@@ -1,39 +1,32 @@
 <!doctype html>
-<html lang="en">
+<html class="govuk-template" lang="en">
 <head>
-	<meta charset="utf-8" />
-	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<title>Your ResearchOps account - ResearchOps Demo Suite</title>
-	<link rel="stylesheet" href="/css/govuk/govuk-typography.css" media="screen" />
-	<link rel="stylesheet" href="/css/govuk/govuk-colours.css" media="screen" />
-	<link rel="stylesheet" href="/css/govuk/govuk-page-chrome.css" media="screen" />
-	<link rel="stylesheet" href="/css/govuk/govuk-buttons.css" media="screen" />
-	<link rel="stylesheet" href="/css/govuk/govuk-forms.css" media="screen" />
-	<link rel="stylesheet" href="/css/govuk/govuk-frontend-v6.css" media="screen" />
-	<link rel="stylesheet" href="/css/screen.css" media="screen" />
+	<link rel="stylesheet" href="/assets/govuk/govuk-frontend.css" media="screen">
 	<script type="module" src="/components/layout.js" defer></script>
+	<script type="module" src="/js/govuk-frontend-init.js" defer></script>
 </head>
-<body>
-	<noscript><a class="govuk-skip-link" href="#main-content">Skip to main content</a></noscript>
-	<x-include src="/partials/header.html" vars='{"active":"Account","subtitle":"Your account"}'></x-include>
-
-	<div class="govuk-width-container">
-		<nav class="govuk-breadcrumbs" aria-label="Breadcrumb">
-			<ol class="govuk-breadcrumbs__list">
-				<li class="govuk-breadcrumbs__list-item"><a class="govuk-breadcrumbs__link" href="/">Home</a></li>
-				<li class="govuk-breadcrumbs__list-item">Account</li>
-			</ol>
-		</nav>
-	</div>
-
+<body class="govuk-template__body">
+	<script>document.body.className += ' js-enabled' + ('noModule' in HTMLScriptElement.prototype ? ' govuk-frontend-supported' : '');</script>
+	<x-include src="/partials/header.html" vars='{"active":""}'></x-include>
 	<main class="govuk-main-wrapper" id="main-content" role="main" tabindex="-1">
 		<div class="govuk-width-container">
-			<div id="account-status" class="govuk-notification-banner" role="region" aria-live="polite" aria-busy="true" aria-labelledby="account-status-title">
+			<div class="govuk-breadcrumbs">
+				<ol class="govuk-breadcrumbs__list">
+					<li class="govuk-breadcrumbs__list-item">
+						<a class="govuk-breadcrumbs__link" href="/">Home</a>
+					</li>
+				</ol>
+			</div>
+
+			<div class="govuk-notification-banner" role="region" aria-labelledby="govuk-notification-banner-title" data-module="govuk-notification-banner" id="account-status" aria-live="polite" aria-busy="true">
 				<div class="govuk-notification-banner__header">
-					<h2 class="govuk-notification-banner__title" id="account-status-title">Checking your account</h2>
+					<h2 class="govuk-notification-banner__title" id="govuk-notification-banner-title">Checking your account</h2>
 				</div>
-				<div class="govuk-notification-banner__content" id="account-status-body">
-					<p class="govuk-body">Checking which teams and permissions you can use.</p>
+				<div class="govuk-notification-banner__content">
+					<p class="govuk-notification-banner__heading">Checking which teams and permissions you can use.</p>
 				</div>
 			</div>
 
@@ -49,7 +42,7 @@
 				<dl class="govuk-summary-list govuk-!-margin-bottom-6" aria-label="Account summary">
 					<div class="govuk-summary-list__row">
 						<dt class="govuk-summary-list__key">Signed in as</dt>
-						<dd class="govuk-summary-list__value" id="account-user-value">Not loaded</dd>
+						<dd class="govuk-summary-list__value"><span id="account-user-value">Not loaded</span></dd>
 					</div>
 				</dl>
 
@@ -65,7 +58,7 @@
 					<div id="account-actions" class="govuk-button-group"></div>
 				</section>
 
-				<details class="govuk-details" id="account-permissions-details" hidden>
+				<details class="govuk-details" id="account-permissions-details" hidden data-module="govuk-details">
 					<summary class="govuk-details__summary">
 						<span class="govuk-details__summary-text">View permission details</span>
 					</summary>
@@ -78,13 +71,12 @@
 				<section aria-labelledby="account-sign-out-title">
 					<h2 class="govuk-heading-m" id="account-sign-out-title">Sign out</h2>
 					<p class="govuk-body">Sign out when you have finished using ResearchOps on this device.</p>
-					<button class="govuk-button govuk-button--secondary" id="account-logout" type="button">Sign out</button>
+					<button type="button" class="govuk-button govuk-button--secondary" data-module="govuk-button" id="account-logout">Sign out</button>
 				</section>
 			</div>
 		</div>
 	</main>
-
-	<x-include src="/partials/footer.html" vars='{"org":"Home Office Biometrics","build":"ResearchOps v1.0.0 (demo)"}'></x-include>
+	<x-include src="/partials/footer.html"></x-include>
 	<script type="module" src="/js/auth-account-page.js?v=account-dashboard-20260513-teams-v3"></script>
 </body>
 </html>

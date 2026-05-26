@@ -1,6 +1,9 @@
 const PREVIEW_API_ORIGIN = 'https://rops-api-passwordless-preview.digikev-kevin-rapley.workers.dev';
 const PRODUCTION_API_ORIGIN = 'https://rops-api.digikev-kevin-rapley.workers.dev';
 const PRODUCTION_PAGES_HOST = 'researchops.pages.dev';
+const DEFAULT_UPSTREAM_TIMEOUT_MS = 12000;
+const MIN_UPSTREAM_TIMEOUT_MS = 1000;
+const MAX_UPSTREAM_TIMEOUT_MS = 30000;
 
 const VALID_PROJECT_PHASES = new Set(['pre-discovery', 'discovery', 'alpha', 'beta', 'live']);
 
@@ -15,6 +18,16 @@ function upstreamApiFor(request, env = {}) {
 	const hostname = new URL(request.url).hostname;
 	if (isPagesPreviewHost(hostname)) return PREVIEW_API_ORIGIN;
 	return PRODUCTION_API_ORIGIN;
+}
+
+function proxyTimeoutMs(env = {}) {
+	const configured = Number(env.API_PROXY_TIMEOUT_MS || env.RESEARCHOPS_API_PROXY_TIMEOUT_MS || DEFAULT_UPSTREAM_TIMEOUT_MS);
+	if (!Number.isFinite(configured)) return DEFAULT_UPSTREAM_TIMEOUT_MS;
+	return Math.min(Math.max(Math.trunc(configured), MIN_UPSTREAM_TIMEOUT_MS), MAX_UPSTREAM_TIMEOUT_MS);
+}
+
+function isAbortError(error) {
+	return error?.name === 'AbortError';
 }
 
 function corsHeaders(origin) {
@@ -74,6 +87,23 @@ function jsonResponse(body, status = 200, origin = null, extraHeaders = {}) {
 			...extraHeaders,
 		},
 	});
+}
+
+async function fetchUpstreamWithTimeout(targetUrl, request, method, timeoutMs) {
+	const controller = new AbortController();
+	const timer = setTimeout(() => controller.abort(), timeoutMs);
+
+	try {
+		return await fetch(targetUrl.toString(), {
+			method,
+			headers: forwardedHeaders(request),
+			body: method === 'GET' || method === 'HEAD' ? undefined : await request.arrayBuffer(),
+			redirect: 'manual',
+			signal: controller.signal,
+		});
+	} finally {
+		clearTimeout(timer);
+	}
 }
 
 function isAirtableRecordId(value) {
@@ -159,6 +189,8 @@ async function blockMalformedProjectList(request, origin, response) {
 export async function onRequest({ request, env }) {
 	const method = request.method.toUpperCase();
 	const origin = request.headers.get('Origin');
+	let targetUrl = null;
+	const timeoutMs = proxyTimeoutMs(env);
 
 	if (method === 'OPTIONS') {
 		return new Response(null, {
@@ -168,13 +200,8 @@ export async function onRequest({ request, env }) {
 	}
 
 	try {
-		const targetUrl = buildUpstreamUrl(request, env);
-		const response = await fetch(targetUrl.toString(), {
-			method,
-			headers: forwardedHeaders(request),
-			body: method === 'GET' || method === 'HEAD' ? undefined : await request.arrayBuffer(),
-			redirect: 'manual',
-		});
+		targetUrl = buildUpstreamUrl(request, env);
+		const response = await fetchUpstreamWithTimeout(targetUrl, request, method, timeoutMs);
 
 		const projectBlock = await blockMalformedProjectList(request, origin, response);
 		if (projectBlock) return projectBlock;
@@ -184,6 +211,7 @@ export async function onRequest({ request, env }) {
 		headers.set('x-content-type-options', 'nosniff');
 		headers.set('x-researchops-api-proxy', 'pages-function');
 		headers.set('x-researchops-api-upstream', targetUrl.origin);
+		headers.set('x-researchops-api-proxy-timeout-ms', String(timeoutMs));
 		for (const [key, value] of Object.entries(corsHeaders(origin))) headers.set(key, value);
 
 		return new Response(response.body, {
@@ -192,15 +220,39 @@ export async function onRequest({ request, env }) {
 			headers,
 		});
 	} catch (error) {
+		if (isAbortError(error)) {
+			return jsonResponse(
+				{
+					ok: false,
+					error: 'api_proxy_timeout',
+					message: 'ResearchOps API proxy timed out while contacting the upstream Worker.',
+					detail: `Upstream Worker did not respond within ${timeoutMs}ms.`,
+					upstreamOrigin: targetUrl?.origin || null,
+					timeoutMs,
+				},
+				504,
+				origin,
+				{
+					'x-researchops-api-upstream': targetUrl?.origin || 'unknown',
+					'x-researchops-api-proxy-timeout-ms': String(timeoutMs),
+				},
+			);
+		}
+
 		return jsonResponse(
 			{
 				ok: false,
 				error: 'api_proxy_error',
-				message: 'ResearchOps could not contact the sign-in service.',
+				message: 'ResearchOps could not contact the API service.',
 				detail: String(error?.message || error),
+				upstreamOrigin: targetUrl?.origin || null,
 			},
 			502,
 			origin,
+			{
+				'x-researchops-api-upstream': targetUrl?.origin || 'unknown',
+				'x-researchops-api-proxy-timeout-ms': String(timeoutMs),
+			},
 		);
 	}
 }

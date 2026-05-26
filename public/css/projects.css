@@ -1,146 +1,54 @@
 /* ========================================================================== 
-   ResearchOps UI • Projects route stylesheet
+   ResearchOps UI • Projects route stylesheet source
    Service:    Home Office Biometrics — ResearchOps
    Route:      /pages/projects/
-   Build:      GOV.UK typography + colours; mobile-first
-   Repo:       /css/projects.css
+   Build:      GOV.UK Frontend components with route-specific support
+   Repo:       /src/styles/projects.scss
    License:    All rights reserved
    ========================================================================== */
-
 /* Projects page structure */
-
 .projects-page-actions {
-	margin: 24px 0 0;
-	}
+  margin: 24px 0 0;
+}
 
 .projects-list-section {
-	margin-top: 16px;
-	}
+  margin-top: 16px;
+}
 
 .projects-list {
-	margin-top: 16px;
-	}
+  margin-top: 16px;
+}
 
-.projects-empty-state,
-.projects-error-state {
-	margin: 24px 0;
-	border-left: 5px solid #1d70b8;
-	padding: 16px 20px;
-	background: #f3f2f1;
-	}
+.projects-list > * + * {
+  margin-top: 24px;
+}
 
-.projects-error-state {
-	border-left-color: #d4351c;
-	}
+/* GOV.UK component support */
+.rops-project-card {
+  margin-bottom: 24px;
+}
 
-.projects-empty-state .govuk-heading-m,
-.projects-error-state .govuk-heading-m {
-	margin-top: 0;
-	}
+.rops-project-summary-list {
+  margin-bottom: 20px;
+}
 
-/* Projects page card content */
+.rops-project-summary-list .govuk-summary-list__value > .govuk-list {
+  margin-bottom: 0;
+}
 
-.project-org {
-	margin: 0 0 4px;
-	color: #00703c;
-	font-weight: 700;
-	font-size: 0.95rem;
-	letter-spacing: .02em;
-	text-transform: none;
-	}
+.rops-project-details {
+  margin-bottom: 0;
+}
 
-.project-title {
-	margin: 0;
-	}
-
-.project-title .govuk-link {
-	color: #1d70b8;
-	font-weight: 700;
-	text-decoration: underline;
-	text-decoration-thickness: max(1px, .0625rem);
-	text-underline-offset: 0.1em;
-	}
-
-.project-title .govuk-link:hover,
-.project-title .govuk-link:focus {
-	color: #003078;
-	text-decoration-thickness: max(3px, .1875rem);
-	}
-
-.project-title .govuk-link:visited {
-	color: #4c2c92;
-	}
-
-.project-meta {
-	margin: 4px 0 8px;
-	}
-
-.project-meta strong {
-	font-weight: 700;
-	}
-
-.project-summary {
-	margin-bottom: 8px;
-	}
-
-.project-actions {
-	display: flex;
-	flex-wrap: wrap;
-	gap: 12px;
-	margin: 12px 0 8px;
-	}
-
-.project-dashboard-action {
-	margin-bottom: 0;
-	}
-
-.user-groups {
-	margin: 8px 0 8px;
-	}
-
-.project-groups-title {
-	margin: 12px 0 6px;
-	font-size: 1rem;
-	font-weight: 700;
-	}
-
-.tags {
-	display: flex;
-	flex-wrap: wrap;
-	gap: 6px;
-	margin: 0 0 8px;
-	padding: 0;
-	list-style: none;
-	}
-
-.tag {
-	display: inline-block;
-	border: 1px solid #b1b4b6;
-	padding: 2px 8px;
-	border-radius: 14px;
-	font-size: 12px;
-	color: #0b0c0c;
-	background: #ffffff;
-	}
-
-.project-extra {
-	margin-top: 8px;
-	}
-
-.project-details summary {
-	cursor: pointer;
-	}
-
-.details-columns {
-	display: grid;
-	gap: 16px;
-	margin-top: 12px;
-	}
+.rops-project-details__columns {
+  display: grid;
+  gap: 16px;
+}
 
 @media (min-width: 700px) {
-	.details-columns {
-		grid-template-columns: 1fr 1fr;
-		}
-	}
+  .rops-project-details__columns {
+    grid-template-columns: 1fr 1fr;
+  }
+}
 
 /* transparency begins in the cascade */

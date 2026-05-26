@@ -7,16 +7,6 @@ const headerPartial = fs.readFileSync('public/partials/header.html', 'utf8');
 const homePage = fs.readFileSync('public/index.html', 'utf8');
 const projectsPage = fs.readFileSync('public/pages/projects/index.html', 'utf8');
 
-function textContent(source, selectorPattern) {
-	const match = source.match(selectorPattern);
-	return match
-		? match[1]
-				.replace(/<[^>]+>/g, ' ')
-				.replace(/\s+/g, ' ')
-				.trim()
-		: '';
-}
-
 function headingText(source, level) {
 	const pattern = new RegExp(`<h${level}\\b[^>]*>([\\s\\S]*?)<\\/h${level}>`, 'gi');
 	return [...source.matchAll(pattern)]
@@ -54,17 +44,24 @@ function pageById(id) {
 
 assert.equal(headingText(overviewPage, 1).length, 1, 'Start overview page should have one h1');
 assert.equal(headingText(overviewPage, 1)[0], 'Start a research project');
+assert.deepEqual(headingText(overviewPage, 2), [
+	'Before you start',
+	'What you will do',
+	'Do not include real personal data',
+]);
 assert.equal(
-	overviewPage.includes('<title>Start a research project — ResearchOps demo suite</title>'),
+	overviewPage.includes('<title>Start a research project - ResearchOps Demo Suite</title>'),
 	true
 );
 assert.equal(overviewPage.includes('src="/partials/header.html"'), true);
 assert.equal(overviewPage.includes('src="/partials/footer.html"'), true);
-assert.equal(overviewPage.includes('class="govuk-button" href="/pages/start/"'), true);
 assert.equal(
-	textContent(overviewPage, /<a\b[^>]*class="govuk-button"[^>]*>([\s\S]*?)<\/a>/),
-	'Start now'
+	linkHref(overviewPage, 'Start now'),
+	'/pages/start/',
+	'Overview page Start now action should route to the existing creation form'
 );
+assert.equal(overviewPage.includes('class="govuk-button'), true);
+assert.equal(overviewPage.includes('data-module="govuk-button"'), true);
 assert.equal(overviewPage.includes('<h2 class="govuk-heading-m">Before you start</h2>'), true);
 assert.equal(overviewPage.includes('<h2 class="govuk-heading-m">What you will do</h2>'), true);
 assert.equal(
@@ -99,9 +96,4 @@ assert.equal(
 	linkHref(projectsPage, 'Start a research project'),
 	'/pages/start/overview/',
 	'Projects page Start a research project button should route to the overview page'
-);
-assert.equal(
-	overviewPage.includes('href="/pages/start/"'),
-	true,
-	'Overview page should keep the Start now action routed to the existing creation form'
 );

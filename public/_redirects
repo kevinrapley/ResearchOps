@@ -1,3 +1,6 @@
+/assets/fonts/*                 /assets/govuk/assets/fonts/:splat              200
+/assets/images/govuk-crest.svg  /assets/govuk/assets/images/govuk-crest.svg  200
+
 /api/*       https://rops-api.digikev-kevin-rapley.workers.dev/api/:splat   200
 /reporting/* https://reopsreporting.pages.dev/:splat                     301
 /reporting   https://reopsreporting.pages.dev/                           301

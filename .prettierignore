@@ -22,6 +22,9 @@ public/css/coloris.min.css
 public/css/govuk/**
 public/components/guides/print.css
 
+# Preview compatibility generated CSS
+assets/researchops/researchops-home.css
+
 # Binary or machine-maintained files
 *.zip
 *.png

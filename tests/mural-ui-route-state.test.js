@@ -2,32 +2,55 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 
 const source = fs.readFileSync("public/components/mural-integration.js", "utf8");
+const previewConfig = fs.readFileSync("infra/cloudflare/wrangler.passwordless-preview.toml", "utf8");
 
 function includes(text) {
-  assert.equal(
-    source.includes(text),
-    true,
-    `Expected mural-integration.js to include: ${text}`,
-  );
+	assert.equal(source.includes(text), true, `Expected mural-integration.js to include: ${text}`);
 }
 
 function excludes(text) {
-  assert.equal(
-    source.includes(text),
-    false,
-    `Expected mural-integration.js not to include: ${text}`,
-  );
+	assert.equal(source.includes(text), false, `Expected mural-integration.js not to include: ${text}`);
 }
 
+function configIncludes(text) {
+	assert.equal(previewConfig.includes(text), true, `Expected preview config to include: ${text}`);
+}
+
+includes("Project Dashboard ↔ Mural wiring with GOV.UK Frontend dashboard state");
+includes("location.hostname.endsWith(\"pages.dev\")");
+includes("https://rops-api.digikev-kevin-rapley.workers.dev");
 includes("function projectDashboardPath(projectId)");
 includes("/pages/project-dashboard/?id=");
-includes("const backPath = projectDashboardPath(effectiveId);");
-includes("return=${encodeURIComponent(backPath)}");
+includes("function wireConnectButton(projectId)");
+includes("function verify()");
+includes("function resolveBoard(projectId)");
+includes("function updateSetupState()");
+includes("function setSetupAsCreate(projectId, projectName)");
+includes("function setSetupAsOpen(projectId, boardUrl)");
+includes("function observeProjectMeta()");
 includes("function hideConnectButton()");
-includes("els.btnConnect.hidden = true;");
-includes("els.btnConnect.disabled = true;");
-includes("hideConnectButton();");
+includes("function setGovukTag(el, text, modifier = \"govuk-tag--grey\")");
+includes("function setOpenLinkState(enabled, boardUrl = \"\")");
+includes("jsonFetch(addDebug(`${API_ORIGIN}/api/health`)).catch(() => {});");
+includes("`${API_ORIGIN}/api/mural/auth?uid=${encodeURIComponent(uid())}&return=${encodeURIComponent(backPath)}`");
+includes("`${API_ORIGIN}/api/mural/verify?uid=${encodeURIComponent(uid())}`");
+includes("`${API_ORIGIN}/api/mural/setup`");
+includes("`${API_ORIGIN}/api/mural/resolve?projectId=${encodeURIComponent(pid)}&uid=${encodeURIComponent(uid())}`");
+includes("Mural optional");
+includes("Connect if needed");
+includes("Create or open manually");
+includes("Board linked");
+includes("mural-account-state");
+includes("mural-board-state");
+includes("mural-summary-tag");
+includes("mural-open");
 
+excludes("Mural has not been checked yet");
+excludes("Mural not checked");
 excludes("const backAbs = absolutePagesUrl");
 excludes("return=${encodeURIComponent(backAbs)}");
 excludes("function absolutePagesUrl(pathAndQuery)");
+
+configIncludes('PAGES_ORIGIN       = "https://chore-govuk-frontend-integra.researchops.pages.dev"');
+configIncludes("https://chore-govuk-frontend-integra.researchops.pages.dev");
+configIncludes('MURAL_REDIRECT_URI = "https://rops-api-passwordless-preview.digikev-kevin-rapley.workers.dev/api/mural/callback"');

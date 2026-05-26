@@ -1,0 +1,90 @@
+{
+	"traceId": "govuk-x-include-page-chrome",
+	"date": "2026-05-23",
+	"repository": "kevinrapley/ResearchOps",
+	"pullRequest": 262,
+	"branch": "chore/govuk-frontend-integration",
+	"branchTraceDecision": "trace-required",
+	"task": "Reinstate x-include for the GOV.UK Frontend header and footer on representative spike pages.",
+	"operatingModelFilesLoaded": [
+		"AGENTS.md",
+		".agent-operating-model/orchestration.xml",
+		".agent-operating-model/bundle-registry.json",
+		".agent-operating-model/task-signal-catalog.json",
+		".agent-operating-model/selection-rules.json",
+		".agent-operating-model/github-mutation-policy.md",
+		".agent-operating-model/precedence-policy.md",
+		".agent-operating-model/trace-policy.md"
+	],
+	"selectedBundles": [
+		{
+			"id": "github-diamond",
+			"canonicalPath": ".agent-operating-model/bundles/github/"
+		},
+		{
+			"id": "researchops-developer-control",
+			"canonicalPath": ".agent-operating-model/bundles/researchops-developer-control/"
+		},
+		{
+			"id": "multi-functional-team",
+			"canonicalPath": ".agent-operating-model/bundles/multi-functional-team/"
+		},
+		{
+			"id": "govuk-design-system",
+			"canonicalPath": ".agent-operating-model/bundles/govuk-design-system/"
+		}
+	],
+	"skippedBundles": [
+		"cloudflare",
+		"openai-platform",
+		"mcp-agent-tooling",
+		"airtable-public-api",
+		"mural-public-api"
+	],
+	"signals": [
+		"repository-affecting-task",
+		"government-product-assurance-default",
+		"ui-or-content-change"
+	],
+	"filesRead": [
+		"docs/design-system/govuk-compliance-audit.md",
+		"docs/spikes/govuk-frontend-integration.md",
+		"public/partials/header.html",
+		"public/partials/footer.html",
+		"public/components/layout.js",
+		"public/js/govuk-frontend-init.js",
+		"src/govuk/templates/layouts/researchops.njk",
+		"src/govuk/templates/pages/home.njk",
+		"src/govuk/templates/pages/account.njk",
+		"src/govuk/templates/pages/start-overview.njk",
+		"scripts/govuk/render-govuk-pages.mjs",
+		"tests/govuk-frontend-integration-route-state.test.js"
+	],
+	"filesCreatedOrModified": [
+		"public/components/govuk-layout.js",
+		"public/partials/header.html",
+		"public/partials/footer.html",
+		"src/govuk/templates/layouts/researchops.njk",
+		"scripts/govuk/render-govuk-pages.mjs",
+		"public/index.html",
+		"public/pages/account/index.html",
+		"public/pages/start/overview/index.html",
+		"tests/govuk-frontend-integration-route-state.test.js",
+		"docs/agent-audit/reasoning/2026/05/23/govuk-x-include-page-chrome.md",
+		"docs/agent-audit/reasoning/2026/05/23/govuk-x-include-page-chrome.json"
+	],
+	"implementationDecisions": [
+		"The representative pages now include shared GOV.UK header and footer chrome through x-include rather than hardcoded page markup.",
+		"A GOV.UK-specific x-include loader was added to avoid loading the legacy include script that injects custom GOV.UK clone CSS.",
+		"The Nunjucks layout now renders x-include tags so future build output preserves the shared chrome contract.",
+		"The route-state test now fails if representative pages hardcode the GOV.UK header or footer."
+	],
+	"validation": {
+		"localExecution": false,
+		"testUpdated": "tests/govuk-frontend-integration-route-state.test.js now asserts shared x-include chrome and absence of hardcoded header/footer."
+	},
+	"residualRisks": [
+		"Browser validation should confirm visual parity after x-include render and GOV.UK Frontend init.",
+		"Automated validation still needs to be run before promoting the draft PR."
+	]
+}

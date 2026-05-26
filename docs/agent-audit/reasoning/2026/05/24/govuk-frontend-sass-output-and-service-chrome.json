@@ -1,0 +1,86 @@
+{
+  "traceId": "govuk-frontend-sass-output-and-service-chrome",
+  "date": "2026-05-24",
+  "repository": "kevinrapley/ResearchOps",
+  "pullRequest": 262,
+  "branch": "chore/govuk-frontend-integration",
+  "branchTraceDecision": "trace-required",
+  "task": "Reinstate the home-page Sass-driven grid output, add explicit GOV.UK Frontend chrome to every registered service page, and fix Cloudflare Pages preview asset 404s.",
+  "selectedBundles": [
+    "github-diamond",
+    "researchops-developer-control",
+    "multi-functional-team",
+    "govuk-design-system"
+  ],
+  "skippedBundles": [
+    "cloudflare",
+    "openai-platform",
+    "mcp-agent-tooling",
+    "airtable-public-api",
+    "mural-public-api"
+  ],
+  "userConstraintsApplied": [
+    "Do not manually edit public/assets/researchops/researchops-home.css.",
+    "Treat src/styles/researchops-home.scss as the source of truth for home-page grid styling.",
+    "Do not make /components/layout.js inject generated GOV.UK Frontend stylesheets into every page.",
+    "Do not use the shared header partial as a global stylesheet injection point.",
+    "Migrate service pages explicitly using the page-level GOV.UK Frontend pattern."
+  ],
+  "implementationDecisions": [
+    "Kept src/styles/researchops-home.scss as the source of truth for the 8-step grid and 3-column next-actions layout.",
+    "Added generated CSS assertions for minmax grid output and the mid-grey vertical rule.",
+    "Ensured Release Gate runs npm run build before unit tests.",
+    "Added a build-time service-page normaliser based on visual-walkthrough.config.mjs.",
+    "Used npm postbuild:govuk-pages so normalisation runs after build:govuk-pages without changing the asserted build command string.",
+    "Preserved route-specific CSS during normalisation.",
+    "Removed hardcoded GOV.UK header/footer fallbacks during normalisation.",
+    "Added a service-wide route-state test for explicit GOV.UK Frontend chrome.",
+    "Migrated public/pages/projects/index.html to the explicit GOV.UK Frontend page pattern.",
+    "Fixed Projects acceptance parsing so govuk-body-l and govuk-body are distinct class tokens.",
+    "Added a top-level assets/researchops/researchops-home.css compatibility copy for the Cloudflare Pages preview URL observed in the browser network panel.",
+    "Added Cloudflare Pages rewrites from /assets/fonts/* and /assets/images/govuk-crest.svg to the committed GOV.UK asset directory under /assets/govuk/assets/.",
+    "Set $govuk-assets-path in src/styles/govuk.scss so future compiled GOV.UK CSS points at the deployed GOV.UK asset directory.",
+    "Added tests/deploy-asset-paths.test.js to guard preview-facing asset paths and redirect mappings.",
+    "Updated .prettierignore so the generated top-level ResearchOps CSS compatibility copy is not reformatted."
+  ],
+  "filesModified": [
+    ".github/workflows/release-gate.yml",
+    ".prettierignore",
+    "assets/researchops/researchops-home.css",
+    "package.json",
+    "public/_redirects",
+    "public/pages/projects/index.html",
+    "scripts/govuk/normalise-service-pages.mjs",
+    "scripts/researchops-projects-acceptance.mjs",
+    "src/styles/govuk.scss",
+    "tests/deploy-asset-paths.test.js",
+    "tests/govuk-frontend-integration-route-state.test.js",
+    "tests/govuk-frontend-service-pages-route-state.test.js",
+    "tests/consent-forms-route-state.test.js",
+    "tests/study-child-route-state.test.js",
+    "tests/study-page-route-state.test.js",
+    "tests/synthesize-page-route-state.test.js",
+    "docs/agent-audit/reasoning/2026/05/24/govuk-frontend-sass-output-and-service-chrome.md",
+    "docs/agent-audit/reasoning/2026/05/24/govuk-frontend-sass-output-and-service-chrome.json"
+  ],
+  "previewIssueAddressed": {
+    "homeCss404": "/assets/researchops/researchops-home.css was returning 404 in the browser network panel, so a top-level compatibility copy was added and guarded by tests.",
+    "govukAsset404s": "The compiled GOV.UK CSS requested /assets/fonts/* and /assets/images/govuk-crest.svg. Cloudflare Pages rewrites now map those paths to /assets/govuk/assets/.",
+    "futureBuildPath": "$govuk-assets-path is set in the GOV.UK Sass entry point so future compiled CSS points at the deployed GOV.UK asset directory."
+  },
+  "validatedGreen": {
+    "head": "0200d846aeec40df4dd580b2f5bbea33f461e7ef",
+    "workflows": [
+      "CI",
+      "Validate ResearchOps",
+      "Accessibility audit (pa11y-ci)",
+      "qa-bdd",
+      "Release Gate",
+      "Format pull request",
+      "QA — Broken links (Lychee)",
+      "Build and deploy agent documentation Pages",
+      "Update GitHub bundle registry manifest"
+    ]
+  },
+  "residualRisk": "The build-time normaliser covers every page registered in visual-walkthrough.config.mjs. Additional public HTML files outside that registry are outside this unit. A final visual check should still be done in the Cloudflare Pages preview after the latest branch deployment completes."
+}

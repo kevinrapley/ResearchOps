@@ -4,6 +4,6 @@ main#main-content.govuk-main-wrapper:focus,
 main#main-content.govuk-main-wrapper:focus-visible {
 	outline: none;
 	box-shadow: none;
-	}
+}
 
 /* transparency begins in the cascade */

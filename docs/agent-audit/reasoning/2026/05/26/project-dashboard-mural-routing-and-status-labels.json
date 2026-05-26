@@ -1,0 +1,80 @@
+{
+	"date": "2026-05-26",
+	"branch": "chore/govuk-frontend-integration",
+	"pullRequest": 262,
+	"traceTrigger": "chore/ branch prefix",
+	"taskSummary": "Fix Project Dashboard regressions for Mural OAuth routing, stage status labels and optional Mural idle state.",
+	"operatingModelFilesLoaded": [
+		"AGENTS.md",
+		".agent-operating-model/orchestration.xml",
+		".agent-operating-model/bundle-registry.json",
+		".agent-operating-model/task-signal-catalog.json",
+		".agent-operating-model/selection-rules.json",
+		".agent-operating-model/github-mutation-policy.md"
+	],
+	"selectedBundles": [
+		"github-diamond",
+		"researchops-developer-control",
+		"multi-functional-team",
+		"govuk-design-system",
+		"cloudflare",
+		"airtable-public-api",
+		"mural-public-api"
+	],
+	"filesRead": [
+		"public/components/mural-integration.js@main",
+		"public/components/mural-integration.js@chore/govuk-frontend-integration",
+		"public/js/project-dashboard.js@main",
+		"public/js/project-dashboard.js@chore/govuk-frontend-integration",
+		"src/govuk/templates/pages/project-dashboard.njk",
+		"infra/cloudflare/wrangler.toml",
+		"infra/cloudflare/wrangler.passwordless-preview.toml",
+		".github/workflows/deploy-worker.yml",
+		"tests/mural-ui-route-state.test.js",
+		"tests/project-dashboard-route-state.test.js"
+	],
+	"filesModified": [
+		"public/components/mural-integration.js",
+		"public/js/project-dashboard.js",
+		"src/govuk/templates/pages/project-dashboard.njk",
+		"infra/cloudflare/wrangler.passwordless-preview.toml",
+		"tests/mural-ui-route-state.test.js",
+		"tests/project-dashboard-route-state.test.js"
+	],
+	"filesCreated": [
+		"docs/agent-audit/reasoning/2026/05/26/project-dashboard-mural-routing-and-status-labels.md",
+		"docs/agent-audit/reasoning/2026/05/26/project-dashboard-mural-routing-and-status-labels.json"
+	],
+	"diagnosis": [
+		"The Mural client still routed pages.dev hosts directly to the production Worker, bypassing the Pages API proxy and preview Worker.",
+		"The status-strip tags were static and were not updated after project data loaded.",
+		"The initial Mural state implied a required check rather than an optional integration."
+	],
+	"changes": [
+		"Restored same-origin Mural API routing by default in public/components/mural-integration.js.",
+		"Removed the production Worker fallback from the dashboard Mural client.",
+		"Added an apiUrl helper for /api/mural calls.",
+		"Changed Mural idle copy to optional integration language.",
+		"Added connected return handling for mural=connected.",
+		"Broadened project stage field aliases in public/js/project-dashboard.js.",
+		"Updated status-strip tags from loaded project data.",
+		"Updated Nunjucks loading labels and route-state tests."
+	],
+	"deploymentContractGap": {
+		"file": ".github/workflows/deploy-worker.yml",
+		"details": [
+			"Preview Worker deploy triggers do not include chore/** even though this PR branch is chore/govuk-frontend-integration.",
+			"The Wrangler deploy secrets list does not include MURAL_CLIENT_SECRET.",
+			"A workflow update was attempted but blocked by the tool layer."
+		]
+	},
+	"validationAttempted": [],
+	"validationNotRun": [
+		"npm test",
+		"npm run format:check",
+		"npm run lint",
+		"Cloudflare Pages preview visual check",
+		"Worker deployment workflow validation"
+	],
+	"residualRisk": "If the Mural callback still returns missing_secret after these client fixes deploy, the remaining issue is Worker secret/deployment configuration rather than the dashboard route client."
+}

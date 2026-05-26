@@ -1,0 +1,85 @@
+{
+	"traceId": "home-grid-styling-regression",
+	"date": "2026-05-23",
+	"repository": "kevinrapley/ResearchOps",
+	"pullRequest": 262,
+	"branch": "chore/govuk-frontend-integration",
+	"branchTraceDecision": "trace-required",
+	"task": "Restore the ResearchOps home page styling for the 8-step grid and next-action columns after the GOV.UK x-include page chrome change.",
+	"operatingModelFilesLoaded": [
+		"AGENTS.md",
+		".agent-operating-model/orchestration.xml",
+		".agent-operating-model/bundle-registry.json",
+		".agent-operating-model/task-signal-catalog.json",
+		".agent-operating-model/selection-rules.json",
+		".agent-operating-model/github-mutation-policy.md"
+	],
+	"selectedBundles": [
+		{
+			"id": "github-diamond",
+			"canonicalPath": ".agent-operating-model/bundles/github/"
+		},
+		{
+			"id": "researchops-developer-control",
+			"canonicalPath": ".agent-operating-model/bundles/researchops-developer-control/"
+		},
+		{
+			"id": "multi-functional-team",
+			"canonicalPath": ".agent-operating-model/bundles/multi-functional-team/"
+		},
+		{
+			"id": "govuk-design-system",
+			"canonicalPath": ".agent-operating-model/bundles/govuk-design-system/"
+		}
+	],
+	"skippedBundles": [
+		"cloudflare",
+		"openai-platform",
+		"mcp-agent-tooling",
+		"airtable-public-api",
+		"mural-public-api"
+	],
+	"signals": [
+		"repository-affecting-task",
+		"government-product-assurance-default",
+		"ui-or-content-change"
+	],
+	"filesRead": [
+		"docs/design-system/govuk-compliance-audit.md",
+		"docs/spikes/govuk-frontend-integration.md",
+		"src/styles/researchops-home.scss",
+		"src/govuk/templates/pages/home.njk",
+		"public/index.html",
+		"public/assets/researchops/researchops-home.css",
+		"tests/govuk-frontend-integration-route-state.test.js"
+	],
+	"filesModified": [
+		"src/styles/researchops-home.scss",
+		"src/govuk/templates/pages/home.njk",
+		"public/index.html",
+		"tests/govuk-frontend-integration-route-state.test.js",
+		"docs/agent-audit/reasoning/2026/05/23/home-grid-styling-regression.md",
+		"docs/agent-audit/reasoning/2026/05/23/home-grid-styling-regression.json"
+	],
+	"findings": [
+		"The Sass source for the home grid components still existed.",
+		"The rendered home page used an unversioned ResearchOps home stylesheet URL.",
+		"The previous route-state test did not assert the Sass desktop grid contracts or the versioned home stylesheet URL."
+	],
+	"implementationDecisions": [
+		"Keep src/styles/researchops-home.scss as the source of truth for the home page components.",
+		"Harden the Sass grid tracks with minmax(0, 1fr) and defensive sizing properties.",
+		"Version the ResearchOps home stylesheet URL in the source template and checked-in rendered page.",
+		"Do not commit a manual generated CSS patch as the source of truth."
+	],
+	"validation": {
+		"localExecution": false,
+		"testUpdated": "tests/govuk-frontend-integration-route-state.test.js now asserts Sass grid contracts, versioned home stylesheet usage, and rendered home component classes."
+	},
+	"requiredFollowUpValidation": [
+		"npm run build:researchops",
+		"npm run build:govuk-pages",
+		"node tests/govuk-frontend-integration-route-state.test.js",
+		"Browser-check desktop home page grid and next-action columns"
+	]
+}

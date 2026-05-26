@@ -24,7 +24,8 @@ assert.equal(workerSource.includes("apiPath === \"/api/studies\" || apiPath.star
 
 assert.equal(dashboardSource.includes("async function loadStudies(projectId)"), true);
 assert.equal(dashboardSource.includes("/pages/study/?id="), true);
-assert.equal(dashboardSource.includes("?pid="), false);
+assert.equal(dashboardSource.includes("/pages/study/?pid="), false);
+assert.equal(dashboardSource.includes("&sid="), false);
 assert.equal(dashboardSource.includes("renderStudiesLoadError"), true);
 
 assert.equal(studyPageSource.includes("resolveStudyContext"), true);

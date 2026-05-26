@@ -53,7 +53,8 @@ includes(studyBridge, "next.searchParams.delete('sid')", "study canonical URL br
 includes(studyBridge, "next.searchParams.set('id', context.studyId)", "study canonical URL bridge");
 
 for (const [label, source] of Object.entries(pages)) {
-	includes(source, "<html lang=\"en-GB\">", label);
+	includes(source, "<html class=\"govuk-template\" lang=\"en\">", label);
+	includes(source, "/assets/govuk/govuk-frontend.css", label);
 	includes(source, "/js/study-route-context.js", label);
 	includes(source, "?v=study-record-id-routing-20260518", label);
 	excludes(source, "?pid=", label);

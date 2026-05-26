@@ -1,0 +1,160 @@
+/* ============================================================================
+   ResearchOps UI • Project Dashboard route stylesheet
+   Service:    Home Office Biometrics — ResearchOps
+   Route:      /pages/project-dashboard/
+   Build:      GOV.UK Frontend route support only
+   Repo:       /src/styles/project-dashboard.scss
+   License:    All rights reserved
+   ============================================================================ */
+
+.rops-dashboard-header {
+	margin-bottom: 30px;
+}
+
+.rops-dashboard-description {
+	max-width: 34em;
+}
+
+.rops-status-strip {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 10px;
+	margin-bottom: 20px;
+}
+
+.rops-dashboard-grid {
+	display: grid;
+	gap: 20px;
+	grid-template-columns: 1fr;
+}
+
+.rops-two-column {
+	display: grid;
+	gap: 20px;
+	grid-template-columns: 1fr;
+}
+
+@media (min-width: 48.0625em) {
+	.rops-two-column {
+		grid-template-columns: 1fr 1fr;
+	}
+}
+
+.rops-compact-list {
+	margin-bottom: 0;
+}
+
+.rops-summary-card-button {
+	margin-bottom: 0;
+}
+
+.rops-divided-list > li {
+	border-bottom: 1px solid #b1b4b6;
+	margin-bottom: 10px;
+	padding-bottom: 10px;
+}
+
+.rops-divided-list > li:last-child {
+	border-bottom: 0;
+	margin-bottom: 0;
+	padding-bottom: 0;
+}
+
+.rops-study-list {
+	margin-bottom: 20px;
+}
+
+.rops-study-list > li,
+.rops-study-item {
+	border-bottom: 1px solid #b1b4b6;
+	margin-bottom: 20px;
+	padding-bottom: 20px;
+}
+
+.rops-study-list > li:last-child,
+.rops-study-item:last-child {
+	border-bottom: 0;
+	margin-bottom: 0;
+	padding-bottom: 0;
+}
+
+.rops-study-description {
+	color: #505a5f;
+	margin-bottom: 10px;
+	margin-top: 5px;
+}
+
+.rops-link-panel {
+	border-left: 5px solid #1d70b8;
+	margin-bottom: 20px;
+	padding-left: 15px;
+}
+
+.rops-mural-status {
+	margin: 0 0 12px;
+}
+
+.rops-mural-actions {
+	margin-top: 20px;
+}
+
+.rops-disabled-button {
+	cursor: default;
+	opacity: 0.6;
+}
+
+/* Mural integration status */
+
+.pill {
+	display: inline-block;
+	font-weight: 700;
+	padding: 3px 8px;
+}
+
+.pill--neutral {
+	background: #f3f2f1;
+	color: #0b0c0c;
+}
+
+.pill--good {
+	background: #00703c;
+	color: #ffffff;
+}
+
+.pill--warn {
+	background: #ffdd00;
+	color: #0b0c0c;
+}
+
+.pill--bad {
+	background: #d4351c;
+	color: #ffffff;
+}
+
+/* Lightweight project action panels */
+
+.dashboard-action-panel {
+	background: #f3f2f1;
+	border-left: 5px solid #1d70b8;
+	margin-top: 16px;
+	padding: 16px;
+}
+
+.dashboard-action-panel .govuk-heading-s {
+	margin-top: 0;
+}
+
+.dashboard-action-status {
+	font-weight: 700;
+	margin-bottom: 12px;
+}
+
+.dashboard-action-status:empty {
+	display: none;
+}
+
+.dashboard-action-status--error {
+	color: #d4351c;
+}
+
+/* transparency begins in the cascade */

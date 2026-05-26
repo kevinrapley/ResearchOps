@@ -1,0 +1,84 @@
+{
+	"traceId": "govuk-frontend-integration-main-merge",
+	"date": "2026-05-23",
+	"repository": "kevinrapley/ResearchOps",
+	"pullRequest": 262,
+	"branch": "chore/govuk-frontend-integration",
+	"branchTraceDecision": "trace-required",
+	"task": "Fetch and merge updates from main into the GOV.UK Frontend integration spike branch.",
+	"operatingModelFilesLoaded": [
+		"AGENTS.md",
+		".agent-operating-model/orchestration.xml",
+		".agent-operating-model/bundle-registry.json",
+		".agent-operating-model/task-signal-catalog.json",
+		".agent-operating-model/selection-rules.json",
+		".agent-operating-model/bootstrap-checklist.md",
+		".agent-operating-model/precedence-policy.md",
+		".agent-operating-model/trace-policy.md",
+		".agent-operating-model/trace-layers.md",
+		".agent-operating-model/behavioural-evals.json",
+		".agent-operating-model/github-mutation-policy.md"
+	],
+	"selectedBundles": [
+		{
+			"id": "github-diamond",
+			"canonicalPath": ".agent-operating-model/bundles/github/"
+		},
+		{
+			"id": "researchops-developer-control",
+			"canonicalPath": ".agent-operating-model/bundles/researchops-developer-control/"
+		},
+		{
+			"id": "multi-functional-team",
+			"canonicalPath": ".agent-operating-model/bundles/multi-functional-team/"
+		},
+		{
+			"id": "govuk-design-system",
+			"canonicalPath": ".agent-operating-model/bundles/govuk-design-system/"
+		}
+	],
+	"skippedBundles": [
+		"cloudflare",
+		"openai-platform",
+		"mcp-agent-tooling",
+		"airtable-public-api",
+		"mural-public-api"
+	],
+	"signals": [
+		"repository-affecting-task",
+		"government-product-assurance-default",
+		"ui-or-content-change"
+	],
+	"beforeMerge": {
+		"status": "diverged",
+		"aheadBy": 37,
+		"behindBy": 431,
+		"headSha": "5bb70b3a1a31eb94b5134f2376228732298aeeea",
+		"baseSha": "eca9e2e55715f1a7e8f4146762a505e1c4c9561c"
+	},
+	"actionTaken": {
+		"method": "non-forced ref update to GitHub-generated merge commit",
+		"mergeCommitSha": "0e2d1f7e15d74ff4ae0d9cb3002dc498afdeee93",
+		"force": false,
+		"result": "success"
+	},
+	"afterMerge": {
+		"status": "ahead",
+		"aheadBy": 38,
+		"behindBy": 0,
+		"mergeBase": "eca9e2e55715f1a7e8f4146762a505e1c4c9561c"
+	},
+	"filesCreatedOrModifiedByTraceStep": [
+		"docs/agent-audit/reasoning/2026/05/23/govuk-frontend-integration-main-merge.md",
+		"docs/agent-audit/reasoning/2026/05/23/govuk-frontend-integration-main-merge.json"
+	],
+	"validation": {
+		"localExecution": false,
+		"compareAfterMerge": "main...chore/govuk-frontend-integration reported behindBy 0",
+		"automatedSuiteRun": false
+	},
+	"residualRisks": [
+		"PR body validation note still needs refresh after trace commits.",
+		"Automated validation needs to be re-run against the latest branch head before promoting the draft PR."
+	]
+}

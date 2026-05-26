@@ -1,0 +1,62 @@
+{
+  "traceId": "govuk-header-footer-rendering-fix",
+  "date": "2026-05-24",
+  "repository": "kevinrapley/ResearchOps",
+  "pullRequest": 262,
+  "branch": "chore/govuk-frontend-integration",
+  "branchTraceDecision": "trace-required",
+  "task": "Fix preview rendering defects in the shared GOV.UK header wordmark and shared GOV.UK footer containment.",
+  "operatingModelFilesLoaded": [
+    "README.md",
+    "AGENTS.md",
+    "RECENT_LEARNINGS.md",
+    ".agent-operating-model/orchestration.xml",
+    ".agent-operating-model/bundle-registry.json",
+    ".agent-operating-model/task-signal-catalog.json",
+    ".agent-operating-model/selection-rules.json",
+    ".agent-operating-model/github-mutation-policy.md"
+  ],
+  "selectedBundles": [
+    "github-diamond",
+    "researchops-developer-control",
+    "multi-functional-team",
+    "govuk-design-system"
+  ],
+  "userEvidence": [
+    "Preview screenshots showed the GOV.UK wordmark in the shared header rendering incorrectly.",
+    "Preview screenshots showed the shared footer behaving correctly on the account sign-in page but escaping the intended layout on other pages."
+  ],
+  "implementationDecisions": [
+    "Replaced the brittle header SVG text wordmark with a shared header structure using a crown SVG and plain GOV.UK wordmark text.",
+    "Kept the service name as ResearchOps Demo Suite in govuk-header__product-name.",
+    "Added a single accessible label to the service home link: GOV.UK ResearchOps Demo Suite home.",
+    "Removed the old word-spacing workaround from the header support stylesheet.",
+    "Added explicit support styles for researchops-header__logotype, researchops-header__crown and researchops-header__wordmark.",
+    "Added govuk-width-container to the shared footer container so the footer is constrained consistently across pages.",
+    "Updated route-state tests to prevent regression to an SVG text GOV.UK wordmark and to require govuk-width-container govuk-footer__container."
+  ],
+  "filesModified": [
+    "public/partials/header.html",
+    "public/partials/footer.html",
+    "public/css/govuk/govuk-header-service-brand.css",
+    "tests/govuk-frontend-integration-route-state.test.js",
+    "tests/govuk-page-chrome-navigation-route-state.test.js",
+    "docs/agent-audit/reasoning/2026/05/24/govuk-header-footer-rendering-fix.md",
+    "docs/agent-audit/reasoning/2026/05/24/govuk-header-footer-rendering-fix.json"
+  ],
+  "validationEvidence": {
+    "head": "985092bde5bcbf43a5527e9cb752429e314f3956",
+    "workflows": [
+      "CI",
+      "Validate ResearchOps",
+      "Accessibility audit (pa11y-ci)",
+      "qa-bdd",
+      "Release Gate",
+      "Format pull request",
+      "QA — Broken links (Lychee)",
+      "Build and deploy agent documentation Pages",
+      "Update GitHub bundle registry manifest"
+    ]
+  },
+  "residualRisk": "The preview should be visually rechecked after the latest Cloudflare Pages deployment completes. The local and CI route-state checks confirm the shared partial contract, but they do not replace a final browser check against the deployed preview."
+}

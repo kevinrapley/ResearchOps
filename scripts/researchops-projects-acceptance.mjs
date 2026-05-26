@@ -90,6 +90,13 @@ function byClass(source = '', className = '') {
 	return source.match(pattern)?.[0] || '';
 }
 
+function paragraphWithClass(className) {
+	return new RegExp(
+		`<p\\b(?=[^>]*class=["'][^"']*(?:^|\\s)${className}(?:\\s|["']))[^>]*>([\\s\\S]*?)<\\/p>`,
+		'i'
+	);
+}
+
 function rows(values = []) {
 	return values.map((row) => `      | ${row.map((item) => quote(item)).join(' | ')} |`);
 }
@@ -106,18 +113,18 @@ function model() {
 	);
 
 	return {
-		serviceName: first(source, /<a\b(?=[^>]*class=["'][^"']*\bgovuk-service-navigation__link\b)[^>]*href=["']\/["'][^>]*>([\s\S]*?)<\/a>/i, FALLBACK.serviceName),
+		serviceName: first(source, /<span\b(?=[^>]*class=["'][^"']*\bgovuk-header__product-name\b)[^>]*>([\s\S]*?)<\/span>/i, FALLBACK.serviceName),
 		heading: first(source, /<h1\b(?=[^>]*id=["']projects-title["'])[^>]*>([\s\S]*?)<\/h1>/i, FALLBACK.heading),
-		lede: first(intro, /<p\b(?=[^>]*class=["'][^"']*\blede\b)[^>]*>([\s\S]*?)<\/p>/i, FALLBACK.lede),
-		intro: first(intro, /<p\b(?=[^>]*class=["'][^"']*\bgovuk-body\b)[^>]*>([\s\S]*?)<\/p>/i, FALLBACK.intro),
+		lede: first(intro, paragraphWithClass('govuk-body-l'), FALLBACK.lede),
+		intro: first(intro, paragraphWithClass('govuk-body'), FALLBACK.intro),
 		prototype: first(source, /<span\b(?=[^>]*class=["'][^"']*\bgovuk-phase-banner__text\b)[^>]*>([\s\S]*?)<\/span>/i, FALLBACK.prototype),
 		nav: nav.length ? nav : FALLBACK.nav,
 		primaryAction: first(intro, /<a\b(?=[^>]*class=["'][^"']*\bgovuk-button\b)[^>]*>([\s\S]*?)<\/a>/i, FALLBACK.primaryAction),
 		listTitle: first(listSection, /<h2\b(?=[^>]*id=["']projects-list-title["'])[^>]*>([\s\S]*?)<\/h2>/i, FALLBACK.listTitle),
-		listDescription: first(listSection, /<p\b(?=[^>]*class=["'][^"']*\bgovuk-body\b)[^>]*>([\s\S]*?)<\/p>/i, FALLBACK.listDescription),
-		loadingText: first(list, /<p\b(?=[^>]*class=["'][^"']*\blede\b)[^>]*>([\s\S]*?)<\/p>/i, FALLBACK.loadingText),
+		listDescription: first(listSection, paragraphWithClass('govuk-body'), FALLBACK.listDescription),
+		loadingText: first(list, paragraphWithClass('govuk-body-l'), FALLBACK.loadingText),
 		noScriptTitle: first(noScriptState, /<h3\b[^>]*>([\s\S]*?)<\/h3>/i, FALLBACK.noScriptTitle),
-		noScriptText: first(noScriptState, /<p\b(?=[^>]*class=["'][^"']*\bgovuk-body\b)[^>]*>([\s\S]*?)<\/p>/i, FALLBACK.noScriptText),
+		noScriptText: first(noScriptState, paragraphWithClass('govuk-body'), FALLBACK.noScriptText),
 		emptyTitle: first(controller, /<h3\b(?=[^>]*class=\"govuk-heading-m\")[^>]*>(No projects yet)<\/h3>/i, FALLBACK.emptyTitle),
 		emptyText: first(controller, /<p\b(?=[^>]*class=\"govuk-body\")[^>]*>(Create a research project[\s\S]*?)<\/p>/i, FALLBACK.emptyText),
 		errorTitle: first(controller, /<h3\b(?=[^>]*class=\"govuk-heading-m\")[^>]*>(Could not load projects)<\/h3>/i, FALLBACK.errorTitle),

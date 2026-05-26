@@ -1,13 +1,14 @@
 /**
  * @file /public/components/mural-integration.js
- * @summary Project Dashboard ↔ Mural wiring (verify, resolve, setup, open) with async "await link" polling.
+ * @summary Project Dashboard ↔ Mural wiring with GOV.UK Frontend dashboard state.
  *
  * UI hooks expected on the page:
- *  - Section:   <section id="mural-integration">
- *  - Status:    <p id="mural-status"><span class="pill"></span></p>
- *  - Buttons:   #mural-connect  #mural-setup
+ *  - Section:   #mural-integration
+ *  - Status:    #mural-status with optional .pill child
+ *  - Buttons:   #mural-connect  #mural-setup  #mural-open
+ *  - Tags:      #mural-account-state  #mural-board-state  #mural-summary-tag
  *
- * Public API used elsewhere (e.g. journal-tabs.js):
+ * Public API used elsewhere:
  *  - window.MuralIntegration.getMuralIdForProject(projectId) → string|null
  */
 
@@ -21,7 +22,7 @@
 
 	const $ = (s, r = document) => r.querySelector(s);
 	const byId = (id) => document.getElementById(id);
-	const sleep = (ms) => new Promise(res => setTimeout(res, ms));
+	const sleep = (ms) => new Promise((res) => setTimeout(res, ms));
 
 	function addDebug(url) {
 		try {
@@ -42,7 +43,11 @@
 		const res = await fetch(url, init);
 		const txt = await res.text().catch(() => "");
 		let body = {};
-		try { body = txt ? JSON.parse(txt) : {}; } catch { /* noop */ }
+		try {
+			body = txt ? JSON.parse(txt) : {};
+		} catch {
+			// Non-JSON upstream responses are handled by status checks below.
+		}
 		debugLog("← fetch", url, { status: res.status, ok: res.ok, bodyPreview: txt.slice(0, 300) });
 		if (!res.ok) {
 			const err = new Error((body && (body.error || body.message)) || `HTTP ${res.status}`);
@@ -51,6 +56,25 @@
 			throw err;
 		}
 		return body;
+	}
+
+	function setGovukTag(el, text, modifier = "govuk-tag--grey") {
+		if (!el) return;
+		el.className = `govuk-tag ${modifier}`;
+		el.textContent = text;
+	}
+
+	function setOpenLinkState(enabled, boardUrl = "") {
+		if (!els.btnOpen) return;
+		if (enabled && boardUrl) {
+			els.btnOpen.href = boardUrl;
+			els.btnOpen.removeAttribute("aria-disabled");
+			els.btnOpen.classList.remove("rops-disabled-button");
+			return;
+		}
+		els.btnOpen.href = "#";
+		els.btnOpen.setAttribute("aria-disabled", "true");
+		els.btnOpen.classList.add("rops-disabled-button");
 	}
 
 	function pill(el, variant, text) {
@@ -75,6 +99,8 @@
 
 	function setConnectedStatus(folderDenied = false) {
 		hideConnectButton();
+		setGovukTag(els.accountState, "Connected", "govuk-tag--green");
+		setGovukTag(els.summaryTag, "Mural connected", "govuk-tag--green");
 		if (folderDenied) {
 			pill(els.status, "warn", "Board created but we couldn't create a folder in your Mural room.");
 		} else {
@@ -82,10 +108,28 @@
 		}
 	}
 
+	function setDisconnectedStatus(message = "Connect to Mural to enable journal sync") {
+		showConnectButton();
+		setGovukTag(els.accountState, "Connect if needed", "govuk-tag--grey");
+		setGovukTag(els.summaryTag, "Mural optional", "govuk-tag--grey");
+		pill(els.status, "neutral", message);
+	}
+
+	function setBoardLinkedStatus(boardUrl = "") {
+		setGovukTag(els.boardState, "Board linked", "govuk-tag--green");
+		setGovukTag(els.summaryTag, "Mural board linked", "govuk-tag--green");
+		setOpenLinkState(true, boardUrl);
+	}
+
+	function setBoardUnlinkedStatus(message = "No board yet") {
+		setGovukTag(els.boardState, "Create or open manually", "govuk-tag--grey");
+		setGovukTag(els.summaryTag, "Mural optional", "govuk-tag--grey");
+		setOpenLinkState(false);
+		pill(els.status, "neutral", message);
+	}
+
 	function uid() {
-		return localStorage.getItem("mural.uid") ||
-			localStorage.getItem("userId") ||
-			"anon";
+		return localStorage.getItem("mural.uid") || localStorage.getItem("userId") || "anon";
 	}
 
 	function getProjectParamId() {
@@ -128,31 +172,49 @@
 		section: byId("mural-integration"),
 		status: byId("mural-status"),
 		btnConnect: byId("mural-connect"),
-		btnSetup: byId("mural-setup")
+		btnSetup: byId("mural-setup"),
+		btnOpen: byId("mural-open"),
+		accountState: byId("mural-account-state"),
+		boardState: byId("mural-board-state"),
+		summaryTag: byId("mural-summary-tag"),
 	};
 
 	function disableAll() {
 		showConnectButton();
 		if (els.btnSetup) els.btnSetup.disabled = true;
+		setOpenLinkState(false);
+	}
+
+	function openCachedBoard(projectId, boardUrl) {
+		const effectiveId = canonicalProjectId(getProjectId() || projectId);
+		const cached = RESOLVE_CACHE.get(effectiveId);
+		const href = boardUrl || cached?.boardUrl;
+		debugLog("open click", { effectiveId, hasHref: !!href });
+		if (href) {
+			window.open(href, "_blank", "noopener");
+			return;
+		}
+		resolveBoard(effectiveId)
+			.then((res) => {
+				if (res?.boardUrl) window.open(res.boardUrl, "_blank", "noopener");
+			})
+			.catch(() => {
+				pill(els.status, "warn", "We couldn't check Mural just now. Try again in a moment.");
+			});
 	}
 
 	function setSetupAsOpen(projectId, boardUrl) {
 		if (!els.btnSetup) return;
 		els.btnSetup.disabled = false;
 		els.btnSetup.textContent = 'Open "Reflexive Journal"';
-		els.btnSetup.onclick = () => {
-			const effectiveId = canonicalProjectId(getProjectId() || projectId);
-			const cached = RESOLVE_CACHE.get(effectiveId);
-			const href = boardUrl || cached?.boardUrl;
-			debugLog("open click", { effectiveId, hasHref: !!href });
-			if (href) {
-				window.open(href, "_blank", "noopener");
-			} else {
-				resolveBoard(effectiveId).then((res) => {
-					if (res?.boardUrl) window.open(res.boardUrl, "_blank", "noopener");
-				}).catch(() => { /* noop */ });
-			}
-		};
+		els.btnSetup.onclick = () => openCachedBoard(projectId, boardUrl);
+		setBoardLinkedStatus(boardUrl || "");
+		if (els.btnOpen) {
+			els.btnOpen.onclick = (event) => {
+				event.preventDefault();
+				openCachedBoard(projectId, boardUrl);
+			};
+		}
 		debugLog("setup button → OPEN wired");
 	}
 
@@ -181,7 +243,7 @@
 		const pid = canonicalProjectId(projectId);
 
 		const cached = RESOLVE_CACHE.get(pid);
-		if (cached && (Date.now() - cached.ts < 60_000)) return cached;
+		if (cached && Date.now() - cached.ts < 60000) return cached;
 
 		const url = addDebug(`${API_ORIGIN}/api/mural/resolve?projectId=${encodeURIComponent(pid)}&uid=${encodeURIComponent(uid())}`);
 		const js = await jsonFetch(url);
@@ -192,7 +254,7 @@
 
 			const paramId = getProjectParamId();
 			const airtableId = document.querySelector("main")?.dataset?.projectAirtableId || "";
-			[projectId, pid, paramId, airtableId].filter(Boolean).forEach(id => {
+			[projectId, pid, paramId, airtableId].filter(Boolean).forEach((id) => {
 				const s = String(id);
 				if (s !== pid) PROJECT_ID_ALIASES.set(s, pid);
 			});
@@ -209,14 +271,20 @@
 				const r = await fetch(url, { method: "GET", cache: "no-store" });
 				const bodyText = await r.text().catch(() => "");
 				let body = {};
-				try { body = bodyText ? JSON.parse(bodyText) : {}; } catch {}
+				try {
+					body = bodyText ? JSON.parse(bodyText) : {};
+				} catch {
+					// Polling tolerates transient non-JSON responses.
+				}
 				debugLog("await ←", { status: r.status, ok: r.ok });
 
 				if (r.status === 200 && body?.ok && body?.boardUrl) {
 					return { ok: true, boardUrl: body.boardUrl };
 				}
 				if (r.status !== 202) throw new Error(body?.error || `HTTP ${r.status}`);
-			} catch {}
+			} catch {
+				// Continue polling until maxMs is reached.
+			}
 			await sleep(intervalMs);
 		}
 		return { ok: false };
@@ -243,14 +311,19 @@
 		} catch (err) {
 			const code = Number(err?.status || 0);
 			if (code === 401) {
-				pill(els.status, "neutral", "Connect to Mural to enable journal sync");
+				setDisconnectedStatus("Connect to Mural to enable journal sync");
 			} else if (code === 403) {
 				pill(els.status, "bad", "Mural account not in Home Office workspace");
+				setGovukTag(els.accountState, "Workspace access needed", "govuk-tag--red");
+				setGovukTag(els.summaryTag, "Mural access needed", "govuk-tag--red");
 			} else {
 				pill(els.status, "warn", "Mural is having trouble right now. You can still write journal entries; we'll sync later.");
+				setGovukTag(els.accountState, "Check later", "govuk-tag--yellow");
+				setGovukTag(els.summaryTag, "Mural check failed", "govuk-tag--yellow");
 			}
 			showConnectButton();
 			if (els.btnSetup) els.btnSetup.disabled = true;
+			setOpenLinkState(false);
 			return;
 		}
 
@@ -270,20 +343,22 @@
 				setConnectedStatus(false);
 			} else {
 				setSetupAsCreate(canonicalId, getProjectName() || "Project");
-				pill(els.status, "neutral", "No board yet");
+				setBoardUnlinkedStatus("No board yet");
 			}
 		} catch (err) {
 			const code = Number(err?.status || 0);
 			const tag = (err?.body?.error || err?.body?.detail || "").toString();
 			if (code === 404) {
 				setSetupAsCreate(projectIdRaw, getProjectName() || "Project");
-				pill(els.status, "neutral", "No board yet");
+				setBoardUnlinkedStatus("No board yet");
 			} else if (code === 500 && /airtable_list_failed/i.test(tag)) {
 				setSetupAsCreate(projectIdRaw, getProjectName() || "Project");
 				pill(els.status, "warn", "Couldn't check the board mapping just now (Airtable). You can still create it.");
+				setGovukTag(els.boardState, "Mapping check failed", "govuk-tag--yellow");
 			} else {
 				setSetupAsCreate(projectIdRaw, getProjectName() || "Project");
 				pill(els.status, "warn", "We couldn't check Mural just now. You can still create the board.");
+				setGovukTag(els.boardState, "Check failed", "govuk-tag--yellow");
 			}
 		}
 	}
@@ -292,6 +367,13 @@
 		if (!els.btnSetup) return;
 		els.btnSetup.disabled = false;
 		els.btnSetup.textContent = 'Create "Reflexive Journal"';
+		setOpenLinkState(false);
+		if (els.btnOpen) {
+			els.btnOpen.onclick = (event) => {
+				event.preventDefault();
+				pill(els.status, "neutral", "Create the board first, then open it from here.");
+			};
+		}
 		els.btnSetup.onclick = async () => {
 			try {
 				els.btnSetup.disabled = true;
@@ -315,7 +397,7 @@
 
 				const body = {
 					uid: uid(),
-					projectName
+					projectName,
 				};
 
 				if (/^rec[a-z0-9]{14}$/i.test(resolvedProjectId)) {
@@ -332,14 +414,14 @@
 				const js = await jsonFetch(addDebug(`${API_ORIGIN}/api/mural/setup`), {
 					method: "POST",
 					headers: { "content-type": "application/json" },
-					body: JSON.stringify(body)
+					body: JSON.stringify(body),
 				});
 
 				debugLog("Setup response", {
 					templateCopied: js?.templateCopied,
 					folderDenied: js?.folderDenied,
 					muralId: js?.mural?.id || js?.muralId,
-					boardUrl: js?.boardUrl || js?.mural?.viewLink
+					boardUrl: js?.boardUrl || js?.mural?.viewLink,
 				});
 
 				const folderDenied = Boolean(js?.folderDenied);
@@ -356,7 +438,7 @@
 						console.warn("[mural] Template was NOT copied - check server logs");
 						pill(els.status, "warn", "Board created but template couldn't be copied. Check Mural permissions.");
 					} else if (folderDenied) {
-						pill(els.status, "warn", "Board created but we couldn't create a folder in your Mural room");
+						setConnectedStatus(true);
 					} else {
 						setConnectedStatus(false);
 					}
@@ -380,7 +462,7 @@
 						console.warn("[mural] Template was NOT copied - check server logs");
 						pill(els.status, "warn", "Board created but template couldn't be copied. Check Mural permissions.");
 					} else if (folderDenied) {
-						pill(els.status, "warn", "Board created but we couldn't create a folder in your Mural room");
+						setConnectedStatus(true);
 					} else {
 						setConnectedStatus(false);
 					}
@@ -391,6 +473,7 @@
 				}
 
 				pill(els.status, "warn", "Board created; link will appear shortly. Try the button again in a moment.");
+				setGovukTag(els.boardState, "Link pending", "govuk-tag--yellow");
 				els.btnSetup.disabled = false;
 			} catch (err) {
 				console.error("[mural] Setup failed", err);
@@ -414,6 +497,7 @@
 				} else {
 					pill(els.status, "bad", "Could not create the board");
 				}
+				setGovukTag(els.boardState, "Create failed", "govuk-tag--red");
 				els.btnSetup.disabled = false;
 			}
 		};
@@ -449,7 +533,7 @@
 			const pid = canonicalProjectId(projectId);
 			const rec = RESOLVE_CACHE.get(pid);
 			return rec?.muralId || null;
-		}
+		},
 	});
 
 	document.addEventListener("DOMContentLoaded", () => {

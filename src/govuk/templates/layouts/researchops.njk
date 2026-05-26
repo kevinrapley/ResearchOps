@@ -1,0 +1,21 @@
+<!doctype html>
+<html class="govuk-template" lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>{{ pageTitle }}</title>
+	<link rel="stylesheet" href="/assets/govuk/govuk-frontend.css" media="screen">
+	{% block head %}{% endblock %}
+	<script type="module" src="/components/layout.js" defer></script>
+	<script type="module" src="/js/govuk-frontend-init.js" defer></script>
+</head>
+<body class="govuk-template__body">
+	<script>document.body.className += ' js-enabled' + ('noModule' in HTMLScriptElement.prototype ? ' govuk-frontend-supported' : '');</script>
+	<x-include src="/partials/header.html" vars='{"active":"{{ activeNavigation | default("") }}"}'></x-include>
+	<main class="govuk-main-wrapper" id="main-content" role="main" tabindex="-1">
+		{% block content %}{% endblock %}
+	</main>
+	<x-include src="/partials/footer.html"></x-include>
+	{% block scripts %}{% endblock %}
+</body>
+</html>

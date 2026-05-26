@@ -2,13 +2,14 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 
 const pageSource = fs.readFileSync("public/pages/project-dashboard/index.html", "utf8");
+const templateSource = fs.readFileSync("src/govuk/templates/pages/project-dashboard.njk", "utf8");
 const controllerSource = fs.readFileSync("public/js/project-dashboard.js", "utf8");
+const muralIntegrationSource = fs.readFileSync("public/components/mural-integration.js", "utf8");
+const muralStateSource = fs.readFileSync("public/components/project-dashboard-mural-state.js", "utf8");
 const dashboardCssSource = fs.readFileSync("public/css/project-dashboard.css", "utf8");
-const buttonCssSource = fs.readFileSync("public/css/govuk/govuk-buttons.css", "utf8");
-const passwordlessPreviewWorkflowSource = fs.readFileSync(
-	".github/workflows/deploy-passwordless-preview-worker.yml",
-	"utf8",
-);
+const dashboardSassSource = fs.readFileSync("src/styles/project-dashboard.scss", "utf8");
+const layoutSource = fs.readFileSync("src/govuk/templates/layouts/researchops.njk", "utf8");
+const renderGovukPagesSource = fs.readFileSync("scripts/govuk/render-govuk-pages.mjs", "utf8");
 
 function includes(source, text, label) {
 	assert.equal(source.includes(text), true, `Expected ${label} to include: ${text}`);
@@ -18,119 +19,112 @@ function excludes(source, text, label) {
 	assert.equal(source.includes(text), false, `Expected ${label} not to include: ${text}`);
 }
 
-includes(pageSource, "href=\"/css/screen.css\"", "project dashboard page");
-includes(pageSource, "href=\"/css/govuk/govuk-buttons.css\"", "project dashboard page");
-includes(pageSource, "href=\"/css/project-dashboard.css\"", "project dashboard page");
-includes(pageSource, "/js/project-dashboard.js?v=projects-api-proxy-20260514", "project dashboard page");
-includes(pageSource, "rel=\"modulepreload\" href=\"/js/project-dashboard.js?v=projects-api-proxy-20260514\"", "project dashboard page");
+includes(renderGovukPagesSource, "template: 'pages/project-dashboard.njk'", "GOV.UK page renderer");
+includes(renderGovukPagesSource, "output: 'public/pages/project-dashboard/index.html'", "GOV.UK page renderer");
+
+includes(layoutSource, "<x-include src=\"/partials/header.html\"", "GOV.UK layout");
+includes(layoutSource, "<x-include src=\"/partials/footer.html\"></x-include>", "GOV.UK layout");
+excludes(layoutSource, "fallbackHeaderHtml", "GOV.UK layout");
+excludes(layoutSource, "fallbackFooterHtml", "GOV.UK layout");
+
+includes(templateSource, "{% from \"govuk/components/button/macro.njk\" import govukButton %}", "project dashboard template");
+includes(templateSource, "id=\"mural-integration\"", "project dashboard template");
+includes(templateSource, "id=\"journal-link\"", "project dashboard template");
+includes(templateSource, "id=\"outcomes-card-link\"", "project dashboard template");
+includes(templateSource, "id=\"kv-project-stage\"", "project dashboard template");
+includes(templateSource, "Loading service stage", "project dashboard template");
+includes(templateSource, "Loading project stage", "project dashboard template");
+includes(templateSource, "Mural optional", "project dashboard template");
+excludes(templateSource, "Service stage not recorded", "project dashboard template");
+excludes(templateSource, "Project stage not recorded", "project dashboard template");
+excludes(templateSource, "Mural not checked", "project dashboard template");
+excludes(templateSource, "Add a project note", "project dashboard template");
+excludes(templateSource, "Setup checks", "project dashboard template");
+excludes(templateSource, "class=\"section\"", "project dashboard template");
+excludes(templateSource, "href=\"/css/screen.css\"", "project dashboard template");
+
+includes(pageSource, "class=\"govuk-template\"", "project dashboard page");
+includes(pageSource, "href=\"/assets/govuk/govuk-frontend.css\"", "project dashboard page");
+includes(pageSource, "<x-include src=\"/partials/header.html\"", "project dashboard page");
+includes(pageSource, "<x-include src=\"/partials/footer.html\"", "project dashboard page");
+includes(pageSource, "class=\"govuk-summary-card\"", "project dashboard page");
+includes(pageSource, "class=\"govuk-summary-list\"", "project dashboard page");
 includes(pageSource, "id=\"project-title\"", "project dashboard page");
-includes(pageSource, "id=\"journal-link\"", "project dashboard page");
-includes(pageSource, "id=\"outcomes-link\"", "project dashboard page");
-includes(pageSource, "id=\"mural-integration\"", "project dashboard page");
-includes(pageSource, "id=\"add-stakeholder-form\"", "project dashboard page");
-includes(pageSource, "id=\"add-objective-form\"", "project dashboard page");
-includes(pageSource, "id=\"add-user-group-form\"", "project dashboard page");
-includes(pageSource, "id=\"add-participant-link\"", "project dashboard page");
-includes(pageSource, "id=\"import-participants-link\"", "project dashboard page");
-includes(pageSource, "id=\"add-study-link\"", "project dashboard page");
-includes(pageSource, "id=\"add-insight-link\"", "project dashboard page");
-includes(pageSource, "class=\"section\"", "project dashboard page");
-includes(pageSource, "class=\"section__header\"", "project dashboard page");
-includes(pageSource, "class=\"section__title govuk-heading-m\"", "project dashboard page");
-includes(pageSource, "class=\"section__body section__grid\"", "project dashboard page");
-includes(pageSource, "class=\"govuk-button\"", "project dashboard page");
-includes(pageSource, "class=\"govuk-button govuk-button--secondary\"", "project dashboard page");
-excludes(pageSource, "id=\"study-dialog\"", "project dashboard page");
-excludes(pageSource, "class=\"btn", "project dashboard page");
-excludes(pageSource, "class=\"dashboard-section\"", "project dashboard page");
-excludes(pageSource, "class=\"dashboard-section__header\"", "project dashboard page");
-excludes(pageSource, "class=\"dashboard-section__title govuk-heading-m\"", "project dashboard page");
-excludes(pageSource, "class=\"dashboard-section__body dashboard-section__grid\"", "project dashboard page");
-excludes(pageSource, "<script type=\"module\">", "project dashboard page");
-excludes(pageSource, "data-api-origin=\"https://rops-api.digikev-kevin-rapley.workers.dev\"", "project dashboard page");
+includes(pageSource, "id=\"mural-connect\"", "project dashboard page");
+includes(pageSource, "id=\"mural-setup\"", "project dashboard page");
+includes(pageSource, "id=\"mural-open\"", "project dashboard page");
+includes(pageSource, "id=\"studies-list\"", "project dashboard page");
+excludes(pageSource, "href=\"/css/screen.css\"", "project dashboard page");
+excludes(pageSource, "href=\"/css/govuk/govuk-buttons.css\"", "project dashboard page");
+excludes(pageSource, "href=\"/css/govuk/govuk-forms.css\"", "project dashboard page");
+excludes(pageSource, "Add a project note", "project dashboard page");
+excludes(pageSource, "Setup checks", "project dashboard page");
 
 includes(controllerSource, "const API_ORIGIN", "project dashboard controller");
 includes(controllerSource, "resolveApiBase", "project dashboard controller");
-includes(controllerSource, "window.API_ORIGIN", "project dashboard controller");
-includes(controllerSource, "function apiUrl", "project dashboard controller");
-includes(controllerSource, "async function loadProject(projectId)", "project dashboard controller");
-includes(controllerSource, "apiUrl(`/api/projects/${encodeURIComponent(projectId)}?ts=${Date.now()}`)", "project dashboard controller");
-includes(controllerSource, "async function loadStudies", "project dashboard controller");
-includes(controllerSource, "apiUrl(`/api/studies?project=${encodeURIComponent(projectId)}&ts=${Date.now()}`)", "project dashboard controller");
+includes(controllerSource, "fetchWithTimeout", "project dashboard controller");
+includes(controllerSource, "AbortController", "project dashboard controller");
 includes(controllerSource, "function renderProject", "project dashboard controller");
 includes(controllerSource, "function renderStudies", "project dashboard controller");
-includes(controllerSource, "async function saveProjectPatch", "project dashboard controller");
-includes(controllerSource, "apiUrl(`/api/projects/${encodeURIComponent(currentProject.id)}`)", "project dashboard controller");
-includes(controllerSource, "function initStakeholderForm", "project dashboard controller");
-includes(controllerSource, "function initObjectiveForm", "project dashboard controller");
-includes(controllerSource, "function initUserGroupForm", "project dashboard controller");
-includes(controllerSource, "function initProjectActions", "project dashboard controller");
-includes(controllerSource, "data-project-id", "project dashboard controller");
-includes(controllerSource, "credentials: \"include\"", "project dashboard controller");
-includes(controllerSource, "/api/projects", "project dashboard controller");
-includes(controllerSource, "/api/studies", "project dashboard controller");
+includes(controllerSource, "function setTagText", "project dashboard controller");
+includes(controllerSource, "project[\"Service stage\"]", "project dashboard controller");
+includes(controllerSource, "project[\"Project stage\"]", "project dashboard controller");
+includes(controllerSource, "setTagText(\"project-service-stage-tag\", project.phase", "project dashboard controller");
+includes(controllerSource, "setTagText(\"project-stage-tag\", project.status", "project dashboard controller");
 includes(controllerSource, "method: \"PATCH\"", "project dashboard controller");
+includes(controllerSource, "credentials: \"include\"", "project dashboard controller");
+includes(controllerSource, "class=\"govuk-link govuk-!-font-weight-bold\"", "project dashboard controller");
+excludes(controllerSource, "Service stage not recorded", "project dashboard controller");
+excludes(controllerSource, "Project stage not recorded", "project dashboard controller");
 excludes(controllerSource, "rops-api.digikev-kevin-rapley.workers.dev", "project dashboard controller");
-excludes(controllerSource, "location.hostname.endsWith(\"pages.dev\")", "project dashboard controller");
-excludes(controllerSource, "function pickProject", "project dashboard controller");
-excludes(controllerSource, "async function loadProjects", "project dashboard controller");
-excludes(controllerSource, "function initStudyModal", "project dashboard controller");
-
-includes(buttonCssSource, ".govuk-button", "GOV.UK button stylesheet");
-includes(buttonCssSource, ".govuk-button--secondary", "GOV.UK button stylesheet");
-includes(buttonCssSource, ".govuk-button--warning", "GOV.UK button stylesheet");
-includes(buttonCssSource, ".btn", "GOV.UK button stylesheet legacy alias");
-includes(buttonCssSource, ".btn--secondary", "GOV.UK button stylesheet legacy alias");
-includes(buttonCssSource, ".btn--outline", "GOV.UK button stylesheet legacy alias");
-
-includes(dashboardCssSource, ".pill--neutral", "project dashboard stylesheet");
-includes(dashboardCssSource, ".dashboard-action-panel", "project dashboard stylesheet");
-includes(dashboardCssSource, ".dashboard-action-status", "project dashboard stylesheet");
-includes(dashboardCssSource, "/* transparency begins in the cascade */", "project dashboard stylesheet");
-excludes(dashboardCssSource, "#study-dialog", "project dashboard stylesheet");
-excludes(dashboardCssSource, "\n.dashboard-hero {", "project dashboard stylesheet");
-excludes(dashboardCssSource, "\n.kv__list {", "project dashboard stylesheet");
-excludes(dashboardCssSource, "\n.board {", "project dashboard stylesheet");
-excludes(dashboardCssSource, "\n.board__item {", "project dashboard stylesheet");
-excludes(dashboardCssSource, "\n.section {", "project dashboard stylesheet");
-excludes(dashboardCssSource, "\n.section__header {", "project dashboard stylesheet");
-excludes(dashboardCssSource, "\n.section__body {", "project dashboard stylesheet");
-excludes(dashboardCssSource, "\n.section__grid {", "project dashboard stylesheet");
-excludes(dashboardCssSource, "\n.dashboard-section {", "project dashboard stylesheet");
-excludes(dashboardCssSource, "\n.dashboard-section__header {", "project dashboard stylesheet");
-excludes(dashboardCssSource, "\n.dashboard-section__body {", "project dashboard stylesheet");
-excludes(dashboardCssSource, "\n.dashboard-section__grid {", "project dashboard stylesheet");
-excludes(dashboardCssSource, "\n.dropzone {", "project dashboard stylesheet");
-
-/*
- * Replace the legacy alert() with a visible, structured error region so the
- * actual upstream failure (HTTP status, error code, requested project id) is
- * legible on the dashboard rather than masked behind a generic "Could not load
- * project." alert. The console keeps a structured log for triage.
- */
-includes(controllerSource, "function renderProjectLoadError", "project dashboard controller");
-includes(controllerSource, "container.id = \"project-load-error\"", "project dashboard controller");
-includes(controllerSource, "container.setAttribute(\"role\", \"alert\")", "project dashboard controller");
-includes(controllerSource, "err.upstreamStatus = res.status", "project dashboard controller");
-includes(controllerSource, "[project-dashboard] load failed", "project dashboard controller");
 excludes(controllerSource, "alert(\"Could not load project.\");", "project dashboard controller");
 
-/*
- * Pin the preview Worker deploy trigger to the approved branch prefixes so
- * Pages-preview traffic to /api/projects/:id is served by a Worker on the
- * same branch as the Pages preview. A drift back to a single hardcoded
- * branch reproduces the 2026-05-14 "Could not load project." regression on
- * any branch other than the one named in the filter.
- */
-includes(passwordlessPreviewWorkflowSource, "- main", "preview Worker workflow");
-includes(passwordlessPreviewWorkflowSource, '- "feature/**"', "preview Worker workflow");
-includes(passwordlessPreviewWorkflowSource, '- "chore/**"', "preview Worker workflow");
-includes(passwordlessPreviewWorkflowSource, '- "test/**"', "preview Worker workflow");
-includes(passwordlessPreviewWorkflowSource, '- "fix/**"', "preview Worker workflow");
-includes(passwordlessPreviewWorkflowSource, '- "perf/**"', "preview Worker workflow");
-includes(passwordlessPreviewWorkflowSource, '- "hotfix/**"', "preview Worker workflow");
-excludes(
-	passwordlessPreviewWorkflowSource,
-	"branches: [ fix/team-admin-sign-in-journey ]",
-	"preview Worker workflow",
-);
+includes(muralIntegrationSource, "Project Dashboard ↔ Mural wiring with GOV.UK Frontend dashboard state", "Mural integration component");
+includes(muralIntegrationSource, "location.hostname.endsWith(\"pages.dev\")", "Mural integration component");
+includes(muralIntegrationSource, "https://rops-api.digikev-kevin-rapley.workers.dev", "Mural integration component");
+includes(muralIntegrationSource, "function projectDashboardPath(projectId)", "Mural integration component");
+includes(muralIntegrationSource, "function wireConnectButton(projectId)", "Mural integration component");
+includes(muralIntegrationSource, "function verify()", "Mural integration component");
+includes(muralIntegrationSource, "function resolveBoard(projectId)", "Mural integration component");
+includes(muralIntegrationSource, "function updateSetupState()", "Mural integration component");
+includes(muralIntegrationSource, "function setSetupAsCreate(projectId, projectName)", "Mural integration component");
+includes(muralIntegrationSource, "function setSetupAsOpen(projectId, boardUrl)", "Mural integration component");
+includes(muralIntegrationSource, "function observeProjectMeta()", "Mural integration component");
+includes(muralIntegrationSource, "function hideConnectButton()", "Mural integration component");
+includes(muralIntegrationSource, "function setGovukTag(el, text, modifier = \"govuk-tag--grey\")", "Mural integration component");
+includes(muralIntegrationSource, "function setOpenLinkState(enabled, boardUrl = \"\")", "Mural integration component");
+includes(muralIntegrationSource, "jsonFetch(addDebug(`${API_ORIGIN}/api/health`)).catch(() => {});", "Mural integration component");
+includes(muralIntegrationSource, "`${API_ORIGIN}/api/mural/auth?uid=${encodeURIComponent(uid())}&return=${encodeURIComponent(backPath)}`", "Mural integration component");
+includes(muralIntegrationSource, "`${API_ORIGIN}/api/mural/verify?uid=${encodeURIComponent(uid())}`", "Mural integration component");
+includes(muralIntegrationSource, "`${API_ORIGIN}/api/mural/setup`", "Mural integration component");
+includes(muralIntegrationSource, "`${API_ORIGIN}/api/mural/resolve?projectId=${encodeURIComponent(pid)}&uid=${encodeURIComponent(uid())}`", "Mural integration component");
+includes(muralIntegrationSource, "Mural optional", "Mural integration component");
+includes(muralIntegrationSource, "Connect if needed", "Mural integration component");
+includes(muralIntegrationSource, "Create or open manually", "Mural integration component");
+includes(muralIntegrationSource, "Board linked", "Mural integration component");
+includes(muralIntegrationSource, "mural-account-state", "Mural integration component");
+includes(muralIntegrationSource, "mural-board-state", "Mural integration component");
+includes(muralIntegrationSource, "mural-summary-tag", "Mural integration component");
+includes(muralIntegrationSource, "mural-open", "Mural integration component");
+excludes(muralIntegrationSource, "Mural has not been checked yet", "Mural integration component");
+excludes(muralIntegrationSource, "Mural not checked", "Mural integration component");
+excludes(muralIntegrationSource, "const backAbs = absolutePagesUrl", "Mural integration component");
+excludes(muralIntegrationSource, "return=${encodeURIComponent(backAbs)}", "Mural integration component");
+excludes(muralIntegrationSource, "function absolutePagesUrl(pathAndQuery)", "Mural integration component");
+
+includes(muralStateSource, "intentionally inert", "Project Dashboard Mural state bridge");
+includes(muralStateSource, "export {};", "Project Dashboard Mural state bridge");
+excludes(muralStateSource, "MutationObserver", "Project Dashboard Mural state bridge");
+excludes(muralStateSource, "requestAnimationFrame", "Project Dashboard Mural state bridge");
+excludes(muralStateSource, "syncDashboardPresentation", "Project Dashboard Mural state bridge");
+
+includes(dashboardSassSource, ".rops-dashboard-header", "project dashboard Sass source");
+includes(dashboardSassSource, ".rops-study-list", "project dashboard Sass source");
+includes(dashboardSassSource, ".dashboard-action-panel", "project dashboard Sass source");
+includes(dashboardSassSource, "/* transparency begins in the cascade */", "project dashboard Sass source");
+includes(dashboardCssSource, ".rops-dashboard-header", "project dashboard stylesheet");
+includes(dashboardCssSource, ".rops-study-list", "project dashboard stylesheet");
+includes(dashboardCssSource, ".dashboard-action-panel", "project dashboard stylesheet");
+excludes(dashboardCssSource, "\n.section {", "project dashboard stylesheet");
+excludes(dashboardCssSource, "\n.dashboard-section {", "project dashboard stylesheet");
+excludes(dashboardCssSource, "\n.board {", "project dashboard stylesheet");

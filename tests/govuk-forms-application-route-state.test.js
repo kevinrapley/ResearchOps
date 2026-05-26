@@ -2,43 +2,42 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 
 const formRoutes = [
-  "public/pages/start/index.html",
-  "public/pages/search/index.html",
-  "public/pages/notes/index.html",
-  "public/pages/consent/index.html",
-  "public/pages/sessions/index.html",
-  "public/pages/study/synthesis/index.html",
-  "public/pages/project-dashboard/index.html",
-  "public/pages/project-dashboard/participants/index.html",
-  "public/pages/project-dashboard/participants/import/index.html",
-  "public/pages/projects/outcomes/index.html",
-  "public/pages/projects/journals/index.html",
-  "public/pages/study/index.html",
-  "public/pages/study/new/index.html",
-  "public/pages/study/guides/index.html",
-  "public/pages/study/consent-forms/index.html",
-  "public/pages/study/participant-consent/index.html",
-  "public/pages/study/participants/index.html",
-  "public/pages/study/session/index.html"
+	"public/pages/start/index.html",
+	"public/pages/search/index.html",
+	"public/pages/notes/index.html",
+	"public/pages/consent/index.html",
+	"public/pages/sessions/index.html",
+	"public/pages/study/synthesis/index.html",
+	"public/pages/project-dashboard/participants/index.html",
+	"public/pages/project-dashboard/participants/import/index.html",
+	"public/pages/projects/outcomes/index.html",
+	"public/pages/projects/journals/index.html",
+	"public/pages/study/index.html",
+	"public/pages/study/new/index.html",
+	"public/pages/study/guides/index.html",
+	"public/pages/study/consent-forms/index.html",
+	"public/pages/study/participant-consent/index.html",
+	"public/pages/study/participants/index.html",
+	"public/pages/study/session/index.html",
 ];
 
 function read(path) {
-  return fs.readFileSync(path, "utf8");
+	return fs.readFileSync(path, "utf8");
 }
 
 function includes(source, text, label) {
-  assert.equal(source.includes(text), true, `Expected ${label} to include: ${text}`);
+	assert.equal(source.includes(text), true, `Expected ${label} to include: ${text}`);
 }
 
 function excludes(source, text, label) {
-  assert.equal(source.includes(text), false, `Expected ${label} not to include: ${text}`);
+	assert.equal(source.includes(text), false, `Expected ${label} not to include: ${text}`);
 }
 
 for (const route of formRoutes) {
-  const source = read(route);
-  includes(source, "href=\"/css/govuk/govuk-forms.css\"", route);
-  includes(source, "govuk-form-group", route);
-  includes(source, "govuk-label", route);
+	const source = read(route);
+	includes(source, "href=\"/css/govuk/govuk-forms.css\"", route);
+	includes(source, "govuk-form-group", route);
+	includes(source, "govuk-label", route);
 }
 
 const startPage = read("public/pages/start/index.html");
@@ -87,6 +86,7 @@ includes(synthesizePage, "disabled>Create theme</button>", "Synthesize route");
 excludes(synthesizePage, "<textarea id=\"themeDesc\"", "Synthesize route");
 
 const dashboardPage = read("public/pages/project-dashboard/index.html");
+includes(dashboardPage, "href=\"/assets/govuk/govuk-frontend.css\"", "Project Dashboard route");
 includes(dashboardPage, "id=\"add-stakeholder-form\"", "Project Dashboard route");
 includes(dashboardPage, "id=\"add-objective-form\"", "Project Dashboard route");
 includes(dashboardPage, "id=\"add-user-group-form\"", "Project Dashboard route");
@@ -94,6 +94,7 @@ includes(dashboardPage, "aria-describedby=\"objective-text-hint\"", "Project Das
 includes(dashboardPage, "id=\"add-participant-link\"", "Project Dashboard route");
 includes(dashboardPage, "id=\"import-participants-link\"", "Project Dashboard route");
 includes(dashboardPage, "id=\"add-study-link\"", "Project Dashboard route");
+excludes(dashboardPage, "href=\"/css/govuk/govuk-forms.css\"", "Project Dashboard route");
 excludes(dashboardPage, "id=\"study-dialog\"", "Project Dashboard route");
 
 const projectParticipantsPage = read("public/pages/project-dashboard/participants/index.html");

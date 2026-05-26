@@ -1,0 +1,95 @@
+{% extends "layouts/researchops.njk" %}
+
+{% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
+{% from "govuk/components/summary-list/macro.njk" import govukSummaryList %}
+{% from "govuk/components/notification-banner/macro.njk" import govukNotificationBanner %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+
+{% block content %}
+<div class="govuk-width-container">
+	{{ govukBreadcrumbs({
+		items: [
+			{
+				text: 'Home',
+				href: '/'
+			}
+		]
+	}) }}
+
+	{{ govukNotificationBanner({
+		titleText: 'Checking your account',
+		text: 'Checking which teams and permissions you can use.',
+		attributes: {
+			id: 'account-status',
+			'aria-live': 'polite',
+			'aria-busy': 'true'
+		}
+	}) }}
+
+	<div id="account-dashboard" hidden>
+		<div class="govuk-grid-row">
+			<div class="govuk-grid-column-two-thirds">
+				<span class="govuk-caption-l">ResearchOps account</span>
+				<h1 class="govuk-heading-xl" id="account-dashboard-title">Your ResearchOps account</h1>
+				<p class="govuk-body-l">Check your teams, roles and available actions.</p>
+			</div>
+		</div>
+
+		{{ govukSummaryList({
+			attributes: {
+				'aria-label': 'Account summary'
+			},
+			classes: 'govuk-!-margin-bottom-6',
+			rows: [
+				{
+					key: {
+						text: 'Signed in as'
+					},
+					value: {
+						html: '<span id="account-user-value">Not loaded</span>'
+					}
+				}
+			]
+		}) }}
+
+		<section aria-labelledby="account-teams-title">
+			<h2 class="govuk-heading-m" id="account-teams-title">Teams and roles</h2>
+			<p class="govuk-body">Your roles are scoped by team. You may have different access in each team.</p>
+			<div id="account-team-memberships"></div>
+		</section>
+
+		<section aria-labelledby="account-actions-title" id="account-actions-section" hidden>
+			<h2 class="govuk-heading-m" id="account-actions-title">Actions you can take</h2>
+			<p class="govuk-body">These actions are based on your current ResearchOps permissions.</p>
+			<div id="account-actions" class="govuk-button-group"></div>
+		</section>
+
+		<details id="account-permissions-details" hidden class="govuk-details" data-module="govuk-details">
+			<summary class="govuk-details__summary">
+				<span class="govuk-details__summary-text">View permission details</span>
+			</summary>
+			<div class="govuk-details__text">
+				<p class="govuk-body">ResearchOps uses these permissions to decide what controls and records you can use in the current team context.</p>
+				<ul class="govuk-list govuk-list--bullet" id="account-permissions"></ul>
+			</div>
+		</details>
+
+		<section aria-labelledby="account-sign-out-title">
+			<h2 class="govuk-heading-m" id="account-sign-out-title">Sign out</h2>
+			<p class="govuk-body">Sign out when you have finished using ResearchOps on this device.</p>
+			{{ govukButton({
+				text: 'Sign out',
+				classes: 'govuk-button--secondary',
+				attributes: {
+					id: 'account-logout',
+					type: 'button'
+				}
+			}) }}
+		</section>
+	</div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script type="module" src="/js/auth-account-page.js?v=account-dashboard-20260513-teams-v3"></script>
+{% endblock %}

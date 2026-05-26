@@ -7,6 +7,7 @@ const performanceAudit = fs.readFileSync("docs/performance/initial-load-audit.md
 const buttonMigration = fs.readFileSync("docs/design-system/govuk-button-migration.md", "utf8");
 const formMigration = fs.readFileSync("docs/design-system/govuk-form-migration.md", "utf8");
 const frontendV6Migration = fs.readFileSync("docs/design-system/govuk-frontend-v6-migration.md", "utf8");
+const generatedGovukCss = fs.readFileSync("public/assets/govuk/govuk-frontend.css", "utf8");
 const buttonCss = fs.readFileSync("public/css/govuk/govuk-buttons.css", "utf8");
 const formCss = fs.readFileSync("public/css/govuk/govuk-forms.css", "utf8");
 const tableCss = fs.readFileSync("public/css/govuk/govuk-tables.css", "utf8");
@@ -15,22 +16,14 @@ const htmlHead = fs.readFileSync("public/partials/html-head.html", "utf8");
 const layoutJs = fs.readFileSync("public/components/layout.js", "utf8");
 const dashboardCss = fs.readFileSync("public/css/project-dashboard.css", "utf8");
 const dashboardPage = fs.readFileSync("public/pages/project-dashboard/index.html", "utf8");
+const projectsPage = fs.readFileSync("public/pages/projects/index.html", "utf8");
 
 function includes(source, text, label) {
-  assert.equal(source.includes(text), true, `Expected ${label} to include: ${text}`);
+	assert.equal(source.includes(text), true, `Expected ${label} to include: ${text}`);
 }
 
 function excludes(source, text, label) {
-  assert.equal(source.includes(text), false, `Expected ${label} not to include: ${text}`);
-}
-
-function appearsAfter(source, earlier, later, label) {
-  const earlierIndex = source.indexOf(earlier);
-  const laterIndex = source.indexOf(later);
-
-  assert.notEqual(earlierIndex, -1, `Expected ${label} to include earlier text: ${earlier}`);
-  assert.notEqual(laterIndex, -1, `Expected ${label} to include later text: ${later}`);
-  assert.equal(laterIndex > earlierIndex, true, `Expected ${label} to place ${later} after ${earlier}`);
+	assert.equal(source.includes(text), false, `Expected ${label} not to include: ${text}`);
 }
 
 includes(complianceAudit, "# GOV.UK design system compliance audit", "GOV.UK compliance audit");
@@ -56,61 +49,74 @@ includes(buttonMigration, "# GOV.UK button migration", "GOV.UK button migration"
 includes(buttonMigration, "Target classification: GOV.UK global.", "GOV.UK button migration");
 includes(buttonMigration, "Route stylesheets must not create button systems for individual pages.", "GOV.UK button migration");
 
-includes(buttonCss, ".govuk-button", "GOV.UK button stylesheet");
-includes(buttonCss, ".govuk-button--secondary", "GOV.UK button stylesheet");
-includes(buttonCss, ".govuk-button--warning", "GOV.UK button stylesheet");
+includes(generatedGovukCss, ".govuk-button", "generated GOV.UK Frontend stylesheet");
+includes(generatedGovukCss, 'font-family:"GDS Transport"', "generated GOV.UK Frontend stylesheet");
+includes(generatedGovukCss, ".govuk-summary-card", "generated GOV.UK Frontend stylesheet");
+includes(generatedGovukCss, ".govuk-details", "generated GOV.UK Frontend stylesheet");
+includes(generatedGovukCss, ".govuk-tag", "generated GOV.UK Frontend stylesheet");
+
+includes(buttonCss, ".govuk-button", "legacy GOV.UK button stylesheet");
+includes(buttonCss, ".govuk-button--secondary", "legacy GOV.UK button stylesheet");
+includes(buttonCss, ".govuk-button--warning", "legacy GOV.UK button stylesheet");
 
 includes(formMigration, "# GOV.UK form migration", "GOV.UK form migration");
 includes(formMigration, "Target classification: GOV.UK global.", "GOV.UK form migration");
 includes(formMigration, "Do not create route-level replacements for GOV.UK base form styling.", "GOV.UK form migration");
 includes(formMigration, "Do not move base label, hint, input, textarea, select, error, radio, checkbox, or error-summary styling into route stylesheets.", "GOV.UK form migration");
 
-includes(formCss, ".govuk-form-group", "GOV.UK form stylesheet");
-includes(formCss, ".govuk-form-group--error", "GOV.UK form stylesheet");
-includes(formCss, ".govuk-label", "GOV.UK form stylesheet");
-includes(formCss, ".govuk-fieldset", "GOV.UK form stylesheet");
-includes(formCss, ".govuk-fieldset__legend", "GOV.UK form stylesheet");
-includes(formCss, ".govuk-hint", "GOV.UK form stylesheet");
-includes(formCss, ".govuk-error-message", "GOV.UK form stylesheet");
-includes(formCss, ".govuk-input", "GOV.UK form stylesheet");
-includes(formCss, ".govuk-textarea", "GOV.UK form stylesheet");
-includes(formCss, ".govuk-select", "GOV.UK form stylesheet");
-includes(formCss, ".govuk-error-summary", "GOV.UK form stylesheet");
-includes(formCss, ".govuk-button-group", "GOV.UK form stylesheet");
+includes(formCss, ".govuk-form-group", "legacy GOV.UK form stylesheet");
+includes(formCss, ".govuk-form-group--error", "legacy GOV.UK form stylesheet");
+includes(formCss, ".govuk-label", "legacy GOV.UK form stylesheet");
+includes(formCss, ".govuk-fieldset", "legacy GOV.UK form stylesheet");
+includes(formCss, ".govuk-fieldset__legend", "legacy GOV.UK form stylesheet");
+includes(formCss, ".govuk-hint", "legacy GOV.UK form stylesheet");
+includes(formCss, ".govuk-error-message", "legacy GOV.UK form stylesheet");
+includes(formCss, ".govuk-input", "legacy GOV.UK form stylesheet");
+includes(formCss, ".govuk-textarea", "legacy GOV.UK form stylesheet");
+includes(formCss, ".govuk-select", "legacy GOV.UK form stylesheet");
+includes(formCss, ".govuk-error-summary", "legacy GOV.UK form stylesheet");
+includes(formCss, ".govuk-button-group", "legacy GOV.UK form stylesheet");
 
-includes(tableCss, ".govuk-table", "GOV.UK table stylesheet");
-includes(tableCss, ".govuk-summary-list", "GOV.UK table stylesheet");
-includes(tableCss, ".govuk-summary-list__actions", "GOV.UK table stylesheet");
+includes(tableCss, ".govuk-table", "legacy GOV.UK table stylesheet");
+includes(tableCss, ".govuk-summary-list", "legacy GOV.UK table stylesheet");
+includes(tableCss, ".govuk-summary-list__actions", "legacy GOV.UK table stylesheet");
 
 includes(frontendV6Migration, "# GOV.UK Frontend v6 migration", "GOV.UK Frontend v6 migration");
 includes(frontendV6Migration, "forms, buttons, error summaries, fieldsets, radios, checkboxes, file upload, tables, summary lists, tags and notification states", "GOV.UK Frontend v6 migration");
 includes(frontendV6Migration, "Do not add new route-level component approximations", "GOV.UK Frontend v6 migration");
 
-includes(frontendV6Css, ".govuk-file-upload", "GOV.UK Frontend v6 stylesheet");
-includes(frontendV6Css, ".govuk-radios__label::before", "GOV.UK Frontend v6 stylesheet");
-includes(frontendV6Css, ".govuk-checkboxes__label::before", "GOV.UK Frontend v6 stylesheet");
-includes(frontendV6Css, ".govuk-error-summary__list a", "GOV.UK Frontend v6 stylesheet");
-includes(frontendV6Css, ".govuk-table .govuk-table__header", "GOV.UK Frontend v6 stylesheet");
-includes(frontendV6Css, ".govuk-summary-list__row", "GOV.UK Frontend v6 stylesheet");
-includes(frontendV6Css, ".govuk-tag--green", "GOV.UK Frontend v6 stylesheet");
-includes(frontendV6Css, ".govuk-notification-banner--success", "GOV.UK Frontend v6 stylesheet");
-includes(frontendV6Css, "z-index: 1;", "GOV.UK Frontend v6 stylesheet");
-includes(frontendV6Css, "pointer-events: none;", "GOV.UK Frontend v6 stylesheet");
-includes(frontendV6Css, "/* transparency begins in the cascade */", "GOV.UK Frontend v6 stylesheet");
-excludes(frontendV6Css, ".govuk-error-message .govuk-visually-hidden", "GOV.UK Frontend v6 stylesheet");
+includes(frontendV6Css, ".govuk-file-upload", "legacy GOV.UK Frontend v6 stylesheet");
+includes(frontendV6Css, ".govuk-radios__label::before", "legacy GOV.UK Frontend v6 stylesheet");
+includes(frontendV6Css, ".govuk-checkboxes__label::before", "legacy GOV.UK Frontend v6 stylesheet");
+includes(frontendV6Css, ".govuk-summary-list__row", "legacy GOV.UK Frontend v6 stylesheet");
+includes(frontendV6Css, ".govuk-tag--green", "legacy GOV.UK Frontend v6 stylesheet");
+includes(frontendV6Css, "/* transparency begins in the cascade */", "legacy GOV.UK Frontend v6 stylesheet");
+excludes(frontendV6Css, ".govuk-error-message .govuk-visually-hidden", "legacy GOV.UK Frontend v6 stylesheet");
 
-appearsAfter(htmlHead, "{{/include_css}}", "/css/govuk/govuk-frontend-v6.css", "shared HTML head partial");
-includes(layoutJs, "GOVUK_FRONTEND_V6_STYLESHEET", "layout component");
-includes(layoutJs, "/css/govuk/govuk-frontend-v6.css", "layout component");
-includes(layoutJs, "lastStylesheet.after(link);", "layout component");
-includes(layoutJs, "ensureGovukFrontendV6Stylesheet();", "layout component");
-excludes(layoutJs, "if (existing) return;", "layout component");
+includes(htmlHead, "/assets/govuk/govuk-frontend.css", "shared HTML head partial");
+excludes(htmlHead, "/css/govuk/govuk-frontend-v6.css", "shared HTML head partial");
+excludes(htmlHead, "GOV.UK Frontend migration layer", "shared HTML head partial");
 
-includes(dashboardPage, "class=\"section\"", "project dashboard page");
-includes(dashboardPage, "class=\"section__header\"", "project dashboard page");
-includes(dashboardPage, "class=\"section__title govuk-heading-m\"", "project dashboard page");
-includes(dashboardPage, "class=\"section__body section__grid\"", "project dashboard page");
+includes(layoutJs, "class XInclude extends HTMLElement", "layout component");
+includes(layoutJs, "customElements.define(\"x-include\", XInclude)", "layout component");
+includes(layoutJs, "x-include:loaded", "layout component");
+excludes(layoutJs, "GOVUK_FRONTEND_V6_STYLESHEET", "layout component");
+excludes(layoutJs, "/css/govuk/govuk-frontend-v6.css", "layout component");
+excludes(layoutJs, "ensureGovukFrontendV6Stylesheet", "layout component");
+excludes(layoutJs, "lastStylesheet.after(link);", "layout component");
 
+includes(projectsPage, "/assets/govuk/govuk-frontend.css", "Projects page");
+includes(projectsPage, "class=\"govuk-button govuk-button--secondary\"", "Projects page");
+includes(projectsPage, "data-module=\"govuk-button\"", "Projects page");
+excludes(projectsPage, "/css/govuk/govuk-frontend-v6.css", "Projects page");
+
+includes(dashboardPage, "/assets/govuk/govuk-frontend.css", "project dashboard page");
+includes(dashboardPage, "class=\"govuk-summary-card\"", "project dashboard page");
+includes(dashboardPage, "class=\"govuk-summary-list\"", "project dashboard page");
+includes(dashboardPage, "id=\"mural-integration\"", "project dashboard page");
+includes(dashboardPage, "id=\"studies-list\"", "project dashboard page");
+excludes(dashboardPage, "class=\"section\"", "project dashboard page");
+excludes(dashboardPage, "class=\"section__header\"", "project dashboard page");
 excludes(dashboardPage, "class=\"dashboard-section\"", "project dashboard page");
 excludes(dashboardCss, "\n.dashboard-hero {", "project dashboard stylesheet");
 excludes(dashboardCss, "\n.board {", "project dashboard stylesheet");

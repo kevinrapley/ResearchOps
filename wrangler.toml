@@ -1,3 +1,3 @@
-name = "agent-rops"
-pages_build_output_dir = "docs/agent-operating-model"
+name = "researchops"
+pages_build_output_dir = "public"
 compatibility_date = "2026-05-21"
