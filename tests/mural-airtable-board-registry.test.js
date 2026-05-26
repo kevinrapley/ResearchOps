@@ -1,7 +1,10 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { createBoard, listBoards } from "../infra/cloudflare/src/service/internals/airtable.js";
+import {
+	createBoard,
+	listBoards,
+} from "../infra/cloudflare/src/service/internals/airtable.js";
 
 const env = {
 	AIRTABLE_BASE_ID: "appFixture",
@@ -53,7 +56,11 @@ test("listBoards returns D1 board mappings before external fallback", async () =
 					],
 				}),
 			},
-			{ projectId: "recgdpwEI5hFO7bUZ", uid: "anon", purpose: "reflexive_journal" },
+			{
+				projectId: "recgdpwEI5hFO7bUZ",
+				uid: "anon",
+				purpose: "reflexive_journal",
+			},
 		);
 
 		assert.equal(rows.length, 1);
@@ -96,7 +103,11 @@ test("listBoards preserves legacy fallback rows without Project ID text", async 
 				...env,
 				RESEARCHOPS_D1: makeD1({ rows: [] }),
 			},
-			{ projectId: "recgdpwEI5hFO7bUZ", uid: "anon", purpose: "reflexive_journal" },
+			{
+				projectId: "recgdpwEI5hFO7bUZ",
+				uid: "anon",
+				purpose: "reflexive_journal",
+			},
 		);
 
 		assert.equal(rows.length, 1);
@@ -112,10 +123,13 @@ test("listBoards preserves legacy fallback rows without Project ID text", async 
 test("createBoard mirrors board mappings to D1 before external registration", async () => {
 	const d1Writes = [];
 	const originalFetch = globalThis.fetch;
-	globalThis.fetch = async () => new Response(
-		JSON.stringify({ errors: [{ error: "PUBLIC_API_BILLING_LIMIT_EXCEEDED" }] }),
-		{ status: 429, headers: { "content-type": "application/json" } },
-	);
+	globalThis.fetch = async () =>
+		new Response(
+			JSON.stringify({
+				errors: [{ error: "PUBLIC_API_BILLING_LIMIT_EXCEEDED" }],
+			}),
+			{ status: 429, headers: { "content-type": "application/json" } },
+		);
 
 	try {
 		const result = await createBoard(
