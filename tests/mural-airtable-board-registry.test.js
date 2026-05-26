@@ -4,12 +4,68 @@ import test from "node:test";
 import { createBoard, listBoards } from "../infra/cloudflare/src/service/internals/airtable.js";
 
 const env = {
-	AIRTABLE_BASE_ID: "app123",
-	AIRTABLE_API_KEY: "pat123",
+	AIRTABLE_BASE_ID: "appFixture",
 	AIRTABLE_TABLE_MURAL_BOARDS: "Mural Boards",
 };
 
-test("listBoards preserves legacy Airtable fallback rows without Project ID text", async () => {
+function makeD1({ rows = [], onRun = () => {} } = {}) {
+	return {
+		prepare(sql) {
+			return {
+				params: [],
+				bind(...params) {
+					this.params = params;
+					return this;
+				},
+				async all() {
+					return { results: rows };
+				},
+				async run() {
+					onRun(sql, this.params);
+					return { success: true };
+				},
+			};
+		},
+	};
+}
+
+test("listBoards returns D1 board mappings before external fallback", async () => {
+	let fetched = false;
+	const originalFetch = globalThis.fetch;
+	globalThis.fetch = async () => {
+		fetched = true;
+		throw new Error("fallback should not be called");
+	};
+
+	try {
+		const rows = await listBoards(
+			{
+				...env,
+				RESEARCHOPS_D1: makeD1({
+					rows: [
+						{
+							mural_id: "board-from-d1",
+							project: "recgdpwEI5hFO7bUZ",
+							purpose: "reflexive_journal",
+							board_url: "https://example.test/mural/d1",
+							workspace_id: "workspace-fixture",
+						},
+					],
+				}),
+			},
+			{ projectId: "recgdpwEI5hFO7bUZ", uid: "anon", purpose: "reflexive_journal" },
+		);
+
+		assert.equal(rows.length, 1);
+		assert.equal(rows[0]._source, "d1");
+		assert.equal(rows[0].fields["Mural ID"], "board-from-d1");
+		assert.equal(fetched, false);
+	} finally {
+		globalThis.fetch = originalFetch;
+	}
+});
+
+test("listBoards preserves legacy fallback rows without Project ID text", async () => {
 	let formula = "";
 	const originalFetch = globalThis.fetch;
 	globalThis.fetch = async (resource) => {
@@ -25,7 +81,7 @@ test("listBoards preserves legacy Airtable fallback rows without Project ID text
 							UID: "anon",
 							Purpose: "reflexive_journal",
 							Active: true,
-							"Mural ID": "pppt6786.legacy",
+							"Mural ID": "legacy-board",
 						},
 					},
 				],
@@ -35,52 +91,58 @@ test("listBoards preserves legacy Airtable fallback rows without Project ID text
 	};
 
 	try {
-		const rows = await listBoards(env, {
-			projectId: "recgdpwEI5hFO7bUZ",
-			uid: "anon",
-			purpose: "reflexive_journal",
-			active: true,
-		});
+		const rows = await listBoards(
+			{
+				...env,
+				RESEARCHOPS_D1: makeD1({ rows: [] }),
+			},
+			{ projectId: "recgdpwEI5hFO7bUZ", uid: "anon", purpose: "reflexive_journal" },
+		);
 
 		assert.equal(rows.length, 1);
-		assert.equal(rows[0].fields["Mural ID"], "pppt6786.legacy");
+		assert.equal(rows[0].fields["Mural ID"], "legacy-board");
 		assert.doesNotMatch(formula, /\{Project ID\}/);
-		assert.match(formula, /\{UID\} = "anon"/);
+		assert.doesNotMatch(formula, /\{UID\}/);
 		assert.match(formula, /\{Purpose\} = "reflexive_journal"/);
 	} finally {
 		globalThis.fetch = originalFetch;
 	}
 });
 
-test("createBoard defers Airtable billing-limit failures instead of throwing", async () => {
+test("createBoard mirrors board mappings to D1 before external registration", async () => {
+	const d1Writes = [];
 	const originalFetch = globalThis.fetch;
 	globalThis.fetch = async () => new Response(
-		JSON.stringify({
-			errors: [
-				{
-					error: "PUBLIC_API_BILLING_LIMIT_EXCEEDED",
-					message: "API billing plan limit exceeded.",
-				},
-			],
-		}),
+		JSON.stringify({ errors: [{ error: "PUBLIC_API_BILLING_LIMIT_EXCEEDED" }] }),
 		{ status: 429, headers: { "content-type": "application/json" } },
 	);
 
 	try {
-		const result = await createBoard(env, {
-			projectIdText: "recgdpwEI5hFO7bUZ",
-			uid: "anon",
-			purpose: "reflexive_journal",
-			muralId: "pppt6786.123",
-			boardUrl: "https://app.mural.co/t/pppt6786/m/pppt6786/123/test",
-			primary: true,
-			active: true,
-		});
+		const result = await createBoard(
+			{
+				...env,
+				RESEARCHOPS_D1: makeD1({
+					onRun(sql, params) {
+						d1Writes.push({ sql, params });
+					},
+				}),
+			},
+			{
+				projectIdText: "recgdpwEI5hFO7bUZ",
+				uid: "anon",
+				purpose: "reflexive_journal",
+				muralId: "new-board",
+				boardUrl: "https://example.test/mural/new",
+				primary: true,
+				active: true,
+			},
+		);
 
 		assert.equal(result.deferred, true);
-		assert.equal(result.error, "airtable_billing_limit_exceeded");
-		assert.equal(result.fields["Project ID"], "recgdpwEI5hFO7bUZ");
-		assert.equal(result.fields["Mural ID"], "pppt6786.123");
+		assert.equal(result.d1Write.ok, true);
+		assert.equal(d1Writes.length, 1);
+		assert.equal(d1Writes[0].params[0], "new-board");
+		assert.equal(d1Writes[0].params[1], "recgdpwEI5hFO7bUZ");
 	} finally {
 		globalThis.fetch = originalFetch;
 	}
