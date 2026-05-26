@@ -32,6 +32,12 @@ includes(templateSource, "id=\"mural-integration\"", "project dashboard template
 includes(templateSource, "id=\"journal-link\"", "project dashboard template");
 includes(templateSource, "id=\"outcomes-card-link\"", "project dashboard template");
 includes(templateSource, "id=\"kv-project-stage\"", "project dashboard template");
+includes(templateSource, "Loading service stage", "project dashboard template");
+includes(templateSource, "Loading project stage", "project dashboard template");
+includes(templateSource, "Mural optional", "project dashboard template");
+excludes(templateSource, "Service stage not recorded", "project dashboard template");
+excludes(templateSource, "Project stage not recorded", "project dashboard template");
+excludes(templateSource, "Mural not checked", "project dashboard template");
 excludes(templateSource, "Add a project note", "project dashboard template");
 excludes(templateSource, "Setup checks", "project dashboard template");
 excludes(templateSource, "class=\"section\"", "project dashboard template");
@@ -60,9 +66,16 @@ includes(controllerSource, "fetchWithTimeout", "project dashboard controller");
 includes(controllerSource, "AbortController", "project dashboard controller");
 includes(controllerSource, "function renderProject", "project dashboard controller");
 includes(controllerSource, "function renderStudies", "project dashboard controller");
+includes(controllerSource, "function setTagText", "project dashboard controller");
+includes(controllerSource, "project[\"Service stage\"]", "project dashboard controller");
+includes(controllerSource, "project[\"Project stage\"]", "project dashboard controller");
+includes(controllerSource, "setTagText(\"project-service-stage-tag\", project.phase", "project dashboard controller");
+includes(controllerSource, "setTagText(\"project-stage-tag\", project.status", "project dashboard controller");
 includes(controllerSource, "method: \"PATCH\"", "project dashboard controller");
 includes(controllerSource, "credentials: \"include\"", "project dashboard controller");
 includes(controllerSource, "class=\"govuk-link govuk-!-font-weight-bold\"", "project dashboard controller");
+excludes(controllerSource, "Service stage not recorded", "project dashboard controller");
+excludes(controllerSource, "Project stage not recorded", "project dashboard controller");
 excludes(controllerSource, "rops-api.digikev-kevin-rapley.workers.dev", "project dashboard controller");
 excludes(controllerSource, "alert(\"Could not load project.\");", "project dashboard controller");
 
@@ -71,9 +84,11 @@ includes(muralIntegrationSource, "function wireConnectButton", "Mural integratio
 includes(muralIntegrationSource, "function createBoard", "Mural integration component");
 includes(muralIntegrationSource, "function openBoard", "Mural integration component");
 includes(muralIntegrationSource, "fetchWithTimeout", "Mural integration component");
+includes(muralIntegrationSource, "Mural optional", "Mural integration component");
 excludes(muralIntegrationSource, "/api/health", "Mural integration component");
 excludes(muralIntegrationSource, "updateSetupState();", "Mural integration component");
 excludes(muralIntegrationSource, "observeProjectMeta();", "Mural integration component");
+excludes(muralIntegrationSource, "Mural not checked", "Mural integration component");
 
 includes(muralStateSource, "intentionally inert", "Project Dashboard Mural state bridge");
 includes(muralStateSource, "export {};", "Project Dashboard Mural state bridge");
