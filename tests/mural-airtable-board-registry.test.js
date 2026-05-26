@@ -9,7 +9,7 @@ const env = {
 	AIRTABLE_TABLE_MURAL_BOARDS: "Mural Boards",
 };
 
-test("listBoards scopes Airtable lookup by project ID when provided", async () => {
+test("listBoards preserves legacy Airtable fallback rows without Project ID text", async () => {
 	let formula = "";
 	const originalFetch = globalThis.fetch;
 	globalThis.fetch = async (resource) => {
@@ -21,11 +21,11 @@ test("listBoards scopes Airtable lookup by project ID when provided", async () =
 					{
 						id: "recBoard1",
 						fields: {
-							"Project ID": "recgdpwEI5hFO7bUZ",
-							UID: "someone-else",
+							Project: ["recgdpwEI5hFO7bUZ"],
+							UID: "anon",
 							Purpose: "reflexive_journal",
 							Active: true,
-							"Mural ID": "pppt6786.123",
+							"Mural ID": "pppt6786.legacy",
 						},
 					},
 				],
@@ -43,8 +43,10 @@ test("listBoards scopes Airtable lookup by project ID when provided", async () =
 		});
 
 		assert.equal(rows.length, 1);
-		assert.match(formula, /\{Project ID\} = "recgdpwEI5hFO7bUZ"/);
-		assert.doesNotMatch(formula, /\{UID\}/);
+		assert.equal(rows[0].fields["Mural ID"], "pppt6786.legacy");
+		assert.doesNotMatch(formula, /\{Project ID\}/);
+		assert.match(formula, /\{UID\} = "anon"/);
+		assert.match(formula, /\{Purpose\} = "reflexive_journal"/);
 	} finally {
 		globalThis.fetch = originalFetch;
 	}
