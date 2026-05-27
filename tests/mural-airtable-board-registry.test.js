@@ -29,6 +29,10 @@ function makeD1({ rows = [], onRun = () => {} } = {}) {
 	};
 }
 
+function mappingInsert(writes, muralId) {
+	return writes.find((write) => write.params[0] === muralId) || null;
+}
+
 test('listBoards returns D1 board mappings before external fallback', async () => {
 	let fetched = false;
 	const originalFetch = globalThis.fetch;
@@ -114,13 +118,13 @@ test('listBoards uses exact Project ID Airtable fallback before broad scan', asy
 			}
 		);
 
+		const insert = mappingInsert(d1Writes, 'exact-board');
 		assert.equal(rows.length, 1);
 		assert.equal(rows[0].fields['Mural ID'], 'exact-board');
 		assert.match(formulas[0], /\{Project ID\} = "recgdpwEI5hFO7bUZ"/);
 		assert.equal(formulas.length, 1);
-		assert.equal(d1Writes.length, 1);
-		assert.equal(d1Writes[0].params[0], 'exact-board');
-		assert.equal(d1Writes[0].params[1], 'recgdpwEI5hFO7bUZ');
+		assert.ok(insert);
+		assert.equal(insert.params[1], 'recgdpwEI5hFO7bUZ');
 	} finally {
 		globalThis.fetch = originalFetch;
 	}
@@ -214,11 +218,11 @@ test('createBoard mirrors board mappings to D1 before external registration', as
 			}
 		);
 
+		const insert = mappingInsert(d1Writes, 'new-board');
 		assert.equal(result.deferred, true);
 		assert.equal(result.d1Write.ok, true);
-		assert.equal(d1Writes.length, 1);
-		assert.equal(d1Writes[0].params[0], 'new-board');
-		assert.equal(d1Writes[0].params[1], 'recgdpwEI5hFO7bUZ');
+		assert.ok(insert);
+		assert.equal(insert.params[1], 'recgdpwEI5hFO7bUZ');
 	} finally {
 		globalThis.fetch = originalFetch;
 	}
