@@ -3,8 +3,9 @@
   "date": "2026-05-27",
   "repository": "kevinrapley/ResearchOps",
   "branch": "fix/journals-govuk-template-shell",
+  "pullRequest": 292,
   "traceRequired": true,
-  "taskSummary": "Add the first GOV.UK Frontend migration slice for the journals page by introducing a Nunjucks template shell that uses the shared layout header and footer.",
+  "taskSummary": "Add the first GOV.UK Frontend migration slice for the journals page and use the GOV.UK breadcrumbs macro.",
   "bundlesSelected": [
     ".agent-operating-model/bundles/github/",
     ".agent-operating-model/bundles/researchops-developer-control/",
@@ -15,7 +16,10 @@
     "src/govuk/templates/layouts/researchops.njk",
     "scripts/govuk/render-govuk-pages.mjs",
     "public/pages/projects/journals/index.html",
+    "public/js/project-context.js",
     "tests/journals-route-state.test.js",
+    "tests/govuk-breadcrumb-back-link-route-state.test.js",
+    "tests/govuk-forms-application-route-state.test.js",
     "package.json"
   ],
   "filesCreated": [
@@ -25,23 +29,37 @@
   ],
   "filesModified": [
     "scripts/govuk/render-govuk-pages.mjs",
-    "tests/journals-route-state.test.js"
+    "public/js/project-context.js",
+    "tests/journals-route-state.test.js",
+    "tests/govuk-breadcrumb-back-link-route-state.test.js",
+    "tests/govuk-forms-application-route-state.test.js",
+    "docs/agent-audit/reasoning/2026/05/27/journals-govuk-template-shell.md",
+    "docs/agent-audit/reasoning/2026/05/27/journals-govuk-template-shell.json"
   ],
   "implementationDecisions": [
     "The journals page template extends layouts/researchops.njk.",
     "The shared header and footer are provided by the existing layout x-include elements.",
-    "The existing journal tab and panel content is preserved for later GOV.UK content review.",
-    "The GOV.UK renderer now outputs public/pages/projects/journals/index.html from the new template."
+    "The journals breadcrumb uses the GOV.UK govukBreadcrumbs macro with Projects, Project Dashboard and Journal and analysis items.",
+    "Project-context hydration updates the macro-rendered Project Dashboard link to the resolved project name and record-specific dashboard URL.",
+    "The existing journal tab and panel content is preserved for later GOV.UK content review."
   ],
   "validationAttempted": [
     "Compared branch changes against main.",
-    "Confirmed the changed-file list before trace files was limited to the GOV.UK renderer, the new template and the route-state test."
+    "Updated route-state tests for the GOV.UK template shell, migrated forms stylesheet contract and macro-rendered breadcrumb contract.",
+    "Investigated CI failures from older route-state contracts and updated those contracts to match the intended migration."
   ],
-  "validationNotRun": [
-    "No local npm, browser or template-render validation was run through the connector path."
+  "validationPassed": [
+    "Format pull request",
+    "CI",
+    "qa-bdd",
+    "Accessibility audit (pa11y-ci)",
+    "QA — Broken links (Lychee)",
+    "Validate ResearchOps",
+    "Release Gate",
+    "Worker CI"
   ],
   "residualRisks": [
     "Main page content is intentionally not redesigned in this slice.",
-    "GitHub Actions should validate rendered output after PR creation."
+    "The Project Dashboard breadcrumb text is replaced at runtime only when the project id resolves successfully."
   ]
 }
