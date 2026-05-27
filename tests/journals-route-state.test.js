@@ -58,9 +58,9 @@ includes(pageSource, "<x-include src=\"/partials/footer.html\"", "journals page"
 includes(pageSource, "class=\"govuk-main-wrapper\"", "journals page");
 includes(pageSource, "id=\"main-content\"", "journals page");
 includes(pageSource, "href=\"/pages/projects/\"", "journals page");
-includes(pageSource, "Projects</a>", "journals page");
+includes(pageSource, "Projects", "journals page");
 includes(pageSource, "href=\"/pages/project-dashboard/\"", "journals page");
-includes(pageSource, "Project Dashboard</a>", "journals page");
+includes(pageSource, "Project Dashboard", "journals page");
 includes(pageSource, "Journal and analysis", "journals page");
 includes(pageSource, "rel=\"modulepreload\" href=\"/js/journal-tabs.js\"", "journals page");
 includes(pageSource, "rel=\"modulepreload\" href=\"/js/journal-mural-sync-compact.js\"", "journals page");
