@@ -10,10 +10,7 @@ import {
 	airtableTryWrite,
 } from "../../core/utils.js";
 import { DEFAULTS } from "../../core/constants.js";
-import {
-	d1GetMuralBoardForProject,
-	d1Run,
-} from "./researchops-d1.js";
+import { d1GetMuralBoardForProject, d1Run } from "./researchops-d1.js";
 
 export function makeTableUrl(env, tableName) {
 	const base = env.AIRTABLE_BASE_ID || env.AIRTABLE_BASE;
@@ -47,6 +44,10 @@ export function escFormula(v) {
 
 export function looksLikeAirtableId(v) {
 	return typeof v === "string" && /^rec[a-z0-9]{14}$/i.test(v.trim());
+}
+
+function cleanString(value) {
+	return typeof value === "string" && value.trim() ? value.trim() : "";
 }
 
 function parseAirtableJson(text, fallback = {}) {
@@ -145,9 +146,7 @@ export async function getRecord(
 	const listUrl = `${base}?${params.toString()}`;
 	const res2 = await fetchWithTimeout(listUrl, { headers }, timeoutMs);
 	const txt2 = await res2.text();
-	if (!res2.ok) {
-		throw new Error(`Airtable ${res2.status}: ${safeText(txt2)}`);
-	}
+	if (!res2.ok) throw new Error(`Airtable ${res2.status}: ${safeText(txt2)}`);
 
 	const js2 = parseAirtableJson(txt2, { records: [] });
 	const rec = (js2.records || [])[0];
@@ -349,11 +348,35 @@ function d1BoardRecord(row, { projectId, uid, purpose }) {
 	};
 }
 
+async function ensureMuralBoardsTable(env, log = null) {
+	if (!env?.RESEARCHOPS_D1) return null;
+	try {
+		await d1Run(
+			env,
+			`CREATE TABLE IF NOT EXISTS mural_boards (
+				mural_id TEXT PRIMARY KEY,
+				project TEXT,
+				purpose TEXT,
+				board_url TEXT,
+				workspace_id TEXT
+			)`,
+		);
+		return { ok: true };
+	} catch (err) {
+		log?.warn?.("d1.mural_boards.ensure_failed", {
+			err: String(err?.message || err),
+		});
+		return { ok: false, error: String(err?.message || err) };
+	}
+}
+
 async function mirrorBoardToD1(env, fields, log = null) {
 	if (!env?.RESEARCHOPS_D1) return null;
 	const muralId = String(fields["Mural ID"] || "").trim();
 	const projectId = String(fields["Project ID"] || "").trim();
 	if (!muralId || !projectId) return null;
+	const ensured = await ensureMuralBoardsTable(env, log);
+	if (ensured && ensured.ok === false) return ensured;
 	try {
 		await d1Run(
 			env,
@@ -375,6 +398,88 @@ async function mirrorBoardToD1(env, fields, log = null) {
 		});
 		return { ok: false, error: String(err?.message || err) };
 	}
+}
+
+function airtableBoardFields(record) {
+	return record?.fields || {};
+}
+
+function boardMatchesProject(fields, pidRaw) {
+	if (String(fields["Project ID"] || "").trim() === pidRaw) return true;
+	const pidRec = looksLikeAirtableId(pidRaw) ? pidRaw : null;
+	const candidates = [];
+	if (Array.isArray(fields.Project)) candidates.push(fields.Project);
+	if (Array.isArray(fields.Projects)) candidates.push(fields.Projects);
+	for (const arr of candidates) {
+		if (!Array.isArray(arr)) continue;
+		if (pidRec) {
+			const hasRecordId = arr.some((v) => {
+				return typeof v === "string" && String(v).trim() === pidRec;
+			});
+			const hasObjectRecordId = arr.some((v) => {
+				return (
+					v &&
+					typeof v === "object" &&
+					String(v.id || "").trim() === pidRec
+				);
+			});
+			if (hasRecordId || hasObjectRecordId) return true;
+		}
+		const hasRawProjectId = arr.some((v) => {
+			return typeof v === "string" && String(v).trim() === pidRaw;
+		});
+		if (hasRawProjectId) return true;
+	}
+	const textVal = String(fields.Project || fields.Projects || "").trim();
+	return textVal && textVal === pidRaw;
+}
+
+async function fetchBoardRows(env, formulaParts, max, log, timeoutMs) {
+	const url = new URL(makeTableUrl(env, boardsTableName(env)));
+	if (formulaParts.length) {
+		url.searchParams.set(
+			"filterByFormula",
+			formulaParts.length === 1
+				? formulaParts[0]
+				: `AND(${formulaParts.join(",")})`,
+		);
+	}
+	url.searchParams.set("maxRecords", String(max));
+	url.searchParams.append("sort[0][field]", "Primary?");
+	url.searchParams.append("sort[0][direction]", "desc");
+	url.searchParams.append("sort[1][field]", "Created At");
+	url.searchParams.append("sort[1][direction]", "desc");
+	log?.debug?.("airtable.boards.list.request", { url: url.toString() });
+	const res = await fetchWithTimeout(
+		url.toString(),
+		{ headers: authHeaders(env) },
+		timeoutMs,
+	);
+	const txt = await res.text().catch(() => "");
+	log?.[res.ok ? "debug" : "warn"]?.("airtable.boards.list.response", {
+		status: res.status,
+		ok: res.ok,
+		bodyPreview: txt.slice(0, 500),
+	});
+	if (!res.ok) {
+		const err = new Error("airtable_list_failed");
+		err.status = res.status;
+		try {
+			err.body = JSON.parse(txt);
+		} catch {}
+		throw err;
+	}
+	const js = parseAirtableJson(txt, {});
+	return Array.isArray(js.records) ? js.records : [];
+}
+
+async function mirrorRowsToD1(env, rows, log = null) {
+	await Promise.all(
+		rows.map(async (row) => {
+			const fields = airtableBoardFields(row);
+			await mirrorBoardToD1(env, fields, log);
+		}),
+	);
 }
 
 export async function listBoards(
@@ -401,80 +506,35 @@ export async function listBoards(
 		}
 	}
 
-	const url = new URL(makeTableUrl(env, boardsTableName(env)));
-	const ands = [];
-	if (!pidRaw && uid) ands.push(`{UID} = "${escFormula(uid)}"`);
-	if (purpose) ands.push(`{Purpose} = "${escFormula(purpose)}"`);
-	if (typeof active === "boolean") ands.push(`{Active} = ${active ? "1" : "0"}`);
-	if (ands.length) {
-		url.searchParams.set(
-			"filterByFormula",
-			ands.length === 1 ? ands[0] : `AND(${ands.join(",")})`,
+	const commonParts = [];
+	if (purpose) commonParts.push(`{Purpose} = "${escFormula(purpose)}"`);
+	if (typeof active === "boolean") {
+		commonParts.push(`{Active} = ${active ? "1" : "0"}`);
+	}
+
+	if (pidRaw) {
+		const exactRows = await fetchBoardRows(
+			env,
+			[`{Project ID} = "${escFormula(pidRaw)}"`, ...commonParts],
+			max,
+			log,
+			timeoutMs,
 		);
-	}
-	url.searchParams.set("maxRecords", String(max));
-	url.searchParams.append("sort[0][field]", "Primary?");
-	url.searchParams.append("sort[0][direction]", "desc");
-	url.searchParams.append("sort[1][field]", "Created At");
-	url.searchParams.append("sort[1][direction]", "desc");
-	log?.debug?.("airtable.boards.list.request", {
-		url: url.toString(),
-		projectId,
-		fallback: "airtable",
-	});
-	const res = await fetchWithTimeout(
-		url.toString(),
-		{ headers: authHeaders(env) },
-		timeoutMs,
-	);
-	const txt = await res.text().catch(() => "");
-	log?.[res.ok ? "debug" : "warn"]?.("airtable.boards.list.response", {
-		status: res.status,
-		ok: res.ok,
-		bodyPreview: txt.slice(0, 500),
-	});
-	if (!res.ok) {
-		const err = new Error("airtable_list_failed");
-		err.status = res.status;
-		try {
-			err.body = JSON.parse(txt);
-		} catch {}
-		throw err;
-	}
-	const js = parseAirtableJson(txt, {});
-	const records = Array.isArray(js.records) ? js.records : [];
-	if (!projectId) return records;
-	const pidRec = looksLikeAirtableId(pidRaw) ? pidRaw : null;
-	return records.filter((r) => {
-		const f = r?.fields || {};
-		if (String(f["Project ID"] || "").trim() === pidRaw) return true;
-		const candidates = [];
-		if (Array.isArray(f.Project)) candidates.push(f.Project);
-		if (Array.isArray(f.Projects)) candidates.push(f.Projects);
-		for (const arr of candidates) {
-			if (!Array.isArray(arr)) continue;
-			if (pidRec) {
-				if (arr.some((v) => typeof v === "string" && String(v).trim() === pidRec)) {
-					return true;
-				}
-				if (
-					arr.some(
-						(v) =>
-							v &&
-							typeof v === "object" &&
-							String(v.id || "").trim() === pidRec,
-					)
-				) {
-					return true;
-				}
-			}
-			if (arr.some((v) => typeof v === "string" && String(v).trim() === pidRaw)) {
-				return true;
-			}
+		if (exactRows.length) {
+			await mirrorRowsToD1(env, exactRows, log);
+			return exactRows;
 		}
-		const textVal = String(f.Project || f.Projects || "").trim();
-		return textVal && textVal === pidRaw;
+	}
+
+	const broadParts = [...commonParts];
+	if (!pidRaw && uid) broadParts.push(`{UID} = "${escFormula(uid)}"`);
+	const broadRows = await fetchBoardRows(env, broadParts, max, log, timeoutMs);
+	if (!projectId) return broadRows;
+	const matchedRows = broadRows.filter((row) => {
+		return boardMatchesProject(airtableBoardFields(row), pidRaw);
 	});
+	if (matchedRows.length) await mirrorRowsToD1(env, matchedRows, log);
+	return matchedRows;
 }
 
 export async function createBoard(
@@ -499,12 +559,12 @@ export async function createBoard(
 		UID: String(uid ?? ""),
 		Purpose: String(purpose ?? ""),
 		"Mural ID": String(muralId ?? ""),
-		"Board URL": typeof boardUrl === "string" && boardUrl.trim() ? boardUrl.trim() : "",
+		"Board URL": cleanString(boardUrl),
 		"Primary?": !!primary,
 		Active: !!active,
 	};
-	if (typeof workspaceId === "string" && workspaceId.trim()) {
-		baseFields["Workspace ID"] = workspaceId.trim();
+	if (cleanString(workspaceId)) {
+		baseFields["Workspace ID"] = cleanString(workspaceId);
 	}
 	const d1Write = await mirrorBoardToD1(env, baseFields, log);
 	const body = { typecast: true, records: [{ fields: baseFields }] };
@@ -543,7 +603,9 @@ export async function createBoard(
 		}
 		const err = new Error("airtable_create_failed");
 		err.status = res.status;
-		err.body = Object.keys(parsed || {}).length ? parsed : { raw: txt.slice(0, 800) };
+		err.body = Object.keys(parsed || {}).length
+			? parsed
+			: { raw: txt.slice(0, 800) };
 		throw err;
 	}
 	return parsed;
@@ -557,7 +619,9 @@ export async function updateBoard(
 	timeoutMs = DEFAULTS.TIMEOUT_MS,
 ) {
 	await mirrorBoardToD1(env, fields, log);
-	if (String(recordId || "").startsWith("d1-")) return { ok: true, source: "d1" };
+	if (String(recordId || "").startsWith("d1-")) {
+		return { ok: true, source: "d1" };
+	}
 	const url = `${makeTableUrl(env, boardsTableName(env))}/${recordId}`;
 	log?.info?.("airtable.boards.update.request", { url, recordId });
 	const res = await fetchWithTimeout(
