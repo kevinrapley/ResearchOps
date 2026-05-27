@@ -30,21 +30,6 @@ Create a pull request for the existing branch `fix/project-dashboard-template`, 
 - `.agent-operating-model/bundles/multi-functional-team/`
 - `.agent-operating-model/bundles/govuk-design-system/`
 
-## Bundles skipped
-
-- `.agent-operating-model/bundles/cloudflare/` — no Worker, Pages routing, deployment or binding change was part of the user edit.
-- `.agent-operating-model/bundles/mural-public-api/` — the change affected dashboard template copy and visible action count only; no Mural API behaviour changed.
-- `.agent-operating-model/bundles/airtable-public-api/` — no Airtable schema, records or API calls changed.
-- `.agent-operating-model/bundles/openai/` — no OpenAI API or model behaviour changed.
-- `.agent-operating-model/bundles/mcp-agent-tooling/` — no MCP tooling change was in scope.
-
-## Precedence decisions
-
-- GitHub repository governance controlled branch, PR and trace handling.
-- ResearchOps Developer Control governed the platform template context.
-- GOV.UK Design System governed page-template content and action clarity.
-- The GitHub mutation policy required checking the changed-file list before reporting readiness.
-
 ## Files read
 
 - `README.md`
@@ -55,6 +40,7 @@ Create a pull request for the existing branch `fix/project-dashboard-template`, 
 - `.agent-operating-model/trace-policy.md`
 - `.agent-operating-model/github-mutation-policy.md`
 - `src/govuk/templates/pages/project-dashboard.njk`
+- `tests/project-dashboard-route-state.test.js`
 
 ## Files created or modified
 
@@ -63,24 +49,39 @@ Created:
 - `docs/agent-audit/reasoning/2026/05/27/project-dashboard-template.md`
 - `docs/agent-audit/reasoning/2026/05/27/project-dashboard-template.json`
 
-Already modified before this trace was added:
+Modified:
 
 - `src/govuk/templates/pages/project-dashboard.njk`
+- `tests/project-dashboard-route-state.test.js`
 
 ## Validation attempted
 
 - Compared `fix/project-dashboard-template` against `main` before opening the PR.
 - Confirmed the implementation branch was one commit ahead of `main` before trace files were added.
-- Confirmed the implementation diff was scoped to `src/govuk/templates/pages/project-dashboard.njk`.
 - Confirmed there was no pre-existing open PR for `fix/project-dashboard-template`.
 - Opened PR #291 into `main`.
+- Investigated the initial failing route-state contract.
+- Updated `tests/project-dashboard-route-state.test.js` so the rendered page contract matches the intended removal of the third Mural action.
+
+## Validation results
+
+On commit `b075e7ca20d40961df7f0b768796d8b53664b151`, these GitHub Actions passed:
+
+- Format pull request
+- Accessibility audit (pa11y-ci)
+- CI
+- Validate ResearchOps
+- QA — Broken links (Lychee)
+- qa-bdd
+- Release Gate
+- Worker CI
 
 ## Validation not run
 
-No local npm, browser or template-render validation was run through the connector path. GitHub Actions are the expected validation path after the PR is opened.
+No local npm, browser or template-render validation was run through the connector path. GitHub Actions were used as the validation source.
 
 ## Issues, pivots and residual risks
 
 - The PR was opened before the required trace files were added. This trace corrects that branch-policy gap in the same PR.
-- The change is expected to be low risk because it is limited to one GOV.UK template and does not change JavaScript, API routes or data contracts.
-- Final readiness depends on GitHub Actions completing successfully for PR #291.
+- The first validation run failed because the route-state contract still expected the removed third Mural action. The test now requires the rendered page to match the intended two-action panel.
+- The change is expected to be low risk because it is limited to one GOV.UK template and one matching route-state contract. It does not change JavaScript, API routes or data contracts.
