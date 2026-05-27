@@ -25,6 +25,17 @@ const govukFrontendCss = fs.readFileSync('public/assets/govuk/govuk-frontend.css
 const legacyTypographyCss = fs.readFileSync('public/css/govuk/govuk-typography.css', 'utf8');
 const redirects = fs.readFileSync('public/_redirects', 'utf8');
 
+const requiredGovukFrontendSelectors = [
+	'.govuk-width-container',
+	'.govuk-main-wrapper',
+	'.govuk-grid-row',
+	'.govuk-header',
+	'.govuk-service-navigation',
+	'.govuk-phase-banner',
+	'.govuk-summary-card',
+	'.govuk-details',
+];
+
 assert.equal(
 	topLevelHomeCss,
 	publicHomeCss.endsWith('\n') ? publicHomeCss : `${publicHomeCss}\n`,
@@ -42,11 +53,12 @@ assert.doesNotMatch(
 	/Can't find stylesheet to import|src\/styles\/govuk\.scss|body::before/,
 	'committed GOV.UK Frontend CSS must not contain Sass error output'
 );
-assert.match(
-	govukFrontendCss,
-	/\.govuk-width-container|\.govuk-main-wrapper|\.govuk-summary-card/,
-	'committed GOV.UK Frontend CSS should contain deployable GOV.UK-compatible styles'
-);
+for (const selector of requiredGovukFrontendSelectors) {
+	assert.ok(
+		govukFrontendCss.includes(selector),
+		`committed GOV.UK Frontend CSS should contain ${selector} for deployable static pages`
+	);
+}
 assert.match(
 	legacyTypographyCss,
 	/^@import url\('\/assets\/govuk\/govuk-frontend\.css'\);/,
