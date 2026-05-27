@@ -1,0 +1,36 @@
+{
+  "traceLayer": "operational",
+  "date": "2026-05-27",
+  "branch": "fix/govuk-frontend-css-artifact",
+  "traceRequired": true,
+  "taskSummary": "Repair committed GOV.UK frontend fallback CSS artifact and address PR review findings.",
+  "operatingModelFilesLoaded": [
+    "AGENTS.md",
+    ".agent-operating-model/trace-policy.md"
+  ],
+  "bundlesSelected": [
+    ".agent-operating-model/bundles/github/",
+    ".agent-operating-model/bundles/researchops-developer-control/",
+    ".agent-operating-model/bundles/govuk-design-system/"
+  ],
+  "filesRead": [
+    "AGENTS.md",
+    ".agent-operating-model/trace-policy.md",
+    "public/assets/govuk/govuk-frontend.css"
+  ],
+  "filesModified": [
+    "public/assets/govuk/govuk-frontend.css"
+  ],
+  "filesCreated": [
+    "docs/agent-audit/reasoning/2026/05/27/govuk-frontend-css-artifact.md",
+    "docs/agent-audit/reasoning/2026/05/27/govuk-frontend-css-artifact.json"
+  ],
+  "validationTargets": [
+    "tests/deploy-asset-paths.test.js",
+    "tests/govuk-frontend-integration-route-state.test.js",
+    "tests/govuk-design-system-baseline-route-state.test.js"
+  ],
+  "residualRisks": [
+    "Fallback CSS remains a partial GOV.UK Frontend compatibility layer rather than a complete compiled distribution."
+  ]
+}
