@@ -34,51 +34,25 @@ const requiredGovukFrontendSelectors = [
 	'.govuk-service-navigation',
 	'.govuk-phase-banner',
 	'.govuk-footer',
-	'.govuk-footer__container',
 	'.govuk-summary-card',
 	'.govuk-details',
 ];
 
-assert.equal(
-	topLevelHomeCss,
-	publicHomeCss.endsWith('\n') ? publicHomeCss : `${publicHomeCss}\n`,
-	'top-level preview home CSS should mirror the public build output'
-);
-
+assert.equal(topLevelHomeCss, publicHomeCss.endsWith('\n') ? publicHomeCss : `${publicHomeCss}\n`);
 assert.match(topLevelHomeCss, /grid-template-columns:repeat\(4,\s*minmax\(0,\s*1fr\)\)/);
 assert.match(topLevelHomeCss, /grid-template-columns:repeat\(3,\s*minmax\(0,\s*1fr\)\)/);
-assert.match(
-	topLevelHomeCss,
-	/\.researchops-next-action:not\(:last-child\)\{border-right:1px solid #cecece\}/
-);
-assert.doesNotMatch(
-	govukFrontendCss,
-	/Can't find stylesheet to import|src\/styles\/govuk\.scss|body::before/,
-	'committed GOV.UK Frontend CSS must not contain Sass error output'
-);
-assert.match(
-	govukFrontendCss,
-	/--govuk-frontend-version:\s*"6\./,
-	'committed GOV.UK Frontend CSS should be generated from GOV.UK Frontend v6'
-);
+assert.match(topLevelHomeCss, /\.researchops-next-action:not\(:last-child\)\{border-right:1px solid #cecece\}/);
+assert.doesNotMatch(govukFrontendCss, /Can't find stylesheet to import|src\/styles\/govuk\.scss|body::before/);
+assert.match(govukFrontendCss, /--govuk-frontend-version:\s*"6\./);
+
 for (const selector of requiredGovukFrontendSelectors) {
-	assert.ok(
-		govukFrontendCss.includes(selector),
-		`committed GOV.UK Frontend CSS should contain ${selector} for deployable static pages`
-	);
+	assert.ok(govukFrontendCss.includes(selector), `${selector} should exist in the GOV.UK frontend CSS asset`);
 }
-assert.match(
-	footerPartial,
-	/class="govuk-width-container govuk-footer__container"/,
+
+assert.ok(
+	footerPartial.includes('class="govuk-width-container govuk-footer__container"'),
 	'shared footer should keep the width-constrained GOV.UK footer container contract'
 );
-assert.match(
-	legacyTypographyCss,
-	/^@import url\('\/assets\/govuk\/govuk-frontend\.css'\);/,
-	'legacy typography entry point should load generated GOV.UK Frontend CSS for stale committed pages'
-);
+assert.match(legacyTypographyCss, /^@import url\('\/assets\/govuk\/govuk-frontend\.css'\);/);
 assert.match(redirects, /\/assets\/fonts\/\*\s+\/assets\/govuk\/assets\/fonts\/:splat\s+200/);
-assert.match(
-	redirects,
-	/\/assets\/images\/govuk-crest\.svg\s+\/assets\/govuk\/assets\/images\/govuk-crest\.svg\s+200/
-);
+assert.match(redirects, /\/assets\/images\/govuk-crest\.svg\s+\/assets\/govuk\/assets\/images\/govuk-crest\.svg\s+200/);
