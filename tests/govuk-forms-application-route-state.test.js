@@ -11,7 +11,6 @@ const formRoutes = [
 	"public/pages/project-dashboard/participants/index.html",
 	"public/pages/project-dashboard/participants/import/index.html",
 	"public/pages/projects/outcomes/index.html",
-	"public/pages/projects/journals/index.html",
 	"public/pages/study/index.html",
 	"public/pages/study/new/index.html",
 	"public/pages/study/guides/index.html",
@@ -117,10 +116,12 @@ includes(outcomesPage, "id=\"impact-form\"", "Outcomes route");
 includes(outcomesPage, "class=\"govuk-form-group outcomes-form\"", "Outcomes route");
 
 const journalsPage = read("public/pages/projects/journals/index.html");
+includes(journalsPage, "href=\"/assets/govuk/govuk-frontend.css\"", "Journals route");
 includes(journalsPage, "<form id=\"retrieval-form\" novalidate>", "Journals route");
 includes(journalsPage, "class=\"govuk-fieldset\"", "Journals route");
 includes(journalsPage, "class=\"govuk-radios__input\"", "Journals route");
 includes(journalsPage, "<label for=\"code-search-input\" class=\"govuk-label\">Search codes</label>", "Journals route");
+excludes(journalsPage, "href=\"/css/govuk/govuk-forms.css\"", "Journals route");
 excludes(journalsPage, "class=\"visually-hidden\">Search codes", "Journals route");
 
 const studyPage = read("public/pages/study/index.html");
