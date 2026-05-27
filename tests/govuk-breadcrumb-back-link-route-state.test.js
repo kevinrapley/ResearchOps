@@ -87,8 +87,8 @@ includes(projectContextSource, "document.getElementById(\"breadcrumb-project\")"
 includes(projectContextSource, ".govuk-breadcrumbs__link[href=\"/pages/project-dashboard/\"]", "project context hydrator");
 includes(projectContextSource, "document.getElementById(\"project-link\")", "project context hydrator");
 includes(projectContextSource, "document.getElementById(\"back-to-project\")", "project context hydrator");
-includes(projectContextSource, "anchor.textContent = project.name || \"Project\"", "project context hydrator");
-includes(projectContextSource, "anchor.href = dashboardHref(project.id || project.localId)", "project context hydrator");
+includes(projectContextSource, "anchor.textContent = project.name || \"Project Dashboard\"", "project context hydrator");
+includes(projectContextSource, "anchor.href = dashboardHref(projectId)", "project context hydrator");
 includes(projectContextSource, "anchor.textContent = \"Back to Project\"", "project context hydrator");
 includes(projectContextSource, "anchor.classList.remove(\"govuk-back-link\")", "project context hydrator");
 includes(projectContextSource, "anchor.classList.add(\"govuk-button\", \"govuk-button--secondary\")", "project context hydrator");
