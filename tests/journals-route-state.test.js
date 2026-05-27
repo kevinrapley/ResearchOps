@@ -82,7 +82,13 @@ excludes(pageSource, "class=\"btn", "journals page");
 excludes(pageSource, "<script type=\"module\">", "journals page");
 
 includes(projectContextSource, "function findProjectBreadcrumb()", "project context module");
+includes(projectContextSource, "function projectPayloadFrom", "project context module");
+includes(projectContextSource, "data?.project || data?.record || data", "project context module");
 includes(projectContextSource, ".govuk-breadcrumbs__link[href=\"/pages/project-dashboard/\"]", "project context module");
+includes(projectContextSource, "setProjectRouteFallback(projectId)", "project context module");
+includes(projectContextSource, "function observeJournalFeedbackPlacement", "project context module");
+includes(projectContextSource, "anchor.insertAdjacentElement(\"afterend\", flash)", "project context module");
+includes(projectContextSource, "document.addEventListener(\"DOMContentLoaded\", observeJournalFeedbackPlacement)", "project context module");
 includes(projectContextSource, "setProjectAnchor(findProjectBreadcrumb(), project)", "project context module");
 includes(tabsSource, "tab:shown", "journal tabs module");
 includes(muralSyncSource, "mural", "journal mural sync module");
