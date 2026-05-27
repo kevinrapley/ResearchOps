@@ -18,8 +18,11 @@ includes(workflow, 'scripts/govuk/render-govuk-pages.mjs', 'GOV.UK pages render 
 includes(workflow, 'scripts/govuk/normalise-service-pages.mjs', 'GOV.UK pages render workflow');
 includes(workflow, 'public/index.html public/pages', 'GOV.UK pages render workflow');
 includes(workflow, 'npm run build:govuk-pages', 'GOV.UK pages render workflow');
-includes(workflow, 'git add public/index.html public/pages', 'GOV.UK pages render workflow');
+includes(workflow, 'git diff --binary -- public/index.html public/pages', 'GOV.UK pages render workflow');
+includes(workflow, 'git reset --hard', 'GOV.UK pages render workflow');
 includes(workflow, 'git pull --rebase origin', 'GOV.UK pages render workflow');
+includes(workflow, 'git apply --3way', 'GOV.UK pages render workflow');
+includes(workflow, 'git add public/index.html public/pages', 'GOV.UK pages render workflow');
 includes(workflow, 'git push origin "HEAD:$branch_name"', 'GOV.UK pages render workflow');
 includes(workflow, 'Render GOV.UK page templates', 'GOV.UK pages render workflow');
 includes(
