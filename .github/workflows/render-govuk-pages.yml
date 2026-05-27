@@ -49,6 +49,7 @@ jobs:
         run: |
           set -euo pipefail
           branch_name="${{ github.event.pull_request.head.ref || github.ref_name }}"
+          patch_path="${RUNNER_TEMP}/rendered-govuk-pages.patch"
 
           if git diff --quiet -- public/index.html public/pages; then
             echo "Rendered GOV.UK pages are already committed."
@@ -58,14 +59,12 @@ jobs:
           echo "Rendered GOV.UK pages differ from committed static output."
           git status --short -- public/index.html public/pages
           git diff --stat -- public/index.html public/pages
+          git diff --binary -- public/index.html public/pages > "$patch_path"
 
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-
-          git add public/index.html public/pages
-          git stash push --include-untracked --message "rendered-govuk-pages" -- public/index.html public/pages
+          git reset --hard
+          git clean -fd -- public/index.html public/pages
           git pull --rebase origin "$branch_name"
-          git stash pop
+          git apply --3way "$patch_path"
 
           if git diff --quiet -- public/index.html public/pages; then
             echo "Rendered GOV.UK pages match the updated branch after rebase."
@@ -74,6 +73,8 @@ jobs:
 
           git status --short -- public/index.html public/pages
           git diff --stat -- public/index.html public/pages
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add public/index.html public/pages
           git commit -m "Render GOV.UK page templates"
           git push origin "HEAD:$branch_name"
