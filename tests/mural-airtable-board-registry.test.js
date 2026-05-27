@@ -69,12 +69,76 @@ test('listBoards returns D1 board mappings before external fallback', async () =
 	}
 });
 
-test('listBoards preserves legacy fallback rows without Project ID text', async () => {
-	let formula = '';
+test('listBoards uses exact Project ID Airtable fallback before broad scan', async () => {
+	const formulas = [];
+	const d1Writes = [];
 	const originalFetch = globalThis.fetch;
 	globalThis.fetch = async (resource) => {
 		const url = new URL(String(resource));
-		formula = url.searchParams.get('filterByFormula') || '';
+		const formula = url.searchParams.get('filterByFormula') || '';
+		formulas.push(formula);
+		return new Response(
+			JSON.stringify({
+				records: [
+					{
+						id: 'recBoardExact',
+						fields: {
+							'Project ID': 'recgdpwEI5hFO7bUZ',
+							UID: 'anon',
+							Purpose: 'reflexive_journal',
+							Active: true,
+							'Mural ID': 'exact-board',
+							'Workspace ID': 'workspace-fixture',
+						},
+					},
+				],
+			}),
+			{ status: 200, headers: { 'content-type': 'application/json' } }
+		);
+	};
+
+	try {
+		const rows = await listBoards(
+			{
+				...env,
+				RESEARCHOPS_D1: makeD1({
+					onRun(sql, params) {
+						d1Writes.push({ sql, params });
+					},
+				}),
+			},
+			{
+				projectId: 'recgdpwEI5hFO7bUZ',
+				uid: 'anon',
+				purpose: 'reflexive_journal',
+			}
+		);
+
+		assert.equal(rows.length, 1);
+		assert.equal(rows[0].fields['Mural ID'], 'exact-board');
+		assert.match(formulas[0], /\{Project ID\} = "recgdpwEI5hFO7bUZ"/);
+		assert.equal(formulas.length, 1);
+		assert.equal(d1Writes.length, 1);
+		assert.equal(d1Writes[0].params[0], 'exact-board');
+		assert.equal(d1Writes[0].params[1], 'recgdpwEI5hFO7bUZ');
+	} finally {
+		globalThis.fetch = originalFetch;
+	}
+});
+
+test('listBoards preserves legacy fallback rows without Project ID text', async () => {
+	const formulas = [];
+	const originalFetch = globalThis.fetch;
+	globalThis.fetch = async (resource) => {
+		const url = new URL(String(resource));
+		const formula = url.searchParams.get('filterByFormula') || '';
+		formulas.push(formula);
+		if (formula.includes('{Project ID}')) {
+			return new Response(JSON.stringify({ records: [] }), {
+				status: 200,
+				headers: { 'content-type': 'application/json' },
+			});
+		}
 		return new Response(
 			JSON.stringify({
 				records: [
@@ -109,9 +173,10 @@ test('listBoards preserves legacy fallback rows without Project ID text', async 
 
 		assert.equal(rows.length, 1);
 		assert.equal(rows[0].fields['Mural ID'], 'legacy-board');
-		assert.doesNotMatch(formula, /\{Project ID\}/);
-		assert.doesNotMatch(formula, /\{UID\}/);
-		assert.match(formula, /\{Purpose\} = "reflexive_journal"/);
+		assert.match(formulas[0], /\{Project ID\}/);
+		assert.doesNotMatch(formulas[1], /\{Project ID\}/);
+		assert.doesNotMatch(formulas[1], /\{UID\}/);
+		assert.match(formulas[1], /\{Purpose\} = "reflexive_journal"/);
 	} finally {
 		globalThis.fetch = originalFetch;
 	}
