@@ -41,12 +41,21 @@ const requiredGovukFrontendSelectors = [
 assert.equal(topLevelHomeCss, publicHomeCss.endsWith('\n') ? publicHomeCss : `${publicHomeCss}\n`);
 assert.match(topLevelHomeCss, /grid-template-columns:repeat\(4,\s*minmax\(0,\s*1fr\)\)/);
 assert.match(topLevelHomeCss, /grid-template-columns:repeat\(3,\s*minmax\(0,\s*1fr\)\)/);
-assert.match(topLevelHomeCss, /\.researchops-next-action:not\(:last-child\)\{border-right:1px solid #cecece\}/);
-assert.doesNotMatch(govukFrontendCss, /Can't find stylesheet to import|src\/styles\/govuk\.scss|body::before/);
+assert.match(
+	topLevelHomeCss,
+	/\.researchops-next-action:not\(:last-child\)\{border-right:1px solid #cecece\}/
+);
+assert.doesNotMatch(
+	govukFrontendCss,
+	/Can't find stylesheet to import|src\/styles\/govuk\.scss|body::before/
+);
 assert.match(govukFrontendCss, /--govuk-frontend-version:\s*"6\./);
 
 for (const selector of requiredGovukFrontendSelectors) {
-	assert.ok(govukFrontendCss.includes(selector), `${selector} should exist in the GOV.UK frontend CSS asset`);
+	assert.ok(
+		govukFrontendCss.includes(selector),
+		`${selector} should exist in the GOV.UK frontend CSS asset`
+	);
 }
 
 assert.ok(
@@ -55,4 +64,7 @@ assert.ok(
 );
 assert.match(legacyTypographyCss, /^@import url\('\/assets\/govuk\/govuk-frontend\.css'\);/);
 assert.match(redirects, /\/assets\/fonts\/\*\s+\/assets\/govuk\/assets\/fonts\/:splat\s+200/);
-assert.match(redirects, /\/assets\/images\/govuk-crest\.svg\s+\/assets\/govuk\/assets\/images\/govuk-crest\.svg\s+200/);
+assert.match(
+	redirects,
+	/\/assets\/images\/govuk-crest\.svg\s+\/assets\/govuk\/assets\/images\/govuk-crest\.svg\s+200/
+);
