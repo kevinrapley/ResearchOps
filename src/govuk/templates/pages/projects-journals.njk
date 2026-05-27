@@ -1,11 +1,12 @@
 {% extends "layouts/researchops.njk" %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
 
 {% block head %}
+	<meta name="project:name" content="">
 	<meta name="sda-auto" content="true">
-	<meta property="dcterms:creator" content="Home Office Biometrics">
 	<link rel="stylesheet" href="/css/tabs.css" media="screen">
 	<link rel="stylesheet" href="/css/coloris.min.css" media="screen">
-	<link rel="stylesheet" href="/css/journals.css?v=1.0.1" media="screen">
+	<!--<link rel="stylesheet" href="/css/journals.css?v=1.0.1" media="screen">-->
 	<link rel="stylesheet" href="/css/journal-mural-sync.css" media="screen">
 	<link rel="modulepreload" href="/js/project-context.js">
 	<link rel="modulepreload" href="/js/journal-tabs.js">
