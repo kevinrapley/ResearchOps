@@ -17,6 +17,8 @@ The breadcrumb was then changed to use the GOV.UK breadcrumbs macro. The second 
 
 A screenshot review then identified two outstanding issues: the committed static page was still serving the old shell, and the journal refresh message was appearing above the breadcrumb rather than after the lead paragraph.
 
+A further review identified that static HTML can become stale when Nunjucks templates are changed. A dedicated workflow was added to render GOV.UK page templates and commit generated static HTML back to same-repository PR branches.
+
 ## Operating-model files loaded
 
 - `README.md`
@@ -60,12 +62,15 @@ A screenshot review then identified two outstanding issues: the committed static
 - `src/govuk/templates/layouts/researchops.njk`
 - `src/govuk/templates/pages/projects-journals.njk`
 - `scripts/govuk/render-govuk-pages.mjs`
+- `scripts/govuk/normalise-service-pages.mjs`
 - `public/pages/projects/journals/index.html`
 - `public/js/project-context.js`
 - `public/js/journal-tabs.js`
+- `.github/workflows/render-govuk-pages.yml`
 - `tests/journals-route-state.test.js`
 - `tests/govuk-breadcrumb-back-link-route-state.test.js`
 - `tests/govuk-forms-application-route-state.test.js`
+- `tests/govuk-pages-render-workflow-state.test.js`
 - `package.json`
 
 ## Files created or modified
@@ -73,6 +78,8 @@ A screenshot review then identified two outstanding issues: the committed static
 Created:
 
 - `src/govuk/templates/pages/projects-journals.njk`
+- `.github/workflows/render-govuk-pages.yml`
+- `tests/govuk-pages-render-workflow-state.test.js`
 - `docs/agent-audit/reasoning/2026/05/27/journals-govuk-template-shell.md`
 - `docs/agent-audit/reasoning/2026/05/27/journals-govuk-template-shell.json`
 
@@ -97,19 +104,29 @@ Modified:
 - Updated `project-context.js` so the macro-rendered `/pages/project-dashboard/` breadcrumb link receives the record id immediately and is hydrated to the project name when the project resolves.
 - Made `project-context.js` unwrap project API responses shaped as `{ project: ... }` or `{ record: ... }`.
 - Moved journal flash messages into the GOV.UK content container immediately after `.journal-header`, which places `Could not refresh journal entries.` after the lead paragraph.
+- Added `.github/workflows/render-govuk-pages.yml` to run `npm run build:govuk-pages` when GOV.UK Nunjucks templates or render scripts change.
+- The render workflow commits generated `public/index.html` and `public/pages` changes back to same-repository PR branches.
+- The workflow uses a patch-based rebase flow so it can cope with branch movement while checks are running.
+- Added `tests/govuk-pages-render-workflow-state.test.js` to keep the render workflow and canonical renderer contract under test.
 - Preserved the existing journals tab, form and panel structure so the main content design can be reviewed separately.
-- Updated route-state tests to enforce the new shell, breadcrumb, feedback placement and forms stylesheet contracts.
+- Updated route-state tests to enforce the new shell, breadcrumb, feedback placement, render workflow and forms stylesheet contracts.
+
+## GOV.UK Frontend workflow review
+
+A targeted check of the `alphagov/govuk-frontend` `.github` area did not identify a directly equivalent workflow that commits generated Nunjucks output back to a PR branch. The ResearchOps workflow is therefore repository-specific: ResearchOps commits static HTML outputs under `public/`, so PR branches need an automation that keeps those outputs in sync with Nunjucks sources.
 
 ## Validation attempted
 
 - Compared `fix/journals-govuk-template-shell` against `main`.
-- Confirmed the changed-file list matched the GOV.UK renderer, journals Nunjucks template, rendered static page, project context hydration, route-state tests and trace files.
+- Confirmed the changed-file list matched the GOV.UK renderer, journals Nunjucks template, rendered static page, project context hydration, workflow, route-state tests and trace files.
 - Investigated and corrected CI failures caused by older tests expecting legacy journals breadcrumb and legacy forms stylesheet contracts.
+- Investigated and corrected the first render workflow failures by replacing the stash-based commit flow with a patch-based rebase flow.
 
 ## Validation results
 
-On commit `52057b4d424bca4f1d909fafcb3e35513e1f4caa`, these GitHub Actions passed:
+On commit `4825999d9efc0155d55c6c4587c7b8c9ef3b717f`, these GitHub Actions passed:
 
+- Render GOV.UK pages
 - Format pull request
 - CI
 - qa-bdd
@@ -127,3 +144,4 @@ No local npm, browser or template-render validation was run through the connecto
 
 - The existing main content remains structurally close to the previous journals page by design. This avoids expanding the scope before reviewing the GOV.UK Frontend approach for the content itself.
 - The macro-rendered breadcrumb link starts as `Project Dashboard`; runtime hydration changes it to the actual project name when the project id can be resolved.
+- The render workflow only commits generated pages for same-repository PR branches. Fork PRs are deliberately not granted write behaviour.
