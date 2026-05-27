@@ -112,10 +112,13 @@ excludes(muralIntegrationSource, "const backAbs = absolutePagesUrl", "Mural inte
 excludes(muralIntegrationSource, "return=${encodeURIComponent(backAbs)}", "Mural integration component");
 excludes(muralIntegrationSource, "function absolutePagesUrl(pathAndQuery)", "Mural integration component");
 
-includes(muralStateSource, "intentionally inert", "Project Dashboard Mural state bridge");
-includes(muralStateSource, "export {};", "Project Dashboard Mural state bridge");
-excludes(muralStateSource, "MutationObserver", "Project Dashboard Mural state bridge");
-excludes(muralStateSource, "requestAnimationFrame", "Project Dashboard Mural state bridge");
+includes(muralStateSource, "Normalises Project Dashboard Mural action presentation", "Project Dashboard Mural state bridge");
+includes(muralStateSource, "function hideLegacyOpenAction()", "Project Dashboard Mural state bridge");
+includes(muralStateSource, "legacyOpen.hidden = true", "Project Dashboard Mural state bridge");
+includes(muralStateSource, "function normaliseSetupActionLabel()", "Project Dashboard Mural state bridge");
+includes(muralStateSource, 'setup.textContent = "Open Mural board";', "Project Dashboard Mural state bridge");
+includes(muralStateSource, "new MutationObserver", "Project Dashboard Mural state bridge");
+excludes(muralStateSource, "intentionally inert", "Project Dashboard Mural state bridge");
 excludes(muralStateSource, "syncDashboardPresentation", "Project Dashboard Mural state bridge");
 
 includes(dashboardSassSource, ".rops-dashboard-header", "project dashboard Sass source");
