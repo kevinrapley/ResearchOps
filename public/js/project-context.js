@@ -1,14 +1,14 @@
 /**
  * @file /js/project-context.js
- * @summary Hydrates project route breadcrumbs and parent links from the ?id= project context.
+ * @summary Hydrates project route breadcrumbs, parent links and page feedback placement from the ?id= project context.
  */
 
-const API_ORIGIN =
-	document.documentElement?.dataset?.apiOrigin ||
-	window.API_ORIGIN ||
-	(location.hostname.endsWith("pages.dev") ?
-		"https://rops-api.digikev-kevin-rapley.workers.dev" :
-		location.origin);
+const API_ORIGIN = resolveApiBase();
+
+function resolveApiBase() {
+	const explicit = document.documentElement?.dataset?.apiOrigin || window.API_ORIGIN || "";
+	return String(explicit || "").trim().replace(/\/+$/, "");
+}
 
 function projectApiUrl(path) {
 	const value = String(path || "");
@@ -22,13 +22,18 @@ function firstPresent(...values) {
 	return "";
 }
 
+function projectPayloadFrom(data = {}) {
+	return data?.project || data?.record || data;
+}
+
 function normaliseProject(project = {}) {
-	const publicId = firstPresent(project.id, project.airtableId, project.recordId, project.LocalId, project.localId);
+	const source = projectPayloadFrom(project);
+	const publicId = firstPresent(source.id, source.airtableId, source.recordId, source.LocalId, source.localId);
 	return {
 		id: publicId,
-		localId: firstPresent(project.localId, project.LocalId, publicId),
-		airtableId: firstPresent(project.airtableId, project.recordId, publicId),
-		name: firstPresent(project.name, project.Name)
+		localId: firstPresent(source.localId, source.LocalId, publicId),
+		airtableId: firstPresent(source.airtableId, source.recordId, publicId),
+		name: firstPresent(source.name, source.Name, source.title, source.Title)
 	};
 }
 
@@ -127,6 +132,39 @@ function setProjectParentLink(anchor, project) {
 	ensureProjectActionBar(anchor);
 }
 
+function findFeedbackAnchor() {
+	return document.querySelector(".journal-header") || document.querySelector("#main-content .govuk-width-container");
+}
+
+function normaliseFlashElement(flash) {
+	if (!flash) return;
+	flash.classList.add("govuk-notification-banner", "govuk-!-margin-bottom-6");
+	flash.removeAttribute("style");
+	flash.setAttribute("role", flash.getAttribute("role") || "status");
+	flash.setAttribute("aria-live", flash.getAttribute("aria-live") || "polite");
+}
+
+function placeFlashElement(flash) {
+	if (!flash) return;
+	const anchor = findFeedbackAnchor();
+	if (!anchor || anchor.nextElementSibling === flash) return;
+	normaliseFlashElement(flash);
+	anchor.insertAdjacentElement("afterend", flash);
+}
+
+function observeJournalFeedbackPlacement() {
+	placeFlashElement(document.getElementById("flash"));
+
+	const observer = new MutationObserver((mutations) => {
+		for (const mutation of mutations) {
+			for (const node of mutation.addedNodes) {
+				if (node instanceof HTMLElement && node.id === "flash") placeFlashElement(node);
+			}
+		}
+	});
+	observer.observe(document.body, { childList: true, subtree: true });
+}
+
 async function hydrateProjectRouteContext() {
 	const parentLink = document.getElementById("back-to-project");
 	ensureProjectActionBar(parentLink);
@@ -149,6 +187,8 @@ async function hydrateProjectRouteContext() {
 		main.dataset.projectName = project.name || "";
 	}
 }
+
+document.addEventListener("DOMContentLoaded", observeJournalFeedbackPlacement);
 
 hydrateProjectRouteContext().catch((error) => {
 	console.warn("[project-context] Could not hydrate project route context", error);
