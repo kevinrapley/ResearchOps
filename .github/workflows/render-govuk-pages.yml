@@ -61,7 +61,19 @@ jobs:
 
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add public/index.html public/pages
+          git stash push --include-untracked --message "rendered-govuk-pages" -- public/index.html public/pages
+          git pull --rebase origin "$branch_name"
+          git stash pop
+
+          if git diff --quiet -- public/index.html public/pages; then
+            echo "Rendered GOV.UK pages match the updated branch after rebase."
+            exit 0
+          fi
+
+          git status --short -- public/index.html public/pages
+          git diff --stat -- public/index.html public/pages
           git add public/index.html public/pages
           git commit -m "Render GOV.UK page templates"
-          git pull --rebase origin "$branch_name"
           git push origin "HEAD:$branch_name"
