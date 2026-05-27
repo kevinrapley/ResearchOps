@@ -1,0 +1,44 @@
+{
+  "traceLayer": "operational",
+  "date": "2026-05-27",
+  "branch": "fix/govuk-frontend-css-artifact",
+  "traceRequired": true,
+  "taskSummary": "Repair GOV.UK frontend CSS artifact and runtime page chrome styles.",
+  "filesRead": [
+    "AGENTS.md",
+    ".agent-operating-model/trace-policy.md",
+    "src/styles/govuk.scss",
+    "package.json",
+    "package-lock.json",
+    ".github/workflows/accessibility.yml",
+    "tests/deploy-asset-paths.test.js",
+    "public/assets/govuk/govuk-frontend.css",
+    "public/partials/header.html"
+  ],
+  "filesModified": [
+    "public/assets/govuk/govuk-frontend.css",
+    ".github/workflows/accessibility.yml",
+    "tests/deploy-asset-paths.test.js",
+    "docs/agent-audit/reasoning/2026/05/27/govuk-frontend-css-artifact.md",
+    "docs/agent-audit/reasoning/2026/05/27/govuk-frontend-css-artifact.json"
+  ],
+  "filesCreated": [
+    "docs/agent-audit/reasoning/2026/05/27/govuk-frontend-css-artifact.md",
+    "docs/agent-audit/reasoning/2026/05/27/govuk-frontend-css-artifact.json"
+  ],
+  "implementationDecisions": [
+    "Accessibility workflow builds GOV.UK CSS before pa11y serves public assets.",
+    "Committed GOV.UK fallback CSS includes the page chrome selectors missing in the screenshot.",
+    "Deploy asset guardrail requires header, service navigation, phase banner, grid, details and summary-card selectors."
+  ],
+  "validationTargets": [
+    "tests/deploy-asset-paths.test.js",
+    "tests/govuk-frontend-integration-route-state.test.js",
+    "tests/govuk-design-system-baseline-route-state.test.js",
+    ".github/workflows/accessibility.yml"
+  ],
+  "residualRisks": [
+    "Committed CSS remains a deploy-safe fallback rather than the full generated GOV.UK Frontend distribution.",
+    "GitHub Actions must complete on the latest commit."
+  ]
+}

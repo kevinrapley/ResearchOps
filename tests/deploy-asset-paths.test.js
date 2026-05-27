@@ -21,26 +21,48 @@ for (const assetPath of requiredPreviewAssetPaths) {
 
 const topLevelHomeCss = fs.readFileSync('assets/researchops/researchops-home.css', 'utf8');
 const publicHomeCss = fs.readFileSync('public/assets/researchops/researchops-home.css', 'utf8');
+const govukFrontendCss = fs.readFileSync('public/assets/govuk/govuk-frontend.css', 'utf8');
+const footerPartial = fs.readFileSync('public/partials/footer.html', 'utf8');
 const legacyTypographyCss = fs.readFileSync('public/css/govuk/govuk-typography.css', 'utf8');
 const redirects = fs.readFileSync('public/_redirects', 'utf8');
 
-assert.equal(
-	topLevelHomeCss,
-	publicHomeCss.endsWith('\n') ? publicHomeCss : `${publicHomeCss}\n`,
-	'top-level preview home CSS should mirror the public build output'
-);
+const requiredGovukFrontendSelectors = [
+	'.govuk-width-container',
+	'.govuk-main-wrapper',
+	'.govuk-grid-row',
+	'.govuk-header',
+	'.govuk-service-navigation',
+	'.govuk-phase-banner',
+	'.govuk-footer',
+	'.govuk-summary-card',
+	'.govuk-details',
+];
 
+assert.equal(topLevelHomeCss, publicHomeCss.endsWith('\n') ? publicHomeCss : `${publicHomeCss}\n`);
 assert.match(topLevelHomeCss, /grid-template-columns:repeat\(4,\s*minmax\(0,\s*1fr\)\)/);
 assert.match(topLevelHomeCss, /grid-template-columns:repeat\(3,\s*minmax\(0,\s*1fr\)\)/);
 assert.match(
 	topLevelHomeCss,
 	/\.researchops-next-action:not\(:last-child\)\{border-right:1px solid #cecece\}/
 );
-assert.match(
-	legacyTypographyCss,
-	/^@import url\('\/assets\/govuk\/govuk-frontend\.css'\);/,
-	'legacy typography entry point should load generated GOV.UK Frontend CSS for stale committed pages'
+assert.doesNotMatch(
+	govukFrontendCss,
+	/Can't find stylesheet to import|src\/styles\/govuk\.scss|body::before/
 );
+assert.match(govukFrontendCss, /--govuk-frontend-version:\s*"6\./);
+
+for (const selector of requiredGovukFrontendSelectors) {
+	assert.ok(
+		govukFrontendCss.includes(selector),
+		`${selector} should exist in the GOV.UK frontend CSS asset`
+	);
+}
+
+assert.ok(
+	footerPartial.includes('class="govuk-width-container govuk-footer__container"'),
+	'shared footer should keep the width-constrained GOV.UK footer container contract'
+);
+assert.match(legacyTypographyCss, /^@import url\('\/assets\/govuk\/govuk-frontend\.css'\);/);
 assert.match(redirects, /\/assets\/fonts\/\*\s+\/assets\/govuk\/assets\/fonts\/:splat\s+200/);
 assert.match(
 	redirects,

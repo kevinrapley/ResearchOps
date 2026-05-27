@@ -5,7 +5,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
@@ -19,6 +19,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref || github.ref }}
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -28,6 +30,23 @@ jobs:
 
       - name: Install deps
         run: npm ci
+
+      - name: Build GOV.UK frontend CSS
+        run: npm run build:govuk
+
+      - name: Commit generated GOV.UK frontend CSS
+        if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
+        run: |
+          if git diff --quiet -- public/assets/govuk/govuk-frontend.css; then
+            echo "Generated GOV.UK frontend CSS is already committed."
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f public/assets/govuk/govuk-frontend.css
+          git commit -m "Regenerate GOV.UK frontend CSS from Sass"
+          git push origin "HEAD:${{ github.event.pull_request.head.ref }}"
 
       - name: Start local static site
         run: |
