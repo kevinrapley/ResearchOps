@@ -29,6 +29,9 @@ jobs:
       - name: Install deps
         run: npm ci
 
+      - name: Build GOV.UK frontend CSS
+        run: npm run build:govuk
+
       - name: Start local static site
         run: |
           python3 -m http.server 8080 --directory public > static-site.log 2>&1 &
