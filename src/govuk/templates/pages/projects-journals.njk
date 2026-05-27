@@ -1,4 +1,5 @@
 {% extends "layouts/researchops.njk" %}
+{% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
 {% from "govuk/components/button/macro.njk" import govukButton %}
 
 {% block head %}
@@ -16,13 +17,21 @@
 
 {% block content %}
 <div class="govuk-width-container">
-	<nav class="govuk-breadcrumbs" aria-label="Breadcrumb">
-		<ol class="govuk-breadcrumbs__list">
-			<li class="govuk-breadcrumbs__list-item"><a class="govuk-breadcrumbs__link" href="/pages/projects/">Projects</a></li>
-			<li class="govuk-breadcrumbs__list-item"><a class="govuk-breadcrumbs__link" href="#" id="project-link">Project</a></li>
-			<li class="govuk-breadcrumbs__list-item" aria-current="page">Journal and analysis</li>
-		</ol>
-	</nav>
+	{{ govukBreadcrumbs({
+		items: [
+			{
+				text: 'Projects',
+				href: '/pages/projects/'
+			},
+			{
+				text: 'Project Dashboard',
+				href: '/pages/project-dashboard/'
+			},
+			{
+				text: 'Journal and analysis'
+			}
+		]
+	}) }}
 
 	<a id="back-to-project" class="govuk-back-link" href="/pages/projects/">Back to Project</a>
 
