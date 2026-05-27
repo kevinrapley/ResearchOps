@@ -50,6 +50,13 @@ function setProjectAnchor(anchor, project) {
 	anchor.href = dashboardHref(project.id || project.localId);
 }
 
+function findProjectBreadcrumb() {
+	return (
+		document.getElementById("breadcrumb-project") ||
+		document.querySelector('.govuk-breadcrumbs__link[href="/pages/project-dashboard/"]')
+	);
+}
+
 function ensureProjectActionBar(anchor) {
 	if (!anchor) return;
 
@@ -84,7 +91,7 @@ async function hydrateProjectRouteContext() {
 	const project = findProject(projects, projectId);
 	if (!project) return;
 
-	setProjectAnchor(document.getElementById("breadcrumb-project"), project);
+	setProjectAnchor(findProjectBreadcrumb(), project);
 	setProjectAnchor(document.getElementById("project-link"), project);
 	setProjectParentLink(parentLink, project);
 
