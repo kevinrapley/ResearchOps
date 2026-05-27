@@ -22,6 +22,7 @@ for (const assetPath of requiredPreviewAssetPaths) {
 const topLevelHomeCss = fs.readFileSync('assets/researchops/researchops-home.css', 'utf8');
 const publicHomeCss = fs.readFileSync('public/assets/researchops/researchops-home.css', 'utf8');
 const govukFrontendCss = fs.readFileSync('public/assets/govuk/govuk-frontend.css', 'utf8');
+const footerPartial = fs.readFileSync('public/partials/footer.html', 'utf8');
 const legacyTypographyCss = fs.readFileSync('public/css/govuk/govuk-typography.css', 'utf8');
 const redirects = fs.readFileSync('public/_redirects', 'utf8');
 
@@ -32,6 +33,8 @@ const requiredGovukFrontendSelectors = [
 	'.govuk-header',
 	'.govuk-service-navigation',
 	'.govuk-phase-banner',
+	'.govuk-footer',
+	'.govuk-footer__container',
 	'.govuk-summary-card',
 	'.govuk-details',
 ];
@@ -53,12 +56,22 @@ assert.doesNotMatch(
 	/Can't find stylesheet to import|src\/styles\/govuk\.scss|body::before/,
 	'committed GOV.UK Frontend CSS must not contain Sass error output'
 );
+assert.match(
+	govukFrontendCss,
+	/--govuk-frontend-version:\s*"6\./,
+	'committed GOV.UK Frontend CSS should be generated from GOV.UK Frontend v6'
+);
 for (const selector of requiredGovukFrontendSelectors) {
 	assert.ok(
 		govukFrontendCss.includes(selector),
 		`committed GOV.UK Frontend CSS should contain ${selector} for deployable static pages`
 	);
 }
+assert.match(
+	footerPartial,
+	/class="govuk-width-container govuk-footer__container"/,
+	'shared footer should keep the width-constrained GOV.UK footer container contract'
+);
 assert.match(
 	legacyTypographyCss,
 	/^@import url\('\/assets\/govuk\/govuk-frontend\.css'\);/,
