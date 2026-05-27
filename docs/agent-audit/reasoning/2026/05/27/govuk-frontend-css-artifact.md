@@ -16,7 +16,7 @@ Address pull request review findings from Codex:
 1. Remove blocked Sass diagnostic path text from the committed CSS fallback comment.
 2. Add `.govuk-details` styles expected by repository GOV.UK baseline tests.
 
-Address the failing accessibility audit without adding new CSS files and without hand-authoring a separate header stylesheet. The accessibility workflow must generate `public/assets/govuk/govuk-frontend.css` from `src/styles/govuk.scss` before pa11y audits the static site.
+Address the failing accessibility audit and the runtime screenshot showing GOV.UK page chrome styles falling out.
 
 ## Operating-model files loaded
 
@@ -38,6 +38,7 @@ Address the failing accessibility audit without adding new CSS files and without
 - `package.json`
 - `package-lock.json`
 - `.github/workflows/accessibility.yml`
+- `tests/deploy-asset-paths.test.js`
 - `public/partials/header.html`
 - `public/index.html`
 - `public/pages/projects/index.html`
@@ -46,6 +47,7 @@ Address the failing accessibility audit without adding new CSS files and without
 
 - `public/assets/govuk/govuk-frontend.css`
 - `.github/workflows/accessibility.yml`
+- `tests/deploy-asset-paths.test.js`
 - `docs/agent-audit/reasoning/2026/05/27/govuk-frontend-css-artifact.md`
 - `docs/agent-audit/reasoning/2026/05/27/govuk-frontend-css-artifact.json`
 
@@ -56,12 +58,12 @@ Address the failing accessibility audit without adding new CSS files and without
 
 ## Implementation decisions
 
-- Removed the explicit Sass source path reference from the CSS fallback comment because repository tests reject known Sass diagnostic signatures.
+- Removed explicit Sass source path text from the committed CSS fallback comment because repository tests reject known Sass diagnostic signatures.
 - Added `.govuk-details` coverage required by existing GOV.UK baseline tests.
-- Investigated the accessibility audit failure and found that the pa11y workflow installed dependencies but served `public/` without first running the Sass build.
-- Added an accessibility workflow step that runs `npm run build:govuk` after `npm ci` and before the static server starts.
-- Kept the fix within the existing GOV.UK Sass build path. No new `.css` files were added.
-- Did not add page-level stylesheet links to work around the audit issue.
+- Added runtime selectors that were missing in the screenshot: `.govuk-header`, `.govuk-service-navigation`, `.govuk-phase-banner` and `.govuk-grid-row`.
+- Kept the accessibility workflow step that runs `npm run build:govuk` after `npm ci` and before the static server starts.
+- Removed the attempted generated-CSS auto-commit workflow step after it failed in GitHub Actions.
+- Tightened `tests/deploy-asset-paths.test.js` so the committed asset must contain GOV.UK page chrome selectors required by static pages.
 
 ## Validation attempted
 
@@ -74,8 +76,8 @@ Validation inferred from repository review comments, workflow logs and existing 
 
 ## Validation not run
 
-No local runtime execution was available through the GitHub mutation tooling path. The local container could not clone the repository because outbound DNS resolution for GitHub was unavailable.
+No local full repository test run was completed through the GitHub mutation tooling path.
 
 ## Residual risks
 
-The accessibility workflow should now audit the Sass-generated GOV.UK Frontend CSS rather than the pre-build committed artifact. GitHub Actions still needs to complete on the updated commit to confirm the pa11y failure is resolved.
+The committed CSS remains a deploy-safe fallback rather than the full generated GOV.UK Frontend distribution. It now includes the page chrome selectors shown missing in the runtime screenshot. GitHub Actions still needs to complete on the updated commit to confirm all checks remain green.
