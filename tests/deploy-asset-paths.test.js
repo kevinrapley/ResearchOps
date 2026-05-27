@@ -21,6 +21,7 @@ for (const assetPath of requiredPreviewAssetPaths) {
 
 const topLevelHomeCss = fs.readFileSync('assets/researchops/researchops-home.css', 'utf8');
 const publicHomeCss = fs.readFileSync('public/assets/researchops/researchops-home.css', 'utf8');
+const govukFrontendCss = fs.readFileSync('public/assets/govuk/govuk-frontend.css', 'utf8');
 const legacyTypographyCss = fs.readFileSync('public/css/govuk/govuk-typography.css', 'utf8');
 const redirects = fs.readFileSync('public/_redirects', 'utf8');
 
@@ -35,6 +36,16 @@ assert.match(topLevelHomeCss, /grid-template-columns:repeat\(3,\s*minmax\(0,\s*1
 assert.match(
 	topLevelHomeCss,
 	/\.researchops-next-action:not\(:last-child\)\{border-right:1px solid #cecece\}/
+);
+assert.doesNotMatch(
+	govukFrontendCss,
+	/Can't find stylesheet to import|src\/styles\/govuk\.scss|body::before/,
+	'committed GOV.UK Frontend CSS must not contain Sass error output'
+);
+assert.match(
+	govukFrontendCss,
+	/\.govuk-width-container|\.govuk-main-wrapper|\.govuk-summary-card/,
+	'committed GOV.UK Frontend CSS should contain deployable GOV.UK-compatible styles'
 );
 assert.match(
 	legacyTypographyCss,
