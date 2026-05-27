@@ -3,6 +3,7 @@
 	"branch": "fix/mural-d1-first-resolution",
 	"trace_stub": "mural-d1-first-resolution",
 	"trigger": "Test Project 1 still resolved as having no Reflexive Journal Mural board after PR 287, even though Airtable contained a valid matching Mural Boards row.",
+	"follow_up_trigger": "After a linked board was created, the dashboard showed two Mural open actions: Open Reflexive Journal and Open Mural board.",
 	"operating_model_files_loaded": [
 		"AGENTS.md",
 		".agent-operating-model/orchestration.xml",
@@ -15,6 +16,7 @@
 		"github-diamond",
 		"researchops-developer-control",
 		"multi-functional-team",
+		"govuk-design-system",
 		"cloudflare",
 		"airtable-public-api",
 		"mural-public-api"
@@ -23,7 +25,8 @@
 		"primary_registry": "D1",
 		"fallback_registry": "Airtable",
 		"seed_file_added": false,
-		"reason_seed_file_not_added": "The runtime path should discover the existing Airtable row and mirror it into D1 automatically. Manual seed data would only mask the ordering bug."
+		"reason_seed_file_not_added": "The runtime path should discover the existing Airtable row and mirror it into D1 automatically. Manual seed data would only mask the ordering bug.",
+		"mural_action_contract": "When a board is linked, show one visible Mural board action named Open Mural board. Hide the legacy mural-open action."
 	},
 	"changes": [
 		"Kept D1 as the first Mural board lookup path.",
@@ -31,10 +34,14 @@
 		"Kept broad Airtable fallback for legacy linked Project or Projects fields.",
 		"Mirrored Airtable fallback matches into D1.",
 		"Ensured the D1 mural_boards table exists before mirroring.",
-		"Updated unit tests for D1-first lookup, exact fallback, legacy fallback and D1 mirroring."
+		"Updated unit tests for D1-first lookup, exact fallback, legacy fallback and D1 mirroring.",
+		"Converted project-dashboard-mural-state.js into a small Mural action normaliser.",
+		"Hid the legacy mural-open action and removed it from tab order.",
+		"Normalised the linked-state setup action label to Open Mural board.",
+		"Updated route-state tests for the single linked Mural board action contract."
 	],
 	"validation": {
 		"local": "not run",
-		"github_actions": "pending after PR creation"
+		"github_actions": "pending after latest PR update"
 	}
 }
