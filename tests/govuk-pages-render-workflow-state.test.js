@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 
 const workflow = fs.readFileSync('.github/workflows/render-govuk-pages.yml', 'utf8');
+const gitignore = fs.readFileSync('.gitignore', 'utf8');
 const packageJson = JSON.parse(fs.readFileSync('package.json', 'utf8'));
 const renderer = fs.readFileSync('scripts/govuk/render-govuk-pages.mjs', 'utf8');
 
@@ -37,6 +38,10 @@ const requiredCommandSnippets = [
 
 for (const parts of requiredCommandSnippets) {
 	includes(workflow, parts.join(' '), 'GOV.UK pages render workflow');
+}
+
+for (const snippet of ['public/**', '!public/', '!public/index.html', '!public/pages/']) {
+	includes(gitignore, snippet, 'gitignore rendered GOV.UK HTML policy');
 }
 
 assert.equal(
