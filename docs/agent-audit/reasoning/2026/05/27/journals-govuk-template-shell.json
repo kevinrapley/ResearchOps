@@ -1,0 +1,47 @@
+{
+  "traceLayer": "operational",
+  "date": "2026-05-27",
+  "repository": "kevinrapley/ResearchOps",
+  "branch": "fix/journals-govuk-template-shell",
+  "traceRequired": true,
+  "taskSummary": "Add the first GOV.UK Frontend migration slice for the journals page by introducing a Nunjucks template shell that uses the shared layout header and footer.",
+  "bundlesSelected": [
+    ".agent-operating-model/bundles/github/",
+    ".agent-operating-model/bundles/researchops-developer-control/",
+    ".agent-operating-model/bundles/multi-functional-team/",
+    ".agent-operating-model/bundles/govuk-design-system/"
+  ],
+  "filesRead": [
+    "src/govuk/templates/layouts/researchops.njk",
+    "scripts/govuk/render-govuk-pages.mjs",
+    "public/pages/projects/journals/index.html",
+    "tests/journals-route-state.test.js",
+    "package.json"
+  ],
+  "filesCreated": [
+    "src/govuk/templates/pages/projects-journals.njk",
+    "docs/agent-audit/reasoning/2026/05/27/journals-govuk-template-shell.md",
+    "docs/agent-audit/reasoning/2026/05/27/journals-govuk-template-shell.json"
+  ],
+  "filesModified": [
+    "scripts/govuk/render-govuk-pages.mjs",
+    "tests/journals-route-state.test.js"
+  ],
+  "implementationDecisions": [
+    "The journals page template extends layouts/researchops.njk.",
+    "The shared header and footer are provided by the existing layout x-include elements.",
+    "The existing journal tab and panel content is preserved for later GOV.UK content review.",
+    "The GOV.UK renderer now outputs public/pages/projects/journals/index.html from the new template."
+  ],
+  "validationAttempted": [
+    "Compared branch changes against main.",
+    "Confirmed the changed-file list before trace files was limited to the GOV.UK renderer, the new template and the route-state test."
+  ],
+  "validationNotRun": [
+    "No local npm, browser or template-render validation was run through the connector path."
+  ],
+  "residualRisks": [
+    "Main page content is intentionally not redesigned in this slice.",
+    "GitHub Actions should validate rendered output after PR creation."
+  ]
+}
