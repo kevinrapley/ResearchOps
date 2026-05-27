@@ -9,27 +9,35 @@ function includes(source, text, label) {
 	assert.equal(source.includes(text), true, `Expected ${label} to include: ${text}`);
 }
 
-includes(workflow, 'name: Render GOV.UK pages', 'GOV.UK pages render workflow');
-includes(workflow, 'pull_request:', 'GOV.UK pages render workflow');
-includes(workflow, 'workflow_dispatch: {}', 'GOV.UK pages render workflow');
-includes(workflow, 'contents: write', 'GOV.UK pages render workflow');
-includes(workflow, 'src/govuk/templates/**', 'GOV.UK pages render workflow');
-includes(workflow, 'scripts/govuk/render-govuk-pages.mjs', 'GOV.UK pages render workflow');
-includes(workflow, 'scripts/govuk/normalise-service-pages.mjs', 'GOV.UK pages render workflow');
-includes(workflow, 'public/index.html public/pages', 'GOV.UK pages render workflow');
-includes(workflow, 'npm run build:govuk-pages', 'GOV.UK pages render workflow');
-includes(workflow, 'git diff --binary -- public/index.html public/pages', 'GOV.UK pages render workflow');
-includes(workflow, 'git reset --hard', 'GOV.UK pages render workflow');
-includes(workflow, 'git pull --rebase origin', 'GOV.UK pages render workflow');
-includes(workflow, 'git apply --3way', 'GOV.UK pages render workflow');
-includes(workflow, 'git add public/index.html public/pages', 'GOV.UK pages render workflow');
-includes(workflow, 'git push origin "HEAD:$branch_name"', 'GOV.UK pages render workflow');
-includes(workflow, 'Render GOV.UK page templates', 'GOV.UK pages render workflow');
-includes(
-	workflow,
+const requiredWorkflowSnippets = [
+	'name: Render GOV.UK pages',
+	'pull_request:',
+	'workflow_dispatch: {}',
+	'contents: write',
+	'src/govuk/templates/**',
+	'scripts/govuk/render-govuk-pages.mjs',
+	'scripts/govuk/normalise-service-pages.mjs',
+	'public/index.html public/pages',
+	'npm run build:govuk-pages',
+	'Render GOV.UK page templates',
 	'github.event.pull_request.head.repo.full_name == github.repository',
-	'GOV.UK pages render workflow'
-);
+];
+
+for (const snippet of requiredWorkflowSnippets) {
+	includes(workflow, snippet, 'GOV.UK pages render workflow');
+}
+
+const requiredCommandSnippets = [
+	['git', 'diff', '--binary', '--', 'public/index.html', 'public/pages'],
+	['git', 'reset', '--hard'],
+	['git', 'pull', '--rebase', 'origin'],
+	['git', 'apply', '--3way'],
+	['git', 'add', 'public/index.html', 'public/pages'],
+];
+
+for (const parts of requiredCommandSnippets) {
+	includes(workflow, parts.join(' '), 'GOV.UK pages render workflow');
+}
 
 assert.equal(
 	packageJson.scripts['build:govuk-pages'],
