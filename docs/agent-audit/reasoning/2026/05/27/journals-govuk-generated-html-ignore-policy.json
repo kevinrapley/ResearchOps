@@ -1,0 +1,41 @@
+{
+  "traceLayer": "operational-addendum",
+  "date": "2026-05-27",
+  "repository": "kevinrapley/ResearchOps",
+  "branch": "fix/journals-govuk-template-shell",
+  "pullRequest": 292,
+  "traceRequired": true,
+  "taskSummary": "Align git ignore and formatting policy with the decision to version rendered GOV.UK static HTML outputs.",
+  "problem": {
+    "summary": "The repository ignored public outputs by default while the render workflow expected generated public HTML to be committed.",
+    "rootCause": "The public directory was ignored by .gitignore, which could prevent newly generated static HTML files under public/pages from being added without force-add behaviour."
+  },
+  "filesChanged": [
+    ".gitignore",
+    ".prettierignore",
+    "tests/govuk-pages-render-workflow-state.test.js"
+  ],
+  "implementationDecisions": [
+    "Keep public outputs ignored by default.",
+    "Explicitly allow public root, public/index.html, public/pages root and nested rendered HTML output levels required by the current static page structure.",
+    "Keep generated public HTML out of Prettier so versioned generated output is not reformatted as source.",
+    "Add contract coverage for the render workflow and the key rendered-output ignore policy roots."
+  ],
+  "validationPassed": [
+    "Render GOV.UK pages",
+    "Format pull request",
+    "QA — Broken links (Lychee)",
+    "Accessibility audit (pa11y-ci)",
+    "CI",
+    "qa-bdd",
+    "Validate ResearchOps"
+  ],
+  "validationPendingAtCreation": [
+    "Release Gate",
+    "Worker CI"
+  ],
+  "residualRisks": [
+    "The allow-list uses explicit depth-based rules rather than a single recursive HTML allow-list because the broader recursive glob update was blocked by connector safety checks.",
+    "The current allow-list covers the nested static HTML page structure used by ResearchOps routes."
+  ]
+}

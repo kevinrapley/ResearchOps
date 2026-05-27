@@ -89,6 +89,11 @@ const cards = [
 	},
 ];
 
+const projectNavigation = navigation.map((item) => ({
+	...item,
+	active: item.href === '/pages/projects/',
+}));
+
 const pages = [
 	{
 		template: 'pages/home.njk',
@@ -135,10 +140,7 @@ const pages = [
 			pageTitle: 'Projects - ResearchOps Demo Suite',
 			serviceName: 'ResearchOps Demo Suite',
 			activeNavigation: 'Projects',
-			navigation: navigation.map((item) => ({
-				...item,
-				active: item.href === '/pages/projects/',
-			})),
+			navigation: projectNavigation,
 		},
 	},
 	{
@@ -148,10 +150,17 @@ const pages = [
 			pageTitle: 'Project dashboard - ResearchOps Demo Suite',
 			serviceName: 'ResearchOps Demo Suite',
 			activeNavigation: 'Projects',
-			navigation: navigation.map((item) => ({
-				...item,
-				active: item.href === '/pages/projects/',
-			})),
+			navigation: projectNavigation,
+		},
+	},
+	{
+		template: 'pages/projects-journals.njk',
+		output: 'public/pages/projects/journals/index.html',
+		context: {
+			pageTitle: 'Reflexive Journal and Analysis - ResearchOps Demo Suite',
+			serviceName: 'ResearchOps Demo Suite',
+			activeNavigation: 'Projects',
+			navigation: projectNavigation,
 		},
 	},
 ];

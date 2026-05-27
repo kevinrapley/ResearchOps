@@ -1,0 +1,81 @@
+{
+  "traceLayer": "operational",
+  "date": "2026-05-27",
+  "repository": "kevinrapley/ResearchOps",
+  "branch": "fix/journals-govuk-template-shell",
+  "pullRequest": 292,
+  "traceRequired": true,
+  "taskSummary": "Add the first GOV.UK Frontend migration slice for the journals page, use the GOV.UK breadcrumbs macro, commit rendered static HTML, place journal feedback after the page lead, and add a workflow that keeps generated GOV.UK HTML in sync with Nunjucks templates.",
+  "bundlesSelected": [
+    ".agent-operating-model/bundles/github/",
+    ".agent-operating-model/bundles/researchops-developer-control/",
+    ".agent-operating-model/bundles/multi-functional-team/",
+    ".agent-operating-model/bundles/govuk-design-system/"
+  ],
+  "filesRead": [
+    "src/govuk/templates/layouts/researchops.njk",
+    "src/govuk/templates/pages/projects-journals.njk",
+    "scripts/govuk/render-govuk-pages.mjs",
+    "scripts/govuk/normalise-service-pages.mjs",
+    "public/pages/projects/journals/index.html",
+    "public/js/project-context.js",
+    "public/js/journal-tabs.js",
+    ".github/workflows/render-govuk-pages.yml",
+    "tests/journals-route-state.test.js",
+    "tests/govuk-breadcrumb-back-link-route-state.test.js",
+    "tests/govuk-forms-application-route-state.test.js",
+    "tests/govuk-pages-render-workflow-state.test.js",
+    "package.json"
+  ],
+  "filesCreated": [
+    "src/govuk/templates/pages/projects-journals.njk",
+    ".github/workflows/render-govuk-pages.yml",
+    "tests/govuk-pages-render-workflow-state.test.js",
+    "docs/agent-audit/reasoning/2026/05/27/journals-govuk-template-shell.md",
+    "docs/agent-audit/reasoning/2026/05/27/journals-govuk-template-shell.json"
+  ],
+  "filesModified": [
+    "scripts/govuk/render-govuk-pages.mjs",
+    "public/pages/projects/journals/index.html",
+    "public/js/project-context.js",
+    "tests/journals-route-state.test.js",
+    "tests/govuk-breadcrumb-back-link-route-state.test.js",
+    "tests/govuk-forms-application-route-state.test.js",
+    "docs/agent-audit/reasoning/2026/05/27/journals-govuk-template-shell.md",
+    "docs/agent-audit/reasoning/2026/05/27/journals-govuk-template-shell.json"
+  ],
+  "implementationDecisions": [
+    "The journals page template extends layouts/researchops.njk.",
+    "The shared header and footer are provided by the existing layout x-include elements.",
+    "The journals breadcrumb uses the GOV.UK govukBreadcrumbs macro with Projects, Project Dashboard and Journal and analysis items.",
+    "The rendered static journals page was committed so preview deployments do not serve the old standalone shell.",
+    "Project-context hydration immediately gives Project Dashboard and Back to Project links the id-specific dashboard URL.",
+    "Project-context hydration unwraps project API responses shaped as project or record objects.",
+    "Journal feedback messages are moved into the GOV.UK content container after the journal header and lead paragraph.",
+    "A dedicated Render GOV.UK pages workflow runs npm run build:govuk-pages when Nunjucks templates or renderer scripts change.",
+    "The Render GOV.UK pages workflow commits generated public/index.html and public/pages changes back to same-repository PR branches using a patch-based rebase flow.",
+    "The existing journal tab and panel content is preserved for later GOV.UK content review."
+  ],
+  "validationAttempted": [
+    "Compared branch changes against main.",
+    "Updated route-state tests for the GOV.UK template shell, migrated forms stylesheet contract, macro-rendered breadcrumb contract, feedback placement and render workflow.",
+    "Investigated CI failures from older route-state contracts and updated those contracts to match the intended migration.",
+    "Investigated initial Render GOV.UK pages workflow failures and replaced the stash-based generated-output handling with a patch-based rebase flow."
+  ],
+  "validationPassed": [
+    "Render GOV.UK pages",
+    "Format pull request",
+    "CI",
+    "qa-bdd",
+    "Accessibility audit (pa11y-ci)",
+    "QA — Broken links (Lychee)",
+    "Validate ResearchOps",
+    "Release Gate",
+    "Worker CI"
+  ],
+  "residualRisks": [
+    "Main page content is intentionally not redesigned in this slice.",
+    "The Project Dashboard breadcrumb text is replaced at runtime only when the project id resolves successfully.",
+    "The render workflow only commits generated pages for same-repository PR branches."
+  ]
+}

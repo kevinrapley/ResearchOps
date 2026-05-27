@@ -1,0 +1,80 @@
+name: Render GOV.UK pages
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+    paths:
+      - 'src/govuk/templates/**'
+      - 'scripts/govuk/render-govuk-pages.mjs'
+      - 'scripts/govuk/normalise-service-pages.mjs'
+      - 'package.json'
+      - 'package-lock.json'
+      - '.github/workflows/render-govuk-pages.yml'
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+concurrency:
+  group: render-govuk-pages-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  render:
+    name: Render and commit static GOV.UK pages
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout PR branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref || github.ref_name }}
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Render GOV.UK pages from Nunjucks
+        run: npm run build:govuk-pages
+
+      - name: Commit rendered static pages
+        shell: bash
+        run: |
+          set -euo pipefail
+          branch_name="${{ github.event.pull_request.head.ref || github.ref_name }}"
+          patch_path="${RUNNER_TEMP}/rendered-govuk-pages.patch"
+
+          if git diff --quiet -- public/index.html public/pages; then
+            echo "Rendered GOV.UK pages are already committed."
+            exit 0
+          fi
+
+          echo "Rendered GOV.UK pages differ from committed static output."
+          git status --short -- public/index.html public/pages
+          git diff --stat -- public/index.html public/pages
+          git diff --binary -- public/index.html public/pages > "$patch_path"
+
+          git reset --hard
+          git clean -fd -- public/index.html public/pages
+          git pull --rebase origin "$branch_name"
+          git apply --3way "$patch_path"
+
+          if git diff --quiet -- public/index.html public/pages; then
+            echo "Rendered GOV.UK pages match the updated branch after rebase."
+            exit 0
+          fi
+
+          git status --short -- public/index.html public/pages
+          git diff --stat -- public/index.html public/pages
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add public/index.html public/pages
+          git commit -m "Render GOV.UK page templates"
+          git push origin "HEAD:$branch_name"

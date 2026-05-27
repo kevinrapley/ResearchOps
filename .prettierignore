@@ -11,6 +11,8 @@ package-lock.json
 npm-shrinkwrap.json
 
 # Generated / vendor libs (don’t reformat)
+public/index.html
+public/pages/**/*.html
 public/lib/**
 public/css/**/*.min.css
 public/**/*.min.js

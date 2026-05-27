@@ -26,6 +26,18 @@ functions/**
 
 # === Public site (mix of vendor, HTML, CSS; format later if desired) ===
 public/**
+!public/
+!public/index.html
+!public/pages/
+!public/pages/*.html
+!public/pages/*/
+!public/pages/*/*.html
+!public/pages/*/*/
+!public/pages/*/*/*.html
+!public/pages/*/*/*/
+!public/pages/*/*/*/*.html
+!public/pages/*/*/*/*/
+!public/pages/*/*/*/*/*.html
 
 # === Scripts & misc (optional) ===
 scripts/**
