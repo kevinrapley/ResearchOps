@@ -35,6 +35,7 @@ includes(templateSource, "id=\"kv-project-stage\"", "project dashboard template"
 includes(templateSource, "Loading service stage", "project dashboard template");
 includes(templateSource, "Loading project stage", "project dashboard template");
 includes(templateSource, "Mural optional", "project dashboard template");
+excludes(templateSource, "id=\"mural-open\"", "project dashboard template");
 excludes(templateSource, "Service stage not recorded", "project dashboard template");
 excludes(templateSource, "Project stage not recorded", "project dashboard template");
 excludes(templateSource, "Mural not checked", "project dashboard template");
@@ -52,7 +53,7 @@ includes(pageSource, "class=\"govuk-summary-list\"", "project dashboard page");
 includes(pageSource, "id=\"project-title\"", "project dashboard page");
 includes(pageSource, "id=\"mural-connect\"", "project dashboard page");
 includes(pageSource, "id=\"mural-setup\"", "project dashboard page");
-includes(pageSource, "id=\"mural-open\"", "project dashboard page");
+excludes(pageSource, "id=\"mural-open\"", "project dashboard page");
 includes(pageSource, "id=\"studies-list\"", "project dashboard page");
 excludes(pageSource, "href=\"/css/screen.css\"", "project dashboard page");
 excludes(pageSource, "href=\"/css/govuk/govuk-buttons.css\"", "project dashboard page");

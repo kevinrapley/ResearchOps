@@ -1,0 +1,64 @@
+{
+  "traceLayer": "operational",
+  "date": "2026-05-27",
+  "repository": "kevinrapley/ResearchOps",
+  "branch": "fix/project-dashboard-template",
+  "pullRequest": 291,
+  "traceRequired": true,
+  "taskSummary": "Create a PR for project dashboard template copy and Mural action cleanup.",
+  "operatingModelFilesLoaded": [
+    "README.md",
+    "AGENTS.md",
+    "RECENT_LEARNINGS.md",
+    ".agent-operating-model/orchestration.xml",
+    ".agent-operating-model/bundle-registry.json",
+    ".agent-operating-model/trace-policy.md",
+    ".agent-operating-model/github-mutation-policy.md"
+  ],
+  "bundlesSelected": [
+    ".agent-operating-model/bundles/github/",
+    ".agent-operating-model/bundles/researchops-developer-control/",
+    ".agent-operating-model/bundles/multi-functional-team/",
+    ".agent-operating-model/bundles/govuk-design-system/"
+  ],
+  "filesRead": [
+    "README.md",
+    "AGENTS.md",
+    "RECENT_LEARNINGS.md",
+    ".agent-operating-model/orchestration.xml",
+    ".agent-operating-model/bundle-registry.json",
+    ".agent-operating-model/trace-policy.md",
+    ".agent-operating-model/github-mutation-policy.md",
+    "src/govuk/templates/pages/project-dashboard.njk",
+    "tests/project-dashboard-route-state.test.js"
+  ],
+  "filesCreated": [
+    "docs/agent-audit/reasoning/2026/05/27/project-dashboard-template.md",
+    "docs/agent-audit/reasoning/2026/05/27/project-dashboard-template.json"
+  ],
+  "filesModified": [
+    "src/govuk/templates/pages/project-dashboard.njk",
+    "tests/project-dashboard-route-state.test.js",
+    "docs/agent-audit/reasoning/2026/05/27/project-dashboard-template.md",
+    "docs/agent-audit/reasoning/2026/05/27/project-dashboard-template.json"
+  ],
+  "validationAttempted": [
+    "Compared fix/project-dashboard-template against main.",
+    "Confirmed no pre-existing open PR for the branch.",
+    "Opened PR #291 into main.",
+    "Updated route-state contract after the first CI failure expected the removed Mural action."
+  ],
+  "validationPassed": [
+    "Format pull request",
+    "Accessibility audit (pa11y-ci)",
+    "CI",
+    "Validate ResearchOps",
+    "QA — Broken links (Lychee)",
+    "qa-bdd",
+    "Release Gate",
+    "Worker CI"
+  ],
+  "residualRisks": [
+    "No local browser check was run through the connector path."
+  ]
+}

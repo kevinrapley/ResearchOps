@@ -34,7 +34,7 @@
 	<header class="rops-dashboard-header" typeof="schema:ResearchProject" resource="#project">
 		<span id="eyebrow-org" class="govuk-caption-l" property="schema:sourceOrganization"></span>
 		<h1 id="project-title" class="govuk-heading-xl" property="schema:name">Project dashboard</h1>
-		<p id="project-subtitle" class="govuk-body-l rops-dashboard-description" property="schema:description"></p>
+		<p id="project-subtitle" class="govuk-body-l rops-dashboard-description" property="schema:description">Use this dashboard to manage project context, research planning, reflexive journaling and research outcomes.</p>
 		<div class="rops-status-strip" aria-label="Project status">
 			<strong class="govuk-tag govuk-tag--blue" id="project-service-stage-tag">Loading service stage</strong>
 			<strong class="govuk-tag govuk-tag--purple" id="project-stage-tag">Loading project stage</strong>
@@ -127,15 +127,6 @@
 							disabled: true,
 							attributes: {
 								id: "mural-setup"
-							}
-						}) }}
-						{{ govukButton({
-							text: "Open Mural board",
-							href: "#",
-							classes: "govuk-button--secondary",
-							attributes: {
-								id: "mural-open",
-								"aria-disabled": "true"
 							}
 						}) }}
 					</div>
