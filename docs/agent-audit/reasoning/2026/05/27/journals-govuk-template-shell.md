@@ -15,6 +15,8 @@ Migrate the first part of `pages/projects/journals/?id=<recordID>` to the GOV.UK
 
 The breadcrumb was then changed to use the GOV.UK breadcrumbs macro. The second breadcrumb item starts as `Project Dashboard` and is hydrated to the project name at runtime when the project record id is present in the query string.
 
+A screenshot review then identified two outstanding issues: the committed static page was still serving the old shell, and the journal refresh message was appearing above the breadcrumb rather than after the lead paragraph.
+
 ## Operating-model files loaded
 
 - `README.md`
@@ -56,9 +58,11 @@ The breadcrumb was then changed to use the GOV.UK breadcrumbs macro. The second 
 ## Files read
 
 - `src/govuk/templates/layouts/researchops.njk`
+- `src/govuk/templates/pages/projects-journals.njk`
 - `scripts/govuk/render-govuk-pages.mjs`
 - `public/pages/projects/journals/index.html`
 - `public/js/project-context.js`
+- `public/js/journal-tabs.js`
 - `tests/journals-route-state.test.js`
 - `tests/govuk-breadcrumb-back-link-route-state.test.js`
 - `tests/govuk-forms-application-route-state.test.js`
@@ -75,10 +79,13 @@ Created:
 Modified:
 
 - `scripts/govuk/render-govuk-pages.mjs`
+- `public/pages/projects/journals/index.html`
 - `public/js/project-context.js`
 - `tests/journals-route-state.test.js`
 - `tests/govuk-breadcrumb-back-link-route-state.test.js`
 - `tests/govuk-forms-application-route-state.test.js`
+- `docs/agent-audit/reasoning/2026/05/27/journals-govuk-template-shell.md`
+- `docs/agent-audit/reasoning/2026/05/27/journals-govuk-template-shell.json`
 
 ## Implementation decisions
 
@@ -86,21 +93,22 @@ Modified:
 - Relied on the existing layout for the shared `x-include` header and footer rather than placing those includes directly in the page template.
 - Replaced the hand-authored breadcrumb markup with the GOV.UK `govukBreadcrumbs` macro.
 - Used the requested breadcrumb item shape: `Projects`, `Project Dashboard`, `Journal and analysis`.
-- Updated `project-context.js` so the macro-rendered `/pages/project-dashboard/` breadcrumb link is hydrated to the project name and record-specific dashboard URL at runtime.
+- Committed the rendered `public/pages/projects/journals/index.html` so static preview deployments no longer serve the old standalone shell.
+- Updated `project-context.js` so the macro-rendered `/pages/project-dashboard/` breadcrumb link receives the record id immediately and is hydrated to the project name when the project resolves.
+- Made `project-context.js` unwrap project API responses shaped as `{ project: ... }` or `{ record: ... }`.
+- Moved journal flash messages into the GOV.UK content container immediately after `.journal-header`, which places `Could not refresh journal entries.` after the lead paragraph.
 - Preserved the existing journals tab, form and panel structure so the main content design can be reviewed separately.
-- Removed page-shell responsibility from the journals template: no standalone `<html>`, `<body>`, header include or footer include lives in the page template.
-- Added the journals page to `scripts/govuk/render-govuk-pages.mjs` so the rendered static page is produced from Nunjucks.
-- Updated route-state tests to enforce the new shell and breadcrumb contracts.
+- Updated route-state tests to enforce the new shell, breadcrumb, feedback placement and forms stylesheet contracts.
 
 ## Validation attempted
 
 - Compared `fix/journals-govuk-template-shell` against `main`.
-- Confirmed the changed-file list was limited to the GOV.UK renderer, the new journals Nunjucks template, route-state tests, project context hydration and trace files.
+- Confirmed the changed-file list matched the GOV.UK renderer, journals Nunjucks template, rendered static page, project context hydration, route-state tests and trace files.
 - Investigated and corrected CI failures caused by older tests expecting legacy journals breadcrumb and legacy forms stylesheet contracts.
 
 ## Validation results
 
-On commit `7df61914859ae2c2eb0af482312be4ce7fc6637f`, these GitHub Actions passed:
+On commit `52057b4d424bca4f1d909fafcb3e35513e1f4caa`, these GitHub Actions passed:
 
 - Format pull request
 - CI
