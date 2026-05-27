@@ -5,7 +5,7 @@
   "branch": "fix/journals-govuk-template-shell",
   "pullRequest": 292,
   "traceRequired": true,
-  "taskSummary": "Add the first GOV.UK Frontend migration slice for the journals page and use the GOV.UK breadcrumbs macro.",
+  "taskSummary": "Add the first GOV.UK Frontend migration slice for the journals page, use the GOV.UK breadcrumbs macro, commit the rendered shell and place journal feedback after the page lead.",
   "bundlesSelected": [
     ".agent-operating-model/bundles/github/",
     ".agent-operating-model/bundles/researchops-developer-control/",
@@ -14,9 +14,11 @@
   ],
   "filesRead": [
     "src/govuk/templates/layouts/researchops.njk",
+    "src/govuk/templates/pages/projects-journals.njk",
     "scripts/govuk/render-govuk-pages.mjs",
     "public/pages/projects/journals/index.html",
     "public/js/project-context.js",
+    "public/js/journal-tabs.js",
     "tests/journals-route-state.test.js",
     "tests/govuk-breadcrumb-back-link-route-state.test.js",
     "tests/govuk-forms-application-route-state.test.js",
@@ -29,6 +31,7 @@
   ],
   "filesModified": [
     "scripts/govuk/render-govuk-pages.mjs",
+    "public/pages/projects/journals/index.html",
     "public/js/project-context.js",
     "tests/journals-route-state.test.js",
     "tests/govuk-breadcrumb-back-link-route-state.test.js",
@@ -40,12 +43,15 @@
     "The journals page template extends layouts/researchops.njk.",
     "The shared header and footer are provided by the existing layout x-include elements.",
     "The journals breadcrumb uses the GOV.UK govukBreadcrumbs macro with Projects, Project Dashboard and Journal and analysis items.",
-    "Project-context hydration updates the macro-rendered Project Dashboard link to the resolved project name and record-specific dashboard URL.",
+    "The rendered static journals page was committed so preview deployments do not serve the old standalone shell.",
+    "Project-context hydration immediately gives Project Dashboard and Back to Project links the id-specific dashboard URL.",
+    "Project-context hydration unwraps project API responses shaped as project or record objects.",
+    "Journal feedback messages are moved into the GOV.UK content container after the journal header and lead paragraph.",
     "The existing journal tab and panel content is preserved for later GOV.UK content review."
   ],
   "validationAttempted": [
     "Compared branch changes against main.",
-    "Updated route-state tests for the GOV.UK template shell, migrated forms stylesheet contract and macro-rendered breadcrumb contract.",
+    "Updated route-state tests for the GOV.UK template shell, migrated forms stylesheet contract, macro-rendered breadcrumb contract and feedback placement.",
     "Investigated CI failures from older route-state contracts and updated those contracts to match the intended migration."
   ],
   "validationPassed": [
