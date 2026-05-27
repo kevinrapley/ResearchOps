@@ -1,5 +1,5 @@
 /* ResearchOps checked-in GOV.UK Frontend fallback.
- * The build step regenerates this file from src/styles/govuk.scss when dependencies are available.
+ * The build step regenerates this file when dependencies are available.
  * This committed fallback prevents a Sass error page from being served if build output is stale.
  */
 :root{--govuk-brand-colour:#1d70b8;--govuk-text-colour:#0b0c0c;--govuk-secondary-text-colour:#505a5f;--govuk-border-colour:#b1b4b6;--govuk-input-border-colour:#0b0c0c;--govuk-link-colour:#1d70b8;--govuk-link-hover-colour:#003078;--govuk-link-visited-colour:#4c2c92;--govuk-focus-colour:#ffdd00;--govuk-focus-text-colour:#0b0c0c;--govuk-error-colour:#d4351c;--govuk-success-colour:#00703c;--govuk-body-background-colour:#fff;--govuk-template-background-colour:#f4f8fb}
