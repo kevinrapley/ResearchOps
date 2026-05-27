@@ -19,6 +19,8 @@ includes(workflow, "scripts/govuk/normalise-service-pages.mjs", "GOV.UK pages re
 includes(workflow, "public/index.html public/pages", "GOV.UK pages render workflow");
 includes(workflow, "npm run build:govuk-pages", "GOV.UK pages render workflow");
 includes(workflow, "git add public/index.html public/pages", "GOV.UK pages render workflow");
+includes(workflow, "git pull --rebase origin", "GOV.UK pages render workflow");
+includes(workflow, "git push origin \"HEAD:$branch_name\"", "GOV.UK pages render workflow");
 includes(workflow, "Render GOV.UK page templates", "GOV.UK pages render workflow");
 includes(workflow, "github.event.pull_request.head.repo.full_name == github.repository", "GOV.UK pages render workflow");
 
