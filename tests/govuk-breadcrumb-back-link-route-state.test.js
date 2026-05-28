@@ -24,7 +24,7 @@ const breadcrumbPages = [
 	{
 		label: "Journals route",
 		path: "public/pages/projects/journals/index.html",
-		requiredIds: ["back-to-project"],
+		requiredIds: [],
 		currentText: "Journal and analysis"
 	},
 	{
@@ -81,19 +81,16 @@ includes(pageChromeCss, "content: none;", "page chrome stylesheet");
 excludes(pageChromeCss, ".breadcrumbs", "page chrome stylesheet");
 
 includes(projectContextSource, "function hydrateProjectRouteContext", "project context hydrator");
-includes(projectContextSource, "function ensureProjectActionBar", "project context hydrator");
 includes(projectContextSource, "function findProjectBreadcrumb", "project context hydrator");
 includes(projectContextSource, "document.getElementById(\"breadcrumb-project\")", "project context hydrator");
 includes(projectContextSource, ".govuk-breadcrumbs__link[href=\"/pages/project-dashboard/\"]", "project context hydrator");
 includes(projectContextSource, "document.getElementById(\"project-link\")", "project context hydrator");
-includes(projectContextSource, "document.getElementById(\"back-to-project\")", "project context hydrator");
 includes(projectContextSource, "anchor.textContent = project.name || \"Project Dashboard\"", "project context hydrator");
 includes(projectContextSource, "anchor.href = dashboardHref(projectId)", "project context hydrator");
-includes(projectContextSource, "anchor.textContent = \"Back to Project\"", "project context hydrator");
-includes(projectContextSource, "anchor.classList.remove(\"govuk-back-link\")", "project context hydrator");
-includes(projectContextSource, "anchor.classList.add(\"govuk-button\", \"govuk-button--secondary\")", "project context hydrator");
-includes(projectContextSource, "actionsBar.className = \"actions-bar\"", "project context hydrator");
-includes(projectContextSource, "ensureProjectActionBar(parentLink)", "project context hydrator");
+excludes(projectContextSource, "function ensureProjectActionBar", "project context hydrator");
+excludes(projectContextSource, "function setProjectParentLink", "project context hydrator");
+excludes(projectContextSource, "document.getElementById(\"back-to-project\")", "project context hydrator");
+excludes(projectContextSource, "Back to Project", "project context hydrator");
 
 includes(migrationDoc, "# GOV.UK breadcrumb and back-link migration", "breadcrumb migration doc");
 includes(migrationDoc, "Breadcrumbs show hierarchy", "breadcrumb migration doc");
@@ -139,8 +136,8 @@ includes(journalsPage, "rel=\"modulepreload\" href=\"/js/project-context.js\"", 
 includes(journalsPage, "src=\"/js/project-context.js\"", "Journals route");
 includes(journalsPage, "href=\"/pages/project-dashboard/\"", "Journals route");
 includes(journalsPage, "Project Dashboard", "Journals route");
-includes(journalsPage, "id=\"back-to-project\"", "Journals route");
-includes(journalsPage, ">Back to Project</a>", "Journals route");
+excludes(journalsPage, "id=\"back-to-project\"", "Journals route");
+excludes(journalsPage, ">Back to Project</a>", "Journals route");
 
 const guidesPage = fs.readFileSync("public/pages/study/guides/index.html", "utf8");
 includes(guidesPage, "id=\"back-to-study\"", "Guides route");
