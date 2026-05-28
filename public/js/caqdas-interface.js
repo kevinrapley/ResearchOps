@@ -23,6 +23,32 @@ function esc(s) { var d = document.createElement("div");
 
 function when(iso) { return iso ? new Date(iso).toLocaleString() : "—"; }
 
+function flashError(message) {
+	var existing = document.getElementById("flash");
+	if (existing) existing.remove();
+
+	var el = document.createElement("div");
+	el.id = "flash";
+	el.dataset.type = "error";
+	el.setAttribute("role", "alert");
+	el.setAttribute("aria-live", "assertive");
+	el.textContent = String(message || "");
+	document.body.appendChild(el);
+}
+
+function flashStatus(message) {
+	var existing = document.getElementById("flash");
+	if (existing) existing.remove();
+
+	var el = document.createElement("div");
+	el.id = "flash";
+	el.dataset.type = "status";
+	el.setAttribute("role", "status");
+	el.setAttribute("aria-live", "polite");
+	el.textContent = String(message || "");
+	document.body.appendChild(el);
+}
+
 function fetchJSON(url, init) {
 	return fetch(url, init).then(function(res) {
 		return res.text().then(function(txt) {
@@ -136,7 +162,8 @@ function runTimeline(projectId) {
 		wrap.innerHTML = html;
 	}).catch(function(err) {
 		console.error('runTimeline', err);
-		if (wrap) wrap.innerHTML = '<p class="hint">Timeline failed to load.</p>';
+		if (wrap) wrap.innerHTML = '';
+		flashError('Timeline failed to load.');
 	});
 }
 
@@ -172,7 +199,8 @@ function runCooccurrence(projectId) {
 		wrap.innerHTML = html;
 	}).catch(function(err) {
 		console.error('runCooccurrence', err);
-		if (wrap) wrap.innerHTML = '<p class="hint">Co-occurrence failed to load.</p>';
+		if (wrap) wrap.innerHTML = '';
+		flashError('Co-occurrence failed to load.');
 	});
 }
 
@@ -189,7 +217,7 @@ function runRetrieval(projectId) {
 		e.preventDefault();
 		var qEl = document.getElementById("retrieval-q");
 		var term = qEl ? String(qEl.value || "").trim() : "";
-		if (!term) { results.innerHTML = '<p class="hint">Enter a term to search.</p>'; return; }
+		if (!term) { results.innerHTML = ''; flashError('Enter a term to search.'); return; }
 		results.innerHTML = "<p>Searching…</p>";
 
 		var url = apiUrl("/api/analysis/retrieval?project=" + encodeURIComponent(projectId || "") + "&q=" + encodeURIComponent(term));
@@ -210,7 +238,8 @@ function runRetrieval(projectId) {
 				'</ul>';
 			results.innerHTML = html;
 		}).catch(function() {
-			results.innerHTML = '<p class="hint">Search failed.</p>';
+			results.innerHTML = '';
+			flashError('Search failed.');
 		});
 	});
 }
@@ -230,36 +259,9 @@ function runExport(projectId) {
 			links: links
 		};
 		updateJsonPanel(payload, "analysis-" + String(projectId || "unknown") + ".json");
-
-		var el = document.getElementById("flash");
-		if (!el) {
-			el = document.createElement("div");
-			el.id = "flash";
-			el.setAttribute("role", "status");
-			el.setAttribute("aria-live", "polite");
-			el.style.margin = "12px 0";
-			el.style.padding = "12px";
-			el.style.border = "1px solid #d0d7de";
-			el.style.background = "#fff";
-			var main = document.querySelector("main");
-			if (main) main.prepend(el);
-		}
-		el.textContent = "Export ready in JSON panel. Use Download JSON.";
+		flashStatus("Export ready in JSON panel. Use Download JSON.");
 	}).catch(function() {
-		var el = document.getElementById("flash");
-		if (!el) {
-			el = document.createElement("div");
-			el.id = "flash";
-			el.setAttribute("role", "status");
-			el.setAttribute("aria-live", "polite");
-			el.style.margin = "12px 0";
-			el.style.padding = "12px";
-			el.style.border = "1px solid #d0d7de";
-			el.style.background = "#fff";
-			var main = document.querySelector("main");
-			if (main) main.prepend(el);
-		}
-		el.textContent = "Failed to prepare export.";
+		flashError("Failed to prepare export.");
 	});
 }
 
