@@ -2,6 +2,14 @@
 
 This file records repeatable repository-specific lessons for ResearchOps agents and maintainers. It is not a changelog.
 
+## 2026-05-28 — GOV.UK Nunjucks pages require source and rendered HTML parity
+
+Context: During the GOV.UK journals migration, the preview branch, `research-operations.com` and `researchops.pages.dev` served visibly different behaviour. Cache purging did not resolve the difference. The root issue was that the Nunjucks source, committed static HTML and served JavaScript could drift from each other. In one case, `src/govuk/templates/pages/projects-journals.njk` still rendered a linked default journal error while the runtime JavaScript had moved on to targeted field-validation behaviour. In another case, static `public/pages/**/index.html` was not aligned with the expected Nunjucks source.
+
+Learning: For GOV.UK page migrations in this repository, `src/govuk/templates/**/*.njk` and the committed `public/pages/**/index.html` outputs are a deployment pair. A green render workflow is not enough if the rendered artefact did not change when it should have, or if a domain is serving older JavaScript. Deployment divergence must be diagnosed by comparing all three layers: Nunjucks source, committed static HTML and the live-served JS/HTML on each Cloudflare Pages target.
+
+Action: When changing a GOV.UK Nunjucks page, always verify the matching rendered `public/pages/**/index.html` output and route-state tests before merging. If preview, `researchops.pages.dev` and a custom domain differ, inspect the live page HTML and key JS files from each target before assuming cache. Treat Cloudflare cache purge as a last-mile check, not the primary explanation. If the rendered page does not match source, fix the source/static artefact pair and redeploy all targets from the same commit.
+
 ## 2026-05-19 — GitHub tooling must use surgical mutation paths for small edits
 
 Context: A role-assignment fix was delayed because the agent repeatedly tried to use full-file `update_file` operations for a small JavaScript change. A later low-level Git object attempt created a partial tree and opened a pull request with a repository-wide deletion diff before the work was recovered through a clean branch.
