@@ -152,7 +152,9 @@ function setHidden(element, hidden) {
 
 function showJournalError(message) {
 	const errorSummary = document.getElementById("journal-error-summary");
-	const errorLink = errorSummary?.querySelector(".govuk-error-summary__list a");
+	const errorLink =
+		errorSummary?.querySelector(".govuk-error-summary__list a") ||
+		errorSummary?.querySelector(".govuk-error-summary__list li");
 	if (!errorSummary || !errorLink) return false;
 
 	errorLink.textContent = message;
