@@ -1,6 +1,6 @@
 /**
  * @file /js/project-context.js
- * @summary Hydrates project route breadcrumbs, parent links and page feedback placement from the ?id= project context.
+ * @summary Hydrates project route breadcrumbs, parent links and journal page feedback from the ?id= project context.
  */
 
 const API_ORIGIN = resolveApiBase();
@@ -132,33 +132,69 @@ function setProjectParentLink(anchor, project) {
 	ensureProjectActionBar(anchor);
 }
 
-function findFeedbackAnchor() {
-	return document.querySelector(".journal-header") || document.querySelector("#main-content .govuk-width-container");
+function feedbackMessageFrom(flash) {
+	return String(flash?.textContent || "").trim();
 }
 
-function normaliseFlashElement(flash) {
-	if (!flash) return;
-	flash.classList.add("govuk-notification-banner", "govuk-!-margin-bottom-6");
-	flash.removeAttribute("style");
-	flash.setAttribute("role", flash.getAttribute("role") || "status");
-	flash.setAttribute("aria-live", flash.getAttribute("aria-live") || "polite");
+function isErrorFlash(flash) {
+	const text = feedbackMessageFrom(flash).toLowerCase();
+	return flash?.dataset?.type === "error" || flash?.classList.contains("error") || text.startsWith("could not") || text.includes("failed");
 }
 
-function placeFlashElement(flash) {
-	if (!flash) return;
-	const anchor = findFeedbackAnchor();
-	if (!anchor || anchor.nextElementSibling === flash) return;
-	normaliseFlashElement(flash);
-	anchor.insertAdjacentElement("afterend", flash);
+function setHidden(element, hidden) {
+	if (!element) return;
+	if (hidden) {
+		element.setAttribute("hidden", "hidden");
+	} else {
+		element.removeAttribute("hidden");
+	}
+}
+
+function showJournalError(message, targetId = "") {
+	const errorSummary = document.getElementById("journal-error-summary");
+	const errorItem = errorSummary?.querySelector(".govuk-error-summary__list li");
+	if (!errorSummary || !errorItem) return false;
+
+	errorItem.textContent = "";
+	if (targetId) {
+		const link = document.createElement("a");
+		link.href = `#${targetId}`;
+		link.textContent = message;
+		errorItem.appendChild(link);
+	} else {
+		errorItem.textContent = message;
+	}
+	setHidden(errorSummary, false);
+	setHidden(document.getElementById("journal-notification-banner"), true);
+	return true;
+}
+
+function showJournalNotification(message) {
+	const notification = document.getElementById("journal-notification-banner");
+	const notificationMessage = document.getElementById("journal-notification-message");
+	if (!notification || !notificationMessage) return false;
+
+	notificationMessage.textContent = message;
+	setHidden(notification, false);
+	setHidden(document.getElementById("journal-error-summary"), true);
+	return true;
+}
+
+function handleFlashElement(flash) {
+	const message = feedbackMessageFrom(flash);
+	if (!message) return;
+
+	const displayed = isErrorFlash(flash) ? showJournalError(message, flash?.dataset?.target || "") : showJournalNotification(message);
+	if (displayed) flash.remove();
 }
 
 function observeJournalFeedbackPlacement() {
-	placeFlashElement(document.getElementById("flash"));
+	handleFlashElement(document.getElementById("flash"));
 
 	const observer = new MutationObserver((mutations) => {
 		for (const mutation of mutations) {
 			for (const node of mutation.addedNodes) {
-				if (node instanceof HTMLElement && node.id === "flash") placeFlashElement(node);
+				if (node instanceof HTMLElement && node.id === "flash") handleFlashElement(node);
 			}
 		}
 	});

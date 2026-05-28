@@ -1,0 +1,73 @@
+{
+  "traceLayer": "operational",
+  "date": "2026-05-28",
+  "repository": "kevinrapley/ResearchOps",
+  "branch": "fix/journals-tabs-feedback-macros-clean",
+  "pullRequest": 293,
+  "traceRequired": true,
+  "taskSummary": "Update the journals page to use GOV.UK Nunjucks macros for tabs and feedback, and remove the Back to Project button from the journals page.",
+  "operatingModelFilesLoaded": [
+    "AGENTS.md",
+    ".agent-operating-model/orchestration.xml",
+    ".agent-operating-model/bundle-registry.json",
+    ".agent-operating-model/github-mutation-policy.md"
+  ],
+  "bundlesSelected": [
+    ".agent-operating-model/bundles/github/",
+    ".agent-operating-model/bundles/researchops-developer-control/",
+    ".agent-operating-model/bundles/multi-functional-team/",
+    ".agent-operating-model/bundles/govuk-design-system/"
+  ],
+  "filesRead": [
+    "src/govuk/templates/pages/projects-journals.njk",
+    "public/pages/projects/journals/index.html",
+    "public/js/project-context.js",
+    "public/js/journal-tabs.js",
+    "tests/journals-route-state.test.js",
+    "tests/govuk-breadcrumb-back-link-route-state.test.js"
+  ],
+  "filesModified": [
+    "src/govuk/templates/pages/projects-journals.njk",
+    "public/pages/projects/journals/index.html",
+    "public/js/project-context.js",
+    "tests/journals-route-state.test.js",
+    "tests/govuk-breadcrumb-back-link-route-state.test.js",
+    "docs/agent-audit/reasoning/2026/05/28/journals-tabs-feedback-macros.md",
+    "docs/agent-audit/reasoning/2026/05/28/journals-tabs-feedback-macros.json"
+  ],
+  "filesCreated": [
+    "docs/agent-audit/reasoning/2026/05/28/journals-tabs-feedback-macros.md",
+    "docs/agent-audit/reasoning/2026/05/28/journals-tabs-feedback-macros.json"
+  ],
+  "implementationDecisions": [
+    "Replaced hand-authored journal tabs with the GOV.UK govukTabs macro.",
+    "Removed the Back to Project button from the journals template and rendered page only.",
+    "Kept shared project-context parent-link helpers for other routes that still use Back to Project.",
+    "Added macro-rendered feedback targets using govukErrorSummary for error messages.",
+    "Added macro-rendered feedback targets using govukNotificationBanner for non-error messages in the same location.",
+    "Added an href to the error-summary item so the rendered error summary contains the link used by the runtime feedback handler.",
+    "Routed runtime flash messages into the macro-rendered feedback targets.",
+    "Committed the rendered static journals HTML so preview deployments and route-state tests match the Nunjucks source."
+  ],
+  "validationAttempted": [
+    "Opened PR #293 from fix/journals-tabs-feedback-macros-clean to main.",
+    "Let the Render GOV.UK pages workflow run.",
+    "Investigated CI failure and added the missing error-summary macro href.",
+    "Restored shared parent-link hydration after confirming it is still required by other routes.",
+    "Reduced brittle journals route-state assertions while keeping the macro, feedback and removed journals back-link contracts."
+  ],
+  "validationPassed": [
+    "Render GOV.UK pages",
+    "Format pull request",
+    "CI",
+    "qa-bdd",
+    "Accessibility audit (pa11y-ci)",
+    "QA — Broken links (Lychee)",
+    "Validate ResearchOps",
+    "Release Gate",
+    "Worker CI"
+  ],
+  "residualRisks": [
+    "The main journals content remains structurally close to the existing implementation. This PR only migrates tabs, feedback presentation and removes the journals back-link."
+  ]
+}
