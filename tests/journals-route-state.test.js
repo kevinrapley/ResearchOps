@@ -88,9 +88,9 @@ includes(projectContextSource, "journal-error-summary", "project context module"
 includes(projectContextSource, "journal-notification-banner", "project context module");
 includes(projectContextSource, "setProjectRouteFallback(projectId)", "project context module");
 includes(projectContextSource, "setProjectAnchor(findProjectBreadcrumb(), project)", "project context module");
-excludes(projectContextSource, "ensureProjectActionBar", "project context module");
-excludes(projectContextSource, "setProjectParentLink", "project context module");
-excludes(projectContextSource, "document.getElementById(\"back-to-project\")", "project context module");
+includes(projectContextSource, "function ensureProjectActionBar", "project context module");
+includes(projectContextSource, "function setProjectParentLink", "project context module");
+includes(projectContextSource, "document.getElementById(\"back-to-project\")", "project context module");
 includes(tabsSource, "tab:shown", "journal tabs module");
 includes(muralSyncSource, "mural", "journal mural sync module");
 includes(excerptsSource, "function renderEntries", "journal excerpts module");
