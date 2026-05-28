@@ -87,10 +87,10 @@ includes(projectContextSource, ".govuk-breadcrumbs__link[href=\"/pages/project-d
 includes(projectContextSource, "document.getElementById(\"project-link\")", "project context hydrator");
 includes(projectContextSource, "anchor.textContent = project.name || \"Project Dashboard\"", "project context hydrator");
 includes(projectContextSource, "anchor.href = dashboardHref(projectId)", "project context hydrator");
-excludes(projectContextSource, "function ensureProjectActionBar", "project context hydrator");
-excludes(projectContextSource, "function setProjectParentLink", "project context hydrator");
-excludes(projectContextSource, "document.getElementById(\"back-to-project\")", "project context hydrator");
-excludes(projectContextSource, "Back to Project", "project context hydrator");
+includes(projectContextSource, "function ensureProjectActionBar", "project context hydrator");
+includes(projectContextSource, "function setProjectParentLink", "project context hydrator");
+includes(projectContextSource, "document.getElementById(\"back-to-project\")", "project context hydrator");
+includes(projectContextSource, "Back to Project", "project context hydrator");
 
 includes(migrationDoc, "# GOV.UK breadcrumb and back-link migration", "breadcrumb migration doc");
 includes(migrationDoc, "Breadcrumbs show hierarchy", "breadcrumb migration doc");
