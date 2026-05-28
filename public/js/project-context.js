@@ -1,6 +1,6 @@
 /**
  * @file /js/project-context.js
- * @summary Hydrates project route breadcrumbs, parent links and page feedback placement from the ?id= project context.
+ * @summary Hydrates project route breadcrumbs and journal page feedback from the ?id= project context.
  */
 
 const API_ORIGIN = resolveApiBase();
@@ -97,68 +97,69 @@ function findProjectBreadcrumb() {
 	);
 }
 
-function ensureProjectActionBar(anchor) {
-	if (!anchor) return;
-
-	anchor.classList.remove("govuk-back-link");
-	anchor.classList.add("govuk-button", "govuk-button--secondary");
-
-	if (anchor.parentElement?.classList.contains("actions-bar")) return;
-
-	const actionsBar = document.createElement("div");
-	actionsBar.className = "actions-bar";
-	anchor.parentNode.insertBefore(actionsBar, anchor);
-	actionsBar.appendChild(anchor);
-}
-
 function setProjectRouteFallback(projectId) {
-	const href = dashboardHref(projectId);
 	const breadcrumb = findProjectBreadcrumb();
-	if (breadcrumb) breadcrumb.href = href;
+	if (breadcrumb) breadcrumb.href = dashboardHref(projectId);
 
 	const legacyProjectLink = document.getElementById("project-link");
-	if (legacyProjectLink) legacyProjectLink.href = href;
-
-	const parentLink = document.getElementById("back-to-project");
-	if (parentLink) parentLink.href = href;
+	if (legacyProjectLink) legacyProjectLink.href = dashboardHref(projectId);
 }
 
-function setProjectParentLink(anchor, project) {
-	if (!anchor || !project) return;
-	const projectId = project.id || project.localId || project.airtableId;
-
-	anchor.textContent = "Back to Project";
-	anchor.href = dashboardHref(projectId);
-	ensureProjectActionBar(anchor);
+function feedbackMessageFrom(flash) {
+	return String(flash?.textContent || "").trim();
 }
 
-function findFeedbackAnchor() {
-	return document.querySelector(".journal-header") || document.querySelector("#main-content .govuk-width-container");
+function isErrorFlash(flash) {
+	const text = feedbackMessageFrom(flash).toLowerCase();
+	return flash?.dataset?.type === "error" || flash?.classList.contains("error") || text.startsWith("could not") || text.includes("failed");
 }
 
-function normaliseFlashElement(flash) {
-	if (!flash) return;
-	flash.classList.add("govuk-notification-banner", "govuk-!-margin-bottom-6");
-	flash.removeAttribute("style");
-	flash.setAttribute("role", flash.getAttribute("role") || "status");
-	flash.setAttribute("aria-live", flash.getAttribute("aria-live") || "polite");
+function setHidden(element, hidden) {
+	if (!element) return;
+	if (hidden) {
+		element.setAttribute("hidden", "hidden");
+	} else {
+		element.removeAttribute("hidden");
+	}
 }
 
-function placeFlashElement(flash) {
-	if (!flash) return;
-	const anchor = findFeedbackAnchor();
-	if (!anchor || anchor.nextElementSibling === flash) return;
-	normaliseFlashElement(flash);
-	anchor.insertAdjacentElement("afterend", flash);
+function showJournalError(message) {
+	const errorSummary = document.getElementById("journal-error-summary");
+	const errorLink = errorSummary?.querySelector(".govuk-error-summary__list a");
+	if (!errorSummary || !errorLink) return false;
+
+	errorLink.textContent = message;
+	setHidden(errorSummary, false);
+	setHidden(document.getElementById("journal-notification-banner"), true);
+	return true;
+}
+
+function showJournalNotification(message) {
+	const notification = document.getElementById("journal-notification-banner");
+	const notificationMessage = document.getElementById("journal-notification-message");
+	if (!notification || !notificationMessage) return false;
+
+	notificationMessage.textContent = message;
+	setHidden(notification, false);
+	setHidden(document.getElementById("journal-error-summary"), true);
+	return true;
+}
+
+function handleFlashElement(flash) {
+	const message = feedbackMessageFrom(flash);
+	if (!message) return;
+
+	const displayed = isErrorFlash(flash) ? showJournalError(message) : showJournalNotification(message);
+	if (displayed) flash.remove();
 }
 
 function observeJournalFeedbackPlacement() {
-	placeFlashElement(document.getElementById("flash"));
+	handleFlashElement(document.getElementById("flash"));
 
 	const observer = new MutationObserver((mutations) => {
 		for (const mutation of mutations) {
 			for (const node of mutation.addedNodes) {
-				if (node instanceof HTMLElement && node.id === "flash") placeFlashElement(node);
+				if (node instanceof HTMLElement && node.id === "flash") handleFlashElement(node);
 			}
 		}
 	});
@@ -166,9 +167,6 @@ function observeJournalFeedbackPlacement() {
 }
 
 async function hydrateProjectRouteContext() {
-	const parentLink = document.getElementById("back-to-project");
-	ensureProjectActionBar(parentLink);
-
 	const params = new URLSearchParams(window.location.search);
 	const projectId = params.get("id");
 	if (!projectId) return;
@@ -179,7 +177,6 @@ async function hydrateProjectRouteContext() {
 
 	setProjectAnchor(findProjectBreadcrumb(), project);
 	setProjectAnchor(document.getElementById("project-link"), project);
-	setProjectParentLink(parentLink, project);
 
 	const main = document.querySelector("main");
 	if (main) {
