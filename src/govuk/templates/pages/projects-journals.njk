@@ -1,6 +1,147 @@
 {% extends "layouts/researchops.njk" %}
 {% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
-{% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
+{% from "govuk/components/notification-banner/macro.njk" import govukNotificationBanner %}
+{% from "govuk/components/tabs/macro.njk" import govukTabs %}
+
+{% set journalEntriesHtml %}
+	<div id="journal-entries-panel">
+		<div class="journal-entries-header">
+			<div class="journal-entries-header__primary">
+				<h3 class="govuk-heading-m">Journal entries</h3>
+				<button type="button" class="govuk-button" data-module="govuk-button" id="new-entry-btn">Add journal entry</button>
+			</div>
+
+			<div class="mural-sync-status" id="mural-sync-status" aria-labelledby="mural-sync-title">
+				<span class="mural-sync-status__label" id="mural-sync-title">Reflexive Journal Mural</span>
+				<span class="mural-sync-status__message" id="mural-sync-message" role="status" aria-live="polite">Checking sync status</span>
+				<button type="button" class="govuk-button govuk-button--secondary mural-sync-status__action" id="mural-sync-pending-btn" hidden disabled>
+					Add pending entries to Mural
+				</button>
+			</div>
+		</div>
+
+		<section id="mural-sync-panel" hidden aria-hidden="true"></section>
+
+		<div id="entry-form" hidden>
+			<form id="add-entry-form" novalidate>
+				<div class="govuk-form-group">
+					<label class="govuk-label govuk-label--s" for="entry-category">Category</label>
+					<select class="govuk-select" id="entry-category" name="category" required>
+						<option value="perceptions">Evolving perceptions</option>
+						<option value="procedures">Day-to-day procedures</option>
+						<option value="decisions">Methodological decision points</option>
+						<option value="introspections">Personal introspections</option>
+					</select>
+				</div>
+
+				<div class="govuk-form-group">
+					<label class="govuk-label govuk-label--s" for="entry-content">Entry</label>
+					<div id="content-hint" class="govuk-hint">Write freely; this is a private space for research reflection</div>
+					<textarea class="govuk-textarea" id="entry-content" name="content" rows="8" required aria-describedby="content-hint"></textarea>
+				</div>
+
+				<div class="govuk-form-group">
+					<label class="govuk-label govuk-label--s" for="entry-tags">Tags (optional)</label>
+					<div id="tags-hint" class="govuk-hint">Comma-separated keywords for easier retrieval</div>
+					<input class="govuk-input" type="text" id="entry-tags" name="tags" aria-describedby="tags-hint">
+				</div>
+
+				<div class="govuk-button-group">
+					<button type="submit" class="govuk-button" data-module="govuk-button">Save entry</button>
+					<button type="button" class="govuk-button govuk-button--secondary" data-module="govuk-button" id="cancel-form-btn">Cancel</button>
+				</div>
+			</form>
+		</div>
+
+		<div class="journal-filters" role="group" aria-label="Filter entries by category">
+			<h4 class="govuk-heading-s">Filter by category</h4>
+			<div class="filter-chips">
+				<button type="button" class="filter-chip filter-chip--active" data-filter="all">All entries</button>
+				<button type="button" class="filter-chip" data-filter="perceptions">Perceptions</button>
+				<button type="button" class="filter-chip" data-filter="procedures">Procedures</button>
+				<button type="button" class="filter-chip" data-filter="decisions">Decisions</button>
+				<button type="button" class="filter-chip" data-filter="introspections">Introspections</button>
+			</div>
+		</div>
+
+		<div id="entries-container">
+			<div class="empty-state" id="empty-journal" hidden>
+				<p class="govuk-body">No entries match the current filter.</p>
+			</div>
+		</div>
+	</div>
+{% endset %}
+
+{% set codesHtml %}
+	<h3 class="govuk-heading-m">Codebook management</h3>
+	<div id="codes-panel">
+		<button type="button" class="govuk-button" data-module="govuk-button" id="new-code-btn">Add code</button>
+		<div id="codes-container"></div>
+	</div>
+{% endset %}
+
+{% set memosHtml %}
+	<h3 class="govuk-heading-m">Research memos</h3>
+	<div id="memos-panel">
+		<button type="button" class="govuk-button" data-module="govuk-button" id="new-memo-btn">Add memo</button>
+
+		<div class="memo-filters govuk-!-margin-top-4">
+			<h4 class="govuk-heading-s">Filter by memo type</h4>
+			<div class="filter-chips">
+				<button type="button" class="filter-chip filter-chip--active" data-memo-filter="all">All</button>
+				<button type="button" class="filter-chip" data-memo-filter="analytical">Analytical</button>
+				<button type="button" class="filter-chip" data-memo-filter="methodological">Methodological</button>
+				<button type="button" class="filter-chip" data-memo-filter="theoretical">Theoretical</button>
+				<button type="button" class="filter-chip" data-memo-filter="reflexive">Reflexive</button>
+			</div>
+		</div>
+
+		<div id="memos-container" class="govuk-!-margin-top-6"></div>
+	</div>
+{% endset %}
+
+{% set analysisHtml %}
+	<h3 class="govuk-heading-m">Analysis tools</h3>
+	<div id="analysis-panel">
+		<div class="govuk-button-group">
+			<button type="button" class="govuk-button" data-analysis="timeline">Timeline view</button>
+			<button type="button" class="govuk-button govuk-button--secondary" data-analysis="co-occurrence">Code co-occurrence</button>
+			<button type="button" class="govuk-button govuk-button--secondary" data-analysis="retrieval">Code retrieval</button>
+			<button type="button" class="govuk-button govuk-button--secondary" data-analysis="export">Export analysis</button>
+		</div>
+
+		<div id="analysis-container" class="govuk-!-margin-top-6" data-role="analysis-container">
+			<section id="analysis-timeline" class="govuk-!-margin-bottom-6" aria-live="polite"></section>
+			<section id="analysis-cooccurrence" class="govuk-!-margin-bottom-6" aria-live="polite"></section>
+
+			<section id="analysis-retrieval" class="govuk-!-margin-bottom-6" aria-live="polite">
+				<form id="retrieval-form" novalidate>
+					<div class="govuk-form-group">
+						<label class="govuk-label" for="retrieval-q">Search term</label>
+						<div class="govuk-hint" id="retrieval-q-hint">Searches code names and journal text.</div>
+						<input class="govuk-input" id="retrieval-q" name="q" type="text" spellcheck="true" autocomplete="off" aria-describedby="retrieval-q-hint">
+					</div>
+					<button class="govuk-button govuk-!-margin-top-2" type="submit" data-module="govuk-button">Run search</button>
+				</form>
+				<div id="retrieval-results" class="govuk-!-margin-top-3"></div>
+			</section>
+
+			<details class="govuk-details govuk-!-margin-top-4" data-module="govuk-details" id="json-viewer">
+				<summary class="govuk-details__summary">
+					<span class="govuk-details__summary-text">View raw JSON</span>
+				</summary>
+				<div class="govuk-details__text">
+					<div class="govuk-button-group">
+						<button type="button" class="govuk-button govuk-button--secondary" id="json-copy">Copy JSON</button>
+						<button type="button" class="govuk-button govuk-button--secondary" id="json-download">Download JSON</button>
+					</div>
+					<pre class="app-codeblock" tabindex="0" aria-label="Raw JSON"><code id="json-code"></code></pre>
+				</div>
+			</details>
+		</div>
+	</div>
+{% endset %}
 
 {% block head %}
 	<meta name="project:name" content="">
@@ -33,8 +174,6 @@
 		]
 	}) }}
 
-	<a id="back-to-project" class="govuk-back-link" href="/pages/projects/">Back to Project</a>
-
 	<header class="journal-header">
 		<div>
 			<h1 class="govuk-heading-xl">Reflexive Journal &amp; Analysis</h1>
@@ -42,164 +181,65 @@
 		</div>
 	</header>
 
+	<div id="journal-feedback" class="govuk-!-margin-bottom-6">
+		{{ govukErrorSummary({
+			titleText: 'There is a problem',
+			errorList: [
+				{
+					text: 'Could not refresh journal entries.'
+				}
+			],
+			classes: 'journal-feedback__error',
+			attributes: {
+				id: 'journal-error-summary',
+				hidden: 'hidden'
+			}
+		}) }}
+		{{ govukNotificationBanner({
+			titleText: 'Information',
+			html: '<p class="govuk-notification-banner__heading" id="journal-notification-message">Journal status will appear here.</p>',
+			classes: 'journal-feedback__notification',
+			attributes: {
+				id: 'journal-notification-banner',
+				hidden: 'hidden'
+			}
+		}) }}
+	</div>
+
 	<div id="content">
-		<div class="govuk-tabs" data-module="govuk-tabs" id="journals-tabs">
-			<h2 class="govuk-tabs__title">Contents</h2>
-
-			<ul class="govuk-tabs__list">
-				<li class="govuk-tabs__list-item govuk-tabs__list-item--selected">
-					<a class="govuk-tabs__tab" href="#journal-entries">Journal entries</a>
-				</li>
-				<li class="govuk-tabs__list-item">
-					<a class="govuk-tabs__tab" href="#codes">Codes</a>
-				</li>
-				<li class="govuk-tabs__list-item">
-					<a class="govuk-tabs__tab" href="#memos">Memos</a>
-				</li>
-				<li class="govuk-tabs__list-item">
-					<a class="govuk-tabs__tab" href="#analysis">Analysis</a>
-				</li>
-			</ul>
-
-			<div class="govuk-tabs__panel govuk-tabs__panel--hidden" id="journal-entries">
-				<div id="journal-entries-panel">
-					<div class="journal-entries-header">
-						<div class="journal-entries-header__primary">
-							<h3 class="govuk-heading-m">Journal entries</h3>
-							<button type="button" class="govuk-button" data-module="govuk-button" id="new-entry-btn">Add journal entry</button>
-						</div>
-
-						<div class="mural-sync-status" id="mural-sync-status" aria-labelledby="mural-sync-title">
-							<span class="mural-sync-status__label" id="mural-sync-title">Reflexive Journal Mural</span>
-							<span class="mural-sync-status__message" id="mural-sync-message" role="status" aria-live="polite">Checking sync status</span>
-							<button type="button" class="govuk-button govuk-button--secondary mural-sync-status__action" id="mural-sync-pending-btn" hidden disabled>
-								Add pending entries to Mural
-							</button>
-						</div>
-					</div>
-
-					<section id="mural-sync-panel" hidden aria-hidden="true"></section>
-
-					<div id="entry-form" hidden>
-						<form id="add-entry-form" novalidate>
-							<div class="govuk-form-group">
-								<label class="govuk-label govuk-label--s" for="entry-category">Category</label>
-								<select class="govuk-select" id="entry-category" name="category" required>
-									<option value="perceptions">Evolving perceptions</option>
-									<option value="procedures">Day-to-day procedures</option>
-									<option value="decisions">Methodological decision points</option>
-									<option value="introspections">Personal introspections</option>
-								</select>
-							</div>
-
-							<div class="govuk-form-group">
-								<label class="govuk-label govuk-label--s" for="entry-content">Entry</label>
-								<div id="content-hint" class="govuk-hint">Write freely; this is a private space for research reflection</div>
-								<textarea class="govuk-textarea" id="entry-content" name="content" rows="8" required aria-describedby="content-hint"></textarea>
-							</div>
-
-							<div class="govuk-form-group">
-								<label class="govuk-label govuk-label--s" for="entry-tags">Tags (optional)</label>
-								<div id="tags-hint" class="govuk-hint">Comma-separated keywords for easier retrieval</div>
-								<input class="govuk-input" type="text" id="entry-tags" name="tags" aria-describedby="tags-hint">
-							</div>
-
-							<div class="govuk-button-group">
-								<button type="submit" class="govuk-button" data-module="govuk-button">Save entry</button>
-								<button type="button" class="govuk-button govuk-button--secondary" data-module="govuk-button" id="cancel-form-btn">Cancel</button>
-							</div>
-						</form>
-					</div>
-
-					<div class="journal-filters" role="group" aria-label="Filter entries by category">
-						<h4 class="govuk-heading-s">Filter by category</h4>
-						<div class="filter-chips">
-							<button type="button" class="filter-chip filter-chip--active" data-filter="all">All entries</button>
-							<button type="button" class="filter-chip" data-filter="perceptions">Perceptions</button>
-							<button type="button" class="filter-chip" data-filter="procedures">Procedures</button>
-							<button type="button" class="filter-chip" data-filter="decisions">Decisions</button>
-							<button type="button" class="filter-chip" data-filter="introspections">Introspections</button>
-						</div>
-					</div>
-
-					<div id="entries-container">
-						<div class="empty-state" id="empty-journal" hidden>
-							<p class="govuk-body">No entries match the current filter.</p>
-						</div>
-					</div>
-				</div>
-			</div>
-
-			<div class="govuk-tabs__panel govuk-tabs__panel--hidden" id="codes">
-				<h3 class="govuk-heading-m">Codebook management</h3>
-				<div id="codes-panel">
-					<button type="button" class="govuk-button" data-module="govuk-button" id="new-code-btn">Add code</button>
-					<div id="codes-container"></div>
-				</div>
-			</div>
-
-			<div class="govuk-tabs__panel govuk-tabs__panel--hidden" id="memos">
-				<h3 class="govuk-heading-m">Research memos</h3>
-				<div id="memos-panel">
-					<button type="button" class="govuk-button" data-module="govuk-button" id="new-memo-btn">Add memo</button>
-
-					<div class="memo-filters govuk-!-margin-top-4">
-						<h4 class="govuk-heading-s">Filter by memo type</h4>
-						<div class="filter-chips">
-							<button type="button" class="filter-chip filter-chip--active" data-memo-filter="all">All</button>
-							<button type="button" class="filter-chip" data-memo-filter="analytical">Analytical</button>
-							<button type="button" class="filter-chip" data-memo-filter="methodological">Methodological</button>
-							<button type="button" class="filter-chip" data-memo-filter="theoretical">Theoretical</button>
-							<button type="button" class="filter-chip" data-memo-filter="reflexive">Reflexive</button>
-						</div>
-					</div>
-
-					<div id="memos-container" class="govuk-!-margin-top-6"></div>
-				</div>
-			</div>
-
-			<div class="govuk-tabs__panel govuk-tabs__panel--hidden" id="analysis">
-				<h3 class="govuk-heading-m">Analysis tools</h3>
-				<div id="analysis-panel">
-					<div class="govuk-button-group">
-						<button type="button" class="govuk-button" data-analysis="timeline">Timeline view</button>
-						<button type="button" class="govuk-button govuk-button--secondary" data-analysis="co-occurrence">Code co-occurrence</button>
-						<button type="button" class="govuk-button govuk-button--secondary" data-analysis="retrieval">Code retrieval</button>
-						<button type="button" class="govuk-button govuk-button--secondary" data-analysis="export">Export analysis</button>
-					</div>
-
-					<div id="analysis-container" class="govuk-!-margin-top-6" data-role="analysis-container">
-						<section id="analysis-timeline" class="govuk-!-margin-bottom-6" aria-live="polite"></section>
-						<section id="analysis-cooccurrence" class="govuk-!-margin-bottom-6" aria-live="polite"></section>
-
-						<section id="analysis-retrieval" class="govuk-!-margin-bottom-6" aria-live="polite">
-							<form id="retrieval-form" novalidate>
-								<div class="govuk-form-group">
-									<label class="govuk-label" for="retrieval-q">Search term</label>
-									<div class="govuk-hint" id="retrieval-q-hint">Searches code names and journal text.</div>
-									<input class="govuk-input" id="retrieval-q" name="q" type="text" spellcheck="true" autocomplete="off" aria-describedby="retrieval-q-hint">
-								</div>
-								<button class="govuk-button govuk-!-margin-top-2" type="submit" data-module="govuk-button">Run search</button>
-							</form>
-							<div id="retrieval-results" class="govuk-!-margin-top-3"></div>
-						</section>
-
-						<details class="govuk-details govuk-!-margin-top-4" data-module="govuk-details" id="json-viewer">
-							<summary class="govuk-details__summary">
-								<span class="govuk-details__summary-text">View raw JSON</span>
-							</summary>
-							<div class="govuk-details__text">
-								<div class="govuk-button-group">
-									<button type="button" class="govuk-button govuk-button--secondary" id="json-copy">Copy JSON</button>
-									<button type="button" class="govuk-button govuk-button--secondary" id="json-download">Download JSON</button>
-								</div>
-								<pre class="app-codeblock" tabindex="0" aria-label="Raw JSON"><code id="json-code"></code></pre>
-							</div>
-						</details>
-					</div>
-				</div>
-			</div>
-		</div>
+		{{ govukTabs({
+			id: 'journals-tabs',
+			items: [
+				{
+					label: 'Journal entries',
+					id: 'journal-entries',
+					panel: {
+						html: journalEntriesHtml
+					}
+				},
+				{
+					label: 'Codes',
+					id: 'codes',
+					panel: {
+						html: codesHtml
+					}
+				},
+				{
+					label: 'Memos',
+					id: 'memos',
+					panel: {
+						html: memosHtml
+					}
+				},
+				{
+					label: 'Analysis',
+					id: 'analysis',
+					panel: {
+						html: analysisHtml
+					}
+				}
+			]
+		}) }}
 	</div>
 
 	<aside id="coding-panel" class="coding-panel" hidden aria-label="Apply codes">
