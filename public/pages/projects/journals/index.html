@@ -9,7 +9,6 @@
 	<meta name="sda-auto" content="true">
 	<link rel="stylesheet" href="/css/tabs.css" media="screen">
 	<link rel="stylesheet" href="/css/coloris.min.css" media="screen">
-	<!--<link rel="stylesheet" href="/css/journals.css?v=1.0.1" media="screen">-->
 	<link rel="stylesheet" href="/css/journal-mural-sync.css" media="screen">
 	<link rel="modulepreload" href="/js/project-context.js">
 	<link rel="modulepreload" href="/js/journal-tabs.js">
@@ -25,17 +24,11 @@
 		<div class="govuk-width-container">
 			<div class="govuk-breadcrumbs" aria-label="Breadcrumb">
 				<ol class="govuk-breadcrumbs__list">
-					<li class="govuk-breadcrumbs__list-item">
-						<a class="govuk-breadcrumbs__link" href="/pages/projects/">Projects</a>
-					</li>
-					<li class="govuk-breadcrumbs__list-item">
-						<a class="govuk-breadcrumbs__link" href="/pages/project-dashboard/">Project Dashboard</a>
-					</li>
+					<li class="govuk-breadcrumbs__list-item"><a class="govuk-breadcrumbs__link" href="/pages/projects/">Projects</a></li>
+					<li class="govuk-breadcrumbs__list-item"><a class="govuk-breadcrumbs__link" href="/pages/project-dashboard/">Project Dashboard</a></li>
 					<li class="govuk-breadcrumbs__list-item" aria-current="page">Journal and analysis</li>
 				</ol>
 			</div>
-
-			<a id="back-to-project" class="govuk-back-link" href="/pages/projects/">Back to Project</a>
 
 			<header class="journal-header">
 				<div>
@@ -44,44 +37,49 @@
 				</div>
 			</header>
 
+			<div id="journal-feedback" class="govuk-!-margin-bottom-6">
+				<div class="govuk-error-summary journal-feedback__error" id="journal-error-summary" aria-labelledby="journal-error-summary-title" role="alert" tabindex="-1" data-module="govuk-error-summary" hidden>
+					<h2 class="govuk-error-summary__title" id="journal-error-summary-title">There is a problem</h2>
+					<div class="govuk-error-summary__body">
+						<ul class="govuk-list govuk-error-summary__list">
+							<li><a href="#content">Could not refresh journal entries.</a></li>
+						</ul>
+					</div>
+				</div>
+				<div class="govuk-notification-banner journal-feedback__notification" id="journal-notification-banner" role="region" aria-labelledby="journal-notification-banner-title" data-module="govuk-notification-banner" hidden>
+					<div class="govuk-notification-banner__header">
+						<h2 class="govuk-notification-banner__title" id="journal-notification-banner-title">Information</h2>
+					</div>
+					<div class="govuk-notification-banner__content">
+						<p class="govuk-notification-banner__heading" id="journal-notification-message">Journal status will appear here.</p>
+					</div>
+				</div>
+			</div>
+
 			<div id="content">
 				<div class="govuk-tabs" data-module="govuk-tabs" id="journals-tabs">
 					<h2 class="govuk-tabs__title">Contents</h2>
-
 					<ul class="govuk-tabs__list">
-						<li class="govuk-tabs__list-item govuk-tabs__list-item--selected">
-							<a class="govuk-tabs__tab" href="#journal-entries">Journal entries</a>
-						</li>
-						<li class="govuk-tabs__list-item">
-							<a class="govuk-tabs__tab" href="#codes">Codes</a>
-						</li>
-						<li class="govuk-tabs__list-item">
-							<a class="govuk-tabs__tab" href="#memos">Memos</a>
-						</li>
-						<li class="govuk-tabs__list-item">
-							<a class="govuk-tabs__tab" href="#analysis">Analysis</a>
-						</li>
+						<li class="govuk-tabs__list-item govuk-tabs__list-item--selected"><a class="govuk-tabs__tab" href="#journal-entries">Journal entries</a></li>
+						<li class="govuk-tabs__list-item"><a class="govuk-tabs__tab" href="#codes">Codes</a></li>
+						<li class="govuk-tabs__list-item"><a class="govuk-tabs__tab" href="#memos">Memos</a></li>
+						<li class="govuk-tabs__list-item"><a class="govuk-tabs__tab" href="#analysis">Analysis</a></li>
 					</ul>
 
-					<div class="govuk-tabs__panel govuk-tabs__panel--hidden" id="journal-entries">
+					<div class="govuk-tabs__panel" id="journal-entries">
 						<div id="journal-entries-panel">
 							<div class="journal-entries-header">
 								<div class="journal-entries-header__primary">
 									<h3 class="govuk-heading-m">Journal entries</h3>
 									<button type="button" class="govuk-button" data-module="govuk-button" id="new-entry-btn">Add journal entry</button>
 								</div>
-
 								<div class="mural-sync-status" id="mural-sync-status" aria-labelledby="mural-sync-title">
 									<span class="mural-sync-status__label" id="mural-sync-title">Reflexive Journal Mural</span>
 									<span class="mural-sync-status__message" id="mural-sync-message" role="status" aria-live="polite">Checking sync status</span>
-									<button type="button" class="govuk-button govuk-button--secondary mural-sync-status__action" id="mural-sync-pending-btn" hidden disabled>
-										Add pending entries to Mural
-									</button>
+									<button type="button" class="govuk-button govuk-button--secondary mural-sync-status__action" id="mural-sync-pending-btn" hidden disabled>Add pending entries to Mural</button>
 								</div>
 							</div>
-
 							<section id="mural-sync-panel" hidden aria-hidden="true"></section>
-
 							<div id="entry-form" hidden>
 								<form id="add-entry-form" novalidate>
 									<div class="govuk-form-group">
@@ -93,26 +91,22 @@
 											<option value="introspections">Personal introspections</option>
 										</select>
 									</div>
-
 									<div class="govuk-form-group">
 										<label class="govuk-label govuk-label--s" for="entry-content">Entry</label>
 										<div id="content-hint" class="govuk-hint">Write freely; this is a private space for research reflection</div>
 										<textarea class="govuk-textarea" id="entry-content" name="content" rows="8" required aria-describedby="content-hint"></textarea>
 									</div>
-
 									<div class="govuk-form-group">
 										<label class="govuk-label govuk-label--s" for="entry-tags">Tags (optional)</label>
 										<div id="tags-hint" class="govuk-hint">Comma-separated keywords for easier retrieval</div>
 										<input class="govuk-input" type="text" id="entry-tags" name="tags" aria-describedby="tags-hint">
 									</div>
-
 									<div class="govuk-button-group">
 										<button type="submit" class="govuk-button" data-module="govuk-button">Save entry</button>
 										<button type="button" class="govuk-button govuk-button--secondary" data-module="govuk-button" id="cancel-form-btn">Cancel</button>
 									</div>
 								</form>
 							</div>
-
 							<div class="journal-filters" role="group" aria-label="Filter entries by category">
 								<h4 class="govuk-heading-s">Filter by category</h4>
 								<div class="filter-chips">
@@ -123,28 +117,19 @@
 									<button type="button" class="filter-chip" data-filter="introspections">Introspections</button>
 								</div>
 							</div>
-
-							<div id="entries-container">
-								<div class="empty-state" id="empty-journal" hidden>
-									<p class="govuk-body">No entries match the current filter.</p>
-								</div>
-							</div>
+							<div id="entries-container"><div class="empty-state" id="empty-journal" hidden><p class="govuk-body">No entries match the current filter.</p></div></div>
 						</div>
 					</div>
 
 					<div class="govuk-tabs__panel govuk-tabs__panel--hidden" id="codes">
 						<h3 class="govuk-heading-m">Codebook management</h3>
-						<div id="codes-panel">
-							<button type="button" class="govuk-button" data-module="govuk-button" id="new-code-btn">Add code</button>
-							<div id="codes-container"></div>
-						</div>
+						<div id="codes-panel"><button type="button" class="govuk-button" data-module="govuk-button" id="new-code-btn">Add code</button><div id="codes-container"></div></div>
 					</div>
 
 					<div class="govuk-tabs__panel govuk-tabs__panel--hidden" id="memos">
 						<h3 class="govuk-heading-m">Research memos</h3>
 						<div id="memos-panel">
 							<button type="button" class="govuk-button" data-module="govuk-button" id="new-memo-btn">Add memo</button>
-
 							<div class="memo-filters govuk-!-margin-top-4">
 								<h4 class="govuk-heading-s">Filter by memo type</h4>
 								<div class="filter-chips">
@@ -155,7 +140,6 @@
 									<button type="button" class="filter-chip" data-memo-filter="reflexive">Reflexive</button>
 								</div>
 							</div>
-
 							<div id="memos-container" class="govuk-!-margin-top-6"></div>
 						</div>
 					</div>
@@ -169,35 +153,11 @@
 								<button type="button" class="govuk-button govuk-button--secondary" data-analysis="retrieval">Code retrieval</button>
 								<button type="button" class="govuk-button govuk-button--secondary" data-analysis="export">Export analysis</button>
 							</div>
-
 							<div id="analysis-container" class="govuk-!-margin-top-6" data-role="analysis-container">
 								<section id="analysis-timeline" class="govuk-!-margin-bottom-6" aria-live="polite"></section>
 								<section id="analysis-cooccurrence" class="govuk-!-margin-bottom-6" aria-live="polite"></section>
-
-								<section id="analysis-retrieval" class="govuk-!-margin-bottom-6" aria-live="polite">
-									<form id="retrieval-form" novalidate>
-										<div class="govuk-form-group">
-											<label class="govuk-label" for="retrieval-q">Search term</label>
-											<div class="govuk-hint" id="retrieval-q-hint">Searches code names and journal text.</div>
-											<input class="govuk-input" id="retrieval-q" name="q" type="text" spellcheck="true" autocomplete="off" aria-describedby="retrieval-q-hint">
-										</div>
-										<button class="govuk-button govuk-!-margin-top-2" type="submit" data-module="govuk-button">Run search</button>
-									</form>
-									<div id="retrieval-results" class="govuk-!-margin-top-3"></div>
-								</section>
-
-								<details class="govuk-details govuk-!-margin-top-4" data-module="govuk-details" id="json-viewer">
-									<summary class="govuk-details__summary">
-										<span class="govuk-details__summary-text">View raw JSON</span>
-									</summary>
-									<div class="govuk-details__text">
-										<div class="govuk-button-group">
-											<button type="button" class="govuk-button govuk-button--secondary" id="json-copy">Copy JSON</button>
-											<button type="button" class="govuk-button govuk-button--secondary" id="json-download">Download JSON</button>
-										</div>
-										<pre class="app-codeblock" tabindex="0" aria-label="Raw JSON"><code id="json-code"></code></pre>
-									</div>
-								</details>
+								<section id="analysis-retrieval" class="govuk-!-margin-bottom-6" aria-live="polite"><form id="retrieval-form" novalidate><div class="govuk-form-group"><label class="govuk-label" for="retrieval-q">Search term</label><div class="govuk-hint" id="retrieval-q-hint">Searches code names and journal text.</div><input class="govuk-input" id="retrieval-q" name="q" type="text" spellcheck="true" autocomplete="off" aria-describedby="retrieval-q-hint"></div><button class="govuk-button govuk-!-margin-top-2" type="submit" data-module="govuk-button">Run search</button></form><div id="retrieval-results" class="govuk-!-margin-top-3"></div></section>
+								<details class="govuk-details govuk-!-margin-top-4" data-module="govuk-details" id="json-viewer"><summary class="govuk-details__summary"><span class="govuk-details__summary-text">View raw JSON</span></summary><div class="govuk-details__text"><div class="govuk-button-group"><button type="button" class="govuk-button govuk-button--secondary" id="json-copy">Copy JSON</button><button type="button" class="govuk-button govuk-button--secondary" id="json-download">Download JSON</button></div><pre class="app-codeblock" tabindex="0" aria-label="Raw JSON"><code id="json-code"></code></pre></div></details>
 							</div>
 						</div>
 					</div>
@@ -205,54 +165,13 @@
 			</div>
 
 			<aside id="coding-panel" class="coding-panel" hidden aria-label="Apply codes">
-				<div class="panel-header">
-					<h3>Apply Codes</h3>
-					<button type="button" class="close-panel" aria-label="Close coding panel">✕</button>
-				</div>
-
-				<div class="selected-text-preview">
-					<h4>Selected text:</h4>
-					<blockquote id="selected-text-display"></blockquote>
-				</div>
-
-				<div class="code-search govuk-form-group">
-					<label for="code-search-input" class="govuk-label">Search codes</label>
-					<input class="govuk-input" type="search" id="code-search-input" placeholder="Search codes…">
-				</div>
-
+				<div class="panel-header"><h3>Apply Codes</h3><button type="button" class="close-panel" aria-label="Close coding panel">✕</button></div>
+				<div class="selected-text-preview"><h4>Selected text:</h4><blockquote id="selected-text-display"></blockquote></div>
+				<div class="code-search govuk-form-group"><label for="code-search-input" class="govuk-label">Search codes</label><input class="govuk-input" type="search" id="code-search-input" placeholder="Search codes…"></div>
 				<div class="codebook-tree" id="coding-codebook" role="tree"></div>
-
-				<div class="coding-confidence govuk-form-group">
-					<fieldset class="govuk-fieldset">
-						<legend class="govuk-fieldset__legend govuk-fieldset__legend--s">Confidence level</legend>
-
-						<div class="govuk-radios__item">
-							<input class="govuk-radios__input" id="confidence-low" type="radio" name="confidence" value="low">
-							<label class="govuk-label govuk-radios__label" for="confidence-low">Low</label>
-						</div>
-
-						<div class="govuk-radios__item">
-							<input class="govuk-radios__input" id="confidence-medium" type="radio" name="confidence" value="medium" checked>
-							<label class="govuk-label govuk-radios__label" for="confidence-medium">Medium</label>
-						</div>
-
-						<div class="govuk-radios__item">
-							<input class="govuk-radios__input" id="confidence-high" type="radio" name="confidence" value="high">
-							<label class="govuk-label govuk-radios__label" for="confidence-high">High</label>
-						</div>
-					</fieldset>
-				</div>
-
-				<div class="coding-memo govuk-form-group">
-					<label class="govuk-label" for="coding-memo-input">Coding memo</label>
-					<div class="govuk-hint" id="coding-memo-hint">Optional. Explain why this code applies or note any reflections.</div>
-					<textarea class="govuk-textarea" id="coding-memo-input" rows="3" placeholder="Why this code? Any reflections?" aria-describedby="coding-memo-hint"></textarea>
-				</div>
-
-				<div class="panel-actions govuk-button-group">
-					<button type="button" class="govuk-button" id="apply-code-btn">Apply Code</button>
-					<button type="button" class="govuk-button govuk-button--secondary" id="cancel-coding-btn">Cancel</button>
-				</div>
+				<div class="coding-confidence govuk-form-group"><fieldset class="govuk-fieldset"><legend class="govuk-fieldset__legend govuk-fieldset__legend--s">Confidence level</legend><div class="govuk-radios__item"><input class="govuk-radios__input" id="confidence-low" type="radio" name="confidence" value="low"><label class="govuk-label govuk-radios__label" for="confidence-low">Low</label></div><div class="govuk-radios__item"><input class="govuk-radios__input" id="confidence-medium" type="radio" name="confidence" value="medium" checked><label class="govuk-label govuk-radios__label" for="confidence-medium">Medium</label></div><div class="govuk-radios__item"><input class="govuk-radios__input" id="confidence-high" type="radio" name="confidence" value="high"><label class="govuk-label govuk-radios__label" for="confidence-high">High</label></div></fieldset></div>
+				<div class="coding-memo govuk-form-group"><label class="govuk-label" for="coding-memo-input">Coding memo</label><div class="govuk-hint" id="coding-memo-hint">Optional. Explain why this code applies or note any reflections.</div><textarea class="govuk-textarea" id="coding-memo-input" rows="3" placeholder="Why this code? Any reflections?" aria-describedby="coding-memo-hint"></textarea></div>
+				<div class="panel-actions govuk-button-group"><button type="button" class="govuk-button" id="apply-code-btn">Apply Code</button><button type="button" class="govuk-button govuk-button--secondary" id="cancel-coding-btn">Cancel</button></div>
 			</aside>
 		</div>
 	</main>
