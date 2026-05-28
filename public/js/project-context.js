@@ -150,15 +150,20 @@ function setHidden(element, hidden) {
 	}
 }
 
-function showJournalError(message) {
+function showJournalError(message, targetId = "") {
 	const errorSummary = document.getElementById("journal-error-summary");
-	const errorLink =
-		errorSummary?.querySelector(".govuk-error-summary__list a") ||
-		errorSummary?.querySelector(".govuk-error-summary__list li");
-	if (!errorSummary || !errorLink) return false;
+	const errorItem = errorSummary?.querySelector(".govuk-error-summary__list li");
+	if (!errorSummary || !errorItem) return false;
 
-	errorLink.textContent = message;
-	if (errorLink.tagName === "A") errorLink.replaceWith(document.createTextNode(message));
+	errorItem.textContent = "";
+	if (targetId) {
+		const link = document.createElement("a");
+		link.href = `#${targetId}`;
+		link.textContent = message;
+		errorItem.appendChild(link);
+	} else {
+		errorItem.textContent = message;
+	}
 	setHidden(errorSummary, false);
 	setHidden(document.getElementById("journal-notification-banner"), true);
 	return true;
@@ -179,7 +184,7 @@ function handleFlashElement(flash) {
 	const message = feedbackMessageFrom(flash);
 	if (!message) return;
 
-	const displayed = isErrorFlash(flash) ? showJournalError(message) : showJournalNotification(message);
+	const displayed = isErrorFlash(flash) ? showJournalError(message, flash?.dataset?.target || "") : showJournalNotification(message);
 	if (displayed) flash.remove();
 }
 
