@@ -1,6 +1,6 @@
 /**
  * @file /js/project-context.js
- * @summary Hydrates project route breadcrumbs and journal page feedback from the ?id= project context.
+ * @summary Hydrates project route breadcrumbs, parent links and journal page feedback from the ?id= project context.
  */
 
 const API_ORIGIN = resolveApiBase();
@@ -97,12 +97,39 @@ function findProjectBreadcrumb() {
 	);
 }
 
+function ensureProjectActionBar(anchor) {
+	if (!anchor) return;
+
+	anchor.classList.remove("govuk-back-link");
+	anchor.classList.add("govuk-button", "govuk-button--secondary");
+
+	if (anchor.parentElement?.classList.contains("actions-bar")) return;
+
+	const actionsBar = document.createElement("div");
+	actionsBar.className = "actions-bar";
+	anchor.parentNode.insertBefore(actionsBar, anchor);
+	actionsBar.appendChild(anchor);
+}
+
 function setProjectRouteFallback(projectId) {
+	const href = dashboardHref(projectId);
 	const breadcrumb = findProjectBreadcrumb();
-	if (breadcrumb) breadcrumb.href = dashboardHref(projectId);
+	if (breadcrumb) breadcrumb.href = href;
 
 	const legacyProjectLink = document.getElementById("project-link");
-	if (legacyProjectLink) legacyProjectLink.href = dashboardHref(projectId);
+	if (legacyProjectLink) legacyProjectLink.href = href;
+
+	const parentLink = document.getElementById("back-to-project");
+	if (parentLink) parentLink.href = href;
+}
+
+function setProjectParentLink(anchor, project) {
+	if (!anchor || !project) return;
+	const projectId = project.id || project.localId || project.airtableId;
+
+	anchor.textContent = "Back to Project";
+	anchor.href = dashboardHref(projectId);
+	ensureProjectActionBar(anchor);
 }
 
 function feedbackMessageFrom(flash) {
@@ -167,6 +194,9 @@ function observeJournalFeedbackPlacement() {
 }
 
 async function hydrateProjectRouteContext() {
+	const parentLink = document.getElementById("back-to-project");
+	ensureProjectActionBar(parentLink);
+
 	const params = new URLSearchParams(window.location.search);
 	const projectId = params.get("id");
 	if (!projectId) return;
@@ -177,6 +207,7 @@ async function hydrateProjectRouteContext() {
 
 	setProjectAnchor(findProjectBreadcrumb(), project);
 	setProjectAnchor(document.getElementById("project-link"), project);
+	setProjectParentLink(parentLink, project);
 
 	const main = document.querySelector("main");
 	if (main) {
