@@ -3,6 +3,7 @@
   "date": "2026-05-28",
   "repository": "kevinrapley/ResearchOps",
   "branch": "fix/journals-tabs-feedback-macros-clean",
+  "pullRequest": 293,
   "traceRequired": true,
   "taskSummary": "Update the journals page to use GOV.UK Nunjucks macros for tabs and feedback, and remove the Back to Project button.",
   "operatingModelFilesLoaded": [
@@ -19,6 +20,7 @@
   ],
   "filesRead": [
     "src/govuk/templates/pages/projects-journals.njk",
+    "public/pages/projects/journals/index.html",
     "public/js/project-context.js",
     "public/js/journal-tabs.js",
     "tests/journals-route-state.test.js",
@@ -26,9 +28,12 @@
   ],
   "filesModified": [
     "src/govuk/templates/pages/projects-journals.njk",
+    "public/pages/projects/journals/index.html",
     "public/js/project-context.js",
     "tests/journals-route-state.test.js",
-    "tests/govuk-breadcrumb-back-link-route-state.test.js"
+    "tests/govuk-breadcrumb-back-link-route-state.test.js",
+    "docs/agent-audit/reasoning/2026/05/28/journals-tabs-feedback-macros.md",
+    "docs/agent-audit/reasoning/2026/05/28/journals-tabs-feedback-macros.json"
   ],
   "filesCreated": [
     "docs/agent-audit/reasoning/2026/05/28/journals-tabs-feedback-macros.md",
@@ -39,14 +44,18 @@
     "Removed the Back to Project button from the journals template and journals-specific hydration behaviour.",
     "Added macro-rendered feedback targets using govukErrorSummary for error messages.",
     "Added macro-rendered feedback targets using govukNotificationBanner for non-error messages in the same location.",
-    "Routed runtime flash messages into the macro-rendered feedback targets."
+    "Added an href to the error-summary item so the rendered error summary contains the link used by the runtime feedback handler.",
+    "Routed runtime flash messages into the macro-rendered feedback targets.",
+    "Committed the rendered static journals HTML so preview deployments and route-state tests match the Nunjucks source."
   ],
-  "validationPlan": [
-    "Open a PR from fix/journals-tabs-feedback-macros-clean to main.",
-    "Let the Render GOV.UK pages workflow generate static HTML from Nunjucks.",
-    "Verify GitHub Actions before reporting readiness."
+  "validationAttempted": [
+    "Opened PR #293 from fix/journals-tabs-feedback-macros-clean to main.",
+    "Let the Render GOV.UK pages workflow run.",
+    "Investigated CI failure and added the missing error-summary macro href.",
+    "Updated route-state tests to match the new tabs, feedback and removed back-link contracts."
   ],
-  "residualRisks": [
-    "Generated static HTML is expected to be committed by the Render GOV.UK pages workflow after PR creation."
-  ]
+  "validationPending": [
+    "Latest GitHub Actions need to complete after trace correction before readiness is reported."
+  ],
+  "residualRisks": []
 }
