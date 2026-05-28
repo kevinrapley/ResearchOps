@@ -43,6 +43,8 @@ Update the journals page to use GOV.UK Nunjucks macros for tabs and page feedbac
 - `public/js/project-context.js`
 - `tests/journals-route-state.test.js`
 - `tests/govuk-breadcrumb-back-link-route-state.test.js`
+- `docs/agent-audit/reasoning/2026/05/28/journals-tabs-feedback-macros.md`
+- `docs/agent-audit/reasoning/2026/05/28/journals-tabs-feedback-macros.json`
 
 ## Files created
 
@@ -52,7 +54,8 @@ Update the journals page to use GOV.UK Nunjucks macros for tabs and page feedbac
 ## Implementation decisions
 
 - Replaced hand-authored tab markup in the Nunjucks template with the GOV.UK `govukTabs` macro.
-- Removed the `Back to Project` button from the journals template and from journals-specific hydration behaviour.
+- Removed the `Back to Project` button from the journals template and rendered page.
+- Kept shared `project-context.js` parent-link helpers for other routes that still use `Back to Project`.
 - Added macro-rendered feedback targets using `govukErrorSummary` for errors and `govukNotificationBanner` for non-error messages in the same page location after the lead paragraph.
 - Added an `href` to the error-summary item so the rendered error summary contains the link used by the runtime feedback handler.
 - Updated `project-context.js` so legacy runtime `#flash` messages are routed into the macro-rendered feedback targets.
@@ -64,8 +67,23 @@ Update the journals page to use GOV.UK Nunjucks macros for tabs and page feedbac
 - Opened PR #293 from `fix/journals-tabs-feedback-macros-clean` to `main`.
 - Let the Render GOV.UK pages workflow run.
 - Investigated CI failure and added the missing error-summary macro `href`.
-- Updated the route-state tests to match the new tabs, feedback and removed back-link contracts.
+- Restored shared parent-link hydration after confirming it is still required by other routes.
+- Updated the route-state tests to match the new tabs, feedback and removed journals back-link contracts.
 
-## Validation pending
+## Validation results
 
-Latest GitHub Actions need to complete after this trace correction before the PR is reported ready.
+On commit `a8a3c5e6def8809c57ffaaa85820b3db7f661e23`, these GitHub Actions passed:
+
+- Render GOV.UK pages
+- Format pull request
+- CI
+- qa-bdd
+- Accessibility audit (pa11y-ci)
+- QA — Broken links (Lychee)
+- Validate ResearchOps
+- Release Gate
+- Worker CI
+
+## Residual risks
+
+- The main journals content remains structurally close to the existing implementation. This PR only migrates tabs, feedback presentation and the removed journals back-link.
