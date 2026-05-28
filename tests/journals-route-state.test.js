@@ -6,6 +6,7 @@ const templateSource = fs.readFileSync("src/govuk/templates/pages/projects-journ
 const layoutSource = fs.readFileSync("src/govuk/templates/layouts/researchops.njk", "utf8");
 const renderGovukPagesSource = fs.readFileSync("scripts/govuk/render-govuk-pages.mjs", "utf8");
 const projectContextSource = fs.readFileSync("public/js/project-context.js", "utf8");
+const caqdasSource = fs.readFileSync("public/js/caqdas-interface.js", "utf8");
 const tabsSource = fs.readFileSync("public/js/journal-tabs.js", "utf8");
 const muralSyncSource = fs.readFileSync("public/js/journal-mural-sync-compact.js", "utf8");
 const excerptsSource = fs.readFileSync("public/components/journal-excerpts.js", "utf8");
@@ -37,7 +38,7 @@ includes(templateSource, "{{ govukNotificationBanner({", "journals GOV.UK templa
 includes(templateSource, "id: 'journals-tabs'", "journals GOV.UK template");
 includes(templateSource, "id: 'journal-error-summary'", "journals GOV.UK template");
 includes(templateSource, "id: 'journal-notification-banner'", "journals GOV.UK template");
-includes(templateSource, "href: '#content'", "journals GOV.UK template");
+excludes(templateSource, "href: '#content'", "journals GOV.UK template");
 excludes(templateSource, "id=\"back-to-project\"", "journals GOV.UK template");
 excludes(templateSource, "<nav class=\"govuk-breadcrumbs\"", "journals GOV.UK template");
 excludes(templateSource, "class=\"govuk-tabs\"", "journals GOV.UK template");
@@ -49,7 +50,7 @@ includes(pageSource, "<x-include src=\"/partials/header.html\"", "journals page"
 includes(pageSource, "<x-include src=\"/partials/footer.html\"", "journals page");
 includes(pageSource, "id=\"journal-error-summary\"", "journals page");
 includes(pageSource, "class=\"govuk-error-summary", "journals page");
-includes(pageSource, "href=\"#content\"", "journals page");
+excludes(pageSource, "href=\"#content\"", "journals page");
 includes(pageSource, "id=\"journal-notification-banner\"", "journals page");
 includes(pageSource, "class=\"govuk-notification-banner", "journals page");
 includes(pageSource, "id=\"journals-tabs\"", "journals page");
@@ -70,6 +71,8 @@ includes(projectContextSource, "journal-notification-banner", "project context m
 includes(projectContextSource, "setProjectAnchor(findProjectBreadcrumb(), project)", "project context module");
 includes(projectContextSource, "function ensureProjectActionBar", "project context module");
 includes(projectContextSource, "function setProjectParentLink", "project context module");
+includes(caqdasSource, "flashError('Enter a term to search.', 'retrieval-q')", "CAQDAS analysis module");
+includes(caqdasSource, "setRetrievalError('Enter a term to search.')", "CAQDAS analysis module");
 includes(tabsSource, "tab:shown", "journal tabs module");
 includes(muralSyncSource, "mural", "journal mural sync module");
 includes(excerptsSource, "function renderEntries", "journal excerpts module");
