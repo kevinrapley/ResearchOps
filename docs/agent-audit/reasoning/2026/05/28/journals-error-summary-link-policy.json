@@ -1,0 +1,42 @@
+{
+  "traceLayer": "operational",
+  "date": "2026-05-28",
+  "repository": "kevinrapley/ResearchOps",
+  "branch": "fix/journals-error-summary-link-policy",
+  "traceRequired": true,
+  "taskSummary": "Bring main into line with preview deployment behaviour for the journals page feedback model by removing the default linked page-level journal error.",
+  "problem": {
+    "summary": "The journals Nunjucks source still rendered the default page-level journal error summary with href: '#content'.",
+    "impact": "General page-level journal errors could be rendered as links when only the retrieval field-validation error should be linked."
+  },
+  "intendedBehaviour": [
+    "General journals page errors are plain text in the page-level GOV.UK error summary.",
+    "Enter a term to search. is the only linked error summary item.",
+    "The linked retrieval validation error targets #retrieval-q and is paired with an inline field-level GOV.UK error state.",
+    "Rendered static HTML must match the Nunjucks source so Cloudflare Pages targets converge."
+  ],
+  "filesRead": [
+    "src/govuk/templates/pages/projects-journals.njk",
+    "public/js/project-context.js",
+    "public/js/caqdas-interface.js",
+    "tests/journals-route-state.test.js"
+  ],
+  "filesModified": [
+    "src/govuk/templates/pages/projects-journals.njk",
+    "tests/journals-route-state.test.js"
+  ],
+  "filesExpectedFromRenderWorkflow": [
+    "public/pages/projects/journals/index.html"
+  ],
+  "implementationDecisions": [
+    "Removed href: '#content' from the default page-level journal error-summary macro item.",
+    "Preserved the targeted retrieval validation runtime path: flashError('Enter a term to search.', 'retrieval-q').",
+    "Updated route-state coverage so the source template and rendered static page reject the default href=\"#content\" error-summary link.",
+    "Kept the retrieval error as the sole targeted link exception."
+  ],
+  "validationPlan": [
+    "Open a PR to main.",
+    "Let the Render GOV.UK pages workflow regenerate the static journals page.",
+    "Verify all GitHub Actions pass before reporting readiness."
+  ]
+}
