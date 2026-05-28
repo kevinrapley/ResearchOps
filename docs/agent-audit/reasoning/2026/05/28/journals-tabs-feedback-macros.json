@@ -5,7 +5,7 @@
   "branch": "fix/journals-tabs-feedback-macros-clean",
   "pullRequest": 293,
   "traceRequired": true,
-  "taskSummary": "Update the journals page to use GOV.UK Nunjucks macros for tabs and feedback, and remove the Back to Project button.",
+  "taskSummary": "Update the journals page to use GOV.UK Nunjucks macros for tabs and feedback, and remove the Back to Project button from the journals page.",
   "operatingModelFilesLoaded": [
     "AGENTS.md",
     ".agent-operating-model/orchestration.xml",
@@ -41,7 +41,8 @@
   ],
   "implementationDecisions": [
     "Replaced hand-authored journal tabs with the GOV.UK govukTabs macro.",
-    "Removed the Back to Project button from the journals template and journals-specific hydration behaviour.",
+    "Removed the Back to Project button from the journals template and rendered page only.",
+    "Kept shared project-context parent-link helpers for other routes that still use Back to Project.",
     "Added macro-rendered feedback targets using govukErrorSummary for error messages.",
     "Added macro-rendered feedback targets using govukNotificationBanner for non-error messages in the same location.",
     "Added an href to the error-summary item so the rendered error summary contains the link used by the runtime feedback handler.",
@@ -52,10 +53,21 @@
     "Opened PR #293 from fix/journals-tabs-feedback-macros-clean to main.",
     "Let the Render GOV.UK pages workflow run.",
     "Investigated CI failure and added the missing error-summary macro href.",
-    "Updated route-state tests to match the new tabs, feedback and removed back-link contracts."
+    "Restored shared parent-link hydration after confirming it is still required by other routes.",
+    "Reduced brittle journals route-state assertions while keeping the macro, feedback and removed journals back-link contracts."
   ],
-  "validationPending": [
-    "Latest GitHub Actions need to complete after trace correction before readiness is reported."
+  "validationPassed": [
+    "Render GOV.UK pages",
+    "Format pull request",
+    "CI",
+    "qa-bdd",
+    "Accessibility audit (pa11y-ci)",
+    "QA — Broken links (Lychee)",
+    "Validate ResearchOps",
+    "Release Gate",
+    "Worker CI"
   ],
-  "residualRisks": []
+  "residualRisks": [
+    "The main journals content remains structurally close to the existing implementation. This PR only migrates tabs, feedback presentation and removes the journals back-link."
+  ]
 }
