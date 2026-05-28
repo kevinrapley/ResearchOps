@@ -158,6 +158,7 @@ function showJournalError(message) {
 	if (!errorSummary || !errorLink) return false;
 
 	errorLink.textContent = message;
+	if (errorLink.tagName === "A") errorLink.replaceWith(document.createTextNode(message));
 	setHidden(errorSummary, false);
 	setHidden(document.getElementById("journal-notification-banner"), true);
 	return true;
