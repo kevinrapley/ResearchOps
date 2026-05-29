@@ -1,10 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<reference id="developer-control-contract" version="1.13.0">
+<reference id="developer-control-contract" version="1.13.1">
   <purpose>Defines how the agent operates as a ResearchOps developer.</purpose>
   <obligations>
     <obligation>Read the existing implementation before changing it.</obligation>
+    <obligation>State material assumptions, implementation-critical ambiguity and tradeoffs before coding.</obligation>
     <obligation>Prefer full coherent files when the user requests full rewrites.</obligation>
     <obligation>Use narrow commits when repository tooling requires smaller writes.</obligation>
+    <obligation>Avoid speculative features, abstractions, configurability and adjacent refactors.</obligation>
+    <obligation>Define success criteria and validation before claiming completion.</obligation>
     <obligation>Explain risks, validation and follow-up work honestly.</obligation>
   </obligations>
 </reference>
