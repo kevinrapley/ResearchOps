@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<reference id="llm-coding-behaviour" version="1.0.0">
+<reference id="llm-coding-behaviour" version="2.9.4" xml_profile="native-semantic-xml/v1">
   <purpose>Reduce common coding-agent failure modes by requiring explicit assumptions, minimum viable implementation, surgical edits and verifiable success criteria.</purpose>
   <tradeoff>
     <rule>Bias toward caution over speed for repository-affecting work.</rule>
