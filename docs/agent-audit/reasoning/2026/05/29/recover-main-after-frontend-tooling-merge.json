@@ -1,0 +1,33 @@
+{
+	"traceLayer": "operational",
+	"date": "2026-05-29",
+	"repository": "kevinrapley/ResearchOps",
+	"branch": "fix/revert-frontend-tooling-dependabot",
+	"traceRequired": true,
+	"taskSummary": "Recover main after accidental merge of frontend tooling Dependabot PR #303.",
+	"selectedBundles": [
+		"github-diamond",
+		"researchops-developer-control",
+		"multi-functional-team"
+	],
+	"diagnosis": [
+		"ESLint 10 dependency graph requires Node ^20.19.0 || ^22.13.0 || >=24.",
+		"Repository package.json still declared node >=20.",
+		"Several workflows requested generic Node 20."
+	],
+	"filesModified": [
+		"package.json",
+		".nvmrc",
+		".github/workflows/ci.yml",
+		".github/workflows/validate.yml",
+		".github/workflows/bundle-version-consistency.yml",
+		".github/workflows/worker-ci.yml",
+		"docs/agent-audit/reasoning/2026/05/29/recover-main-after-frontend-tooling-merge.md",
+		"docs/agent-audit/reasoning/2026/05/29/recover-main-after-frontend-tooling-merge.json"
+	],
+	"validationPlan": [
+		"Open a pull request to main.",
+		"Use CI, Validate ResearchOps, Bundle version consistency, Worker CI and Release Gate to verify recovery.",
+		"If Release Gate still fails, update that workflow's generic Node 20 setup in a follow-up."
+	]
+}
