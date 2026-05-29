@@ -4,6 +4,7 @@
  */
 
 const API_ORIGIN = resolveApiBase();
+const FIELD_ERROR_IDS = ["code-name", "memo-content", "entry-category", "entry-content"];
 
 function resolveApiBase() {
 	const explicit = document.documentElement?.dataset?.apiOrigin || window.API_ORIGIN || "";
@@ -136,9 +137,86 @@ function feedbackMessageFrom(flash) {
 	return String(flash?.textContent || "").trim();
 }
 
+function errorClassForField(field) {
+	if (field?.classList.contains("govuk-select")) return "govuk-select--error";
+	if (field?.classList.contains("govuk-textarea")) return "govuk-textarea--error";
+	return "govuk-input--error";
+}
+
+function fieldErrorId(fieldId) {
+	return `${fieldId}-error`;
+}
+
+function fieldValue(fieldId) {
+	return String(document.getElementById(fieldId)?.value || "").trim();
+}
+
+function clearFieldError(fieldId) {
+	const field = document.getElementById(fieldId);
+	const group = field?.closest(".govuk-form-group");
+	const error = document.getElementById(fieldErrorId(fieldId));
+	if (error) error.remove();
+	if (group) group.classList.remove("govuk-form-group--error");
+	if (field) {
+		field.classList.remove("govuk-input--error", "govuk-select--error", "govuk-textarea--error");
+		field.removeAttribute("aria-invalid");
+		const describedBy = String(field.getAttribute("aria-describedby") || "")
+			.split(/\s+/)
+			.filter((id) => id && id !== fieldErrorId(fieldId))
+			.join(" ");
+		if (describedBy) field.setAttribute("aria-describedby", describedBy);
+		else field.removeAttribute("aria-describedby");
+	}
+}
+
+function clearValidationErrors() {
+	for (const fieldId of FIELD_ERROR_IDS) clearFieldError(fieldId);
+}
+
+function setFieldError(fieldId, message) {
+	const field = document.getElementById(fieldId);
+	const group = field?.closest(".govuk-form-group");
+	if (!field || !group) return;
+	clearFieldError(fieldId);
+
+	const error = document.createElement("p");
+	error.className = "govuk-error-message";
+	error.id = fieldErrorId(fieldId);
+	const prefix = document.createElement("span");
+	prefix.className = "govuk-visually-hidden";
+	prefix.textContent = "Error:";
+	error.append(prefix, document.createTextNode(` ${message}`));
+	group.insertBefore(error, field);
+
+	group.classList.add("govuk-form-group--error");
+	field.classList.add(errorClassForField(field));
+	field.setAttribute("aria-invalid", "true");
+	const describedBy = new Set(String(field.getAttribute("aria-describedby") || "").split(/\s+/).filter(Boolean));
+	describedBy.add(error.id);
+	field.setAttribute("aria-describedby", Array.from(describedBy).join(" "));
+}
+
+function validationErrorsFor(message) {
+	if (message === "Code name is required.") return [{ text: message, href: "code-name" }];
+	if (message === "Memo content is required.") return [{ text: message, href: "memo-content" }];
+	if (message === "Category and content are required.") {
+		const errors = [];
+		if (!fieldValue("entry-category")) errors.push({ text: "Select a category.", href: "entry-category" });
+		if (!fieldValue("entry-content")) errors.push({ text: "Enter journal entry content.", href: "entry-content" });
+		return errors.length ? errors : [{ text: message, href: "entry-content" }];
+	}
+	return [];
+}
+
 function isErrorFlash(flash) {
 	const text = feedbackMessageFrom(flash).toLowerCase();
-	return flash?.dataset?.type === "error" || flash?.classList.contains("error") || text.startsWith("could not") || text.includes("failed");
+	return (
+		flash?.dataset?.type === "error" ||
+		flash?.classList.contains("error") ||
+		text.startsWith("could not") ||
+		text.includes("failed") ||
+		validationErrorsFor(feedbackMessageFrom(flash)).length > 0
+	);
 }
 
 function setHidden(element, hidden) {
@@ -150,23 +228,31 @@ function setHidden(element, hidden) {
 	}
 }
 
-function showJournalError(message, targetId = "") {
+function showJournalErrors(errors) {
 	const errorSummary = document.getElementById("journal-error-summary");
-	const errorItem = errorSummary?.querySelector(".govuk-error-summary__list li");
-	if (!errorSummary || !errorItem) return false;
+	const errorList = errorSummary?.querySelector(".govuk-error-summary__list");
+	if (!errorSummary || !errorList || !errors.length) return false;
 
-	errorItem.textContent = "";
-	if (targetId) {
-		const link = document.createElement("a");
-		link.href = `#${targetId}`;
-		link.textContent = message;
-		errorItem.appendChild(link);
-	} else {
-		errorItem.textContent = message;
+	errorList.textContent = "";
+	for (const error of errors) {
+		const item = document.createElement("li");
+		if (error.href) {
+			const link = document.createElement("a");
+			link.href = `#${error.href}`;
+			link.textContent = error.text;
+			item.appendChild(link);
+		} else {
+			item.textContent = error.text;
+		}
+		errorList.appendChild(item);
 	}
 	setHidden(errorSummary, false);
 	setHidden(document.getElementById("journal-notification-banner"), true);
 	return true;
+}
+
+function showJournalError(message, targetId = "") {
+	return showJournalErrors([{ text: message, href: targetId }]);
 }
 
 function showJournalNotification(message) {
@@ -180,11 +266,24 @@ function showJournalNotification(message) {
 	return true;
 }
 
+function showValidationErrors(errors) {
+	clearValidationErrors();
+	for (const error of errors) setFieldError(error.href, error.text);
+	return showJournalErrors(errors);
+}
+
 function handleFlashElement(flash) {
 	const message = feedbackMessageFrom(flash);
 	if (!message) return;
 
-	const displayed = isErrorFlash(flash) ? showJournalError(message, flash?.dataset?.target || "") : showJournalNotification(message);
+	const validationErrors = validationErrorsFor(message);
+	let displayed = false;
+	if (validationErrors.length) displayed = showValidationErrors(validationErrors);
+	else if (isErrorFlash(flash)) displayed = showJournalError(message, flash?.dataset?.target || "");
+	else {
+		clearValidationErrors();
+		displayed = showJournalNotification(message);
+	}
 	if (displayed) flash.remove();
 }
 
