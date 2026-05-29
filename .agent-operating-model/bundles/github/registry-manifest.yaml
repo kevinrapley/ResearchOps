@@ -6,7 +6,7 @@ artifacts:
 - path: .gitignore
   sha256: 05a152f1b5f03bbe0cab0df43a62733cab3f88a7cb1298da261c30b8b215a9e0
 - path: CHANGELOG.md
-  sha256: d806755f62b9f71f83b377a15d43a9e61be4db782fa820d0c0b6a5510b87f50a
+  sha256: d32e3bae61f700b456a3f0a329025fb6081888a83a74654208c48cd9b1df7c3b
 - path: contracts/accessibility-evidence.schema.json
   sha256: 6dcfd29a11ce04bb610a9aae7cdd1194c6c4ef190bf61be0b10da3148bc01c08
 - path: contracts/agent-evidence.schema.json
@@ -408,9 +408,9 @@ artifacts:
 - path: output.schema.json
   sha256: 5b65943fe37561efc0a98625fa80355b74a451f25e0f714edd52b31452bbf7ad
 - path: prompt.body.xml
-  sha256: a0bd68a5fe3c3f700ba2d6e6d7d0a7592c2feef3fe986a4c5811435abbcb6ba0
+  sha256: 218dbabe5b371c4ef4ebf9ed234a0bd1c6620c1fc4172e9c9c6b3918e82ead87
 - path: prompt.spec.yaml
-  sha256: 4b2cde0f8186dbece11a46b1378856f7758b25e87fb54b9d6e7e5daef2470fbc
+  sha256: ee12b3635a0f1620069b04bfa8ac8ed1757ebc514b0964ff3cfc1c0b7db8805a
 - path: README.md
   sha256: 6c34825d920bf11b9a7e7e85d1a43a50e74970c48be147147bb073d426018438
 - path: references/accessibility-confidence-pack.xml
@@ -443,6 +443,8 @@ artifacts:
   sha256: 3f3e36e2a444a19d74222e90d9c17f6f84a58ee9f9e0aebd9f0a576b62825d56
 - path: references/implementation-workflow.xml
   sha256: c47a6719b2d5b60260fda95bc4360f05374eef1a2b9f718d4a9f31ff16ec045c
+- path: references/llm-coding-behaviour.xml
+  sha256: d6d5191a1d698cb7af8fdfef07a708a2ef2779b4725c4d201230842960e25c95
 - path: references/performance-budget-control.xml
   sha256: ccabe48ed93cb021ed5742dd474a8acfce187c0fe05980f0e1b649b550f9106e
 - path: references/performance-confidence-pack.xml
