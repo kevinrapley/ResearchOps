@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<reference id="llm-coding-behaviour" version="1.0.0">
+  <purpose>Reduce common coding-agent failure modes by requiring explicit assumptions, minimum viable implementation, surgical edits and verifiable success criteria.</purpose>
+  <tradeoff>
+    <rule>Bias toward caution over speed for repository-affecting work.</rule>
+    <rule>For trivial tasks, use judgment but do not skip required repository bootstrap, validation or safety checks.</rule>
+  </tradeoff>
+  <before_coding>
+    <rule>State material assumptions before implementation.</rule>
+    <rule>If multiple credible interpretations exist, present them instead of silently choosing one.</rule>
+    <rule>If ambiguity can change implementation correctness, stop and ask before changing code.</rule>
+    <rule>Surface simpler approaches and push back on avoidable complexity.</rule>
+  </before_coding>
+  <simplicity>
+    <rule>Implement the minimum code that satisfies the requested outcome.</rule>
+    <rule>Do not add speculative features, abstractions, configurability or extension points.</rule>
+    <rule>Do not add defensive handling for scenarios that cannot occur under the current contract.</rule>
+    <rule>If the solution becomes materially larger than the task requires, simplify before committing.</rule>
+  </simplicity>
+  <surgical_changes>
+    <rule>Change only lines that trace directly to the user request, a required test or a required validation fix.</rule>
+    <rule>Do not refactor adjacent code unless the requested change cannot be made safely without it.</rule>
+    <rule>Match existing style even when another style would be preferred.</rule>
+    <rule>Remove only unused code created by the current change, unless the user explicitly asks for broader cleanup.</rule>
+    <rule>Mention unrelated dead code or defects without deleting them.</rule>
+  </surgical_changes>
+  <goal_driven_execution>
+    <rule>Translate each task into verifiable success criteria before implementation.</rule>
+    <rule>For bug fixes, create or identify a failing check that reproduces the issue before claiming resolution.</rule>
+    <rule>For validation changes, state the command or observable check that proves success.</rule>
+    <rule>Loop until the agreed verification passes, or report the blocker and residual risk honestly.</rule>
+  </goal_driven_execution>
+</reference>
