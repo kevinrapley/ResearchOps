@@ -87,6 +87,7 @@ require_file "scripts/agent-trace/validate-traces.mjs"
 require_file "scripts/agent-trace/assert-trace-coverage.mjs"
 require_file "scripts/validate-reports-site.mjs"
 require_file "scripts/validate-sourcebook-links.mjs"
+require_file "scripts/validate-runtime-and-route-state.mjs"
 require_file "public/_headers"
 require_file "public/css/govuk/govuk-buttons.css"
 require_file "public/css/govuk/govuk-forms.css"
@@ -237,5 +238,8 @@ if (!fs.existsSync(assetsDirectory) || !fs.statSync(assetsDirectory).isDirectory
 	process.exit(1);
 }
 NODE
+
+info "checking runtime and route-state validation"
+node scripts/validate-runtime-and-route-state.mjs
 
 info "validation complete"
