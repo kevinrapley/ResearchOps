@@ -1,7 +1,7 @@
 bundle:
   id: github-diamond-standard
   name: GitHub Diamond Standard Prompt Bundle
-  version: 2.9.3
+  version: 2.9.4
   status: full-release-readiness
   default_mode: repository-operator
   prompt_body: prompt.body.xml
@@ -17,6 +17,7 @@ assembly:
   - references/repository-charter.xml
   - references/repository-conventions.xml
   - references/implementation-workflow.xml
+  - references/llm-coding-behaviour.xml
   - references/developer-control-contract.xml
   - references/quality-gates.xml
   - references/ci-selection-guidelines.xml
