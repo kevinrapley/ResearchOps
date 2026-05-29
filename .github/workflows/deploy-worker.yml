@@ -110,7 +110,7 @@ jobs:
             --file "${REGISTRATION_REQUESTS_MIGRATION}"
 
       - name: Deploy Worker with production secrets
-        uses: cloudflare/wrangler-action@v3
+        uses: cloudflare/wrangler-action@v4
         with:
           apiToken: ${{ secrets.CF_API_TOKEN }}
           accountId: ${{ secrets.CF_ACCOUNT_ID }}
@@ -356,7 +356,7 @@ jobs:
             --file "${PREVIEW_PROJECT_CACHE_SEED}"
 
       - name: Deploy preview Worker with secrets
-        uses: cloudflare/wrangler-action@v3
+        uses: cloudflare/wrangler-action@v4
         with:
           apiToken: ${{ secrets.CF_API_TOKEN }}
           accountId: ${{ secrets.CF_ACCOUNT_ID }}
