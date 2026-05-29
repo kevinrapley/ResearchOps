@@ -1,0 +1,69 @@
+{
+	"date": "2026-05-30",
+	"traceType": "operational-audit-trace",
+	"branch": "fix/govuk-guides-generated-table-rows",
+	"traceRequired": true,
+	"taskSummary": "Migrate generated Discussion Guides table rows to GOV.UK table classes for Issue #110.",
+	"operatingModelFilesLoaded": [
+		"README.md",
+		"AGENTS.md",
+		"RECENT_LEARNINGS.md",
+		".agent-operating-model/orchestration.xml",
+		".agent-operating-model/bundle-registry.json",
+		".agent-operating-model/task-signal-catalog.json",
+		".agent-operating-model/selection-rules.json",
+		".agent-operating-model/bootstrap-checklist.md",
+		".agent-operating-model/precedence-policy.md",
+		".agent-operating-model/trace-policy.md",
+		".agent-operating-model/trace-layers.md",
+		".agent-operating-model/behavioural-evals.json",
+		".agent-operating-model/github-mutation-policy.md"
+	],
+	"selectedBundles": [
+		{
+			"id": "github-diamond",
+			"canonicalPath": ".agent-operating-model/bundles/github/",
+			"reason": "Always loaded for repository-affecting work."
+		},
+		{
+			"id": "researchops-developer-control",
+			"canonicalPath": ".agent-operating-model/bundles/researchops-developer-control/",
+			"reason": "Always loaded for ResearchOps platform work."
+		},
+		{
+			"id": "multi-functional-team",
+			"canonicalPath": ".agent-operating-model/bundles/multi-functional-team/",
+			"reason": "Always loaded for government product assurance."
+		},
+		{
+			"id": "govuk-design-system",
+			"canonicalPath": ".agent-operating-model/bundles/govuk-design-system/",
+			"reason": "Selected because the task changes GOV.UK table markup and frontend accessibility-related semantics."
+		}
+	],
+	"skippedBundles": [
+		"cloudflare",
+		"openai-platform",
+		"mcp-agent-tooling",
+		"airtable-public-api",
+		"mural-public-api"
+	],
+	"filesRead": [
+		"public/components/guides/guides-page.js",
+		"GitHub Issue #110"
+	],
+	"filesChanged": [
+		"public/components/guides/guides-page.js",
+		"docs/agent-audit/reasoning/2026/05/30/govuk-guides-generated-table-rows.md",
+		"docs/agent-audit/reasoning/2026/05/30/govuk-guides-generated-table-rows.json"
+	],
+	"validationExpected": [
+		"npm run validate",
+		"npm run lint"
+	],
+	"validationRunInConnector": [],
+	"residualRisks": [
+		"Validation has not been run locally in this connector context.",
+		"Manual browser checks are still required for the Discussion Guides page."
+	]
+}
