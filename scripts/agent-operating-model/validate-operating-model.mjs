@@ -26,6 +26,7 @@ const REQUIRED_FILES = [
 	"scripts/agent-operating-model/load-operating-model.mjs",
 	"scripts/agent-operating-model/run-behavioural-evals.mjs",
 	"scripts/agent-operating-model/validate-bundle-registry.mjs",
+	"scripts/agent-operating-model/validate-bundle-version-consistency.mjs",
 	"scripts/agent-operating-model/validate-operating-model.mjs",
 ];
 
@@ -221,6 +222,7 @@ for (const scriptName of [
 	"agent:model",
 	"agent:model:validate",
 	"agent:bundles:validate",
+	"agent:bundle-versions:validate",
 	"agent:evals",
 ]) {
 	if (!scripts[scriptName]) {
@@ -229,6 +231,10 @@ for (const scriptName of [
 }
 
 execFileSync("node", ["scripts/agent-operating-model/validate-bundle-registry.mjs"], {
+	stdio: "inherit",
+});
+
+execFileSync("node", ["scripts/agent-operating-model/validate-bundle-version-consistency.mjs"], {
 	stdio: "inherit",
 });
 

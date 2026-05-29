@@ -1,6 +1,6 @@
 # Airtable Public API Developer Contract Bundle
 
-Version: 1.0.1
+Version: 1.1.0
 
 This bundle directs Airtable integration development. It is contract-rich rather than merely architectural.
 

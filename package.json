@@ -24,6 +24,7 @@
     "agent:model": "node scripts/agent-operating-model/load-operating-model.mjs",
     "agent:model:validate": "node scripts/agent-operating-model/validate-operating-model.mjs",
     "agent:bundles:validate": "node scripts/agent-operating-model/validate-bundle-registry.mjs",
+    "agent:bundle-versions:validate": "node scripts/agent-operating-model/validate-bundle-version-consistency.mjs",
     "agent:docs:source": "node scripts/agent-operating-model/generate-bundle-source-docs.mjs --bundle github && node scripts/agent-operating-model/apply-source-annotations.mjs && node scripts/agent-operating-model/verify-github-source-panel-docs.mjs",
     "agent:docs:source:dry-run": "node scripts/agent-operating-model/generate-bundle-source-docs.mjs --bundle github --dry-run",
     "agent:docs:source:verify": "node scripts/agent-operating-model/verify-github-source-panel-docs.mjs",

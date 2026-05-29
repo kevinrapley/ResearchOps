@@ -1,0 +1,33 @@
+{
+	"traceLayer": "operational",
+	"date": "2026-05-29",
+	"repository": "kevinrapley/ResearchOps",
+	"branch": "chore/dependabot-bundle-version-check",
+	"traceRequired": true,
+	"taskSummary": "Set up Dependabot and bundle version consistency checks.",
+	"selectedBundles": [
+		"github-diamond",
+		"researchops-developer-control",
+		"multi-functional-team"
+	],
+	"filesModified": [
+		".github/dependabot.yml",
+		".github/workflows/bundle-version-consistency.yml",
+		"package.json",
+		"scripts/validate.sh",
+		"scripts/agent-operating-model/validate-operating-model.mjs",
+		"scripts/agent-operating-model/validate-bundle-version-consistency.mjs",
+		"docs/agent-audit/reasoning/2026/05/29/dependabot-bundle-version-check.md",
+		"docs/agent-audit/reasoning/2026/05/29/dependabot-bundle-version-check.json"
+	],
+	"implementationDecisions": [
+		"Use prompt.spec.yaml as the bundle version source of truth.",
+		"Fail CI when bundle version references drift from that source of truth.",
+		"Configure Dependabot for npm and GitHub Actions updates."
+	],
+	"validationPlan": [
+		"Open a pull request to main.",
+		"Use GitHub Actions for CI and release-gate validation.",
+		"Confirm changed files remain limited to Dependabot setup and bundle-version validation."
+	]
+}

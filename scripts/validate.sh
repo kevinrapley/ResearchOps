@@ -81,11 +81,13 @@ require_file ".agent-operating-model/bundles/mural-public-api/prompt.body.xml"
 require_file "scripts/agent-operating-model/load-operating-model.mjs"
 require_file "scripts/agent-operating-model/run-behavioural-evals.mjs"
 require_file "scripts/agent-operating-model/validate-bundle-registry.mjs"
+require_file "scripts/agent-operating-model/validate-bundle-version-consistency.mjs"
 require_file "scripts/agent-operating-model/validate-operating-model.mjs"
 require_file "scripts/agent-trace/validate-traces.mjs"
 require_file "scripts/agent-trace/assert-trace-coverage.mjs"
 require_file "scripts/validate-reports-site.mjs"
 require_file "scripts/validate-sourcebook-links.mjs"
+require_file "scripts/validate-runtime-and-route-state.mjs"
 require_file "public/_headers"
 require_file "public/css/govuk/govuk-buttons.css"
 require_file "public/css/govuk/govuk-forms.css"
@@ -174,7 +176,7 @@ import fs from 'node:fs';
 
 const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
 const scripts = pkg.scripts || {};
-const required = ['lint', 'format', 'validate', 'audit:performance', 'audit:performance:write', 'agent:model', 'agent:model:validate', 'agent:bundles:validate', 'agent:evals', 'trace:validate', 'trace:coverage', 'reports:validate', 'sourcebook:validate', 'test:e2e', 'qa:browsers', 'qa:cucumber'];
+const required = ['lint', 'format', 'validate', 'audit:performance', 'audit:performance:write', 'agent:model', 'agent:model:validate', 'agent:bundles:validate', 'agent:bundle-versions:validate', 'agent:evals', 'trace:validate', 'trace:coverage', 'reports:validate', 'sourcebook:validate', 'test:e2e', 'qa:browsers', 'qa:cucumber'];
 const missing = required.filter((name) => !scripts[name]);
 
 if (missing.length) {
@@ -195,6 +197,9 @@ NODE
 
 info "checking repository operating model"
 node scripts/agent-operating-model/validate-operating-model.mjs
+
+info "checking bundle version consistency"
+node scripts/agent-operating-model/validate-bundle-version-consistency.mjs
 
 info "checking behavioural operating-model evals"
 node scripts/agent-operating-model/run-behavioural-evals.mjs >/dev/null
@@ -229,171 +234,12 @@ const configDir = path.dirname(wranglerPath);
 const assetsDirectory = path.resolve(configDir, match[1]);
 
 if (!fs.existsSync(assetsDirectory) || !fs.statSync(assetsDirectory).isDirectory()) {
-	console.error(`wrangler.toml assets.directory does not exist: ${match[1]} -> ${assetsDirectory}`);
+	console.error(`wrangler assets directory does not exist: ${match[1]}`);
 	process.exit(1);
 }
 NODE
 
-info "checking JSON files"
-while IFS= read -r -d '' file; do
-	if ! node -e "JSON.parse(require('node:fs').readFileSync(process.argv[1], 'utf8'))" "$file"; then
-		fail "invalid JSON: $file"
-	fi
-done < <(find . \
-	-path './node_modules' -prune -o \
-	-path './.git' -prune -o \
-	-path './playwright-report' -prune -o \
-	-path './test-results' -prune -o \
-	-name '*.json' -print0)
+info "checking runtime and route-state validation"
+node scripts/validate-runtime-and-route-state.mjs
 
-info "checking JavaScript syntax"
-while IFS= read -r -d '' file; do
-	if ! node --check "$file" >/dev/null; then
-		fail "invalid JavaScript syntax: $file"
-	fi
-done < <(find . \
-	-path './node_modules' -prune -o \
-	-path './.git' -prune -o \
-	-path './playwright-report' -prune -o \
-	-path './test-results' -prune -o \
-	\( -name '*.js' -o -name '*.mjs' \) -print0)
-
-info "checking shell script syntax"
-bash -n ./scripts/performance-audit.sh
-
-info "checking performance audit command"
-bash ./scripts/performance-audit.sh --json >/dev/null
-
-info "checking Worker module import"
-node --input-type=module <<'NODE'
-const worker = await import('./infra/cloudflare/src/worker.js');
-
-if (!worker.default || typeof worker.default.fetch !== 'function') {
-	console.error('Worker default export must expose fetch(request, env, ctx)');
-	process.exit(1);
-}
-NODE
-
-info "checking router module import"
-node --input-type=module <<'NODE'
-const router = await import('./infra/cloudflare/src/core/router.js');
-
-if (typeof router.handleRequest !== 'function') {
-	console.error('router module must export handleRequest(request, env, ctx)');
-	process.exit(1);
-}
-NODE
-
-info "checking service module import"
-node --input-type=module <<'NODE'
-const service = await import('./infra/cloudflare/src/service/index.js');
-
-if (typeof service.ResearchOpsService !== 'function') {
-	console.error('service module must export ResearchOpsService');
-	process.exit(1);
-}
-NODE
-
-info "checking GOV.UK design system baseline"
-node tests/govuk-design-system-baseline-route-state.test.js
-
-info "checking application GOV.UK forms route-state contract"
-node tests/govuk-forms-application-route-state.test.js
-
-info "checking application GOV.UK tables and summary lists route-state contract"
-node tests/govuk-tables-summary-lists-application-route-state.test.js
-
-info "checking GOV.UK page chrome and navigation route-state contract"
-node tests/govuk-page-chrome-navigation-route-state.test.js
-
-info "checking GOV.UK breadcrumb and back-link route-state contract"
-node tests/govuk-breadcrumb-back-link-route-state.test.js
-
-info "checking authentication foundation route-state contract"
-node tests/auth-foundation-route-state.test.js
-
-info "checking authentication route-permission contract"
-node tests/auth-route-permissions.test.js
-
-info "checking authentication runtime bootstrap contract"
-node tests/auth-runtime-bootstrap-route-state.test.js
-
-info "checking authentication role assignment API contract"
-node tests/auth-role-assignment-api-route-state.test.js
-
-info "checking authentication role assignment UI contract"
-node tests/auth-role-assignment-ui-route-state.test.js
-
-info "checking authentication sign-in route-state contract"
-node tests/auth-sign-in-route-state.test.js
-
-info "checking authentication account dashboard route-state contract"
-node tests/auth-account-dashboard-route-state.test.js
-
-info "checking Projects API route contract"
-node tests/projects-route-contract.test.js
-
-info "checking Projects page route-state contract"
-node tests/projects-page-route-state.test.js
-
-info "checking Project Dashboard route-state contract"
-node tests/project-dashboard-route-state.test.js
-
-info "checking Outcomes page route-state contract"
-node tests/outcomes-page-route-state.test.js
-
-info "checking Mural UI route-state contract"
-node tests/mural-ui-route-state.test.js
-
-info "checking Journals project route contract"
-node tests/journals-project-route-contract.test.js
-
-info "checking Journals route-state contract"
-node tests/journals-route-state.test.js
-
-info "checking Journal tabs API origin route-state contract"
-node tests/journal-tabs-api-origin-route-state.test.js
-
-info "checking Journal tabs filter-state route-state contract"
-node tests/journal-tabs-filter-state-route-state.test.js
-
-info "checking Journal tabs resilience route-state contract"
-node tests/journal-tabs-resilience-route-state.test.js
-
-info "checking Journal secondary actions route-state contract"
-node tests/journal-secondary-actions-route-state.test.js
-
-info "checking Mural journal sync route-state contract"
-node tests/mural-journal-sync-route-state.test.js
-
-info "checking Study page route-state contract"
-node tests/study-page-route-state.test.js
-
-info "checking Study guides route-state contract"
-node tests/study-guides-route-state.test.js
-
-info "checking Study session route-state contract"
-node tests/study-session-route-state.test.js
-
-info "checking Search page route-state contract"
-node tests/search-page-route-state.test.js
-
-info "checking Notes page route-state contract"
-node tests/notes-page-route-state.test.js
-
-info "checking Synthesize page route-state contract"
-node tests/synthesize-page-route-state.test.js
-
-info "checking Start page route-state contract"
-node tests/start-page-route-state.test.js
-
-info "checking Participants page route-state contract"
-node tests/participants-page-route-state.test.js
-
-info "checking Consent Forms route-state contract"
-node tests/consent-forms-route-state.test.js
-
-info "checking Participant Consent route-state contract"
-node tests/participant-consent-route-state.test.js
-
-info "validation passed"
+info "validation complete"
