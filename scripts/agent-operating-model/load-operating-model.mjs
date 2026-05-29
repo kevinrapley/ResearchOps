@@ -36,6 +36,13 @@ const LLM_CODING_BEHAVIOUR_SAFEGUARDS = Object.freeze([
 	"validation-command-or-observable-check",
 	"residual-risk-report",
 ]);
+const REVIEW_THREAD_STATE_SAFEGUARDS = Object.freeze([
+	"inspect-review-thread-state",
+	"ignore-resolved-review-threads",
+	"ignore-outdated-review-threads",
+	"preserve-current-pr-head",
+	"avoid-duplicating-completed-work",
+]);
 const REASONING_TRACE_OUTPUTS = Object.freeze([
 	"raw-jsonl-trace",
 	"user-readable-trace",
@@ -107,6 +114,7 @@ function inferOperatingModelSafeguards(taskText) {
 	const safeguards = new Set([
 		...BASE_OPERATING_MODEL_SAFEGUARDS,
 		...LLM_CODING_BEHAVIOUR_SAFEGUARDS,
+		...REVIEW_THREAD_STATE_SAFEGUARDS,
 	]);
 	const conflicts = inferInstructionConflicts(taskText);
 
