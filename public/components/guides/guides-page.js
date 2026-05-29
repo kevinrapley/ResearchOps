@@ -411,18 +411,18 @@ function ensureGuidesTableSkeleton() {
 	wrapper.id = "guides-fallback-wrapper";
 	wrapper.className = "table-wrap";
 	wrapper.innerHTML = `
-    <table class="table" role="table" id="guides-table">
-      <thead>
-        <tr>
-          <th scope="col">Title</th>
-          <th scope="col">Status</th>
-          <th scope="col">Version</th>
-          <th scope="col">Updated</th>
-          <th scope="col">Owner</th>
-          <th scope="col"><span class="sr-only">Actions</span></th>
+    <table class="govuk-table" id="guides-table">
+      <thead class="govuk-table__head">
+        <tr class="govuk-table__row">
+          <th scope="col" class="govuk-table__header">Title</th>
+          <th scope="col" class="govuk-table__header">Status</th>
+          <th scope="col" class="govuk-table__header">Version</th>
+          <th scope="col" class="govuk-table__header">Updated</th>
+          <th scope="col" class="govuk-table__header">Owner</th>
+          <th scope="col" class="govuk-table__header"><span class="sr-only">Actions</span></th>
         </tr>
       </thead>
-      <tbody id="guides-tbody"></tbody>
+      <tbody id="guides-tbody" class="govuk-table__body"></tbody>
     </table>
   `;
 	host.appendChild(wrapper);
@@ -466,7 +466,7 @@ async function loadGuides(studyId, opts = {}) {
 			console.error("[guides] tbody is null, cannot paint");
 		}
 	};
-	const row = (msg) => `<tr><td colspan="6" class="muted">${escapeHtml(msg)}</td></tr>`;
+	const row = (msg) => `<tr class="govuk-table__row"><td colspan="6" class="govuk-table__cell muted">${escapeHtml(msg)}</td></tr>`;
 
 	// Show loading row, then *immediately* kill any external loaders
 	paint(row("Loading…"));
@@ -523,6 +523,7 @@ async function loadGuides(studyId, opts = {}) {
 		const fr = document.createDocumentFragment();
 		for (const g of guides) {
 			const tr = document.createElement("tr");
+			tr.className = "govuk-table__row";
 
 			// Format the updated date
 			let dateStr = "—";
@@ -542,12 +543,12 @@ async function loadGuides(studyId, opts = {}) {
 			}
 
 			tr.innerHTML = `
-        <td>${escapeHtml(g.title || "Untitled")}</td>
-        <td>${escapeHtml(g.status || "draft")}</td>
-        <td>v${Number.isFinite(g.version) ? g.version : (parseInt(g.version,10) || 0)}</td>
-        <td>${dateStr}</td>
-        <td>${escapeHtml(g.createdBy?.name || "—")}</td>
-        <td><button class="link-like" data-open="${g.id}">Open</button></td>`;
+        <td class="govuk-table__cell">${escapeHtml(g.title || "Untitled")}</td>
+        <td class="govuk-table__cell">${escapeHtml(g.status || "draft")}</td>
+        <td class="govuk-table__cell">v${Number.isFinite(g.version) ? g.version : (parseInt(g.version,10) || 0)}</td>
+        <td class="govuk-table__cell">${dateStr}</td>
+        <td class="govuk-table__cell">${escapeHtml(g.createdBy?.name || "—")}</td>
+        <td class="govuk-table__cell"><button class="link-like" data-open="${g.id}">Open</button></td>`;
 			fr.appendChild(tr);
 		}
 
