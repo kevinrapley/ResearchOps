@@ -1,0 +1,32 @@
+{
+	"traceLayer": "behavioural",
+	"date": "2026-05-29",
+	"repository": "kevinrapley/ResearchOps",
+	"branch": "chore/review-thread-state-gate",
+	"traceRequired": true,
+	"taskSummary": "Add a GitHub bundle operating procedure for review-thread state gating.",
+	"selectedBundles": [
+		"github-diamond",
+		"researchops-developer-control",
+		"multi-functional-team"
+	],
+	"filesModified": [
+		".agent-operating-model/bundles/github/prompt.body.xml",
+		".agent-operating-model/behavioural-evals.json",
+		"scripts/agent-operating-model/load-operating-model.mjs",
+		"scripts/agent-operating-model/run-behavioural-evals.mjs",
+		".agent-operating-model/bundles/github/README.md",
+		"docs/agent-audit/reasoning/2026/05/29/review-thread-state-gate.md",
+		"docs/agent-audit/reasoning/2026/05/29/review-thread-state-gate.json"
+	],
+	"implementationDecisions": [
+		"Added the rule to GitHub Diamond automated review comment handling.",
+		"Added executable safeguards rather than prose-only guidance.",
+		"Preserved the current pull request head unless explicit recovery is needed."
+	],
+	"validationPlan": [
+		"Open a pull request to main.",
+		"Use GitHub Actions for CI and release-gate validation.",
+		"Confirm changed files remain limited to GitHub bundle procedure, evals, loader support and trace artefacts."
+	]
+}

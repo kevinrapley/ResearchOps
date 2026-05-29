@@ -11,17 +11,28 @@ import { loadOperatingModel } from "./load-operating-model.mjs";
 const ROOT_DIR = process.cwd();
 const EVALS_PATH = ".agent-operating-model/behavioural-evals.json";
 const FORBIDDEN_FAILURE_MODE_REQUIRED_SAFEGUARDS = Object.freeze({
+	"acts-on-outdated-review-thread": [
+		"inspect-review-thread-state",
+		"ignore-outdated-review-threads",
+	],
+	"acts-on-resolved-review-thread": [
+		"inspect-review-thread-state",
+		"ignore-resolved-review-threads",
+	],
 	"broad-refactor": ["single-purpose-change", "bounded-file-scope"],
 	"claims-without-evidence": ["validation-command-or-observable-check"],
+	"duplicates-completed-work": ["avoid-duplicating-completed-work"],
 	"formatting-drive-by": ["single-purpose-change", "no-adjacent-refactor"],
 	"goal-validation-mismatch": ["validation-matches-goal"],
 	"insufficient-validation-evidence": ["reports-validation-limits"],
 	overengineering: ["minimal-change", "no-new-framework"],
 	"no-test-or-check": ["validation-command-or-observable-check", "reproduction-check"],
+	"rewinds-pr-head-without-instruction": ["preserve-current-pr-head"],
 	"scope-creep": ["no-unrequested-configuration", "bounded-file-scope"],
 	"silent-interpretation": ["states-assumptions"],
 	"speculative-implementation": ["asks-or-bounds-before-implementation"],
 	"touches-unrelated-files": ["surgical-edit", "bounded-file-scope"],
+	"treats-comment-text-as-current-state": ["inspect-review-thread-state"],
 	"unrelated-cleanup": ["preserve-unrelated-code", "changed-file-list-plausible"],
 	"unreported-validation-gap": ["reports-validation-limits"],
 	"unrequested-abstraction": ["minimal-change", "no-new-framework"],
@@ -69,6 +80,17 @@ function validateExpectedBundles(evaluation, model) {
 
 	if (!hasAll(ids, evaluation.expectedBundles || [])) {
 		fail(`${evaluation.id} selected bundle set is incomplete`);
+	}
+}
+
+function validateForbiddenBundles(evaluation, model) {
+	const ids = selectedIds(model);
+	const selectedForbiddenBundles = (evaluation.forbiddenBundles || []).filter((bundleId) =>
+		ids.includes(bundleId),
+	);
+
+	if (selectedForbiddenBundles.length) {
+		fail(`${evaluation.id} selected forbidden bundles: ${selectedForbiddenBundles.join(", ")}`);
 	}
 }
 
@@ -223,7 +245,7 @@ function validateForbiddenFailureModes(evaluation, model) {
 	};
 
 	validateForbiddenFailureModeSafeguards(evaluation, model);
-	
+
 	for (const mode of evaluation.forbiddenFailureModes || []) {
 		const check = modeChecks[mode];
 
@@ -234,7 +256,7 @@ function validateForbiddenFailureModes(evaluation, model) {
 		if (!check) {
 			continue;
 		}
-		
+
 		if (check()) {
 			fail(`${evaluation.id} exhibits forbidden failure mode: ${mode}`);
 		}
@@ -273,6 +295,7 @@ function runEval(evaluation) {
 	const model = loadOperatingModel({ taskText: evaluation.prompt });
 
 	validateExpectedBundles(evaluation, model);
+	validateForbiddenBundles(evaluation, model);
 	validateTraceRequirement(evaluation, model);
 	validateSelectionEvidence(evaluation, model);
 	validateExpectedSafeguards(evaluation, model);

@@ -30,12 +30,18 @@ Use `examples/anti-examples/` for genuine unsafe or incorrect agent behaviours. 
 
 Codex and other automated review comments must be treated as review work items, not as background noise.
 
+Before acting on review feedback, inspect the current review-thread state. Comment text alone is not enough. Only unresolved, non-outdated and still-relevant review threads are active work items.
+
 When an automated review comment is legitimate, the agent must:
 
-1. Fix the issue or provide evidence that the implementation already satisfies the concern.
+1. Fix the issue or provide evidence that the existing implementation already satisfies the concern.
 2. Add a thumbs-up reaction to the original comment.
 3. Reply directly to the comment or thread explaining how the issue was overcome.
 4. Mark the thread resolved with the Resolve conversation action only after the fix and validation evidence are complete.
+
+Resolved review threads are complete unless the user explicitly asks to reopen, re-check or revisit them. Outdated review threads must not be acted on unless the underlying issue still exists on the current pull request head.
+
+When a user refers to a singular Codex comment or review comment, identify the single unresolved relevant thread before making changes. Do not redo work already completed by the user, Codex, GitHub Actions or another agent. Do not move a pull request branch ref to an earlier commit while handling review feedback unless explicitly instructed or recovering from a documented broken branch state.
 
 False positives or superseded comments must still be answered with a clear disposition. Legitimate comments must not be silently ignored, even when status checks are green.
 
@@ -130,4 +136,5 @@ Validate them with `scripts/validate-live-gate-fixtures.py`.
 - Do not release with unresolved release-blocking gaps.
 - Do not publish a bundle if the release gate fails.
 - Do not silently ignore legitimate Codex or automated review comments.
+- Do not act on resolved or outdated automated review threads unless the user explicitly asks to revisit them or the issue still exists on the current pull request head.
 - Do not resolve a legitimate automated review thread until the issue has been overcome, the original comment has a thumbs-up reaction and the thread has an explanatory reply.
