@@ -199,7 +199,7 @@ jobs:
 
       - name: Upload Cucumber report
         if: always() && steps.bdd_scope.outputs.run_bdd == 'true' && steps.detect_cucumber_report.outputs.present == 'true'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: cucumber-report
           path: |
@@ -320,7 +320,7 @@ jobs:
 
       - name: Upload visual walkthrough artifact
         if: always() && steps.detect_site.outputs.present == 'true'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: visual-walkthrough-site
           path: reports-site
@@ -437,7 +437,7 @@ jobs:
             always() &&
             steps.deploy_reporting_site.outcome == 'failure'
           }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: wrangler-pages-deploy-logs
           path: ~/.config/.wrangler/logs/*.log
