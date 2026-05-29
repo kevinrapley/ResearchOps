@@ -408,11 +408,11 @@ artifacts:
 - path: output.schema.json
   sha256: 5b65943fe37561efc0a98625fa80355b74a451f25e0f714edd52b31452bbf7ad
 - path: prompt.body.xml
-  sha256: 218dbabe5b371c4ef4ebf9ed234a0bd1c6620c1fc4172e9c9c6b3918e82ead87
+  sha256: 5bc94a526410bce5ab6ac978f4c20668291b5e633e9c360c1358a174a60b727e
 - path: prompt.spec.yaml
   sha256: ee12b3635a0f1620069b04bfa8ac8ed1757ebc514b0964ff3cfc1c0b7db8805a
 - path: README.md
-  sha256: b32ee6cc766363e495d3cb6635afc6a3edd37e3ef69a8cbecf54c58279ca0070
+  sha256: 6bbbb385cecd42b6c0f4ef3151f1dc844d9dc7cd5b7a3b6c71005656b114fe2a
 - path: references/accessibility-confidence-pack.xml
   sha256: 2fc68d05f251363527d279b7cd75bd3608c13d7e5848b94790d182b480ec6421
 - path: references/agent-evidence.xml
