@@ -1,6 +1,6 @@
 # GitHub Diamond Standard Prompt Bundle
 
-Version: 2.9.3
+Version: 2.9.4
 
 ## Purpose
 
@@ -10,11 +10,11 @@ It guides repository instantiation, maintenance, review, release and conformance
 
 ## Current release
 
-Version 2.9.3 strengthens the examples layer so bundle behaviour is easier to understand, review and test.
+Version 2.9.4 adds cross-cutting coding-agent behaviour controls for repository-affecting work.
 
-It reorganises examples around canonical scenarios, expected outputs and behavioural anti-examples. Placeholder-style examples are promoted into concrete worked examples with mode selection, roles, references, contracts, graders, evidence requirements and failure conditions.
+It adds an always-loaded LLM coding behaviour reference that requires agents to state material assumptions, surface implementation-critical ambiguity, prefer the simplest sufficient change, preserve unrelated code and define verifiable success criteria before claiming completion.
 
-The release preserves the 2.9.2 auditable assurance regime, including schema-valid release-gate reports, policy-driven live release profiles, stricter GitHub API observability handling, trusted attestation verification evidence, stronger accessibility fixtures, and high-assurance live gate fixtures.
+The release extends behavioural eval coverage for assumptions before coding, minimal implementation, surgical change boundaries and validation evidence. It also aligns the ResearchOps Developer Control implementation workflow and developer obligations with the new behaviour controls.
 
 ## Example structure
 
