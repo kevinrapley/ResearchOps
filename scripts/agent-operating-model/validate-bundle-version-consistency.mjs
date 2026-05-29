@@ -37,7 +37,7 @@ function normaliseDirectory(relativePath) {
 }
 
 function parseVersionLine(line) {
-	const match = line.match(/^\s*version:\s*["']?([^"'\s]+)["']?\s*$/);
+	const match = line.match(/^\s*(?:version|bundle_version):\s*["']?([^"'\s]+)["']?\s*$/);
 
 	return match ? match[1] : null;
 }
@@ -57,7 +57,7 @@ function readBundleVersion(specPath) {
 			insideBundleBlock = false;
 		}
 
-		if (insideBundleBlock || /^version:/.test(line)) {
+		if (insideBundleBlock || /^(?:version|bundle_version):/.test(line)) {
 			const version = parseVersionLine(line);
 
 			if (version) {
@@ -120,10 +120,10 @@ function validateReadme(bundleId, readmePath, version, errors) {
 
 function validatePromptBody(bundleId, promptBodyPath, version, errors) {
 	const text = readText(promptBodyPath);
-	const match = text.match(/<prompt_bundle\b[^>]*\sversion="([^"]+)"/);
+	const match = text.match(/<[^!?\s>]+\b[^>]*\sversion="([^"]+)"/);
 
 	if (!match) {
-		errors.push(`${bundleId} prompt body does not declare <prompt_bundle version="...">`);
+		errors.push(`${bundleId} prompt body does not declare a root XML version attribute`);
 		return;
 	}
 
