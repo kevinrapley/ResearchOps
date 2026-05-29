@@ -236,11 +236,19 @@
 		{
 			"id": "behaviour-review-thread-state-gate",
 			"question": "Does the agent act only on unresolved, non-outdated review threads and avoid redoing resolved work?",
-			"prompt": "See the Codex comment and fix the failing tests.",
+			"prompt": "See the Codex thread and fix the failing tests.",
 			"expectedBundles": [
 				"github-diamond",
 				"researchops-developer-control",
 				"multi-functional-team"
+			],
+			"forbiddenBundles": [
+				"airtable-public-api",
+				"mural-public-api",
+				"cloudflare",
+				"openai-platform",
+				"mcp-agent-tooling",
+				"govuk-design-system"
 			],
 			"expectedSafeguards": [
 				"inspect-review-thread-state",
