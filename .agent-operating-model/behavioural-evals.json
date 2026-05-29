@@ -1,5 +1,5 @@
 {
-	"version": "1.4.1",
+	"version": "1.4.2",
 	"traceLayer": "behavioural",
 	"purpose": "Evaluate whether agent operating-model behaviour follows repository orchestration and canonical bundle-directory precedence rules.",
 	"evals": [
@@ -231,6 +231,30 @@
 				"claims-without-evidence",
 				"no-test-or-check",
 				"vague-make-it-work-plan"
+			]
+		},
+		{
+			"id": "behaviour-review-thread-state-gate",
+			"question": "Does the agent act only on unresolved, non-outdated review threads and avoid redoing resolved work?",
+			"prompt": "See the Codex comment and fix the failing tests.",
+			"expectedBundles": [
+				"github-diamond",
+				"researchops-developer-control",
+				"multi-functional-team"
+			],
+			"expectedSafeguards": [
+				"inspect-review-thread-state",
+				"ignore-resolved-review-threads",
+				"ignore-outdated-review-threads",
+				"preserve-current-pr-head",
+				"avoid-duplicating-completed-work"
+			],
+			"forbiddenFailureModes": [
+				"acts-on-resolved-review-thread",
+				"acts-on-outdated-review-thread",
+				"duplicates-completed-work",
+				"rewinds-pr-head-without-instruction",
+				"treats-comment-text-as-current-state"
 			]
 		}
 	]
