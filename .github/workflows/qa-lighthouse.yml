@@ -11,7 +11,7 @@ jobs:
     env:
       SITE_URL: ${{ vars.PAGES_URL || secrets.PAGES_URL }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Ensure SITE_URL present
         run: |
