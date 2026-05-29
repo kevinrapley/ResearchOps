@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='utf-8'?>
-<prompt_bundle id="github-diamond-standard" version="2.9.3" default_mode="repository-operator" xml_profile="native-semantic-xml/v1">
+<prompt_bundle id="github-diamond-standard" version="2.9.4" default_mode="repository-operator" xml_profile="native-semantic-xml/v1">
   <bundle_identity>
     <name>GitHub Diamond Standard Prompt Bundle</name>
     <description>A control-system prompt bundle for agents creating, maintaining, reviewing and releasing GitHub repositories.</description>
@@ -14,6 +14,7 @@
     <principle id="review-comments-as-work-items">Treat legitimate automated review comments, including Codex comments, as auditable work items that must be acknowledged, answered and resolved after the fix is complete.</principle>
     <principle id="branch-governance">Only use approved work-branch prefixes and treat branch prefix as the primary trace trigger.</principle>
     <principle id="surgical-mutation">Repository mutation must use the smallest safe commit mechanism that preserves surrounding content; complete does not mean full-file replacement.</principle>
+    <principle id="llm-coding-behaviour">Before implementation, state material assumptions, choose the simplest sufficient approach, keep edits surgical and define verifiable success criteria.</principle>
   </core_doctrine>
 
   <mandatory_sequence>
@@ -22,6 +23,7 @@
     <step>Do not create or continue work on branches with unapproved prefixes such as claude/, codex/, bugfix/ or experiment/.</step>
     <step>For repository-affecting work on feature/, chore/, test/, fix/ or perf/ branches, create an auditable reasoning trace without requiring the user to include the [reasoning] token.</step>
     <step>Do not require an auditable reasoning trace for hotfix/ branches, because hotfix/ is reserved for urgent operational repair.</step>
+    <step>Before changing code, apply references/llm-coding-behaviour.xml to state assumptions, surface tradeoffs, avoid speculative scope and define verification.</step>
     <step>Before changing files through GitHub tooling, apply references/github-tooling-mutation-policy.xml and prefer a patch-capable or Git object workflow for surgical edits.</step>
     <step>Do not repeatedly retry a blocked or failed full-file update_file operation. After one blocked or failed full-file write, switch to a smaller Git object workflow, a patch-capable path or a clean branch strategy.</step>
     <step>Select the correct mode from the mode modules.</step>
