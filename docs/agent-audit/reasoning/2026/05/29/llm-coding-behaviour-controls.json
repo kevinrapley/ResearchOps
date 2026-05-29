@@ -1,0 +1,28 @@
+{
+	"traceLayer": "behavioural",
+	"date": "2026-05-29",
+	"repository": "kevinrapley/ResearchOps",
+	"branch": "chore/llm-coding-behaviour-controls",
+	"traceRequired": true,
+	"taskSummary": "Add cross-cutting coding behaviour controls to the repository operating model.",
+	"selectedBundles": [
+		"github-diamond",
+		"researchops-developer-control",
+		"multi-functional-team"
+	],
+	"filesExpectedToChange": [
+		".agent-operating-model/bundles/github/references/llm-coding-behaviour.xml",
+		".agent-operating-model/bundles/github/prompt.spec.yaml",
+		".agent-operating-model/bundles/github/prompt.body.xml",
+		".agent-operating-model/bundles/researchops-developer-control/references/implementation-workflow.xml",
+		".agent-operating-model/bundles/researchops-developer-control/references/developer-control-contract.xml",
+		".agent-operating-model/behavioural-evals.json",
+		"docs/agent-audit/reasoning/2026/05/29/llm-coding-behaviour-controls.md",
+		"docs/agent-audit/reasoning/2026/05/29/llm-coding-behaviour-controls.json"
+	],
+	"validationPlan": [
+		"Parse edited XML files.",
+		"Parse behavioural eval JSON.",
+		"Inspect changed-file list and PR diff."
+	]
+}
