@@ -74,6 +74,9 @@ includes(projectContextSource, "function setProjectParentLink", "project context
 includes(caqdasSource, "flashError('Enter a term to search.', 'retrieval-q')", "CAQDAS analysis module");
 includes(caqdasSource, "setRetrievalError('Enter a term to search.')", "CAQDAS analysis module");
 includes(tabsSource, "tab:shown", "journal tabs module");
+includes(tabsSource, "govuk-button govuk-button--secondary", "journal tabs module");
+includes(tabsSource, "govuk-button govuk-button--warning", "journal tabs module");
+excludes(tabsSource, "btn-quiet", "journal tabs module")
 includes(muralSyncSource, "mural", "journal mural sync module");
 includes(excerptsSource, "function renderEntries", "journal excerpts module");
 includes(excerptsSource, "function loadEntries", "journal excerpts module");
