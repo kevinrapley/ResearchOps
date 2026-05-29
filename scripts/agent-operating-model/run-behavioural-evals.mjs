@@ -83,6 +83,17 @@ function validateExpectedBundles(evaluation, model) {
 	}
 }
 
+function validateForbiddenBundles(evaluation, model) {
+	const ids = selectedIds(model);
+	const selectedForbiddenBundles = (evaluation.forbiddenBundles || []).filter((bundleId) =>
+		ids.includes(bundleId),
+	);
+
+	if (selectedForbiddenBundles.length) {
+		fail(`${evaluation.id} selected forbidden bundles: ${selectedForbiddenBundles.join(", ")}`);
+	}
+}
+
 function validateTraceRequirement(evaluation, model) {
 	if (!evaluation.prompt.includes("[reasoning]")) {
 		return;
@@ -284,6 +295,7 @@ function runEval(evaluation) {
 	const model = loadOperatingModel({ taskText: evaluation.prompt });
 
 	validateExpectedBundles(evaluation, model);
+	validateForbiddenBundles(evaluation, model);
 	validateTraceRequirement(evaluation, model);
 	validateSelectionEvidence(evaluation, model);
 	validateExpectedSafeguards(evaluation, model);
