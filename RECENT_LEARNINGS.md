@@ -2,6 +2,14 @@
 
 This file records repeatable repository-specific lessons for ResearchOps agents and maintainers. It is not a changelog.
 
+## 2026-05-29 — Coding agents need explicit behaviour controls before implementation
+
+Context: Cross-cutting LLM coding guidelines were added to reduce avoidable assumptions, over-complication, broad edits and weak validation across repository-affecting work.
+
+Learning: Repository-affecting coding work needs an always-loaded behaviour contract, not only domain-specific bundle rules. The agent should state assumptions, keep changes minimal, preserve unrelated code and define verifiable success criteria before claiming completion.
+
+Action: Apply the GitHub Diamond LLM coding behaviour reference for all repository-affecting implementation work. Add or update behavioural evals when a repeated coding-agent failure mode is identified.
+
 ## 2026-05-19 — GitHub tooling must use surgical mutation paths for small edits
 
 Context: A role-assignment fix was delayed because the agent repeatedly tried to use full-file `update_file` operations for a small JavaScript change. A later low-level Git object attempt created a partial tree and opened a pull request with a repository-wide deletion diff before the work was recovered through a clean branch.
