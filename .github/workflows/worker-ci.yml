@@ -73,7 +73,7 @@ jobs:
 
       - name: Upload Prettier patch
         if: failure() && steps.prettier.outcome == 'failure'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: prettier-fix.patch
           path: prettier-fix.patch

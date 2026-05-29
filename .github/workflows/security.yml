@@ -40,7 +40,7 @@ jobs:
 
       - name: Upload policy audit reports
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: npm-audit-policy-report
           path: |
