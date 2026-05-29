@@ -2,6 +2,14 @@
 
 This file records repeatable repository-specific lessons for ResearchOps agents and maintainers. It is not a changelog.
 
+## 2026-05-29 — Coding agents need explicit behaviour controls before implementation
+
+Context: Cross-cutting LLM coding guidelines were added to reduce avoidable assumptions, over-complication, broad edits and weak validation across repository-affecting work.
+
+Learning: Repository-affecting coding work needs an always-loaded behaviour contract, not only domain-specific bundle rules. The agent should state assumptions, keep changes minimal, preserve unrelated code and define verifiable success criteria before claiming completion.
+
+Action: Apply the GitHub Diamond LLM coding behaviour reference for all repository-affecting implementation work. Add or update behavioural evals when a repeated coding-agent failure mode is identified.
+
 ## 2026-05-28 — GOV.UK Nunjucks pages require source and rendered HTML parity
 
 Context: During the GOV.UK journals migration, the preview branch, `research-operations.com` and `researchops.pages.dev` served visibly different behaviour. Cache purging did not resolve the difference. The root issue was that the Nunjucks source, committed static HTML and served JavaScript could drift from each other. In one case, `src/govuk/templates/pages/projects-journals.njk` still rendered a linked default journal error while the runtime JavaScript had moved on to targeted field-validation behaviour. In another case, static `public/pages/**/index.html` was not aligned with the expected Nunjucks source.

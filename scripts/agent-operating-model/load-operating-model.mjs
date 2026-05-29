@@ -15,6 +15,27 @@ const BASE_OPERATING_MODEL_SAFEGUARDS = Object.freeze([
 	"must-resolve-canonical-bundle-directories",
 	"must-apply-bundle-precedence",
 ]);
+const LLM_CODING_BEHAVIOUR_SAFEGUARDS = Object.freeze([
+	"states-assumptions",
+	"identifies-ambiguous-role-scope",
+	"asks-or-bounds-before-implementation",
+	"minimal-change",
+	"no-new-framework",
+	"no-unrequested-configuration",
+	"surgical-edit",
+	"preserve-unrelated-code",
+	"bounded-file-scope",
+	"single-purpose-change",
+	"no-adjacent-refactor",
+	"changed-file-list-plausible",
+	"validation-matches-goal",
+	"no-unrelated-validation-only",
+	"reports-validation-limits",
+	"success-criteria",
+	"reproduction-check",
+	"validation-command-or-observable-check",
+	"residual-risk-report",
+]);
 const REASONING_TRACE_OUTPUTS = Object.freeze([
 	"raw-jsonl-trace",
 	"user-readable-trace",
@@ -83,20 +104,23 @@ function inferInstructionConflicts(taskText) {
 }
 
 function inferOperatingModelSafeguards(taskText) {
-	const safeguards = [...BASE_OPERATING_MODEL_SAFEGUARDS];
+	const safeguards = new Set([
+		...BASE_OPERATING_MODEL_SAFEGUARDS,
+		...LLM_CODING_BEHAVIOUR_SAFEGUARDS,
+	]);
 	const conflicts = inferInstructionConflicts(taskText);
 
 	if (conflicts.length) {
-		safeguards.push("must-report-conflict");
+		safeguards.add("must-report-conflict");
 	}
 
 	if (taskText.includes("[reasoning]")) {
-		safeguards.push("must-create-trace");
+		safeguards.add("must-create-trace");
 	}
 
 	return {
 		conflicts,
-		safeguards,
+		safeguards: [...safeguards],
 	};
 }
 

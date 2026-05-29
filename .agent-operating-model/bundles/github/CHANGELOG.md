@@ -6,6 +6,30 @@ The format follows Keep a Changelog conventions and the bundle uses semantic ver
 
 ---
 
+## [2.9.4+researchops.2026-05-29] - 2026-05-29
+
+### Added
+
+- Added `references/llm-coding-behaviour.xml` to define cross-cutting coding-agent behaviour controls for repository-affecting work.
+- Added explicit behaviour rules for assumptions before coding, simplicity first, surgical changes and goal-driven validation.
+- Added behavioural eval coverage for assumptions, minimal implementation, change-boundary discipline and validation evidence.
+
+### Changed
+
+- Updated `prompt.spec.yaml` and `prompt.body.xml` to version `2.9.4`.
+- Registered `references/llm-coding-behaviour.xml` as an always-loaded GitHub Diamond reference.
+- Added a mandatory pre-coding step requiring agents to state assumptions, surface tradeoffs, avoid speculative scope and define verification before changing code.
+- Added light ResearchOps Developer Control hooks so implementation workflow and developer obligations align with the new coding behaviour controls.
+- Recorded the reusable operating-model lesson in `RECENT_LEARNINGS.md`.
+
+### Fixed
+
+- Reduced the risk of silent interpretation, speculative implementation and over-engineered coding changes.
+- Reduced the risk of unrelated refactors, formatting drive-bys and broad cleanup during focused repository tasks.
+- Reduced the risk of agents claiming completion without clear success criteria, reproduction checks or validation evidence.
+
+---
+
 ## [2.9.3+researchops.2026-05-21] - 2026-05-21
 
 ### Added

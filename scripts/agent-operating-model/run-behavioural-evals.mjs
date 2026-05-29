@@ -10,6 +10,25 @@ import { loadOperatingModel } from "./load-operating-model.mjs";
 
 const ROOT_DIR = process.cwd();
 const EVALS_PATH = ".agent-operating-model/behavioural-evals.json";
+const FORBIDDEN_FAILURE_MODE_REQUIRED_SAFEGUARDS = Object.freeze({
+	"broad-refactor": ["single-purpose-change", "bounded-file-scope"],
+	"claims-without-evidence": ["validation-command-or-observable-check"],
+	"formatting-drive-by": ["single-purpose-change", "no-adjacent-refactor"],
+	"goal-validation-mismatch": ["validation-matches-goal"],
+	"insufficient-validation-evidence": ["reports-validation-limits"],
+	overengineering: ["minimal-change", "no-new-framework"],
+	"no-test-or-check": ["validation-command-or-observable-check", "reproduction-check"],
+	"scope-creep": ["no-unrequested-configuration", "bounded-file-scope"],
+	"silent-interpretation": ["states-assumptions"],
+	"speculative-implementation": ["asks-or-bounds-before-implementation"],
+	"touches-unrelated-files": ["surgical-edit", "bounded-file-scope"],
+	"unrelated-cleanup": ["preserve-unrelated-code", "changed-file-list-plausible"],
+	"unreported-validation-gap": ["reports-validation-limits"],
+	"unrequested-abstraction": ["minimal-change", "no-new-framework"],
+	"unrelated-churn": ["preserve-unrelated-code"],
+	"unsupported-assumption": ["states-assumptions", "identifies-ambiguous-role-scope"],
+	"vague-make-it-work-plan": ["success-criteria", "residual-risk-report"],
+});
 
 function fail(message) {
 	console.error(`agent:evals: ${message}`);
@@ -167,6 +186,26 @@ function validateExpectedSafeguards(evaluation, model) {
 	}
 }
 
+function missingSafeguardsForMode(mode, model) {
+	return (FORBIDDEN_FAILURE_MODE_REQUIRED_SAFEGUARDS[mode] || []).filter(
+		(safeguard) => !model.operatingModelSafeguards.includes(safeguard),
+	);
+}
+
+function validateForbiddenFailureModeSafeguards(evaluation, model) {
+	for (const mode of evaluation.forbiddenFailureModes || []) {
+		const missingSafeguards = missingSafeguardsForMode(mode, model);
+
+		if (missingSafeguards.length) {
+			fail(
+				`${evaluation.id} forbidden failure mode ${mode} missing required safeguards: ${missingSafeguards.join(
+					", ",
+				)}`,
+			);
+		}
+	}
+}
+
 function validateForbiddenFailureModes(evaluation, model) {
 	const modeChecks = {
 		context: () => model.selectedBundles.length === 0,
@@ -183,13 +222,19 @@ function validateForbiddenFailureModes(evaluation, model) {
 		tool: () => !model.operatingModelSafeguards.includes("must-load-agents-md"),
 	};
 
+	validateForbiddenFailureModeSafeguards(evaluation, model);
+	
 	for (const mode of evaluation.forbiddenFailureModes || []) {
 		const check = modeChecks[mode];
 
-		if (!check) {
+		if (!check && !FORBIDDEN_FAILURE_MODE_REQUIRED_SAFEGUARDS[mode]) {
 			fail(`${evaluation.id} declares unsupported forbidden failure mode: ${mode}`);
 		}
 
+		if (!check) {
+			continue;
+		}
+		
 		if (check()) {
 			fail(`${evaluation.id} exhibits forbidden failure mode: ${mode}`);
 		}

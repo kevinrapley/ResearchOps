@@ -1,0 +1,42 @@
+{
+	"traceLayer": "behavioural",
+	"date": "2026-05-29",
+	"repository": "kevinrapley/ResearchOps",
+	"branch": "chore/llm-coding-behaviour-controls",
+	"traceRequired": true,
+	"taskSummary": "Add cross-cutting coding behaviour controls to the repository operating model.",
+	"selectedBundles": [
+		"github-diamond",
+		"researchops-developer-control",
+		"multi-functional-team"
+	],
+	"filesModified": [
+		".agent-operating-model/behavioural-evals.json",
+		".agent-operating-model/bundles/github/CHANGELOG.md",
+		".agent-operating-model/bundles/github/README.md",
+		".agent-operating-model/bundles/github/prompt.body.xml",
+		".agent-operating-model/bundles/github/prompt.spec.yaml",
+		".agent-operating-model/bundles/github/references/llm-coding-behaviour.xml",
+		".agent-operating-model/bundles/github/registry-manifest.yaml",
+		".agent-operating-model/bundles/researchops-developer-control/references/developer-control-contract.xml",
+		".agent-operating-model/bundles/researchops-developer-control/references/implementation-workflow.xml",
+		"RECENT_LEARNINGS.md",
+		"docs/agent-audit/reasoning/2026/05/29/llm-coding-behaviour-controls.json",
+		"docs/agent-audit/reasoning/2026/05/29/llm-coding-behaviour-controls.md",
+		"scripts/agent-operating-model/load-operating-model.mjs",
+		"scripts/agent-operating-model/run-behavioural-evals.mjs"
+	],
+	"reviewFollowUps": [
+		"Taught the operating-model loader and behavioural eval runner to support the new coding behaviour safeguards.",
+		"Regenerated the GitHub bundle registry manifest after bundle file changes.",
+		"Updated the GitHub bundle README current release text to version 2.9.4.",
+		"Updated this trace to record the complete changed-file set."
+	],
+	"validationEvidence": [
+		"CI passed on current head 27d6dc0aaf18447a337399e9b43cc1c1e6dc6caf.",
+		"Validate ResearchOps passed on current head 27d6dc0aaf18447a337399e9b43cc1c1e6dc6caf.",
+		"Worker CI passed on current head 27d6dc0aaf18447a337399e9b43cc1c1e6dc6caf.",
+		"Release Gate passed on current head 27d6dc0aaf18447a337399e9b43cc1c1e6dc6caf.",
+		"Update GitHub bundle registry manifest passed on current head 27d6dc0aaf18447a337399e9b43cc1c1e6dc6caf."
+	]
+}
