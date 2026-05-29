@@ -46,19 +46,19 @@
   },
   "devDependencies": {
     "@cucumber/cucumber": "^11.0.0",
-    "@eslint/js": "^9.12.0",
+    "@eslint/js": "^10.0.1",
     "@playwright/test": "^1.56.1",
     "ajv": "^8.20.0",
-    "eslint": "^9.39.1",
+    "eslint": "^10.4.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-import": "^2.32.0",
     "eslint-plugin-node": "^11.1.0",
-    "eslint-plugin-promise": "^7.2.1",
+    "eslint-plugin-promise": "^7.3.0",
     "globals": "^17.6.0",
     "nunjucks": "^3.2.4",
     "playwright": "^1.56.1",
-    "prettier": "^3.6.2",
-    "sass": "^1.94.2"
+    "prettier": "^3.8.3",
+    "sass": "^1.100.0"
   },
   "engines": {
     "node": ">=20"
