@@ -36,10 +36,14 @@ function normaliseDirectory(relativePath) {
 	return relativePath.endsWith("/") ? relativePath : `${relativePath}/`;
 }
 
+function normaliseVersionReference(value) {
+	return String(value || "").trim().replace(/^`+|`+$/g, "");
+}
+
 function parseVersionLine(line) {
 	const match = line.match(/^\s*(?:version|bundle_version):\s*["']?([^"'\s]+)["']?\s*$/);
 
-	return match ? match[1] : null;
+	return match ? normaliseVersionReference(match[1]) : null;
 }
 
 function readBundleVersion(specPath) {
@@ -93,9 +97,10 @@ function validateReadme(bundleId, readmePath, version, errors) {
 
 	const text = readText(readmePath);
 	const versionLine = text.match(/^Version:\s*([^\s]+)\s*$/m);
+	const readmeVersion = normaliseVersionReference(versionLine?.[1]);
 
-	if (versionLine && versionLine[1] !== version) {
-		errors.push(`${bundleId} README Version line is ${versionLine[1]}, expected ${version}`);
+	if (versionLine && readmeVersion !== version) {
+		errors.push(`${bundleId} README Version line is ${readmeVersion}, expected ${version}`);
 	}
 
 	const currentRelease = currentReleaseSection(text);
@@ -104,23 +109,23 @@ function validateReadme(bundleId, readmePath, version, errors) {
 		return;
 	}
 
-	const currentReleaseVersion = currentRelease.match(/\bVersion\s+([0-9]+\.[0-9]+\.[0-9]+(?:[+\-][A-Za-z0-9.-]+)?)/);
+	const currentReleaseVersion = currentRelease.match(/\bVersion\s+`?([0-9]+\.[0-9]+\.[0-9]+(?:[+\-][A-Za-z0-9.-]+)?)`?/);
 
 	if (!currentReleaseVersion) {
 		errors.push(`${bundleId} README Current release section does not declare a Version ${version} reference`);
 		return;
 	}
 
-	if (currentReleaseVersion[1] !== version) {
-		errors.push(
-			`${bundleId} README Current release version is ${currentReleaseVersion[1]}, expected ${version}`,
-		);
+	const releaseVersion = normaliseVersionReference(currentReleaseVersion[1]);
+
+	if (releaseVersion !== version) {
+		errors.push(`${bundleId} README Current release version is ${releaseVersion}, expected ${version}`);
 	}
 }
 
 function validatePromptBody(bundleId, promptBodyPath, version, errors) {
 	const text = readText(promptBodyPath);
-	const match = text.match(/<[^!?\s>]+\b[^>]*\sversion="([^"]+)"/);
+	const match = text.match(/<[^!?\s>]+\b[^>]*\sversion=["']([^"']+)["']/);
 
 	if (!match) {
 		errors.push(`${bundleId} prompt body does not declare a root XML version attribute`);
