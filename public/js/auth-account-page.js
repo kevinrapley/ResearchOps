@@ -38,6 +38,7 @@ const CONFIG = Object.freeze({
 	CACHE: 'no-store',
 	FETCH_TIMEOUT_MS: 12000,
 	SIGN_IN_URL: '/pages/account/sign-in/',
+	TEAM_ACCESS_URL: '/pages/account/team-access/',
 });
 
 const dom = {
@@ -52,6 +53,8 @@ const dom = {
 	currentTeamSection: document.getElementById('account-current-team-section'),
 	currentTeam: document.getElementById('account-current-team-value'),
 	teamMemberships: document.getElementById('account-team-memberships'),
+	teamAccessRequestsSection: document.getElementById('account-team-access-requests-section'),
+	teamAccessRequests: document.getElementById('account-team-access-requests'),
 	actionsSection: document.getElementById('account-actions-section'),
 	actions: document.getElementById('account-actions'),
 	permissionsDetails: document.getElementById('account-permissions-details'),
@@ -288,17 +291,22 @@ function renderTeamMembership(team) {
 	`;
 }
 
+function renderNoTeamState() {
+	return `
+		<div class="govuk-inset-text">
+			<p class="govuk-body">You are not currently a member of any team.</p>
+			<p class="govuk-body">Request access to a team before using team-scoped ResearchOps features.</p>
+			<p class="govuk-body"><a class="govuk-link" href="${CONFIG.TEAM_ACCESS_URL}">Request access to a team</a></p>
+		</div>
+	`;
+}
+
 function renderTeamMemberships(context) {
 	if (!dom.teamMemberships) return;
 	const memberships = teamMemberships(context);
 
 	if (memberships.length === 0) {
-		dom.teamMemberships.innerHTML = `
-			<div class="govuk-inset-text">
-				<p class="govuk-body">You are not currently a member of any team.</p>
-				<p class="govuk-body">Ask a Team Admin to add you to a team or review your account request.</p>
-			</div>
-		`;
+		dom.teamMemberships.innerHTML = renderNoTeamState();
 		return;
 	}
 
@@ -314,6 +322,33 @@ function renderCurrentTeam(context, memberships) {
 	}
 	dom.currentTeam.textContent = currentTeam.name || currentTeam.id;
 	setVisible(dom.currentTeamSection, true);
+}
+
+function renderTeamAccessRequest(request) {
+	const teamLabel = request.teamName || request.teamReference || 'Requested team';
+	return `
+		<div class="govuk-summary-card" data-team-access-request-id="${escapeHtml(request.id)}">
+			<div class="govuk-summary-card__title-wrapper">
+				<h3 class="govuk-summary-card__title">${escapeHtml(teamLabel)} <strong class="govuk-tag govuk-tag--yellow">Awaiting approval</strong></h3>
+			</div>
+			<div class="govuk-summary-card__content">
+				<p class="govuk-body">This request does not give access to team records yet.</p>
+				<button class="govuk-button govuk-button--secondary" type="button" data-cancel-team-access-request="${escapeHtml(request.id)}">Cancel request</button>
+			</div>
+		</div>
+	`;
+}
+
+function renderTeamAccessRequests(requests = []) {
+	if (!dom.teamAccessRequests || !dom.teamAccessRequestsSection) return;
+	if (!requests.length) {
+		dom.teamAccessRequests.innerHTML = '';
+		setVisible(dom.teamAccessRequestsSection, false);
+		return;
+	}
+
+	dom.teamAccessRequests.innerHTML = requests.map(renderTeamAccessRequest).join('');
+	setVisible(dom.teamAccessRequestsSection, true);
 }
 
 function allowedActions(context) {
@@ -340,7 +375,7 @@ function renderPermissions(context, memberships) {
 	setVisible(dom.permissionsDetails, showPermissionDetails);
 }
 
-function renderDashboard(context) {
+function renderDashboard(context, requests = []) {
 	const memberships = teamMemberships(context);
 	if (dom.title) dom.title.textContent = 'Your ResearchOps account';
 	if (dom.user) dom.user.textContent = displayName(context);
@@ -348,6 +383,7 @@ function renderDashboard(context) {
 	if (dom.accountStatus) dom.accountStatus.textContent = formatAccountStatus(context?.user?.accountStatus);
 	renderCurrentTeam(context, memberships);
 	renderTeamMemberships(context);
+	renderTeamAccessRequests(requests);
 	renderActions(context);
 	renderPermissions(context, memberships);
 	setVisible(dom.status, false);
@@ -364,6 +400,25 @@ function renderAccountProblem(message) {
 	setVisible(dom.status, true);
 }
 
+async function loadTeamAccessRequests() {
+	const response = await fetchJson('/api/team-access/requests');
+	if (!response.ok || !response.data?.ok) return [];
+	return Array.isArray(response.data.requests) ? response.data.requests : [];
+}
+
+async function cancelTeamAccessRequest(requestId) {
+	if (!requestId) return;
+	try {
+		await fetchJson('/api/team-access/requests/cancel', {
+			method: 'POST',
+			body: JSON.stringify({ requestId }),
+		});
+		await loadAccount();
+	} catch (error) {
+		renderAccountProblem(userFacingError(error));
+	}
+}
+
 async function loadAccount() {
 	setBusy(true);
 	try {
@@ -375,7 +430,8 @@ async function loadAccount() {
 		if (!response.ok || !response.data?.ok) {
 			throw new Error(response.data?.message || `Could not load /api/me (${response.status})`);
 		}
-		renderDashboard(response.data);
+		const requests = await loadTeamAccessRequests();
+		renderDashboard(response.data, requests);
 	} catch (error) {
 		renderAccountProblem(userFacingError(error));
 	} finally {
@@ -394,6 +450,10 @@ async function logout() {
 
 function init() {
 	dom.logout?.addEventListener('click', logout);
+	dom.teamAccessRequests?.addEventListener('click', (event) => {
+		const requestId = event.target?.dataset?.cancelTeamAccessRequest;
+		if (requestId) cancelTeamAccessRequest(requestId);
+	});
 	loadAccount();
 }
 
@@ -410,5 +470,6 @@ window.__ropsAuthAccountPage = Object.freeze({
 	formatAccountStatus,
 	permissionCodes,
 	renderDashboard,
+	renderTeamAccessRequests,
 	teamMemberships,
 });
