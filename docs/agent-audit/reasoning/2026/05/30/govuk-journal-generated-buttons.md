@@ -59,12 +59,15 @@ The branch starts with `fix/`, so trace artefacts are required by the repository
 
 - `public/js/journal-tabs.js`
 - `tests/journals-route-state.test.js`
+- `tests/journal-tabs-filter-state-route-state.test.js`
 - GitHub Issue #106
+- CI and release-gate artefacts for PR #311
 
 ## Files changed
 
 - `public/js/journal-tabs.js`
 - `tests/journals-route-state.test.js`
+- `tests/journal-tabs-filter-state-route-state.test.js`
 - `docs/agent-audit/reasoning/2026/05/30/govuk-journal-generated-buttons.md`
 - `docs/agent-audit/reasoning/2026/05/30/govuk-journal-generated-buttons.json`
 
@@ -79,6 +82,19 @@ The change:
 - preserves the existing `href`, `type`, `data-act`, `data-id` and delete handler contract
 - adds route-state checks for the new button classes
 - adds a route-state check that `btn-quiet` is no longer used in the journal tabs module
+- updates the journal tabs filter-state route test so it expects the GOV.UK warning delete button and no longer expects the legacy `btn-quiet danger` button
+
+## CI failure handling
+
+The first PR run failed in `Validate ResearchOps`, `Worker CI`, `CI` and `Release Gate`.
+
+The release-gate artefact showed the blocking root cause was an obsolete route-state assertion in `tests/journal-tabs-filter-state-route-state.test.js` expecting:
+
+```text
+<button type="button" class="btn-quiet danger"
+```
+
+That assertion is no longer valid after the GOV.UK button migration and has been updated to expect the new GOV.UK warning button.
 
 ## Validation expected
 
@@ -97,4 +113,4 @@ Manual checks:
 
 ## Residual risk
 
-Validation has not been run locally in this connector context. CI and manual browser checks remain the source of truth for readiness.
+Validation has not been run locally in this connector context because this environment cannot clone the repository from GitHub. CI and manual browser checks remain the source of truth for readiness.
