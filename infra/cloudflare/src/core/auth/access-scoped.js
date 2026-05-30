@@ -43,6 +43,15 @@ function mapPermission(row) {
 	};
 }
 
+function identityUserFor(context) {
+	return {
+		id: context.user.id,
+		displayName: context.user.displayName,
+		email: context.user.email,
+		accountStatus: context.user.accountStatus,
+	};
+}
+
 async function isResearchOpsCoreTeamAdmin(db, userId) {
 	if (!db || !userId) return false;
 	const row = await db
@@ -301,6 +310,15 @@ export async function handleMeRoute(request, env, apiPath) {
 	try {
 		const context = await resolveAuthenticatedContext(request, env);
 		await assertRoutePermission(request, env, context);
+
+		if (apiPath === '/api/me/identity') {
+			return jsonResponse({
+				ok: true,
+				authenticated: true,
+				provider: context.provider,
+				user: identityUserFor(context),
+			});
+		}
 
 		if (apiPath === '/api/me/permissions') {
 			return jsonResponse({
