@@ -18,7 +18,7 @@
 
 	{{ govukNotificationBanner({
 		titleText: 'Checking your account',
-		text: 'Checking which teams and permissions you can use.',
+		text: 'Checking which teams, roles and account actions you can use.',
 		attributes: {
 			id: 'account-status',
 			'aria-live': 'polite',
@@ -31,45 +31,70 @@
 			<div class="govuk-grid-column-two-thirds">
 				<span class="govuk-caption-l">ResearchOps account</span>
 				<h1 class="govuk-heading-xl" id="account-dashboard-title">Your ResearchOps account</h1>
-				<p class="govuk-body-l">Check your teams, roles and available actions.</p>
+				<p class="govuk-body-l">Check who you are signed in as, which teams you belong to and what you can do.</p>
 			</div>
 		</div>
 
-		{{ govukSummaryList({
-			attributes: {
-				'aria-label': 'Account summary'
-			},
-			classes: 'govuk-!-margin-bottom-6',
-			rows: [
-				{
-					key: {
-						text: 'Signed in as'
+		<section aria-labelledby="account-identity-title">
+			<h2 class="govuk-heading-m" id="account-identity-title">Your account</h2>
+			{{ govukSummaryList({
+				attributes: {
+					'aria-label': 'Account summary'
+				},
+				classes: 'govuk-!-margin-bottom-6',
+				rows: [
+					{
+						key: {
+							text: 'Signed in as'
+						},
+						value: {
+							html: '<span id="account-user-value">Not loaded</span>'
+						}
 					},
-					value: {
-						html: '<span id="account-user-value">Not loaded</span>'
+					{
+						key: {
+							text: 'Email address'
+						},
+						value: {
+							html: '<span id="account-email-value">Not loaded</span>'
+						}
+					},
+					{
+						key: {
+							text: 'Account status'
+						},
+						value: {
+							html: '<span id="account-status-value">Not loaded</span>'
+						}
 					}
-				}
-			]
-		}) }}
+				]
+			}) }}
+		</section>
+
+		<section aria-labelledby="account-current-team-title" id="account-current-team-section" hidden>
+			<h2 class="govuk-heading-m" id="account-current-team-title">Current team context</h2>
+			<p class="govuk-body">ResearchOps uses this team context when deciding which team-scoped actions and records you can use.</p>
+			<p class="govuk-inset-text" id="account-current-team-value">Not loaded</p>
+		</section>
 
 		<section aria-labelledby="account-teams-title">
-			<h2 class="govuk-heading-m" id="account-teams-title">Teams and roles</h2>
-			<p class="govuk-body">Your roles are scoped by team. You may have different access in each team.</p>
+			<h2 class="govuk-heading-m" id="account-teams-title">Your teams and roles</h2>
+			<p class="govuk-body">You may have different roles and access in each team.</p>
 			<div id="account-team-memberships"></div>
 		</section>
 
 		<section aria-labelledby="account-actions-title" id="account-actions-section" hidden>
-			<h2 class="govuk-heading-m" id="account-actions-title">Actions you can take</h2>
-			<p class="govuk-body">These actions are based on your current ResearchOps permissions.</p>
+			<h2 class="govuk-heading-m" id="account-actions-title">What you can do from here</h2>
+			<p class="govuk-body">These account actions are based on your current ResearchOps permissions. Protected services still check your access when you use them.</p>
 			<div id="account-actions" class="govuk-button-group"></div>
 		</section>
 
 		<details id="account-permissions-details" hidden class="govuk-details" data-module="govuk-details">
 			<summary class="govuk-details__summary">
-				<span class="govuk-details__summary-text">View permission details</span>
+				<span class="govuk-details__summary-text">View technical permission details</span>
 			</summary>
 			<div class="govuk-details__text">
-				<p class="govuk-body">ResearchOps uses these permissions to decide what controls and records you can use in the current team context.</p>
+				<p class="govuk-body">This technical view is shown only where it helps administer access. Most users should rely on the task-based access summary above.</p>
 				<ul class="govuk-list govuk-list--bullet" id="account-permissions"></ul>
 			</div>
 		</details>
@@ -91,5 +116,5 @@
 {% endblock %}
 
 {% block scripts %}
-<script type="module" src="/js/auth-account-page.js?v=account-dashboard-20260513-teams-v3"></script>
+<script type="module" src="/js/auth-account-page.js?v=account-access-summary-20260530"></script>
 {% endblock %}

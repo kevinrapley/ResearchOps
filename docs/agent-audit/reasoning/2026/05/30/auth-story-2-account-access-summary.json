@@ -1,0 +1,96 @@
+{
+	"date": "2026-05-30",
+	"traceType": "operational-audit-trace",
+	"branch": "feature/account-access-summary",
+	"epic": "ROPS-AUTH-P1-000 — Governed access, permissions and audit",
+	"story": "See my account, teams, roles and access summary",
+	"traceRequired": true,
+	"taskSummary": "Implement Story 2 using the recommended rewrite: make access understandable, not changeable.",
+	"operatingModelFilesLoaded": [
+		"AGENTS.md",
+		".agent-operating-model/orchestration.xml",
+		".agent-operating-model/bundle-registry.json",
+		".agent-operating-model/task-signal-catalog.json",
+		".agent-operating-model/selection-rules.json",
+		".agent-operating-model/github-mutation-policy.md"
+	],
+	"selectedBundles": [
+		{
+			"id": "github-diamond",
+			"canonicalPath": ".agent-operating-model/bundles/github/",
+			"reason": "Always loaded for repository-affecting branch work."
+		},
+		{
+			"id": "researchops-developer-control",
+			"canonicalPath": ".agent-operating-model/bundles/researchops-developer-control/",
+			"reason": "Selected for ResearchOps platform account dashboard behaviour."
+		},
+		{
+			"id": "multi-functional-team",
+			"canonicalPath": ".agent-operating-model/bundles/multi-functional-team/",
+			"reason": "Selected for government product assurance and access-control risk framing."
+		},
+		{
+			"id": "govuk-design-system",
+			"canonicalPath": ".agent-operating-model/bundles/govuk-design-system/",
+			"reason": "Selected because the task changes page content, GOV.UK components and accessibility affordances."
+		},
+		{
+			"id": "cloudflare",
+			"canonicalPath": ".agent-operating-model/bundles/cloudflare/",
+			"reason": "Selected because the page consumes D1-backed /api/me account context exposed by the Worker."
+		}
+	],
+	"skippedBundles": [
+		"openai-platform",
+		"mcp-agent-tooling",
+		"airtable-public-api",
+		"mural-public-api"
+	],
+	"filesRead": [
+		"docs/product/26/05/08/authentication-role-selection-requirements-2026-05-08.md",
+		"docs/product/26/05/13/team-scoped-account-dashboard.md",
+		"public/pages/account/index.html",
+		"public/js/auth-account-page.js",
+		"infra/cloudflare/src/core/auth/access-scoped.js",
+		"tests/auth-account-dashboard-route-state.test.js"
+	],
+	"filesChanged": [
+		"docs/product/26/05/30/auth-story-2-account-access-summary.md",
+		"public/pages/account/index.html",
+		"public/js/auth-account-page.js",
+		"tests/auth-account-dashboard-route-state.test.js",
+		"docs/agent-audit/reasoning/2026/05/30/auth-story-2-account-access-summary.md",
+		"docs/agent-audit/reasoning/2026/05/30/auth-story-2-account-access-summary.json"
+	],
+	"implementationSummary": {
+		"teamPosition": "Story 2 should make access understandable; it should not make access changeable.",
+		"pageSections": [
+			"Your account",
+			"Current team context",
+			"Your teams and roles",
+			"What you can do from here",
+			"Sign out"
+		],
+		"outOfScopeControlsNotAdded": [
+			"team creation",
+			"team joining",
+			"team switching",
+			"role request",
+			"role approval",
+			"permission assignment",
+			"PII reveal",
+			"audit log viewing"
+		]
+	},
+	"validationExpected": [
+		"npm run validate",
+		"npm run lint",
+		"npm test -- --ci"
+	],
+	"validationRunInConnector": [],
+	"residualRisks": [
+		"Validation has not been run in this connector context.",
+		"Manual account dashboard checks are needed for no-team, one-team, multi-team and sensitive capability states."
+	]
+}

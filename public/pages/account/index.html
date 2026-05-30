@@ -25,8 +25,8 @@
 				<div class="govuk-notification-banner__header">
 					<h2 class="govuk-notification-banner__title" id="govuk-notification-banner-title">Checking your account</h2>
 				</div>
-				<div class="govuk-notification-banner__content">
-					<p class="govuk-notification-banner__heading">Checking which teams and permissions you can use.</p>
+				<div class="govuk-notification-banner__content" id="account-status-body">
+					<p class="govuk-notification-banner__heading">Checking which teams, roles and account actions you can use.</p>
 				</div>
 			</div>
 
@@ -35,35 +35,52 @@
 					<div class="govuk-grid-column-two-thirds">
 						<span class="govuk-caption-l">ResearchOps account</span>
 						<h1 class="govuk-heading-xl" id="account-dashboard-title">Your ResearchOps account</h1>
-						<p class="govuk-body-l">Check your teams, roles and available actions.</p>
+						<p class="govuk-body-l">Check who you are signed in as, which teams you belong to and what you can do.</p>
 					</div>
 				</div>
 
-				<dl class="govuk-summary-list govuk-!-margin-bottom-6" aria-label="Account summary">
-					<div class="govuk-summary-list__row">
-						<dt class="govuk-summary-list__key">Signed in as</dt>
-						<dd class="govuk-summary-list__value"><span id="account-user-value">Not loaded</span></dd>
-					</div>
-				</dl>
+				<section aria-labelledby="account-identity-title">
+					<h2 class="govuk-heading-m" id="account-identity-title">Your account</h2>
+					<dl class="govuk-summary-list govuk-!-margin-bottom-6" aria-label="Account summary">
+						<div class="govuk-summary-list__row">
+							<dt class="govuk-summary-list__key">Signed in as</dt>
+							<dd class="govuk-summary-list__value"><span id="account-user-value">Not loaded</span></dd>
+						</div>
+						<div class="govuk-summary-list__row">
+							<dt class="govuk-summary-list__key">Email address</dt>
+							<dd class="govuk-summary-list__value"><span id="account-email-value">Not loaded</span></dd>
+						</div>
+						<div class="govuk-summary-list__row">
+							<dt class="govuk-summary-list__key">Account status</dt>
+							<dd class="govuk-summary-list__value"><span id="account-status-value">Not loaded</span></dd>
+						</div>
+					</dl>
+				</section>
+
+				<section aria-labelledby="account-current-team-title" id="account-current-team-section" hidden>
+					<h2 class="govuk-heading-m" id="account-current-team-title">Current team context</h2>
+					<p class="govuk-body">ResearchOps uses this team context when deciding which team-scoped actions and records you can use.</p>
+					<p class="govuk-inset-text" id="account-current-team-value">Not loaded</p>
+				</section>
 
 				<section aria-labelledby="account-teams-title">
-					<h2 class="govuk-heading-m" id="account-teams-title">Teams and roles</h2>
-					<p class="govuk-body">Your roles are scoped by team. You may have different access in each team.</p>
+					<h2 class="govuk-heading-m" id="account-teams-title">Your teams and roles</h2>
+					<p class="govuk-body">You may have different roles and access in each team.</p>
 					<div id="account-team-memberships"></div>
 				</section>
 
 				<section aria-labelledby="account-actions-title" id="account-actions-section" hidden>
-					<h2 class="govuk-heading-m" id="account-actions-title">Actions you can take</h2>
-					<p class="govuk-body">These actions are based on your current ResearchOps permissions.</p>
+					<h2 class="govuk-heading-m" id="account-actions-title">What you can do from here</h2>
+					<p class="govuk-body">These account actions are based on your current ResearchOps permissions. Protected services still check your access when you use them.</p>
 					<div id="account-actions" class="govuk-button-group"></div>
 				</section>
 
 				<details class="govuk-details" id="account-permissions-details" hidden data-module="govuk-details">
 					<summary class="govuk-details__summary">
-						<span class="govuk-details__summary-text">View permission details</span>
+						<span class="govuk-details__summary-text">View technical permission details</span>
 					</summary>
 					<div class="govuk-details__text">
-						<p class="govuk-body">ResearchOps uses these permissions to decide what controls and records you can use in the current team context.</p>
+						<p class="govuk-body">This technical view is shown only where it helps administer access. Most users should rely on the task-based access summary above.</p>
 						<ul class="govuk-list govuk-list--bullet" id="account-permissions"></ul>
 					</div>
 				</details>
@@ -77,6 +94,6 @@
 		</div>
 	</main>
 	<x-include src="/partials/footer.html"></x-include>
-	<script type="module" src="/js/auth-account-page.js?v=account-dashboard-20260513-teams-v3"></script>
+	<script type="module" src="/js/auth-account-page.js?v=account-access-summary-20260530"></script>
 </body>
 </html>
