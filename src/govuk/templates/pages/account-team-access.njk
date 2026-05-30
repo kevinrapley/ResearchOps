@@ -1,10 +1,6 @@
 {% extends "layouts/researchops.njk" %}
 
 {% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
-{% from "govuk/components/button/macro.njk" import govukButton %}
-{% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
-{% from "govuk/components/input/macro.njk" import govukInput %}
-{% from "govuk/components/textarea/macro.njk" import govukTextarea %}
 
 {% block content %}
 <div class="govuk-width-container">
@@ -28,14 +24,14 @@
 			<p class="govuk-body-l">Ask to join a team before using team-scoped ResearchOps features.</p>
 			<p class="govuk-body">A Team Admin needs to review your request before you can use that team’s research records. This request does not give you a role or sensitive access.</p>
 
-			{{ govukErrorSummary({
-				titleText: 'There is a problem',
-				errorList: [],
-				attributes: {
-					id: 'team-access-error-summary',
-					hidden: 'hidden'
-				}
-			}) }}
+			<div class="govuk-error-summary" data-module="govuk-error-summary" id="team-access-error-summary" hidden>
+				<div role="alert">
+					<h2 class="govuk-error-summary__title">There is a problem</h2>
+					<div class="govuk-error-summary__body">
+						<ul class="govuk-list govuk-error-summary__list" id="team-access-error-list"></ul>
+					</div>
+				</div>
+			</div>
 
 			<div class="govuk-notification-banner" role="region" aria-live="polite" aria-labelledby="team-access-status-title" id="team-access-status" hidden>
 				<div class="govuk-notification-banner__header">
@@ -45,42 +41,21 @@
 			</div>
 
 			<form id="team-access-request-form" novalidate data-submit-route="/api/team-access/requests" data-account-url="/pages/account/">
-				{{ govukInput({
-					id: 'team-reference',
-					name: 'teamReference',
-					label: {
-						text: 'Team name or invitation code',
-						classes: 'govuk-label--m'
-					},
-					hint: {
-						text: 'Enter the team name or invitation code you were given.'
-					},
-					attributes: {
-						autocomplete: 'off'
-					}
-				}) }}
+				<div class="govuk-form-group" id="team-reference-group">
+					<label class="govuk-label govuk-label--m" for="team-reference">Team name or invitation code</label>
+					<div id="team-reference-hint" class="govuk-hint">Enter the team name or invitation code you were given.</div>
+					<p id="team-reference-error" class="govuk-error-message" hidden></p>
+					<input class="govuk-input" id="team-reference" name="teamReference" type="text" autocomplete="off" aria-describedby="team-reference-hint">
+				</div>
 
-				{{ govukTextarea({
-					id: 'team-access-message',
-					name: 'message',
-					label: {
-						text: 'Message to the Team Admin',
-						classes: 'govuk-label--m'
-					},
-					hint: {
-						text: 'Optional. Include anything that will help the Team Admin review your request.'
-					},
-					attributes: {
-						maxlength: '500'
-					}
-				}) }}
+				<div class="govuk-form-group" id="team-access-message-group">
+					<label class="govuk-label govuk-label--m" for="team-access-message">Message to the Team Admin</label>
+					<div id="team-access-message-hint" class="govuk-hint">Optional. Include anything that will help the Team Admin review your request.</div>
+					<p id="team-access-message-error" class="govuk-error-message" hidden></p>
+					<textarea class="govuk-textarea" id="team-access-message" name="message" rows="5" maxlength="500" aria-describedby="team-access-message-hint"></textarea>
+				</div>
 
-				{{ govukButton({
-					text: 'Send request',
-					attributes: {
-						id: 'team-access-submit'
-					}
-				}) }}
+				<button class="govuk-button" data-module="govuk-button" id="team-access-submit">Send request</button>
 				<a class="govuk-link" href="/pages/account/">Cancel and return to your account</a>
 			</form>
 		</div>
