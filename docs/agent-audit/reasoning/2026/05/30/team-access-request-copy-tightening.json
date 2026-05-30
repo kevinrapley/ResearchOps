@@ -1,0 +1,61 @@
+{
+	"date": "2026-05-30",
+	"traceType": "operational-audit-trace",
+	"branch": "content/team-access-request-copy-v2",
+	"relatedPr": 315,
+	"story": "Story 3 follow-up — Request access to a team",
+	"traceRequired": true,
+	"taskSummary": "Tighten the team access request page content while keeping the single field for team name or invitation code.",
+	"selectedBundles": [
+		{
+			"id": "github-diamond",
+			"canonicalPath": ".agent-operating-model/bundles/github/",
+			"reason": "Always loaded for repository-affecting branch work."
+		},
+		{
+			"id": "researchops-developer-control",
+			"canonicalPath": ".agent-operating-model/bundles/researchops-developer-control/",
+			"reason": "Selected for ResearchOps account and access journey content."
+		},
+		{
+			"id": "multi-functional-team",
+			"canonicalPath": ".agent-operating-model/bundles/multi-functional-team/",
+			"reason": "Selected because the content affects a governed access flow."
+		},
+		{
+			"id": "govuk-design-system",
+			"canonicalPath": ".agent-operating-model/bundles/govuk-design-system/",
+			"reason": "Selected because the change affects GOV.UK copy, hints, form affordances and accessible descriptions."
+		}
+	],
+	"skippedBundles": [
+		"cloudflare",
+		"openai-platform",
+		"mcp-agent-tooling",
+		"airtable-public-api",
+		"mural-public-api"
+	],
+	"filesChanged": [
+		"src/govuk/templates/pages/account-team-access.njk",
+		"public/pages/account/team-access/index.html",
+		"tests/auth-team-access-request-route-state.test.js",
+		"docs/agent-audit/reasoning/2026/05/30/team-access-request-copy-tightening.md",
+		"docs/agent-audit/reasoning/2026/05/30/team-access-request-copy-tightening.json"
+	],
+	"implementationSummary": {
+		"singleFieldKept": true,
+		"backendBehaviourChanged": false,
+		"privacyHintLinkedToTextarea": true,
+		"controlsGroupedWithGovukButtonGroup": true
+	},
+	"validationExpected": [
+		"npm run validate",
+		"npm run lint",
+		"npm test -- --ci"
+	],
+	"validationRunInConnector": [],
+	"residualRisks": [
+		"Validation has not been run in this connector context.",
+		"Manual assistive-technology checks should confirm the privacy hint is announced with the textarea."
+	]
+}

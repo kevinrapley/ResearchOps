@@ -21,8 +21,15 @@
 		<div class="govuk-grid-column-two-thirds">
 			<span class="govuk-caption-l">ResearchOps account</span>
 			<h1 class="govuk-heading-xl">Request access to a team</h1>
-			<p class="govuk-body-l">Ask to join a team before using team-scoped ResearchOps features.</p>
-			<p class="govuk-body">A Team Admin needs to review your request before you can use that team’s research records. This request does not give you a role or sensitive access.</p>
+			<p class="govuk-body-l">Ask to join a team before using research records that belong to that team.</p>
+			<p class="govuk-body">A Team Admin must approve your request before you can use that team’s research records. This request will not give you a role or access to sensitive information.</p>
+
+			<h2 class="govuk-heading-m">What happens next</h2>
+			<ul class="govuk-list govuk-list--bullet">
+				<li>A Team Admin will review your request.</li>
+				<li>Your request will appear on your account page as “Awaiting approval”.</li>
+				<li>You cannot use this team’s research records until your request is approved.</li>
+			</ul>
 
 			<div class="govuk-error-summary" data-module="govuk-error-summary" id="team-access-error-summary" hidden>
 				<div role="alert">
@@ -43,20 +50,23 @@
 			<form id="team-access-request-form" novalidate data-submit-route="/api/team-access/requests" data-account-url="/pages/account/">
 				<div class="govuk-form-group" id="team-reference-group">
 					<label class="govuk-label govuk-label--m" for="team-reference">Team name or invitation code</label>
-					<div id="team-reference-hint" class="govuk-hint">Enter the team name or invitation code you were given.</div>
+					<div id="team-reference-hint" class="govuk-hint">Enter the team name, or paste the invitation code given to you by a Team Admin.</div>
 					<p id="team-reference-error" class="govuk-error-message" hidden></p>
 					<input class="govuk-input" id="team-reference" name="teamReference" type="text" autocomplete="off" aria-describedby="team-reference-hint">
 				</div>
 
 				<div class="govuk-form-group" id="team-access-message-group">
 					<label class="govuk-label govuk-label--m" for="team-access-message">Message to the Team Admin</label>
-					<div id="team-access-message-hint" class="govuk-hint">Optional. Include anything that will help the Team Admin review your request.</div>
+					<div id="team-access-message-hint" class="govuk-hint">Optional. For example, explain which project, study or team activity you need access for.</div>
+					<p id="team-access-message-privacy-hint" class="govuk-hint">Do not include participant names, contact details or sensitive research information.</p>
 					<p id="team-access-message-error" class="govuk-error-message" hidden></p>
-					<textarea class="govuk-textarea" id="team-access-message" name="message" rows="5" maxlength="500" aria-describedby="team-access-message-hint"></textarea>
+					<textarea class="govuk-textarea" id="team-access-message" name="message" rows="5" maxlength="500" aria-describedby="team-access-message-hint team-access-message-privacy-hint"></textarea>
 				</div>
 
-				<button class="govuk-button" data-module="govuk-button" id="team-access-submit">Send request</button>
-				<a class="govuk-link" href="/pages/account/">Cancel and return to your account</a>
+				<div class="govuk-button-group">
+					<button class="govuk-button" data-module="govuk-button" id="team-access-submit">Send request</button>
+					<a class="govuk-link" href="/pages/account/">Cancel and return to your account</a>
+				</div>
 			</form>
 		</div>
 	</div>
