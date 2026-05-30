@@ -197,6 +197,7 @@ INSERT OR IGNORE INTO auth_role_permissions (role_id, permission_code) VALUES
 
 INSERT OR IGNORE INTO auth_route_permissions (id, method, route_pattern, required_permissions_json, auth_required, implementation_status) VALUES
   ('route_api_me_get', 'GET', '/api/me', '[]', 1, 'implemented'),
+  ('route_api_me_identity_get', 'GET', '/api/me/identity', '[]', 1, 'implemented'),
   ('route_api_me_permissions_get', 'GET', '/api/me/permissions', '[]', 1, 'implemented'),
   ('route_api_role_assignments_post', 'POST', '/api/auth/role-assignments', '["role.assign"]', 1, 'deferred'),
   ('route_api_account_activity_get', 'GET', '/api/audit/account-activity', '[]', 1, 'deferred'),
