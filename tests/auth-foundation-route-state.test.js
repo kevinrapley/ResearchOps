@@ -24,6 +24,20 @@ async function assertMeRouteFailsClosedWithoutAccessToken() {
   assert.equal(payload.error, "authentication_required");
 }
 
+async function assertMeIdentityRouteFailsClosedWithoutAccessToken() {
+  const response = await worker.fetch(
+    new Request("https://worker.test/api/me/identity"),
+    env,
+    {},
+  );
+
+  assert.equal(response.status, 401);
+
+  const payload = await readJson(response);
+  assert.equal(payload.ok, false);
+  assert.equal(payload.error, "authentication_required");
+}
+
 async function assertPermissionsRouteFailsClosedWithoutAccessToken() {
   const response = await worker.fetch(
     new Request("https://worker.test/api/me/permissions"),
@@ -46,6 +60,7 @@ function assertWorkerRoutesAuthThroughScopedAccessResolver() {
     /import \{ handleMeRoute \} from "\.\/core\/auth\/access-scoped\.js";/,
   );
   assert.match(workerSource, /apiPath === "\/api\/me"/);
+  assert.match(workerSource, /apiPath === "\/api\/me\/identity"/);
   assert.match(workerSource, /apiPath === "\/api\/me\/permissions"/);
 }
 
@@ -58,6 +73,27 @@ function assertIdentityRoutesUseRoutePermissions() {
   assert.match(authSource, /assertRoutePermission/);
   assert.match(authSource, /routePermissionErrorResponse/);
   assert.match(authSource, /await assertRoutePermission\(request, env, context\)/);
+  assert.match(authSource, /apiPath === '\/api\/me\/identity'/);
+  assert.match(authSource, /identityUserFor\(context\)/);
+  assert.match(authSource, /provider: context\.provider/);
+}
+
+function assertIdentityOnlyRouteKeepsAuthorisationStateOutOfPrimaryResponse() {
+  const authSource = fs.readFileSync(
+    "infra/cloudflare/src/core/auth/access-scoped.js",
+    "utf8",
+  );
+
+  const identityRouteStart = authSource.indexOf("apiPath === '/api/me/identity'");
+  const permissionsRouteStart = authSource.indexOf("apiPath === '/api/me/permissions'");
+  const identityBlock = authSource.slice(identityRouteStart, permissionsRouteStart);
+
+  assert.notEqual(identityRouteStart, -1);
+  assert.notEqual(permissionsRouteStart, -1);
+  assert.equal(identityBlock.includes("activeTeam"), false);
+  assert.equal(identityBlock.includes("roles"), false);
+  assert.equal(identityBlock.includes("permissions"), false);
+  assert.equal(identityBlock.includes("memberTeams"), false);
 }
 
 function assertNoMockIdentityModeExists() {
@@ -99,14 +135,17 @@ function assertMigrationContainsRequiredControlPlaneTables() {
     /scope_type TEXT NOT NULL CHECK \(scope_type IN \('team', 'project', 'study'\)\)/,
   );
   assert.match(migration, /scope_id TEXT NOT NULL/);
+  assert.match(migration, /'route_api_me_identity_get', 'GET', '\/api\/me\/identity'/);
   assert.match(migration, /safeguarding\.audit\.view/);
   assert.match(migration, /audit\.export/);
   assert.match(migration, /participant\.pii\.export/);
 }
 
 await assertMeRouteFailsClosedWithoutAccessToken();
+await assertMeIdentityRouteFailsClosedWithoutAccessToken();
 await assertPermissionsRouteFailsClosedWithoutAccessToken();
 assertWorkerRoutesAuthThroughScopedAccessResolver();
 assertIdentityRoutesUseRoutePermissions();
+assertIdentityOnlyRouteKeepsAuthorisationStateOutOfPrimaryResponse();
 assertNoMockIdentityModeExists();
 assertMigrationContainsRequiredControlPlaneTables();
