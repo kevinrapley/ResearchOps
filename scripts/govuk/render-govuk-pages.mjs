@@ -94,6 +94,11 @@ const projectNavigation = navigation.map((item) => ({
 	active: item.href === '/pages/projects/',
 }));
 
+const accountNavigation = navigation.map((item) => ({
+	...item,
+	active: false,
+}));
+
 const pages = [
 	{
 		template: 'pages/home.njk',
@@ -127,10 +132,17 @@ const pages = [
 			pageTitle: 'Your ResearchOps account - ResearchOps Demo Suite',
 			serviceName: 'ResearchOps Demo Suite',
 			activeNavigation: '',
-			navigation: navigation.map((item) => ({
-				...item,
-				active: false,
-			})),
+			navigation: accountNavigation,
+		},
+	},
+	{
+		template: 'pages/account-team-access.njk',
+		output: 'public/pages/account/team-access/index.html',
+		context: {
+			pageTitle: 'Request access to a team - ResearchOps Demo Suite',
+			serviceName: 'ResearchOps Demo Suite',
+			activeNavigation: '',
+			navigation: accountNavigation,
 		},
 	},
 	{
