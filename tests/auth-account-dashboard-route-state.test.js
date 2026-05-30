@@ -151,10 +151,10 @@ function assertDashboardSupportsLogout() {
 
 function assertProductRequirementsSupportPermissionBasedDashboard() {
 	assert.match(productRequirements, /Users should know who they are signed in as and what team context is active/);
-	assert.match(productRequirements, /Given a user belongs to multiple teams, then the active team is visible/);
-	assert.match(productRequirements, /Given a role is active, then account settings show the role and main permissions/);
-	assert.match(productRequirements, /Use permission checks like `governed\.approve` or `safeguarding\.view`/);
-	assert.match(productRequirements, /Given a user signs out, then the local ResearchOps session is invalidated/);
+	assert.match(productRequirements, /The system should support scoped roles/);
+	assert.match(productRequirements, /Use plain language descriptions/);
+	assert.match(productRequirements, /Roles should map to permissions/);
+	assert.match(productRequirements, /Client-side hiding is convenience, not security/);
 }
 
 function assertStory2ScopeIsAccountSummaryOnly() {
