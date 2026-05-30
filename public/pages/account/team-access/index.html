@@ -1,0 +1,75 @@
+<!doctype html>
+<html class="govuk-template" lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Request access to a team - ResearchOps Demo Suite</title>
+	<link rel="stylesheet" href="/assets/govuk/govuk-frontend.css" media="screen">
+	<script type="module" src="/components/layout.js" defer></script>
+	<script type="module" src="/js/govuk-frontend-init.js" defer></script>
+</head>
+<body class="govuk-template__body">
+	<script>document.body.className += ' js-enabled' + ('noModule' in HTMLScriptElement.prototype ? ' govuk-frontend-supported' : '');</script>
+	<x-include src="/partials/header.html" vars='{"active":""}'></x-include>
+	<main class="govuk-main-wrapper" id="main-content" role="main" tabindex="-1">
+		<div class="govuk-width-container">
+			<div class="govuk-breadcrumbs">
+				<ol class="govuk-breadcrumbs__list">
+					<li class="govuk-breadcrumbs__list-item">
+						<a class="govuk-breadcrumbs__link" href="/">Home</a>
+					</li>
+					<li class="govuk-breadcrumbs__list-item">
+						<a class="govuk-breadcrumbs__link" href="/pages/account/">Your account</a>
+					</li>
+				</ol>
+			</div>
+
+			<div class="govuk-grid-row">
+				<div class="govuk-grid-column-two-thirds">
+					<span class="govuk-caption-l">ResearchOps account</span>
+					<h1 class="govuk-heading-xl">Request access to a team</h1>
+					<p class="govuk-body-l">Ask to join a team before using team-scoped ResearchOps features.</p>
+					<p class="govuk-body">A Team Admin needs to review your request before you can use that team’s research records. This request does not give you a role or sensitive access.</p>
+
+					<div class="govuk-error-summary" data-module="govuk-error-summary" id="team-access-error-summary" hidden>
+						<div role="alert">
+							<h2 class="govuk-error-summary__title">There is a problem</h2>
+							<div class="govuk-error-summary__body">
+								<ul class="govuk-list govuk-error-summary__list" id="team-access-error-list"></ul>
+							</div>
+						</div>
+					</div>
+
+					<div class="govuk-notification-banner" role="region" aria-live="polite" aria-labelledby="team-access-status-title" id="team-access-status" hidden>
+						<div class="govuk-notification-banner__header">
+							<h2 class="govuk-notification-banner__title" id="team-access-status-title">Team access request</h2>
+						</div>
+						<div class="govuk-notification-banner__content" id="team-access-status-body"></div>
+					</div>
+
+					<form id="team-access-request-form" novalidate data-submit-route="/api/team-access/requests" data-account-url="/pages/account/">
+						<div class="govuk-form-group" id="team-reference-group">
+							<label class="govuk-label govuk-label--m" for="team-reference">Team name or invitation code</label>
+							<div id="team-reference-hint" class="govuk-hint">Enter the team name or invitation code you were given.</div>
+							<p id="team-reference-error" class="govuk-error-message" hidden></p>
+							<input class="govuk-input" id="team-reference" name="teamReference" type="text" autocomplete="off" aria-describedby="team-reference-hint">
+						</div>
+
+						<div class="govuk-form-group" id="team-access-message-group">
+							<label class="govuk-label govuk-label--m" for="team-access-message">Message to the Team Admin</label>
+							<div id="team-access-message-hint" class="govuk-hint">Optional. Include anything that will help the Team Admin review your request.</div>
+							<p id="team-access-message-error" class="govuk-error-message" hidden></p>
+							<textarea class="govuk-textarea" id="team-access-message" name="message" rows="5" maxlength="500" aria-describedby="team-access-message-hint"></textarea>
+						</div>
+
+						<button class="govuk-button" data-module="govuk-button" id="team-access-submit">Send request</button>
+						<a class="govuk-link" href="/pages/account/">Cancel and return to your account</a>
+					</form>
+				</div>
+			</div>
+		</div>
+	</main>
+	<x-include src="/partials/footer.html"></x-include>
+	<script type="module" src="/js/auth-team-access-page.js?v=team-access-request-20260530"></script>
+</body>
+</html>
