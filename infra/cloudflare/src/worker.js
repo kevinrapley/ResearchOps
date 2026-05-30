@@ -282,7 +282,7 @@ export default {
 			if ((method === "GET" || method === "POST") && apiPath === "/api/auth/registration-requests") result = await handleRegistrationRequestsRoute(request, env, apiPath);
 			else if (method === "POST" && apiPath.startsWith("/api/auth/email/")) result = await handlePasswordlessAuthRoute(request, env, apiPath);
 			else if (method === "POST" && apiPath === "/api/auth/logout") result = await handlePasswordlessAuthRoute(request, env, apiPath);
-			else if (method === "GET" && (apiPath === "/api/me" || apiPath === "/api/me/permissions")) result = await handleMeRoute(request, env, apiPath);
+			else if (method === "GET" && (apiPath === "/api/me" || apiPath === "/api/me/identity" || apiPath === "/api/me/permissions")) result = await handleMeRoute(request, env, apiPath);
 			else if (method === "POST" && apiPath === "/api/auth/role-assignments") result = await handleRoleAssignmentsRoute(request, env);
 			else if (method === "GET" && apiPath === "/api/_diag/projects-source") result = await handleProjectSourceDiagnostics(request, env);
 			else if (method === "GET" && apiPath === "/api/_diag/project-linked-records") result = await handleProjectLinkedDiagnostics(request, env);
