@@ -1,0 +1,93 @@
+{% extends "layouts/researchops.njk" %}
+
+{% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
+{% from "govuk/components/input/macro.njk" import govukInput %}
+{% from "govuk/components/textarea/macro.njk" import govukTextarea %}
+
+{% block content %}
+<div class="govuk-width-container">
+	{{ govukBreadcrumbs({
+		items: [
+			{
+				text: 'Home',
+				href: '/'
+			},
+			{
+				text: 'Your account',
+				href: '/pages/account/'
+			}
+		]
+	}) }}
+
+	<div class="govuk-grid-row">
+		<div class="govuk-grid-column-two-thirds">
+			<span class="govuk-caption-l">ResearchOps account</span>
+			<h1 class="govuk-heading-xl">Request access to a team</h1>
+			<p class="govuk-body-l">Ask to join a team before using team-scoped ResearchOps features.</p>
+			<p class="govuk-body">A Team Admin needs to review your request before you can use that team’s research records. This request does not give you a role or sensitive access.</p>
+
+			{{ govukErrorSummary({
+				titleText: 'There is a problem',
+				errorList: [],
+				attributes: {
+					id: 'team-access-error-summary',
+					hidden: 'hidden'
+				}
+			}) }}
+
+			<div class="govuk-notification-banner" role="region" aria-live="polite" aria-labelledby="team-access-status-title" id="team-access-status" hidden>
+				<div class="govuk-notification-banner__header">
+					<h2 class="govuk-notification-banner__title" id="team-access-status-title">Team access request</h2>
+				</div>
+				<div class="govuk-notification-banner__content" id="team-access-status-body"></div>
+			</div>
+
+			<form id="team-access-request-form" novalidate data-submit-route="/api/team-access/requests" data-account-url="/pages/account/">
+				{{ govukInput({
+					id: 'team-reference',
+					name: 'teamReference',
+					label: {
+						text: 'Team name or invitation code',
+						classes: 'govuk-label--m'
+					},
+					hint: {
+						text: 'Enter the team name or invitation code you were given.'
+					},
+					attributes: {
+						autocomplete: 'off'
+					}
+				}) }}
+
+				{{ govukTextarea({
+					id: 'team-access-message',
+					name: 'message',
+					label: {
+						text: 'Message to the Team Admin',
+						classes: 'govuk-label--m'
+					},
+					hint: {
+						text: 'Optional. Include anything that will help the Team Admin review your request.'
+					},
+					attributes: {
+						maxlength: '500'
+					}
+				}) }}
+
+				{{ govukButton({
+					text: 'Send request',
+					attributes: {
+						id: 'team-access-submit'
+					}
+				}) }}
+				<a class="govuk-link" href="/pages/account/">Cancel and return to your account</a>
+			</form>
+		</div>
+	</div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script type="module" src="/js/auth-team-access-page.js?v=team-access-request-20260530"></script>
+{% endblock %}
