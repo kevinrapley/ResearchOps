@@ -47,6 +47,10 @@ const dom = {
 	dashboard: document.getElementById('account-dashboard'),
 	title: document.getElementById('account-dashboard-title'),
 	user: document.getElementById('account-user-value'),
+	email: document.getElementById('account-email-value'),
+	accountStatus: document.getElementById('account-status-value'),
+	currentTeamSection: document.getElementById('account-current-team-section'),
+	currentTeam: document.getElementById('account-current-team-value'),
 	teamMemberships: document.getElementById('account-team-memberships'),
 	actionsSection: document.getElementById('account-actions-section'),
 	actions: document.getElementById('account-actions'),
@@ -124,16 +128,40 @@ async function fetchJson(path, options = {}) {
 }
 
 function displayName(context) {
-	const rawName = context?.user?.displayName || context?.user?.email || 'there';
+	const rawName = context?.user?.displayName || context?.user?.email || 'Not available';
 	return String(rawName).includes('@') ? String(rawName).split('@')[0] : rawName;
+}
+
+function formatAccountStatus(value) {
+	const status = String(value || '').trim().toLowerCase();
+	if (!status) return 'Not available';
+	return status
+		.split(/[-_\s]+/)
+		.filter(Boolean)
+		.map((part) => `${part.charAt(0).toUpperCase()}${part.slice(1)}`)
+		.join(' ');
 }
 
 function labelList(items, emptyLabel) {
 	const labels = (items || [])
-		.map((item) => item.label || item.name || item.code || item.key)
+		.map((item) => item.label || item.name)
 		.filter(Boolean)
 		.sort((first, second) => first.localeCompare(second));
 	return labels.length ? labels.join(', ') : emptyLabel;
+}
+
+function capabilityLabel(permission) {
+	return permission?.label || permission?.description || '';
+}
+
+function capabilityItems(permissions = []) {
+	return permissions
+		.map((permission) => ({
+			label: capabilityLabel(permission),
+			sensitive: permission?.sensitive === true,
+		}))
+		.filter((permission) => permission.label)
+		.sort((first, second) => first.label.localeCompare(second.label));
 }
 
 function fallbackActiveTeamMembership(context) {
@@ -162,7 +190,7 @@ function teamMemberships(context) {
 		normalised.push({
 			...team,
 			roles: team.roles || [],
-			permissions: team.permissions || [],
+			permissions: team.permissions || team.capabilities || [],
 			current: Boolean(team.current || (activeTeamId && team.id === activeTeamId)),
 		});
 	}
@@ -176,7 +204,7 @@ function permissionCodes(context) {
 
 function permissionLabels(context) {
 	return (context?.permissions || [])
-		.map((permission) => permission.label || permission.code)
+		.map((permission) => capabilityLabel(permission))
 		.filter(Boolean)
 		.sort((first, second) => first.localeCompare(second));
 }
@@ -197,9 +225,9 @@ function hasResearchOpsCoreTeamAdmin(memberships) {
 	return (memberships || []).some(isResearchOpsCoreTeamAdmin);
 }
 
-function currentTag(team, membershipCount) {
-	if (!team?.current || membershipCount <= 1) return '';
-	return '<strong class="govuk-tag govuk-tag--blue">Current</strong>';
+function currentTag(team) {
+	if (!team?.current) return '';
+	return '<strong class="govuk-tag govuk-tag--blue">Current team</strong>';
 }
 
 function roleLabels(team) {
@@ -215,38 +243,17 @@ function renderCoreAdminInset(team) {
 	`;
 }
 
-function renderSingleTeamMembership(team) {
+function renderCapabilityList(team) {
+	const capabilities = capabilityItems(team?.permissions || []);
+	if (capabilities.length === 0) return '<p class="govuk-body">No active access summary for this team.</p>';
 	return `
-		<h3 class="govuk-heading-s">Your team</h3>
-		<dl class="govuk-summary-list govuk-!-margin-bottom-6">
-			<div class="govuk-summary-list__row">
-				<dt class="govuk-summary-list__key">Team</dt>
-				<dd class="govuk-summary-list__value">${escapeHtml(team.name || team.id || 'Unnamed team')}</dd>
-			</div>
-			<div class="govuk-summary-list__row">
-				<dt class="govuk-summary-list__key">Role or roles</dt>
-				<dd class="govuk-summary-list__value">${escapeHtml(roleLabels(team))}</dd>
-			</div>
-		</dl>
-		${renderCoreAdminInset(team)}
-	`;
-}
-
-function renderMultipleTeamMemberships(memberships) {
-	return `
-		<h3 class="govuk-heading-s">Your teams</h3>
-		<p class="govuk-body">You have different access in each team.</p>
-		<ul class="govuk-list govuk-list--spaced">
-			${memberships
+		<ul class="govuk-list govuk-list--bullet">
+			${capabilities
 				.map(
-					(team) => `
+					(capability) => `
 						<li>
-							<h4 class="govuk-heading-s govuk-!-margin-bottom-1">
-								${escapeHtml(team.name || team.id || 'Unnamed team')}
-								${currentTag(team, memberships.length)}
-							</h4>
-							<p class="govuk-body govuk-!-margin-bottom-0">${escapeHtml(roleLabels(team))}</p>
-							${renderCoreAdminInset(team)}
+							${escapeHtml(capability.label)}
+							${capability.sensitive ? '<strong class="govuk-tag govuk-tag--yellow">Sensitive access</strong>' : ''}
 						</li>
 					`,
 				)
@@ -255,17 +262,58 @@ function renderMultipleTeamMemberships(memberships) {
 	`;
 }
 
+function renderTeamMembership(team) {
+	return `
+		<div class="govuk-summary-card">
+			<div class="govuk-summary-card__title-wrapper">
+				<h3 class="govuk-summary-card__title">
+					${escapeHtml(team.name || team.id || 'Unnamed team')}
+					${currentTag(team)}
+				</h3>
+			</div>
+			<div class="govuk-summary-card__content">
+				<dl class="govuk-summary-list govuk-summary-list--no-border">
+					<div class="govuk-summary-list__row">
+						<dt class="govuk-summary-list__key">Role or roles</dt>
+						<dd class="govuk-summary-list__value">${escapeHtml(roleLabels(team))}</dd>
+					</div>
+					<div class="govuk-summary-list__row">
+						<dt class="govuk-summary-list__key">What this lets you do</dt>
+						<dd class="govuk-summary-list__value">${renderCapabilityList(team)}</dd>
+					</div>
+				</dl>
+				${renderCoreAdminInset(team)}
+			</div>
+		</div>
+	`;
+}
+
 function renderTeamMemberships(context) {
 	if (!dom.teamMemberships) return;
 	const memberships = teamMemberships(context);
 
 	if (memberships.length === 0) {
-		dom.teamMemberships.innerHTML = '<p class="govuk-body">You are not currently a member of any team.</p>';
+		dom.teamMemberships.innerHTML = `
+			<div class="govuk-inset-text">
+				<p class="govuk-body">You are not currently a member of any team.</p>
+				<p class="govuk-body">Ask a Team Admin to add you to a team or review your account request.</p>
+			</div>
+		`;
 		return;
 	}
 
-	dom.teamMemberships.innerHTML =
-		memberships.length === 1 ? renderSingleTeamMembership(memberships[0]) : renderMultipleTeamMemberships(memberships);
+	dom.teamMemberships.innerHTML = memberships.map(renderTeamMembership).join('');
+}
+
+function renderCurrentTeam(context, memberships) {
+	const currentTeam = memberships.find((team) => team.current) || context?.activeTeam || null;
+	if (!dom.currentTeam || !dom.currentTeamSection) return;
+	if (!currentTeam?.id) {
+		setVisible(dom.currentTeamSection, false);
+		return;
+	}
+	dom.currentTeam.textContent = currentTeam.name || currentTeam.id;
+	setVisible(dom.currentTeamSection, true);
 }
 
 function allowedActions(context) {
@@ -295,7 +343,10 @@ function renderPermissions(context, memberships) {
 function renderDashboard(context) {
 	const memberships = teamMemberships(context);
 	if (dom.title) dom.title.textContent = 'Your ResearchOps account';
-	if (dom.user) dom.user.textContent = context?.user?.displayName || context?.user?.email || 'Not available';
+	if (dom.user) dom.user.textContent = displayName(context);
+	if (dom.email) dom.email.textContent = context?.user?.email || 'Not available';
+	if (dom.accountStatus) dom.accountStatus.textContent = formatAccountStatus(context?.user?.accountStatus);
+	renderCurrentTeam(context, memberships);
 	renderTeamMemberships(context);
 	renderActions(context);
 	renderPermissions(context, memberships);
@@ -352,9 +403,11 @@ window.__ropsAuthAccountPage = Object.freeze({
 	ACTIONS,
 	CONFIG,
 	allowedActions,
+	capabilityItems,
 	defaultApiOrigin,
 	displayName,
 	fallbackActiveTeamMembership,
+	formatAccountStatus,
 	permissionCodes,
 	renderDashboard,
 	teamMemberships,
