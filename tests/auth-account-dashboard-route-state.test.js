@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 
 const accountPage = fs.readFileSync('public/pages/account/index.html', 'utf8');
+const accountTemplate = fs.readFileSync('src/govuk/templates/pages/account.njk', 'utf8');
 const accountScript = fs.readFileSync('public/js/auth-account-page.js', 'utf8');
 const productRequirements = fs.readFileSync(
 	'docs/product/26/05/08/authentication-role-selection-requirements-2026-05-08.md',
@@ -24,6 +25,10 @@ function assertAccountPageExistsAsDashboard() {
 	assert.match(accountPage, /id="account-team-memberships"/);
 	assert.match(accountPage, /Your teams and roles/);
 	assert.match(accountPage, /You may have different roles and access in each team/);
+	assert.match(accountPage, /id="account-team-access-requests-section" hidden/);
+	assert.match(accountPage, /id="account-team-access-requests"/);
+	assert.match(accountPage, /Team access requests/);
+	assert.match(accountPage, /Requests shown here are awaiting approval/);
 	assert.doesNotMatch(accountPage, /id="account-team-value"/);
 	assert.doesNotMatch(accountPage, /id="account-roles-value"/);
 	assert.doesNotMatch(accountPage, /<h2 class="govuk-heading-m" id="account-summary-title">Account summary<\/h2>/);
@@ -37,6 +42,14 @@ function assertAccountPageExistsAsDashboard() {
 	assert.match(accountPage, /id="account-logout"/);
 }
 
+function assertAccountTemplateMatchesGeneratedTeamAccessRequestSection() {
+	assert.match(accountTemplate, /id="account-team-access-requests-section" hidden/);
+	assert.match(accountTemplate, /id="account-team-access-requests"/);
+	assert.match(accountTemplate, /Team access requests/);
+	assert.match(accountTemplate, /Requests shown here are awaiting approval/);
+	assert.match(accountTemplate, /team-access-request-20260530/);
+}
+
 function assertAccountPageDoesNotUseSuccessMessagePattern() {
 	assert.equal(accountPage.includes('You are signed in'), false);
 	assert.equal(accountPage.includes('Signed in successfully'), false);
@@ -44,7 +57,7 @@ function assertAccountPageDoesNotUseSuccessMessagePattern() {
 }
 
 function assertAccountPageLoadsDashboardScript() {
-	assert.match(accountPage, /\/js\/auth-account-page\.js\?v=account-access-summary-20260530/);
+	assert.match(accountPage, /\/js\/auth-account-page\.js\?v=team-access-request-20260530/);
 }
 
 function assertDashboardUsesSameOriginApiAndAuthContext() {
@@ -86,10 +99,30 @@ function assertDashboardRendersAdaptiveTeamMembershipPresentation() {
 	assert.match(accountScript, /No active role/);
 	assert.match(accountScript, /What this lets you do/);
 	assert.match(accountScript, /No active access summary for this team/);
-	assert.match(accountScript, /Ask a Team Admin to add you to a team or review your account request/);
+	assert.match(accountScript, /function renderNoTeamState\(\)/);
+	assert.match(accountScript, /Request access to a team before using team-scoped ResearchOps features/);
+	assert.match(accountScript, /href="\$\{CONFIG\.TEAM_ACCESS_URL\}">Request access to a team/);
 	assert.match(accountScript, /dom\.title\) dom\.title\.textContent = 'Your ResearchOps account'/);
 	assert.doesNotMatch(accountScript, /Team membership and role access/);
 	assert.doesNotMatch(accountScript, /activeTeamLabel\(context\)/);
+}
+
+function assertDashboardRendersTeamAccessRequestsSeparately() {
+	assert.match(accountScript, /TEAM_ACCESS_URL: '\/pages\/account\/team-access\/'/);
+	assert.match(accountScript, /teamAccessRequestsSection: document\.getElementById\('account-team-access-requests-section'\)/);
+	assert.match(accountScript, /teamAccessRequests: document\.getElementById\('account-team-access-requests'\)/);
+	assert.match(accountScript, /function renderTeamAccessRequest\(request\)/);
+	assert.match(accountScript, /Awaiting approval/);
+	assert.match(accountScript, /This request does not give access to team records yet/);
+	assert.match(accountScript, /data-cancel-team-access-request/);
+	assert.match(accountScript, /function renderTeamAccessRequests\(requests = \[\]\)/);
+	assert.match(accountScript, /setVisible\(dom\.teamAccessRequestsSection, false\)/);
+	assert.match(accountScript, /setVisible\(dom\.teamAccessRequestsSection, true\)/);
+	assert.match(accountScript, /async function loadTeamAccessRequests\(\)/);
+	assert.match(accountScript, /fetchJson\('\/api\/team-access\/requests'\)/);
+	assert.match(accountScript, /async function cancelTeamAccessRequest\(requestId\)/);
+	assert.match(accountScript, /fetchJson\('\/api\/team-access\/requests\/cancel'/);
+	assert.match(accountScript, /renderDashboard\(response\.data, requests\)/);
 }
 
 function assertDashboardRendersCurrentTeamContextWithoutHidingMemberships() {
@@ -166,11 +199,13 @@ function assertStory2ScopeIsAccountSummaryOnly() {
 }
 
 assertAccountPageExistsAsDashboard();
+assertAccountTemplateMatchesGeneratedTeamAccessRequestSection();
 assertAccountPageDoesNotUseSuccessMessagePattern();
 assertAccountPageLoadsDashboardScript();
 assertDashboardUsesSameOriginApiAndAuthContext();
 assertDashboardRendersAccountIdentity();
 assertDashboardRendersAdaptiveTeamMembershipPresentation();
+assertDashboardRendersTeamAccessRequestsSeparately();
 assertDashboardRendersCurrentTeamContextWithoutHidingMemberships();
 assertDashboardSeparatesRolesFromCapabilities();
 assertDashboardExplainsSensitiveAccessProportionately();
