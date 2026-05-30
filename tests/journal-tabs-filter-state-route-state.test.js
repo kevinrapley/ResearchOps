@@ -26,8 +26,9 @@ includes("categoryKey: normalizeCategoryKey(rawCategory)");
 includes("filter === 'all' || String(en.categoryKey || normalizeCategoryKey(en.category)).toLowerCase() === filter");
 includes("data-category=\"${esc(en.categoryKey || normalizeCategoryKey(en.category))}\"");
 includes("wrap.innerHTML = emptyEntriesHtml(); return;");
-includes("<button type=\"button\" class=\"btn-quiet danger\"");
+includes("<button type=\"button\" class=\"govuk-button govuk-button--warning\"");
 
+excludes("<button type=\"button\" class=\"btn-quiet danger\"");
 excludes("const empty = document.getElementById('empty-journal');");
 excludes("wrap.innerHTML = ''; if (empty) empty.hidden = false; return;");
 excludes("String(en.category || '').toLowerCase() === filter");
