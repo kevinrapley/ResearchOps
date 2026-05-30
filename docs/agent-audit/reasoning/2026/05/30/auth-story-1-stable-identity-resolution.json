@@ -1,0 +1,100 @@
+{
+	"date": "2026-05-30",
+	"traceType": "operational-audit-trace",
+	"branch": "feature/auth-stable-internal-user-identity",
+	"epic": "ROPS-AUTH-P1-000 — Governed access, permissions and audit",
+	"story": "Sign in as a known user and resolve internal identity",
+	"traceRequired": true,
+	"taskSummary": "Begin implementation work for Story 1 by establishing a narrow, testable identity-only route and product plan for stable internal user identity resolution.",
+	"operatingModelFilesLoaded": [
+		"AGENTS.md",
+		".agent-operating-model/orchestration.xml",
+		".agent-operating-model/bundle-registry.json",
+		".agent-operating-model/task-signal-catalog.json",
+		".agent-operating-model/selection-rules.json",
+		".agent-operating-model/github-mutation-policy.md"
+	],
+	"selectedBundles": [
+		{
+			"id": "github-diamond",
+			"canonicalPath": ".agent-operating-model/bundles/github/",
+			"reason": "Always loaded for repository-affecting branch work."
+		},
+		{
+			"id": "researchops-developer-control",
+			"canonicalPath": ".agent-operating-model/bundles/researchops-developer-control/",
+			"reason": "Selected for ResearchOps platform architecture and Worker route behaviour."
+		},
+		{
+			"id": "multi-functional-team",
+			"canonicalPath": ".agent-operating-model/bundles/multi-functional-team/",
+			"reason": "Selected for government product assurance and access-control risk framing."
+		},
+		{
+			"id": "govuk-design-system",
+			"canonicalPath": ".agent-operating-model/bundles/govuk-design-system/",
+			"reason": "Selected because Story 1 includes sign-in and account-language commitments."
+		},
+		{
+			"id": "cloudflare",
+			"canonicalPath": ".agent-operating-model/bundles/cloudflare/",
+			"reason": "Selected because the implementation affects Cloudflare Worker routing and D1-backed auth state."
+		}
+	],
+	"skippedBundles": [
+		"openai-platform",
+		"mcp-agent-tooling",
+		"airtable-public-api",
+		"mural-public-api"
+	],
+	"filesRead": [
+		"docs/product/26/05/08/authentication-role-selection-requirements-2026-05-08.md",
+		"infra/cloudflare/src/core/auth/access.js",
+		"infra/cloudflare/src/core/auth/access-scoped.js",
+		"infra/cloudflare/src/core/auth/passwordless.js",
+		"infra/cloudflare/src/core/auth/route-permissions.js",
+		"infra/cloudflare/src/worker.js",
+		"infra/cloudflare/migrations/0001_auth_foundation.sql",
+		"tests/auth-foundation-route-state.test.js",
+		"tests/auth-registration-requests-runtime.test.js"
+	],
+	"filesChanged": [
+		"docs/product/26/05/30/auth-story-1-stable-identity-resolution.md",
+		"infra/cloudflare/migrations/0001_auth_foundation.sql",
+		"infra/cloudflare/src/core/auth/access-scoped.js",
+		"infra/cloudflare/src/worker.js",
+		"tests/auth-foundation-route-state.test.js",
+		"docs/agent-audit/reasoning/2026/05/30/auth-story-1-stable-identity-resolution.md",
+		"docs/agent-audit/reasoning/2026/05/30/auth-story-1-stable-identity-resolution.json"
+	],
+	"implementationSummary": {
+		"route": "GET /api/me/identity",
+		"purpose": "Return identity-only signed-in user data without roles, permissions or team membership state.",
+		"identityResponseFields": [
+			"ok",
+			"authenticated",
+			"provider",
+			"user.id",
+			"user.displayName",
+			"user.email",
+			"user.accountStatus"
+		],
+		"excludedFromIdentityResponse": [
+			"activeTeam",
+			"roles",
+			"permissions",
+			"memberTeams",
+			"teamMemberships"
+		]
+	},
+	"validationExpected": [
+		"npm run validate",
+		"npm run lint",
+		"npm test -- --ci"
+	],
+	"validationRunInConnector": [],
+	"residualRisks": [
+		"Validation has not been run in this connector context.",
+		"The next implementation step should add an end-to-end signed-in runtime test with a FakeD1 identity provider assertion."
+	]
+}
