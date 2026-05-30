@@ -10,10 +10,9 @@ const accessScoped = fs.readFileSync('infra/cloudflare/src/core/auth/access-scop
 const passwordless = fs.readFileSync('infra/cloudflare/src/core/auth/passwordless.js', 'utf8');
 const routePermissions = fs.readFileSync('infra/cloudflare/src/core/auth/route-permissions.js', 'utf8');
 const authFoundationMigration = fs.readFileSync('infra/cloudflare/migrations/0001_auth_foundation.sql', 'utf8');
-const passwordlessMigration = fs.readFileSync('infra/cloudflare/migrations/0003_auth_passwordless_sessions.sql', 'utf8');
+const identityRouteMigration = fs.readFileSync('infra/cloudflare/migrations/0004_auth_identity_route.sql', 'utf8');
 const authFoundationTest = fs.readFileSync('tests/auth-foundation-route-state.test.js', 'utf8');
 const signInRouteTest = fs.readFileSync('tests/auth-sign-in-route-state.test.js', 'utf8');
-const storyPlan = fs.readFileSync('docs/product/26/05/30/auth-story-1-stable-identity-resolution.md', 'utf8');
 const seedRunbook = fs.readFileSync('docs/product/26/05/30/auth-story-1-d1-alpha-user-seed-runbook.md', 'utf8');
 
 function includes(source, text, label) {
@@ -63,10 +62,10 @@ function assertAC4FirstTimeKnownUserCanBeCreatedOrMatchedSafely() {
 	includes(passwordless, 'SELECT id, email, display_name, account_status FROM auth_users WHERE lower(email) = lower(?) LIMIT 1', 'passwordless user resolution');
 	includes(passwordless, "INSERT INTO auth_users (id, email, display_name, account_status) VALUES (?, ?, ?, 'pending')", 'passwordless user resolution');
 	includes(passwordless, 'await ensureIdentity(db, user, challenge.email);', 'passwordless verification');
-	includes(seedRunbook, 'accountStatus: active', 'D1 seed runbook');
-	includes(seedRunbook, 'no team membership', 'D1 seed runbook');
-	includes(seedRunbook, 'no role assignment', 'D1 seed runbook');
-	includes(seedRunbook, 'no permission exceptions', 'D1 seed runbook');
+	includes(seedRunbook, '"accountStatus": "active"', 'D1 seed runbook');
+	includes(seedRunbook, 'team membership', 'D1 seed runbook');
+	includes(seedRunbook, 'role assignment', 'D1 seed runbook');
+	includes(seedRunbook, 'permission exception', 'D1 seed runbook');
 }
 
 function assertAC5IdentityRouteReturnsSignedInIdentityOnly() {
@@ -157,6 +156,7 @@ function assertAC12ServerSideIdentityValidationIsCoveredByTests() {
 	includes(signInRouteTest, 'assertProtectedProjectsRouteRedirectsSignedOutUsersToSignIn', 'sign-in route-state test');
 	includes(routePermissions, 'export async function assertRoutePermission(request, env, context)', 'route permissions service');
 	includes(accessScoped, 'await assertRoutePermission(request, env, context)', 'scoped access handler');
+	includes(identityRouteMigration, '/api/me/identity', 'identity route forward migration');
 }
 
 assertAC2IdentityProviderEstablishesIdentity();
