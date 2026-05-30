@@ -340,7 +340,7 @@ import { runTimeline, runCooccurrence, runRetrieval, runExport } from './caqdas-
 							</a>
 						</div>
 						<div class="entry-actions" role="group">
-							<a class="govuk-button govuk-button--secondary" href="${ROUTES.editEntry(en.id)}">Edit</a>
+							<a class="govuk-button govuk-button--secondary" href="${ROUTES.editEntry(en.id)}" role="button" draggable="false" data-module="govuk-button">Edit</a>
 							<button type="button" class="govuk-button govuk-button--warning" data-act="delete" data-id="${esc(en.id)}">Delete</button>
 						</div>
 					</header>
