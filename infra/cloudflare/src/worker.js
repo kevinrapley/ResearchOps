@@ -127,7 +127,7 @@ function safeAirtableHeaders(response) {
 	return {
 		...(retryAfter ? { retryAfter } : {}),
 		...(limit ? { rateLimit: limit } : {}),
-		...(remaining ? { rateLimitRemaining } : {}),
+		...(remaining ? { rateLimitRemaining: remaining } : {}),
 		...(reset ? { rateLimitReset: reset } : {})
 	};
 }
