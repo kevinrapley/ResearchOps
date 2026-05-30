@@ -3,6 +3,7 @@ import fs from 'node:fs';
 
 const signInPage = fs.readFileSync('public/pages/account/sign-in/index.html', 'utf8');
 const signInScript = fs.readFileSync('public/js/auth-sign-in-page.js', 'utf8');
+const projectsController = fs.readFileSync('public/js/projects-page.js', 'utf8');
 const worker = fs.readFileSync('infra/cloudflare/src/worker.js', 'utf8');
 const access = fs.readFileSync('infra/cloudflare/src/core/auth/access.js', 'utf8');
 const passwordless = fs.readFileSync('infra/cloudflare/src/core/auth/passwordless.js', 'utf8');
@@ -30,6 +31,8 @@ function assertSignInPageUsesResearchOpsPasswordlessJourney() {
 	assert.match(signInPage, /<title>Sign in to ResearchOps - ResearchOps Demo Suite<\/title>/);
 	assert.match(signInPage, /<h1 class="govuk-heading-xl">Sign in to ResearchOps<\/h1>/);
 	assert.match(signInPage, /Use your work email address to continue\./);
+	assert.match(signInPage, /You need to sign in before accessing governed research activity/);
+	assert.match(signInPage, /connect sensitive work to the right account and audit trail/);
 	assert.match(signInPage, /We will send you a 6 digit code/);
 	assert.match(signInPage, /id="email-code-start-form"/);
 	assert.match(signInPage, /id="email-code-verify-form"/);
@@ -41,8 +44,21 @@ function assertSignInPageUsesResearchOpsPasswordlessJourney() {
 	assert.match(signInPage, /data-verify-route="\/api\/auth\/email\/verify"/);
 	assert.match(signInPage, /data-auth-route="\/api\/me"/);
 	assert.match(signInPage, /data-account-destination="\/pages\/account\/"/);
+	assert.equal(signInPage.includes('Authenticate'), false);
+	assert.equal(signInPage.includes('authenticate'), false);
 	assert.equal(signInPage.includes('data-team-admin-destination'), false);
 	assert.equal(signInPage.includes('id="signed-in-actions"'), false);
+}
+
+function assertProtectedProjectsRouteRedirectsSignedOutUsersToSignIn() {
+	assert.match(projectsController, /const REDIRECTING_TO_SIGN_IN_ERROR = "redirecting_to_sign_in"/);
+	assert.match(projectsController, /function signInUrl\(\)/);
+	assert.match(projectsController, /\/pages\/account\/sign-in\/\?returnTo=/);
+	assert.match(projectsController, /encodeURIComponent\(returnTo\)/);
+	assert.match(projectsController, /function redirectToSignIn\(\)/);
+	assert.match(projectsController, /window\.location\.assign\(signInUrl\(\)\)/);
+	assert.match(projectsController, /if \(status === 401\) \{/);
+	assert.match(projectsController, /redirectToSignIn\(\)/);
 }
 
 function assertSignInPageDoesNotExposeCloudflareToUser() {
@@ -140,6 +156,7 @@ function assertPasswordlessMigrationExists() {
 
 assertSignInPageUsesGovukFrontendTemplate();
 assertSignInPageUsesResearchOpsPasswordlessJourney();
+assertProtectedProjectsRouteRedirectsSignedOutUsersToSignIn();
 assertSignInPageDoesNotExposeCloudflareToUser();
 assertSignInPageDoesNotCreatePasswordAuth();
 assertSignInScriptStartsAndVerifiesEmailCode();
