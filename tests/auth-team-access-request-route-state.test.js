@@ -59,16 +59,25 @@ includes(renderScript, "pageTitle: 'Request access to a team - ResearchOps Demo 
 
 for (const source of [template, page]) {
 	includes(source, 'Request access to a team', 'team access page');
-	includes(source, 'Ask to join a team before using team-scoped ResearchOps features.', 'team access page');
-	includes(source, 'This request does not give you a role or sensitive access.', 'team access page');
+	includes(source, 'Ask to join a team before using research records that belong to that team.', 'team access page');
+	includes(source, 'A Team Admin must approve your request before you can use that team’s research records.', 'team access page');
+	includes(source, 'This request will not give you a role or access to sensitive information.', 'team access page');
+	includes(source, 'What happens next', 'team access page');
+	includes(source, 'Your request will appear on your account page as “Awaiting approval”.', 'team access page');
+	includes(source, 'You cannot use this team’s research records until your request is approved.', 'team access page');
 	includes(source, 'team-access-error-summary', 'team access page');
 	includes(source, 'team-access-error-list', 'team access page');
 	includes(source, 'team-access-request-form', 'team access page');
 	includes(source, 'data-submit-route="/api/team-access/requests"', 'team access page');
 	includes(source, 'Team name or invitation code', 'team access page');
+	includes(source, 'Enter the team name, or paste the invitation code given to you by a Team Admin.', 'team access page');
 	includes(source, 'Message to the Team Admin', 'team access page');
+	includes(source, 'Optional. For example, explain which project, study or team activity you need access for.', 'team access page');
+	includes(source, 'Do not include participant names, contact details or sensitive research information.', 'team access page');
+	includes(source, 'govuk-button-group', 'team access page');
 	includes(source, 'Send request', 'team access page');
 	includes(source, 'Cancel and return to your account', 'team access page');
+	excludes(source, 'team-scoped ResearchOps features', 'team access page');
 	excludes(source, 'Create a new team', 'team access page');
 	excludes(source, 'Approve request', 'team access page');
 	excludes(source, 'Assign role', 'team access page');
