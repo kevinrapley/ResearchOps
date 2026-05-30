@@ -7,7 +7,7 @@ const roleAssignmentPageSource = fs.readFileSync('public/pages/team/role-assignm
 
 function assertWalkthroughUsesCurrentRoleAssignmentCopy() {
 	assert.match(walkthroughConfigSource, /id: 'team-role-assignments'/);
-	assert.match(walkthroughConfigSource, /waitForText: 'You can assign roles in teams you manage'/);
+	assert.match(walkthroughConfigSource, /text: 'You can assign roles in teams you manage'/);
 	assert.doesNotMatch(walkthroughConfigSource, /waitForText: 'You are assigning roles in'/);
 }
 
