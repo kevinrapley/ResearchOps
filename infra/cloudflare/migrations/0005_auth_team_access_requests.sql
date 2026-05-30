@@ -31,4 +31,4 @@ CREATE UNIQUE INDEX IF NOT EXISTS idx_auth_team_access_requests_pending_referenc
 INSERT OR IGNORE INTO auth_route_permissions (id, method, route_pattern, required_permissions_json, auth_required, implementation_status) VALUES
   ('route_api_team_access_requests_get', 'GET', '/api/team-access/requests', '[]', 1, 'implemented'),
   ('route_api_team_access_requests_post', 'POST', '/api/team-access/requests', '[]', 1, 'implemented'),
-  ('route_api_team_access_requests_cancel_post', 'POST', '/api/team-access/requests/:id/cancel', '[]', 1, 'implemented');
+  ('route_api_team_access_requests_cancel_post', 'POST', '/api/team-access/requests/cancel', '[]', 1, 'implemented');
