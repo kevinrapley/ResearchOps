@@ -21,10 +21,11 @@ It deliberately does not decide what the user can do. Authorisation belongs to l
 The alpha slice should provide:
 
 - a stable internal user ID resolved from a trusted provider identity
-- a safe `/api/me` contract
+- a safe identity-only `/api/me/identity` contract
 - unauthenticated and failed-identity states that do not leak account existence
 - auth event names and audit shape for sign-in, sign-out and identity-link resolution
-- tests that prove identity resolution is deterministic and safe
+- route-state tests that protect the identity-only response boundary
+- a D1 smoke test using a second alpha mailbox at execution time
 
 ## Out of scope
 
@@ -49,6 +50,7 @@ This story does not include:
 4. Provider tokens and raw identity-provider claims must not be returned to the browser.
 5. First-time users must not receive sensitive permissions by default.
 6. User-facing language must use plain terms such as “Sign in” rather than technical labels such as “Authenticate”.
+7. Alpha validation should use a D1-seeded user rather than an in-memory identity fixture.
 
 ## Data concepts
 
@@ -94,64 +96,106 @@ Suggested event names:
 
 ## API contract
 
-### Signed-in `/api/me`
+### Signed-in `/api/me/identity`
 
 ```json
 {
 	"ok": true,
+	"authenticated": true,
+	"provider": "researchops_email",
 	"user": {
 		"id": "usr_...",
-		"displayName": "Alex Smith",
-		"email": "alex.smith@example.gov.uk",
+		"displayName": "...",
+		"email": "...",
 		"accountStatus": "active"
 	}
 }
 ```
 
-### Signed-out `/api/me`
+The identity-only route must not return:
+
+- `activeTeam`
+- `roles`
+- `permissions`
+- `memberTeams`
+- `teamMemberships`
+- session tokens
+- provider tokens
+
+### Signed-out `/api/me/identity`
 
 ```json
 {
 	"ok": false,
-	"error": "not_signed_in",
-	"message": "Sign in to continue."
+	"error": "authentication_required",
+	"message": "Sign in is required to use this part of ResearchOps."
 }
 ```
 
 ## Acceptance criteria summary
 
 - Signed-out users can reach a clear sign-in route.
-- Trusted identity provider assertions resolve to stable internal users.
+- Trusted provider assertions resolve to stable internal users.
 - First-time known users can be created or matched safely.
-- `/api/me` returns the signed-in identity without secrets or provider tokens.
-- Signed-out `/api/me` requests fail safely.
+- `/api/me/identity` returns the signed-in identity without secrets or provider tokens.
+- Signed-out `/api/me/identity` requests fail safely.
 - Failed sign-in avoids account enumeration.
 - Auth events are recorded separately from application audit events.
 - Server-side identity validation is covered by tests.
+- D1 validation uses a second alpha mailbox with no team, role or sensitive permissions seeded for Story 1.
 
 ## Implementation slice
 
 The first implementation should be deliberately thin:
 
-1. Add an identity-resolution service for provider identity assertions.
-2. Add or update `/api/me` so it resolves through the service.
-3. Add unit tests for deterministic identity-link resolution and safe unauthenticated responses.
+1. Add an identity-only `/api/me/identity` route.
+2. Route it through the existing scoped access resolver.
+3. Declare the route in `auth_route_permissions`.
 4. Add route-state or contract tests for the public response shape.
-5. Leave role, team and permission data out of this story except where a safe placeholder state is required.
+5. Add a D1 alpha user seed runbook with placeholders.
+6. Leave role, team and permission data out of this story except where existing broader `/api/me` behaviour already exposes it.
+
+## D1 validation
+
+Story 1 should be smoke-tested with a second alpha mailbox that can receive the ResearchOps sign-in code.
+
+Use:
+
+```text
+docs/product/26/05/30/auth-story-1-d1-alpha-user-seed-runbook.md
+```
+
+The seeded user should be active and known to D1, but should not receive team membership, role assignment or sensitive permissions in this story.
+
+The user should sign in through:
+
+```text
+/pages/account/sign-in/
+```
+
+Then validate:
+
+```text
+GET /api/me/identity
+```
 
 ## Risks
 
 ### Identity-provider drift
 
-The alpha implementation may start with Cloudflare Access or test provider assertions. The internal identity model should not depend on a single provider-specific field beyond the provider-subject mapping.
+The visible alpha sign-in route uses ResearchOps passwordless email-code authentication. The internal identity model should not depend on a single provider-specific field beyond the provider-subject mapping.
 
 ### Over-claiming authorisation
 
-Do not add permissions, roles or access decisions into `/api/me` in this story unless they are clearly marked as future placeholders. Returning roles too early risks confusing identity proof with authorisation.
+Do not add permissions, roles or access decisions into `/api/me/identity`. Returning roles too early risks confusing identity proof with authorisation.
 
 ### Account enumeration
 
-Failed sign-in, missing identity and unauthenticated `/api/me` responses must not reveal whether an email exists.
+Failed sign-in, missing identity and unauthenticated identity responses must not reveal whether an email exists.
+
+### Repository history hygiene
+
+Do not commit the second mailbox address or related identifying values. Use placeholders in committed documentation and provide the operational values only when running the seed.
 
 ## Validation expectation
 
@@ -163,4 +207,4 @@ npm run lint
 npm test -- --ci
 ```
 
-Manual checks depend on the identity route selected for alpha and should be added to this document when the implementation route is confirmed.
+Manual checks depend on the seeded mailbox and should be captured without exposing identifying values in repository files.
