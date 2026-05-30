@@ -1,0 +1,101 @@
+{
+	"date": "2026-05-30",
+	"traceType": "operational-audit-trace",
+	"branch": "feature/team-access-request",
+	"epic": "ROPS-AUTH-P1-000 — Governed access, permissions and audit",
+	"story": "Request access to a team",
+	"traceRequired": true,
+	"taskSummary": "Begin implementation of Story 3 using the narrowed team position: users can request team access, but cannot approve access, assign roles or create teams.",
+	"operatingModelFilesLoaded": [
+		"AGENTS.md",
+		".agent-operating-model/orchestration.xml",
+		".agent-operating-model/bundle-registry.json",
+		".agent-operating-model/task-signal-catalog.json",
+		".agent-operating-model/selection-rules.json",
+		".agent-operating-model/github-mutation-policy.md"
+	],
+	"selectedBundles": [
+		{
+			"id": "github-diamond",
+			"canonicalPath": ".agent-operating-model/bundles/github/",
+			"reason": "Always loaded for repository-affecting branch work."
+		},
+		{
+			"id": "researchops-developer-control",
+			"canonicalPath": ".agent-operating-model/bundles/researchops-developer-control/",
+			"reason": "Selected for ResearchOps account journey and access-control behaviour."
+		},
+		{
+			"id": "multi-functional-team",
+			"canonicalPath": ".agent-operating-model/bundles/multi-functional-team/",
+			"reason": "Selected for government product assurance and access-control risk framing."
+		},
+		{
+			"id": "govuk-design-system",
+			"canonicalPath": ".agent-operating-model/bundles/govuk-design-system/",
+			"reason": "Selected because the task changes GOV.UK templates, form structure, error summary and account page content."
+		},
+		{
+			"id": "cloudflare",
+			"canonicalPath": ".agent-operating-model/bundles/cloudflare/",
+			"reason": "Selected because the task adds D1 schema and Worker API routes."
+		}
+	],
+	"skippedBundles": [
+		"openai-platform",
+		"mcp-agent-tooling",
+		"airtable-public-api",
+		"mural-public-api"
+	],
+	"filesChanged": [
+		"docs/product/26/05/30/auth-story-3-team-access-request.md",
+		"infra/cloudflare/migrations/0005_auth_team_access_requests.sql",
+		"infra/cloudflare/src/core/auth/team-access-requests.js",
+		"infra/cloudflare/src/worker.js",
+		"scripts/govuk/render-govuk-pages.mjs",
+		"src/govuk/templates/pages/account.njk",
+		"src/govuk/templates/pages/account-team-access.njk",
+		"public/pages/account/index.html",
+		"public/pages/account/team-access/index.html",
+		"public/js/auth-account-page.js",
+		"public/js/auth-team-access-page.js",
+		"tests/auth-account-dashboard-route-state.test.js",
+		"tests/auth-team-access-request-route-state.test.js",
+		"docs/agent-audit/reasoning/2026/05/30/auth-story-3-team-access-request.md",
+		"docs/agent-audit/reasoning/2026/05/30/auth-story-3-team-access-request.json"
+	],
+	"implementationSummary": {
+		"included": [
+			"no-team account state links to request access",
+			"request access page",
+			"create pending request",
+			"duplicate pending request prevention",
+			"active member prevention",
+			"cancel pending request",
+			"pending request account display",
+			"audit events for request and cancellation"
+		],
+		"excluded": [
+			"approval queue",
+			"approve request",
+			"reject request",
+			"role request",
+			"role assignment",
+			"team switching",
+			"team creation",
+			"notification delivery",
+			"PII access",
+			"audit viewer"
+		]
+	},
+	"validationExpected": [
+		"npm run validate",
+		"npm run lint",
+		"npm test -- --ci"
+	],
+	"validationRunInConnector": [],
+	"residualRisks": [
+		"Validation has not been run in this connector context.",
+		"Invitation-code handling is not implemented in this first slice beyond accepting an entered reference in the same form field."
+	]
+}
