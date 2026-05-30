@@ -51,11 +51,14 @@
 	"filesRead": [
 		"public/js/journal-tabs.js",
 		"tests/journals-route-state.test.js",
-		"GitHub Issue #106"
+		"tests/journal-tabs-filter-state-route-state.test.js",
+		"GitHub Issue #106",
+		"PR #311 CI and release-gate artefacts"
 	],
 	"filesChanged": [
 		"public/js/journal-tabs.js",
 		"tests/journals-route-state.test.js",
+		"tests/journal-tabs-filter-state-route-state.test.js",
 		"docs/agent-audit/reasoning/2026/05/30/govuk-journal-generated-buttons.md",
 		"docs/agent-audit/reasoning/2026/05/30/govuk-journal-generated-buttons.json"
 	],
@@ -64,8 +67,18 @@
 		"npm run lint"
 	],
 	"validationRunInConnector": [],
+	"ciFailureHandling": {
+		"observedFailedWorkflows": [
+			"Validate ResearchOps",
+			"Worker CI",
+			"CI",
+			"Release Gate"
+		],
+		"rootCause": "An obsolete route-state assertion in tests/journal-tabs-filter-state-route-state.test.js expected the legacy btn-quiet danger delete button after the GOV.UK button migration.",
+		"fix": "Updated the test to expect the GOV.UK warning button and exclude the legacy btn-quiet danger button."
+	},
 	"residualRisks": [
-		"Validation has not been run locally in this connector context.",
+		"Validation has not been run locally in this connector context because this environment cannot clone the repository from GitHub.",
 		"Manual browser checks are still required for the Reflexive Journals page."
 	]
 }
