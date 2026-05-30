@@ -1,6 +1,7 @@
 {% extends "layouts/researchops.njk" %}
 
 {% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
 
 {% block content %}
 <div class="govuk-width-container">
@@ -64,7 +65,9 @@
 				</div>
 
 				<div class="govuk-button-group">
-					<button class="govuk-button" data-module="govuk-button" id="team-access-submit">Send request</button>
+					{{ govukButton({
+						text: 'Send request'
+					}) }}
 					<a class="govuk-link" href="/pages/account/">Cancel and return to your account</a>
 				</div>
 			</form>
