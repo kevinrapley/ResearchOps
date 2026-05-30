@@ -74,6 +74,8 @@ for (const source of [template, page]) {
 	includes(source, 'Message to the Team Admin', 'team access page');
 	includes(source, 'Optional. For example, explain which project, study or team activity you need access for.', 'team access page');
 	includes(source, 'Do not include participant names, contact details or sensitive research information.', 'team access page');
+	includes(source, 'team-access-message-privacy-hint', 'team access page');
+	includes(source, 'aria-describedby="team-access-message-hint team-access-message-privacy-hint"', 'team access page');
 	includes(source, 'govuk-button-group', 'team access page');
 	includes(source, 'Send request', 'team access page');
 	includes(source, 'Cancel and return to your account', 'team access page');
