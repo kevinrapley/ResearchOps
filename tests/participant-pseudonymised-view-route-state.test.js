@@ -45,7 +45,6 @@ includes(participantService, 'preferFallbackMessage ? fallbackMessage', 'partici
 const pseudonymisedMapper = functionBody(participantService, 'mapPseudonymisedParticipant');
 excludes(pseudonymisedMapper, 'email:', 'pseudonymised participant mapper');
 excludes(pseudonymisedMapper, 'phone:', 'pseudonymised participant mapper');
-excludes(pseudonymisedMapper, 'display_name:', 'pseudonymised participant mapper raw name field');
 includes(pseudonymisedMapper, 'display_name: participantReference(record, index)', 'pseudonymised participant mapper');
 
 const contactMapper = functionBody(participantService, 'mapParticipantContact');
