@@ -119,7 +119,7 @@ async function readD1ParticipantsForStudy(svc, origin, studyId, context) {
 	try {
 		const result = await db
 			.prepare(`
-				SELECT id, project_id, study_id, participant_ref, channel_pref, consent_status, status, created_at
+				SELECT id, project_id, study_id, participant_airtable_id, participant_ref, channel_pref, consent_status, status, access_needs, created_at
 				FROM rops_participants_cache
 				WHERE study_id = ?
 					AND active = 1
@@ -176,6 +176,7 @@ async function readD1ParticipantContact(svc, origin, participantId) {
 }
 
 function mapD1Participant(row, context) {
+	const sessionParticipantId = cleanText(row.participant_airtable_id);
 	return {
 		id: row.id,
 		participant_ref: row.participant_ref || row.id,
@@ -183,9 +184,12 @@ function mapD1Participant(row, context) {
 		contact_restricted: true,
 		has_contact_details: null,
 		can_reveal_contact: canRevealParticipantContact(context),
+		can_schedule: Boolean(sessionParticipantId),
+		session_participant_id: sessionParticipantId,
 		channel_pref: row.channel_pref || "not recorded",
 		consent_status: row.consent_status || "not_sent",
 		status: row.status || "invited",
+		access_needs: row.access_needs || "",
 		createdAt: row.created_at || "",
 	};
 }
@@ -301,7 +305,9 @@ export async function createParticipant(svc, request, origin) {
 
 	const studyId = cleanText(body.study_id || body.studyId || body.study_airtable_id);
 	const projectId = cleanText(body.project_id || body.projectId || body.project_airtable_id);
+	const participantAirtableId = cleanText(body.participant_airtable_id || body.participantAirtableId);
 	const participantRef = participantRefFor(body);
+	const accessNeeds = cleanText(body.access_needs || body.accessNeeds);
 
 	if (!studyId) return svc.json({ ok: false, error: "study_required", message: "Choose a study for this participant." }, 400, svc.corsHeaders(origin));
 	if (!projectId) return svc.json({ ok: false, error: "project_required", message: "Choose a project for this participant." }, 400, svc.corsHeaders(origin));
@@ -324,10 +330,12 @@ export async function createParticipant(svc, request, origin) {
 					id,
 					project_id,
 					study_id,
+					participant_airtable_id,
 					participant_ref,
 					channel_pref,
 					consent_status,
 					status,
+					access_needs,
 					active,
 					source,
 					created_at,
@@ -335,20 +343,22 @@ export async function createParticipant(svc, request, origin) {
 					sensitive_contact_json,
 					payload_json
 				)
-				VALUES (?, ?, ?, ?, ?, ?, ?, 1, 'd1-runtime', ?, ?, ?, ?)
+				VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 1, 'd1-runtime', ?, ?, ?, ?)
 			`)
 			.bind(
 				participantId,
 				projectId,
 				studyId,
+				participantAirtableId || null,
 				participantRef,
 				cleanText(body.channel_pref || body.channelPref || "email") || "email",
 				cleanText(body.consent_status || body.consentStatus || "not_sent") || "not_sent",
 				cleanText(body.status || "invited") || "invited",
+				accessNeeds || null,
 				now,
 				now,
 				hasContact ? jsonText(contact) : null,
-				jsonText({ projectId, studyId, participantRef, pseudonymised: true }),
+				jsonText({ projectId, studyId, participantRef, accessNeeds, pseudonymised: true }),
 			)
 			.run();
 	} catch {
