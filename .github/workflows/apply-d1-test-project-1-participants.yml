@@ -94,3 +94,7 @@ jobs:
             --remote \
             --config "${WRANGLER_CONFIG}" \
             --command "SELECT id, participant_ref, channel_pref, consent_status, status FROM rops_participants_cache WHERE project_id = 'recgdpwEI5hFO7bUZ' AND study_id = 'rect3biqr' AND source = 'd1-seed' ORDER BY id;"
+          npx --yes wrangler@${WRANGLER_VERSION} d1 execute "${D1_DATABASE_NAME}" \
+            --remote \
+            --config "${WRANGLER_CONFIG}" \
+            --command "SELECT method, route_pattern, required_permissions_json FROM auth_route_permissions WHERE route_pattern = '/api/participants' ORDER BY method;"
