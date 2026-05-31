@@ -21,6 +21,12 @@ import { PARTICIPANT_FIELDS } from "../core/fields.js";
 import { airtableTryWrite } from "../core/utils.js";
 
 const CONTACT_RESTRICTED_MESSAGE = "Participant contact details are restricted. Ask a Team Admin or authorised role if you need access.";
+const PSEUDONYMISED_LIST_FIELDS = [
+	PARTICIPANT_FIELDS.study_link[0],
+	PARTICIPANT_FIELDS.channel_pref[0],
+	PARTICIPANT_FIELDS.consent_status[0],
+	PARTICIPANT_FIELDS.status[0],
+];
 
 function permissionCodes(context = {}) {
 	return new Set((context.permissions || []).map((permission) => permission.code).filter(Boolean));
@@ -30,13 +36,13 @@ function canRevealParticipantContact(context) {
 	return permissionCodes(context).has("participant.pii.reveal");
 }
 
-function permissionErrorResponse(svc, origin, error, fallbackMessage = CONTACT_RESTRICTED_MESSAGE) {
+function permissionErrorResponse(svc, origin, error, fallbackMessage = CONTACT_RESTRICTED_MESSAGE, preferFallbackMessage = false) {
 	const status = error?.status || 403;
 	return svc.json(
 		{
 			ok: false,
 			error: error?.code || "permission_denied",
-			message: error?.message || fallbackMessage,
+			message: preferFallbackMessage ? fallbackMessage : (error?.message || fallbackMessage),
 		},
 		status,
 		svc.corsHeaders(origin),
@@ -97,6 +103,12 @@ function airtableConfig(svc) {
 	};
 }
 
+function appendPseudonymisedFieldProjection(params) {
+	for (const field of [...new Set(PSEUDONYMISED_LIST_FIELDS)]) {
+		params.append("fields[]", field);
+	}
+}
+
 async function readParticipantRecords(svc) {
 	const at = airtableConfig(svc);
 	const records = [];
@@ -104,6 +116,7 @@ async function readParticipantRecords(svc) {
 
 	do {
 		const params = new URLSearchParams({ pageSize: "100" });
+		appendPseudonymisedFieldProjection(params);
 		if (offset) params.set("offset", offset);
 		const resp = await fetchWithTimeout(`${at.url}?${params.toString()}`, { headers: at.headers }, svc.cfg.TIMEOUT_MS);
 		const txt = await resp.text();
@@ -155,15 +168,13 @@ function participantReference(record, index) {
 
 function mapPseudonymisedParticipant(record, index, context) {
 	const fields = record.fields || {};
-	const email = pickParticipantField(fields, PARTICIPANT_FIELDS.email) || "";
-	const phone = pickParticipantField(fields, PARTICIPANT_FIELDS.phone) || "";
 
 	return {
 		id: record.id,
 		participant_ref: participantReference(record, index),
 		display_name: participantReference(record, index),
 		contact_restricted: true,
-		has_contact_details: Boolean(email || phone),
+		has_contact_details: null,
 		can_reveal_contact: canRevealParticipantContact(context),
 		channel_pref: pickParticipantField(fields, PARTICIPANT_FIELDS.channel_pref) || "not recorded",
 		consent_status: pickParticipantField(fields, PARTICIPANT_FIELDS.consent_status) || "not_sent",
@@ -233,7 +244,7 @@ export async function revealParticipantContact(svc, request, origin, url) {
 		await assertRoutePermission(request, svc.env, context);
 	} catch (error) {
 		await recordParticipantContactAudit(svc, request, context, participantId, "denied");
-		return permissionErrorResponse(svc, origin, error);
+		return permissionErrorResponse(svc, origin, error, CONTACT_RESTRICTED_MESSAGE, true);
 	}
 
 	const result = await readParticipantRecord(svc, participantId);
