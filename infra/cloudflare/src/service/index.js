@@ -167,7 +167,7 @@ export class ResearchOpsService {
 	listCodeApplications = (origin, url) => CodeApplications.listCodeApplications(this, origin, url);
 
 	/* ─────────────── Codes ─────────────── */
-	listCodes = (origin, url) => Codes.listCodes(this, origin, url);
+	listCodes = (origin, url) => Codes.listCodes(this, origin);
 	createCode = (req, origin) => Codes.createCode(this, req, origin);
 	updateCode = (req, origin, codeId) => Codes.updateCode(this, req, origin, codeId);
 
@@ -191,7 +191,7 @@ export class ResearchOpsService {
 	listSynthesisEvidence = (origin, url) => Synthesis.listSynthesisEvidence(this, origin, url);
 	listSynthesis = (origin, url) => Synthesis.listSynthesis(this, origin, url);
 	createSynthesisCluster = (req, origin, url) => Synthesis.createSynthesisCluster(this, req, origin, url);
-	updateSynthesisCluster = (req, origin, url, clusterId) => Synthesis.updateSynthesisCluster(this, req, origin, url, clusterId);
+	updateSynthesisCluster = (req, origin, url, clusterId) => Synthesis.updateSynthesisCluster(this, req, origin, clusterId);
 	deleteSynthesisCluster = (origin, url, clusterId) => Synthesis.deleteSynthesisCluster(this, origin, url, clusterId);
 	createSynthesisTheme = (req, origin, url) => Synthesis.createSynthesisTheme(this, req, origin, url);
 
@@ -222,7 +222,8 @@ export class ResearchOpsService {
 	deletePartial = (origin, id) => Partials.deletePartial(this, origin, id);
 
 	/* ─────────────── Participants ─────────────── */
-	listParticipants = (origin, url) => Participants.listParticipants(this, origin, url);
+	listParticipants = (req, origin, url) => Participants.listParticipants(this, req, origin, url);
+	revealParticipantContact = (req, origin, url) => Participants.revealParticipantContact(this, req, origin, url);
 	createParticipant = (req, origin) => Participants.createParticipant(this, req, origin);
 
 	/* ─────────────── Sessions ─────────────── */
