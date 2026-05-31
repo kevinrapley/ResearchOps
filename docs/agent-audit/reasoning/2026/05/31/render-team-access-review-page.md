@@ -13,9 +13,17 @@ It does not expose private chain-of-thought.
 
 ## Task summary
 
-Fix the missing generated static HTML route for the Story 4 team access review page.
+Fix the missing generated static HTML route for the Story 4 team access review page and harden the GOV.UK render workflow so future new generated pages are detected.
 
 `public/pages/team/access-requests/index.html` was expected to exist as the rendered output from `src/govuk/templates/pages/team-access-requests.njk`, but it was absent after PR #317 merged.
+
+## Root cause
+
+`scripts/govuk/render-govuk-pages.mjs` already creates missing output directories using recursive directory creation before writing generated HTML.
+
+The render workflow detection step used `git diff --quiet -- public/index.html public/pages`, which checks tracked-file differences but does not detect brand-new untracked generated files.
+
+A new Nunjucks template can therefore generate a new `public/pages/.../index.html` file during CI, but the workflow may still conclude that rendered pages are already committed.
 
 ## Operating model context
 
@@ -28,11 +36,13 @@ Trace coverage is required.
 - `src/govuk/templates/layouts/researchops.njk`
 - `src/govuk/templates/pages/team-access-requests.njk`
 - `scripts/govuk/render-govuk-pages.mjs`
+- `.github/workflows/render-govuk-pages.yml`
 - `tests/auth-team-access-review-route-state.test.js`
 - `public/pages/account/team-access/index.html`
 
 ## Files changed
 
+- `.github/workflows/render-govuk-pages.yml`
 - `public/pages/team/access-requests/index.html`
 - `tests/auth-team-access-review-route-state.test.js`
 - `docs/agent-audit/reasoning/2026/05/31/render-team-access-review-page.md`
@@ -52,9 +62,24 @@ The renderer registration already exists in:
 
 `scripts/govuk/render-govuk-pages.mjs`
 
-The renderer creates missing output directories using recursive directory creation before writing generated HTML.
+The workflow now detects generated output using:
+
+`git status --short -- public/index.html public/pages`
+
+This captures both tracked changes and brand-new untracked generated HTML files.
+
+The workflow now stages generated output before creating the patch used across the branch rebase step.
 
 The route-state test now reads the generated HTML route directly and checks that it contains the expected title, shell, loading state, empty state, pending requests container and review-page controller script.
+
+## Future behaviour
+
+When a new Nunjucks page is registered in `scripts/govuk/render-govuk-pages.mjs`, the render process should:
+
+1. create any missing `public/pages/.../` directory structure,
+2. write the generated `index.html`,
+3. detect the new generated file,
+4. commit it back to the PR branch from the render workflow.
 
 ## Scope controls
 
