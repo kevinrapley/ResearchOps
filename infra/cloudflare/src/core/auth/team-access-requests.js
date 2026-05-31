@@ -56,6 +56,14 @@ function requestMessageFor(value) {
 	return message;
 }
 
+function decisionReasonFor(value) {
+	const reason = cleanText(value);
+	if (reason.length > 500) {
+		throw new TeamAccessRequestError(400, 'decision_reason_too_long', 'Reason must be 500 characters or fewer.');
+	}
+	return reason;
+}
+
 async function readJson(request) {
 	try {
 		const body = await request.json();
@@ -128,13 +136,14 @@ async function recordTeamAccessEvent(db, request, type, context, metadata = {}) 
 	try {
 		await db
 			.prepare(`
-				INSERT INTO auth_events (id, event_type, actor_user_id, team_id, provider, route_path, metadata_json)
-				VALUES (?, ?, ?, ?, 'researchops_team_access', ?, ?)
+				INSERT INTO auth_events (id, event_type, actor_user_id, target_user_id, team_id, provider, route_path, metadata_json)
+				VALUES (?, ?, ?, ?, ?, 'researchops_team_access', ?, ?)
 			`)
 			.bind(
 				makeId('evt'),
 				type,
 				context?.user?.id || null,
+				metadata.targetUserId || null,
 				metadata.teamId || null,
 				new URL(request.url).pathname,
 				JSON.stringify(metadata),
@@ -155,7 +164,31 @@ function mapTeamAccessRequest(row) {
 		status: row.request_status,
 		requestedAt: row.requested_at,
 		cancelledAt: row.cancelled_at || null,
+		decidedAt: row.decided_at || null,
+		decisionReason: row.decision_reason || '',
 	};
+}
+
+function mapReviewRequest(row) {
+	return {
+		id: row.id,
+		requesterUserId: row.requester_user_id,
+		requesterName: row.requester_name,
+		requesterEmail: row.requester_email,
+		teamId: row.team_id,
+		teamName: row.team_name,
+		message: row.request_message || '',
+		status: row.request_status,
+		requestedAt: row.requested_at,
+	};
+}
+
+function manageableTeamIds(context) {
+	return (context?.manageableTeams || []).map((team) => team.id).filter(Boolean);
+}
+
+function canManageTeam(context, teamId) {
+	return manageableTeamIds(context).includes(teamId);
 }
 
 async function listTeamAccessRequests(request, env, context) {
@@ -172,11 +205,13 @@ async function listTeamAccessRequests(request, env, context) {
 				r.request_message,
 				r.request_status,
 				r.requested_at,
-				r.cancelled_at
+				r.cancelled_at,
+				r.decided_at,
+				r.decision_reason
 			FROM auth_team_access_requests r
 			LEFT JOIN auth_teams t ON t.id = r.team_id
 			WHERE r.requester_user_id = ?
-				AND r.request_status = 'pending'
+				AND r.request_status IN ('pending', 'rejected')
 			ORDER BY r.requested_at DESC
 			LIMIT 50
 		`)
@@ -184,6 +219,41 @@ async function listTeamAccessRequests(request, env, context) {
 		.all();
 
 	return (result.results || []).map(mapTeamAccessRequest);
+}
+
+async function listTeamAccessReviewRequests(request, env, context) {
+	const db = dbFor(env);
+	await assertRoutePermission(request, env, context);
+
+	const teamIds = manageableTeamIds(context);
+	if (teamIds.length === 0) return [];
+
+	const placeholders = teamIds.map(() => '?').join(', ');
+	const result = await db
+		.prepare(`
+			SELECT
+				r.id,
+				r.requester_user_id,
+				u.display_name AS requester_name,
+				u.email AS requester_email,
+				r.team_id,
+				t.name AS team_name,
+				r.request_message,
+				r.request_status,
+				r.requested_at
+			FROM auth_team_access_requests r
+			INNER JOIN auth_users u ON u.id = r.requester_user_id
+			INNER JOIN auth_teams t ON t.id = r.team_id
+			WHERE r.request_status = 'pending'
+				AND t.team_status = 'active'
+				AND r.team_id IN (${placeholders})
+			ORDER BY r.requested_at ASC
+			LIMIT 100
+		`)
+		.bind(...teamIds)
+		.all();
+
+	return (result.results || []).map(mapReviewRequest);
 }
 
 async function createTeamAccessRequest(request, env, context) {
@@ -294,6 +364,129 @@ async function cancelTeamAccessRequest(request, env, context) {
 	};
 }
 
+async function readRequestForDecision(db, requestId) {
+	return db
+		.prepare(`
+			SELECT
+				r.id,
+				r.requester_user_id,
+				r.team_id,
+				r.request_status,
+				t.team_status,
+				t.name AS team_name
+			FROM auth_team_access_requests r
+			INNER JOIN auth_teams t ON t.id = r.team_id
+			WHERE r.id = ?
+			LIMIT 1
+		`)
+		.bind(requestId)
+		.first();
+}
+
+function assertCanDecideTeamAccess(context, existing) {
+	if (!existing) throw new TeamAccessRequestError(404, 'team_access_request_not_found', 'We could not find a pending request to review.');
+	if (existing.request_status === 'cancelled') throw new TeamAccessRequestError(409, 'team_access_request_cancelled', 'This request has been cancelled.');
+	if (existing.request_status !== 'pending') throw new TeamAccessRequestError(409, 'team_access_request_already_reviewed', 'This request has already been reviewed.');
+	if (existing.team_status !== 'active') throw new TeamAccessRequestError(409, 'team_not_active', 'This team is not active.');
+	if (existing.requester_user_id === context.user.id) throw new TeamAccessRequestError(403, 'self_approval_blocked', 'You cannot approve your own team access request.');
+	if (!canManageTeam(context, existing.team_id)) {
+		throw new TeamAccessRequestError(403, 'team_access_review_denied', 'You do not have permission to review team access requests for this team.');
+	}
+}
+
+async function approveTeamAccessRequest(request, env, context) {
+	const db = dbFor(env);
+	await assertRoutePermission(request, env, context);
+
+	const body = await readJson(request);
+	const requestId = cleanText(body.requestId);
+	if (!requestId) throw new TeamAccessRequestError(400, 'request_id_required', 'Choose a team access request to approve.');
+
+	const existing = await readRequestForDecision(db, requestId);
+	assertCanDecideTeamAccess(context, existing);
+
+	const activeMembership = await readActiveMembership(db, existing.requester_user_id, existing.team_id);
+	if (activeMembership) {
+		throw new TeamAccessRequestError(409, 'team_member_already_active', 'This person is already a member of this team.');
+	}
+
+	await db
+		.prepare(`
+			UPDATE auth_team_access_requests
+			SET request_status = 'approved',
+				decided_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now'),
+				decided_by_user_id = ?,
+				decision_reason = NULL
+			WHERE id = ?
+				AND request_status = 'pending'
+		`)
+		.bind(context.user.id, requestId)
+		.run();
+
+	await db
+		.prepare(`
+			INSERT INTO auth_team_memberships (id, user_id, team_id, membership_status)
+			VALUES (?, ?, ?, 'active')
+			ON CONFLICT(user_id, team_id) DO UPDATE SET membership_status = 'active', removed_at = NULL
+		`)
+		.bind(makeId('tm'), existing.requester_user_id, existing.team_id)
+		.run();
+
+	await recordTeamAccessEvent(db, request, 'team.access.approved', context, {
+		requestId,
+		teamId: existing.team_id,
+		targetUserId: existing.requester_user_id,
+		decision: 'approved',
+	});
+
+	return {
+		approved: true,
+		requestId,
+		status: 'approved',
+		message: 'Request approved. This person is now a team member with no active role.',
+	};
+}
+
+async function rejectTeamAccessRequest(request, env, context) {
+	const db = dbFor(env);
+	await assertRoutePermission(request, env, context);
+
+	const body = await readJson(request);
+	const requestId = cleanText(body.requestId);
+	const decisionReason = decisionReasonFor(body.decisionReason);
+	if (!requestId) throw new TeamAccessRequestError(400, 'request_id_required', 'Choose a team access request to reject.');
+
+	const existing = await readRequestForDecision(db, requestId);
+	assertCanDecideTeamAccess(context, existing);
+
+	await db
+		.prepare(`
+			UPDATE auth_team_access_requests
+			SET request_status = 'rejected',
+				decided_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now'),
+				decided_by_user_id = ?,
+				decision_reason = ?
+			WHERE id = ?
+				AND request_status = 'pending'
+		`)
+		.bind(context.user.id, decisionReason, requestId)
+		.run();
+
+	await recordTeamAccessEvent(db, request, 'team.access.rejected', context, {
+		requestId,
+		teamId: existing.team_id,
+		targetUserId: existing.requester_user_id,
+		decision: 'rejected',
+	});
+
+	return {
+		rejected: true,
+		requestId,
+		status: 'rejected',
+		message: 'Request not approved. This person has not become a member of the team.',
+	};
+}
+
 function teamAccessRequestErrorResponse(error) {
 	if (!(error instanceof TeamAccessRequestError)) throw error;
 	return jsonResponse({ ok: false, error: error.code, message: error.message }, error.status);
@@ -307,6 +500,10 @@ export async function handleTeamAccessRequestsRoute(request, env, apiPath) {
 			return jsonResponse({ ok: true, requests: await listTeamAccessRequests(request, env, context) });
 		}
 
+		if (request.method === 'GET' && apiPath === '/api/team-access/requests/review') {
+			return jsonResponse({ ok: true, requests: await listTeamAccessReviewRequests(request, env, context) });
+		}
+
 		if (request.method === 'POST' && apiPath === '/api/team-access/requests') {
 			const result = await createTeamAccessRequest(request, env, context);
 			return jsonResponse({ ok: true, ...result }, result.created ? 201 : 200);
@@ -314,6 +511,16 @@ export async function handleTeamAccessRequestsRoute(request, env, apiPath) {
 
 		if (request.method === 'POST' && apiPath === '/api/team-access/requests/cancel') {
 			const result = await cancelTeamAccessRequest(request, env, context);
+			return jsonResponse({ ok: true, ...result });
+		}
+
+		if (request.method === 'POST' && apiPath === '/api/team-access/requests/approve') {
+			const result = await approveTeamAccessRequest(request, env, context);
+			return jsonResponse({ ok: true, ...result });
+		}
+
+		if (request.method === 'POST' && apiPath === '/api/team-access/requests/reject') {
+			const result = await rejectTeamAccessRequest(request, env, context);
 			return jsonResponse({ ok: true, ...result });
 		}
 
