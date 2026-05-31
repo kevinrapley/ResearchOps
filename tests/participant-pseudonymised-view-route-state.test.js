@@ -30,8 +30,9 @@ function functionBody(source, functionName) {
 
 includes(participantService, 'resolveAuthenticatedContext(request, svc.env)', 'participant service');
 includes(participantService, 'await assertRoutePermission(request, svc.env, context)', 'participant service');
-includes(participantService, 'const PSEUDONYMISED_LIST_FIELDS = [', 'participant service');
-includes(participantService, 'params.append("fields[]", field)', 'participant service');
+includes(participantService, 'readParticipantRecordsForStudy(svc, studyId)', 'participant service');
+includes(participantService, 'for (const linkFieldName of PARTICIPANT_FIELDS.study_link)', 'participant service');
+includes(participantService, 'params.append("fields[]", linkFieldName)', 'participant service');
 includes(participantService, 'mapPseudonymisedParticipant(record, index, context)', 'participant service');
 includes(participantService, 'participant_ref: participantReference(record, index)', 'participant service');
 includes(participantService, 'contact_restricted: true', 'participant service');
@@ -59,7 +60,6 @@ includes(router, 'service.revealParticipantContact(request, origin, url)', 'rout
 includes(router, 'service.listParticipants(request, origin, url)', 'router');
 
 includes(migration, "'participant.record.view'", 'participant pseudonymised view migration');
-includes(migration, "'participant.pii.reveal'", 'participant pseudonymised view migration');
 includes(migration, "'GET', '/api/participants', '[\"participant.record.view\"]'", 'participant pseudonymised view migration');
 includes(migration, "'GET', '/api/participants/contact', '[\"participant.pii.reveal\"]'", 'participant pseudonymised view migration');
 includes(migration, "('role_researcher', 'participant.record.view')", 'participant pseudonymised view migration');
