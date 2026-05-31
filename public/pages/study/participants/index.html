@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en-GB">
+<html class="govuk-template" lang="en">
 
 <head>
 	<meta charset="utf-8" />
@@ -19,9 +19,13 @@
 	<!-- route-state contract: src="/components/participants/participants-page.js" defer -->
 	<!-- route-state contract: src="/pages/study/participants/scheduler.js" defer -->
 	<script type="module" src="/js/participants-route-loader.js?v=study-record-id-routing-20260518"></script>
+	<link rel="stylesheet" href="/assets/govuk/govuk-frontend.css" media="screen">
+	<script type="module" src="/components/layout.js" defer></script>
+	<script type="module" src="/js/govuk-frontend-init.js" defer></script>
 </head>
 
-<body>
+<body class="govuk-template__body">
+	<script>document.body.className += ' js-enabled' + ('noModule' in HTMLScriptElement.prototype ? ' govuk-frontend-supported' : '');</script>
 	<x-include src="/partials/debug-boot.html" debug-only></x-include>
 
 	<x-include src="/partials/header.html" vars='{
@@ -29,7 +33,7 @@
     "subtitle":"Study — Participants"
   }'></x-include>
 
-	<main id="main" class="container govuk-body" role="main">
+	<main id="main-content" class="container govuk-body govuk-main-wrapper" role="main" tabindex="-1">
 		<nav class="govuk-breadcrumbs" aria-label="Breadcrumb">
 			<ol class="govuk-breadcrumbs__list">
 				<li class="govuk-breadcrumbs__list-item"><a class="govuk-breadcrumbs__link" href="/pages/projects/">Projects</a></li>

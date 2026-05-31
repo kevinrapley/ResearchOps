@@ -5,6 +5,7 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<title>Your ResearchOps account - ResearchOps Demo Suite</title>
 	<link rel="stylesheet" href="/assets/govuk/govuk-frontend.css" media="screen">
+	
 	<script type="module" src="/components/layout.js" defer></script>
 	<script type="module" src="/js/govuk-frontend-init.js" defer></script>
 </head>
@@ -12,94 +13,193 @@
 	<script>document.body.className += ' js-enabled' + ('noModule' in HTMLScriptElement.prototype ? ' govuk-frontend-supported' : '');</script>
 	<x-include src="/partials/header.html" vars='{"active":""}'></x-include>
 	<main class="govuk-main-wrapper" id="main-content" role="main" tabindex="-1">
-		<div class="govuk-width-container">
-			<div class="govuk-breadcrumbs">
-				<ol class="govuk-breadcrumbs__list">
-					<li class="govuk-breadcrumbs__list-item">
-						<a class="govuk-breadcrumbs__link" href="/">Home</a>
-					</li>
-				</ol>
-			</div>
+		
+<div class="govuk-width-container">
+	<nav class="govuk-breadcrumbs" aria-label="Breadcrumb">
+  <ol class="govuk-breadcrumbs__list">
 
-			<div class="govuk-notification-banner" role="region" aria-labelledby="govuk-notification-banner-title" data-module="govuk-notification-banner" id="account-status" aria-live="polite" aria-busy="true">
-				<div class="govuk-notification-banner__header">
-					<h2 class="govuk-notification-banner__title" id="govuk-notification-banner-title">Checking your account</h2>
-				</div>
-				<div class="govuk-notification-banner__content" id="account-status-body">
-					<p class="govuk-notification-banner__heading">Checking which teams, roles and account actions you can use.</p>
-				</div>
-			</div>
+  
+    <li class="govuk-breadcrumbs__list-item">
+      <a class="govuk-breadcrumbs__link" href="/">Home</a>
+    </li>
+  
 
-			<div id="account-dashboard" hidden>
-				<div class="govuk-grid-row">
-					<div class="govuk-grid-column-two-thirds">
-						<span class="govuk-caption-l">ResearchOps account</span>
-						<h1 class="govuk-heading-xl" id="account-dashboard-title">Your ResearchOps account</h1>
-						<p class="govuk-body-l">Check who you are signed in as, which teams you belong to and what you can do.</p>
-					</div>
-				</div>
+  </ol>
+</nav>
 
-				<section aria-labelledby="account-identity-title">
-					<h2 class="govuk-heading-m" id="account-identity-title">Your account</h2>
-					<dl class="govuk-summary-list govuk-!-margin-bottom-6" aria-label="Account summary">
-						<div class="govuk-summary-list__row">
-							<dt class="govuk-summary-list__key">Signed in as</dt>
-							<dd class="govuk-summary-list__value"><span id="account-user-value">Not loaded</span></dd>
-						</div>
-						<div class="govuk-summary-list__row">
-							<dt class="govuk-summary-list__key">Email address</dt>
-							<dd class="govuk-summary-list__value"><span id="account-email-value">Not loaded</span></dd>
-						</div>
-						<div class="govuk-summary-list__row">
-							<dt class="govuk-summary-list__key">Account status</dt>
-							<dd class="govuk-summary-list__value"><span id="account-status-value">Not loaded</span></dd>
-						</div>
-					</dl>
-				</section>
 
-				<section aria-labelledby="account-current-team-title" id="account-current-team-section" hidden>
-					<h2 class="govuk-heading-m" id="account-current-team-title">Current team context</h2>
-					<p class="govuk-body">ResearchOps uses this team context when deciding which team-scoped actions and records you can use.</p>
-					<p class="govuk-inset-text" id="account-current-team-value">Not loaded</p>
-				</section>
+	
 
-				<section aria-labelledby="account-teams-title">
-					<h2 class="govuk-heading-m" id="account-teams-title">Your teams and roles</h2>
-					<p class="govuk-body">You may have different roles and access in each team.</p>
-					<div id="account-team-memberships"></div>
-				</section>
+  <div class="govuk-notification-banner" role="region" aria-labelledby="govuk-notification-banner-title" data-module="govuk-notification-banner"
+    
+        
+        
+      
+        
+      
+    
+        
+        
+      
+        
+      
+    
+        
+        
+      
+        
+      
+    
+   id="account-status" aria-live="polite" aria-busy="true">
+  <div class="govuk-notification-banner__header">
+    <h2 class="govuk-notification-banner__title" id="govuk-notification-banner-title">
+      Checking your account
+    </h2>
+  </div>
+  <div class="govuk-notification-banner__content">
+  
+    <p class="govuk-notification-banner__heading">
+      Checking which teams, roles and account actions you can use.
+    </p>
+  
+  </div>
+</div>
 
-				<section aria-labelledby="account-team-access-requests-title" id="account-team-access-requests-section" hidden>
-					<h2 class="govuk-heading-m" id="account-team-access-requests-title">Team access requests</h2>
-					<p class="govuk-body">Requests shown here are awaiting approval. They do not give access to team records yet.</p>
-					<div id="account-team-access-requests"></div>
-				</section>
 
-				<section aria-labelledby="account-actions-title" id="account-actions-section" hidden>
-					<h2 class="govuk-heading-m" id="account-actions-title">What you can do from here</h2>
-					<p class="govuk-body">These account actions are based on your current ResearchOps permissions. Protected services still check your access when you use them.</p>
-					<div id="account-actions" class="govuk-button-group"></div>
-				</section>
-
-				<details class="govuk-details" id="account-permissions-details" hidden data-module="govuk-details">
-					<summary class="govuk-details__summary">
-						<span class="govuk-details__summary-text">View technical permission details</span>
-					</summary>
-					<div class="govuk-details__text">
-						<p class="govuk-body">This technical view is shown only where it helps administer access. Most users should rely on the task-based access summary above.</p>
-						<ul class="govuk-list govuk-list--bullet" id="account-permissions"></ul>
-					</div>
-				</details>
-
-				<section aria-labelledby="account-sign-out-title">
-					<h2 class="govuk-heading-m" id="account-sign-out-title">Sign out</h2>
-					<p class="govuk-body">Sign out when you have finished using ResearchOps on this device.</p>
-					<button type="button" class="govuk-button govuk-button--secondary" data-module="govuk-button" id="account-logout">Sign out</button>
-				</section>
+	<div id="account-dashboard" hidden>
+		<div class="govuk-grid-row">
+			<div class="govuk-grid-column-two-thirds">
+				<span class="govuk-caption-l">ResearchOps account</span>
+				<h1 class="govuk-heading-xl" id="account-dashboard-title">Your ResearchOps account</h1>
+				<p class="govuk-body-l">Check who you are signed in as, which teams you belong to and what you can do.</p>
 			</div>
 		</div>
+
+		<section aria-labelledby="account-identity-title">
+			<h2 class="govuk-heading-m" id="account-identity-title">Your account</h2>
+			
+
+  
+
+  
+
+  
+<dl class="govuk-summary-list govuk-!-margin-bottom-6"
+    
+        
+        
+      
+        
+      
+    
+   aria-label="Account summary">
+
+  
+  <div class="govuk-summary-list__row">
+    <dt class="govuk-summary-list__key">
+      Signed in as
+    </dt>
+    <dd class="govuk-summary-list__value">
+      <span id="account-user-value">Not loaded</span>
+    </dd>
+    
+  </div>
+  
+
+  
+  <div class="govuk-summary-list__row">
+    <dt class="govuk-summary-list__key">
+      Email address
+    </dt>
+    <dd class="govuk-summary-list__value">
+      <span id="account-email-value">Not loaded</span>
+    </dd>
+    
+  </div>
+  
+
+  
+  <div class="govuk-summary-list__row">
+    <dt class="govuk-summary-list__key">
+      Account status
+    </dt>
+    <dd class="govuk-summary-list__value">
+      <span id="account-status-value">Not loaded</span>
+    </dd>
+    
+  </div>
+  
+
+</dl>
+
+		</section>
+
+		<section aria-labelledby="account-current-team-title" id="account-current-team-section" hidden>
+			<h2 class="govuk-heading-m" id="account-current-team-title">Current team context</h2>
+			<p class="govuk-body">ResearchOps uses this team context when deciding which team-scoped actions and records you can use.</p>
+			<p class="govuk-inset-text" id="account-current-team-value">Not loaded</p>
+		</section>
+
+		<section aria-labelledby="account-teams-title">
+			<h2 class="govuk-heading-m" id="account-teams-title">Your teams and roles</h2>
+			<p class="govuk-body">You may have different roles and access in each team.</p>
+			<div id="account-team-memberships"></div>
+		</section>
+
+		<section aria-labelledby="account-team-access-requests-title" id="account-team-access-requests-section" hidden>
+			<h2 class="govuk-heading-m" id="account-team-access-requests-title">Team access requests</h2>
+			<p class="govuk-body">Requests shown here are awaiting approval. They do not give access to team records yet.</p>
+			<div id="account-team-access-requests"></div>
+		</section>
+
+		<section aria-labelledby="account-actions-title" id="account-actions-section" hidden>
+			<h2 class="govuk-heading-m" id="account-actions-title">What you can do from here</h2>
+			<p class="govuk-body">These account actions are based on your current ResearchOps permissions. Protected services still check your access when you use them.</p>
+			<div id="account-actions" class="govuk-button-group"></div>
+		</section>
+
+		<details id="account-permissions-details" hidden class="govuk-details" data-module="govuk-details">
+			<summary class="govuk-details__summary">
+				<span class="govuk-details__summary-text">View technical permission details</span>
+			</summary>
+			<div class="govuk-details__text">
+				<p class="govuk-body">This technical view is shown only where it helps administer access. Most users should rely on the task-based access summary above.</p>
+				<ul class="govuk-list govuk-list--bullet" id="account-permissions"></ul>
+			</div>
+		</details>
+
+		<section aria-labelledby="account-sign-out-title">
+			<h2 class="govuk-heading-m" id="account-sign-out-title">Sign out</h2>
+			<p class="govuk-body">Sign out when you have finished using ResearchOps on this device.</p>
+			
+  
+
+<button type="submit" class="govuk-button govuk-button--secondary" data-module="govuk-button"
+    
+        
+        
+      
+        
+      
+    
+        
+        
+      
+        
+      
+    
+   id="account-logout" type="button">
+  Sign out
+</button>
+
+		</section>
+	</div>
+</div>
+
 	</main>
 	<x-include src="/partials/footer.html"></x-include>
-	<script type="module" src="/js/auth-account-page.js?v=team-access-request-20260530"></script>
+	
+<script type="module" src="/js/auth-account-page.js?v=team-access-request-20260530"></script>
+
 </body>
 </html>

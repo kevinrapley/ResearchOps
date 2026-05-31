@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html class="govuk-template" lang="en">
 
 <head>
 	<meta charset="utf-8" />
@@ -26,48 +26,12 @@
 
 	<!-- Main page controller: respects window.__descAssistActive and will not double-wire Step 1 -->
 	<script type="module" src="start-new-project.js" defer></script>
+	<link rel="stylesheet" href="/assets/govuk/govuk-frontend.css" media="screen">
+	<script type="module" src="/js/govuk-frontend-init.js" defer></script>
 </head>
 
-<body>
-	<noscript>
-		<a class="govuk-skip-link" href="#main-content">Skip to main content</a>
-
-		<header class="govuk-header" role="banner">
-			<div class="govuk-header__container govuk-width-container">
-				<div class="govuk-header__logo">
-					<a class="govuk-header__link govuk-header__link--homepage" href="/" aria-label="GOV.UK home">
-						<span class="govuk-header__logotype">GOV.UK</span>
-					</a>
-				</div>
-			</div>
-		</header>
-
-		<nav class="govuk-service-navigation" aria-label="Service navigation">
-			<div class="govuk-service-navigation__container govuk-width-container">
-				<span class="govuk-service-navigation__service-name">
-					<a class="govuk-service-navigation__link" href="/">ResearchOps Demo Suite</a>
-				</span>
-				<ul class="govuk-service-navigation__list">
-					<li class="govuk-service-navigation__item">
-						<a class="govuk-service-navigation__link" href="/">Home</a>
-					</li>
-					<li class="govuk-service-navigation__item">
-						<a class="govuk-service-navigation__link" href="/pages/start/" aria-current="page">Start research project</a>
-					</li>
-					<li class="govuk-service-navigation__item">
-						<a class="govuk-service-navigation__link" href="/pages/projects/">Projects</a>
-					</li>
-				</ul>
-			</div>
-		</nav>
-
-		<div class="govuk-phase-banner" role="note" aria-label="Service phase">
-			<p class="govuk-phase-banner__content">
-				<strong class="govuk-tag">Prototype</strong>
-				<span class="govuk-phase-banner__text">This is a ResearchOps prototype. Do not enter real participant personal data.</span>
-			</p>
-		</div>
-	</noscript>
+<body class="govuk-template__body">
+	<script>document.body.className += ' js-enabled' + ('noModule' in HTMLScriptElement.prototype ? ' govuk-frontend-supported' : '');</script>
 
 	<x-include src="/partials/debug.html" debug-only></x-include>
 	<x-include
@@ -238,14 +202,6 @@
 			</div>
 		</div>
 	</main>
-
-	<noscript>
-		<footer class="govuk-footer" role="contentinfo">
-			<div class="govuk-footer__container govuk-width-container">
-				<p class="govuk-footer__meta">© 2026 Home Office Biometrics · ResearchOps v1.0.0</p>
-			</div>
-		</footer>
-	</noscript>
 
 	<x-include src="/partials/footer.html"></x-include>
 </body>
