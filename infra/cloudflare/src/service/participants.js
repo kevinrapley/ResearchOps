@@ -21,12 +21,6 @@ import { PARTICIPANT_FIELDS } from "../core/fields.js";
 import { airtableTryWrite } from "../core/utils.js";
 
 const CONTACT_RESTRICTED_MESSAGE = "Participant contact details are restricted. Ask a Team Admin or authorised role if you need access.";
-const PSEUDONYMISED_LIST_FIELDS = [
-	PARTICIPANT_FIELDS.study_link[0],
-	PARTICIPANT_FIELDS.channel_pref[0],
-	PARTICIPANT_FIELDS.consent_status[0],
-	PARTICIPANT_FIELDS.status[0],
-];
 
 function permissionCodes(context = {}) {
 	return new Set((context.permissions || []).map((permission) => permission.code).filter(Boolean));
@@ -103,26 +97,27 @@ function airtableConfig(svc) {
 	};
 }
 
-function appendPseudonymisedFieldProjection(params) {
-	for (const field of PSEUDONYMISED_LIST_FIELDS) {
-		params.append("fields[]", field);
-	}
+function isUnknownFieldResponse(status, text) {
+	return status === 422 && /UNKNOWN_FIELD|INVALID_FIELD|field/i.test(String(text || ""));
 }
 
-async function readParticipantRecords(svc) {
+async function readParticipantRecords(svc, linkFieldName) {
 	const at = airtableConfig(svc);
 	const records = [];
 	let offset;
 
 	do {
 		const params = new URLSearchParams({ pageSize: "100" });
-		appendPseudonymisedFieldProjection(params);
+		params.append("fields[]", linkFieldName);
 		if (offset) params.set("offset", offset);
 		const resp = await fetchWithTimeout(`${at.url}?${params.toString()}`, { headers: at.headers }, svc.cfg.TIMEOUT_MS);
 		const txt = await resp.text();
 		if (!resp.ok) {
-			svc.log.error("airtable.participants.list.fail", { status: resp.status, text: safeText(txt) });
-			return { ok: false, response: svc.json({ ok: false, error: `Airtable ${resp.status}`, detail: safeText(txt) }, resp.status) };
+			return {
+				ok: false,
+				unknownField: isUnknownFieldResponse(resp.status, txt),
+				response: svc.json({ ok: false, error: `Airtable ${resp.status}`, detail: safeText(txt) }, resp.status),
+			};
 		}
 
 		let js;
@@ -135,7 +130,33 @@ async function readParticipantRecords(svc) {
 		offset = js.offset;
 	} while (offset);
 
-	return { ok: true, records };
+	return { ok: true, linkFieldName, records };
+}
+
+async function readParticipantRecordsForStudy(svc, studyId) {
+	let lastResponse = null;
+
+	for (const linkFieldName of PARTICIPANT_FIELDS.study_link) {
+		const result = await readParticipantRecords(svc, linkFieldName);
+		if (!result.ok) {
+			lastResponse = result.response;
+			if (result.unknownField) continue;
+			svc.log.error("airtable.participants.list.fail", { linkFieldName });
+			return result;
+		}
+
+		const records = result.records.filter((record) => {
+			const links = record.fields?.[linkFieldName];
+			return Array.isArray(links) && links.includes(studyId);
+		});
+
+		return { ok: true, linkFieldName, records };
+	}
+
+	return {
+		ok: false,
+		response: lastResponse || svc.json({ ok: false, error: "participant_study_link_missing", message: "Participants could not be matched to this study." }, 502),
+	};
 }
 
 async function readParticipantRecord(svc, participantId) {
@@ -167,8 +188,6 @@ function participantReference(record, index) {
 }
 
 function mapPseudonymisedParticipant(record, index, context) {
-	const fields = record.fields || {};
-
 	return {
 		id: record.id,
 		participant_ref: participantReference(record, index),
@@ -176,9 +195,9 @@ function mapPseudonymisedParticipant(record, index, context) {
 		contact_restricted: true,
 		has_contact_details: null,
 		can_reveal_contact: canRevealParticipantContact(context),
-		channel_pref: pickParticipantField(fields, PARTICIPANT_FIELDS.channel_pref) || "not recorded",
-		consent_status: pickParticipantField(fields, PARTICIPANT_FIELDS.consent_status) || "not_sent",
-		status: pickParticipantField(fields, PARTICIPANT_FIELDS.status) || "invited",
+		channel_pref: "not recorded",
+		consent_status: "not_sent",
+		status: "invited",
 		createdAt: record.createdTime || "",
 	};
 }
@@ -209,16 +228,10 @@ export async function listParticipants(svc, request, origin, url) {
 	const studyId = url.searchParams.get("study");
 	if (!studyId) return svc.json({ ok: false, error: "Missing study query" }, 400, svc.corsHeaders(origin));
 
-	const result = await readParticipantRecords(svc);
+	const result = await readParticipantRecordsForStudy(svc, studyId);
 	if (!result.ok) return result.response;
 
 	const participants = result.records
-		.filter(r => {
-			const f = r.fields || {};
-			const linkKey = pickFirstField(f, PARTICIPANT_FIELDS.study_link);
-			const linkArr = linkKey ? f[linkKey] : undefined;
-			return Array.isArray(linkArr) && linkArr.includes(studyId);
-		})
 		.map((record, index) => mapPseudonymisedParticipant(record, index, context))
 		.sort((a, b) => toMs(a.createdAt) - toMs(b.createdAt));
 
