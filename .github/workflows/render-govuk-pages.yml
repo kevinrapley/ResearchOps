@@ -120,9 +120,7 @@ jobs:
           if [ "$render_all" = "true" ]; then
             output_paths=(public/index.html public/pages)
           else
-            cat > "$changed_outputs_path" <<'EOF'
-          ${{ steps.changed-pages.outputs.outputs }}
-          EOF
+            printf '%s\n' "${{ steps.changed-pages.outputs.outputs }}" > "$changed_outputs_path"
             mapfile -t output_paths < "$changed_outputs_path"
           fi
 
