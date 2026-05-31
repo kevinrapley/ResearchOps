@@ -74,7 +74,6 @@ for (const source of [component, scheduler]) {
 	includes(source, 'Contact details are restricted. Ask a Team Admin or authorised role if you need access.', 'participant UI');
 	includes(source, 'data-contact-state="restricted"', 'participant UI');
 	includes(source, 'Reveal contact details', 'participant UI');
-	includes(source, 'Sensitive', 'participant UI');
 	excludes(source, 'mailto:${encodeURIComponent(p.email)}', 'participant UI default state');
 	excludes(source, 'tel:${encodeURIComponent(p.phone)}', 'participant UI default state');
 }
@@ -82,6 +81,7 @@ for (const source of [component, scheduler]) {
 includes(scheduler, 'revealParticipantContact(participantId)', 'participant scheduler');
 includes(scheduler, '/api/participants/contact?participant=', 'participant scheduler');
 includes(scheduler, 'data-contact-state="revealed"', 'participant scheduler');
+includes(scheduler, 'Sensitive', 'participant scheduler');
 includes(scheduler, 'Handle this information as sensitive.', 'participant scheduler');
 
 includes(page, 'Participants', 'participants page');
