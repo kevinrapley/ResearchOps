@@ -146,6 +146,16 @@ const pages = [
 		},
 	},
 	{
+		template: 'pages/team-access-requests.njk',
+		output: 'public/pages/team/access-requests/index.html',
+		context: {
+			pageTitle: 'Review team access requests - ResearchOps Demo Suite',
+			serviceName: 'ResearchOps Demo Suite',
+			activeNavigation: '',
+			navigation: accountNavigation,
+		},
+	},
+	{
 		template: 'pages/projects.njk',
 		output: 'public/pages/projects/index.html',
 		context: {
