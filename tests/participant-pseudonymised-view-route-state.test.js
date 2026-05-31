@@ -34,9 +34,14 @@ includes(participantService, 'resolveAuthenticatedContext(request, svc.env)', 'p
 includes(participantService, 'await assertRoutePermission(request, svc.env, context)', 'participant service');
 includes(participantService, 'readD1ParticipantsForStudy(svc, origin, studyId, context)', 'participant service');
 includes(participantService, 'FROM rops_participants_cache', 'participant service');
+includes(participantService, 'participant_airtable_id', 'participant service');
+includes(participantService, 'session_participant_id: sessionParticipantId', 'participant service');
+includes(participantService, 'can_schedule: Boolean(sessionParticipantId)', 'participant service');
 includes(participantService, 'WHERE study_id = ?', 'participant service');
 includes(participantService, 'readD1ParticipantContact(svc, origin, participantId)', 'participant service');
 includes(participantService, 'sensitive_contact_json', 'participant service');
+includes(participantService, 'access_needs', 'participant service');
+includes(participantService, 'accessNeeds', 'participant service');
 includes(participantService, 'participant.contact.revealed', 'participant service');
 includes(participantService, 'participant.contact.reveal.denied', 'participant service');
 includes(participantService, 'participant.created', 'participant service');
@@ -52,6 +57,7 @@ excludes(pseudonymisedMapper, 'email:', 'D1 pseudonymised participant mapper');
 excludes(pseudonymisedMapper, 'phone:', 'D1 pseudonymised participant mapper');
 includes(pseudonymisedMapper, 'display_name: row.participant_ref || row.id', 'D1 pseudonymised participant mapper');
 includes(pseudonymisedMapper, 'contact_restricted: true', 'D1 pseudonymised participant mapper');
+includes(pseudonymisedMapper, 'access_needs: row.access_needs || ""', 'D1 pseudonymised participant mapper');
 
 const contactReader = functionBody(participantService, 'readD1ParticipantContact');
 includes(contactReader, 'email: cleanText(contact.email)', 'D1 contact reveal reader');
@@ -74,6 +80,8 @@ includes(migration, "('role_researcher', 'participant.record.view')", 'participa
 includes(d1SeedMigration, "'participant.record.create'", 'D1 participant canonical seed migration');
 includes(d1SeedMigration, "'POST', '/api/participants', '[\"participant.record.create\"]'", 'D1 participant canonical seed migration');
 includes(d1SeedMigration, 'CREATE TABLE IF NOT EXISTS rops_participants_cache', 'D1 participant canonical seed migration');
+includes(d1SeedMigration, 'participant_airtable_id TEXT', 'D1 participant canonical seed migration');
+includes(d1SeedMigration, 'access_needs TEXT', 'D1 participant canonical seed migration');
 includes(d1SeedMigration, 'sensitive_contact_json TEXT', 'D1 participant canonical seed migration');
 
 includes(workflow, 'Apply D1 Participant Pseudonymised View', 'participant D1 apply workflow');
@@ -93,6 +101,11 @@ for (const source of [component, scheduler]) {
 includes(scheduler, 'project_id: context.projectId', 'participant scheduler');
 includes(scheduler, 'study_id: context.studyId', 'participant scheduler');
 includes(scheduler, 'handleAddParticipant(e, context', 'participant scheduler');
+includes(scheduler, 'scheduleableParticipants(participants)', 'participant scheduler');
+includes(scheduler, 'session_participant_id', 'participant scheduler');
+includes(scheduler, 'data-session-participant-id', 'participant scheduler');
+includes(scheduler, 'Scheduling is not available until this participant has a session-compatible record.', 'participant scheduler');
+includes(scheduler, 'participant_airtable_id: participantId', 'participant scheduler');
 includes(scheduler, 'revealParticipantContact(participantId)', 'participant scheduler');
 includes(scheduler, '/api/participants/contact?participant=', 'participant scheduler');
 includes(scheduler, 'data-contact-state="revealed"', 'participant scheduler');
