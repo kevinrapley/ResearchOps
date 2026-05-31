@@ -5,6 +5,7 @@ const participantService = fs.readFileSync('infra/cloudflare/src/service/partici
 const serviceIndex = fs.readFileSync('infra/cloudflare/src/service/index.js', 'utf8');
 const router = fs.readFileSync('infra/cloudflare/src/core/router.js', 'utf8');
 const migration = fs.readFileSync('infra/cloudflare/migrations/0007_participant_pseudonymised_view.sql', 'utf8');
+const d1SeedMigration = fs.readFileSync('infra/cloudflare/migrations/0008_seed_test_project_1_participants.sql', 'utf8');
 const workflow = fs.readFileSync('.github/workflows/apply-d1-participant-pseudonymised-view.yml', 'utf8');
 const component = fs.readFileSync('public/components/participants/participants-page.js', 'utf8');
 const scheduler = fs.readFileSync('public/pages/study/participants/scheduler.js', 'utf8');
@@ -28,41 +29,52 @@ function functionBody(source, functionName) {
 	return source.slice(start, end);
 }
 
+includes(participantService, 'D1 is the runtime source of truth', 'participant service');
 includes(participantService, 'resolveAuthenticatedContext(request, svc.env)', 'participant service');
 includes(participantService, 'await assertRoutePermission(request, svc.env, context)', 'participant service');
-includes(participantService, 'readParticipantRecordsForStudy(svc, studyId)', 'participant service');
-includes(participantService, 'for (const linkFieldName of PARTICIPANT_FIELDS.study_link)', 'participant service');
-includes(participantService, 'params.append("fields[]", linkFieldName)', 'participant service');
-includes(participantService, 'mapPseudonymisedParticipant(record, index, context)', 'participant service');
-includes(participantService, 'participant_ref: participantReference(record, index)', 'participant service');
-includes(participantService, 'contact_restricted: true', 'participant service');
-includes(participantService, 'can_reveal_contact: canRevealParticipantContact(context)', 'participant service');
-includes(participantService, 'export async function revealParticipantContact', 'participant service');
+includes(participantService, 'readD1ParticipantsForStudy(svc, origin, studyId, context)', 'participant service');
+includes(participantService, 'FROM rops_participants_cache', 'participant service');
+includes(participantService, 'WHERE study_id = ?', 'participant service');
+includes(participantService, 'readD1ParticipantContact(svc, origin, participantId)', 'participant service');
+includes(participantService, 'sensitive_contact_json', 'participant service');
 includes(participantService, 'participant.contact.revealed', 'participant service');
 includes(participantService, 'participant.contact.reveal.denied', 'participant service');
+includes(participantService, 'participant.created', 'participant service');
 includes(participantService, 'CONTACT_RESTRICTED_MESSAGE', 'participant service');
 includes(participantService, 'preferFallbackMessage ? fallbackMessage', 'participant service');
 
-const pseudonymisedMapper = functionBody(participantService, 'mapPseudonymisedParticipant');
-excludes(pseudonymisedMapper, 'email:', 'pseudonymised participant mapper');
-excludes(pseudonymisedMapper, 'phone:', 'pseudonymised participant mapper');
-includes(pseudonymisedMapper, 'display_name: participantReference(record, index)', 'pseudonymised participant mapper');
+excludes(participantService, 'fetchWithTimeout', 'participant service');
+excludes(participantService, 'airtableTryWrite', 'participant service');
+excludes(participantService, 'AIRTABLE_', 'participant service');
 
-const contactMapper = functionBody(participantService, 'mapParticipantContact');
-includes(contactMapper, 'email:', 'contact reveal mapper');
-includes(contactMapper, 'phone:', 'contact reveal mapper');
+const pseudonymisedMapper = functionBody(participantService, 'mapD1Participant');
+excludes(pseudonymisedMapper, 'email:', 'D1 pseudonymised participant mapper');
+excludes(pseudonymisedMapper, 'phone:', 'D1 pseudonymised participant mapper');
+includes(pseudonymisedMapper, 'display_name: row.participant_ref || row.id', 'D1 pseudonymised participant mapper');
+includes(pseudonymisedMapper, 'contact_restricted: true', 'D1 pseudonymised participant mapper');
+
+const contactReader = functionBody(participantService, 'readD1ParticipantContact');
+includes(contactReader, 'email: cleanText(contact.email)', 'D1 contact reveal reader');
+includes(contactReader, 'phone: cleanText(contact.phone)', 'D1 contact reveal reader');
 
 includes(serviceIndex, 'listParticipants = (req, origin, url) => Participants.listParticipants(this, req, origin, url)', 'service index');
 includes(serviceIndex, 'revealParticipantContact = (req, origin, url) => Participants.revealParticipantContact(this, req, origin, url)', 'service index');
+includes(serviceIndex, 'createParticipant = (req, origin) => Participants.createParticipant(this, req, origin)', 'service index');
 
 includes(router, 'url.pathname === "/api/participants/contact"', 'router');
 includes(router, 'service.revealParticipantContact(request, origin, url)', 'router');
 includes(router, 'service.listParticipants(request, origin, url)', 'router');
+includes(router, 'service.createParticipant(request, origin)', 'router');
 
 includes(migration, "'participant.record.view'", 'participant pseudonymised view migration');
 includes(migration, "'GET', '/api/participants', '[\"participant.record.view\"]'", 'participant pseudonymised view migration');
 includes(migration, "'GET', '/api/participants/contact', '[\"participant.pii.reveal\"]'", 'participant pseudonymised view migration');
 includes(migration, "('role_researcher', 'participant.record.view')", 'participant pseudonymised view migration');
+
+includes(d1SeedMigration, "'participant.record.create'", 'D1 participant canonical seed migration');
+includes(d1SeedMigration, "'POST', '/api/participants', '[\"participant.record.create\"]'", 'D1 participant canonical seed migration');
+includes(d1SeedMigration, 'CREATE TABLE IF NOT EXISTS rops_participants_cache', 'D1 participant canonical seed migration');
+includes(d1SeedMigration, 'sensitive_contact_json TEXT', 'D1 participant canonical seed migration');
 
 includes(workflow, 'Apply D1 Participant Pseudonymised View', 'participant D1 apply workflow');
 includes(workflow, 'infra/cloudflare/migrations/0007_participant_pseudonymised_view.sql', 'participant D1 apply workflow');
@@ -78,6 +90,9 @@ for (const source of [component, scheduler]) {
 	excludes(source, 'tel:${encodeURIComponent(p.phone)}', 'participant UI default state');
 }
 
+includes(scheduler, 'project_id: context.projectId', 'participant scheduler');
+includes(scheduler, 'study_id: context.studyId', 'participant scheduler');
+includes(scheduler, 'handleAddParticipant(e, context', 'participant scheduler');
 includes(scheduler, 'revealParticipantContact(participantId)', 'participant scheduler');
 includes(scheduler, '/api/participants/contact?participant=', 'participant scheduler');
 includes(scheduler, 'data-contact-state="revealed"', 'participant scheduler');
