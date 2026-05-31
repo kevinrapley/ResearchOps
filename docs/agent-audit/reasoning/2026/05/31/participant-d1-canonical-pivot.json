@@ -1,0 +1,61 @@
+{
+	"date": "2026-05-31",
+	"traceType": "operational-audit-trace",
+	"branch": "feature/pseudonymised-participant-view",
+	"relatedWork": "Story 7 continuation — make D1 canonical and Airtable secondary",
+	"traceRequired": true,
+	"taskSummary": "Pivot participant runtime behaviour so D1 is the canonical source of truth for testing and service behaviour. Airtable remains secondary and must not be required for participant list, contact reveal or participant creation.",
+	"implementationSummary": {
+		"d1CanonicalParticipants": true,
+		"airtableSecondaryAdapter": true,
+		"participantListReadsD1": true,
+		"participantContactRevealReadsD1": true,
+		"participantCreationWritesD1": true,
+		"testProject1SeededParticipants": 10,
+		"seedContainsRealPersonalData": false,
+		"postApplyChecksIncluded": true
+	},
+	"d1Objects": {
+		"participantTable": "rops_participants_cache",
+		"seedProjectId": "recgdpwEI5hFO7bUZ",
+		"seedStudyId": "rect3biqr",
+		"seedSource": "d1-seed",
+		"permissions": [
+			"participant.record.create",
+			"participant.record.view",
+			"participant.pii.reveal"
+		],
+		"routes": [
+			"GET /api/participants",
+			"POST /api/participants",
+			"GET /api/participants/contact"
+		]
+	},
+	"filesChanged": [
+		".github/workflows/apply-d1-test-project-1-participants.yml",
+		"infra/cloudflare/migrations/0008_seed_test_project_1_participants.sql",
+		"infra/cloudflare/src/service/participants.js",
+		"public/pages/study/participants/scheduler.js",
+		"tests/participant-pseudonymised-view-route-state.test.js",
+		"tests/test-project-1-participants-seed-route-state.test.js",
+		"docs/agent-audit/reasoning/2026/05/31/participant-d1-canonical-pivot.md",
+		"docs/agent-audit/reasoning/2026/05/31/participant-d1-canonical-pivot.json"
+	],
+	"scopeControls": {
+		"story8AccessRequestsImplemented": false,
+		"airtableRuntimeParticipantSource": false,
+		"realPersonalDataSeeded": false,
+		"defaultContactRevealGranted": false,
+		"allRuntimeEntitiesMigratedToD1": false,
+		"sessionCreationMovedToD1": false
+	},
+	"validationExpected": [
+		"npm run validate",
+		"npm run lint",
+		"npm test -- --ci"
+	],
+	"residualRisks": [
+		"The session creation path still uses existing Airtable-oriented field names and should be handled in a later D1-canonical session slice.",
+		"If D1 already contains an older incompatible rops_participants_cache table without sensitive_contact_json, the remote apply may need a compatibility migration."
+	]
+}
