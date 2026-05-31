@@ -1,31 +1,8 @@
 {% extends "layouts/researchops.njk" %}
 
 {% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
-{% from "govuk/components/button/macro.njk" import govukButton %}
 {% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
-{% from "govuk/components/summary-list/macro.njk" import govukSummaryList %}
-{% from "govuk/components/tag/macro.njk" import govukTag %}
-{% from "govuk/components/textarea/macro.njk" import govukTextarea %}
 {% from "govuk/components/warning-text/macro.njk" import govukWarningText %}
-
-{% set pendingRequests = [
-	{
-		id: 'request-alex-morgan',
-		requesterName: 'Alex Morgan',
-		requesterEmail: 'alex.morgan@example.gov.uk',
-		teamName: 'ResearchOps Core Team',
-		requestedAt: '30 May 2026',
-		message: 'I need access for the discovery work on account and team management.'
-	},
-	{
-		id: 'request-sam-patel',
-		requesterName: 'Sam Patel',
-		requesterEmail: 'sam.patel@example.gov.uk',
-		teamName: 'Research Operations',
-		requestedAt: '30 May 2026',
-		message: 'I am supporting the next round of research planning.'
-	}
-] %}
 
 {% block content %}
 <div class="govuk-width-container">
@@ -48,6 +25,11 @@
 			<h1 class="govuk-heading-xl">Review team access requests</h1>
 			<p class="govuk-body-l">Approve or reject requests from people who want to join a team you administer.</p>
 			<p class="govuk-body">Approving a request makes the person a team member. It does not give them a role or access to sensitive information.</p>
+
+			{{ govukWarningText({
+				text: 'Decision controls only work for real pending requests returned by the account service. Fixture requests must not be rendered as live decisions.',
+				iconFallbackText: 'Warning'
+			}) }}
 		</div>
 	</div>
 
@@ -60,96 +42,23 @@
 		}
 	}) }}
 
+	<section aria-labelledby="team-access-review-loading-title" id="team-access-review-loading">
+		<h2 class="govuk-heading-m" id="team-access-review-loading-title">Checking team access requests</h2>
+		<p class="govuk-body">ResearchOps is checking for pending requests you can review.</p>
+	</section>
+
 	<section aria-labelledby="team-access-review-empty-title" id="team-access-review-empty" hidden>
 		<h2 class="govuk-heading-m" id="team-access-review-empty-title">There are no team access requests to review.</h2>
 		<p class="govuk-body">Requests that need your decision will appear here.</p>
 	</section>
 
-	<section aria-labelledby="team-access-review-pending-title" id="team-access-review-pending">
+	<section aria-labelledby="team-access-review-pending-title" id="team-access-review-pending" hidden>
 		<h2 class="govuk-heading-m" id="team-access-review-pending-title">Pending requests</h2>
-
-		{% for request in pendingRequests %}
-			<section class="govuk-summary-card" aria-labelledby="{{ request.id }}-title" data-team-access-review-request>
-				<div class="govuk-summary-card__title-wrapper">
-					<h3 class="govuk-summary-card__title" id="{{ request.id }}-title">Request from {{ request.requesterName }}</h3>
-					<div class="govuk-summary-card__actions">
-						{{ govukTag({
-							text: 'Awaiting review',
-							classes: 'govuk-tag--yellow'
-						}) }}
-					</div>
-				</div>
-				<div class="govuk-summary-card__content">
-					{{ govukSummaryList({
-						classes: 'govuk-summary-list--no-border',
-						rows: [
-							{
-								key: { text: 'Requester' },
-								value: { text: request.requesterName }
-							},
-							{
-								key: { text: 'Email address' },
-								value: { text: request.requesterEmail }
-							},
-							{
-								key: { text: 'Requested team' },
-								value: { text: request.teamName }
-							},
-							{
-								key: { text: 'Requested' },
-								value: { text: request.requestedAt }
-							},
-							{
-								key: { text: 'Message' },
-								value: { text: request.message }
-							}
-						]
-					}) }}
-
-					{{ govukWarningText({
-						text: 'Approving this request will make this person a member of the team. It will not give them a role or access to sensitive information.',
-						iconFallbackText: 'Warning'
-					}) }}
-
-					<form class="team-access-review-form" action="/api/team-access/requests/approve" method="post" data-team-access-approve-form>
-						<input type="hidden" name="requestId" value="{{ request.id }}">
-						{{ govukButton({
-							text: 'Approve request',
-							attributes: {
-								'aria-label': 'Approve ' + request.requesterName + '’s request'
-							}
-						}) }}
-					</form>
-
-					<form class="team-access-review-form" action="/api/team-access/requests/reject" method="post" data-team-access-reject-form>
-						<input type="hidden" name="requestId" value="{{ request.id }}">
-						{{ govukTextarea({
-							id: request.id + '-rejection-reason',
-							name: 'decisionReason',
-							label: {
-								text: 'Reason for not approving this request',
-								classes: 'govuk-label--s'
-							},
-							hint: {
-								text: 'Optional. Give a short reason that will help the requester understand the decision.'
-							},
-							attributes: {
-								maxlength: '500',
-								'aria-describedby': request.id + '-rejection-reason-hint ' + request.id + '-rejection-reason-privacy-hint'
-							}
-						}) }}
-						<p class="govuk-hint" id="{{ request.id }}-rejection-reason-privacy-hint">Do not include participant names, contact details or sensitive research information.</p>
-						{{ govukButton({
-							text: 'Reject request',
-							classes: 'govuk-button--warning',
-							attributes: {
-								'aria-label': 'Reject ' + request.requesterName + '’s request'
-							}
-						}) }}
-					</form>
-				</div>
-			</section>
-		{% endfor %}
+		<div id="team-access-review-list"></div>
 	</section>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script type="module" src="/js/auth-team-access-review-page.js?v=team-access-review-20260531"></script>
 {% endblock %}
