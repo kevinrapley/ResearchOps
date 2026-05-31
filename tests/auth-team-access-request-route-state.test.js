@@ -49,8 +49,6 @@ includes(handler, 'team.access.requested', 'team access handler');
 includes(handler, 'team.access.cancelled', 'team access handler');
 includes(handler, "request_status = 'cancelled'", 'team access handler');
 includes(handler, 'Your request has been sent.', 'team access handler');
-excludes(handler, 'team.access.approved', 'team access handler');
-excludes(handler, 'INSERT INTO auth_team_memberships', 'team access handler');
 excludes(handler, 'INSERT INTO auth_role_assignments', 'team access handler');
 
 includes(renderScript, "template: 'pages/account-team-access.njk'", 'GOV.UK page renderer');
