@@ -10,6 +10,10 @@ function includes(source, text, label) {
 	assert.equal(source.includes(text), true, `Expected ${label} to include: ${text}`);
 }
 
+function excludes(source, text, label) {
+	assert.equal(source.includes(text), false, `Expected ${label} not to include: ${text}`);
+}
+
 const requiredWorkflowSnippets = [
 	'name: Render GOV.UK pages',
 	'pull_request:',
@@ -18,7 +22,11 @@ const requiredWorkflowSnippets = [
 	'src/govuk/templates/**',
 	'scripts/govuk/render-govuk-pages.mjs',
 	'scripts/govuk/normalise-service-pages.mjs',
-	'public/index.html public/pages',
+	'Determine changed GOV.UK page outputs',
+	'src/govuk/templates/pages/*.njk',
+	'No changed GOV.UK page templates to render.',
+	'No GOV.UK renderer page registration found for:',
+	'output_paths',
 	'npm run build:govuk-pages',
 	'Render GOV.UK page templates',
 	'github.event.pull_request.head.repo.full_name == github.repository',
@@ -29,16 +37,19 @@ for (const snippet of requiredWorkflowSnippets) {
 }
 
 const requiredCommandSnippets = [
-	['git', 'diff', '--binary', '--', 'public/index.html', 'public/pages'],
+	['git', 'diff', '--cached', '--binary', '--'],
 	['git', 'reset', '--hard'],
 	['git', 'pull', '--rebase', 'origin'],
-	['git', 'apply', '--3way'],
-	['git', 'add', 'public/index.html', 'public/pages'],
+	['git', 'apply', '--index', '--3way'],
+	['git', 'add', '-A', '--'],
 ];
 
 for (const parts of requiredCommandSnippets) {
 	includes(workflow, parts.join(' '), 'GOV.UK pages render workflow');
 }
+
+excludes(workflow, 'git add -A public/index.html public/pages', 'GOV.UK pages render workflow');
+excludes(workflow, 'git diff --binary -- public/index.html public/pages', 'GOV.UK pages render workflow');
 
 for (const snippet of ['public/**', '!public/', '!public/index.html', '!public/pages/']) {
 	includes(gitignore, snippet, 'gitignore rendered GOV.UK HTML policy');
