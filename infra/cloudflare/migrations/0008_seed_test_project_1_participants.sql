@@ -1,12 +1,12 @@
--- Seed pseudonymised D1 participants for Test Project 1.
+-- D1-canonical participant model and Test Project 1 seed.
 -- Date: 2026-05-31
--- Scope: D1-only seed for local/preview participant list support.
+-- Scope: D1 runtime participant source of truth for testing without Airtable API calls.
 --
 -- Project: Test Project 1
 -- Project record ID: recgdpwEI5hFO7bUZ
 -- Study seeded: rect3biqr
 --
--- This seed deliberately contains no contact details.
+-- Seeded records are pseudonymised and deliberately contain no email addresses or phone numbers.
 
 PRAGMA foreign_keys = ON;
 
@@ -22,12 +22,25 @@ CREATE TABLE IF NOT EXISTS rops_participants_cache (
 	source TEXT NOT NULL DEFAULT 'd1-seed',
 	created_at TEXT,
 	updated_at TEXT NOT NULL,
+	sensitive_contact_json TEXT,
 	payload_json TEXT
 );
 
 CREATE INDEX IF NOT EXISTS idx_rops_participants_cache_project_id ON rops_participants_cache(project_id);
 CREATE INDEX IF NOT EXISTS idx_rops_participants_cache_study_id ON rops_participants_cache(study_id);
 CREATE INDEX IF NOT EXISTS idx_rops_participants_cache_active ON rops_participants_cache(active);
+CREATE INDEX IF NOT EXISTS idx_rops_participants_cache_source ON rops_participants_cache(source);
+
+INSERT OR IGNORE INTO auth_permissions (code, label, description, is_sensitive, is_reserved) VALUES
+	('participant.record.create', 'Create participant records', 'Can create D1-backed participant records for a project or study.', 0, 0);
+
+INSERT OR IGNORE INTO auth_role_permissions (role_id, permission_code) VALUES
+	('role_researcher', 'participant.record.create'),
+	('role_research_lead', 'participant.record.create'),
+	('role_team_admin', 'participant.record.create');
+
+INSERT OR IGNORE INTO auth_route_permissions (id, method, route_pattern, required_permissions_json, auth_required, implementation_status) VALUES
+	('route_api_participants_post', 'POST', '/api/participants', '["participant.record.create"]', 1, 'implemented');
 
 INSERT INTO rops_participants_cache (
 	id,
@@ -41,19 +54,20 @@ INSERT INTO rops_participants_cache (
 	source,
 	created_at,
 	updated_at,
+	sensitive_contact_json,
 	payload_json
 )
 VALUES
-	('d1ptp_test_project_1_01', 'recgdpwEI5hFO7bUZ', 'rect3biqr', 'TP1 Participant 01', 'email', 'not_sent', 'invited', 1, 'd1-seed', '2026-05-31T22:40:01.000Z', '2026-05-31T22:40:01.000Z', '{"projectId":"recgdpwEI5hFO7bUZ","studyId":"rect3biqr","participantRef":"TP1 Participant 01","pseudonymised":true}'),
-	('d1ptp_test_project_1_02', 'recgdpwEI5hFO7bUZ', 'rect3biqr', 'TP1 Participant 02', 'phone', 'not_sent', 'invited', 1, 'd1-seed', '2026-05-31T22:40:02.000Z', '2026-05-31T22:40:02.000Z', '{"projectId":"recgdpwEI5hFO7bUZ","studyId":"rect3biqr","participantRef":"TP1 Participant 02","pseudonymised":true}'),
-	('d1ptp_test_project_1_03', 'recgdpwEI5hFO7bUZ', 'rect3biqr', 'TP1 Participant 03', 'email', 'sent', 'invited', 1, 'd1-seed', '2026-05-31T22:40:03.000Z', '2026-05-31T22:40:03.000Z', '{"projectId":"recgdpwEI5hFO7bUZ","studyId":"rect3biqr","participantRef":"TP1 Participant 03","pseudonymised":true}'),
-	('d1ptp_test_project_1_04', 'recgdpwEI5hFO7bUZ', 'rect3biqr', 'TP1 Participant 04', 'phone', 'sent', 'invited', 1, 'd1-seed', '2026-05-31T22:40:04.000Z', '2026-05-31T22:40:04.000Z', '{"projectId":"recgdpwEI5hFO7bUZ","studyId":"rect3biqr","participantRef":"TP1 Participant 04","pseudonymised":true}'),
-	('d1ptp_test_project_1_05', 'recgdpwEI5hFO7bUZ', 'rect3biqr', 'TP1 Participant 05', 'email', 'not_sent', 'screening', 1, 'd1-seed', '2026-05-31T22:40:05.000Z', '2026-05-31T22:40:05.000Z', '{"projectId":"recgdpwEI5hFO7bUZ","studyId":"rect3biqr","participantRef":"TP1 Participant 05","pseudonymised":true}'),
-	('d1ptp_test_project_1_06', 'recgdpwEI5hFO7bUZ', 'rect3biqr', 'TP1 Participant 06', 'email', 'sent', 'screening', 1, 'd1-seed', '2026-05-31T22:40:06.000Z', '2026-05-31T22:40:06.000Z', '{"projectId":"recgdpwEI5hFO7bUZ","studyId":"rect3biqr","participantRef":"TP1 Participant 06","pseudonymised":true}'),
-	('d1ptp_test_project_1_07', 'recgdpwEI5hFO7bUZ', 'rect3biqr', 'TP1 Participant 07', 'phone', 'not_sent', 'invited', 1, 'd1-seed', '2026-05-31T22:40:07.000Z', '2026-05-31T22:40:07.000Z', '{"projectId":"recgdpwEI5hFO7bUZ","studyId":"rect3biqr","participantRef":"TP1 Participant 07","pseudonymised":true}'),
-	('d1ptp_test_project_1_08', 'recgdpwEI5hFO7bUZ', 'rect3biqr', 'TP1 Participant 08', 'email', 'sent', 'invited', 1, 'd1-seed', '2026-05-31T22:40:08.000Z', '2026-05-31T22:40:08.000Z', '{"projectId":"recgdpwEI5hFO7bUZ","studyId":"rect3biqr","participantRef":"TP1 Participant 08","pseudonymised":true}'),
-	('d1ptp_test_project_1_09', 'recgdpwEI5hFO7bUZ', 'rect3biqr', 'TP1 Participant 09', 'phone', 'sent', 'screening', 1, 'd1-seed', '2026-05-31T22:40:09.000Z', '2026-05-31T22:40:09.000Z', '{"projectId":"recgdpwEI5hFO7bUZ","studyId":"rect3biqr","participantRef":"TP1 Participant 09","pseudonymised":true}'),
-	('d1ptp_test_project_1_10', 'recgdpwEI5hFO7bUZ', 'rect3biqr', 'TP1 Participant 10', 'email', 'not_sent', 'invited', 1, 'd1-seed', '2026-05-31T22:40:10.000Z', '2026-05-31T22:40:10.000Z', '{"projectId":"recgdpwEI5hFO7bUZ","studyId":"rect3biqr","participantRef":"TP1 Participant 10","pseudonymised":true}')
+	('d1ptp_test_project_1_01', 'recgdpwEI5hFO7bUZ', 'rect3biqr', 'TP1 Participant 01', 'email', 'not_sent', 'invited', 1, 'd1-seed', '2026-05-31T22:40:01.000Z', '2026-05-31T22:40:01.000Z', NULL, '{"projectId":"recgdpwEI5hFO7bUZ","studyId":"rect3biqr","participantRef":"TP1 Participant 01","pseudonymised":true}'),
+	('d1ptp_test_project_1_02', 'recgdpwEI5hFO7bUZ', 'rect3biqr', 'TP1 Participant 02', 'phone', 'not_sent', 'invited', 1, 'd1-seed', '2026-05-31T22:40:02.000Z', '2026-05-31T22:40:02.000Z', NULL, '{"projectId":"recgdpwEI5hFO7bUZ","studyId":"rect3biqr","participantRef":"TP1 Participant 02","pseudonymised":true}'),
+	('d1ptp_test_project_1_03', 'recgdpwEI5hFO7bUZ', 'rect3biqr', 'TP1 Participant 03', 'email', 'sent', 'invited', 1, 'd1-seed', '2026-05-31T22:40:03.000Z', '2026-05-31T22:40:03.000Z', NULL, '{"projectId":"recgdpwEI5hFO7bUZ","studyId":"rect3biqr","participantRef":"TP1 Participant 03","pseudonymised":true}'),
+	('d1ptp_test_project_1_04', 'recgdpwEI5hFO7bUZ', 'rect3biqr', 'TP1 Participant 04', 'phone', 'sent', 'invited', 1, 'd1-seed', '2026-05-31T22:40:04.000Z', '2026-05-31T22:40:04.000Z', NULL, '{"projectId":"recgdpwEI5hFO7bUZ","studyId":"rect3biqr","participantRef":"TP1 Participant 04","pseudonymised":true}'),
+	('d1ptp_test_project_1_05', 'recgdpwEI5hFO7bUZ', 'rect3biqr', 'TP1 Participant 05', 'email', 'not_sent', 'screening', 1, 'd1-seed', '2026-05-31T22:40:05.000Z', '2026-05-31T22:40:05.000Z', NULL, '{"projectId":"recgdpwEI5hFO7bUZ","studyId":"rect3biqr","participantRef":"TP1 Participant 05","pseudonymised":true}'),
+	('d1ptp_test_project_1_06', 'recgdpwEI5hFO7bUZ', 'rect3biqr', 'TP1 Participant 06', 'email', 'sent', 'screening', 1, 'd1-seed', '2026-05-31T22:40:06.000Z', '2026-05-31T22:40:06.000Z', NULL, '{"projectId":"recgdpwEI5hFO7bUZ","studyId":"rect3biqr","participantRef":"TP1 Participant 06","pseudonymised":true}'),
+	('d1ptp_test_project_1_07', 'recgdpwEI5hFO7bUZ', 'rect3biqr', 'TP1 Participant 07', 'phone', 'not_sent', 'invited', 1, 'd1-seed', '2026-05-31T22:40:07.000Z', '2026-05-31T22:40:07.000Z', NULL, '{"projectId":"recgdpwEI5hFO7bUZ","studyId":"rect3biqr","participantRef":"TP1 Participant 07","pseudonymised":true}'),
+	('d1ptp_test_project_1_08', 'recgdpwEI5hFO7bUZ', 'rect3biqr', 'TP1 Participant 08', 'email', 'sent', 'invited', 1, 'd1-seed', '2026-05-31T22:40:08.000Z', '2026-05-31T22:40:08.000Z', NULL, '{"projectId":"recgdpwEI5hFO7bUZ","studyId":"rect3biqr","participantRef":"TP1 Participant 08","pseudonymised":true}'),
+	('d1ptp_test_project_1_09', 'recgdpwEI5hFO7bUZ', 'rect3biqr', 'TP1 Participant 09', 'phone', 'sent', 'screening', 1, 'd1-seed', '2026-05-31T22:40:09.000Z', '2026-05-31T22:40:09.000Z', NULL, '{"projectId":"recgdpwEI5hFO7bUZ","studyId":"rect3biqr","participantRef":"TP1 Participant 09","pseudonymised":true}'),
+	('d1ptp_test_project_1_10', 'recgdpwEI5hFO7bUZ', 'rect3biqr', 'TP1 Participant 10', 'email', 'not_sent', 'invited', 1, 'd1-seed', '2026-05-31T22:40:10.000Z', '2026-05-31T22:40:10.000Z', NULL, '{"projectId":"recgdpwEI5hFO7bUZ","studyId":"rect3biqr","participantRef":"TP1 Participant 10","pseudonymised":true}')
 ON CONFLICT(id) DO UPDATE SET
 	project_id = excluded.project_id,
 	study_id = excluded.study_id,
@@ -65,4 +79,5 @@ ON CONFLICT(id) DO UPDATE SET
 	source = excluded.source,
 	created_at = excluded.created_at,
 	updated_at = excluded.updated_at,
+	sensitive_contact_json = excluded.sensitive_contact_json,
 	payload_json = excluded.payload_json;
