@@ -222,7 +222,8 @@ export class ResearchOpsService {
 	deletePartial = (origin, id) => Partials.deletePartial(this, origin, id);
 
 	/* ─────────────── Participants ─────────────── */
-	listParticipants = (origin, url) => Participants.listParticipants(this, origin, url);
+	listParticipants = (req, origin, url) => Participants.listParticipants(this, req, origin, url);
+	revealParticipantContact = (req, origin, url) => Participants.revealParticipantContact(this, req, origin, url);
 	createParticipant = (req, origin) => Participants.createParticipant(this, req, origin);
 
 	/* ─────────────── Sessions ─────────────── */

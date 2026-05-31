@@ -1,7 +1,7 @@
 /**
  * @file /pages/study/participants/scheduler.js
  * @module ParticipantsScheduler
- * @summary Controller for Participants and Sessions on a Study: loads data, renders tables/empty states, gates scheduling.
+ * @summary Controller for Participants and Sessions on a Study: loads pseudonymised participant data, renders tables/empty states, gates scheduling.
  */
 
 import { apiUrl, route, studyTitle } from '/js/study-route-context.js';
@@ -23,11 +23,17 @@ function fmtWhen(isoStart, mins) {
 	return sameDay ? `${d} – ${e}` : `${d} → ${end.toLocaleString()}`;
 }
 
-function contactCell(p) {
-	const bits = [];
-	if (p.email) bits.push(`<a href="mailto:${encodeURIComponent(p.email)}">${escapeHtml(p.email)}</a>`);
-	if (p.phone) bits.push(`<a href="tel:${encodeURIComponent(p.phone)}">${escapeHtml(p.phone)}</a>`);
-	return bits.join("<br/>") || "—";
+function restrictedContactCell(p) {
+	const reveal = p.can_reveal_contact ?
+		`<button class="govuk-button govuk-button--secondary" data-part="${escapeHtml(p.id)}" data-act="reveal-contact">Reveal contact details</button>` :
+		`<p class="govuk-hint govuk-!-margin-bottom-0">Contact details are restricted. Ask a Team Admin or authorised role if you need access.</p>`;
+
+	return `
+		<div data-contact-state="restricted">
+			<strong class="govuk-tag govuk-tag--grey">Restricted</strong>
+			${reveal}
+		</div>
+	`;
 }
 
 function readStudyRouteContext() {
@@ -51,13 +57,18 @@ async function jsonFetch(path, options = {}) {
 		}
 	});
 	const js = await res.json().catch(() => ({}));
-	if (!res.ok || js?.ok === false) throw new Error(js?.detail || js?.error || `HTTP ${res.status}`);
+	if (!res.ok || js?.ok === false) throw new Error(js?.message || js?.detail || js?.error || `HTTP ${res.status}`);
 	return js;
 }
 
 async function loadParticipants(studyId) {
 	const js = await jsonFetch(`/api/participants?study=${encodeURIComponent(studyId)}`);
 	return Array.isArray(js.participants) ? js.participants : [];
+}
+
+async function revealParticipantContact(participantId) {
+	const js = await jsonFetch(`/api/participants/contact?participant=${encodeURIComponent(participantId)}`);
+	return js.participant || null;
 }
 
 async function loadSessions(studyId) {
@@ -90,16 +101,34 @@ function renderParticipants(list) {
 		const row = document.createElement("tr");
 		row.className = "govuk-table__row";
 		row.dataset.participantRow = "true";
+		row.dataset.participantId = p.id;
 		row.innerHTML = `
-			<td class="govuk-table__cell">${escapeHtml(p.display_name || p.name || "—")}</td>
-			<td class="govuk-table__cell">${contactCell(p)}</td>
-			<td class="govuk-table__cell">${escapeHtml(p.status || "—")}</td>
+			<td class="govuk-table__cell">${escapeHtml(p.participant_ref || p.display_name || "—")}</td>
+			<td class="govuk-table__cell" data-contact-cell="${escapeHtml(p.id)}">${restrictedContactCell(p)}</td>
+			<td class="govuk-table__cell">${escapeHtml(p.status || "—")}<br><span class="govuk-hint">Preferred channel: ${escapeHtml(p.channel_pref || "not recorded")}</span></td>
 			<td class="govuk-table__cell">
 				<button class="govuk-button govuk-button--secondary" data-part="${escapeHtml(p.id)}" data-act="schedule">Schedule</button>
 			</td>
 		`;
 		body.appendChild(row);
 	}
+}
+
+function renderRevealedContact(participantId, contact) {
+	const cell = document.querySelector(`[data-contact-cell="${CSS.escape(participantId)}"]`);
+	if (!cell) return;
+
+	const email = contact?.email ? `<a href="mailto:${encodeURIComponent(contact.email)}">${escapeHtml(contact.email)}</a>` : "";
+	const phone = contact?.phone ? `<a href="tel:${encodeURIComponent(contact.phone)}">${escapeHtml(contact.phone)}</a>` : "";
+	const details = [email, phone].filter(Boolean).join("<br>") || "No contact details recorded.";
+
+	cell.innerHTML = `
+		<div data-contact-state="revealed">
+			<strong class="govuk-tag govuk-tag--red">Sensitive</strong>
+			<p class="govuk-hint govuk-!-margin-bottom-1">Participant contact details are revealed. Handle this information as sensitive.</p>
+			${details}
+		</div>
+	`;
 }
 
 function renderSessions(list, participantsById) {
@@ -126,7 +155,8 @@ function renderSessions(list, participantsById) {
 	for (const s of list) {
 		const row = document.createElement("tr");
 		row.className = "govuk-table__row";
-		const pname = participantsById.get(s.participant_id)?.display_name || participantsById.get(s.participantId)?.display_name || "—";
+		const participant = participantsById.get(s.participant_id) || participantsById.get(s.participantId);
+		const pname = participant?.participant_ref || participant?.display_name || "—";
 
 		row.innerHTML = `
 			<td class="govuk-table__cell">${escapeHtml(fmtWhen(s.starts_at || s.startsAt, s.duration_min || s.durationMin))}</td>
@@ -165,7 +195,7 @@ function setScheduleEnabled(enabled, participants) {
 	btn.disabled = false;
 	form.querySelectorAll("input, textarea, select, button").forEach(el => el.removeAttribute("disabled"));
 	select.innerHTML = `<option value="" disabled selected>Select a participant</option>` +
-		participants.map(p => `<option value="${escapeHtml(p.id)}">${escapeHtml(p.display_name || p.email || p.phone || p.id)}</option>`).join("");
+		participants.map(p => `<option value="${escapeHtml(p.id)}">${escapeHtml(p.participant_ref || p.display_name || p.id)}</option>`).join("");
 	cta?.removeAttribute("aria-disabled");
 	cta?.classList.remove("link--disabled");
 }
@@ -312,8 +342,23 @@ function bindRouteChrome(context) {
 
 		const pTable = $("#participantsTable");
 		if (pTable) {
-			pTable.addEventListener("click", (e) => {
+			pTable.addEventListener("click", async (e) => {
 				const target = e.target instanceof HTMLElement ? e.target : null;
+				const revealButton = target?.closest("[data-act='reveal-contact'], [data-action='reveal-contact']");
+				if (revealButton) {
+					const participantId = revealButton.getAttribute("data-part") || revealButton.getAttribute("data-id") || "";
+					try {
+						const contact = await revealParticipantContact(participantId);
+						renderRevealedContact(participantId, contact);
+					} catch (error) {
+						const cell = document.querySelector(`[data-contact-cell="${CSS.escape(participantId)}"]`);
+						if (cell) {
+							cell.innerHTML = `<div class="govuk-error-message" role="alert">${escapeHtml(error?.message || "Contact details could not be revealed.")}</div>`;
+						}
+					}
+					return;
+				}
+
 				const btn = target?.closest("[data-act='schedule'], [data-action='schedule']");
 				if (!btn) return;
 				const participantSelect = $("#s_participant");

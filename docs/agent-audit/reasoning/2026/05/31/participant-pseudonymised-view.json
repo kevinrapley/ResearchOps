@@ -1,0 +1,78 @@
+{
+	"date": "2026-05-31",
+	"traceType": "operational-audit-trace",
+	"branch": "feature/pseudonymised-participant-view",
+	"relatedWork": "Story 7 — Show pseudonymised participant data by default; Story 6 and Story 12 controls for one protected journey",
+	"traceRequired": true,
+	"operatingModelBootstrap": {
+		"loadedSources": [
+			"AGENTS.md",
+			".agent-operating-model/orchestration.xml",
+			".agent-operating-model/bundle-registry.json",
+			".agent-operating-model/task-signal-catalog.json",
+			".agent-operating-model/selection-rules.json",
+			".agent-operating-model/github-mutation-policy.md"
+		],
+		"selectedBundles": [
+			".agent-operating-model/bundles/github/",
+			".agent-operating-model/bundles/researchops-developer-control/",
+			".agent-operating-model/bundles/multi-functional-team/",
+			".agent-operating-model/bundles/govuk-design-system/",
+			".agent-operating-model/bundles/cloudflare/",
+			".agent-operating-model/bundles/airtable-public-api/"
+		]
+	},
+	"protectedJourney": {
+		"page": "public/pages/study/participants/index.html",
+		"defaultRoute": "GET /api/participants?study=...",
+		"revealRoute": "GET /api/participants/contact?participant=...",
+		"defaultPermission": "participant.record.view",
+		"revealPermission": "participant.pii.reveal",
+		"defaultState": "pseudonymised participant list with restricted contact state",
+		"revealState": "sensitive contact details after deliberate reveal"
+	},
+	"filesChanged": [
+		".github/workflows/apply-d1-participant-pseudonymised-view.yml",
+		"infra/cloudflare/migrations/0007_participant_pseudonymised_view.sql",
+		"infra/cloudflare/src/core/router.js",
+		"infra/cloudflare/src/service/index.js",
+		"infra/cloudflare/src/service/participants.js",
+		"public/components/participants/participants-page.js",
+		"public/pages/study/participants/scheduler.js",
+		"tests/participant-pseudonymised-view-route-state.test.js",
+		"docs/agent-audit/reasoning/2026/05/31/participant-pseudonymised-view.md",
+		"docs/agent-audit/reasoning/2026/05/31/participant-pseudonymised-view.json"
+	],
+	"implementationSummary": {
+		"pseudonymisedDefaultList": true,
+		"defaultListReturnsContactFields": false,
+		"defaultListUsesAirtableSafeProjection": true,
+		"d1IdentityBeforeDefaultList": true,
+		"d1PermissionBeforeReveal": true,
+		"contactRevealIsSeparateRoute": true,
+		"revealSuccessAudited": true,
+		"revealDeniedAudited": true,
+		"restrictedUiState": true,
+		"sensitiveRevealLabel": true,
+		"d1SeedIncluded": true,
+		"d1ApplyWorkflowIncluded": true
+	},
+	"scopeControls": {
+		"story8AccessRequestsImplemented": false,
+		"newAccessRequestFlowCreated": false,
+		"participantPiiRevealGrantedToDefaultRoles": false,
+		"airtableSchemaChanged": false,
+		"allApiRoutesProtected": false,
+		"participantCreateRouteFullyHardened": false
+	},
+	"validationExpected": [
+		"npm run validate",
+		"npm run lint",
+		"npm test -- --ci"
+	],
+	"residualRisks": [
+		"infra/cloudflare/src/core/router.js was replaced with a compact equivalent because a partial patch path was unavailable through the connector context.",
+		"The default Airtable request projects canonical safe participant field names only. If the live Airtable table uses alternate field names, a follow-up safe schema-discovery pattern may be needed.",
+		"The existing participant creation route still accepts contact details and should be hardened in a later protected journey."
+	]
+}
