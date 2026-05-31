@@ -22,10 +22,10 @@ import { airtableTryWrite } from "../core/utils.js";
 
 const CONTACT_RESTRICTED_MESSAGE = "Participant contact details are restricted. Ask a Team Admin or authorised role if you need access.";
 const PSEUDONYMISED_LIST_FIELDS = [
-	PARTICIPANT_FIELDS.study_link[0],
-	PARTICIPANT_FIELDS.channel_pref[0],
-	PARTICIPANT_FIELDS.consent_status[0],
-	PARTICIPANT_FIELDS.status[0],
+	...PARTICIPANT_FIELDS.study_link,
+	...PARTICIPANT_FIELDS.channel_pref,
+	...PARTICIPANT_FIELDS.consent_status,
+	...PARTICIPANT_FIELDS.status,
 ];
 
 function permissionCodes(context = {}) {
