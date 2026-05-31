@@ -64,6 +64,12 @@ function decisionReasonFor(value) {
 	return reason;
 }
 
+function assertAuthenticatedRouteContext(context) {
+	if (!context?.authenticated) {
+		throw new TeamAccessRequestError(401, 'authentication_required', 'Sign in is required to use this part of ResearchOps.');
+	}
+}
+
 async function readJson(request) {
 	try {
 		const body = await request.json();
@@ -221,9 +227,9 @@ async function listTeamAccessRequests(request, env, context) {
 	return (result.results || []).map(mapTeamAccessRequest);
 }
 
-async function listTeamAccessReviewRequests(request, env, context) {
+async function listTeamAccessReviewRequests(env, context) {
 	const db = dbFor(env);
-	await assertRoutePermission(request, env, context);
+	assertAuthenticatedRouteContext(context);
 
 	const teamIds = manageableTeamIds(context);
 	if (teamIds.length === 0) return [];
@@ -396,7 +402,7 @@ function assertCanDecideTeamAccess(context, existing) {
 
 async function approveTeamAccessRequest(request, env, context) {
 	const db = dbFor(env);
-	await assertRoutePermission(request, env, context);
+	assertAuthenticatedRouteContext(context);
 
 	const body = await readJson(request);
 	const requestId = cleanText(body.requestId);
@@ -449,7 +455,7 @@ async function approveTeamAccessRequest(request, env, context) {
 
 async function rejectTeamAccessRequest(request, env, context) {
 	const db = dbFor(env);
-	await assertRoutePermission(request, env, context);
+	assertAuthenticatedRouteContext(context);
 
 	const body = await readJson(request);
 	const requestId = cleanText(body.requestId);
@@ -501,7 +507,7 @@ export async function handleTeamAccessRequestsRoute(request, env, apiPath) {
 		}
 
 		if (request.method === 'GET' && apiPath === '/api/team-access/requests/review') {
-			return jsonResponse({ ok: true, requests: await listTeamAccessReviewRequests(request, env, context) });
+			return jsonResponse({ ok: true, requests: await listTeamAccessReviewRequests(env, context) });
 		}
 
 		if (request.method === 'POST' && apiPath === '/api/team-access/requests') {
