@@ -1,6 +1,6 @@
 /**
  * @file /components/participants/participants-page.js
- * @summary Renders the participants list and emits Safari-safe events.
+ * @summary Renders the pseudonymised participants list and emits Safari-safe events.
  */
 
 import { apiUrl } from '/js/study-route-context.js';
@@ -23,7 +23,7 @@ async function fetchParticipants(studyId) {
 	const res = await fetch(url, { cache: "no-store", credentials: "include" });
 	const js = await res.json().catch(() => ({}));
 	if (!res.ok || js?.ok !== true || !Array.isArray(js.participants)) {
-		throw new Error(js?.error || `Participants fetch failed (${res.status})`);
+		throw new Error(js?.message || js?.error || `Participants fetch failed (${res.status})`);
 	}
 	console.info("[participants] loaded", js.participants.length);
 	return js.participants;
@@ -36,23 +36,33 @@ function escapeHtml(s) {
 	return d.innerHTML;
 }
 
+function restrictedContactHtml(participant) {
+	const revealButton = participant.can_reveal_contact ?
+		`<button class="govuk-button govuk-button--secondary" data-action="reveal-contact" data-id="${escapeHtml(participant.id)}">Reveal contact details</button>` :
+		`<p class="govuk-hint govuk-!-margin-bottom-0">Contact details are restricted. Ask a Team Admin or authorised role if you need access.</p>`;
+
+	return `
+		<div data-contact-state="restricted">
+			<strong class="govuk-tag govuk-tag--grey">Restricted</strong>
+			${revealButton}
+		</div>
+	`;
+}
+
 /** Create one row element for the participants table. */
 function makeRow(p) {
 	const row = document.createElement("tr");
 	row.className = "govuk-table__row";
 	row.dataset.participantRow = "true";
 
-	const name = `${p.display_name || p.name || "—"}`;
-	const contactBits = [];
-	if (p.email) contactBits.push(p.email);
-	if (p.phone) contactBits.push(p.phone);
-	const contact = contactBits.join(" · ") || "—";
+	const name = `${p.participant_ref || p.display_name || "—"}`;
 	const status = p.status || "new";
+	const channel = p.channel_pref || "not recorded";
 
 	row.innerHTML = `
 		<td class="govuk-table__cell">${escapeHtml(name)}</td>
-		<td class="govuk-table__cell">${escapeHtml(contact)}</td>
-		<td class="govuk-table__cell">${escapeHtml(status)}</td>
+		<td class="govuk-table__cell">${restrictedContactHtml(p)}</td>
+		<td class="govuk-table__cell">${escapeHtml(status)}<br><span class="govuk-hint">Preferred channel: ${escapeHtml(channel)}</span></td>
 		<td class="govuk-table__cell">
 			<button class="govuk-button govuk-button--secondary" data-action="schedule" data-id="${escapeHtml(p.id)}">Schedule</button>
 		</td>
