@@ -35,7 +35,15 @@ includes(migration, "'POST', '/api/team-access/requests/approve'", 'team access 
 includes(migration, "'POST', '/api/team-access/requests/reject'", 'team access review migration');
 
 includes(handler, 'function assertAuthenticatedRouteContext(context)', 'team access review handler');
+includes(handler, 'async function readTeamAccessRequestSchema(db)', 'team access review handler');
+includes(handler, "PRAGMA table_info(auth_team_access_requests)", 'team access review handler');
+includes(handler, "hasDecisionReason: columns.has('decision_reason')", 'team access review handler');
+includes(handler, "schema.hasDecisionReason ? 'r.decision_reason' : \"'' AS decision_reason\"", 'team access review handler');
 includes(handler, 'async function listTeamAccessReviewRequests(env, context)', 'team access review handler');
+includes(handler, 'async function markTeamAccessRequestApproved(db, requestId, decidedByUserId, schema)', 'team access review handler');
+includes(handler, 'async function markTeamAccessRequestRejected(db, requestId, decidedByUserId, decisionReason, schema)', 'team access review handler');
+includes(handler, 'markTeamAccessRequestApproved(db, requestId, context.user.id, schema)', 'team access review handler');
+includes(handler, 'markTeamAccessRequestRejected(db, requestId, context.user.id, decisionReason, schema)', 'team access review handler');
 includes(handler, "apiPath === '/api/team-access/requests/review'", 'team access review handler');
 includes(handler, "apiPath === '/api/team-access/requests/approve'", 'team access review handler');
 includes(handler, "apiPath === '/api/team-access/requests/reject'", 'team access review handler');
