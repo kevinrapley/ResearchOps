@@ -4,13 +4,15 @@
 	"branch": "fix/render-team-access-review-page",
 	"relatedWork": "Story 4 — Team Admin reviews team access requests",
 	"traceRequired": true,
-	"taskSummary": "Fix the missing generated static HTML route for the Story 4 team access review page.",
+	"taskSummary": "Fix the missing generated static HTML route for the Story 4 team access review page and harden the GOV.UK render workflow so future new generated pages are detected.",
 	"problem": {
 		"missingOutput": "public/pages/team/access-requests/index.html",
 		"expectedSource": "src/govuk/templates/pages/team-access-requests.njk",
-		"expectedRenderer": "scripts/govuk/render-govuk-pages.mjs"
+		"expectedRenderer": "scripts/govuk/render-govuk-pages.mjs",
+		"rootCause": "The render workflow used git diff --quiet, which ignored brand-new untracked generated files."
 	},
 	"filesChanged": [
+		".github/workflows/render-govuk-pages.yml",
 		"public/pages/team/access-requests/index.html",
 		"tests/auth-team-access-review-route-state.test.js",
 		"docs/agent-audit/reasoning/2026/05/31/render-team-access-review-page.md",
@@ -21,8 +23,15 @@
 		"nunjucksSourceUnchanged": true,
 		"rendererRegistrationAlreadyPresent": true,
 		"recursiveDirectoryCreationConfirmedInRenderer": true,
+		"workflowDetectsUntrackedGeneratedPages": true,
+		"workflowStagesGeneratedOutputBeforePatchCreation": true,
 		"routeStateCoverageRequiresGeneratedRoute": true
 	},
+	"futureBehaviour": [
+		"New registered Nunjucks pages create missing public/pages directory structures.",
+		"New generated index.html files are detected by git status --short.",
+		"The render workflow commits new generated static files back to the PR branch."
+	],
 	"scopeControls": {
 		"workerApiChanged": false,
 		"d1MigrationChanged": false,
@@ -39,6 +48,6 @@
 	],
 	"residualRisks": [
 		"Validation has not been run in this connector context.",
-		"The GOV.UK render workflow may normalise generated markup if the hand-created output differs from renderer output."
+		"The GOV.UK render workflow may normalise generated markup if the committed output differs from renderer output."
 	]
 }
