@@ -1,0 +1,104 @@
+<!doctype html>
+<html class="govuk-template" lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Review team access requests - ResearchOps Demo Suite</title>
+	<link rel="stylesheet" href="/assets/govuk/govuk-frontend.css" media="screen">
+	
+	<script type="module" src="/components/layout.js" defer></script>
+	<script type="module" src="/js/govuk-frontend-init.js" defer></script>
+</head>
+<body class="govuk-template__body">
+	<script>document.body.className += ' js-enabled' + ('noModule' in HTMLScriptElement.prototype ? ' govuk-frontend-supported' : '');</script>
+	<x-include src="/partials/header.html" vars='{"active":""}'></x-include>
+	<main class="govuk-main-wrapper" id="main-content" role="main" tabindex="-1">
+		
+<div class="govuk-width-container">
+	<nav class="govuk-breadcrumbs" aria-label="Breadcrumb">
+  <ol class="govuk-breadcrumbs__list">
+
+  
+    <li class="govuk-breadcrumbs__list-item">
+      <a class="govuk-breadcrumbs__link" href="/">Home</a>
+    </li>
+  
+
+  
+    <li class="govuk-breadcrumbs__list-item">
+      <a class="govuk-breadcrumbs__link" href="/pages/account/">Your account</a>
+    </li>
+  
+
+  </ol>
+</nav>
+
+
+	<div class="govuk-grid-row">
+		<div class="govuk-grid-column-two-thirds">
+			<span class="govuk-caption-l">Team administration</span>
+			<h1 class="govuk-heading-xl">Review team access requests</h1>
+			<p class="govuk-body-l">Approve or reject requests from people who want to join a team you administer.</p>
+			<p class="govuk-body">Approving a request makes the person a team member. It does not give them a role or access to sensitive information.</p>
+
+			<div class="govuk-warning-text">
+  <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+  <strong class="govuk-warning-text__text">
+    <span class="govuk-visually-hidden">Warning</span>
+    Only approve a request when you are confident the person should become a member of the team. Assign roles separately after approval.
+  </strong>
+</div>
+
+		</div>
+	</div>
+
+	<div class="govuk-error-summary"
+    
+        
+        
+      
+        
+      
+    
+        
+        
+      
+        
+      
+    
+   id="team-access-review-error-summary" hidden="hidden" data-module="govuk-error-summary">
+  <div role="alert">
+    <h2 class="govuk-error-summary__title">
+      There is a problem
+    </h2>
+    <div class="govuk-error-summary__body">
+      
+      
+    </div>
+  </div>
+</div>
+
+
+	<section aria-labelledby="team-access-review-loading-title" id="team-access-review-loading">
+		<h2 class="govuk-heading-m" id="team-access-review-loading-title">Checking team access requests</h2>
+		<p class="govuk-body">ResearchOps is checking for pending requests you can review.</p>
+	</section>
+
+	<section aria-labelledby="team-access-review-empty-title" id="team-access-review-empty" hidden>
+		<h2 class="govuk-heading-m" id="team-access-review-empty-title">There are no team access requests to review.</h2>
+		<p class="govuk-body">Requests that need your decision will appear here.</p>
+	</section>
+
+	<section aria-labelledby="team-access-review-pending-title" id="team-access-review-pending" hidden>
+		<h2 class="govuk-heading-m" id="team-access-review-pending-title">Pending requests</h2>
+		<div id="team-access-review-list"></div>
+	</section>
+</div>
+
+	</main>
+	<x-include src="/partials/footer.html"></x-include>
+	
+<script type="module" src="/js/auth-team-access-review-page.js?v=team-access-review-20260531"></script>
+
+</body>
+</html>

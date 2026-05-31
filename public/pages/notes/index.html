@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html class="govuk-template" lang="en">
 
 <head>
 	<meta charset="utf-8" />
@@ -14,16 +14,19 @@
 	<link rel="stylesheet" href="/css/notes.css" media="screen" />
 	<link rel="modulepreload" href="/js/notes-page.js" />
 	<script type="module" src="/components/layout.js" defer></script>
+	<link rel="stylesheet" href="/assets/govuk/govuk-frontend.css" media="screen">
+	<script type="module" src="/js/govuk-frontend-init.js" defer></script>
 </head>
 
-<body>
+<body class="govuk-template__body">
+	<script>document.body.className += ' js-enabled' + ('noModule' in HTMLScriptElement.prototype ? ' govuk-frontend-supported' : '');</script>
 	<x-include src="/partials/debug-boot.html" debug-only></x-include>
 	<x-include
 		src="/partials/header.html"
 		vars='{"active":"Notes","subtitle":"Notes"}'>	
 	</x-include>
 
-	<main id="main-content" class="govuk-body" role="main" tabindex="-1">
+	<main id="main-content" class="govuk-body govuk-main-wrapper" role="main" tabindex="-1">
 		<div class="card notes-panel">
 			<h2 class="govuk-heading-m">Select a session</h2>
 			<div class="govuk-form-group">
