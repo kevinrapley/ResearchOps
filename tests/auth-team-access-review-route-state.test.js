@@ -5,6 +5,7 @@ const storyPlan = fs.readFileSync('docs/product/26/05/31/auth-story-4-team-acces
 const migration = fs.readFileSync('infra/cloudflare/migrations/0006_auth_team_access_review.sql', 'utf8');
 const handler = fs.readFileSync('infra/cloudflare/src/core/auth/team-access-requests.js', 'utf8');
 const renderScript = fs.readFileSync('scripts/govuk/render-govuk-pages.mjs', 'utf8');
+const renderWorkflow = fs.readFileSync('.github/workflows/render-govuk-pages.yml', 'utf8');
 const walkthroughConfig = fs.readFileSync('visual-walkthrough.config.mjs', 'utf8');
 const template = fs.readFileSync('src/govuk/templates/pages/team-access-requests.njk', 'utf8');
 const page = fs.readFileSync('public/pages/team/access-requests/index.html', 'utf8');
@@ -33,10 +34,13 @@ includes(migration, "'GET', '/api/team-access/requests/review'", 'team access re
 includes(migration, "'POST', '/api/team-access/requests/approve'", 'team access review migration');
 includes(migration, "'POST', '/api/team-access/requests/reject'", 'team access review migration');
 
-includes(handler, 'async function listTeamAccessReviewRequests', 'team access review handler');
+includes(handler, 'function assertAuthenticatedRouteContext(context)', 'team access review handler');
+includes(handler, 'async function listTeamAccessReviewRequests(env, context)', 'team access review handler');
 includes(handler, "apiPath === '/api/team-access/requests/review'", 'team access review handler');
 includes(handler, "apiPath === '/api/team-access/requests/approve'", 'team access review handler');
 includes(handler, "apiPath === '/api/team-access/requests/reject'", 'team access review handler');
+includes(handler, 'listTeamAccessReviewRequests(env, context)', 'team access review handler');
+includes(handler, 'assertAuthenticatedRouteContext(context)', 'team access review handler');
 includes(handler, "r.request_status = 'pending'", 'team access review handler');
 includes(handler, 'canManageTeam(context, existing.team_id)', 'team access review handler');
 includes(handler, 'self_approval_blocked', 'team access review handler');
@@ -53,6 +57,13 @@ excludes(handler, 'INSERT INTO auth_permission_exceptions', 'team access review 
 includes(renderScript, "template: 'pages/team-access-requests.njk'", 'GOV.UK page renderer');
 includes(renderScript, "output: 'public/pages/team/access-requests/index.html'", 'GOV.UK page renderer');
 includes(renderScript, "pageTitle: 'Review team access requests - ResearchOps Demo Suite'", 'GOV.UK page renderer');
+
+includes(renderWorkflow, 'Determine changed GOV.UK page outputs', 'GOV.UK render workflow');
+includes(renderWorkflow, "git diff --name-only \"origin/${base_ref}\"...HEAD -- 'src/govuk/templates/pages/*.njk'", 'GOV.UK render workflow');
+includes(renderWorkflow, 'No changed GOV.UK page templates to render.', 'GOV.UK render workflow');
+includes(renderWorkflow, 'No GOV.UK renderer page registration found for:', 'GOV.UK render workflow');
+includes(renderWorkflow, 'output_paths < "$changed_outputs_path"', 'GOV.UK render workflow');
+excludes(renderWorkflow, 'git add -A public/index.html public/pages', 'GOV.UK render workflow');
 
 includes(walkthroughConfig, "registeredPage('team-access-requests'", 'visual walkthrough registry');
 includes(walkthroughConfig, "'Review team access requests'", 'visual walkthrough registry');
