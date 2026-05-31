@@ -55,10 +55,29 @@ jobs:
           fi
 
           base_ref="${{ github.event.pull_request.base.ref }}"
+          changed_global_sources_path="${RUNNER_TEMP}/changed-govuk-render-global-sources.txt"
           changed_templates_path="${RUNNER_TEMP}/changed-govuk-page-templates.txt"
           changed_outputs_path="${RUNNER_TEMP}/changed-govuk-page-outputs.txt"
 
           git fetch --no-tags --depth=1 origin "$base_ref"
+          git diff --name-only "origin/${base_ref}"...HEAD -- \
+            'src/govuk/templates/**' \
+            'scripts/govuk/render-govuk-pages.mjs' \
+            'scripts/govuk/normalise-service-pages.mjs' \
+            'package.json' \
+            'package-lock.json' \
+            '.github/workflows/render-govuk-pages.yml' \
+            | awk '$0 !~ /^src\/govuk\/templates\/pages\/[^/]+\.njk$/ { print }' \
+            | sort -u > "$changed_global_sources_path"
+
+          if [ -s "$changed_global_sources_path" ]; then
+            echo "Changed GOV.UK render inputs require all generated pages to be checked."
+            cat "$changed_global_sources_path"
+            echo "render_all=true" >> "$GITHUB_OUTPUT"
+            echo "outputs=" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
           git diff --name-only "origin/${base_ref}"...HEAD -- 'src/govuk/templates/pages/*.njk' \
             | sed 's#^src/govuk/templates/##' \
             | sort -u > "$changed_templates_path"
