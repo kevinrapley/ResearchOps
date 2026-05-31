@@ -200,7 +200,7 @@ function setScheduleEnabled(enabled, participants) {
 	cta?.classList.remove("link--disabled");
 }
 
-async function handleAddParticipant(e, studyId, refresh) {
+async function handleAddParticipant(e, context, refresh) {
 	e.preventDefault();
 	const form = e.target;
 	const msg = $("#addParticipantMsg");
@@ -218,7 +218,8 @@ async function handleAddParticipant(e, studyId, refresh) {
 	}
 
 	const payload = {
-		study_airtable_id: studyId,
+		project_id: context.projectId,
+		study_id: context.studyId,
 		display_name: display,
 		email: email || undefined,
 		phone: phone || undefined,
@@ -335,7 +336,7 @@ function bindRouteChrome(context) {
 
 		const addForm = $("#addParticipantForm");
 		const schedForm = $("#scheduleForm");
-		if (addForm) addForm.addEventListener("submit", (e) => handleAddParticipant(e, context.studyId, () => refreshAll(context.studyId)));
+		if (addForm) addForm.addEventListener("submit", (e) => handleAddParticipant(e, context, () => refreshAll(context.studyId)));
 		if (schedForm) schedForm.addEventListener("submit", (e) => handleCreateSession(e, context.studyId));
 
 		await refreshAll(context.studyId);
