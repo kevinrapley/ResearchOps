@@ -4,7 +4,26 @@
 	"branch": "fix/team-access-review-route-and-render-scope",
 	"relatedWork": "Story 4 — Team Admin reviews team access requests",
 	"traceRequired": true,
-	"taskSummary": "Fix the broken Team Admin review route and limit GOV.UK render workflow commits to generated outputs for changed page templates.",
+	"operatingModelBootstrap": {
+		"loadedSources": [
+			"README.md",
+			"AGENTS.md",
+			"RECENT_LEARNINGS.md",
+			".agent-operating-model/orchestration.xml",
+			".agent-operating-model/bundle-registry.json",
+			".agent-operating-model/task-signal-catalog.json",
+			".agent-operating-model/selection-rules.json",
+			".agent-operating-model/github-mutation-policy.md"
+		],
+		"selectedBundles": [
+			".agent-operating-model/bundles/github/",
+			".agent-operating-model/bundles/researchops-developer-control/",
+			".agent-operating-model/bundles/multi-functional-team/",
+			".agent-operating-model/bundles/govuk-design-system/",
+			".agent-operating-model/bundles/cloudflare/"
+		]
+	},
+	"taskSummary": "Fix the broken Team Admin review route, limit GOV.UK render workflow commits to generated outputs for changed page templates and address the Codex review comment about generator-only render workflow changes.",
 	"problemsObserved": [
 		{
 			"problem": "Team Admin review route displayed a route-permission declaration error.",
@@ -14,12 +33,17 @@
 		{
 			"problem": "The GOV.UK render workflow could stage every generated index.html file after detecting rendered output changes.",
 			"impact": "New PRs could contain noisy unrelated generated page diffs."
+		},
+		{
+			"problem": "Generator-only or dependency-only workflow runs skipped rendering because no changed page template was detected.",
+			"impact": "Changes to generator scripts, package files or the workflow could merge with stale committed public output."
 		}
 	],
 	"filesChanged": [
 		".github/workflows/render-govuk-pages.yml",
 		"infra/cloudflare/src/core/auth/team-access-requests.js",
 		"tests/auth-team-access-review-route-state.test.js",
+		"tests/govuk-pages-render-workflow-state.test.js",
 		"docs/agent-audit/reasoning/2026/05/31/team-access-review-route-and-render-scope.md",
 		"docs/agent-audit/reasoning/2026/05/31/team-access-review-route-and-render-scope.json"
 	],
@@ -31,8 +55,20 @@
 		"routePermissionDeclarationDependencyRemovedFromReviewDecisionEndpoints": true,
 		"renderWorkflowDeterminesChangedPageTemplates": true,
 		"renderWorkflowMapsTemplatesToRegisteredOutputs": true,
-		"renderWorkflowStagesOnlyChangedOutputs": true
+		"renderWorkflowStagesOnlyChangedOutputs": true,
+		"renderWorkflowDetectsGlobalRenderInputs": true,
+		"renderWorkflowChecksAllGeneratedPagesForGlobalInputs": true,
+		"codexGeneratorOnlyEdgeCaseCoveredByTest": true
 	},
+	"automatedReviewCommentDisposition": [
+		{
+			"reviewer": "chatgpt-codex-connector",
+			"path": ".github/workflows/render-govuk-pages.yml",
+			"classification": "legitimate",
+			"resolution": "Added global render-input detection before the page-template-only mapping branch. Generator scripts, package files, the workflow file and non-page GOV.UK templates now set render_all=true.",
+			"testCoverage": "tests/govuk-pages-render-workflow-state.test.js pins the global render-input behaviour."
+		}
+	],
 	"scopeControls": {
 		"nunjucksPageSourceChanged": false,
 		"generatedHtmlChanged": false,
