@@ -240,8 +240,9 @@ export async function handleRequest(request, env) {
 			({ ResearchOpsService } = await import("./service.js"));
 		} catch (e) {
 			serviceLoadFailed = true;
+			console.error("Failed to load ResearchOpsService", e);
 			if (url.pathname.startsWith("/api/")) {
-				return new Response(json({ ok: false, error: "Service temporarily unavailable", detail: String(e?.message || e), note: "Project CSV and Studies APIs are still available via direct handlers" }), {
+				return new Response(json({ ok: false, error: "Service temporarily unavailable", note: "Project CSV and Studies APIs are still available via direct handlers" }), {
 					status: 503,
 					headers: { ...corsHeadersForEnv(env, origin), "content-type": "application/json; charset=utf-8", "x-content-type-options": "nosniff" }
 				});
@@ -385,7 +386,8 @@ export async function handleRequest(request, env) {
 		}
 		return resp;
 	} catch (e) {
-		return new Response(json({ error: "Internal error", detail: String(e?.message || e) }), {
+		console.error("Unhandled router error", e);
+		return new Response(json({ error: "Internal error" }), {
 			status: 500,
 			headers: { "Content-Type": "application/json; charset=utf-8", "x-content-type-options": "nosniff", ...corsHeadersForEnv(env, origin) }
 		});
