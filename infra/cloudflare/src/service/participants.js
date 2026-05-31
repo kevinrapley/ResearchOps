@@ -1,24 +1,17 @@
 /**
  * @file participants.js
  * @module participants
- * @summary Participants endpoints for ResearchOps Worker (Airtable).
+ * @summary D1-canonical participant endpoints for ResearchOps Worker.
  *
  * @description
  * Implements a pseudonymised-by-default participant list and a deliberate,
- * permission-checked contact reveal route. D1 is the identity and authority
- * layer. Airtable remains the research data layer.
+ * permission-checked contact reveal route. D1 is the runtime source of truth.
+ * Airtable is secondary and must not be required for normal participant testing.
  */
 
 import { resolveAuthenticatedContext } from "../core/auth/access-scoped.js";
 import { assertRoutePermission } from "../core/auth/route-permissions.js";
-import {
-	fetchWithTimeout,
-	pickFirstField,
-	safeText,
-	toMs
-} from "../core/utils.js";
-import { PARTICIPANT_FIELDS } from "../core/fields.js";
-import { airtableTryWrite } from "../core/utils.js";
+import { toMs } from "../core/utils.js";
 
 const CONTACT_RESTRICTED_MESSAGE = "Participant contact details are restricted. Ask a Team Admin or authorised role if you need access.";
 
@@ -58,11 +51,44 @@ function dbFor(env = {}) {
 	return db && typeof db.prepare === "function" ? db : null;
 }
 
-function makeAuditId() {
-	return `evt_${crypto.randomUUID()}`;
+function cleanText(value) {
+	return String(value || "").replace(/\s+/g, " ").trim();
 }
 
-async function recordParticipantContactAudit(svc, request, context, participantId, outcome) {
+function makeId(prefix) {
+	return `${prefix}_${crypto.randomUUID()}`;
+}
+
+function jsonText(value) {
+	return JSON.stringify(value || {});
+}
+
+function parseJson(value) {
+	try {
+		const parsed = JSON.parse(value || "{}");
+		return parsed && typeof parsed === "object" && !Array.isArray(parsed) ? parsed : {};
+	} catch {
+		return {};
+	}
+}
+
+function participantDataUnavailable(svc, origin) {
+	return svc.json(
+		{
+			ok: false,
+			error: "participant_store_unavailable",
+			message: "Participant records are not available right now.",
+		},
+		503,
+		svc.corsHeaders(origin),
+	);
+}
+
+function makeAuditId() {
+	return makeId("evt");
+}
+
+async function recordParticipantEvent(svc, request, context, participantId, eventType, outcome) {
 	const db = dbFor(svc.env);
 	if (!db) return;
 
@@ -70,146 +96,127 @@ async function recordParticipantContactAudit(svc, request, context, participantI
 		await db
 			.prepare(`
 				INSERT INTO auth_events (id, event_type, actor_user_id, target_user_id, team_id, provider, route_path, metadata_json)
-				VALUES (?, ?, ?, NULL, ?, 'researchops_participant_contact', ?, ?)
+				VALUES (?, ?, ?, NULL, ?, 'researchops_participants', ?, ?)
 			`)
 			.bind(
 				makeAuditId(),
-				outcome === "succeeded" ? "participant.contact.revealed" : "participant.contact.reveal.denied",
+				eventType,
 				context?.user?.id || null,
 				context?.activeTeam?.id || null,
 				new URL(request.url).pathname,
-				JSON.stringify({ participantId, outcome }),
+				jsonText({ participantId, outcome }),
 			)
 			.run();
 	} catch {
-		// Participant contact access must not fail only because audit storage is unavailable.
+		// Participant actions must not fail only because audit storage is unavailable.
 	}
 }
 
-function airtableConfig(svc) {
-	const base = svc.env.AIRTABLE_BASE_ID;
-	const table = encodeURIComponent(svc.env.AIRTABLE_TABLE_PARTICIPANTS || "Participants");
-	return {
-		base,
-		table,
-		url: `https://api.airtable.com/v0/${base}/${table}`,
-		headers: { "Authorization": `Bearer ${svc.env.AIRTABLE_API_KEY}` },
-	};
+async function readD1ParticipantsForStudy(svc, origin, studyId, context) {
+	const db = dbFor(svc.env);
+	if (!db) return { ok: false, response: participantDataUnavailable(svc, origin) };
+
+	try {
+		const result = await db
+			.prepare(`
+				SELECT id, project_id, study_id, participant_ref, channel_pref, consent_status, status, created_at
+				FROM rops_participants_cache
+				WHERE study_id = ?
+					AND active = 1
+				ORDER BY created_at ASC, id ASC
+			`)
+			.bind(studyId)
+			.all();
+
+		return {
+			ok: true,
+			participants: (result.results || []).map((row) => mapD1Participant(row, context)),
+		};
+	} catch {
+		return { ok: false, response: participantDataUnavailable(svc, origin) };
+	}
 }
 
-function isUnknownFieldResponse(status, text) {
-	return status === 422 && /UNKNOWN_FIELD|INVALID_FIELD|field/i.test(String(text || ""));
-}
+async function readD1ParticipantContact(svc, origin, participantId) {
+	const db = dbFor(svc.env);
+	if (!db) return { ok: false, response: participantDataUnavailable(svc, origin) };
 
-async function readParticipantRecords(svc, linkFieldName) {
-	const at = airtableConfig(svc);
-	const records = [];
-	let offset;
+	try {
+		const row = await db
+			.prepare(`
+				SELECT id, participant_ref, sensitive_contact_json
+				FROM rops_participants_cache
+				WHERE id = ?
+					AND active = 1
+				LIMIT 1
+			`)
+			.bind(participantId)
+			.first();
 
-	do {
-		const params = new URLSearchParams({ pageSize: "100" });
-		params.append("fields[]", linkFieldName);
-		if (offset) params.set("offset", offset);
-		const resp = await fetchWithTimeout(`${at.url}?${params.toString()}`, { headers: at.headers }, svc.cfg.TIMEOUT_MS);
-		const txt = await resp.text();
-		if (!resp.ok) {
+		if (!row) {
 			return {
 				ok: false,
-				unknownField: isUnknownFieldResponse(resp.status, txt),
-				response: svc.json({ ok: false, error: `Airtable ${resp.status}`, detail: safeText(txt) }, resp.status),
+				response: svc.json({ ok: false, error: "participant_not_found", message: "Participant record could not be found." }, 404, svc.corsHeaders(origin)),
 			};
 		}
 
-		let js;
-		try {
-			js = JSON.parse(txt);
-		} catch {
-			js = { records: [] };
-		}
-		records.push(...(js.records || []));
-		offset = js.offset;
-	} while (offset);
-
-	return { ok: true, linkFieldName, records };
-}
-
-async function readParticipantRecordsForStudy(svc, studyId) {
-	let lastResponse = null;
-
-	for (const linkFieldName of PARTICIPANT_FIELDS.study_link) {
-		const result = await readParticipantRecords(svc, linkFieldName);
-		if (!result.ok) {
-			lastResponse = result.response;
-			if (result.unknownField) continue;
-			svc.log.error("airtable.participants.list.fail", { linkFieldName });
-			return result;
-		}
-
-		const records = result.records.filter((record) => {
-			const links = record.fields?.[linkFieldName];
-			return Array.isArray(links) && links.includes(studyId);
-		});
-
-		return { ok: true, linkFieldName, records };
-	}
-
-	return {
-		ok: false,
-		response: lastResponse || svc.json({ ok: false, error: "participant_study_link_missing", message: "Participants could not be matched to this study." }, 502),
-	};
-}
-
-async function readParticipantRecord(svc, participantId) {
-	const at = airtableConfig(svc);
-	const resp = await fetchWithTimeout(`${at.url}/${encodeURIComponent(participantId)}`, { headers: at.headers }, svc.cfg.TIMEOUT_MS);
-	const txt = await resp.text();
-
-	if (!resp.ok) {
-		svc.log.error("airtable.participant.contact.fail", { status: resp.status, text: safeText(txt) });
-		return { ok: false, response: svc.json({ ok: false, error: `Airtable ${resp.status}`, detail: safeText(txt) }, resp.status) };
-	}
-
-	try {
-		return { ok: true, record: JSON.parse(txt) };
+		const contact = parseJson(row.sensitive_contact_json);
+		return {
+			ok: true,
+			participant: {
+				id: row.id,
+				display_name: row.participant_ref || "",
+				email: cleanText(contact.email),
+				phone: cleanText(contact.phone),
+			},
+		};
 	} catch {
-		return { ok: false, response: svc.json({ ok: false, error: "Invalid participant response" }, 502) };
+		return { ok: false, response: participantDataUnavailable(svc, origin) };
 	}
 }
 
-function pickParticipantField(fields, keys) {
-	const key = pickFirstField(fields, keys);
-	return key ? fields[key] : undefined;
-}
-
-function participantReference(record, index) {
-	const id = String(record.id || "");
-	const suffix = id ? id.slice(-6).toUpperCase() : String(index + 1).padStart(3, "0");
-	return `Participant ${suffix}`;
-}
-
-function mapPseudonymisedParticipant(record, index, context) {
+function mapD1Participant(row, context) {
 	return {
-		id: record.id,
-		participant_ref: participantReference(record, index),
-		display_name: participantReference(record, index),
+		id: row.id,
+		participant_ref: row.participant_ref || row.id,
+		display_name: row.participant_ref || row.id,
 		contact_restricted: true,
 		has_contact_details: null,
 		can_reveal_contact: canRevealParticipantContact(context),
-		channel_pref: "not recorded",
-		consent_status: "not_sent",
-		status: "invited",
-		createdAt: record.createdTime || "",
+		channel_pref: row.channel_pref || "not recorded",
+		consent_status: row.consent_status || "not_sent",
+		status: row.status || "invited",
+		createdAt: row.created_at || "",
 	};
 }
 
-function mapParticipantContact(record) {
-	const fields = record.fields || {};
-	return {
-		id: record.id,
-		display_name: pickParticipantField(fields, PARTICIPANT_FIELDS.display_name) || "",
-		email: pickParticipantField(fields, PARTICIPANT_FIELDS.email) || "",
-		phone: pickParticipantField(fields, PARTICIPANT_FIELDS.phone) || "",
-	};
+function participantRefFor(body) {
+	const displayName = cleanText(body.display_name || body.displayName || body.participant_ref || body.participantRef);
+	return displayName || `Participant ${new Date().toISOString()}`;
+}
+
+async function readJsonBody(request, maxBytes) {
+	const body = await request.arrayBuffer();
+	if (body.byteLength > maxBytes) {
+		const error = new Error("Payload too large");
+		error.status = 413;
+		error.code = "payload_too_large";
+		throw error;
+	}
+
+	try {
+		const parsed = JSON.parse(new TextDecoder().decode(body));
+		return parsed && typeof parsed === "object" && !Array.isArray(parsed) ? parsed : {};
+	} catch {
+		const error = new Error("Invalid JSON");
+		error.status = 400;
+		error.code = "invalid_json";
+		throw error;
+	}
+}
+
+function bodyErrorResponse(svc, origin, error) {
+	return svc.json({ ok: false, error: error.code || "invalid_request", message: error.message || "Check the participant information." }, error.status || 400, svc.corsHeaders(origin));
 }
 
 /**
@@ -228,13 +235,10 @@ export async function listParticipants(svc, request, origin, url) {
 	const studyId = url.searchParams.get("study");
 	if (!studyId) return svc.json({ ok: false, error: "Missing study query" }, 400, svc.corsHeaders(origin));
 
-	const result = await readParticipantRecordsForStudy(svc, studyId);
+	const result = await readD1ParticipantsForStudy(svc, origin, studyId, context);
 	if (!result.ok) return result.response;
 
-	const participants = result.records
-		.map((record, index) => mapPseudonymisedParticipant(record, index, context))
-		.sort((a, b) => toMs(a.createdAt) - toMs(b.createdAt));
-
+	const participants = result.participants.sort((a, b) => toMs(a.createdAt) - toMs(b.createdAt));
 	return svc.json({ ok: true, participants }, 200, svc.corsHeaders(origin));
 }
 
@@ -256,20 +260,18 @@ export async function revealParticipantContact(svc, request, origin, url) {
 		context = await resolveAuthenticatedContext(request, svc.env);
 		await assertRoutePermission(request, svc.env, context);
 	} catch (error) {
-		await recordParticipantContactAudit(svc, request, context, participantId, "denied");
+		await recordParticipantEvent(svc, request, context, participantId, "participant.contact.reveal.denied", "denied");
 		return permissionErrorResponse(svc, origin, error, CONTACT_RESTRICTED_MESSAGE, true);
 	}
 
-	const result = await readParticipantRecord(svc, participantId);
+	const result = await readD1ParticipantContact(svc, origin, participantId);
 	if (!result.ok) return result.response;
 
-	const contact = mapParticipantContact(result.record);
-	await recordParticipantContactAudit(svc, request, context, participantId, "succeeded");
-
+	await recordParticipantEvent(svc, request, context, participantId, "participant.contact.revealed", "succeeded");
 	return svc.json(
 		{
 			ok: true,
-			participant: contact,
+			participant: result.participant,
 			sensitive: true,
 			message: "Participant contact details revealed. Handle this information as sensitive.",
 		},
@@ -279,7 +281,7 @@ export async function revealParticipantContact(svc, request, origin, url) {
 }
 
 /**
- * Create a participant linked to a study (resilient to schema + select options).
+ * Create a D1 participant linked to a study.
  * @route POST /api/participants
  * @param {import("./index.js").ResearchOpsService} svc
  * @param {Request} request
@@ -287,106 +289,72 @@ export async function revealParticipantContact(svc, request, origin, url) {
  * @returns {Promise<Response>}
  */
 export async function createParticipant(svc, request, origin) {
-	const body = await request.arrayBuffer();
-	if (body.byteLength > svc.cfg.MAX_BODY_BYTES) {
-		return svc.json({ error: "Payload too large" }, 413, svc.corsHeaders(origin));
+	const { context, response } = await resolveParticipantRouteContext(svc, request, origin);
+	if (response) return response;
+
+	let body;
+	try {
+		body = await readJsonBody(request, svc.cfg.MAX_BODY_BYTES);
+	} catch (error) {
+		return bodyErrorResponse(svc, origin, error);
 	}
 
-	/** @type {any} */
-	let p;
-	try { p = JSON.parse(new TextDecoder().decode(body)); } catch { return svc.json({ error: "Invalid JSON" }, 400, svc.corsHeaders(origin)); }
+	const studyId = cleanText(body.study_id || body.studyId || body.study_airtable_id);
+	const projectId = cleanText(body.project_id || body.projectId || body.project_airtable_id);
+	const participantRef = participantRefFor(body);
 
-	const missing = [];
-	if (!p.study_airtable_id) missing.push("study_airtable_id");
-	if (!p.display_name) missing.push("display_name");
-	if (missing.length) {
-		return svc.json({ error: "Missing fields: " + missing.join(", ") }, 400, svc.corsHeaders(origin));
+	if (!studyId) return svc.json({ ok: false, error: "study_required", message: "Choose a study for this participant." }, 400, svc.corsHeaders(origin));
+	if (!projectId) return svc.json({ ok: false, error: "project_required", message: "Choose a project for this participant." }, 400, svc.corsHeaders(origin));
+
+	const db = dbFor(svc.env);
+	if (!db) return participantDataUnavailable(svc, origin);
+
+	const participantId = makeId("d1ptp");
+	const now = new Date().toISOString();
+	const contact = {
+		email: cleanText(body.email),
+		phone: cleanText(body.phone),
+	};
+	const hasContact = Boolean(contact.email || contact.phone);
+
+	try {
+		await db
+			.prepare(`
+				INSERT INTO rops_participants_cache (
+					id,
+					project_id,
+					study_id,
+					participant_ref,
+					channel_pref,
+					consent_status,
+					status,
+					active,
+					source,
+					created_at,
+					updated_at,
+					sensitive_contact_json,
+					payload_json
+				)
+				VALUES (?, ?, ?, ?, ?, ?, ?, 1, 'd1-runtime', ?, ?, ?, ?)
+			`)
+			.bind(
+				participantId,
+				projectId,
+				studyId,
+				participantRef,
+				cleanText(body.channel_pref || body.channelPref || "email") || "email",
+				cleanText(body.consent_status || body.consentStatus || "not_sent") || "not_sent",
+				cleanText(body.status || "invited") || "invited",
+				now,
+				now,
+				hasContact ? jsonText(contact) : null,
+				jsonText({ projectId, studyId, participantRef, pseudonymised: true }),
+			)
+			.run();
+	} catch {
+		return participantDataUnavailable(svc, origin);
 	}
 
-	const base = svc.env.AIRTABLE_BASE_ID;
-	const table = encodeURIComponent(svc.env.AIRTABLE_TABLE_PARTICIPANTS || "Participants");
-	const atUrl = `https://api.airtable.com/v0/${base}/${table}`;
-
-	const fieldsTemplate = {};
-	const setIf = (names, val) => {
-		if (val === undefined || val === null || String(val).trim() === "") return null;
-		fieldsTemplate[names[0]] = val;
-		return names[0];
-	};
-
-	setIf(PARTICIPANT_FIELDS.display_name, p.display_name);
-	setIf(PARTICIPANT_FIELDS.email, p.email);
-	setIf(PARTICIPANT_FIELDS.phone, p.phone);
-	setIf(PARTICIPANT_FIELDS.access_needs, p.access_needs);
-	setIf(PARTICIPANT_FIELDS.recruitment_source, p.recruitment_source);
-	setIf(PARTICIPANT_FIELDS.privacy_notice_url, p.privacy_notice_url);
-
-	const selects = {
-		channel_pref: { key: PARTICIPANT_FIELDS.channel_pref[0], val: p.channel_pref ?? "email" },
-		consent_status: { key: PARTICIPANT_FIELDS.consent_status[0], val: p.consent_status ?? "not_sent" },
-		status: { key: PARTICIPANT_FIELDS.status[0], val: p.status ?? "invited" }
-	};
-
-	const tryCreate = async (linkFieldName, variant) => {
-		const f = { ...fieldsTemplate, [linkFieldName]: [p.study_airtable_id] };
-
-		for (const [name, meta] of Object.entries(selects)) {
-			if (variant?.omit === name) continue;
-			if (!meta.key) continue;
-			let v = meta.val;
-			if (variant?.caps === name && typeof v === "string" && v) {
-				v = v.charAt(0).toUpperCase() + v.slice(1);
-			}
-			f[meta.key] = v;
-		}
-
-		return await airtableTryWrite(atUrl, svc.env.AIRTABLE_API_KEY, "POST", f, svc.cfg.TIMEOUT_MS);
-	};
-
-	let lastDetail = "";
-	for (const linkName of PARTICIPANT_FIELDS.study_link) {
-		let attempt = await tryCreate(linkName, { variant: "lower" });
-		if (attempt.ok) {
-			const id = attempt.json.records?.[0]?.id;
-			if (svc.env.AUDIT === "true") svc.log.info("participant.created", { id, linkName, statusFallback: "none" });
-			return svc.json({ ok: true, id }, 200, svc.corsHeaders(origin));
-		}
-		lastDetail = attempt.detail || lastDetail;
-
-		const isSelectErr = attempt.status === 422 && /INVALID_MULTIPLE_CHOICE_OPTIONS/i.test(String(attempt.detail || ""));
-		if (isSelectErr) {
-			const capsOrder = ["channel_pref", "status", "consent_status"];
-			for (const caps of capsOrder) {
-				const r = await tryCreate(linkName, { caps });
-				if (r.ok) {
-					const id = r.json.records?.[0]?.id;
-					if (svc.env.AUDIT === "true") svc.log.info("participant.created", { id, linkName, statusFallback: "capitalised:" + caps });
-					return svc.json({ ok: true, id }, 200, svc.corsHeaders(origin));
-				}
-				lastDetail = r.detail || lastDetail;
-			}
-
-			const omitOrder = ["channel_pref", "status", "consent_status"];
-			for (const omit of omitOrder) {
-				const r = await tryCreate(linkName, { omit });
-				if (r.ok) {
-					const id = r.json.records?.[0]?.id;
-					if (svc.env.AUDIT === "true") svc.log.info("participant.created", { id, linkName, statusFallback: "omit:" + omit });
-					return svc.json({ ok: true, id }, 200, svc.corsHeaders(origin));
-				}
-				lastDetail = r.detail || lastDetail;
-			}
-		}
-
-		if (!attempt.retry) {
-			svc.log.error("airtable.participant.create.fail", { status: attempt.status, detail: attempt.detail });
-			return svc.json({ error: `Airtable ${attempt.status}`, detail: attempt.detail }, attempt.status || 500, svc.corsHeaders(origin));
-		}
-	}
-
-	svc.log.error("airtable.participant.create.linkfield.none_matched", { detail: lastDetail });
-	return svc.json({
-		error: "Airtable 422",
-		detail: lastDetail || "No matching link field name found for Participants↔Study relation. Try fields: " + PARTICIPANT_FIELDS.study_link.join(", ")
-	}, 422, svc.corsHeaders(origin));
+	await recordParticipantEvent(svc, request, context, participantId, "participant.created", "succeeded");
+	return svc.json({ ok: true, id: participantId }, 200, svc.corsHeaders(origin));
 }
