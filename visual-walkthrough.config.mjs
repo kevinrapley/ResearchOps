@@ -186,6 +186,7 @@ export const visualWalkthroughConfig = {
 		registeredPage('study-participant-consent', 'Participant consent', 'Study', '/pages/study/participant-consent/index.html', 'Study-scoped participant consent recording and review page.'),
 		registeredPage('synthesize', 'Study synthesis', 'Study', '/pages/study/synthesis/index.html', 'Study-scoped evidence grouping and theme creation page.'),
 		statefulPage('team-registration-requests', 'Review account requests', 'Team administration', '/pages/team/registration-requests/index.html', 'Team Admin review page for pending account registration requests.', 'Pending account requests', 'Registration request review page captured with a deterministic pending request.', '/pages/team/registration-requests/index.html', 'Pending account requests'),
+		registeredPage('team-access-requests', 'Review team access requests', 'Team administration', '/pages/team/access-requests/index.html', 'Team Admin review page for pending team access requests.'),
 		teamRoleAssignmentsPage,
 		registeredPage('search', 'Search', 'Utilities', '/pages/search/index.html', 'Search page.'),
 		registeredPage('notes', 'Notes', 'Utilities', '/pages/notes/index.html', 'Notes page.'),

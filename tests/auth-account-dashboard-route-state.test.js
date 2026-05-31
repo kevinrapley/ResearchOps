@@ -100,7 +100,7 @@ function assertDashboardRendersAdaptiveTeamMembershipPresentation() {
 	assert.match(accountScript, /What this lets you do/);
 	assert.match(accountScript, /No active access summary for this team/);
 	assert.match(accountScript, /function renderNoTeamState\(\)/);
-	assert.match(accountScript, /Request access to a team before using team-scoped ResearchOps features/);
+	assert.match(accountScript, /Request access to a team before using research records that belong to a team/);
 	assert.match(accountScript, /href="\$\{CONFIG\.TEAM_ACCESS_URL\}">Request access to a team/);
 	assert.match(accountScript, /dom\.title\) dom\.title\.textContent = 'Your ResearchOps account'/);
 	assert.doesNotMatch(accountScript, /Team membership and role access/);
@@ -111,10 +111,14 @@ function assertDashboardRendersTeamAccessRequestsSeparately() {
 	assert.match(accountScript, /TEAM_ACCESS_URL: '\/pages\/account\/team-access\/'/);
 	assert.match(accountScript, /teamAccessRequestsSection: document\.getElementById\('account-team-access-requests-section'\)/);
 	assert.match(accountScript, /teamAccessRequests: document\.getElementById\('account-team-access-requests'\)/);
-	assert.match(accountScript, /function renderTeamAccessRequest\(request\)/);
+	assert.match(accountScript, /function teamAccessStatus\(request\)/);
+	assert.match(accountScript, /Not approved/);
 	assert.match(accountScript, /Awaiting approval/);
+	assert.match(accountScript, /decisionReason/);
+	assert.match(accountScript, /This request was not approved\. You have not become a member of this team\./);
 	assert.match(accountScript, /This request does not give access to team records yet/);
 	assert.match(accountScript, /data-cancel-team-access-request/);
+	assert.match(accountScript, /request\.status === 'pending'/);
 	assert.match(accountScript, /function renderTeamAccessRequests\(requests = \[\]\)/);
 	assert.match(accountScript, /setVisible\(dom\.teamAccessRequestsSection, false\)/);
 	assert.match(accountScript, /setVisible\(dom\.teamAccessRequestsSection, true\)/);
@@ -165,6 +169,9 @@ function assertDashboardExplainsResearchOpsCoreTeamAdmin() {
 }
 
 function assertDashboardActionsArePermissionBasedAndHiddenWhenUnavailable() {
+	assert.match(accountScript, /permission: 'team\.manage'/);
+	assert.match(accountScript, /label: 'Review team access requests'/);
+	assert.match(accountScript, /href: '\/pages\/team\/access-requests\/'/);
 	assert.match(accountScript, /permission: 'role\.assign'/);
 	assert.match(accountScript, /permission: 'governed\.approve'/);
 	assert.match(accountScript, /permission: 'safeguarding\.view'/);

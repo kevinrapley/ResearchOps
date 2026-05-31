@@ -1,0 +1,91 @@
+{
+	"date": "2026-05-31",
+	"traceType": "operational-audit-trace",
+	"branch": "feature/team-access-request-review-v2",
+	"epic": "ROPS-AUTH-P1-000 — Governed access, permissions and audit",
+	"story": "Team Admin reviews team access requests",
+	"traceRequired": true,
+	"taskSummary": "Create Story 4 using the recommended core acceptance criteria and add a GOV.UK/Nunjucks review page that uses GOV.UK Frontend macros where practical.",
+	"operatingModelFilesLoaded": [
+		"AGENTS.md",
+		".agent-operating-model/orchestration.xml",
+		".agent-operating-model/bundle-registry.json",
+		".agent-operating-model/task-signal-catalog.json",
+		".agent-operating-model/selection-rules.json",
+		".agent-operating-model/github-mutation-policy.md"
+	],
+	"selectedBundles": [
+		{
+			"id": "github-diamond",
+			"canonicalPath": ".agent-operating-model/bundles/github/",
+			"reason": "Always loaded for repository-affecting branch work."
+		},
+		{
+			"id": "researchops-developer-control",
+			"canonicalPath": ".agent-operating-model/bundles/researchops-developer-control/",
+			"reason": "Selected for ResearchOps account and team administration journey changes."
+		},
+		{
+			"id": "multi-functional-team",
+			"canonicalPath": ".agent-operating-model/bundles/multi-functional-team/",
+			"reason": "Selected because the story defines a governed access-control decision flow."
+		},
+		{
+			"id": "govuk-design-system",
+			"canonicalPath": ".agent-operating-model/bundles/govuk-design-system/",
+			"reason": "Selected because the task changes Nunjucks templates, form controls, GOV.UK components, status tags and accessibility affordances."
+		}
+	],
+	"skippedBundles": [
+		"cloudflare",
+		"openai-platform",
+		"mcp-agent-tooling",
+		"airtable-public-api",
+		"mural-public-api"
+	],
+	"filesChanged": [
+		"docs/product/26/05/31/auth-story-4-team-access-review.md",
+		"src/govuk/templates/pages/team-access-requests.njk",
+		"scripts/govuk/render-govuk-pages.mjs",
+		"visual-walkthrough.config.mjs",
+		"tests/auth-team-access-review-route-state.test.js",
+		"docs/agent-audit/reasoning/2026/05/31/auth-story-4-team-access-review.md",
+		"docs/agent-audit/reasoning/2026/05/31/auth-story-4-team-access-review.json"
+	],
+	"implementationSummary": {
+		"storyDocumentDateFolder": "docs/product/26/05/31/",
+		"traceDateFolder": "docs/agent-audit/reasoning/2026/05/31/",
+		"nunjucksSource": "src/govuk/templates/pages/team-access-requests.njk",
+		"rendererOutput": "public/pages/team/access-requests/index.html",
+		"manualGeneratedHtmlCommitted": false,
+		"govukMacrosUsed": [
+			"govukBreadcrumbs",
+			"govukButton",
+			"govukErrorSummary",
+			"govukSummaryList",
+			"govukTag",
+			"govukTextarea",
+			"govukWarningText"
+		]
+	},
+	"scopeControls": {
+		"backendApprovalBehaviour": false,
+		"backendRejectionBehaviour": false,
+		"d1Migration": false,
+		"roleAssignment": false,
+		"permissionAssignment": false,
+		"teamCreation": false,
+		"emailNotifications": false,
+		"auditViewer": false
+	},
+	"validationExpected": [
+		"npm run validate",
+		"npm run lint",
+		"npm test -- --ci"
+	],
+	"validationRunInConnector": [],
+	"residualRisks": [
+		"Validation has not been run in this connector context.",
+		"The generated HTML route should be produced by the GOV.UK render workflow from the Nunjucks template."
+	]
+}

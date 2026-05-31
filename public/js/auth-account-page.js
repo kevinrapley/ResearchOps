@@ -6,6 +6,11 @@
 
 const ACTIONS = Object.freeze([
 	{
+		permission: 'team.manage',
+		label: 'Review team access requests',
+		href: '/pages/team/access-requests/',
+	},
+	{
 		permission: 'role.assign',
 		label: 'Manage team roles',
 		href: '/pages/team/role-assignments/',
@@ -295,7 +300,7 @@ function renderNoTeamState() {
 	return `
 		<div class="govuk-inset-text">
 			<p class="govuk-body">You are not currently a member of any team.</p>
-			<p class="govuk-body">Request access to a team before using team-scoped ResearchOps features.</p>
+			<p class="govuk-body">Request access to a team before using research records that belong to a team.</p>
 			<p class="govuk-body"><a class="govuk-link" href="${CONFIG.TEAM_ACCESS_URL}">Request access to a team</a></p>
 		</div>
 	`;
@@ -324,16 +329,33 @@ function renderCurrentTeam(context, memberships) {
 	setVisible(dom.currentTeamSection, true);
 }
 
+function teamAccessStatus(request) {
+	if (request.status === 'rejected') return { text: 'Not approved', tagClass: 'govuk-tag--grey' };
+	return { text: 'Awaiting approval', tagClass: 'govuk-tag--yellow' };
+}
+
 function renderTeamAccessRequest(request) {
 	const teamLabel = request.teamName || request.teamReference || 'Requested team';
+	const status = teamAccessStatus(request);
+	const decisionReason = request.decisionReason
+		? `<p class="govuk-body"><strong>Reason:</strong> ${escapeHtml(request.decisionReason)}</p>`
+		: '';
+	const action = request.status === 'pending'
+		? `<button class="govuk-button govuk-button--secondary" type="button" data-cancel-team-access-request="${escapeHtml(request.id)}">Cancel request</button>`
+		: '';
+	const helpText = request.status === 'rejected'
+		? 'This request was not approved. You have not become a member of this team.'
+		: 'This request does not give access to team records yet.';
+
 	return `
 		<div class="govuk-summary-card" data-team-access-request-id="${escapeHtml(request.id)}">
 			<div class="govuk-summary-card__title-wrapper">
-				<h3 class="govuk-summary-card__title">${escapeHtml(teamLabel)} <strong class="govuk-tag govuk-tag--yellow">Awaiting approval</strong></h3>
+				<h3 class="govuk-summary-card__title">${escapeHtml(teamLabel)} <strong class="govuk-tag ${status.tagClass}">${status.text}</strong></h3>
 			</div>
 			<div class="govuk-summary-card__content">
-				<p class="govuk-body">This request does not give access to team records yet.</p>
-				<button class="govuk-button govuk-button--secondary" type="button" data-cancel-team-access-request="${escapeHtml(request.id)}">Cancel request</button>
+				<p class="govuk-body">${escapeHtml(helpText)}</p>
+				${decisionReason}
+				${action}
 			</div>
 		</div>
 	`;
