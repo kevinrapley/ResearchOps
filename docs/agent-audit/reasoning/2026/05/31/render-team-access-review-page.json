@@ -1,0 +1,44 @@
+{
+	"date": "2026-05-31",
+	"traceType": "operational-audit-trace",
+	"branch": "fix/render-team-access-review-page",
+	"relatedWork": "Story 4 — Team Admin reviews team access requests",
+	"traceRequired": true,
+	"taskSummary": "Fix the missing generated static HTML route for the Story 4 team access review page.",
+	"problem": {
+		"missingOutput": "public/pages/team/access-requests/index.html",
+		"expectedSource": "src/govuk/templates/pages/team-access-requests.njk",
+		"expectedRenderer": "scripts/govuk/render-govuk-pages.mjs"
+	},
+	"filesChanged": [
+		"public/pages/team/access-requests/index.html",
+		"tests/auth-team-access-review-route-state.test.js",
+		"docs/agent-audit/reasoning/2026/05/31/render-team-access-review-page.md",
+		"docs/agent-audit/reasoning/2026/05/31/render-team-access-review-page.json"
+	],
+	"implementationSummary": {
+		"generatedRouteAdded": true,
+		"nunjucksSourceUnchanged": true,
+		"rendererRegistrationAlreadyPresent": true,
+		"recursiveDirectoryCreationConfirmedInRenderer": true,
+		"routeStateCoverageRequiresGeneratedRoute": true
+	},
+	"scopeControls": {
+		"workerApiChanged": false,
+		"d1MigrationChanged": false,
+		"accountPageBehaviourChanged": false,
+		"approvalLogicChanged": false,
+		"rejectionLogicChanged": false,
+		"roleAssignmentChanged": false,
+		"permissionAssignmentChanged": false
+	},
+	"validationExpected": [
+		"npm run validate",
+		"npm run lint",
+		"npm test -- --ci"
+	],
+	"residualRisks": [
+		"Validation has not been run in this connector context.",
+		"The GOV.UK render workflow may normalise generated markup if the hand-created output differs from renderer output."
+	]
+}
