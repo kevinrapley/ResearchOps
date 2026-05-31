@@ -70,6 +70,20 @@ function assertAuthenticatedRouteContext(context) {
 	}
 }
 
+async function readTeamAccessRequestSchema(db) {
+	try {
+		const result = await db.prepare('PRAGMA table_info(auth_team_access_requests)').all();
+		const columns = new Set((result.results || []).map((row) => row.name).filter(Boolean));
+		return {
+			hasDecisionReason: columns.has('decision_reason'),
+		};
+	} catch {
+		return {
+			hasDecisionReason: false,
+		};
+	}
+}
+
 async function readJson(request) {
 	try {
 		const body = await request.json();
@@ -201,6 +215,8 @@ async function listTeamAccessRequests(request, env, context) {
 	const db = dbFor(env);
 	await assertRoutePermission(request, env, context);
 
+	const schema = await readTeamAccessRequestSchema(db);
+	const decisionReasonSelect = schema.hasDecisionReason ? 'r.decision_reason' : "'' AS decision_reason";
 	const result = await db
 		.prepare(`
 			SELECT
@@ -213,7 +229,7 @@ async function listTeamAccessRequests(request, env, context) {
 				r.requested_at,
 				r.cancelled_at,
 				r.decided_at,
-				r.decision_reason
+				${decisionReasonSelect}
 			FROM auth_team_access_requests r
 			LEFT JOIN auth_teams t ON t.id = r.team_id
 			WHERE r.requester_user_id = ?
@@ -400,6 +416,66 @@ function assertCanDecideTeamAccess(context, existing) {
 	}
 }
 
+async function markTeamAccessRequestApproved(db, requestId, decidedByUserId, schema) {
+	if (schema.hasDecisionReason) {
+		await db
+			.prepare(`
+				UPDATE auth_team_access_requests
+				SET request_status = 'approved',
+					decided_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now'),
+					decided_by_user_id = ?,
+					decision_reason = NULL
+				WHERE id = ?
+					AND request_status = 'pending'
+			`)
+			.bind(decidedByUserId, requestId)
+			.run();
+		return;
+	}
+
+	await db
+		.prepare(`
+			UPDATE auth_team_access_requests
+			SET request_status = 'approved',
+				decided_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now'),
+				decided_by_user_id = ?
+			WHERE id = ?
+				AND request_status = 'pending'
+		`)
+		.bind(decidedByUserId, requestId)
+		.run();
+}
+
+async function markTeamAccessRequestRejected(db, requestId, decidedByUserId, decisionReason, schema) {
+	if (schema.hasDecisionReason) {
+		await db
+			.prepare(`
+				UPDATE auth_team_access_requests
+				SET request_status = 'rejected',
+					decided_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now'),
+					decided_by_user_id = ?,
+					decision_reason = ?
+				WHERE id = ?
+					AND request_status = 'pending'
+			`)
+			.bind(decidedByUserId, decisionReason, requestId)
+			.run();
+		return;
+	}
+
+	await db
+		.prepare(`
+			UPDATE auth_team_access_requests
+			SET request_status = 'rejected',
+				decided_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now'),
+				decided_by_user_id = ?
+			WHERE id = ?
+				AND request_status = 'pending'
+		`)
+		.bind(decidedByUserId, requestId)
+		.run();
+}
+
 async function approveTeamAccessRequest(request, env, context) {
 	const db = dbFor(env);
 	assertAuthenticatedRouteContext(context);
@@ -416,18 +492,8 @@ async function approveTeamAccessRequest(request, env, context) {
 		throw new TeamAccessRequestError(409, 'team_member_already_active', 'This person is already a member of this team.');
 	}
 
-	await db
-		.prepare(`
-			UPDATE auth_team_access_requests
-			SET request_status = 'approved',
-				decided_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now'),
-				decided_by_user_id = ?,
-				decision_reason = NULL
-			WHERE id = ?
-				AND request_status = 'pending'
-		`)
-		.bind(context.user.id, requestId)
-		.run();
+	const schema = await readTeamAccessRequestSchema(db);
+	await markTeamAccessRequestApproved(db, requestId, context.user.id, schema);
 
 	await db
 		.prepare(`
@@ -465,18 +531,8 @@ async function rejectTeamAccessRequest(request, env, context) {
 	const existing = await readRequestForDecision(db, requestId);
 	assertCanDecideTeamAccess(context, existing);
 
-	await db
-		.prepare(`
-			UPDATE auth_team_access_requests
-			SET request_status = 'rejected',
-				decided_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now'),
-				decided_by_user_id = ?,
-				decision_reason = ?
-			WHERE id = ?
-				AND request_status = 'pending'
-		`)
-		.bind(context.user.id, decisionReason, requestId)
-		.run();
+	const schema = await readTeamAccessRequestSchema(db);
+	await markTeamAccessRequestRejected(db, requestId, context.user.id, decisionReason, schema);
 
 	await recordTeamAccessEvent(db, request, 'team.access.rejected', context, {
 		requestId,
