@@ -49,7 +49,11 @@ for (const parts of requiredCommandSnippets) {
 }
 
 excludes(workflow, 'git add -A public/index.html public/pages', 'GOV.UK pages render workflow');
-excludes(workflow, 'git diff --binary -- public/index.html public/pages', 'GOV.UK pages render workflow');
+excludes(
+	workflow,
+	'git diff --binary -- public/index.html public/pages',
+	'GOV.UK pages render workflow'
+);
 
 for (const snippet of ['public/**', '!public/', '!public/index.html', '!public/pages/']) {
 	includes(gitignore, snippet, 'gitignore rendered GOV.UK HTML policy');
