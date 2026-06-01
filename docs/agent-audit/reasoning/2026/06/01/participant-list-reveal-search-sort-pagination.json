@@ -1,0 +1,48 @@
+{
+	"date": "2026-06-01",
+	"traceType": "operational-audit-trace",
+	"branch": "fix/participant-list-reveal-search-sort-pagination",
+	"base": "main after PR #327",
+	"task": "Add authorised participant detail reveal plus search, sort, pagination and study-title truncation on the project dashboard participant list.",
+	"operatingModelSources": [
+		"AGENTS.md",
+		".agent-operating-model/orchestration.xml",
+		".agent-operating-model/bundle-registry.json",
+		".agent-operating-model/task-signal-catalog.json",
+		".agent-operating-model/selection-rules.json",
+		".agent-operating-model/github-mutation-policy.md"
+	],
+	"selectedBundles": [
+		".agent-operating-model/bundles/github/",
+		".agent-operating-model/bundles/researchops-developer-control/",
+		".agent-operating-model/bundles/multi-functional-team/",
+		".agent-operating-model/bundles/govuk-design-system/",
+		".agent-operating-model/bundles/cloudflare/"
+	],
+	"acceptanceCriteria": [
+		"Authorised users can reveal participant first name, family name and contact details.",
+		"Participant lists greater than 10 records show search, sort and pagination controls.",
+		"Sort options include A-Z, Z-A, First to last, Last to first and User group.",
+		"Long study titles are single-line and truncated at the last fitting word with a horizontal ellipsis."
+	],
+	"scopeControls": [
+		"No D1 participant table model changes.",
+		"No new participant API endpoints.",
+		"No PII added to default participant list responses.",
+		"Reveal continues to use /api/participants/contact."
+	],
+	"filesChanged": [
+		"src/govuk/templates/pages/project-dashboard.njk",
+		"public/js/project-dashboard-participants-list.js",
+		"src/styles/project-dashboard.scss",
+		"public/css/project-dashboard.css",
+		"tests/project-dashboard-route-state.test.js",
+		"docs/agent-audit/reasoning/2026/06/01/participant-list-reveal-search-sort-pagination.md",
+		"docs/agent-audit/reasoning/2026/06/01/participant-list-reveal-search-sort-pagination.json"
+	],
+	"validationExpected": [
+		"npm run validate",
+		"npm run lint",
+		"npm test -- --ci"
+	]
+}
