@@ -5,6 +5,7 @@ on:
     branches: [ main ]
     paths:
       - "infra/cloudflare/migrations/0007_participant_pseudonymised_view.sql"
+      - "infra/cloudflare/migrations/0009_participant_pii_reveal_role_permissions.sql"
       - ".github/workflows/apply-d1-participant-pseudonymised-view.yml"
   workflow_dispatch:
     inputs:
@@ -31,6 +32,7 @@ env:
   D1_DATABASE_NAME: "researchops-d1"
   WRANGLER_CONFIG: "infra/cloudflare/wrangler.toml"
   PARTICIPANT_PSEUDONYMISED_VIEW_MIGRATION: "infra/cloudflare/migrations/0007_participant_pseudonymised_view.sql"
+  PARTICIPANT_PII_ROLE_PERMISSIONS_MIGRATION: "infra/cloudflare/migrations/0009_participant_pii_reveal_role_permissions.sql"
 
 jobs:
   apply:
@@ -67,8 +69,10 @@ jobs:
       - name: Record Wrangler toolchain version
         run: npx --yes wrangler@${WRANGLER_VERSION} --version
 
-      - name: Check migration file exists
-        run: test -f "${PARTICIPANT_PSEUDONYMISED_VIEW_MIGRATION}"
+      - name: Check migration files exist
+        run: |
+          test -f "${PARTICIPANT_PSEUDONYMISED_VIEW_MIGRATION}"
+          test -f "${PARTICIPANT_PII_ROLE_PERMISSIONS_MIGRATION}"
 
       - name: Apply participant pseudonymised view migration to remote D1
         env:
@@ -79,6 +83,10 @@ jobs:
             --remote \
             --config "${WRANGLER_CONFIG}" \
             --file "${PARTICIPANT_PSEUDONYMISED_VIEW_MIGRATION}"
+          npx --yes wrangler@${WRANGLER_VERSION} d1 execute "${D1_DATABASE_NAME}" \
+            --remote \
+            --config "${WRANGLER_CONFIG}" \
+            --file "${PARTICIPANT_PII_ROLE_PERMISSIONS_MIGRATION}"
 
       - name: Check participant permission and route declarations
         if: ${{ github.event_name == 'push' || inputs.run_post_apply_checks }}
@@ -90,6 +98,10 @@ jobs:
             --remote \
             --config "${WRANGLER_CONFIG}" \
             --command "SELECT code, label FROM auth_permissions WHERE code IN ('participant.record.view', 'participant.pii.reveal') ORDER BY code;"
+          npx --yes wrangler@${WRANGLER_VERSION} d1 execute "${D1_DATABASE_NAME}" \
+            --remote \
+            --config "${WRANGLER_CONFIG}" \
+            --command "SELECT role_id, permission_code FROM auth_role_permissions WHERE permission_code = 'participant.pii.reveal' ORDER BY role_id;"
           npx --yes wrangler@${WRANGLER_VERSION} d1 execute "${D1_DATABASE_NAME}" \
             --remote \
             --config "${WRANGLER_CONFIG}" \
