@@ -11,7 +11,22 @@
 
 {% block content %}
 <div class="govuk-width-container">
-	<nav class="govuk-breadcrumbs" aria-label="Breadcrumb" typeof="schema:BreadcrumbList">
+	{{ govukBreadcrumbs({
+		items: [
+			{
+				text: 'Projects',
+				href: '/pages/projects/'
+			},
+			{
+				text: 'Project Dashboard',
+				href: '/pages/project-dashboard/'
+			},
+			{
+				text: 'Add participant'
+			}
+		]
+	}) }}
+	<!--<nav class="govuk-breadcrumbs" aria-label="Breadcrumb" typeof="schema:BreadcrumbList">
 		<ol class="govuk-breadcrumbs__list">
 			<li class="govuk-breadcrumbs__list-item" property="schema:itemListElement" typeof="schema:ListItem">
 				<a class="govuk-breadcrumbs__link" href="/pages/projects/" property="schema:item" typeof="schema:Thing">
@@ -30,9 +45,7 @@
 				<meta property="schema:position" content="3">
 			</li>
 		</ol>
-	</nav>
-
-	<a id="back-to-project" class="govuk-back-link" href="/pages/projects/">Back to project dashboard</a>
+	</nav>-->
 
 	<div class="dashboard-hero">
 		<p id="project-eyebrow" class="govuk-caption-l">Project</p>
