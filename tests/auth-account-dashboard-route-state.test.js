@@ -10,6 +10,21 @@ const productRequirements = fs.readFileSync(
 );
 const story2Plan = fs.readFileSync('docs/product/26/05/30/auth-story-2-account-access-summary.md', 'utf8');
 
+function hasElementAttributes(source, elementName, expectedAttributes) {
+	const elementPattern = new RegExp(`<${elementName}\\b[^>]*>`, 'g');
+	const elements = source.match(elementPattern) || [];
+
+	return elements.some((element) => expectedAttributes.every((attribute) => element.includes(attribute)));
+}
+
+function assertElementAttributes(source, elementName, expectedAttributes, label) {
+	assert.equal(
+		hasElementAttributes(source, elementName, expectedAttributes),
+		true,
+		`Expected ${label} to include <${elementName}> with attributes: ${expectedAttributes.join(', ')}`,
+	);
+}
+
 function assertAccountPageExistsAsDashboard() {
 	assert.match(accountPage, /<title>Your ResearchOps account - ResearchOps Demo Suite<\/title>/);
 	assert.match(accountPage, /<h1 class="govuk-heading-xl" id="account-dashboard-title">Your ResearchOps account<\/h1>/);
@@ -20,22 +35,32 @@ function assertAccountPageExistsAsDashboard() {
 	assert.match(accountPage, /id="account-email-value"/);
 	assert.match(accountPage, /id="account-status-value"/);
 	assert.match(accountPage, /aria-label="Account summary"/);
-	assert.match(accountPage, /id="account-current-team-section" hidden/);
+	assertElementAttributes(
+		accountPage,
+		'section',
+		['id="account-current-team-section"', 'hidden'],
+		'current team section',
+	);
 	assert.match(accountPage, /id="account-current-team-value"/);
 	assert.match(accountPage, /id="account-team-memberships"/);
 	assert.match(accountPage, /Your teams and roles/);
 	assert.match(accountPage, /You may have different roles and access in each team/);
-	assert.match(accountPage, /id="account-team-access-requests-section" hidden/);
+	assertElementAttributes(
+		accountPage,
+		'section',
+		['id="account-team-access-requests-section"', 'hidden'],
+		'team access requests section',
+	);
 	assert.match(accountPage, /id="account-team-access-requests"/);
 	assert.match(accountPage, /Team access requests/);
 	assert.match(accountPage, /Requests shown here are awaiting approval/);
 	assert.doesNotMatch(accountPage, /id="account-team-value"/);
 	assert.doesNotMatch(accountPage, /id="account-roles-value"/);
 	assert.doesNotMatch(accountPage, /<h2 class="govuk-heading-m" id="account-summary-title">Account summary<\/h2>/);
-	assert.match(accountPage, /id="account-actions-section" hidden/);
+	assertElementAttributes(accountPage, 'section', ['id="account-actions-section"', 'hidden'], 'account actions section');
 	assert.match(accountPage, /id="account-actions"/);
 	assert.doesNotMatch(accountPage, /id="account-no-actions"/);
-	assert.match(accountPage, /id="account-permissions-details" hidden/);
+	assertElementAttributes(accountPage, 'details', ['id="account-permissions-details"', 'hidden'], 'permissions details');
 	assert.match(accountPage, /View technical permission details/);
 	assert.match(accountPage, /task-based access summary above/);
 	assert.match(accountPage, /id="account-permissions"/);
