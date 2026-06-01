@@ -24,10 +24,6 @@
 			typeof: "schema:BreadcrumbList"
 		},
 		items: [
-			attributes: {
-				property: "schema:itemListElement",
-				typeof: "schema:ListItem"
-			},
 			{
 				text: "Projects",
 				href: "/pages/projects/",
@@ -38,7 +34,12 @@
 			},
 			{
 				text: "Project Dashboard",
-				href: "/pages/project-dashboard/"
+				href: "/pages/project-dashboard/",
+				attributes: {
+					id: "breadcrumb-project",
+					property: "scheam:item",
+					typeof: "schema:Thing"
+				}
 			},
 			{
 				text: "Add participant"
