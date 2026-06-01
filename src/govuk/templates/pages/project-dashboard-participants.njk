@@ -20,33 +20,20 @@
 <div class="govuk-width-container">
 	{{ govukBreadcrumbs({
 		attributes: {
-			"id": "participant-breadcrumbs",
-			"typeof": "schema:BreadcrumbList"
+			id: "participant-breadcrumbs",
+			typeof: "schema:BreadcrumbList"
 		},
 		items: [
 			{
 				text: "Projects",
-				href: "/pages/projects/",
-				attributes: {
-					"property": "schema:itemListElement",
-					"typeof": "schema:ListItem"
-				}
+				href: "/pages/projects/"
 			},
 			{
 				text: "Project Dashboard",
-				href: "/pages/project-dashboard/",
-				attributes: {
-					"id": "breadcrumb-project",
-					"property": "schema:itemListElement",
-					"typeof": "schema:ListItem"
-				}
+				href: "/pages/project-dashboard/"
 			},
 			{
-				text: "Add participant",
-				attributes: {
-					"property": "schema:itemListElement",
-					"typeof": "schema:ListItem"
-				}
+				text: "Add participant"
 			}
 		]
 	}) }}
