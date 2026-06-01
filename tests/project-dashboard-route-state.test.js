@@ -4,6 +4,7 @@ import fs from "node:fs";
 const pageSource = fs.readFileSync("public/pages/project-dashboard/index.html", "utf8");
 const templateSource = fs.readFileSync("src/govuk/templates/pages/project-dashboard.njk", "utf8");
 const controllerSource = fs.readFileSync("public/js/project-dashboard.js", "utf8");
+const participantListSource = fs.readFileSync("public/js/project-dashboard-participants-list.js", "utf8");
 const muralIntegrationSource = fs.readFileSync("public/components/mural-integration.js", "utf8");
 const muralStateSource = fs.readFileSync("public/components/project-dashboard-mural-state.js", "utf8");
 const dashboardCssSource = fs.readFileSync("public/css/project-dashboard.css", "utf8");
@@ -35,6 +36,7 @@ includes(templateSource, "id=\"kv-project-stage\"", "project dashboard template"
 includes(templateSource, "Loading service stage", "project dashboard template");
 includes(templateSource, "Loading project stage", "project dashboard template");
 includes(templateSource, "Mural optional", "project dashboard template");
+includes(templateSource, "project-dashboard-participants-list.js?v=participant-list-controls-20260601", "project dashboard template");
 excludes(templateSource, "id=\"mural-open\"", "project dashboard template");
 excludes(templateSource, "Service stage not recorded", "project dashboard template");
 excludes(templateSource, "Project stage not recorded", "project dashboard template");
@@ -79,6 +81,23 @@ excludes(controllerSource, "Service stage not recorded", "project dashboard cont
 excludes(controllerSource, "Project stage not recorded", "project dashboard controller");
 excludes(controllerSource, "rops-api.digikev-kevin-rapley.workers.dev", "project dashboard controller");
 excludes(controllerSource, "alert(\"Could not load project.\");", "project dashboard controller");
+
+includes(participantListSource, "const PARTICIPANT_PAGE_SIZE = 10", "participant list controller");
+includes(participantListSource, "participantJson(`/api/participants/contact?participant=", "participant list controller");
+includes(participantListSource, "data-participant-reveal", "participant list controller");
+includes(participantListSource, "First name", "participant list controller");
+includes(participantListSource, "Family name", "participant list controller");
+includes(participantListSource, "Search participants", "participant list controller");
+includes(participantListSource, "Sort participants", "participant list controller");
+includes(participantListSource, ">A-Z</option>", "participant list controller");
+includes(participantListSource, ">Z-A</option>", "participant list controller");
+includes(participantListSource, ">First to last</option>", "participant list controller");
+includes(participantListSource, ">Last to first</option>", "participant list controller");
+includes(participantListSource, ">User group</option>", "participant list controller");
+includes(participantListSource, "data-participants-page=\"previous\"", "participant list controller");
+includes(participantListSource, "data-participants-page=\"next\"", "participant list controller");
+includes(participantListSource, "function applyStudyTitleFit", "participant list controller");
+includes(participantListSource, "element.textContent = fitted ? `${prefix}${fitted}…` : `${prefix}…`;", "participant list controller");
 
 includes(muralIntegrationSource, "Project Dashboard ↔ Mural wiring with GOV.UK Frontend dashboard state", "Mural integration component");
 includes(muralIntegrationSource, "location.hostname.endsWith(\"pages.dev\")", "Mural integration component");
@@ -125,10 +144,16 @@ excludes(muralStateSource, "syncDashboardPresentation", "Project Dashboard Mural
 includes(dashboardSassSource, ".rops-dashboard-header", "project dashboard Sass source");
 includes(dashboardSassSource, ".rops-study-list", "project dashboard Sass source");
 includes(dashboardSassSource, ".dashboard-action-panel", "project dashboard Sass source");
+includes(dashboardSassSource, ".rops-participant-list-controls", "project dashboard Sass source");
+includes(dashboardSassSource, ".rops-study-title-truncated", "project dashboard Sass source");
+includes(dashboardSassSource, "text-overflow: ellipsis;", "project dashboard Sass source");
 includes(dashboardSassSource, "/* transparency begins in the cascade */", "project dashboard Sass source");
 includes(dashboardCssSource, ".rops-dashboard-header", "project dashboard stylesheet");
 includes(dashboardCssSource, ".rops-study-list", "project dashboard stylesheet");
 includes(dashboardCssSource, ".dashboard-action-panel", "project dashboard stylesheet");
+includes(dashboardCssSource, ".rops-participant-list-controls", "project dashboard stylesheet");
+includes(dashboardCssSource, ".rops-study-title-truncated", "project dashboard stylesheet");
+includes(dashboardCssSource, "text-overflow: ellipsis;", "project dashboard stylesheet");
 excludes(dashboardCssSource, "\n.section {", "project dashboard stylesheet");
 excludes(dashboardCssSource, "\n.dashboard-section {", "project dashboard stylesheet");
 excludes(dashboardCssSource, "\n.board {", "project dashboard stylesheet");
