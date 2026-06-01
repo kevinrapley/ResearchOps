@@ -313,7 +313,8 @@ function observeParticipantPanel() {
 	if (!panel || typeof MutationObserver === "undefined") return;
 	const observer = new MutationObserver(() => {
 		if (participantListState.isRendering) return;
-		if (!participantListState.participants.length || panel.dataset.enhancedParticipants === "true") return;
+		const enhancedListPresent = Boolean(panel.querySelector(".rops-participant-list") || panel.querySelector(".rops-participant-list-controls"));
+		if (!participantListState.participants.length || enhancedListPresent) return;
 		window.setTimeout(renderEnhancedParticipants, 0);
 	});
 	observer.observe(panel, { childList: true, subtree: true });
