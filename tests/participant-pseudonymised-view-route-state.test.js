@@ -45,9 +45,13 @@ includes(participantService, 'readD1ParticipantContact(svc, origin, participantI
 includes(participantService, 'sensitive_contact_json', 'participant service');
 includes(participantService, 'access_needs', 'participant service');
 includes(participantService, 'accessNeeds', 'participant service');
+includes(participantService, 'function participantIdentityFor', 'participant service');
+includes(participantService, 'body.display_name || body.displayName || participantRef', 'participant service');
 includes(participantService, 'first_name: firstName', 'participant service');
 includes(participantService, 'family_name: familyName', 'participant service');
 includes(participantService, 'full_name: fullName', 'participant service');
+excludes(participantService, 'first_name_required', 'participant service legacy compatibility');
+excludes(participantService, 'family_name_required', 'participant service legacy compatibility');
 includes(participantService, 'participant.contact.revealed', 'participant service');
 includes(participantService, 'participant.contact.reveal.denied', 'participant service');
 includes(participantService, 'participant.created', 'participant service');
@@ -130,8 +134,7 @@ includes(projectParticipantSource, 'from "govuk/components/input/macro.njk" impo
 includes(projectParticipantSource, 'from "govuk/components/select/macro.njk" import govukSelect', 'project participant source');
 includes(projectParticipantSource, 'from "govuk/components/textarea/macro.njk" import govukTextarea', 'project participant source');
 includes(projectParticipantSource, 'from "govuk/components/inset-text/macro.njk" import govukInsetText', 'project participant source');
-includes(projectParticipantSource, 'property: "schema:itemListElement"', 'project participant breadcrumb source');
-includes(projectParticipantSource, 'typeof: "schema:ListItem"', 'project participant breadcrumb source');
+includes(projectParticipantSource, 'typeof: "schema:BreadcrumbList"', 'project participant breadcrumb source');
 
 includes(projectParticipantPage, 'id="participant-first-name"', 'project participant page');
 includes(projectParticipantPage, 'id="participant-family-name"', 'project participant page');
@@ -142,6 +145,7 @@ includes(projectParticipantController, 'study_id: fieldValue("#study-select")', 
 includes(projectParticipantController, 'first_name: fieldValue("#participant-first-name")', 'project participant controller');
 includes(projectParticipantController, 'family_name: fieldValue("#participant-family-name")', 'project participant controller');
 includes(projectParticipantController, 'function enhanceBreadcrumbSchema', 'project participant controller');
+includes(projectParticipantController, 'property", "schema:itemListElement"', 'project participant controller');
 includes(projectParticipantController, 'property", "schema:item"', 'project participant controller');
 includes(projectParticipantController, 'property", "schema:name"', 'project participant controller');
 includes(projectParticipantController, 'property", "schema:position"', 'project participant controller');
