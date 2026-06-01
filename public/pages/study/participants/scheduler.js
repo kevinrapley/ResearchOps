@@ -36,6 +36,18 @@ function restrictedContactCell(p) {
 	`;
 }
 
+function scheduleCell(p) {
+	const sessionParticipantId = p.session_participant_id || "";
+	if (p.can_schedule && sessionParticipantId) {
+		return `<button class="govuk-button govuk-button--secondary" data-session-participant-id="${escapeHtml(sessionParticipantId)}" data-act="schedule">Schedule</button>`;
+	}
+
+	return `
+		<button class="govuk-button govuk-button--secondary" disabled aria-disabled="true">Schedule</button>
+		<p class="govuk-hint govuk-!-margin-bottom-0">Scheduling is not available until this participant has a session-compatible record.</p>
+	`;
+}
+
 function readStudyRouteContext() {
 	const usp = new URLSearchParams(location.search);
 	return {
@@ -107,7 +119,7 @@ function renderParticipants(list) {
 			<td class="govuk-table__cell" data-contact-cell="${escapeHtml(p.id)}">${restrictedContactCell(p)}</td>
 			<td class="govuk-table__cell">${escapeHtml(p.status || "—")}<br><span class="govuk-hint">Preferred channel: ${escapeHtml(p.channel_pref || "not recorded")}</span></td>
 			<td class="govuk-table__cell">
-				<button class="govuk-button govuk-button--secondary" data-part="${escapeHtml(p.id)}" data-act="schedule">Schedule</button>
+				${scheduleCell(p)}
 			</td>
 		`;
 		body.appendChild(row);
@@ -170,22 +182,27 @@ function renderSessions(list, participantsById) {
 	}
 }
 
+function scheduleableParticipants(participants) {
+	return participants.filter((p) => p.can_schedule && p.session_participant_id);
+}
+
 function setScheduleEnabled(enabled, participants) {
 	const form = $("#scheduleForm");
 	const btn = $("#scheduleBtn");
 	const select = $("#s_participant");
 	const banner = $("#noParticipantsBanner");
 	const cta = $("#scheduleCta");
+	const available = scheduleableParticipants(participants);
 
 	if (!form || !btn || !select || !banner) return;
 
-	if (!enabled) {
+	if (!enabled || !available.length) {
 		banner.hidden = false;
 		btn.disabled = true;
 		form.querySelectorAll("input, textarea, select, button").forEach(el => {
 			if (el !== btn) el.setAttribute("disabled", "true");
 		});
-		select.innerHTML = `<option value="" disabled selected>No participants available</option>`;
+		select.innerHTML = `<option value="" disabled selected>No participants available for scheduling</option>`;
 		cta?.setAttribute("aria-disabled", "true");
 		cta?.classList.add("link--disabled");
 		return;
@@ -195,12 +212,12 @@ function setScheduleEnabled(enabled, participants) {
 	btn.disabled = false;
 	form.querySelectorAll("input, textarea, select, button").forEach(el => el.removeAttribute("disabled"));
 	select.innerHTML = `<option value="" disabled selected>Select a participant</option>` +
-		participants.map(p => `<option value="${escapeHtml(p.id)}">${escapeHtml(p.participant_ref || p.display_name || p.id)}</option>`).join("");
+		available.map(p => `<option value="${escapeHtml(p.session_participant_id)}">${escapeHtml(p.participant_ref || p.display_name || p.id)}</option>`).join("");
 	cta?.removeAttribute("aria-disabled");
 	cta?.classList.remove("link--disabled");
 }
 
-async function handleAddParticipant(e, studyId, refresh) {
+async function handleAddParticipant(e, context, refresh) {
 	e.preventDefault();
 	const form = e.target;
 	const msg = $("#addParticipantMsg");
@@ -218,7 +235,8 @@ async function handleAddParticipant(e, studyId, refresh) {
 	}
 
 	const payload = {
-		study_airtable_id: studyId,
+		project_id: context.projectId,
+		study_id: context.studyId,
 		display_name: display,
 		email: email || undefined,
 		phone: phone || undefined,
@@ -293,7 +311,11 @@ async function refreshAll(studyId) {
 	renderParticipants(participants);
 	setScheduleEnabled(participants.length > 0, participants);
 
-	const pMap = new Map(participants.map(p => [p.id, p]));
+	const pMap = new Map(participants.flatMap((p) => {
+		const entries = [[p.id, p]];
+		if (p.session_participant_id) entries.push([p.session_participant_id, p]);
+		return entries;
+	}));
 	renderSessions(sessions, pMap);
 }
 
@@ -302,7 +324,11 @@ async function refreshSessions(studyId) {
 		loadParticipants(studyId),
 		loadSessions(studyId)
 	]);
-	const pMap = new Map(participants.map(p => [p.id, p]));
+	const pMap = new Map(participants.flatMap((p) => {
+		const entries = [[p.id, p]];
+		if (p.session_participant_id) entries.push([p.session_participant_id, p]);
+		return entries;
+	}));
 	renderSessions(sessions, pMap);
 }
 
@@ -335,7 +361,7 @@ function bindRouteChrome(context) {
 
 		const addForm = $("#addParticipantForm");
 		const schedForm = $("#scheduleForm");
-		if (addForm) addForm.addEventListener("submit", (e) => handleAddParticipant(e, context.studyId, () => refreshAll(context.studyId)));
+		if (addForm) addForm.addEventListener("submit", (e) => handleAddParticipant(e, context, () => refreshAll(context.studyId)));
 		if (schedForm) schedForm.addEventListener("submit", (e) => handleCreateSession(e, context.studyId));
 
 		await refreshAll(context.studyId);
@@ -359,10 +385,10 @@ function bindRouteChrome(context) {
 					return;
 				}
 
-				const btn = target?.closest("[data-act='schedule'], [data-action='schedule']");
-				if (!btn) return;
+				const btn = target?.closest("[data-act='schedule']");
+				if (!btn || btn.hasAttribute("disabled")) return;
 				const participantSelect = $("#s_participant");
-				const participantId = btn.getAttribute("data-part") || btn.getAttribute("data-id");
+				const participantId = btn.getAttribute("data-session-participant-id");
 				if (participantSelect && participantId) {
 					participantSelect.value = participantId;
 					$("#s_datetime")?.focus();
