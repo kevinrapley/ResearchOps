@@ -142,7 +142,7 @@ function participantSensitiveDetailsHtml(participant = {}) {
 
 function participantRevealHtml(participant = {}) {
 	if (participant.revealed) return '<strong class="govuk-tag govuk-tag--green">Details revealed</strong>';
-	if (!participant.can_reveal_contact) return '<span class="govuk-hint">Contact details restricted</span>';
+	if (!participant.can_reveal_contact) return "";
 	return `<button type="button" class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0" data-participant-reveal="${escapeParticipantHtml(participant.id)}">Reveal details</button>`;
 }
 
@@ -151,13 +151,14 @@ function participantListItemHtml(participant = {}) {
 	const studyTitle = String(participant.studyTitle || "Study not recorded").trim();
 	const userGroup = participantUserGroup(participant);
 	const status = participant.status ? `<span class="govuk-hint">Status: ${escapeParticipantHtml(participant.status)}</span>` : "";
+	const revealHtml = participantRevealHtml(participant);
 	return `
 <li class="rops-participant-list__item" data-participant-id="${escapeParticipantHtml(participant.id)}">
 	<strong>${escapeParticipantHtml(reference)}</strong>
 	${status}
 	<span class="govuk-hint rops-study-title-truncated" title="${escapeParticipantHtml(studyTitle)}" data-study-title="${escapeParticipantHtml(studyTitle)}" data-study-prefix="${STUDY_TITLE_PREFIX}">${STUDY_TITLE_PREFIX}${escapeParticipantHtml(studyTitle)}</span>
 	<span class="govuk-hint">User group: ${escapeParticipantHtml(userGroup)}</span>
-	<div class="rops-participant-reveal">${participantRevealHtml(participant)}</div>
+	${revealHtml ? `<div class="rops-participant-reveal">${revealHtml}</div>` : ""}
 	${participantSensitiveDetailsHtml(participant)}
 </li>`;
 }
