@@ -1,0 +1,58 @@
+{
+	"date": "2026-06-01",
+	"traceType": "operational-audit-trace-and-role-consultation",
+	"branch": "fix/project-participants-d1-govuk-pii-capture",
+	"task": "Bring project-dashboard participant creation into the GOV.UK Nunjucks render flow, prefer D1 canonical identifiers, and capture participant real names as sensitive operational data.",
+	"operatingModelSources": [
+		"AGENTS.md",
+		".agent-operating-model/orchestration.xml",
+		".agent-operating-model/bundle-registry.json",
+		".agent-operating-model/task-signal-catalog.json",
+		".agent-operating-model/selection-rules.json",
+		".agent-operating-model/github-mutation-policy.md",
+		"RECENT_LEARNINGS.md"
+	],
+	"selectedBundles": [
+		".agent-operating-model/bundles/github/",
+		".agent-operating-model/bundles/researchops-developer-control/",
+		".agent-operating-model/bundles/multi-functional-team/",
+		".agent-operating-model/bundles/govuk-design-system/",
+		".agent-operating-model/bundles/cloudflare/",
+		".agent-operating-model/bundles/airtable-public-api/"
+	],
+	"roleConsultation": {
+		"researchOperations": "Capture real first and family names because recruitment, consent, withdrawal, scheduling and safeguarding need operational identity. Keep participant reference as the default display label.",
+		"userResearch": "Real names are justified fieldwork operations data. Default lists must remain pseudonymised.",
+		"privacy": "Names are personal data. Store them behind the existing sensitive-details boundary and do not expose them in default list responses.",
+		"security": "Keep real names behind the existing participant.pii.reveal route and audit reveal attempts.",
+		"interactionDesignAndContentDesign": "Use separate GOV.UK first name and family name fields. Explain why names are collected and that participant references remain the default list label."
+	},
+	"filesChanged": [
+		"src/govuk/templates/pages/project-dashboard-participants.njk",
+		"scripts/govuk/render-govuk-pages.mjs",
+		"public/pages/project-dashboard/participants/index.html",
+		"public/pages/project-dashboard/participants/participants-project.js",
+		"public/js/project-participant-context.js",
+		"public/js/project-dashboard-context.js",
+		"infra/cloudflare/src/service/participants.js",
+		"tests/participant-pseudonymised-view-route-state.test.js",
+		"docs/agent-audit/reasoning/2026/06/01/participant-real-name-capture.md",
+		"docs/agent-audit/reasoning/2026/06/01/participant-real-name-capture.json"
+	],
+	"scopeControls": [
+		"D1 remains canonical for participant create, list and reveal behaviour.",
+		"Airtable remains secondary and is not introduced as a runtime dependency.",
+		"Default participant list responses remain pseudonymised.",
+		"First name, family name and full name are returned only from the permission-gated reveal route.",
+		"No new D1 table is introduced in this branch."
+	],
+	"validationExpected": [
+		"npm run validate",
+		"npm run lint",
+		"npm test -- --ci"
+	],
+	"residualRisks": [
+		"The study participants page still contains older inline add-participant behaviour.",
+		"A later branch may split names into a dedicated private participant table if retention or field-level audit requirements increase."
+	]
+}
