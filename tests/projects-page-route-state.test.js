@@ -20,6 +20,10 @@ function excludes(source, text, label) {
 	assert.equal(source.includes(text), false, `Expected ${label} not to include: ${text}`);
 }
 
+function matches(source, pattern, label) {
+	assert.match(source, pattern, `Expected ${label} to match: ${pattern}`);
+}
+
 includes(packageJson.scripts.build, "npm run build:projects", "package build script");
 includes(packageJson.scripts["build:projects"], "src/styles/projects.scss public/css/projects.css", "package build scripts");
 
@@ -48,8 +52,8 @@ for (const source of [projectsTemplate, pageSource]) {
 	excludes(source, "class=\"tag\"", "Projects summary-card source");
 }
 
-includes(pageSource, "id=\"list\" class=\"projects-list\"", "Projects page");
-includes(pageSource, "class=\"projects-page-actions\" hidden", "Projects page");
+matches(pageSource, /id="list"[\s\S]*?class="projects-list"/, "Projects page list container");
+matches(pageSource, /class="projects-page-actions"[\s\S]*?hidden/, "Projects page actions");
 includes(pageSource, "projects-govuk-summary-card-20260524", "Projects page");
 includes(pageSource, "class=\"govuk-notification-banner govuk-notification-banner--error projects-error-state\"", "Projects page");
 includes(pageSource, "class=\"govuk-inset-text projects-empty-state\"", "Projects page");
