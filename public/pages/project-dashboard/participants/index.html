@@ -52,10 +52,34 @@
 					<p id="project-eyebrow" class="govuk-caption-l">Project</p>
 					<h1 class="govuk-heading-l">Add participant</h1>
 					<p class="govuk-body-l">
-						Add participants through a study-specific workflow so recruitment, consent, withdrawal and sessions remain
-						traceable.
+						Add a participant to a study so the team can manage recruitment, consent, withdrawal and sessions.
 					</p>
 				</div>
+
+				<div class="govuk-inset-text">
+					<h2 class="govuk-heading-m">How participant details are used</h2>
+					<p class="govuk-body">
+						This prototype models how production ResearchOps will capture sensitive participant details. Real names and
+						contact details are used for recruitment, consent and withdrawal operations.
+					</p>
+					<p class="govuk-body">
+						Participant lists continue to show the participant reference by default. Real names, contact details and
+						support needs are restricted to authorised project roles.
+					</p>
+				</div>
+
+				<details class="govuk-details">
+					<summary class="govuk-details__summary">
+						<span class="govuk-details__summary-text">What happens next</span>
+					</summary>
+					<div class="govuk-details__text">
+						<p class="govuk-body">ResearchOps creates a participant record and links it to the selected study.</p>
+						<p class="govuk-body">
+							This does not send an email, create a consent request or schedule a session. Those actions happen
+							separately from the study participants area.
+						</p>
+					</div>
+				</details>
 
 				<div
 					class="govuk-error-summary"
@@ -80,6 +104,8 @@
 				<form id="add-participant-form" novalidate>
 					<input id="project-id" name="project_id" type="hidden" value="" />
 
+					<h2 class="govuk-heading-m">Study</h2>
+
 					<div class="govuk-form-group">
 						<label class="govuk-label" for="study-select">Study</label>
 
@@ -95,6 +121,8 @@
 							<option value="">Choose a study</option>
 						</select>
 					</div>
+
+					<h2 class="govuk-heading-m">Participant identity</h2>
 
 					<div class="govuk-form-group">
 						<label class="govuk-label" for="participant-first-name">First name</label>
@@ -118,10 +146,7 @@
 					<div class="govuk-form-group">
 						<label class="govuk-label" for="participant-family-name">Family name</label>
 
-						<div id="participant-family-name-hint" class="govuk-hint">
-							Enter the participant’s real family name. The participant list will continue to show a participant
-							reference by default.
-						</div>
+						<div id="participant-family-name-hint" class="govuk-hint">Enter the participant’s real family name.</div>
 
 						<input
 							class="govuk-input govuk-!-width-two-thirds"
@@ -135,10 +160,11 @@
 					</div>
 
 					<div class="govuk-form-group">
-						<label class="govuk-label" for="participant-ref">Participant reference</label>
+						<label class="govuk-label" for="participant-ref">Participant reference (optional)</label>
 
 						<div id="participant-ref-hint" class="govuk-hint">
-							Use a study reference such as TP1 Participant 11. Leave blank to let ResearchOps create one.
+							This is the label shown by default in participant lists. Do not use a real name here. Leave blank to let
+							ResearchOps create one.
 						</div>
 
 						<input
@@ -151,8 +177,10 @@
 						/>
 					</div>
 
+					<h2 class="govuk-heading-m">Contact details</h2>
+
 					<div class="govuk-form-group">
-						<label class="govuk-label" for="participant-email">Email address</label>
+						<label class="govuk-label" for="participant-email">Email address (optional)</label>
 
 						<input
 							class="govuk-input govuk-!-width-two-thirds"
@@ -164,7 +192,7 @@
 					</div>
 
 					<div class="govuk-form-group">
-						<label class="govuk-label" for="participant-phone">Phone number</label>
+						<label class="govuk-label" for="participant-phone">Phone number (optional)</label>
 
 						<input
 							class="govuk-input govuk-!-width-two-thirds"
@@ -176,7 +204,7 @@
 					</div>
 
 					<div class="govuk-form-group">
-						<label class="govuk-label" for="participant-channel">Preferred contact channel</label>
+						<label class="govuk-label" for="participant-channel">Preferred contact method</label>
 
 						<select class="govuk-select" id="participant-channel" name="channel_pref">
 							<option value="email" selected>Email</option>
@@ -187,11 +215,14 @@
 						</select>
 					</div>
 
+					<h2 class="govuk-heading-m">Access or support needs</h2>
+
 					<div class="govuk-form-group">
-						<label class="govuk-label" for="participant-access-needs">Access needs</label>
+						<label class="govuk-label" for="participant-access-needs">Access or support needs (optional)</label>
 
 						<div id="participant-access-needs-hint" class="govuk-hint">
-							Only record support needs needed to run the research safely and accessibly.
+							Only include adjustments or support needs needed to plan and run the session. Do not record medical
+							history or unnecessary personal details.
 						</div>
 
 						<textarea
@@ -216,7 +247,7 @@
 							data-module="govuk-button"
 							id="cancel-participant"
 						>
-							Cancel
+							Cancel and return to project dashboard
 						</a>
 					</div>
 

@@ -91,7 +91,7 @@ includes(headerPartial, "data-nav=\"Home\"", "shared header partial");
 includes(headerPartial, "data-nav=\"Start Research Project\"", "shared header partial");
 includes(headerPartial, "data-nav=\"Projects\"", "shared header partial");
 includes(headerPartial, "class=\"govuk-phase-banner govuk-width-container\"", "shared header partial");
-includes(headerPartial, "Do not enter real participant personal data", "shared header partial");
+includes(headerPartial, "Do not enter real participant data in this prototype", "shared header partial");
 includes(headerPartial, "ensurePageChromeStylesheet", "shared header partial");
 includes(headerPartial, "ensureMainContentTarget", "shared header partial");
 includes(headerPartial, "initServiceNavigation", "shared header partial");

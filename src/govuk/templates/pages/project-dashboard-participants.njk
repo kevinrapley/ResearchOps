@@ -1,6 +1,7 @@
 {% extends "layouts/researchops.njk" %}
 {% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
 {% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/details/macro.njk" import govukDetails %}
 {% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
 {% from "govuk/components/input/macro.njk" import govukInput %}
 {% from "govuk/components/inset-text/macro.njk" import govukInsetText %}
@@ -50,8 +51,17 @@
 	<div class="dashboard-hero">
 		<p id="project-eyebrow" class="govuk-caption-l">Project</p>
 		<h1 class="govuk-heading-l">Add participant</h1>
-		<p class="govuk-body-l">Add participants through a study-specific workflow so recruitment, consent, withdrawal and sessions remain traceable.</p>
+		<p class="govuk-body-l">Add a participant to a study so the team can manage recruitment, consent, withdrawal and sessions.</p>
 	</div>
+
+	{{ govukInsetText({
+		html: '<h2 class="govuk-heading-m">How participant details are used</h2><p class="govuk-body">This prototype models how production ResearchOps will capture sensitive participant details. Real names and contact details are used for recruitment, consent and withdrawal operations.</p><p class="govuk-body">Participant lists continue to show the participant reference by default. Real names, contact details and support needs are restricted to authorised project roles.</p>'
+	}) }}
+
+	{{ govukDetails({
+		summaryText: "What happens next",
+		html: '<p class="govuk-body">ResearchOps creates a participant record and links it to the selected study.</p><p class="govuk-body">This does not send an email, create a consent request or schedule a session. Those actions happen separately from the study participants area.</p>'
+	}) }}
 
 	{{ govukErrorSummary({
 		attributes: {
@@ -73,6 +83,7 @@
 	<form id="add-participant-form" novalidate>
 		<input id="project-id" name="project_id" type="hidden" value="">
 
+		<h2 class="govuk-heading-m">Study</h2>
 		{{ govukSelect({
 			id: "study-select",
 			name: "study_id",
@@ -94,6 +105,7 @@
 			}
 		}) }}
 
+		<h2 class="govuk-heading-m">Participant identity</h2>
 		{{ govukInput({
 			id: "participant-first-name",
 			name: "first_name",
@@ -118,7 +130,7 @@
 				text: "Family name"
 			},
 			hint: {
-				text: "Enter the participant’s real family name. The participant list will continue to show a participant reference by default."
+				text: "Enter the participant’s real family name."
 			},
 			autocomplete: "family-name",
 			attributes: {
@@ -131,21 +143,22 @@
 			name: "participant_ref",
 			classes: "govuk-!-width-two-thirds",
 			label: {
-				text: "Participant reference"
+				text: "Participant reference (optional)"
 			},
 			hint: {
-				text: "Use a study reference such as TP1 Participant 11. Leave blank to let ResearchOps create one."
+				text: "This is the label shown by default in participant lists. Do not use a real name here. Leave blank to let ResearchOps create one."
 			},
 			autocomplete: "off"
 		}) }}
 
+		<h2 class="govuk-heading-m">Contact details</h2>
 		{{ govukInput({
 			id: "participant-email",
 			name: "email",
 			type: "email",
 			classes: "govuk-!-width-two-thirds",
 			label: {
-				text: "Email address"
+				text: "Email address (optional)"
 			},
 			autocomplete: "email"
 		}) }}
@@ -156,7 +169,7 @@
 			type: "tel",
 			classes: "govuk-!-width-two-thirds",
 			label: {
-				text: "Phone number"
+				text: "Phone number (optional)"
 			},
 			autocomplete: "tel"
 		}) }}
@@ -165,7 +178,7 @@
 			id: "participant-channel",
 			name: "channel_pref",
 			label: {
-				text: "Preferred contact channel"
+				text: "Preferred contact method"
 			},
 			items: [
 				{
@@ -184,6 +197,7 @@
 			]
 		}) }}
 
+		<h2 class="govuk-heading-m">Access or support needs</h2>
 		{{ govukTextarea({
 			id: "participant-access-needs",
 			name: "access_needs",
@@ -194,10 +208,10 @@
 				classes: ""
 			},
 			label: {
-				text: "Access needs"
+				text: "Access or support needs (optional)"
 			},
 			hint: {
-				text: "Only record support needs needed to run the research safely and accessibly."
+				text: "Only include adjustments or support needs needed to plan and run the session. Do not record medical history or unnecessary personal details."
 			}
 		}) }}
 
@@ -210,7 +224,7 @@
 				}
 			}) }}
 			{{ govukButton({
-				text: "Cancel",
+				text: "Cancel and return to project dashboard",
 				href: "/pages/projects/",
 				classes: "govuk-button--secondary",
 				attributes: {

@@ -1,0 +1,34 @@
+{
+	"date": "2026-06-01",
+	"traceType": "operational-audit-trace",
+	"branch": "fix/participant-page-guidance-and-grouping",
+	"base": "merged PR #326",
+	"task": "Improve the project dashboard participant creation page after team critique.",
+	"scopeControls": [
+		"No participant D1 data model changes.",
+		"No new participant API routes.",
+		"No change to pseudonymised-by-default participant lists."
+	],
+	"teamConsultation": {
+		"researchOperations": "Explain what happens after a participant record is created.",
+		"userResearch": "Use operational workflow language connected to recruitment, consent, withdrawal and sessions.",
+		"privacy": "Explain why real names and contact details are captured and how participant references remain the default display label.",
+		"security": "Make the authorised-role boundary visible for names, contact details and support needs.",
+		"interactionDesign": "Group the form into Study, Participant identity, Contact details, and Access or support needs.",
+		"contentDesign": "Use clearer optional-field wording and change Preferred contact channel to Preferred contact method.",
+		"accessibility": "Keep GOV.UK macros and add structured explanatory content with GOV.UK Details and Inset Text."
+	},
+	"filesChanged": [
+		"public/partials/header.html",
+		"src/govuk/templates/pages/project-dashboard-participants.njk",
+		"tests/govuk-page-chrome-navigation-route-state.test.js",
+		"tests/participant-pseudonymised-view-route-state.test.js",
+		"docs/agent-audit/reasoning/2026/06/01/participant-page-guidance-and-grouping.md",
+		"docs/agent-audit/reasoning/2026/06/01/participant-page-guidance-and-grouping.json"
+	],
+	"validationExpected": [
+		"npm run validate",
+		"npm run lint",
+		"npm test -- --ci"
+	]
+}
