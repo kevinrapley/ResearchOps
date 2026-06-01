@@ -34,9 +34,17 @@
 	grid-template-columns: 1fr;
 }
 
+.rops-two-column > * {
+	min-width: 0;
+}
+
 @media (min-width: 48.0625em) {
 	.rops-two-column {
 		grid-template-columns: 1fr 1fr;
+	}
+
+	.rops-planning-grid {
+		grid-template-columns: minmax(170px, 1fr) minmax(0, 1fr);
 	}
 }
 
