@@ -290,10 +290,12 @@ async function readD1ParticipantsForStudy(svc, origin, studyId, context) {
 			`)
 			.bind(studyId)
 			.all();
-
+		const participants = await Promise.all(
+			(result.results || []).map(async (row) => mapD1Participant(row, context, await canRevealParticipantForProject(svc, context, row.project_id))),
+		);
 		return {
 			ok: true,
-			participants: (result.results || []).map((row) => mapD1Participant(row, context)),
+			participants,
 		};
 	} catch {
 		return { ok: false, response: participantDataUnavailable(svc, origin) };
@@ -349,7 +351,7 @@ function publicRevealedParticipant(participant = {}) {
 	return safeParticipant;
 }
 
-function mapD1Participant(row, context) {
+function mapD1Participant(row, context, canRevealContact = false) {
 	const sessionParticipantId = cleanText(row.participant_airtable_id);
 	return {
 		id: row.id,
@@ -357,7 +359,7 @@ function mapD1Participant(row, context) {
 		display_name: row.participant_ref || row.id,
 		contact_restricted: true,
 		has_contact_details: null,
-		can_reveal_contact: canRevealParticipantContact(context),
+		can_reveal_contact: Boolean(canRevealContact),
 		can_schedule: Boolean(sessionParticipantId),
 		session_participant_id: sessionParticipantId,
 		channel_pref: row.channel_pref || "not recorded",
