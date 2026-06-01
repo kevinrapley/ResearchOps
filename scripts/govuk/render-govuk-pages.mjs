@@ -1,6 +1,7 @@
 import { mkdir, writeFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import nunjucks from 'nunjucks';
+import prettier from 'prettier';
 
 const root = resolve(process.cwd());
 const env = new nunjucks.Environment(
@@ -13,6 +14,8 @@ const env = new nunjucks.Environment(
 		throwOnUndefined: true,
 	},
 );
+
+const formattedHtmlOutputs = new Set(['public/pages/project-dashboard/participants/index.html']);
 
 function escapeHtmlAttribute(value) {
 	return String(value)
@@ -34,6 +37,18 @@ function govukAttributes(attributes = {}) {
 		.join('');
 
 	return new nunjucks.runtime.SafeString(html);
+}
+
+async function formatRenderedHtml(html, output) {
+	if (!formattedHtmlOutputs.has(output)) return html;
+
+	return prettier.format(html, {
+		parser: 'html',
+		printWidth: 120,
+		useTabs: true,
+		tabWidth: 2,
+		htmlWhitespaceSensitivity: 'ignore',
+	});
 }
 
 env.addFilter('govukAttributes', govukAttributes);
@@ -224,8 +239,9 @@ const pages = [
 
 for (const page of pages) {
 	const outputPath = resolve(root, page.output);
-	const html = env.render(page.template, page.context);
+	const rawHtml = env.render(page.template, page.context);
+	const html = await formatRenderedHtml(rawHtml, page.output);
 	await mkdir(dirname(outputPath), { recursive: true });
-	await writeFile(outputPath, html + '\n', 'utf8');
+	await writeFile(outputPath, html.endsWith('\n') ? html : `${html}\n`, 'utf8');
 	console.log('Rendered ' + page.output);
 }
