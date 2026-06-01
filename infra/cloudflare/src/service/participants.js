@@ -314,12 +314,10 @@ export async function createParticipant(svc, request, origin) {
 	const accessNeeds = cleanText(body.access_needs || body.accessNeeds);
 	const firstName = cleanText(body.first_name || body.firstName);
 	const familyName = cleanText(body.family_name || body.familyName || body.last_name || body.lastName);
-	const fullName = cleanText([firstName, familyName].filter(Boolean).join(" "));
+	const fullName = cleanText(body.full_name || body.fullName || [firstName, familyName].filter(Boolean).join(" "));
 
 	if (!studyId) return svc.json({ ok: false, error: "study_required", message: "Choose a study for this participant." }, 400, svc.corsHeaders(origin));
 	if (!projectId) return svc.json({ ok: false, error: "project_required", message: "Choose a project for this participant." }, 400, svc.corsHeaders(origin));
-	if (!firstName) return svc.json({ ok: false, error: "first_name_required", message: "Enter the participant’s first name." }, 400, svc.corsHeaders(origin));
-	if (!familyName) return svc.json({ ok: false, error: "family_name_required", message: "Enter the participant’s family name." }, 400, svc.corsHeaders(origin));
 
 	const db = dbFor(svc.env);
 	if (!db) return participantDataUnavailable(svc, origin);
