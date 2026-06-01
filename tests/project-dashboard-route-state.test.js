@@ -41,6 +41,10 @@ includes(templateSource, "project-dashboard-participants-list.js?v=participant-l
 includes(templateSource, "text: \"Dashboard\"", "project dashboard template");
 includes(templateSource, "id: \"breadcrumb-project\"", "project dashboard template");
 includes(templateSource, "href: \"/pages/project-dashboard/?id=\"", "project dashboard template");
+includes(templateSource, "rops-planning-grid", "project dashboard template");
+includes(templateSource, "id=\"add-stakeholder-toggle\"", "project dashboard template");
+includes(templateSource, "aria-controls\": \"add-stakeholder-panel\"", "project dashboard template");
+excludes(templateSource, "rops-summary-card-button", "project dashboard template");
 excludes(templateSource, "id=\"mural-open\"", "project dashboard template");
 excludes(templateSource, "Service stage not recorded", "project dashboard template");
 excludes(templateSource, "Project stage not recorded", "project dashboard template");
@@ -109,6 +113,8 @@ includes(participantListSource, "data-participants-page=\"previous\"", "particip
 includes(participantListSource, "data-participants-page=\"next\"", "participant list controller");
 includes(participantListSource, "function applyStudyTitleFit", "participant list controller");
 includes(participantListSource, "element.textContent = fitted ? `${prefix}${fitted}…` : `${prefix}…`;", "participant list controller");
+includes(participantListSource, "if (!participant.can_reveal_contact) return \"\";", "participant list controller");
+excludes(participantListSource, "Contact details restricted", "participant list controller");
 
 includes(muralIntegrationSource, "Project Dashboard ↔ Mural wiring with GOV.UK Frontend dashboard state", "Mural integration component");
 includes(muralIntegrationSource, "location.hostname.endsWith(\"pages.dev\")", "Mural integration component");
@@ -155,6 +161,8 @@ excludes(muralStateSource, "syncDashboardPresentation", "Project Dashboard Mural
 includes(dashboardSassSource, ".rops-dashboard-header", "project dashboard Sass source");
 includes(dashboardSassSource, ".rops-study-list", "project dashboard Sass source");
 includes(dashboardSassSource, ".dashboard-action-panel", "project dashboard Sass source");
+includes(dashboardSassSource, ".rops-planning-grid", "project dashboard Sass source");
+includes(dashboardSassSource, "minmax(170px, 1fr) minmax(0, 1fr);", "project dashboard Sass source");
 includes(dashboardSassSource, ".rops-participant-list-controls", "project dashboard Sass source");
 includes(dashboardSassSource, ".rops-study-title-truncated", "project dashboard Sass source");
 includes(dashboardSassSource, "text-overflow: ellipsis;", "project dashboard Sass source");
@@ -162,6 +170,8 @@ includes(dashboardSassSource, "/* transparency begins in the cascade */", "proje
 includes(dashboardCssSource, ".rops-dashboard-header", "project dashboard stylesheet");
 includes(dashboardCssSource, ".rops-study-list", "project dashboard stylesheet");
 includes(dashboardCssSource, ".dashboard-action-panel", "project dashboard stylesheet");
+includes(dashboardCssSource, ".rops-planning-grid", "project dashboard stylesheet");
+includes(dashboardCssSource, "minmax(170px, 1fr) minmax(0, 1fr);", "project dashboard stylesheet");
 includes(dashboardCssSource, ".rops-participant-list-controls", "project dashboard stylesheet");
 includes(dashboardCssSource, ".rops-study-title-truncated", "project dashboard stylesheet");
 includes(dashboardCssSource, "text-overflow: ellipsis;", "project dashboard stylesheet");
