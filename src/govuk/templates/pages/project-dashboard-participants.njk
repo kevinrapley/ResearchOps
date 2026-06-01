@@ -20,10 +20,21 @@
 <div class="govuk-width-container">
 	{{ govukBreadcrumbs({
 		id: "participant-breadcrumbs",
+		attributes: {
+			typeof: "schema:BreadcrumbList"
+		}
 		items: [
+			attributes: {
+				property: "schema:itemListElement",
+				typeof: "schema:ListItem"
+			},
 			{
 				text: "Projects",
-				href: "/pages/projects/"
+				href: "/pages/projects/",
+				attributes: {
+					property: "schema:item",
+					typeof: "schema:Thing"
+				}
 			},
 			{
 				text: "Project Dashboard",
@@ -182,7 +193,8 @@
 			},
 			hint: {
 				text: "Only record support needs needed to run the research safely and accessibly."
-			}
+			},
+			attributes: {}
 		}) }}
 
 		<div class="govuk-button-group">
