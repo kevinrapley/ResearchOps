@@ -1,0 +1,35 @@
+{
+	"date": "2026-06-01",
+	"traceType": "operational-audit-trace",
+	"branch": "hotfix/d1-participant-migration-compatibility",
+	"relatedWork": "D1 participant seed workflow compatibility",
+	"traceRequired": true,
+	"problem": "Post-merge tests and release checks failed after PR #323. The remote D1 environment may already contain an earlier rops_participants_cache table shape, and CREATE TABLE IF NOT EXISTS does not add missing columns.",
+	"implementationSummary": {
+		"createsBaseParticipantTableWhenAbsent": true,
+		"checksParticipantTableColumns": true,
+		"addsParticipantAirtableIdWhenMissing": true,
+		"addsAccessNeedsWhenMissing": true,
+		"addsSensitiveContactJsonWhenMissing": true,
+		"replaysExistingSeed": true,
+		"keepsPostApplyChecks": true,
+		"addsTodayTraceForCoverage": true
+	},
+	"filesChanged": [
+		".github/workflows/apply-d1-test-project-1-participants.yml",
+		"tests/test-project-1-participants-seed-route-state.test.js",
+		"docs/agent-audit/reasoning/2026/06/01/d1-participant-migration-compatibility.md",
+		"docs/agent-audit/reasoning/2026/06/01/d1-participant-migration-compatibility.json"
+	],
+	"scopeControls": {
+		"participantRuntimeCodeChanged": false,
+		"seededParticipantDataChanged": false,
+		"sessionsMigratedToD1": false,
+		"workflowCompatibilityOnly": true
+	},
+	"validationExpected": [
+		"npm run validate",
+		"npm run lint",
+		"npm test -- --ci"
+	]
+}
