@@ -176,6 +176,16 @@ const pages = [
 		},
 	},
 	{
+		template: 'pages/project-dashboard-participants.njk',
+		output: 'public/pages/project-dashboard/participants/index.html',
+		context: {
+			pageTitle: 'Add participant - ResearchOps Demo Suite',
+			serviceName: 'ResearchOps Demo Suite',
+			activeNavigation: 'Projects',
+			navigation: projectNavigation,
+		},
+	},
+	{
 		template: 'pages/projects-journals.njk',
 		output: 'public/pages/projects/journals/index.html',
 		context: {
@@ -191,6 +201,6 @@ for (const page of pages) {
 	const outputPath = resolve(root, page.output);
 	const html = env.render(page.template, page.context);
 	await mkdir(dirname(outputPath), { recursive: true });
-	await writeFile(outputPath, `${html}\n`, 'utf8');
-	console.log(`Rendered ${page.output}`);
+	await writeFile(outputPath, html + '\n', 'utf8');
+	console.log('Rendered ' + page.output);
 }
