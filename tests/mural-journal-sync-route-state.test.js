@@ -11,11 +11,26 @@ const pageSource = fs.readFileSync("public/pages/projects/journals/index.html", 
 const compactCss = fs.readFileSync("public/css/journal-mural-sync.css", "utf8");
 
 function includes(source, text, label) {
-  assert.equal(source.includes(text), true, `Expected ${label} to include: ${text}`);
+	assert.equal(source.includes(text), true, `Expected ${label} to include: ${text}`);
 }
 
 function excludes(source, text, label) {
-  assert.equal(source.includes(text), false, `Expected ${label} not to include: ${text}`);
+	assert.equal(source.includes(text), false, `Expected ${label} not to include: ${text}`);
+}
+
+function hasElementAttributes(source, elementName, expectedAttributes) {
+	const elementPattern = new RegExp(`<${elementName}\\b[^>]*>`, "g");
+	const elements = source.match(elementPattern) || [];
+
+	return elements.some((element) => expectedAttributes.every((attribute) => element.includes(attribute)));
+}
+
+function includesElementAttributes(source, elementName, expectedAttributes, label) {
+	assert.equal(
+		hasElementAttributes(source, elementName, expectedAttributes),
+		true,
+		`Expected ${label} to include <${elementName}> with attributes: ${expectedAttributes.join(", ")}`,
+	);
 }
 
 includes(serviceSource, "export async function muralJournalSync", "service");
@@ -82,9 +97,9 @@ includes(indexSource, "this.mural.muralJournalSync =", "service index");
 includes(pageSource, "class=\"journal-entries-header\"", "page");
 includes(pageSource, "class=\"mural-sync-status\"", "page");
 includes(pageSource, "aria-live=\"polite\"", "page");
-includes(pageSource, "id=\"mural-sync-pending-btn\" hidden disabled", "page");
+includesElementAttributes(pageSource, "button", ["id=\"mural-sync-pending-btn\"", "hidden", "disabled"], "page");
 includes(pageSource, "Add pending entries to Mural", "page");
-includes(pageSource, "id=\"mural-sync-panel\" hidden aria-hidden=\"true\"", "page");
+includesElementAttributes(pageSource, "div", ["id=\"mural-sync-panel\"", "hidden", "aria-hidden=\"true\""], "page");
 includes(pageSource, "journal-mural-sync-compact.js", "page");
 includes(pageSource, "journal-mural-sync.css", "page");
 
