@@ -129,11 +129,18 @@ includes(scheduler, 'Sensitive', 'participant scheduler');
 includes(scheduler, 'Handle this information as sensitive.', 'participant scheduler');
 
 includes(projectParticipantSource, 'from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs', 'project participant source');
+includes(projectParticipantSource, 'from "govuk/components/details/macro.njk" import govukDetails', 'project participant source');
 includes(projectParticipantSource, 'from "govuk/components/error-summary/macro.njk" import govukErrorSummary', 'project participant source');
 includes(projectParticipantSource, 'from "govuk/components/input/macro.njk" import govukInput', 'project participant source');
 includes(projectParticipantSource, 'from "govuk/components/select/macro.njk" import govukSelect', 'project participant source');
 includes(projectParticipantSource, 'from "govuk/components/textarea/macro.njk" import govukTextarea', 'project participant source');
 includes(projectParticipantSource, 'from "govuk/components/inset-text/macro.njk" import govukInsetText', 'project participant source');
+includes(projectParticipantSource, 'How participant details are used', 'project participant source');
+includes(projectParticipantSource, 'What happens next', 'project participant source');
+includes(projectParticipantSource, 'Participant reference (optional)', 'project participant source');
+includes(projectParticipantSource, 'Preferred contact method', 'project participant source');
+includes(projectParticipantSource, 'Access or support needs (optional)', 'project participant source');
+includes(projectParticipantSource, 'Do not record medical history or unnecessary personal details.', 'project participant source');
 includes(projectParticipantSource, 'typeof: "schema:BreadcrumbList"', 'project participant breadcrumb source');
 
 includes(projectParticipantPage, 'id="participant-first-name"', 'project participant page');
