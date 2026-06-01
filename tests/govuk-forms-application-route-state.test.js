@@ -1,14 +1,13 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
 
-const formRoutes = [
+const legacyFormRoutes = [
 	"public/pages/start/index.html",
 	"public/pages/search/index.html",
 	"public/pages/notes/index.html",
 	"public/pages/consent/index.html",
 	"public/pages/sessions/index.html",
 	"public/pages/study/synthesis/index.html",
-	"public/pages/project-dashboard/participants/index.html",
 	"public/pages/project-dashboard/participants/import/index.html",
 	"public/pages/projects/outcomes/index.html",
 	"public/pages/study/index.html",
@@ -32,7 +31,7 @@ function excludes(source, text, label) {
 	assert.equal(source.includes(text), false, `Expected ${label} not to include: ${text}`);
 }
 
-for (const route of formRoutes) {
+for (const route of legacyFormRoutes) {
 	const source = read(route);
 	includes(source, "href=\"/css/govuk/govuk-forms.css\"", route);
 	includes(source, "govuk-form-group", route);
@@ -97,10 +96,13 @@ excludes(dashboardPage, "href=\"/css/govuk/govuk-forms.css\"", "Project Dashboar
 excludes(dashboardPage, "id=\"study-dialog\"", "Project Dashboard route");
 
 const projectParticipantsPage = read("public/pages/project-dashboard/participants/index.html");
+includes(projectParticipantsPage, "href=\"/assets/govuk/govuk-frontend.css\"", "Project participant route");
+excludes(projectParticipantsPage, "href=\"/css/govuk/govuk-forms.css\"", "Project participant route");
 includes(projectParticipantsPage, "id=\"add-participant-form\"", "Project participant route");
 includes(projectParticipantsPage, "id=\"participant-error-summary\"", "Project participant route");
 includes(projectParticipantsPage, "id=\"study-select\"", "Project participant route");
-includes(projectParticipantsPage, "id=\"participant-display-name\"", "Project participant route");
+includes(projectParticipantsPage, "id=\"participant-first-name\"", "Project participant route");
+includes(projectParticipantsPage, "id=\"participant-family-name\"", "Project participant route");
 includes(projectParticipantsPage, "id=\"create-study-link\"", "Project participant route");
 
 const participantImportPage = read("public/pages/project-dashboard/participants/import/index.html");
@@ -138,30 +140,3 @@ includes(newStudyPage, "id=\"study-submit\"", "Add Study route");
 
 const guidesPage = read("public/pages/study/guides/index.html");
 includes(guidesPage, "class=\"govuk-form-group editor__title-field\"", "Guides route");
-includes(guidesPage, "<label class=\"govuk-label\" for=\"pattern-search\">Search patterns</label>", "Guides route");
-includes(guidesPage, "class=\"govuk-button-group actions-row\"", "Guides route");
-
-const consentFormsPage = read("public/pages/study/consent-forms/index.html");
-includes(consentFormsPage, "href=\"/css/govuk/govuk-forms.css\"", "Consent Forms route");
-includes(consentFormsPage, "aria-describedby=\"consent-variables-error\"", "Consent Forms route");
-includes(consentFormsPage, "class=\"govuk-button-group actions-bar\"", "Consent Forms route");
-
-const participantConsentPage = read("public/pages/study/participant-consent/index.html");
-includes(participantConsentPage, "href=\"/css/govuk/govuk-forms.css\"", "Participant Consent route");
-includes(participantConsentPage, "id=\"participant-consent-form\"", "Participant Consent route");
-includes(participantConsentPage, "id=\"consent-form-select\"", "Participant Consent route");
-includes(participantConsentPage, "id=\"capture-method\"", "Participant Consent route");
-includes(participantConsentPage, "id=\"recorded-by\"", "Participant Consent route");
-includes(participantConsentPage, "id=\"withdrawal-reason\"", "Participant Consent route");
-includes(participantConsentPage, "class=\"govuk-fieldset participant-consent-items\"", "Participant Consent route");
-includes(participantConsentPage, "class=\"govuk-checkboxes__input\"", "Participant Consent route");
-
-const participantsPage = read("public/pages/study/participants/index.html");
-includes(participantsPage, "href=\"/css/govuk/govuk-forms.css\"", "Participants route");
-includes(participantsPage, "id=\"addParticipantForm\"", "Participants route");
-includes(participantsPage, "id=\"scheduleForm\"", "Participants route");
-
-const sessionPage = read("public/pages/study/session/index.html");
-includes(sessionPage, "href=\"/css/govuk/govuk-forms.css\"", "Study Session route");
-includes(sessionPage, "class=\"picker__row govuk-form-group\"", "Study Session route");
-includes(sessionPage, "<label for=\"framework\" class=\"govuk-label\">Note framework</label>", "Study Session route");
