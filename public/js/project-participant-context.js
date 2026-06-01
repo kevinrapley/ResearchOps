@@ -1,4 +1,4 @@
-const projectId = new URLSearchParams(location.search).get("pid") || new URLSearchParams(location.search).get("id") || "";
+const projectId = new URLSearchParams(location.search).get("id") || new URLSearchParams(location.search).get("pid") || "";
 
 function applyProjectId() {
 	const main = document.querySelector("main");
@@ -21,12 +21,12 @@ function patchParticipantRequests() {
 		if (method === "POST" && url.includes("/api/participants") && body) {
 			try {
 				const payload = JSON.parse(body);
-				if (!payload.project_airtable_id) {
+				if (!payload.project_id && !payload.project_airtable_id) {
 					return nativeFetch(input, {
 						...init,
 						body: JSON.stringify({
 							...payload,
-							project_airtable_id: projectId
+							project_id: projectId
 						})
 					});
 				}
