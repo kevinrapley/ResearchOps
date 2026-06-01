@@ -4,6 +4,7 @@ import fs from "node:fs";
 const pageSource = fs.readFileSync("public/pages/project-dashboard/index.html", "utf8");
 const templateSource = fs.readFileSync("src/govuk/templates/pages/project-dashboard.njk", "utf8");
 const controllerSource = fs.readFileSync("public/js/project-dashboard.js", "utf8");
+const dashboardContextSource = fs.readFileSync("public/js/project-dashboard-context.js", "utf8");
 const participantListSource = fs.readFileSync("public/js/project-dashboard-participants-list.js", "utf8");
 const muralIntegrationSource = fs.readFileSync("public/components/mural-integration.js", "utf8");
 const muralStateSource = fs.readFileSync("public/components/project-dashboard-mural-state.js", "utf8");
@@ -37,6 +38,9 @@ includes(templateSource, "Loading service stage", "project dashboard template");
 includes(templateSource, "Loading project stage", "project dashboard template");
 includes(templateSource, "Mural optional", "project dashboard template");
 includes(templateSource, "project-dashboard-participants-list.js?v=participant-list-controls-20260601", "project dashboard template");
+includes(templateSource, "text: \"Dashboard\"", "project dashboard template");
+includes(templateSource, "id: \"breadcrumb-project\"", "project dashboard template");
+includes(templateSource, "href: \"/pages/project-dashboard/?id=\"", "project dashboard template");
 excludes(templateSource, "id=\"mural-open\"", "project dashboard template");
 excludes(templateSource, "Service stage not recorded", "project dashboard template");
 excludes(templateSource, "Project stage not recorded", "project dashboard template");
@@ -53,6 +57,9 @@ includes(pageSource, "<x-include src=\"/partials/footer.html\"", "project dashbo
 includes(pageSource, "class=\"govuk-summary-card\"", "project dashboard page");
 includes(pageSource, "class=\"govuk-summary-list\"", "project dashboard page");
 includes(pageSource, "id=\"project-title\"", "project dashboard page");
+includes(pageSource, "id=\"breadcrumb-project\"", "project dashboard page");
+includes(pageSource, "Project", "project dashboard page");
+includes(pageSource, "Dashboard", "project dashboard page");
 includes(pageSource, "id=\"mural-connect\"", "project dashboard page");
 includes(pageSource, "id=\"mural-setup\"", "project dashboard page");
 excludes(pageSource, "id=\"mural-open\"", "project dashboard page");
@@ -81,6 +88,10 @@ excludes(controllerSource, "Service stage not recorded", "project dashboard cont
 excludes(controllerSource, "Project stage not recorded", "project dashboard controller");
 excludes(controllerSource, "rops-api.digikev-kevin-rapley.workers.dev", "project dashboard controller");
 excludes(controllerSource, "alert(\"Could not load project.\");", "project dashboard controller");
+
+includes(dashboardContextSource, "[\"breadcrumb-project\", \"/pages/project-dashboard/\", \"id\"]", "project dashboard context controller");
+includes(dashboardContextSource, "projectScopedHref(path, queryKey, projectId, hash)", "project dashboard context controller");
+includes(dashboardContextSource, "link.setAttribute(\"href\", href)", "project dashboard context controller");
 
 includes(participantListSource, "const PARTICIPANT_PAGE_SIZE = 10", "participant list controller");
 includes(participantListSource, "participantJson(`/api/participants/contact?participant=", "participant list controller");
