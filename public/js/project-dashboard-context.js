@@ -18,8 +18,8 @@ function currentProjectId() {
 }
 
 function projectScopedHref(path, queryKey, projectId, hash = "") {
-	const query = `${queryKey}=${encodeURIComponent(projectId || "")}`;
-	return `${path}?${query}${hash ? `#${hash}` : ""}`;
+	const query = queryKey + "=" + encodeURIComponent(projectId || "");
+	return path + "?" + query + (hash ? "#" + hash : "");
 }
 
 function resolvedProjectId() {
@@ -47,14 +47,26 @@ function syncProjectContext() {
 	}
 }
 
+function observeProjectScopedLinks() {
+	const target = document.getElementById("planning") || document.querySelector("main") || document.body;
+	if (!target || typeof MutationObserver === "undefined") return;
+
+	const observer = new MutationObserver(() => syncProjectContext());
+	observer.observe(target, {
+		childList: true,
+		subtree: true
+	});
+}
+
 function initProjectDashboardContext() {
 	syncProjectContext();
+	observeProjectScopedLinks();
 
 	let attempts = 0;
 	const timer = window.setInterval(() => {
 		syncProjectContext();
 		attempts += 1;
-		if (attempts >= 50) window.clearInterval(timer);
+		if (attempts >= 300) window.clearInterval(timer);
 	}, 100);
 }
 
