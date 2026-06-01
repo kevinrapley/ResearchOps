@@ -1,156 +1,193 @@
 <!doctype html>
 <html class="govuk-template" lang="en">
-<head>
-	<meta charset="utf-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<title>ResearchOps Demo Suite</title>
-	<link rel="stylesheet" href="/assets/govuk/govuk-frontend.css" media="screen">
-	
-	<link rel="stylesheet" href="/assets/researchops/researchops-home.css?v=govuk-home-grid-20260524" media="screen">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>ResearchOps Demo Suite</title>
+		<link rel="stylesheet" href="/assets/govuk/govuk-frontend.css" media="screen" />
 
-	<script type="module" src="/components/layout.js" defer></script>
-	<script type="module" src="/js/govuk-frontend-init.js" defer></script>
-</head>
-<body class="govuk-template__body">
-	<script>document.body.className += ' js-enabled' + ('noModule' in HTMLScriptElement.prototype ? ' govuk-frontend-supported' : '');</script>
-	<x-include src="/partials/header.html" vars='{"active":"Home"}'></x-include>
-	<main class="govuk-main-wrapper" id="main-content" role="main" tabindex="-1">
-		
-<div class="govuk-width-container">
-	<div class="govuk-grid-row">
-		<div class="govuk-grid-column-two-thirds">
-			<h1 class="govuk-heading-xl" id="home-title">ResearchOps demo suite</h1>
-			<p class="govuk-body-l">Objective orientated applied user research done well.</p>
-			<p class="govuk-body">Use ResearchOps to structure applied user research with operations, governance and accessibility baked in.</p>
-		</div>
-	</div>
+		<link rel="stylesheet" href="/assets/researchops/researchops-home.css?v=govuk-home-grid-20260524" media="screen" />
 
-	<section class="researchops-highlight-panel govuk-!-margin-top-7 govuk-!-margin-bottom-7" aria-labelledby="start-guidance-title">
-		<div class="govuk-grid-row">
-			<div class="govuk-grid-column-two-thirds">
-				<h2 class="govuk-heading-l" id="start-guidance-title">Start by creating a research project</h2>
-				<p class="govuk-body">A project gives you somewhere to hold studies, participants, sessions, notes, evidence, insights and recommendations.</p>
-				<p class="govuk-body">Create the project first. Later parts of the service become useful once the research work has somewhere to live.</p>
-				
-<a href="/pages/start/overview/" role="button" draggable="false" class="govuk-button" data-module="govuk-button">
-  Start a research project
-</a>
+		<script type="module" src="/components/layout.js" defer></script>
+		<script type="module" src="/js/govuk-frontend-init.js" defer></script>
+	</head>
+	<body class="govuk-template__body">
+		<script>
+			document.body.className +=
+				" js-enabled" + ("noModule" in HTMLScriptElement.prototype ? " govuk-frontend-supported" : "");
+		</script>
+		<x-include src="/partials/header.html" vars='{"active":"Home"}'></x-include>
+		<main class="govuk-main-wrapper" id="main-content" role="main" tabindex="-1">
+			<div class="govuk-width-container">
+				<div class="govuk-grid-row">
+					<div class="govuk-grid-column-two-thirds">
+						<h1 class="govuk-heading-xl" id="home-title">ResearchOps demo suite</h1>
+						<p class="govuk-body-l">Objective orientated applied user research done well.</p>
+						<p class="govuk-body">
+							Use ResearchOps to structure applied user research with operations, governance and accessibility baked in.
+						</p>
+					</div>
+				</div>
 
+				<section
+					class="researchops-highlight-panel govuk-!-margin-top-7 govuk-!-margin-bottom-7"
+					aria-labelledby="start-guidance-title"
+				>
+					<div class="govuk-grid-row">
+						<div class="govuk-grid-column-two-thirds">
+							<h2 class="govuk-heading-l" id="start-guidance-title">Start by creating a research project</h2>
+							<p class="govuk-body">
+								A project gives you somewhere to hold studies, participants, sessions, notes, evidence, insights and
+								recommendations.
+							</p>
+							<p class="govuk-body">
+								Create the project first. Later parts of the service become useful once the research work has somewhere
+								to live.
+							</p>
+
+							<a
+								href="/pages/start/overview/"
+								role="button"
+								draggable="false"
+								class="govuk-button"
+								data-module="govuk-button"
+							>
+								Start a research project
+							</a>
+						</div>
+					</div>
+				</section>
+
+				<section class="researchops-journey-map govuk-!-margin-bottom-8" aria-labelledby="support-title">
+					<div class="govuk-grid-row">
+						<div class="govuk-grid-column-two-thirds">
+							<h2 class="govuk-heading-l" id="support-title">How ResearchOps supports a research project</h2>
+							<p class="govuk-body">
+								ResearchOps follows the shape of a user research project. Start by creating a project. Then add studies,
+								participants, sessions, notes, evidence, insights and recommendations as the work develops.
+							</p>
+							<p class="govuk-body">
+								This sequence is a mental model, not a set of first-visit shortcuts. It shows how the work becomes
+								connected over time.
+							</p>
+						</div>
+					</div>
+
+					<ol class="researchops-step-grid">
+						<li class="researchops-step-card">
+							<p class="researchops-step-card__tag">Step 1 of 8</p>
+							<h3 class="researchops-step-card__heading govuk-heading-s">Project</h3>
+							<p class="govuk-body-s govuk-!-margin-bottom-0">
+								Define the research work, service phase, team context and objectives.
+							</p>
+						</li>
+
+						<li class="researchops-step-card">
+							<p class="researchops-step-card__tag">Step 2 of 8</p>
+							<h3 class="researchops-step-card__heading govuk-heading-s">Study</h3>
+							<p class="govuk-body-s govuk-!-margin-bottom-0">Plan a specific round of research within the project.</p>
+						</li>
+
+						<li class="researchops-step-card">
+							<p class="researchops-step-card__tag">Step 3 of 8</p>
+							<h3 class="researchops-step-card__heading govuk-heading-s">Participants</h3>
+							<p class="govuk-body-s govuk-!-margin-bottom-0">Recruit and manage people taking part in the study.</p>
+						</li>
+
+						<li class="researchops-step-card">
+							<p class="researchops-step-card__tag">Step 4 of 8</p>
+							<h3 class="researchops-step-card__heading govuk-heading-s">Sessions</h3>
+							<p class="govuk-body-s govuk-!-margin-bottom-0">Schedule and run research sessions.</p>
+						</li>
+
+						<li class="researchops-step-card">
+							<p class="researchops-step-card__tag">Step 5 of 8</p>
+							<h3 class="researchops-step-card__heading govuk-heading-s">Notes</h3>
+							<p class="govuk-body-s govuk-!-margin-bottom-0">Capture observations and structured session notes.</p>
+						</li>
+
+						<li class="researchops-step-card">
+							<p class="researchops-step-card__tag">Step 6 of 8</p>
+							<h3 class="researchops-step-card__heading govuk-heading-s">Evidence</h3>
+							<p class="govuk-body-s govuk-!-margin-bottom-0">Organise what was seen, heard or recorded.</p>
+						</li>
+
+						<li class="researchops-step-card">
+							<p class="researchops-step-card__tag">Step 7 of 8</p>
+							<h3 class="researchops-step-card__heading govuk-heading-s">Insights</h3>
+							<p class="govuk-body-s govuk-!-margin-bottom-0">Analyse evidence into meaningful findings.</p>
+						</li>
+
+						<li class="researchops-step-card">
+							<p class="researchops-step-card__tag">Step 8 of 8</p>
+							<h3 class="researchops-step-card__heading govuk-heading-s">Recommendations</h3>
+							<p class="govuk-body-s govuk-!-margin-bottom-0">
+								Turn findings into decisions, actions and service improvements.
+							</p>
+						</li>
+					</ol>
+				</section>
+
+				<section aria-labelledby="after-title">
+					<div class="govuk-grid-row">
+						<div class="govuk-grid-column-two-thirds">
+							<h2 class="govuk-heading-l" id="after-title">What you can do after creating a project</h2>
+							<p class="govuk-body">
+								These parts of ResearchOps are shown as orientation. They make more sense after a project record has
+								been created.
+							</p>
+						</div>
+					</div>
+
+					<div class="researchops-next-actions">
+						<section class="researchops-next-action">
+							<p class="researchops-next-action__category">Team alignment</p>
+							<h3 class="researchops-next-action__heading govuk-heading-m">Set clear research objectives</h3>
+							<strong class="govuk-tag">Available after project creation</strong>
+
+							<p class="researchops-next-action__question govuk-body govuk-!-font-weight-bold">
+								How might we overcome the impact of unclear objectives in user research?
+							</p>
+							<p class="govuk-body">
+								Use the project space to align stakeholder objectives with research, design and delivery work.
+							</p>
+						</section>
+
+						<section class="researchops-next-action">
+							<p class="researchops-next-action__category">Recruitment</p>
+							<h3 class="researchops-next-action__heading govuk-heading-m">
+								Recruit participants for user research studies
+							</h3>
+							<strong class="govuk-tag">Available after study planning</strong>
+
+							<p class="researchops-next-action__question govuk-body govuk-!-font-weight-bold">
+								How might we ensure that participant recruitment reflects the diversity and needs of the service’s real
+								users?
+							</p>
+							<p class="govuk-body">
+								Plan recruitment so findings are not biased, exclusionary or weakly connected to the service’s real
+								users.
+							</p>
+						</section>
+
+						<section class="researchops-next-action">
+							<p class="researchops-next-action__category">Evidence and analysis</p>
+							<h3 class="researchops-next-action__heading govuk-heading-m">
+								Turn research evidence into recommendations
+							</h3>
+							<strong class="govuk-tag">Available after sessions</strong>
+
+							<p class="researchops-next-action__question govuk-body govuk-!-font-weight-bold">
+								How might we keep evidence, insights and recommendations connected?
+							</p>
+							<p class="govuk-body">
+								Use structured notes and evidence trails to show how research findings lead to service decisions.
+							</p>
+						</section>
+					</div>
+				</section>
 			</div>
-		</div>
-	</section>
-
-	<section class="researchops-journey-map govuk-!-margin-bottom-8" aria-labelledby="support-title">
-		<div class="govuk-grid-row">
-			<div class="govuk-grid-column-two-thirds">
-				<h2 class="govuk-heading-l" id="support-title">How ResearchOps supports a research project</h2>
-				<p class="govuk-body">ResearchOps follows the shape of a user research project. Start by creating a project. Then add studies, participants, sessions, notes, evidence, insights and recommendations as the work develops.</p>
-				<p class="govuk-body">This sequence is a mental model, not a set of first-visit shortcuts. It shows how the work becomes connected over time.</p>
-			</div>
-		</div>
-
-		<ol class="researchops-step-grid">
-			
-			<li class="researchops-step-card">
-				<p class="researchops-step-card__tag">Step 1 of 8</p>
-				<h3 class="researchops-step-card__heading govuk-heading-s">Project</h3>
-				<p class="govuk-body-s govuk-!-margin-bottom-0">Define the research work, service phase, team context and objectives.</p>
-			</li>
-			
-			<li class="researchops-step-card">
-				<p class="researchops-step-card__tag">Step 2 of 8</p>
-				<h3 class="researchops-step-card__heading govuk-heading-s">Study</h3>
-				<p class="govuk-body-s govuk-!-margin-bottom-0">Plan a specific round of research within the project.</p>
-			</li>
-			
-			<li class="researchops-step-card">
-				<p class="researchops-step-card__tag">Step 3 of 8</p>
-				<h3 class="researchops-step-card__heading govuk-heading-s">Participants</h3>
-				<p class="govuk-body-s govuk-!-margin-bottom-0">Recruit and manage people taking part in the study.</p>
-			</li>
-			
-			<li class="researchops-step-card">
-				<p class="researchops-step-card__tag">Step 4 of 8</p>
-				<h3 class="researchops-step-card__heading govuk-heading-s">Sessions</h3>
-				<p class="govuk-body-s govuk-!-margin-bottom-0">Schedule and run research sessions.</p>
-			</li>
-			
-			<li class="researchops-step-card">
-				<p class="researchops-step-card__tag">Step 5 of 8</p>
-				<h3 class="researchops-step-card__heading govuk-heading-s">Notes</h3>
-				<p class="govuk-body-s govuk-!-margin-bottom-0">Capture observations and structured session notes.</p>
-			</li>
-			
-			<li class="researchops-step-card">
-				<p class="researchops-step-card__tag">Step 6 of 8</p>
-				<h3 class="researchops-step-card__heading govuk-heading-s">Evidence</h3>
-				<p class="govuk-body-s govuk-!-margin-bottom-0">Organise what was seen, heard or recorded.</p>
-			</li>
-			
-			<li class="researchops-step-card">
-				<p class="researchops-step-card__tag">Step 7 of 8</p>
-				<h3 class="researchops-step-card__heading govuk-heading-s">Insights</h3>
-				<p class="govuk-body-s govuk-!-margin-bottom-0">Analyse evidence into meaningful findings.</p>
-			</li>
-			
-			<li class="researchops-step-card">
-				<p class="researchops-step-card__tag">Step 8 of 8</p>
-				<h3 class="researchops-step-card__heading govuk-heading-s">Recommendations</h3>
-				<p class="govuk-body-s govuk-!-margin-bottom-0">Turn findings into decisions, actions and service improvements.</p>
-			</li>
-			
-		</ol>
-	</section>
-
-	<section aria-labelledby="after-title">
-		<div class="govuk-grid-row">
-			<div class="govuk-grid-column-two-thirds">
-				<h2 class="govuk-heading-l" id="after-title">What you can do after creating a project</h2>
-				<p class="govuk-body">These parts of ResearchOps are shown as orientation. They make more sense after a project record has been created.</p>
-			</div>
-		</div>
-
-		<div class="researchops-next-actions">
-			
-			<section class="researchops-next-action">
-				<p class="researchops-next-action__category">Team alignment</p>
-				<h3 class="researchops-next-action__heading govuk-heading-m">Set clear research objectives</h3>
-				<strong class="govuk-tag">
-  Available after project creation
-</strong>
-
-				<p class="researchops-next-action__question govuk-body govuk-!-font-weight-bold">How might we overcome the impact of unclear objectives in user research?</p>
-				<p class="govuk-body">Use the project space to align stakeholder objectives with research, design and delivery work.</p>
-			</section>
-			
-			<section class="researchops-next-action">
-				<p class="researchops-next-action__category">Recruitment</p>
-				<h3 class="researchops-next-action__heading govuk-heading-m">Recruit participants for user research studies</h3>
-				<strong class="govuk-tag">
-  Available after study planning
-</strong>
-
-				<p class="researchops-next-action__question govuk-body govuk-!-font-weight-bold">How might we ensure that participant recruitment reflects the diversity and needs of the service’s real users?</p>
-				<p class="govuk-body">Plan recruitment so findings are not biased, exclusionary or weakly connected to the service’s real users.</p>
-			</section>
-			
-			<section class="researchops-next-action">
-				<p class="researchops-next-action__category">Evidence and analysis</p>
-				<h3 class="researchops-next-action__heading govuk-heading-m">Turn research evidence into recommendations</h3>
-				<strong class="govuk-tag">
-  Available after sessions
-</strong>
-
-				<p class="researchops-next-action__question govuk-body govuk-!-font-weight-bold">How might we keep evidence, insights and recommendations connected?</p>
-				<p class="govuk-body">Use structured notes and evidence trails to show how research findings lead to service decisions.</p>
-			</section>
-			
-		</div>
-	</section>
-</div>
-
-	</main>
-	<x-include src="/partials/footer.html"></x-include>
-	
-</body>
+		</main>
+		<x-include src="/partials/footer.html"></x-include>
+	</body>
 </html>

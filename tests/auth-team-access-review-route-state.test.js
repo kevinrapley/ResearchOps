@@ -19,6 +19,18 @@ function excludes(source, text, label) {
 	assert.equal(source.includes(text), false, `Expected ${label} not to include: ${text}`);
 }
 
+function normaliseWhitespace(value) {
+	return String(value).replace(/\s+/g, ' ').trim();
+}
+
+function includesText(source, text, label) {
+	assert.equal(
+		normaliseWhitespace(source).includes(normaliseWhitespace(text)),
+		true,
+		`Expected ${label} to include normalised text: ${text}`,
+	);
+}
+
 includes(storyPlan, 'Story 4 can approve team membership.', 'Story 4 plan');
 includes(storyPlan, 'It must not assign roles, permissions or sensitive access.', 'Story 4 plan');
 includes(storyPlan, 'AC1 — Team Admin sees pending requests for teams they administer', 'Story 4 plan');
@@ -36,9 +48,9 @@ includes(migration, "'POST', '/api/team-access/requests/reject'", 'team access r
 
 includes(handler, 'function assertAuthenticatedRouteContext(context)', 'team access review handler');
 includes(handler, 'async function readTeamAccessRequestSchema(db)', 'team access review handler');
-includes(handler, "PRAGMA table_info(auth_team_access_requests)", 'team access review handler');
+includes(handler, 'PRAGMA table_info(auth_team_access_requests)', 'team access review handler');
 includes(handler, "hasDecisionReason: columns.has('decision_reason')", 'team access review handler');
-includes(handler, "schema.hasDecisionReason ? 'r.decision_reason' : \"'' AS decision_reason\"", 'team access review handler');
+includes(handler, 'schema.hasDecisionReason ? \'r.decision_reason\' : "\'\' AS decision_reason"', 'team access review handler');
 includes(handler, 'async function listTeamAccessReviewRequests(env, context)', 'team access review handler');
 includes(handler, 'async function markTeamAccessRequestApproved(db, requestId, decidedByUserId, schema)', 'team access review handler');
 includes(handler, 'async function markTeamAccessRequestRejected(db, requestId, decidedByUserId, decisionReason, schema)', 'team access review handler');
@@ -53,12 +65,12 @@ includes(handler, "r.request_status = 'pending'", 'team access review handler');
 includes(handler, 'canManageTeam(context, existing.team_id)', 'team access review handler');
 includes(handler, 'self_approval_blocked', 'team access review handler');
 includes(handler, "request_status = 'approved'", 'team access review handler');
-includes(handler, "INSERT INTO auth_team_memberships", 'team access review handler');
+includes(handler, 'INSERT INTO auth_team_memberships', 'team access review handler');
 includes(handler, "ON CONFLICT(user_id, team_id) DO UPDATE SET membership_status = 'active'", 'team access review handler');
-includes(handler, "team.access.approved", 'team access review handler');
+includes(handler, 'team.access.approved', 'team access review handler');
 includes(handler, "request_status = 'rejected'", 'team access review handler');
 includes(handler, 'decision_reason = ?', 'team access review handler');
-includes(handler, "team.access.rejected", 'team access review handler');
+includes(handler, 'team.access.rejected', 'team access review handler');
 excludes(handler, 'INSERT INTO auth_role_assignments', 'team access review handler');
 excludes(handler, 'INSERT INTO auth_permission_exceptions', 'team access review handler');
 
@@ -78,13 +90,13 @@ includes(walkthroughConfig, "'Review team access requests'", 'visual walkthrough
 includes(walkthroughConfig, "'/pages/team/access-requests/index.html'", 'visual walkthrough registry');
 
 for (const source of [template, page]) {
-	includes(source, 'Review team access requests', 'team access review page');
-	includes(source, 'Approve or reject requests from people who want to join a team you administer.', 'team access review page');
-	includes(source, 'Approving a request makes the person a team member.', 'team access review page');
-	includes(source, 'It does not give them a role or access to sensitive information.', 'team access review page');
-	includes(source, 'Checking team access requests', 'team access review page');
-	includes(source, 'There are no team access requests to review.', 'team access review page');
-	includes(source, 'Pending requests', 'team access review page');
+	includesText(source, 'Review team access requests', 'team access review page');
+	includesText(source, 'Approve or reject requests from people who want to join a team you administer.', 'team access review page');
+	includesText(source, 'Approving a request makes the person a team member.', 'team access review page');
+	includesText(source, 'It does not give them a role or access to sensitive information.', 'team access review page');
+	includesText(source, 'Checking team access requests', 'team access review page');
+	includesText(source, 'There are no team access requests to review.', 'team access review page');
+	includesText(source, 'Pending requests', 'team access review page');
 	includes(source, 'team-access-review-list', 'team access review page');
 	includes(source, '/js/auth-team-access-review-page.js?v=team-access-review-20260531', 'team access review page');
 	excludes(source, 'request-alex-morgan', 'team access review page');

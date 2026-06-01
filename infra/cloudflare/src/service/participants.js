@@ -166,6 +166,10 @@ async function readD1ParticipantContact(svc, origin, participantId) {
 			participant: {
 				id: row.id,
 				display_name: row.participant_ref || "",
+				participant_ref: row.participant_ref || "",
+				first_name: cleanText(contact.first_name),
+				family_name: cleanText(contact.family_name),
+				full_name: cleanText(contact.full_name),
 				email: cleanText(contact.email),
 				phone: cleanText(contact.phone),
 			},
@@ -197,6 +201,18 @@ function mapD1Participant(row, context) {
 function participantRefFor(body) {
 	const displayName = cleanText(body.display_name || body.displayName || body.participant_ref || body.participantRef);
 	return displayName || `Participant ${new Date().toISOString()}`;
+}
+
+function participantIdentityFor(body, participantRef) {
+	const explicitFirstName = cleanText(body.first_name || body.firstName);
+	const explicitFamilyName = cleanText(body.family_name || body.familyName || body.last_name || body.lastName);
+	const fallbackFullName = cleanText(body.full_name || body.fullName || body.display_name || body.displayName || participantRef);
+	const fallbackParts = fallbackFullName.split(" ").filter(Boolean);
+	const firstName = explicitFirstName || fallbackParts[0] || "";
+	const familyName = explicitFamilyName || fallbackParts.slice(1).join(" ");
+	const fullName = cleanText(body.full_name || body.fullName || [firstName, familyName].filter(Boolean).join(" ") || fallbackFullName);
+
+	return { firstName, familyName, fullName };
 }
 
 async function readJsonBody(request, maxBytes) {
@@ -277,7 +293,7 @@ export async function revealParticipantContact(svc, request, origin, url) {
 			ok: true,
 			participant: result.participant,
 			sensitive: true,
-			message: "Participant contact details revealed. Handle this information as sensitive.",
+			message: "Participant details revealed. Handle this information as sensitive.",
 		},
 		200,
 		svc.corsHeaders(origin),
@@ -308,6 +324,7 @@ export async function createParticipant(svc, request, origin) {
 	const participantAirtableId = cleanText(body.participant_airtable_id || body.participantAirtableId);
 	const participantRef = participantRefFor(body);
 	const accessNeeds = cleanText(body.access_needs || body.accessNeeds);
+	const { firstName, familyName, fullName } = participantIdentityFor(body, participantRef);
 
 	if (!studyId) return svc.json({ ok: false, error: "study_required", message: "Choose a study for this participant." }, 400, svc.corsHeaders(origin));
 	if (!projectId) return svc.json({ ok: false, error: "project_required", message: "Choose a project for this participant." }, 400, svc.corsHeaders(origin));
@@ -318,10 +335,13 @@ export async function createParticipant(svc, request, origin) {
 	const participantId = makeId("d1ptp");
 	const now = new Date().toISOString();
 	const contact = {
+		first_name: firstName,
+		family_name: familyName,
+		full_name: fullName,
 		email: cleanText(body.email),
 		phone: cleanText(body.phone),
 	};
-	const hasContact = Boolean(contact.email || contact.phone);
+	const hasSensitiveDetails = Boolean(contact.first_name || contact.family_name || contact.full_name || contact.email || contact.phone);
 
 	try {
 		await db
@@ -357,8 +377,8 @@ export async function createParticipant(svc, request, origin) {
 				accessNeeds || null,
 				now,
 				now,
-				hasContact ? jsonText(contact) : null,
-				jsonText({ projectId, studyId, participantRef, accessNeeds, pseudonymised: true }),
+				hasSensitiveDetails ? jsonText(contact) : null,
+				jsonText({ projectId, studyId, participantRef, accessNeeds, hasSensitiveDetails, pseudonymised: true }),
 			)
 			.run();
 	} catch {

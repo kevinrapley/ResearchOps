@@ -2,8 +2,8 @@ const PROJECT_ID_PARAMS = ["id", "pid"];
 const PROJECT_SCOPED_LINKS = Object.freeze([
 	["journal-link", "/pages/projects/journals/", "id"],
 	["outcomes-link", "/pages/projects/outcomes/", "id"],
-	["add-participant-link", "/pages/project-dashboard/participants/", "pid"],
-	["import-participants-link", "/pages/project-dashboard/participants/import/", "pid"],
+	["add-participant-link", "/pages/project-dashboard/participants/", "id"],
+	["import-participants-link", "/pages/project-dashboard/participants/import/", "id"],
 	["add-study-link", "/pages/study/new/", "pid"],
 	["add-insight-link", "/pages/projects/outcomes/", "id", "impact-form"]
 ]);
@@ -18,8 +18,8 @@ function currentProjectId() {
 }
 
 function projectScopedHref(path, queryKey, projectId, hash = "") {
-	const query = `${queryKey}=${encodeURIComponent(projectId || "")}`;
-	return `${path}?${query}${hash ? `#${hash}` : ""}`;
+	const query = queryKey + "=" + encodeURIComponent(projectId || "");
+	return path + "?" + query + (hash ? "#" + hash : "");
 }
 
 function resolvedProjectId() {
@@ -47,14 +47,26 @@ function syncProjectContext() {
 	}
 }
 
+function observeProjectScopedLinks() {
+	const target = document.getElementById("planning") || document.querySelector("main") || document.body;
+	if (!target || typeof MutationObserver === "undefined") return;
+
+	const observer = new MutationObserver(() => syncProjectContext());
+	observer.observe(target, {
+		childList: true,
+		subtree: true
+	});
+}
+
 function initProjectDashboardContext() {
 	syncProjectContext();
+	observeProjectScopedLinks();
 
 	let attempts = 0;
 	const timer = window.setInterval(() => {
 		syncProjectContext();
 		attempts += 1;
-		if (attempts >= 50) window.clearInterval(timer);
+		if (attempts >= 300) window.clearInterval(timer);
 	}, 100);
 }
 

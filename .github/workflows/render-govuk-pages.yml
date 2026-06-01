@@ -124,7 +124,13 @@ jobs:
 
       - name: Render GOV.UK pages from Nunjucks
         if: steps.changed-pages.outputs.render_all == 'true' || steps.changed-pages.outputs.outputs != ''
-        run: npm run build:govuk-pages
+        run: |
+          # npm run build:govuk-pages uses this same canonical renderer.
+          node --input-type=module <<'NODE'
+          import { renderAllGovukPages } from './scripts/govuk/render-govuk-pages.mjs';
+
+          await renderAllGovukPages();
+          NODE
 
       - name: Commit rendered static pages
         if: steps.changed-pages.outputs.render_all == 'true' || steps.changed-pages.outputs.outputs != ''

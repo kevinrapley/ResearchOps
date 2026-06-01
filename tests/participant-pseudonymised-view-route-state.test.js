@@ -10,6 +10,9 @@ const workflow = fs.readFileSync('.github/workflows/apply-d1-participant-pseudon
 const component = fs.readFileSync('public/components/participants/participants-page.js', 'utf8');
 const scheduler = fs.readFileSync('public/pages/study/participants/scheduler.js', 'utf8');
 const page = fs.readFileSync('public/pages/study/participants/index.html', 'utf8');
+const projectParticipantSource = fs.readFileSync('src/govuk/templates/pages/project-dashboard-participants.njk', 'utf8');
+const projectParticipantPage = fs.readFileSync('public/pages/project-dashboard/participants/index.html', 'utf8');
+const projectParticipantController = fs.readFileSync('public/pages/project-dashboard/participants/participants-project.js', 'utf8');
 
 function includes(source, text, label) {
 	assert.equal(source.includes(text), true, `Expected ${label} to include: ${text}`);
@@ -42,6 +45,13 @@ includes(participantService, 'readD1ParticipantContact(svc, origin, participantI
 includes(participantService, 'sensitive_contact_json', 'participant service');
 includes(participantService, 'access_needs', 'participant service');
 includes(participantService, 'accessNeeds', 'participant service');
+includes(participantService, 'function participantIdentityFor', 'participant service');
+includes(participantService, 'body.display_name || body.displayName || participantRef', 'participant service');
+includes(participantService, 'first_name: firstName', 'participant service');
+includes(participantService, 'family_name: familyName', 'participant service');
+includes(participantService, 'full_name: fullName', 'participant service');
+excludes(participantService, 'first_name_required', 'participant service legacy compatibility');
+excludes(participantService, 'family_name_required', 'participant service legacy compatibility');
 includes(participantService, 'participant.contact.revealed', 'participant service');
 includes(participantService, 'participant.contact.reveal.denied', 'participant service');
 includes(participantService, 'participant.created', 'participant service');
@@ -55,11 +65,17 @@ excludes(participantService, 'AIRTABLE_', 'participant service');
 const pseudonymisedMapper = functionBody(participantService, 'mapD1Participant');
 excludes(pseudonymisedMapper, 'email:', 'D1 pseudonymised participant mapper');
 excludes(pseudonymisedMapper, 'phone:', 'D1 pseudonymised participant mapper');
+excludes(pseudonymisedMapper, 'first_name:', 'D1 pseudonymised participant mapper');
+excludes(pseudonymisedMapper, 'family_name:', 'D1 pseudonymised participant mapper');
+excludes(pseudonymisedMapper, 'full_name:', 'D1 pseudonymised participant mapper');
 includes(pseudonymisedMapper, 'display_name: row.participant_ref || row.id', 'D1 pseudonymised participant mapper');
 includes(pseudonymisedMapper, 'contact_restricted: true', 'D1 pseudonymised participant mapper');
 includes(pseudonymisedMapper, 'access_needs: row.access_needs || ""', 'D1 pseudonymised participant mapper');
 
 const contactReader = functionBody(participantService, 'readD1ParticipantContact');
+includes(contactReader, 'first_name: cleanText(contact.first_name)', 'D1 contact reveal reader');
+includes(contactReader, 'family_name: cleanText(contact.family_name)', 'D1 contact reveal reader');
+includes(contactReader, 'full_name: cleanText(contact.full_name)', 'D1 contact reveal reader');
 includes(contactReader, 'email: cleanText(contact.email)', 'D1 contact reveal reader');
 includes(contactReader, 'phone: cleanText(contact.phone)', 'D1 contact reveal reader');
 
@@ -111,6 +127,28 @@ includes(scheduler, '/api/participants/contact?participant=', 'participant sched
 includes(scheduler, 'data-contact-state="revealed"', 'participant scheduler');
 includes(scheduler, 'Sensitive', 'participant scheduler');
 includes(scheduler, 'Handle this information as sensitive.', 'participant scheduler');
+
+includes(projectParticipantSource, 'from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs', 'project participant source');
+includes(projectParticipantSource, 'from "govuk/components/error-summary/macro.njk" import govukErrorSummary', 'project participant source');
+includes(projectParticipantSource, 'from "govuk/components/input/macro.njk" import govukInput', 'project participant source');
+includes(projectParticipantSource, 'from "govuk/components/select/macro.njk" import govukSelect', 'project participant source');
+includes(projectParticipantSource, 'from "govuk/components/textarea/macro.njk" import govukTextarea', 'project participant source');
+includes(projectParticipantSource, 'from "govuk/components/inset-text/macro.njk" import govukInsetText', 'project participant source');
+includes(projectParticipantSource, 'typeof: "schema:BreadcrumbList"', 'project participant breadcrumb source');
+
+includes(projectParticipantPage, 'id="participant-first-name"', 'project participant page');
+includes(projectParticipantPage, 'id="participant-family-name"', 'project participant page');
+includes(projectParticipantPage, 'name="project_id"', 'project participant page');
+excludes(projectParticipantPage, 'name="project_airtable_id"', 'project participant page');
+includes(projectParticipantController, 'project_id: projectId', 'project participant controller');
+includes(projectParticipantController, 'study_id: fieldValue("#study-select")', 'project participant controller');
+includes(projectParticipantController, 'first_name: fieldValue("#participant-first-name")', 'project participant controller');
+includes(projectParticipantController, 'family_name: fieldValue("#participant-family-name")', 'project participant controller');
+includes(projectParticipantController, 'function enhanceBreadcrumbSchema', 'project participant controller');
+includes(projectParticipantController, 'property", "schema:itemListElement"', 'project participant controller');
+includes(projectParticipantController, 'property", "schema:item"', 'project participant controller');
+includes(projectParticipantController, 'property", "schema:name"', 'project participant controller');
+includes(projectParticipantController, 'property", "schema:position"', 'project participant controller');
 
 includes(page, 'Participants', 'participants page');
 includes(page, 'Contact', 'participants page');
