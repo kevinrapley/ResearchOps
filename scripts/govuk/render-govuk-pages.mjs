@@ -15,8 +15,6 @@ const env = new nunjucks.Environment(
 	},
 );
 
-const formattedHtmlOutputs = new Set(['public/pages/project-dashboard/participants/index.html']);
-
 function escapeHtmlAttribute(value) {
 	return String(value)
 		.replaceAll('&', '&amp;')
@@ -39,9 +37,7 @@ function govukAttributes(attributes = {}) {
 	return new nunjucks.runtime.SafeString(html);
 }
 
-async function formatRenderedHtml(html, output) {
-	if (!formattedHtmlOutputs.has(output)) return html;
-
+async function formatRenderedHtml(html) {
 	return prettier.format(html, {
 		parser: 'html',
 		printWidth: 120,
@@ -240,7 +236,7 @@ const pages = [
 for (const page of pages) {
 	const outputPath = resolve(root, page.output);
 	const rawHtml = env.render(page.template, page.context);
-	const html = await formatRenderedHtml(rawHtml, page.output);
+	const html = await formatRenderedHtml(rawHtml);
 	await mkdir(dirname(outputPath), { recursive: true });
 	await writeFile(outputPath, html.endsWith('\n') ? html : `${html}\n`, 'utf8');
 	console.log('Rendered ' + page.output);
