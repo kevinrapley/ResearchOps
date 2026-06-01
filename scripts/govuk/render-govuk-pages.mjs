@@ -14,6 +14,31 @@ const env = new nunjucks.Environment(
 	},
 );
 
+function escapeHtmlAttribute(value) {
+	return String(value)
+		.replaceAll('&', '&amp;')
+		.replaceAll('"', '&quot;')
+		.replaceAll('<', '&lt;')
+		.replaceAll('>', '&gt;');
+}
+
+function govukAttributes(attributes = {}) {
+	if (!attributes || typeof attributes !== 'object') return '';
+
+	const html = Object.entries(attributes)
+		.filter(([, value]) => value !== false && value !== null && value !== undefined)
+		.map(([name, value]) => {
+			if (value === true) return ` ${name}`;
+			return ` ${name}="${escapeHtmlAttribute(value)}"`;
+		})
+		.join('');
+
+	return new nunjucks.runtime.SafeString(html);
+}
+
+env.addFilter('govukAttributes', govukAttributes);
+env.addGlobal('govukAttributes', govukAttributes);
+
 const navigation = [
 	{
 		text: 'Home',
