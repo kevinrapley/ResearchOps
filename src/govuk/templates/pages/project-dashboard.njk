@@ -161,26 +161,22 @@
 		<section id="stakeholders" class="govuk-summary-card">
 			<div class="govuk-summary-card__title-wrapper">
 				<h2 class="govuk-summary-card__title">Stakeholder management</h2>
-				<ul class="govuk-summary-card__actions">
-					<li class="govuk-summary-card__action">
-						{{ govukButton({
-							text: "Add stakeholder",
-							type: "button",
-							classes: "govuk-button--secondary rops-summary-card-button",
-							attributes: {
-								id: "add-stakeholder-toggle",
-								"aria-expanded": "false",
-								"aria-controls": "add-stakeholder-panel"
-							}
-						}) }}
-					</li>
-				</ul>
 			</div>
 			<div class="govuk-summary-card__content">
 				<div class="rops-two-column">
 					<div>
 						<h3 class="govuk-heading-s">Stakeholders</h3>
 						<ul class="govuk-list govuk-list--spaced rops-divided-list" id="stakeholders-list"><li>No stakeholders yet.</li></ul>
+						{{ govukButton({
+							text: "Add stakeholder",
+							type: "button",
+							classes: "govuk-button--secondary",
+							attributes: {
+								id: "add-stakeholder-toggle",
+								"aria-expanded": "false",
+								"aria-controls": "add-stakeholder-panel"
+							}
+						}) }}
 						<div id="add-stakeholder-panel" class="dashboard-action-panel" hidden>
 							<form id="add-stakeholder-form" novalidate>
 								<h4 class="govuk-heading-s">Add stakeholder</h4>
@@ -259,7 +255,7 @@
 				<h2 class="govuk-summary-card__title">Research planning</h2>
 			</div>
 			<div class="govuk-summary-card__content">
-				<div class="rops-two-column">
+				<div class="rops-two-column rops-planning-grid">
 					<div>
 						<h3 class="govuk-heading-s">User groups</h3>
 						<ul class="govuk-list govuk-list--spaced rops-divided-list" id="user-groups-list"><li>No user groups yet.</li></ul>

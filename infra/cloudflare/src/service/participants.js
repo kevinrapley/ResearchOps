@@ -55,6 +55,34 @@ function cleanText(value) {
 	return String(value || "").replace(/\s+/g, " ").trim();
 }
 
+function normaliseKey(value) {
+	return String(value || "")
+		.trim()
+		.toLowerCase()
+		.replace(/&/g, "and")
+		.replace(/[^a-z0-9]+/g, "-")
+		.replace(/^-+|-+$/g, "");
+}
+
+function unique(values = []) {
+	const seen = new Set();
+	const out = [];
+	for (const value of values) {
+		const text = cleanText(value);
+		const key = normaliseKey(text);
+		if (!text || seen.has(key)) continue;
+		seen.add(key);
+		out.push(text);
+	}
+	return out;
+}
+
+function splitList(value, pattern) {
+	if (Array.isArray(value)) return unique(value.flatMap((item) => splitList(item, pattern)));
+	if (value && typeof value === "object") return unique([value.name || value.Name || value.label || value.Label || ""]);
+	return unique(String(value || "").split(pattern));
+}
+
 function makeId(prefix) {
 	return `${prefix}_${crypto.randomUUID()}`;
 }
@@ -112,6 +140,141 @@ async function recordParticipantEvent(svc, request, context, participantId, even
 	}
 }
 
+function teamsForAuth(context = {}) {
+	return [...(context.teamMemberships || []), ...(context.memberTeams || []), ...(context.teams || []), context.activeTeam].filter(Boolean);
+}
+
+function authTeamKeys(context = {}) {
+	return new Set(
+		teamsForAuth(context)
+			.flatMap((team) => [team.id, team.teamId, team.team_id, team.name, team.teamName, team.team_name, team.label].map(normaliseKey))
+			.filter(Boolean),
+	);
+}
+
+function isCoreTeamKey(key) {
+	return key === "team-researchops-core" || key === "researchops-core" || key === "researchops-core-team";
+}
+
+function projectTeamKeysFromPayload(row = {}) {
+	const payload = parseJson(row.payload_json || row.payloadJson);
+	return new Set(
+		[
+			row.team_id,
+			row.team_ids,
+			row.team_name,
+			row.team_names,
+			row.org,
+			payload.team,
+			payload.teamName,
+			payload.team_name,
+			payload.org,
+			...(payload.teamIds || []),
+			...(payload.team_ids || []),
+			...(payload.teamNames || []),
+			...(payload.team_names || []),
+		]
+			.flatMap((value) => splitList(value, /\r?\n|[|,]/))
+			.map(normaliseKey)
+			.filter(Boolean),
+	);
+}
+
+async function readProjectTeamKeys(db, projectId) {
+	try {
+		const row = await db
+			.prepare(`
+				SELECT id, org, payload_json
+				FROM rops_projects_cache
+				WHERE id = ?
+				LIMIT 1
+			`)
+			.bind(projectId)
+			.first();
+		return row ? projectTeamKeysFromPayload(row) : new Set();
+	} catch {
+		return new Set();
+	}
+}
+
+async function hasProjectScopedRevealPermission(db, context, projectId) {
+	const userId = context?.user?.id || "";
+	if (!userId || !projectId) return false;
+
+	try {
+		const row = await db
+			.prepare(`
+				SELECT ra.id
+				FROM auth_role_assignments ra
+				INNER JOIN auth_role_permissions rp ON rp.role_id = ra.role_id
+				WHERE ra.user_id = ?
+					AND ra.scope_type = 'project'
+					AND ra.scope_id = ?
+					AND ra.assignment_status = 'active'
+					AND rp.permission_code = 'participant.pii.reveal'
+					AND (ra.expires_at IS NULL OR ra.expires_at > strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
+				UNION
+				SELECT e.id
+				FROM auth_permission_exceptions e
+				WHERE e.user_id = ?
+					AND e.scope_type = 'project'
+					AND e.scope_id = ?
+					AND e.exception_status = 'active'
+					AND e.permission_code = 'participant.pii.reveal'
+					AND e.expires_at > strftime('%Y-%m-%dT%H:%M:%fZ', 'now')
+				LIMIT 1
+			`)
+			.bind(userId, projectId, userId, projectId)
+			.first();
+		return Boolean(row);
+	} catch {
+		return false;
+	}
+}
+
+async function roleRevealTeamKeys(db, context) {
+	const userId = context?.user?.id || "";
+	if (!userId) return new Set();
+
+	try {
+		const result = await db
+			.prepare(`
+				SELECT DISTINCT t.id, t.name
+				FROM auth_role_assignments ra
+				INNER JOIN auth_role_permissions rp ON rp.role_id = ra.role_id
+				INNER JOIN auth_teams t ON t.id = ra.scope_id
+				WHERE ra.user_id = ?
+					AND ra.scope_type = 'team'
+					AND ra.assignment_status = 'active'
+					AND rp.permission_code = 'participant.pii.reveal'
+					AND t.team_status = 'active'
+					AND (ra.expires_at IS NULL OR ra.expires_at > strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
+			`)
+			.bind(userId)
+			.all();
+		return new Set((result.results || []).flatMap((team) => [team.id, team.name].map(normaliseKey)).filter(Boolean));
+	} catch {
+		return new Set();
+	}
+}
+
+async function canRevealParticipantForProject(svc, context, projectId) {
+	if (!canRevealParticipantContact(context)) return false;
+	const db = dbFor(svc.env);
+	if (!db || !projectId) return false;
+	if (await hasProjectScopedRevealPermission(db, context, projectId)) return true;
+
+	const revealTeamKeys = await roleRevealTeamKeys(db, context);
+	if ([...revealTeamKeys].some(isCoreTeamKey) && authTeamKeys(context).size) return true;
+
+	const projectTeamKeys = await readProjectTeamKeys(db, projectId);
+	for (const key of projectTeamKeys) {
+		if (revealTeamKeys.has(key)) return true;
+	}
+
+	return false;
+}
+
 async function readD1ParticipantsForStudy(svc, origin, studyId, context) {
 	const db = dbFor(svc.env);
 	if (!db) return { ok: false, response: participantDataUnavailable(svc, origin) };
@@ -127,10 +290,12 @@ async function readD1ParticipantsForStudy(svc, origin, studyId, context) {
 			`)
 			.bind(studyId)
 			.all();
-
+		const participants = await Promise.all(
+			(result.results || []).map(async (row) => mapD1Participant(row, context, await canRevealParticipantForProject(svc, context, row.project_id))),
+		);
 		return {
 			ok: true,
-			participants: (result.results || []).map((row) => mapD1Participant(row, context)),
+			participants,
 		};
 	} catch {
 		return { ok: false, response: participantDataUnavailable(svc, origin) };
@@ -144,7 +309,7 @@ async function readD1ParticipantContact(svc, origin, participantId) {
 	try {
 		const row = await db
 			.prepare(`
-				SELECT id, participant_ref, sensitive_contact_json
+				SELECT id, project_id, study_id, participant_ref, sensitive_contact_json
 				FROM rops_participants_cache
 				WHERE id = ?
 					AND active = 1
@@ -165,6 +330,8 @@ async function readD1ParticipantContact(svc, origin, participantId) {
 			ok: true,
 			participant: {
 				id: row.id,
+				project_id: row.project_id,
+				study_id: row.study_id,
 				display_name: row.participant_ref || "",
 				participant_ref: row.participant_ref || "",
 				first_name: cleanText(contact.first_name),
@@ -179,7 +346,12 @@ async function readD1ParticipantContact(svc, origin, participantId) {
 	}
 }
 
-function mapD1Participant(row, context) {
+function publicRevealedParticipant(participant = {}) {
+	const { project_id, study_id, ...safeParticipant } = participant;
+	return safeParticipant;
+}
+
+function mapD1Participant(row, context, canRevealContact = false) {
 	const sessionParticipantId = cleanText(row.participant_airtable_id);
 	return {
 		id: row.id,
@@ -187,7 +359,7 @@ function mapD1Participant(row, context) {
 		display_name: row.participant_ref || row.id,
 		contact_restricted: true,
 		has_contact_details: null,
-		can_reveal_contact: canRevealParticipantContact(context),
+		can_reveal_contact: Boolean(canRevealContact),
 		can_schedule: Boolean(sessionParticipantId),
 		session_participant_id: sessionParticipantId,
 		channel_pref: row.channel_pref || "not recorded",
@@ -287,11 +459,17 @@ export async function revealParticipantContact(svc, request, origin, url) {
 	const result = await readD1ParticipantContact(svc, origin, participantId);
 	if (!result.ok) return result.response;
 
+	const canRevealForProject = await canRevealParticipantForProject(svc, context, result.participant.project_id);
+	if (!canRevealForProject) {
+		await recordParticipantEvent(svc, request, context, participantId, "participant.contact.reveal.denied", "denied");
+		return permissionErrorResponse(svc, origin, { status: 403, code: "participant_project_scope_denied" }, CONTACT_RESTRICTED_MESSAGE, true);
+	}
+
 	await recordParticipantEvent(svc, request, context, participantId, "participant.contact.revealed", "succeeded");
 	return svc.json(
 		{
 			ok: true,
-			participant: result.participant,
+			participant: publicRevealedParticipant(result.participant),
 			sensitive: true,
 			message: "Participant details revealed. Handle this information as sensitive.",
 		},
