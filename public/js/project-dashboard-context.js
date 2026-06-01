@@ -1,5 +1,6 @@
 const PROJECT_ID_PARAMS = ["id", "pid"];
 const PROJECT_SCOPED_LINKS = Object.freeze([
+	["breadcrumb-project", "/pages/project-dashboard/", "id"],
 	["journal-link", "/pages/projects/journals/", "id"],
 	["outcomes-link", "/pages/projects/outcomes/", "id"],
 	["add-participant-link", "/pages/project-dashboard/participants/", "id"],
