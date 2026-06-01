@@ -203,6 +203,18 @@ function participantRefFor(body) {
 	return displayName || `Participant ${new Date().toISOString()}`;
 }
 
+function participantIdentityFor(body, participantRef) {
+	const explicitFirstName = cleanText(body.first_name || body.firstName);
+	const explicitFamilyName = cleanText(body.family_name || body.familyName || body.last_name || body.lastName);
+	const fallbackFullName = cleanText(body.full_name || body.fullName || body.display_name || body.displayName || participantRef);
+	const fallbackParts = fallbackFullName.split(" ").filter(Boolean);
+	const firstName = explicitFirstName || fallbackParts[0] || "";
+	const familyName = explicitFamilyName || fallbackParts.slice(1).join(" ");
+	const fullName = cleanText(body.full_name || body.fullName || [firstName, familyName].filter(Boolean).join(" ") || fallbackFullName);
+
+	return { firstName, familyName, fullName };
+}
+
 async function readJsonBody(request, maxBytes) {
 	const body = await request.arrayBuffer();
 	if (body.byteLength > maxBytes) {
@@ -312,9 +324,7 @@ export async function createParticipant(svc, request, origin) {
 	const participantAirtableId = cleanText(body.participant_airtable_id || body.participantAirtableId);
 	const participantRef = participantRefFor(body);
 	const accessNeeds = cleanText(body.access_needs || body.accessNeeds);
-	const firstName = cleanText(body.first_name || body.firstName);
-	const familyName = cleanText(body.family_name || body.familyName || body.last_name || body.lastName);
-	const fullName = cleanText(body.full_name || body.fullName || [firstName, familyName].filter(Boolean).join(" "));
+	const { firstName, familyName, fullName } = participantIdentityFor(body, participantRef);
 
 	if (!studyId) return svc.json({ ok: false, error: "study_required", message: "Choose a study for this participant." }, 400, svc.corsHeaders(origin));
 	if (!projectId) return svc.json({ ok: false, error: "project_required", message: "Choose a project for this participant." }, 400, svc.corsHeaders(origin));
