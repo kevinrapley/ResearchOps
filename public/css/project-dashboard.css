@@ -153,4 +153,51 @@
   color: #d4351c;
 }
 
+.rops-participant-list-controls {
+  display: grid;
+  gap: 15px;
+  grid-template-columns: 1fr;
+  margin-bottom: 15px;
+}
+
+@media (min-width: 40.0625em) {
+  .rops-participant-list-controls {
+    grid-template-columns: 1fr auto;
+  }
+}
+.rops-participant-search,
+.rops-participant-sort {
+  margin-bottom: 0;
+}
+
+.rops-participant-list__item > .govuk-hint {
+  display: block;
+  margin-bottom: 0;
+}
+
+.rops-study-title-truncated {
+  display: block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rops-participant-reveal {
+  margin-top: 10px;
+}
+
+.rops-participant-sensitive-details {
+  margin-top: 10px;
+}
+
+.rops-participant-pagination {
+  margin-bottom: 15px;
+}
+
+.rops-participant-page-status {
+  align-self: center;
+  margin-bottom: 0;
+}
+
 /* transparency begins in the cascade */
