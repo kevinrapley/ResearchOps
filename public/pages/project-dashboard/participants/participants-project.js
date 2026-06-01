@@ -35,6 +35,59 @@ function generatedParticipantRef() {
 	return `Participant ${stamp}-${random}`;
 }
 
+function setSchemaName(element, text) {
+	if (!element) return;
+	let name = element.querySelector('[property="schema:name"]');
+	if (!name) {
+		name = document.createElement("span");
+		name.setAttribute("property", "schema:name");
+		element.textContent = "";
+		element.append(name);
+	}
+	name.textContent = text;
+}
+
+function enhanceBreadcrumbSchema(projectId, projectName) {
+	const breadcrumbs = $("#participant-breadcrumbs") || $(".govuk-breadcrumbs");
+	if (!breadcrumbs) return;
+
+	breadcrumbs.setAttribute("typeof", "schema:BreadcrumbList");
+	const items = Array.from(breadcrumbs.querySelectorAll(".govuk-breadcrumbs__list-item"));
+
+	items.forEach((item, index) => {
+		item.setAttribute("property", "schema:itemListElement");
+		item.setAttribute("typeof", "schema:ListItem");
+
+		const anchor = item.querySelector("a");
+		const label = index === 1 ? projectName : (anchor || item).textContent.trim();
+
+		if (anchor) {
+			anchor.setAttribute("property", "schema:item");
+			anchor.setAttribute("typeof", "schema:Thing");
+			setSchemaName(anchor, label);
+		}
+
+		if (!anchor) {
+			setSchemaName(item, label);
+		}
+
+		let position = item.querySelector('meta[property="schema:position"]');
+		if (!position) {
+			position = document.createElement("meta");
+			position.setAttribute("property", "schema:position");
+			item.append(position);
+		}
+		position.setAttribute("content", String(index + 1));
+	});
+
+	const projectAnchor = items[1]?.querySelector("a");
+	if (projectAnchor) {
+		projectAnchor.id = "breadcrumb-project";
+		projectAnchor.href = `/pages/project-dashboard/?id=${encodeURIComponent(projectId)}`;
+		setSchemaName(projectAnchor, projectName);
+	}
+}
+
 function setProjectLinks(projectId, project = {}) {
 	const dashboardHref = `/pages/project-dashboard/?id=${encodeURIComponent(projectId)}`;
 	const projectName = project.name || project.Name || "Project";
@@ -45,11 +98,7 @@ function setProjectLinks(projectId, project = {}) {
 	const projectInput = $("#project-id");
 	if (projectInput) projectInput.value = projectId;
 
-	const breadcrumbProject = $("#breadcrumb-project");
-	if (breadcrumbProject) {
-		breadcrumbProject.href = dashboardHref;
-		breadcrumbProject.textContent = projectName;
-	}
+	enhanceBreadcrumbSchema(projectId, projectName);
 
 	const back = $("#back-to-project");
 	if (back) back.href = dashboardHref;
@@ -103,7 +152,7 @@ function populateStudies(studies = []) {
 
 function showErrors(errors) {
 	const summary = $("#participant-error-summary");
-	const list = $("#participant-error-list");
+	const list = $("#participant-error-list") || summary?.querySelector(".govuk-error-summary__list");
 	if (!summary || !list) return;
 
 	if (!errors.length) {
