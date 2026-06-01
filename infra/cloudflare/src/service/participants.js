@@ -166,6 +166,10 @@ async function readD1ParticipantContact(svc, origin, participantId) {
 			participant: {
 				id: row.id,
 				display_name: row.participant_ref || "",
+				participant_ref: row.participant_ref || "",
+				first_name: cleanText(contact.first_name),
+				family_name: cleanText(contact.family_name),
+				full_name: cleanText(contact.full_name),
 				email: cleanText(contact.email),
 				phone: cleanText(contact.phone),
 			},
@@ -277,7 +281,7 @@ export async function revealParticipantContact(svc, request, origin, url) {
 			ok: true,
 			participant: result.participant,
 			sensitive: true,
-			message: "Participant contact details revealed. Handle this information as sensitive.",
+			message: "Participant details revealed. Handle this information as sensitive.",
 		},
 		200,
 		svc.corsHeaders(origin),
@@ -308,9 +312,14 @@ export async function createParticipant(svc, request, origin) {
 	const participantAirtableId = cleanText(body.participant_airtable_id || body.participantAirtableId);
 	const participantRef = participantRefFor(body);
 	const accessNeeds = cleanText(body.access_needs || body.accessNeeds);
+	const firstName = cleanText(body.first_name || body.firstName);
+	const familyName = cleanText(body.family_name || body.familyName || body.last_name || body.lastName);
+	const fullName = cleanText([firstName, familyName].filter(Boolean).join(" "));
 
 	if (!studyId) return svc.json({ ok: false, error: "study_required", message: "Choose a study for this participant." }, 400, svc.corsHeaders(origin));
 	if (!projectId) return svc.json({ ok: false, error: "project_required", message: "Choose a project for this participant." }, 400, svc.corsHeaders(origin));
+	if (!firstName) return svc.json({ ok: false, error: "first_name_required", message: "Enter the participant’s first name." }, 400, svc.corsHeaders(origin));
+	if (!familyName) return svc.json({ ok: false, error: "family_name_required", message: "Enter the participant’s family name." }, 400, svc.corsHeaders(origin));
 
 	const db = dbFor(svc.env);
 	if (!db) return participantDataUnavailable(svc, origin);
@@ -318,10 +327,13 @@ export async function createParticipant(svc, request, origin) {
 	const participantId = makeId("d1ptp");
 	const now = new Date().toISOString();
 	const contact = {
+		first_name: firstName,
+		family_name: familyName,
+		full_name: fullName,
 		email: cleanText(body.email),
 		phone: cleanText(body.phone),
 	};
-	const hasContact = Boolean(contact.email || contact.phone);
+	const hasSensitiveDetails = Boolean(contact.first_name || contact.family_name || contact.full_name || contact.email || contact.phone);
 
 	try {
 		await db
@@ -357,8 +369,8 @@ export async function createParticipant(svc, request, origin) {
 				accessNeeds || null,
 				now,
 				now,
-				hasContact ? jsonText(contact) : null,
-				jsonText({ projectId, studyId, participantRef, accessNeeds, pseudonymised: true }),
+				hasSensitiveDetails ? jsonText(contact) : null,
+				jsonText({ projectId, studyId, participantRef, accessNeeds, hasSensitiveDetails, pseudonymised: true }),
 			)
 			.run();
 	} catch {
