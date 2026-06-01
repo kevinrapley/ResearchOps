@@ -1,4 +1,11 @@
 {% extends "layouts/researchops.njk" %}
+{% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
+{% from "govuk/components/input/macro.njk" import govukInput %}
+{% from "govuk/components/inset-text/macro.njk" import govukInsetText %}
+{% from "govuk/components/select/macro.njk" import govukSelect %}
+{% from "govuk/components/textarea/macro.njk" import govukTextarea %}
 
 {% block head %}
 	<meta property="schema:name" content="Add participant — ResearchOps">
@@ -12,40 +19,37 @@
 {% block content %}
 <div class="govuk-width-container">
 	{{ govukBreadcrumbs({
+		attributes: {
+			id: "participant-breadcrumbs",
+			typeof: "schema:BreadcrumbList"
+		},
 		items: [
 			{
-				text: 'Projects',
-				href: '/pages/projects/'
+				text: "Projects",
+				href: "/pages/projects/",
+				attributes: {
+					property: "schema:itemListElement",
+					typeof: "schema:ListItem"
+				}
 			},
 			{
-				text: 'Project Dashboard',
-				href: '/pages/project-dashboard/'
+				text: "Project Dashboard",
+				href: "/pages/project-dashboard/",
+				attributes: {
+					id: "breadcrumb-project",
+					property: "schema:itemListElement",
+					typeof: "schema:ListItem"
+				}
 			},
 			{
-				text: 'Add participant'
+				text: "Add participant",
+				attributes: {
+					property: "schema:itemListElement",
+					typeof: "schema:ListItem"
+				}
 			}
 		]
 	}) }}
-	<!--<nav class="govuk-breadcrumbs" aria-label="Breadcrumb" typeof="schema:BreadcrumbList">
-		<ol class="govuk-breadcrumbs__list">
-			<li class="govuk-breadcrumbs__list-item" property="schema:itemListElement" typeof="schema:ListItem">
-				<a class="govuk-breadcrumbs__link" href="/pages/projects/" property="schema:item" typeof="schema:Thing">
-					<span property="schema:name">Projects</span>
-				</a>
-				<meta property="schema:position" content="1">
-			</li>
-			<li class="govuk-breadcrumbs__list-item" property="schema:itemListElement" typeof="schema:ListItem">
-				<a id="breadcrumb-project" class="govuk-breadcrumbs__link" href="/pages/projects/" property="schema:item" typeof="schema:Thing">
-					<span property="schema:name">Project</span>
-				</a>
-				<meta property="schema:position" content="2">
-			</li>
-			<li class="govuk-breadcrumbs__list-item" aria-current="page" property="schema:itemListElement" typeof="schema:ListItem">
-				<span property="schema:name">Add participant</span>
-				<meta property="schema:position" content="3">
-			</li>
-		</ol>
-	</nav>-->
 
 	<div class="dashboard-hero">
 		<p id="project-eyebrow" class="govuk-caption-l">Project</p>
@@ -53,76 +57,166 @@
 		<p class="govuk-body-l">Add participants through a study-specific workflow so recruitment, consent, withdrawal and sessions remain traceable.</p>
 	</div>
 
-	<div id="participant-error-summary" class="govuk-error-summary" role="alert" tabindex="-1" aria-labelledby="participant-error-summary-title" hidden>
-		<h2 id="participant-error-summary-title" class="govuk-error-summary__title">There is a problem</h2>
-		<div class="govuk-error-summary__body">
-			<ul class="govuk-list govuk-error-summary__list" id="participant-error-list"></ul>
-		</div>
-	</div>
+	{{ govukErrorSummary({
+		attributes: {
+			id: "participant-error-summary",
+			hidden: "hidden"
+		},
+		titleText: "There is a problem",
+		errorList: []
+	}) }}
 
-	<div id="no-studies-panel" class="govuk-inset-text" hidden>
-		<h2 class="govuk-heading-m">Create a study first</h2>
-		<p class="govuk-body">Participants must be linked to a study before they can be added.</p>
-		<a id="create-study-link" href="/pages/study/new/?pid=" class="govuk-button">Add study</a>
-	</div>
+	{{ govukInsetText({
+		attributes: {
+			id: "no-studies-panel",
+			hidden: "hidden"
+		},
+		html: '<h2 class="govuk-heading-m">Create a study first</h2><p class="govuk-body">Participants must be linked to a study before they can be added.</p><a id="create-study-link" href="/pages/study/new/?pid=" class="govuk-button" data-module="govuk-button">Add study</a>'
+	}) }}
 
 	<form id="add-participant-form" novalidate>
 		<input id="project-id" name="project_id" type="hidden" value="">
 
-		<div class="govuk-form-group">
-			<label class="govuk-label" for="study-select">Study</label>
-			<div id="study-select-hint" class="govuk-hint">Choose the study this participant belongs to.</div>
-			<select id="study-select" name="study_id" class="govuk-select govuk-!-width-two-thirds" aria-describedby="study-select-hint" required>
-				<option value="">Choose a study</option>
-			</select>
-		</div>
+		{{ govukSelect({
+			id: "study-select",
+			name: "study_id",
+			classes: "govuk-!-width-two-thirds",
+			label: {
+				text: "Study"
+			},
+			hint: {
+				text: "Choose the study this participant belongs to."
+			},
+			items: [
+				{
+					value: "",
+					text: "Choose a study"
+				}
+			],
+			attributes: {
+				required: "required"
+			}
+		}) }}
 
-		<div class="govuk-form-group">
-			<label class="govuk-label" for="participant-first-name">First name</label>
-			<div id="participant-first-name-hint" class="govuk-hint">Enter the participant’s real first name so the research team can manage recruitment, consent and withdrawal correctly.</div>
-			<input id="participant-first-name" name="first_name" class="govuk-input govuk-!-width-two-thirds" autocomplete="given-name" aria-describedby="participant-first-name-hint" required>
-		</div>
+		{{ govukInput({
+			id: "participant-first-name",
+			name: "first_name",
+			classes: "govuk-!-width-two-thirds",
+			label: {
+				text: "First name"
+			},
+			hint: {
+				text: "Enter the participant’s real first name so the research team can manage recruitment, consent and withdrawal correctly."
+			},
+			autocomplete: "given-name",
+			attributes: {
+				required: "required"
+			}
+		}) }}
 
-		<div class="govuk-form-group">
-			<label class="govuk-label" for="participant-family-name">Family name</label>
-			<div id="participant-family-name-hint" class="govuk-hint">Enter the participant’s real family name. The participant list will continue to show a participant reference by default.</div>
-			<input id="participant-family-name" name="family_name" class="govuk-input govuk-!-width-two-thirds" autocomplete="family-name" aria-describedby="participant-family-name-hint" required>
-		</div>
+		{{ govukInput({
+			id: "participant-family-name",
+			name: "family_name",
+			classes: "govuk-!-width-two-thirds",
+			label: {
+				text: "Family name"
+			},
+			hint: {
+				text: "Enter the participant’s real family name. The participant list will continue to show a participant reference by default."
+			},
+			autocomplete: "family-name",
+			attributes: {
+				required: "required"
+			}
+		}) }}
 
-		<div class="govuk-form-group">
-			<label class="govuk-label" for="participant-ref">Participant reference</label>
-			<div id="participant-ref-hint" class="govuk-hint">Use a study reference such as TP1 Participant 11. Leave blank to let ResearchOps create one.</div>
-			<input id="participant-ref" name="participant_ref" class="govuk-input govuk-!-width-two-thirds" autocomplete="off" aria-describedby="participant-ref-hint">
-		</div>
+		{{ govukInput({
+			id: "participant-ref",
+			name: "participant_ref",
+			classes: "govuk-!-width-two-thirds",
+			label: {
+				text: "Participant reference"
+			},
+			hint: {
+				text: "Use a study reference such as TP1 Participant 11. Leave blank to let ResearchOps create one."
+			},
+			autocomplete: "off"
+		}) }}
 
-		<div class="govuk-form-group">
-			<label class="govuk-label" for="participant-email">Email address</label>
-			<input id="participant-email" name="email" class="govuk-input govuk-!-width-two-thirds" type="email" autocomplete="email">
-		</div>
+		{{ govukInput({
+			id: "participant-email",
+			name: "email",
+			type: "email",
+			classes: "govuk-!-width-two-thirds",
+			label: {
+				text: "Email address"
+			},
+			autocomplete: "email"
+		}) }}
 
-		<div class="govuk-form-group">
-			<label class="govuk-label" for="participant-phone">Phone number</label>
-			<input id="participant-phone" name="phone" class="govuk-input govuk-!-width-two-thirds" type="tel" autocomplete="tel">
-		</div>
+		{{ govukInput({
+			id: "participant-phone",
+			name: "phone",
+			type: "tel",
+			classes: "govuk-!-width-two-thirds",
+			label: {
+				text: "Phone number"
+			},
+			autocomplete: "tel"
+		}) }}
 
-		<div class="govuk-form-group">
-			<label class="govuk-label" for="participant-channel">Preferred contact channel</label>
-			<select id="participant-channel" name="channel_pref" class="govuk-select">
-				<option value="email">Email</option>
-				<option value="sms">SMS</option>
-				<option value="phone">Phone</option>
-			</select>
-		</div>
+		{{ govukSelect({
+			id: "participant-channel",
+			name: "channel_pref",
+			label: {
+				text: "Preferred contact channel"
+			},
+			items: [
+				{
+					value: "email",
+					text: "Email",
+					selected: true
+				},
+				{
+					value: "sms",
+					text: "SMS"
+				},
+				{
+					value: "phone",
+					text: "Phone"
+				}
+			]
+		}) }}
 
-		<div class="govuk-form-group">
-			<label class="govuk-label" for="participant-access-needs">Access needs</label>
-			<div id="participant-access-needs-hint" class="govuk-hint">Only record support needs needed to run the research safely and accessibly.</div>
-			<textarea id="participant-access-needs" name="access_needs" class="govuk-textarea govuk-!-width-two-thirds" rows="4" aria-describedby="participant-access-needs-hint"></textarea>
-		</div>
+		{{ govukTextarea({
+			id: "participant-access-needs",
+			name: "access_needs",
+			classes: "govuk-!-width-two-thirds",
+			rows: 4,
+			label: {
+				text: "Access needs"
+			},
+			hint: {
+				text: "Only record support needs needed to run the research safely and accessibly."
+			}
+		}) }}
 
 		<div class="govuk-button-group">
-			<button id="participant-submit" class="govuk-button" type="submit">Create participant</button>
-			<a id="cancel-participant" class="govuk-button govuk-button--secondary" href="/pages/projects/">Cancel</a>
+			{{ govukButton({
+				text: "Create participant",
+				type: "submit",
+				attributes: {
+					id: "participant-submit"
+				}
+			}) }}
+			{{ govukButton({
+				text: "Cancel",
+				href: "/pages/projects/",
+				classes: "govuk-button--secondary",
+				attributes: {
+					id: "cancel-participant"
+				}
+			}) }}
 		</div>
 
 		<p id="participant-status" class="govuk-body-s" role="status" aria-live="polite"></p>
