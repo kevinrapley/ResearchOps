@@ -1,5 +1,6 @@
 import { mkdir, writeFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import nunjucks from 'nunjucks';
 import prettier from 'prettier';
 
@@ -135,7 +136,7 @@ const accountNavigation = navigation.map((item) => ({
 	active: false,
 }));
 
-const pages = [
+export const govukPages = [
 	{
 		template: 'pages/home.njk',
 		output: 'public/index.html',
@@ -233,11 +234,30 @@ const pages = [
 	},
 ];
 
-for (const page of pages) {
+export async function renderGovukPage(page) {
 	const outputPath = resolve(root, page.output);
 	const rawHtml = env.render(page.template, page.context);
 	const html = await formatRenderedHtml(rawHtml);
 	await mkdir(dirname(outputPath), { recursive: true });
 	await writeFile(outputPath, html.endsWith('\n') ? html : `${html}\n`, 'utf8');
 	console.log('Rendered ' + page.output);
+	return page.output;
+}
+
+export async function renderGovukPages(pagesToRender = govukPages) {
+	const outputs = [];
+	for (const page of pagesToRender) {
+		outputs.push(await renderGovukPage(page));
+	}
+	return outputs;
+}
+
+export async function renderAllGovukPages() {
+	return renderGovukPages(govukPages);
+}
+
+const invokedDirectly = process.argv[1] && fileURLToPath(import.meta.url) === resolve(process.argv[1]);
+
+if (invokedDirectly) {
+	await renderAllGovukPages();
 }
