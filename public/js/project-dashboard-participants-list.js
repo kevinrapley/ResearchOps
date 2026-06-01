@@ -1,5 +1,6 @@
 const PARTICIPANT_API_ORIGIN = resolveParticipantApiBase();
 const PARTICIPANT_PAGE_SIZE = 10;
+const STUDY_TITLE_PREFIX = "Study: ";
 
 const participantListState = {
 	projectId: "",
@@ -8,7 +9,6 @@ const participantListState = {
 	query: "",
 	sort: "az",
 	isRendering: false,
-	lastRenderedSignature: "",
 };
 
 function resolveParticipantApiBase() {
@@ -52,28 +52,12 @@ function studyTitleFor(study = {}) {
 	return String(study.title || study.Title || study.method || "Study").trim() || "Study";
 }
 
-function truncateAtWord(value = "", maxLength = 64) {
-	const text = String(value || "").replace(/\s+/g, " ").trim();
-	if (text.length <= maxLength) return text;
-	const slice = text.slice(0, maxLength + 1);
-	const boundary = slice.search(/\s+\S*$/);
-	const truncated = boundary > 0 ? slice.slice(0, boundary).trim() : text.slice(0, maxLength).trim();
-	return `${truncated}…`;
-}
-
 function participantLabel(participant = {}) {
 	return String(participant.participant_ref || participant.display_name || participant.id || "Participant").trim();
 }
 
 function participantUserGroup(participant = {}) {
-	return String(
-		participant.user_group ||
-		participant.userGroup ||
-		participant.user_group_label ||
-		participant.group ||
-		participant.studyTitle ||
-		"Unassigned user group",
-	).trim();
+	return String(participant.user_group || participant.userGroup || participant.user_group_label || participant.group || "Unassigned user group").trim();
 }
 
 function participantCreatedTime(participant = {}) {
@@ -92,7 +76,9 @@ function participantSearchText(participant = {}) {
 		participant.status,
 		participant.studyTitle,
 		participantUserGroup(participant),
-	].join(" ").toLowerCase();
+	]
+		.join(" ")
+		.toLowerCase();
 }
 
 function filteredParticipants() {
@@ -121,8 +107,8 @@ function participantControlsHtml(total) {
 	<div class="govuk-form-group rops-participant-sort">
 		<label class="govuk-label govuk-label--s" for="participant-list-sort">Sort participants</label>
 		<select class="govuk-select" id="participant-list-sort">
-			<option value="az" ${participantListState.sort === "az" ? "selected" : ""}>A to Z</option>
-			<option value="za" ${participantListState.sort === "za" ? "selected" : ""}>Z to A</option>
+			<option value="az" ${participantListState.sort === "az" ? "selected" : ""}>A-Z</option>
+			<option value="za" ${participantListState.sort === "za" ? "selected" : ""}>Z-A</option>
 			<option value="first-last" ${participantListState.sort === "first-last" ? "selected" : ""}>First to last</option>
 			<option value="last-first" ${participantListState.sort === "last-first" ? "selected" : ""}>Last to first</option>
 			<option value="user-group" ${participantListState.sort === "user-group" ? "selected" : ""}>User group</option>
@@ -163,14 +149,13 @@ function participantRevealHtml(participant = {}) {
 function participantListItemHtml(participant = {}) {
 	const reference = participantLabel(participant);
 	const studyTitle = String(participant.studyTitle || "Study not recorded").trim();
-	const truncatedStudyTitle = truncateAtWord(studyTitle);
 	const userGroup = participantUserGroup(participant);
 	const status = participant.status ? `<span class="govuk-hint">Status: ${escapeParticipantHtml(participant.status)}</span>` : "";
 	return `
 <li class="rops-participant-list__item" data-participant-id="${escapeParticipantHtml(participant.id)}">
 	<strong>${escapeParticipantHtml(reference)}</strong>
 	${status}
-	<span class="govuk-hint rops-study-title-truncated" title="${escapeParticipantHtml(studyTitle)}">Study: ${escapeParticipantHtml(truncatedStudyTitle)}</span>
+	<span class="govuk-hint rops-study-title-truncated" title="${escapeParticipantHtml(studyTitle)}" data-study-title="${escapeParticipantHtml(studyTitle)}" data-study-prefix="${STUDY_TITLE_PREFIX}">${STUDY_TITLE_PREFIX}${escapeParticipantHtml(studyTitle)}</span>
 	<span class="govuk-hint">User group: ${escapeParticipantHtml(userGroup)}</span>
 	<div class="rops-participant-reveal">${participantRevealHtml(participant)}</div>
 	${participantSensitiveDetailsHtml(participant)}
@@ -188,6 +173,34 @@ function paginationHtml(filteredTotal, pageCount, start, end) {
 		<button type="button" class="govuk-button govuk-button--secondary" data-participants-page="next" ${participantListState.page >= pageCount ? "disabled" : ""}>Next</button>
 	</div>
 </nav>`;
+}
+
+function applyStudyTitleFit(element) {
+	const title = String(element.dataset.studyTitle || "").replace(/\s+/g, " ").trim();
+	const prefix = element.dataset.studyPrefix || STUDY_TITLE_PREFIX;
+	if (!title) return;
+	element.textContent = `${prefix}${title}`;
+	if (element.scrollWidth <= element.clientWidth) return;
+	const words = title.split(" ").filter(Boolean);
+	let low = 0;
+	let high = words.length;
+	let fitted = "";
+	while (low <= high) {
+		const middle = Math.floor((low + high) / 2);
+		const candidate = words.slice(0, middle).join(" ").trim();
+		element.textContent = `${prefix}${candidate}…`;
+		if (element.scrollWidth <= element.clientWidth) {
+			fitted = candidate;
+			low = middle + 1;
+		} else {
+			high = middle - 1;
+		}
+	}
+	element.textContent = fitted ? `${prefix}${fitted}…` : `${prefix}…`;
+}
+
+function applySingleLineStudyTitleTruncation() {
+	document.querySelectorAll(".rops-study-title-truncated[data-study-title]").forEach((element) => applyStudyTitleFit(element));
 }
 
 function renderEnhancedParticipants() {
@@ -217,6 +230,7 @@ ${paginationHtml(filtered.length, pageCount, start, end)}
 	<a href="/pages/project-dashboard/participants/import/?pid=${projectId}" role="button" draggable="false" class="govuk-button govuk-button--secondary" data-module="govuk-button" id="import-participants-link">Bulk upload participants via CSV</a>
 </div>`;
 	wireParticipantControls();
+	window.requestAnimationFrame(applySingleLineStudyTitleTruncation);
 	participantListState.isRendering = false;
 }
 
@@ -243,15 +257,21 @@ function wireParticipantControls() {
 	});
 }
 
+function participantRevealButton(participantId) {
+	return Array.from(document.querySelectorAll("[data-participant-reveal]")).find((button) => button.dataset.participantReveal === participantId) || null;
+}
+
 async function revealParticipant(participantId) {
-	const button = document.querySelector(`[data-participant-reveal="${CSS.escape(participantId)}"]`);
+	const button = participantRevealButton(participantId);
 	if (button) button.textContent = "Revealing details";
 	try {
 		const json = await participantJson(`/api/participants/contact?participant=${encodeURIComponent(participantId)}&ts=${Date.now()}`);
-		participantListState.participants = participantListState.participants.map((participant) => participant.id === participantId ? { ...participant, ...json.participant, revealed: true } : participant);
+		participantListState.participants = participantListState.participants.map((participant) =>
+			participant.id === participantId ? { ...participant, ...json.participant, revealed: true } : participant,
+		);
 		renderEnhancedParticipants();
 	} catch (error) {
-		if (button) button.textContent = `Could not reveal details`;
+		if (button) button.textContent = "Could not reveal details";
 		console.error("[project-dashboard-participants-list] reveal failed", error);
 	}
 }
