@@ -86,230 +86,658 @@
 						</div>
 					</div>
 
-					<form id="impact-form" class="outcomes-form" novalidate>
-						<div class="govuk-form-group">
-							<label class="govuk-label" for="impact-insightId">Insight ID</label>
+					<div class="outcomes-form-layout">
+						<form id="impact-form" class="outcomes-form" novalidate>
+							<input id="impact-record-id" name="recordId" type="hidden" value="" />
 
-							<div id="impact-insightId-hint" class="govuk-hint">Auto-generated identifier for this impact record.</div>
+							<div class="govuk-form-group">
+								<label class="govuk-label" for="impact-insightId">Impact record reference</label>
 
-							<input
-								class="govuk-input govuk-!-width-two-thirds"
-								id="impact-insightId"
-								name="insightId"
-								type="text"
-								aria-describedby="impact-insightId-hint"
-								readonly="readonly"
-							/>
-						</div>
+								<div id="impact-insightId-hint" class="govuk-hint">
+									Auto-generated identifier for this impact record.
+								</div>
 
-						<div class="govuk-form-group">
-							<label class="govuk-label" for="impact-decisionLink">Decision link</label>
-
-							<div id="impact-decisionLink-hint" class="govuk-hint">
-								Link to the decision this insight informed, such as a Jira ticket, PRD or service decision record.
+								<input
+									class="govuk-input govuk-input--width-20"
+									id="impact-insightId"
+									name="displayRef"
+									type="text"
+									aria-describedby="impact-insightId-hint"
+									readonly="readonly"
+									data-guidance-key="reference"
+								/>
 							</div>
 
-							<input
-								class="govuk-input govuk-!-width-two-thirds"
-								id="impact-decisionLink"
-								name="decisionLink"
-								type="url"
-								aria-describedby="impact-decisionLink-hint"
-								inputmode="url"
-							/>
-						</div>
+							<div class="govuk-form-group">
+								<label class="govuk-label" for="impact-decisionLink">Decision link</label>
 
-						<div class="govuk-form-group">
-							<label class="govuk-label" for="impact-metricName">Metric name</label>
+								<div id="impact-decisionLink-hint" class="govuk-hint">Link to the decision this insight informed.</div>
 
-							<div id="impact-metricName-hint" class="govuk-hint">
-								The metric being tracked, for example completion rate.
+								<input
+									class="govuk-input govuk-!-width-two-thirds"
+									id="impact-decisionLink"
+									name="decisionLink"
+									type="url"
+									aria-describedby="impact-decisionLink-hint"
+									inputmode="url"
+									data-guidance-key="decisionLink"
+								/>
 							</div>
 
-							<input
-								class="govuk-input govuk-!-width-two-thirds"
-								id="impact-metricName"
-								name="metricName"
-								type="text"
-								aria-describedby="impact-metricName-hint"
-								required="required"
-							/>
-						</div>
+							<div class="govuk-form-group">
+								<label class="govuk-label" for="impact-metricName">Metric name</label>
 
-						<div class="govuk-form-group">
-							<label class="govuk-label" for="impact-date">Date recorded</label>
+								<div id="impact-metricName-hint" class="govuk-hint">The metric being tracked.</div>
 
-							<div id="impact-date-hint" class="govuk-hint">When this impact was recorded.</div>
-
-							<input
-								class="govuk-input govuk-input--width-10"
-								id="impact-date"
-								name="recordedAt"
-								type="date"
-								aria-describedby="impact-date-hint"
-							/>
-						</div>
-
-						<div class="govuk-form-group">
-							<label class="govuk-label" for="impact-baseline">Baseline</label>
-
-							<div id="impact-baseline-hint" class="govuk-hint">Value before the change.</div>
-
-							<input
-								class="govuk-input govuk-input--width-10"
-								id="impact-baseline"
-								name="baseline"
-								type="number"
-								aria-describedby="impact-baseline-hint"
-								min="0"
-								step="0.01"
-								inputmode="decimal"
-							/>
-						</div>
-
-						<div class="govuk-form-group">
-							<label class="govuk-label" for="impact-target">Target</label>
-
-							<div id="impact-target-hint" class="govuk-hint">Expected value after the change.</div>
-
-							<input
-								class="govuk-input govuk-input--width-10"
-								id="impact-target"
-								name="target"
-								type="number"
-								aria-describedby="impact-target-hint"
-								min="0"
-								step="0.01"
-								inputmode="decimal"
-							/>
-						</div>
-
-						<div class="govuk-form-group">
-							<label class="govuk-label" for="impact-actual">Actual</label>
-
-							<div id="impact-actual-hint" class="govuk-hint">Observed value after the change.</div>
-
-							<input
-								class="govuk-input govuk-input--width-10"
-								id="impact-actual"
-								name="actual"
-								type="number"
-								aria-describedby="impact-actual-hint"
-								min="0"
-								step="0.01"
-								inputmode="decimal"
-							/>
-						</div>
-
-						<div class="govuk-form-group">
-							<label class="govuk-label" for="impact-type">Impact type</label>
-
-							<div id="impact-type-hint" class="govuk-hint">What kind of impact this describes.</div>
-
-							<select
-								class="govuk-select govuk-!-width-two-thirds"
-								id="impact-type"
-								name="impactType"
-								aria-describedby="impact-type-hint"
-							>
-								<option value="product">Product</option>
-
-								<option value="strategy">Strategy</option>
-
-								<option value="process">Process</option>
-
-								<option value="org">Organisation</option>
-							</select>
-						</div>
-
-						<div class="govuk-form-group">
-							<label class="govuk-label" for="impact-scale">Impact scale</label>
-
-							<div id="impact-scale-hint" class="govuk-hint">The scale or reach of this impact.</div>
-
-							<select
-								class="govuk-select govuk-!-width-two-thirds"
-								id="impact-scale"
-								name="impactScale"
-								aria-describedby="impact-scale-hint"
-							>
-								<option value="feature">Feature</option>
-
-								<option value="team">Team</option>
-
-								<option value="cross-team">Cross-team</option>
-
-								<option value="org">Organisation-wide</option>
-							</select>
-						</div>
-
-						<div class="govuk-form-group">
-							<label class="govuk-label" for="impact-status">Status</label>
-
-							<div id="impact-status-hint" class="govuk-hint">Lifecycle status of the change.</div>
-
-							<select
-								class="govuk-select govuk-!-width-two-thirds"
-								id="impact-status"
-								name="status"
-								aria-describedby="impact-status-hint"
-							>
-								<option value="planned">Planned</option>
-
-								<option value="in-progress">In progress</option>
-
-								<option value="implemented">Implemented</option>
-
-								<option value="evaluated">Evaluated</option>
-							</select>
-						</div>
-
-						<div class="govuk-form-group">
-							<label class="govuk-label" for="impact-notes">Notes</label>
-
-							<div id="impact-notes-hint" class="govuk-hint">
-								Additional context or links to evidence. Do not include participant personal data.
+								<input
+									class="govuk-input govuk-!-width-two-thirds"
+									id="impact-metricName"
+									name="metricName"
+									type="text"
+									aria-describedby="impact-metricName-hint"
+									required="required"
+									data-guidance-key="metricName"
+								/>
 							</div>
 
-							<textarea
-								class="govuk-textarea govuk-!-width-two-thirds"
-								id="impact-notes"
-								name="notes"
-								rows="3"
-								aria-describedby="impact-notes-hint"
-							></textarea>
-						</div>
+							<div class="govuk-form-group">
+								<fieldset class="govuk-fieldset" aria-describedby="metricUnit-hint">
+									<legend class="govuk-fieldset__legend govuk-fieldset__legend--s">Metric unit</legend>
 
-						<button type="submit" class="govuk-button" data-module="govuk-button" id="impact-submit">
-							Save impact record
-						</button>
-					</form>
+									<div id="metricUnit-hint" class="govuk-hint">Use the same unit for baseline, target and actual.</div>
 
-					<div class="outcomes-table-wrap">
-						<table class="govuk-table govuk-!-margin-top-6 outcomes-table" id="impact-table">
-							<caption class="govuk-table__caption govuk-table__caption--m">Recorded impacts for this project</caption>
+									<div class="govuk-radios" data-guidance-key="metricUnit" data-module="govuk-radios">
+										<div class="govuk-radios__item">
+											<input
+												class="govuk-radios__input"
+												id="metricUnit"
+												name="metricUnit"
+												type="radio"
+												value="percentage"
+											/>
+											<label class="govuk-label govuk-radios__label" for="metricUnit">Percentage</label>
+										</div>
 
-							<thead class="govuk-table__head">
-								<tr class="govuk-table__row">
-									<th scope="col" class="govuk-table__header">Insight</th>
+										<div class="govuk-radios__item">
+											<input
+												class="govuk-radios__input"
+												id="metricUnit-2"
+												name="metricUnit"
+												type="radio"
+												value="count"
+											/>
+											<label class="govuk-label govuk-radios__label" for="metricUnit-2">Count</label>
+										</div>
 
-									<th scope="col" class="govuk-table__header">Decision</th>
+										<div class="govuk-radios__item">
+											<input
+												class="govuk-radios__input"
+												id="metricUnit-3"
+												name="metricUnit"
+												type="radio"
+												value="minutes"
+											/>
+											<label class="govuk-label govuk-radios__label" for="metricUnit-3">Minutes</label>
+										</div>
 
-									<th scope="col" class="govuk-table__header">Metric</th>
+										<div class="govuk-radios__item">
+											<input
+												class="govuk-radios__input"
+												id="metricUnit-4"
+												name="metricUnit"
+												type="radio"
+												value="days"
+											/>
+											<label class="govuk-label govuk-radios__label" for="metricUnit-4">Days</label>
+										</div>
 
-									<th scope="col" class="govuk-table__header govuk-table__header--numeric">Baseline</th>
+										<div class="govuk-radios__item">
+											<input
+												class="govuk-radios__input"
+												id="metricUnit-5"
+												name="metricUnit"
+												type="radio"
+												value="score"
+											/>
+											<label class="govuk-label govuk-radios__label" for="metricUnit-5">Score</label>
+										</div>
 
-									<th scope="col" class="govuk-table__header govuk-table__header--numeric">Target</th>
+										<div class="govuk-radios__item">
+											<input
+												class="govuk-radios__input"
+												id="metricUnit-6"
+												name="metricUnit"
+												type="radio"
+												value="cost"
+											/>
+											<label class="govuk-label govuk-radios__label" for="metricUnit-6">Cost</label>
+										</div>
 
-									<th scope="col" class="govuk-table__header govuk-table__header--numeric">Actual</th>
+										<div class="govuk-radios__item">
+											<input
+												class="govuk-radios__input"
+												id="metricUnit-7"
+												name="metricUnit"
+												type="radio"
+												value="other"
+											/>
+											<label class="govuk-label govuk-radios__label" for="metricUnit-7">Other</label>
+										</div>
+									</div>
+								</fieldset>
+							</div>
 
-									<th scope="col" class="govuk-table__header">Type</th>
-								</tr>
-							</thead>
+							<div class="govuk-form-group">
+								<fieldset class="govuk-fieldset" aria-describedby="metricDirection-hint">
+									<legend class="govuk-fieldset__legend govuk-fieldset__legend--s">Desired direction</legend>
 
-							<tbody class="govuk-table__body"></tbody>
-						</table>
+									<div id="metricDirection-hint" class="govuk-hint">
+										Describe how to interpret movement in the metric.
+									</div>
+
+									<div class="govuk-radios" data-guidance-key="metricDirection" data-module="govuk-radios">
+										<div class="govuk-radios__item">
+											<input
+												class="govuk-radios__input"
+												id="metricDirection"
+												name="metricDirection"
+												type="radio"
+												value="increase"
+											/>
+											<label class="govuk-label govuk-radios__label" for="metricDirection">Increase is better</label>
+										</div>
+
+										<div class="govuk-radios__item">
+											<input
+												class="govuk-radios__input"
+												id="metricDirection-2"
+												name="metricDirection"
+												type="radio"
+												value="decrease"
+											/>
+											<label class="govuk-label govuk-radios__label" for="metricDirection-2">Decrease is better</label>
+										</div>
+
+										<div class="govuk-radios__item">
+											<input
+												class="govuk-radios__input"
+												id="metricDirection-3"
+												name="metricDirection"
+												type="radio"
+												value="range"
+											/>
+											<label class="govuk-label govuk-radios__label" for="metricDirection-3">
+												Stay within range is better
+											</label>
+										</div>
+
+										<div class="govuk-radios__item">
+											<input
+												class="govuk-radios__input"
+												id="metricDirection-4"
+												name="metricDirection"
+												type="radio"
+												value="not-directional"
+											/>
+											<label class="govuk-label govuk-radios__label" for="metricDirection-4">Not directional</label>
+										</div>
+									</div>
+								</fieldset>
+							</div>
+
+							<div class="govuk-form-group">
+								<fieldset class="govuk-fieldset" role="group" aria-describedby="impact-date-hint">
+									<legend class="govuk-fieldset__legend govuk-fieldset__legend--s">Date recorded</legend>
+
+									<div id="impact-date-hint" class="govuk-hint">For example, 2 6 2026.</div>
+
+									<div class="govuk-date-input" data-guidance-key="recordedAt" id="impact-date">
+										<div class="govuk-date-input__item">
+											<div class="govuk-form-group">
+												<label class="govuk-label govuk-date-input__label" for="impact-date-day">Day</label>
+
+												<input
+													class="govuk-input govuk-date-input__input govuk-input--width-2"
+													id="impact-date-day"
+													name="recordedAt-day"
+													type="text"
+													inputmode="numeric"
+												/>
+											</div>
+										</div>
+
+										<div class="govuk-date-input__item">
+											<div class="govuk-form-group">
+												<label class="govuk-label govuk-date-input__label" for="impact-date-month">Month</label>
+
+												<input
+													class="govuk-input govuk-date-input__input govuk-input--width-2"
+													id="impact-date-month"
+													name="recordedAt-month"
+													type="text"
+													inputmode="numeric"
+												/>
+											</div>
+										</div>
+
+										<div class="govuk-date-input__item">
+											<div class="govuk-form-group">
+												<label class="govuk-label govuk-date-input__label" for="impact-date-year">Year</label>
+
+												<input
+													class="govuk-input govuk-date-input__input govuk-input--width-4"
+													id="impact-date-year"
+													name="recordedAt-year"
+													type="text"
+													inputmode="numeric"
+												/>
+											</div>
+										</div>
+									</div>
+								</fieldset>
+							</div>
+
+							<div class="govuk-form-group">
+								<label class="govuk-label" for="impact-baseline">Baseline value</label>
+
+								<div id="impact-baseline-hint" class="govuk-hint">Value before the change.</div>
+
+								<input
+									class="govuk-input govuk-input--width-10"
+									id="impact-baseline"
+									name="baseline"
+									type="number"
+									aria-describedby="impact-baseline-hint"
+									step="0.01"
+									inputmode="decimal"
+									data-guidance-key="baseline"
+								/>
+							</div>
+
+							<div class="govuk-form-group">
+								<label class="govuk-label" for="impact-target">Target value</label>
+
+								<div id="impact-target-hint" class="govuk-hint">Expected value after the change.</div>
+
+								<input
+									class="govuk-input govuk-input--width-10"
+									id="impact-target"
+									name="target"
+									type="number"
+									aria-describedby="impact-target-hint"
+									step="0.01"
+									inputmode="decimal"
+									data-guidance-key="target"
+								/>
+							</div>
+
+							<div class="govuk-form-group">
+								<label class="govuk-label" for="impact-actual">Actual value</label>
+
+								<div id="impact-actual-hint" class="govuk-hint">Observed value after the change.</div>
+
+								<input
+									class="govuk-input govuk-input--width-10"
+									id="impact-actual"
+									name="actual"
+									type="number"
+									aria-describedby="impact-actual-hint"
+									step="0.01"
+									inputmode="decimal"
+									data-guidance-key="actual"
+								/>
+							</div>
+
+							<div class="govuk-form-group">
+								<fieldset class="govuk-fieldset" aria-describedby="measurementWindow-hint">
+									<legend class="govuk-fieldset__legend govuk-fieldset__legend--s">Measurement window</legend>
+
+									<div id="measurementWindow-hint" class="govuk-hint">When the actual value should be checked.</div>
+
+									<div class="govuk-radios" data-guidance-key="measurementWindow" data-module="govuk-radios">
+										<div class="govuk-radios__item">
+											<input
+												class="govuk-radios__input"
+												id="measurementWindow"
+												name="measurementWindow"
+												type="radio"
+												value="before-change"
+											/>
+											<label class="govuk-label govuk-radios__label" for="measurementWindow">Before change</label>
+										</div>
+
+										<div class="govuk-radios__item">
+											<input
+												class="govuk-radios__input"
+												id="measurementWindow-2"
+												name="measurementWindow"
+												type="radio"
+												value="two-weeks"
+											/>
+											<label class="govuk-label govuk-radios__label" for="measurementWindow-2">
+												2 weeks after change
+											</label>
+										</div>
+
+										<div class="govuk-radios__item">
+											<input
+												class="govuk-radios__input"
+												id="measurementWindow-3"
+												name="measurementWindow"
+												type="radio"
+												value="one-month"
+											/>
+											<label class="govuk-label govuk-radios__label" for="measurementWindow-3">
+												1 month after change
+											</label>
+										</div>
+
+										<div class="govuk-radios__item">
+											<input
+												class="govuk-radios__input"
+												id="measurementWindow-4"
+												name="measurementWindow"
+												type="radio"
+												value="three-months"
+											/>
+											<label class="govuk-label govuk-radios__label" for="measurementWindow-4">
+												3 months after change
+											</label>
+										</div>
+
+										<div class="govuk-radios__item">
+											<input
+												class="govuk-radios__input"
+												id="measurementWindow-5"
+												name="measurementWindow"
+												type="radio"
+												value="custom"
+											/>
+											<label class="govuk-label govuk-radios__label" for="measurementWindow-5">Custom</label>
+										</div>
+									</div>
+								</fieldset>
+							</div>
+
+							<div class="govuk-form-group">
+								<fieldset class="govuk-fieldset" aria-describedby="impactType-hint">
+									<legend class="govuk-fieldset__legend govuk-fieldset__legend--s">Impact type</legend>
+
+									<div id="impactType-hint" class="govuk-hint">What kind of change the research influenced.</div>
+
+									<div class="govuk-radios" data-guidance-key="impactType" data-module="govuk-radios">
+										<div class="govuk-radios__item">
+											<input
+												class="govuk-radios__input"
+												id="impactType"
+												name="impactType"
+												type="radio"
+												value="product"
+											/>
+											<label class="govuk-label govuk-radios__label" for="impactType">Product</label>
+										</div>
+
+										<div class="govuk-radios__item">
+											<input
+												class="govuk-radios__input"
+												id="impactType-2"
+												name="impactType"
+												type="radio"
+												value="service"
+											/>
+											<label class="govuk-label govuk-radios__label" for="impactType-2">Service</label>
+										</div>
+
+										<div class="govuk-radios__item">
+											<input
+												class="govuk-radios__input"
+												id="impactType-3"
+												name="impactType"
+												type="radio"
+												value="process"
+											/>
+											<label class="govuk-label govuk-radios__label" for="impactType-3">Process</label>
+										</div>
+
+										<div class="govuk-radios__item">
+											<input
+												class="govuk-radios__input"
+												id="impactType-4"
+												name="impactType"
+												type="radio"
+												value="strategy"
+											/>
+											<label class="govuk-label govuk-radios__label" for="impactType-4">Strategy</label>
+										</div>
+
+										<div class="govuk-radios__item">
+											<input
+												class="govuk-radios__input"
+												id="impactType-5"
+												name="impactType"
+												type="radio"
+												value="policy"
+											/>
+											<label class="govuk-label govuk-radios__label" for="impactType-5">Policy</label>
+										</div>
+
+										<div class="govuk-radios__item">
+											<input
+												class="govuk-radios__input"
+												id="impactType-6"
+												name="impactType"
+												type="radio"
+												value="operational"
+											/>
+											<label class="govuk-label govuk-radios__label" for="impactType-6">Operational</label>
+										</div>
+
+										<div class="govuk-radios__item">
+											<input
+												class="govuk-radios__input"
+												id="impactType-7"
+												name="impactType"
+												type="radio"
+												value="research-practice"
+											/>
+											<label class="govuk-label govuk-radios__label" for="impactType-7">Research practice</label>
+										</div>
+									</div>
+								</fieldset>
+							</div>
+
+							<div class="govuk-form-group">
+								<fieldset class="govuk-fieldset" aria-describedby="impactScale-hint">
+									<legend class="govuk-fieldset__legend govuk-fieldset__legend--s">Impact scale</legend>
+
+									<div id="impactScale-hint" class="govuk-hint">How widely the change applies.</div>
+
+									<div class="govuk-radios" data-guidance-key="impactScale" data-module="govuk-radios">
+										<div class="govuk-radios__item">
+											<input
+												class="govuk-radios__input"
+												id="impactScale"
+												name="impactScale"
+												type="radio"
+												value="feature"
+											/>
+											<label class="govuk-label govuk-radios__label" for="impactScale">Feature</label>
+										</div>
+
+										<div class="govuk-radios__item">
+											<input
+												class="govuk-radios__input"
+												id="impactScale-2"
+												name="impactScale"
+												type="radio"
+												value="journey"
+											/>
+											<label class="govuk-label govuk-radios__label" for="impactScale-2">Journey</label>
+										</div>
+
+										<div class="govuk-radios__item">
+											<input
+												class="govuk-radios__input"
+												id="impactScale-3"
+												name="impactScale"
+												type="radio"
+												value="service"
+											/>
+											<label class="govuk-label govuk-radios__label" for="impactScale-3">Service</label>
+										</div>
+
+										<div class="govuk-radios__item">
+											<input
+												class="govuk-radios__input"
+												id="impactScale-4"
+												name="impactScale"
+												type="radio"
+												value="team"
+											/>
+											<label class="govuk-label govuk-radios__label" for="impactScale-4">Team</label>
+										</div>
+
+										<div class="govuk-radios__item">
+											<input
+												class="govuk-radios__input"
+												id="impactScale-5"
+												name="impactScale"
+												type="radio"
+												value="cross-team"
+											/>
+											<label class="govuk-label govuk-radios__label" for="impactScale-5">Cross-team</label>
+										</div>
+
+										<div class="govuk-radios__item">
+											<input
+												class="govuk-radios__input"
+												id="impactScale-6"
+												name="impactScale"
+												type="radio"
+												value="organisation-wide"
+											/>
+											<label class="govuk-label govuk-radios__label" for="impactScale-6">Organisation-wide</label>
+										</div>
+									</div>
+								</fieldset>
+							</div>
+
+							<div class="govuk-form-group">
+								<fieldset class="govuk-fieldset" aria-describedby="status-hint">
+									<legend class="govuk-fieldset__legend govuk-fieldset__legend--s">Status</legend>
+
+									<div id="status-hint" class="govuk-hint">Lifecycle status of the change.</div>
+
+									<div class="govuk-radios" data-guidance-key="status" data-module="govuk-radios">
+										<div class="govuk-radios__item">
+											<input class="govuk-radios__input" id="status" name="status" type="radio" value="planned" />
+											<label class="govuk-label govuk-radios__label" for="status">Planned</label>
+										</div>
+
+										<div class="govuk-radios__item">
+											<input class="govuk-radios__input" id="status-2" name="status" type="radio" value="in-progress" />
+											<label class="govuk-label govuk-radios__label" for="status-2">In progress</label>
+										</div>
+
+										<div class="govuk-radios__item">
+											<input class="govuk-radios__input" id="status-3" name="status" type="radio" value="implemented" />
+											<label class="govuk-label govuk-radios__label" for="status-3">Implemented</label>
+										</div>
+
+										<div class="govuk-radios__item">
+											<input class="govuk-radios__input" id="status-4" name="status" type="radio" value="measured" />
+											<label class="govuk-label govuk-radios__label" for="status-4">Measured</label>
+										</div>
+
+										<div class="govuk-radios__item">
+											<input class="govuk-radios__input" id="status-5" name="status" type="radio" value="archived" />
+											<label class="govuk-label govuk-radios__label" for="status-5">Archived</label>
+										</div>
+									</div>
+								</fieldset>
+							</div>
+
+							<div class="govuk-form-group">
+								<label class="govuk-label" for="impact-notes">Notes</label>
+
+								<div id="impact-notes-hint" class="govuk-hint">
+									Additional context or links to evidence. Do not include participant personal data.
+								</div>
+
+								<textarea
+									class="govuk-textarea govuk-!-width-two-thirds"
+									id="impact-notes"
+									name="notes"
+									rows="3"
+									aria-describedby="impact-notes-hint"
+									data-guidance-key="notes"
+								></textarea>
+							</div>
+
+							<div class="govuk-button-group">
+								<button type="submit" class="govuk-button" data-module="govuk-button" id="impact-submit">
+									Save impact record
+								</button>
+
+								<button
+									type="button"
+									class="govuk-button govuk-button--secondary"
+									data-module="govuk-button"
+									id="impact-cancel-edit"
+									hidden="hidden"
+								>
+									Cancel edit
+								</button>
+							</div>
+						</form>
+
+						<aside
+							id="impact-guidance-panel"
+							class="outcomes-guidance-panel"
+							aria-labelledby="impact-guidance-title"
+							aria-live="polite"
+						>
+							<h2 id="impact-guidance-title" class="govuk-heading-m">Help with this field</h2>
+							<p id="impact-guidance-body" class="govuk-body">
+								Focus a field to see guidance on how to make the impact record useful and reusable.
+							</p>
+						</aside>
 					</div>
+
+					<section id="impact-records-section" class="outcomes-records" aria-labelledby="impact-records-heading">
+						<h2 id="impact-records-heading" class="govuk-heading-m">Recorded impacts for this project</h2>
+						<p id="impact-empty-state" class="govuk-body">
+							Recorded impacts will appear here after you save the first impact record.
+						</p>
+
+						<div id="impact-table-wrap" class="outcomes-table-wrap" hidden>
+							<table class="govuk-table govuk-!-margin-top-6 outcomes-table" id="impact-table">
+								<caption class="govuk-table__caption govuk-table__caption--m">
+									Recorded impacts for this project
+								</caption>
+
+								<thead class="govuk-table__head">
+									<tr class="govuk-table__row">
+										<th scope="col" class="govuk-table__header">Reference</th>
+
+										<th scope="col" class="govuk-table__header">Decision</th>
+
+										<th scope="col" class="govuk-table__header">Metric</th>
+
+										<th scope="col" class="govuk-table__header govuk-table__header--numeric">Baseline</th>
+
+										<th scope="col" class="govuk-table__header govuk-table__header--numeric">Target</th>
+
+										<th scope="col" class="govuk-table__header govuk-table__header--numeric">Actual</th>
+
+										<th scope="col" class="govuk-table__header">Type</th>
+									</tr>
+								</thead>
+
+								<tbody class="govuk-table__body"></tbody>
+							</table>
+						</div>
+					</section>
 				</section>
 			</div>
 		</main>
