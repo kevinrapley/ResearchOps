@@ -1,0 +1,164 @@
+{% extends "layouts/researchops.njk" %}
+{% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
+{% from "govuk/components/file-upload/macro.njk" import govukFileUpload %}
+{% from "govuk/components/inset-text/macro.njk" import govukInsetText %}
+{% from "govuk/components/select/macro.njk" import govukSelect %}
+
+{% block head %}
+	<meta property="schema:name" content="Import participants — ResearchOps">
+	<meta property="schema:creator" content="Home Office ResearchOps Platform">
+	<meta property="schema:dateModified" content="2026-06-02">
+	<meta property="dcterms:language" content="en-GB">
+	<link rel="modulepreload" href="/js/project-participant-context.js">
+	<link rel="modulepreload" href="/pages/project-dashboard/participants/import/import-participants.js">
+{% endblock %}
+
+{% block content %}
+<div class="govuk-width-container">
+	{{ govukBreadcrumbs({
+		attributes: {
+			id: "participant-import-breadcrumbs",
+			typeof: "schema:BreadcrumbList"
+		},
+		items: [
+			{
+				text: "Projects",
+				href: "/pages/projects/",
+				attributes: {
+					property: "schema:item",
+					typeof: "schema:Thing"
+				}
+			},
+			{
+				text: "Project",
+				href: "/pages/project-dashboard/?id=",
+				attributes: {
+					id: "breadcrumb-project",
+					property: "schema:item",
+					typeof: "schema:Thing"
+				}
+			},
+			{
+				text: "Import participants"
+			}
+		]
+	}) }}
+
+	<header class="govuk-!-margin-bottom-6">
+		<p id="project-eyebrow" class="govuk-caption-l">Project</p>
+		<h1 class="govuk-heading-l">Import participants</h1>
+		<p class="govuk-body-l">Upload a CSV, preview the rows and create participants against a study only after checking the data.</p>
+	</header>
+
+	{{ govukErrorSummary({
+		attributes: {
+			id: "import-error-summary",
+			hidden: "hidden"
+		},
+		titleText: "There is a problem",
+		errorList: []
+	}) }}
+
+	{{ govukInsetText({
+		attributes: {
+			id: "no-studies-panel",
+			hidden: "hidden"
+		},
+		html: '<h2 class="govuk-heading-m">Create a study first</h2><p class="govuk-body">Participants must be linked to a study before they can be imported.</p><a id="create-study-link" href="/pages/study/new/?id=" class="govuk-button" data-module="govuk-button">Add study</a>'
+	}) }}
+
+	<form id="import-participants-form" novalidate>
+		<input id="project-id" name="project_airtable_id" type="hidden" value="">
+
+		{{ govukSelect({
+			id: "study-select",
+			name: "study",
+			label: {
+				text: "Study"
+			},
+			hint: {
+				text: "Choose the study these participants belong to."
+			},
+			items: [
+				{
+					value: "",
+					text: "Choose a study"
+				}
+			],
+			attributes: {
+				required: "required"
+			}
+		}) }}
+
+		{{ govukFileUpload({
+			id: "participants-csv",
+			name: "csv",
+			label: {
+				text: "CSV file"
+			},
+			hint: {
+				text: "Use headings: display_name, email, phone, channel_pref, access_needs. Do not upload unnecessary personal data."
+			},
+			attributes: {
+				accept: ".csv,text/csv",
+				required: "required"
+			}
+		}) }}
+
+		<div class="govuk-button-group">
+			{{ govukButton({
+				text: "Preview CSV",
+				type: "button",
+				classes: "govuk-button--secondary",
+				attributes: {
+					id: "preview-csv"
+				}
+			}) }}
+			{{ govukButton({
+				text: "Create participants",
+				type: "submit",
+				disabled: true,
+				attributes: {
+					id: "import-submit"
+				}
+			}) }}
+			{{ govukButton({
+				text: "Cancel",
+				href: "/pages/projects/",
+				classes: "govuk-button--secondary",
+				attributes: {
+					id: "cancel-import"
+				}
+			}) }}
+		</div>
+
+		<p id="import-status" class="govuk-body-s" role="status" aria-live="polite"></p>
+	</form>
+
+	<section id="preview-section" class="govuk-!-margin-top-6" aria-labelledby="preview-heading" hidden>
+		<h2 id="preview-heading" class="govuk-heading-m">Preview participants</h2>
+		<div class="table-wrap">
+			<table class="govuk-table">
+				<caption class="govuk-table__caption govuk-table__caption--s">Rows to import</caption>
+				<thead class="govuk-table__head">
+					<tr class="govuk-table__row">
+						<th scope="col" class="govuk-table__header">Display name</th>
+						<th scope="col" class="govuk-table__header">Email</th>
+						<th scope="col" class="govuk-table__header">Phone</th>
+						<th scope="col" class="govuk-table__header">Channel</th>
+						<th scope="col" class="govuk-table__header">Access needs</th>
+					</tr>
+				</thead>
+				<tbody id="preview-body" class="govuk-table__body"></tbody>
+			</table>
+		</div>
+	</section>
+</div>
+{% endblock %}
+
+{% block scripts %}
+	<script type="module" src="/js/project-participant-context.js"></script>
+	<script type="module" src="/pages/project-dashboard/participants/import/import-participants.js"></script>
+{% endblock %}
