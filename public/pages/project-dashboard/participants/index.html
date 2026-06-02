@@ -8,7 +8,7 @@
 
 		<meta property="schema:name" content="Add participant — ResearchOps" />
 		<meta property="schema:creator" content="Home Office ResearchOps Platform" />
-		<meta property="schema:dateModified" content="2026-06-01" />
+		<meta property="schema:dateModified" content="2026-06-02" />
 		<meta property="dcterms:language" content="en-GB" />
 		<link rel="modulepreload" href="/js/project-participant-context.js" />
 		<link rel="modulepreload" href="/pages/project-dashboard/participants/participants-project.js" />
@@ -24,7 +24,12 @@
 		<x-include src="/partials/header.html" vars='{"active":"Projects"}'></x-include>
 		<main class="govuk-main-wrapper" id="main-content" role="main" tabindex="-1">
 			<div class="govuk-width-container">
-				<nav class="govuk-breadcrumbs" typeof="schema:BreadcrumbList" aria-label="Breadcrumb">
+				<nav
+					class="govuk-breadcrumbs"
+					id="participant-breadcrumbs"
+					typeof="schema:BreadcrumbList"
+					aria-label="Breadcrumb"
+				>
 					<ol class="govuk-breadcrumbs__list">
 						<li class="govuk-breadcrumbs__list-item">
 							<a class="govuk-breadcrumbs__link" href="/pages/projects/" property="schema:item" typeof="schema:Thing">
@@ -96,7 +101,7 @@
 				<div class="govuk-inset-text" id="no-studies-panel" hidden="hidden">
 					<h2 class="govuk-heading-m">Create a study first</h2>
 					<p class="govuk-body">Participants must be linked to a study before they can be added.</p>
-					<a id="create-study-link" href="/pages/study/new/?pid=" class="govuk-button" data-module="govuk-button">
+					<a id="create-study-link" href="/pages/study/new/?id=" class="govuk-button" data-module="govuk-button">
 						Add study
 					</a>
 				</div>
