@@ -93,7 +93,8 @@ async function projectsCsvDirect(request, env, origin) {
 			headers: { ...corsHeadersForEnv(env, origin), "content-type": "text/csv; charset=utf-8", "x-content-type-options": "nosniff" }
 		});
 	} catch (e) {
-		return new Response(`Handler error (projects.csv): ${String(e?.message || e)}`, {
+		console.error("Handler error (projects.csv)", e);
+		return new Response("Project CSV is temporarily unavailable", {
 			status: 500,
 			headers: { ...corsHeadersForEnv(env, origin), "content-type": "text/plain; charset=utf-8", "x-content-type-options": "nosniff" }
 		});
@@ -142,7 +143,8 @@ async function studiesJsonDirect(request, env, origin, url) {
 			headers: { ...corsHeadersForEnv(env, origin), "content-type": "application/json; charset=utf-8", "x-content-type-options": "nosniff" }
 		});
 	} catch (e) {
-		return new Response(json({ ok: false, error: String(e?.message || e) }), {
+		console.error("Handler error (studies)", e);
+		return new Response(json({ ok: false, error: "Studies are temporarily unavailable" }), {
 			status: 500,
 			headers: { ...corsHeadersForEnv(env, origin), "content-type": "application/json; charset=utf-8", "x-content-type-options": "nosniff" }
 		});
@@ -175,7 +177,8 @@ async function agentPagesDeployDirect(request, env, origin) {
 			headers: { ...corsHeadersForEnv(env, origin), "content-type": "application/json; charset=utf-8", "cache-control": "no-store", "x-content-type-options": "nosniff" }
 		});
 	} catch (e) {
-		return new Response(json({ ok: false, error: String(e?.message || e) }), {
+		console.error("Handler error (agent-pages deploy)", e);
+		return new Response(json({ ok: false, error: "Deploy request could not be completed" }), {
 			status: 500,
 			headers: { ...corsHeadersForEnv(env, origin), "content-type": "application/json; charset=utf-8", "cache-control": "no-store", "x-content-type-options": "nosniff" }
 		});
@@ -204,22 +207,7 @@ export async function handleRequest(request, env) {
 			});
 		}
 		if (url.pathname === "/api/_diag/env" && request.method === "GET") {
-			return new Response(json({
-				ok: true,
-				env: {
-					hasAirtableBase: !!(env.AIRTABLE_BASE || env.AIRTABLE_BASE_ID),
-					hasAirtableKey: !!(env.AIRTABLE_API_KEY || env.AIRTABLE_PAT),
-					hasAirtableTableProjects: !!env.AIRTABLE_TABLE_PROJECTS,
-					hasAirtableTableStudies: !!env.AIRTABLE_TABLE_STUDIES,
-					hasMuralClientId: !!env.MURAL_CLIENT_ID,
-					hasMuralClientSecret: !!env.MURAL_CLIENT_SECRET,
-					muralRedirectUri: env.MURAL_REDIRECT_URI || "(not set)",
-					hasGithubConfig: !!(env.GH_OWNER && env.GH_REPO && env.GH_BRANCH),
-					hasAgentPagesDeployHook: !!env.AGENT_PAGES_DEPLOY_HOOK_URL,
-					hasAgentPagesDeployToken: !!env.AGENT_PAGES_DEPLOY_TOKEN,
-					timestamp: new Date().toISOString()
-				}
-			}), {
+			return new Response(json({ ok: true }), {
 				status: 200,
 				headers: { "content-type": "application/json; charset=utf-8", "x-content-type-options": "nosniff" }
 			});
@@ -388,7 +376,7 @@ export async function handleRequest(request, env) {
 		return env.ASSETS.fetch(request);
 	} catch (e) {
 		console.error("Router fatal", e);
-		return new Response(json({ error: "Internal error", message: String(e?.message || e) }), {
+		return new Response(json({ error: "Internal error" }), {
 			status: 500,
 			headers: { ...corsHeadersForEnv(env, origin), "content-type": "application/json; charset=utf-8", "x-content-type-options": "nosniff" }
 		});
