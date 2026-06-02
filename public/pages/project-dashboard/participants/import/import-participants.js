@@ -62,7 +62,7 @@ function setProjectLinks(projectId, project = {}) {
   if (eyebrow) eyebrow.textContent = projectName;
 
   const createStudy = $("#create-study-link");
-  if (createStudy) createStudy.href = `/pages/study/new/?pid=${encodeURIComponent(projectId)}`;
+  if (createStudy) createStudy.href = `/pages/study/new/?id=${encodeURIComponent(projectId)}`;
 }
 
 async function loadProject(projectId) {
@@ -98,7 +98,7 @@ function populateStudies(studies = []) {
 
 function showErrors(errors) {
   const summary = $("#import-error-summary");
-  const list = $("#import-error-list");
+  const list = $("#import-error-list") || summary?.querySelector(".govuk-error-summary__list");
   if (!summary || !list) return;
 
   if (!errors.length) {
@@ -276,7 +276,7 @@ function initImport(projectId) {
         await createParticipant(row, studyId);
       }
       if (status) status.textContent = "Participants created. Opening study participants page.";
-      location.assign(`/pages/study/participants/?pid=${encodeURIComponent(projectId)}&sid=${encodeURIComponent(studyId)}`);
+      location.assign(`/pages/study/participants/?id=${encodeURIComponent(studyId)}`);
     } catch (err) {
       showErrors([{ id: "participants-csv", message: `Could not import participants. ${String(err?.message || err)}` }]);
       if (status) status.textContent = "";
