@@ -8,7 +8,6 @@ const legacyFormRoutes = [
 	"public/pages/consent/index.html",
 	"public/pages/sessions/index.html",
 	"public/pages/study/synthesis/index.html",
-	"public/pages/projects/outcomes/index.html",
 	"public/pages/study/index.html",
 	"public/pages/study/guides/index.html",
 	"public/pages/study/consent-forms/index.html",
@@ -117,9 +116,13 @@ includes(participantImportPage, "href=\"/pages/study/new/?id=\"", "Participant i
 excludes(participantImportPage, "href=\"/pages/study/new/?pid=\"", "Participant import route");
 
 const outcomesPage = read("public/pages/projects/outcomes/index.html");
-includes(outcomesPage, "href=\"/css/govuk/govuk-forms.css\"", "Outcomes route");
+includes(outcomesPage, "href=\"/assets/govuk/govuk-frontend.css\"", "Outcomes route");
+excludes(outcomesPage, "href=\"/css/govuk/govuk-forms.css\"", "Outcomes route");
+excludes(outcomesPage, "href=\"/css/screen.css\"", "Outcomes route");
 includes(outcomesPage, "id=\"impact-form\"", "Outcomes route");
-includes(outcomesPage, "class=\"govuk-form-group outcomes-form\"", "Outcomes route");
+includes(outcomesPage, "id=\"impact-error-summary\"", "Outcomes route");
+includes(outcomesPage, "id=\"impact-metricName\"", "Outcomes route");
+includes(outcomesPage, "id=\"impact-submit\"", "Outcomes route");
 
 const journalsPage = read("public/pages/projects/journals/index.html");
 includes(journalsPage, "href=\"/assets/govuk/govuk-frontend.css\"", "Journals route");

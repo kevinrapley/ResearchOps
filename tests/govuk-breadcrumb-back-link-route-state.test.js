@@ -18,7 +18,7 @@ const breadcrumbPages = [
 	{
 		label: "Outcomes route",
 		path: "public/pages/projects/outcomes/index.html",
-		requiredIds: ["breadcrumb-project", "back-to-project"],
+		requiredIds: ["breadcrumb-project"],
 		currentText: "Impact &amp; ROI"
 	},
 	{
@@ -127,9 +127,8 @@ const outcomesPage = fs.readFileSync("public/pages/projects/outcomes/index.html"
 includes(outcomesPage, "rel=\"modulepreload\" href=\"/js/project-context.js\"", "Outcomes route");
 includes(outcomesPage, "src=\"/js/project-context.js\"", "Outcomes route");
 includes(outcomesPage, "id=\"breadcrumb-project\"", "Outcomes route");
-includes(outcomesPage, "id=\"back-to-project\"", "Outcomes route");
-includes(outcomesPage, "class=\"govuk-button govuk-button--secondary\"", "Outcomes route");
-includes(outcomesPage, ">Back to Project</a>", "Outcomes route");
+excludes(outcomesPage, "id=\"back-to-project\"", "Outcomes route");
+excludes(outcomesPage, ">Back to Project</a>", "Outcomes route");
 
 const journalsPage = fs.readFileSync("public/pages/projects/journals/index.html", "utf8");
 includes(journalsPage, "rel=\"modulepreload\" href=\"/js/project-context.js\"", "Journals route");
