@@ -200,8 +200,16 @@
 	margin-top: 10px;
 }
 
-.rops-participant-sensitive-details {
+.rops-participant-private-details {
+	background: #f3f2f1;
+	border-left: 5px solid #1d70b8;
 	margin-top: 10px;
+	padding: 12px;
+}
+
+.rops-participant-sensitive-details {
+	margin-bottom: 10px;
+	margin-top: 0;
 }
 
 .rops-participant-pagination {
