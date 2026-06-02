@@ -100,6 +100,10 @@ includes(dashboardContextSource, "link.setAttribute(\"href\", href)", "project d
 includes(participantListSource, "const PARTICIPANT_PAGE_SIZE = 10", "participant list controller");
 includes(participantListSource, "participantJson(`/api/participants/contact?participant=", "participant list controller");
 includes(participantListSource, "data-participant-reveal", "participant list controller");
+includes(participantListSource, "data-participant-hide", "participant list controller");
+includes(participantListSource, "Hide details", "participant list controller");
+includes(participantListSource, "function hideParticipant", "participant list controller");
+includes(participantListSource, "PRIVATE_DETAIL_FIELDS", "participant list controller");
 includes(participantListSource, "First name", "participant list controller");
 includes(participantListSource, "Family name", "participant list controller");
 includes(participantListSource, "Search participants", "participant list controller");
@@ -114,6 +118,7 @@ includes(participantListSource, "data-participants-page=\"next\"", "participant 
 includes(participantListSource, "function applyStudyTitleFit", "participant list controller");
 includes(participantListSource, "element.textContent = fitted ? `${prefix}${fitted}…` : `${prefix}…`;", "participant list controller");
 includes(participantListSource, "if (!participant.can_reveal_contact) return \"\";", "participant list controller");
+excludes(participantListSource, "Details revealed", "participant list controller");
 excludes(participantListSource, "Contact details restricted", "participant list controller");
 
 includes(muralIntegrationSource, "Project Dashboard ↔ Mural wiring with GOV.UK Frontend dashboard state", "Mural integration component");

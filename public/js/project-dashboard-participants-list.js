@@ -1,6 +1,7 @@
 const PARTICIPANT_API_ORIGIN = resolveParticipantApiBase();
 const PARTICIPANT_PAGE_SIZE = 10;
 const STUDY_TITLE_PREFIX = "Study: ";
+const PRIVATE_DETAIL_FIELDS = ["first_name", "family_name", "full_name", "email", "phone"];
 
 const participantListState = {
 	projectId: "",
@@ -117,31 +118,42 @@ function participantControlsHtml(total) {
 </div>`;
 }
 
-function participantSensitiveDetailsHtml(participant = {}) {
+function recordedValue(value = "") {
+	return String(value || "").trim() || "Missing from prototype seed";
+}
+
+function participantDetailRowsHtml(participant = {}) {
+	return `
+		<div class="govuk-summary-list__row">
+			<dt class="govuk-summary-list__key">First name</dt>
+			<dd class="govuk-summary-list__value">${escapeParticipantHtml(recordedValue(participant.first_name))}</dd>
+		</div>
+		<div class="govuk-summary-list__row">
+			<dt class="govuk-summary-list__key">Family name</dt>
+			<dd class="govuk-summary-list__value">${escapeParticipantHtml(recordedValue(participant.family_name))}</dd>
+		</div>
+		<div class="govuk-summary-list__row">
+			<dt class="govuk-summary-list__key">Email</dt>
+			<dd class="govuk-summary-list__value">${escapeParticipantHtml(recordedValue(participant.email))}</dd>
+		</div>
+		<div class="govuk-summary-list__row">
+			<dt class="govuk-summary-list__key">Phone</dt>
+			<dd class="govuk-summary-list__value">${escapeParticipantHtml(recordedValue(participant.phone))}</dd>
+		</div>`;
+}
+
+function participantDetailsHtml(participant = {}) {
 	if (!participant.revealed) return "";
 	return `
-<dl class="govuk-summary-list govuk-summary-list--no-border rops-participant-sensitive-details">
-	<div class="govuk-summary-list__row">
-		<dt class="govuk-summary-list__key">First name</dt>
-		<dd class="govuk-summary-list__value">${escapeParticipantHtml(participant.first_name || "Not recorded")}</dd>
-	</div>
-	<div class="govuk-summary-list__row">
-		<dt class="govuk-summary-list__key">Family name</dt>
-		<dd class="govuk-summary-list__value">${escapeParticipantHtml(participant.family_name || "Not recorded")}</dd>
-	</div>
-	<div class="govuk-summary-list__row">
-		<dt class="govuk-summary-list__key">Email</dt>
-		<dd class="govuk-summary-list__value">${escapeParticipantHtml(participant.email || "Not recorded")}</dd>
-	</div>
-	<div class="govuk-summary-list__row">
-		<dt class="govuk-summary-list__key">Phone</dt>
-		<dd class="govuk-summary-list__value">${escapeParticipantHtml(participant.phone || "Not recorded")}</dd>
-	</div>
-</dl>`;
+<div class="rops-participant-private-details" aria-label="Revealed participant details">
+	<dl class="govuk-summary-list govuk-summary-list--no-border rops-participant-sensitive-details">${participantDetailRowsHtml(participant)}
+	</dl>
+	<button type="button" class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0" data-participant-hide="${escapeParticipantHtml(participant.id)}">Hide details</button>
+</div>`;
 }
 
 function participantRevealHtml(participant = {}) {
-	if (participant.revealed) return '<strong class="govuk-tag govuk-tag--green">Details revealed</strong>';
+	if (participant.revealed) return "";
 	if (!participant.can_reveal_contact) return "";
 	return `<button type="button" class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0" data-participant-reveal="${escapeParticipantHtml(participant.id)}">Reveal details</button>`;
 }
@@ -159,7 +171,7 @@ function participantListItemHtml(participant = {}) {
 	<span class="govuk-hint rops-study-title-truncated" title="${escapeParticipantHtml(studyTitle)}" data-study-title="${escapeParticipantHtml(studyTitle)}" data-study-prefix="${STUDY_TITLE_PREFIX}">${STUDY_TITLE_PREFIX}${escapeParticipantHtml(studyTitle)}</span>
 	<span class="govuk-hint">User group: ${escapeParticipantHtml(userGroup)}</span>
 	${revealHtml ? `<div class="rops-participant-reveal">${revealHtml}</div>` : ""}
-	${participantSensitiveDetailsHtml(participant)}
+	${participantDetailsHtml(participant)}
 </li>`;
 }
 
@@ -256,14 +268,28 @@ function wireParticipantControls() {
 	document.querySelectorAll("[data-participant-reveal]").forEach((button) => {
 		button.addEventListener("click", () => revealParticipant(button.dataset.participantReveal));
 	});
+	document.querySelectorAll("[data-participant-hide]").forEach((button) => {
+		button.addEventListener("click", () => hideParticipant(button.dataset.participantHide));
+	});
 }
 
-function participantRevealButton(participantId) {
-	return Array.from(document.querySelectorAll("[data-participant-reveal]")).find((button) => button.dataset.participantReveal === participantId) || null;
+function participantActionButton(participantId, attributeName) {
+	return Array.from(document.querySelectorAll(`[${attributeName}]`)).find((button) => button.getAttribute(attributeName) === participantId) || null;
+}
+
+function hiddenParticipant(participant = {}) {
+	const next = { ...participant, revealed: false };
+	for (const field of PRIVATE_DETAIL_FIELDS) next[field] = "";
+	return next;
+}
+
+function hideParticipant(participantId) {
+	participantListState.participants = participantListState.participants.map((participant) => participant.id === participantId ? hiddenParticipant(participant) : participant);
+	renderEnhancedParticipants();
 }
 
 async function revealParticipant(participantId) {
-	const button = participantRevealButton(participantId);
+	const button = participantActionButton(participantId, "data-participant-reveal");
 	if (button) button.textContent = "Revealing details";
 	try {
 		const json = await participantJson(`/api/participants/contact?participant=${encodeURIComponent(participantId)}&ts=${Date.now()}`);
