@@ -8,10 +8,8 @@ const legacyFormRoutes = [
 	"public/pages/consent/index.html",
 	"public/pages/sessions/index.html",
 	"public/pages/study/synthesis/index.html",
-	"public/pages/project-dashboard/participants/import/index.html",
 	"public/pages/projects/outcomes/index.html",
 	"public/pages/study/index.html",
-	"public/pages/study/new/index.html",
 	"public/pages/study/guides/index.html",
 	"public/pages/study/consent-forms/index.html",
 	"public/pages/study/participant-consent/index.html",
@@ -104,13 +102,19 @@ includes(projectParticipantsPage, "id=\"study-select\"", "Project participant ro
 includes(projectParticipantsPage, "id=\"participant-first-name\"", "Project participant route");
 includes(projectParticipantsPage, "id=\"participant-family-name\"", "Project participant route");
 includes(projectParticipantsPage, "id=\"create-study-link\"", "Project participant route");
+includes(projectParticipantsPage, "href=\"/pages/study/new/?id=\"", "Project participant route");
+excludes(projectParticipantsPage, "href=\"/pages/study/new/?pid=\"", "Project participant route");
 
 const participantImportPage = read("public/pages/project-dashboard/participants/import/index.html");
+includes(participantImportPage, "href=\"/assets/govuk/govuk-frontend.css\"", "Participant import route");
+excludes(participantImportPage, "href=\"/css/govuk/govuk-forms.css\"", "Participant import route");
 includes(participantImportPage, "id=\"import-participants-form\"", "Participant import route");
 includes(participantImportPage, "id=\"import-error-summary\"", "Participant import route");
 includes(participantImportPage, "id=\"participants-csv\"", "Participant import route");
 includes(participantImportPage, "id=\"preview-csv\"", "Participant import route");
 includes(participantImportPage, "id=\"preview-section\"", "Participant import route");
+includes(participantImportPage, "href=\"/pages/study/new/?id=\"", "Participant import route");
+excludes(participantImportPage, "href=\"/pages/study/new/?pid=\"", "Participant import route");
 
 const outcomesPage = read("public/pages/projects/outcomes/index.html");
 includes(outcomesPage, "href=\"/css/govuk/govuk-forms.css\"", "Outcomes route");
@@ -132,9 +136,13 @@ includes(studyPage, "class=\"govuk-form-group\"", "Study route");
 includes(studyPage, "aria-describedby=\"desc-input-hint\"", "Study route");
 
 const newStudyPage = read("public/pages/study/new/index.html");
+includes(newStudyPage, "href=\"/assets/govuk/govuk-frontend.css\"", "Add Study route");
+excludes(newStudyPage, "href=\"/css/govuk/govuk-forms.css\"", "Add Study route");
 includes(newStudyPage, "id=\"add-study-form\"", "Add Study route");
 includes(newStudyPage, "id=\"study-error-summary\"", "Add Study route");
-includes(newStudyPage, "id=\"study-method\" name=\"method\" class=\"govuk-select\"", "Add Study route");
+includes(newStudyPage, "id=\"study-method\"", "Add Study route");
+includes(newStudyPage, "name=\"method\"", "Add Study route");
+includes(newStudyPage, "class=\"govuk-select", "Add Study route");
 includes(newStudyPage, "aria-describedby=\"study-notes-hint\"", "Add Study route");
 includes(newStudyPage, "id=\"study-submit\"", "Add Study route");
 
