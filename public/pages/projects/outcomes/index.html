@@ -46,9 +46,22 @@
 							</a>
 						</li>
 
-						<li class="govuk-breadcrumbs__list-item" aria-current="page">Research outcomes</li>
+						<li class="govuk-breadcrumbs__list-item" aria-current="page">Impact &amp; ROI</li>
 					</ol>
 				</nav>
+
+				<div class="actions-bar">
+					<a
+						href="/pages/projects/"
+						role="button"
+						draggable="false"
+						class="govuk-button govuk-button--secondary"
+						data-module="govuk-button"
+						id="back-to-project"
+					>
+						Back to Project
+					</a>
+				</div>
 
 				<header class="outcomes-hero" typeof="schema:ResearchProject" resource="#project">
 					<p
@@ -57,7 +70,7 @@
 						property="schema:sourceOrganization"
 						typeof="schema:Organization"
 					></p>
-					<h1 id="project-title" class="govuk-heading-l" property="schema:name">Research outcomes</h1>
+					<h1 id="project-title" class="govuk-heading-l" property="schema:name">Impact & ROI</h1>
 					<p id="project-subtitle" class="govuk-body-l" property="schema:description">
 						Track how research insights influence decisions, delivery work and measurable outcomes.
 					</p>
@@ -286,19 +299,27 @@
 					</form>
 
 					<div class="outcomes-table-wrap">
-						<table id="impact-table" class="govuk-table govuk-!-margin-top-6 outcomes-table">
+						<table class="govuk-table govuk-!-margin-top-6 outcomes-table" id="impact-table">
 							<caption class="govuk-table__caption govuk-table__caption--m">Recorded impacts for this project</caption>
+
 							<thead class="govuk-table__head">
 								<tr class="govuk-table__row">
 									<th scope="col" class="govuk-table__header">Insight</th>
+
 									<th scope="col" class="govuk-table__header">Decision</th>
+
 									<th scope="col" class="govuk-table__header">Metric</th>
+
 									<th scope="col" class="govuk-table__header govuk-table__header--numeric">Baseline</th>
+
 									<th scope="col" class="govuk-table__header govuk-table__header--numeric">Target</th>
+
 									<th scope="col" class="govuk-table__header govuk-table__header--numeric">Actual</th>
+
 									<th scope="col" class="govuk-table__header">Type</th>
 								</tr>
 							</thead>
+
 							<tbody class="govuk-table__body"></tbody>
 						</table>
 					</div>
