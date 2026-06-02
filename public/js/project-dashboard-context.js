@@ -5,7 +5,7 @@ const PROJECT_SCOPED_LINKS = Object.freeze([
 	["outcomes-link", "/pages/projects/outcomes/", "id"],
 	["add-participant-link", "/pages/project-dashboard/participants/", "id"],
 	["import-participants-link", "/pages/project-dashboard/participants/import/", "id"],
-	["add-study-link", "/pages/study/new/", "pid"],
+	["add-study-link", "/pages/study/new/", "id"],
 	["add-insight-link", "/pages/projects/outcomes/", "id", "impact-form"]
 ]);
 
