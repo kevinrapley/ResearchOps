@@ -1,0 +1,326 @@
+{% extends "layouts/researchops.njk" %}
+{% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
+{% from "govuk/components/input/macro.njk" import govukInput %}
+{% from "govuk/components/inset-text/macro.njk" import govukInsetText %}
+{% from "govuk/components/select/macro.njk" import govukSelect %}
+{% from "govuk/components/textarea/macro.njk" import govukTextarea %}
+
+{% block head %}
+	<meta property="schema:name" content="Outcomes – Impact and ROI — ResearchOps">
+	<meta property="schema:creator" content="Home Office ResearchOps Platform">
+	<meta property="schema:dateModified" content="2026-06-02">
+	<meta property="dcterms:language" content="en-GB">
+	<link rel="stylesheet" href="/css/outcomes.css" media="screen">
+	<link rel="modulepreload" href="/js/project-context.js">
+	<link rel="modulepreload" href="/js/outcomes-page.js">
+	<link rel="modulepreload" href="/components/impact-tracker.js">
+{% endblock %}
+
+{% block content %}
+<div class="govuk-width-container">
+	{{ govukBreadcrumbs({
+		attributes: {
+			id: "outcomes-breadcrumbs",
+			typeof: "schema:BreadcrumbList"
+		},
+		items: [
+			{
+				text: "Projects",
+				href: "/pages/projects/",
+				attributes: {
+					property: "schema:item",
+					typeof: "schema:Thing"
+				}
+			},
+			{
+				text: "Project",
+				href: "/pages/project-dashboard/?id=",
+				attributes: {
+					id: "breadcrumb-project",
+					property: "schema:item",
+					typeof: "schema:Thing"
+				}
+			},
+			{
+				text: "Research outcomes"
+			}
+		]
+	}) }}
+
+	<header class="outcomes-hero" typeof="schema:ResearchProject" resource="#project">
+		<p id="eyebrow-org" class="govuk-caption-l" property="schema:sourceOrganization" typeof="schema:Organization"></p>
+		<h1 id="project-title" class="govuk-heading-l" property="schema:name">Research outcomes</h1>
+		<p id="project-subtitle" class="govuk-body-l" property="schema:description">Track how research insights influence decisions, delivery work and measurable outcomes.</p>
+	</header>
+
+	{{ govukInsetText({
+		html: '<p class="govuk-body">Use impact records to connect research evidence to product, service and operational decisions. Do not record participant personal data in this area.</p>'
+	}) }}
+
+	<section id="impact-tracker" class="outcomes-tracker" data-project-id="" data-study-id="" aria-labelledby="impact-heading">
+		<h2 id="impact-heading" class="govuk-heading-m">Add an impact record</h2>
+
+		{{ govukErrorSummary({
+			attributes: {
+				id: "impact-error-summary",
+				hidden: "hidden"
+			},
+			titleText: "There is a problem",
+			errorList: []
+		}) }}
+
+		<form id="impact-form" class="outcomes-form" novalidate>
+			{{ govukInput({
+				id: "impact-insightId",
+				name: "insightId",
+				classes: "govuk-!-width-two-thirds",
+				label: {
+					text: "Insight ID"
+				},
+				hint: {
+					text: "Auto-generated identifier for this impact record."
+				},
+				attributes: {
+					readonly: "readonly"
+				}
+			}) }}
+
+			{{ govukInput({
+				id: "impact-decisionLink",
+				name: "decisionLink",
+				type: "url",
+				classes: "govuk-!-width-two-thirds",
+				label: {
+					text: "Decision link"
+				},
+				hint: {
+					text: "Link to the decision this insight informed, such as a Jira ticket, PRD or service decision record."
+				},
+				attributes: {
+					inputmode: "url"
+				}
+			}) }}
+
+			{{ govukInput({
+				id: "impact-metricName",
+				name: "metricName",
+				classes: "govuk-!-width-two-thirds",
+				label: {
+					text: "Metric name"
+				},
+				hint: {
+					text: "The metric being tracked, for example completion rate."
+				},
+				attributes: {
+					required: "required"
+				}
+			}) }}
+
+			{{ govukInput({
+				id: "impact-date",
+				name: "recordedAt",
+				type: "date",
+				classes: "govuk-input--width-10",
+				label: {
+					text: "Date recorded"
+				},
+				hint: {
+					text: "When this impact was recorded."
+				}
+			}) }}
+
+			{{ govukInput({
+				id: "impact-baseline",
+				name: "baseline",
+				type: "number",
+				classes: "govuk-input--width-10",
+				label: {
+					text: "Baseline"
+				},
+				hint: {
+					text: "Value before the change."
+				},
+				attributes: {
+					min: "0",
+					step: "0.01",
+					inputmode: "decimal"
+				}
+			}) }}
+
+			{{ govukInput({
+				id: "impact-target",
+				name: "target",
+				type: "number",
+				classes: "govuk-input--width-10",
+				label: {
+					text: "Target"
+				},
+				hint: {
+					text: "Expected value after the change."
+				},
+				attributes: {
+					min: "0",
+					step: "0.01",
+					inputmode: "decimal"
+				}
+			}) }}
+
+			{{ govukInput({
+				id: "impact-actual",
+				name: "actual",
+				type: "number",
+				classes: "govuk-input--width-10",
+				label: {
+					text: "Actual"
+				},
+				hint: {
+					text: "Observed value after the change."
+				},
+				attributes: {
+					min: "0",
+					step: "0.01",
+					inputmode: "decimal"
+				}
+			}) }}
+
+			{{ govukSelect({
+				id: "impact-type",
+				name: "impactType",
+				classes: "govuk-!-width-two-thirds",
+				label: {
+					text: "Impact type"
+				},
+				hint: {
+					text: "What kind of impact this describes."
+				},
+				items: [
+					{
+						value: "product",
+						text: "Product"
+					},
+					{
+						value: "strategy",
+						text: "Strategy"
+					},
+					{
+						value: "process",
+						text: "Process"
+					},
+					{
+						value: "org",
+						text: "Organisation"
+					}
+				]
+			}) }}
+
+			{{ govukSelect({
+				id: "impact-scale",
+				name: "impactScale",
+				classes: "govuk-!-width-two-thirds",
+				label: {
+					text: "Impact scale"
+				},
+				hint: {
+					text: "The scale or reach of this impact."
+				},
+				items: [
+					{
+						value: "feature",
+						text: "Feature"
+					},
+					{
+						value: "team",
+						text: "Team"
+					},
+					{
+						value: "cross-team",
+						text: "Cross-team"
+					},
+					{
+						value: "org",
+						text: "Organisation-wide"
+					}
+				]
+			}) }}
+
+			{{ govukSelect({
+				id: "impact-status",
+				name: "status",
+				classes: "govuk-!-width-two-thirds",
+				label: {
+					text: "Status"
+				},
+				hint: {
+					text: "Lifecycle status of the change."
+				},
+				items: [
+					{
+						value: "planned",
+						text: "Planned"
+					},
+					{
+						value: "in-progress",
+						text: "In progress"
+					},
+					{
+						value: "implemented",
+						text: "Implemented"
+					},
+					{
+						value: "evaluated",
+						text: "Evaluated"
+					}
+				]
+			}) }}
+
+			{{ govukTextarea({
+				id: "impact-notes",
+				name: "notes",
+				classes: "govuk-!-width-two-thirds",
+				value: "",
+				rows: 3,
+				label: {
+					text: "Notes"
+				},
+				hint: {
+					text: "Additional context or links to evidence. Do not include participant personal data."
+				}
+			}) }}
+
+			{{ govukButton({
+				text: "Save impact record",
+				type: "submit",
+				attributes: {
+					id: "impact-submit"
+				}
+			}) }}
+		</form>
+
+		<div class="outcomes-table-wrap">
+			<table id="impact-table" class="govuk-table govuk-!-margin-top-6 outcomes-table">
+				<caption class="govuk-table__caption govuk-table__caption--m">Recorded impacts for this project</caption>
+				<thead class="govuk-table__head">
+					<tr class="govuk-table__row">
+						<th scope="col" class="govuk-table__header">Insight</th>
+						<th scope="col" class="govuk-table__header">Decision</th>
+						<th scope="col" class="govuk-table__header">Metric</th>
+						<th scope="col" class="govuk-table__header govuk-table__header--numeric">Baseline</th>
+						<th scope="col" class="govuk-table__header govuk-table__header--numeric">Target</th>
+						<th scope="col" class="govuk-table__header govuk-table__header--numeric">Actual</th>
+						<th scope="col" class="govuk-table__header">Type</th>
+					</tr>
+				</thead>
+				<tbody class="govuk-table__body"></tbody>
+			</table>
+		</div>
+	</section>
+</div>
+{% endblock %}
+
+{% block scripts %}
+	<script type="module" src="/js/project-context.js"></script>
+	<script type="module" src="/js/outcomes-page.js"></script>
+	<script type="module" src="/components/impact-tracker.js"></script>
+{% endblock %}
