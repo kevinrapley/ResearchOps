@@ -233,6 +233,16 @@ export const govukPages = [
 		},
 	},
 	{
+		template: 'pages/project-dashboard-participants-import.njk',
+		output: 'public/pages/project-dashboard/participants/import/index.html',
+		context: {
+			pageTitle: 'Import participants - ResearchOps Demo Suite',
+			serviceName: 'ResearchOps Demo Suite',
+			activeNavigation: 'Projects',
+			navigation: projectNavigation,
+		},
+	},
+	{
 		template: 'pages/projects-journals.njk',
 		output: 'public/pages/projects/journals/index.html',
 		context: {
