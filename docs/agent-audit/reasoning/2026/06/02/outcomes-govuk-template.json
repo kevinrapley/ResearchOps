@@ -3,7 +3,7 @@
   "traceType": "operational-audit",
   "date": "2026-06-02",
   "branch": "feature/outcomes-govuk-template",
-  "summary": "Migrated /pages/projects/outcomes/ to a GOV.UK Frontend Nunjucks source template, registered it with the GOV.UK page renderer, and replaced browser alert validation with a GOV.UK error summary path.",
+  "summary": "Migrated /pages/projects/outcomes/ to a GOV.UK Frontend Nunjucks source template, registered it with the GOV.UK page renderer, replaced browser alert validation with a GOV.UK error summary path, and rendered the impact table through the GOV.UK table macro.",
   "task": {
     "request": "Make /pages/projects/outcomes/ use a Nunjucks template with macros and render a fully compliant GOV.UK Frontend UI.",
     "scope": [
@@ -56,6 +56,7 @@
     "public/css/outcomes.css",
     "scripts/govuk/render-govuk-pages.mjs",
     "tests/govuk-forms-application-route-state.test.js",
+    "tests/govuk-breadcrumb-back-link-route-state.test.js",
     "package.json",
     ".github/workflows/render-govuk-pages.yml"
   ],
@@ -67,7 +68,8 @@
   "filesModified": [
     "scripts/govuk/render-govuk-pages.mjs",
     "public/components/impact-tracker.js",
-    "tests/govuk-forms-application-route-state.test.js"
+    "tests/govuk-forms-application-route-state.test.js",
+    "tests/govuk-breadcrumb-back-link-route-state.test.js"
   ],
   "decisions": [
     {
@@ -75,16 +77,20 @@
       "reason": "Recent GOV.UK migrations use Nunjucks as source of truth, with generated public HTML produced by the renderer workflow."
     },
     {
-      "decision": "Use GOV.UK macros for breadcrumbs, buttons, error summary, input, inset text, select and textarea.",
+      "decision": "Use GOV.UK macros for breadcrumbs, buttons, error summary, input, inset text, select, table and textarea.",
       "reason": "The page is a form-led GOV.UK Frontend page and should use component macros rather than hand-coded mixed CSS fragments."
     },
     {
       "decision": "Do not manually edit public/pages/projects/outcomes/index.html in this branch.",
-      "reason": "The repository now has a render workflow that commits generated GOV.UK page outputs after template changes. The user also reinforced that index.html files are rendered from Nunjucks templates."
+      "reason": "The repository render workflow commits generated GOV.UK page outputs after template changes, and index.html files are generated artefacts."
     },
     {
-      "decision": "Keep existing form field IDs and table IDs.",
-      "reason": "The impact tracker and outcomes page scripts depend on stable IDs such as impact-form, impact-table and impact-metricName."
+      "decision": "Keep the outcomes breadcrumb current-page label as Impact & ROI.",
+      "reason": "Existing route-state tests and user expectations rely on that page label."
+    },
+    {
+      "decision": "Remove the action-bar Back to Project button from the outcomes template.",
+      "reason": "The user explicitly rejected that UI. The page now relies on breadcrumbs for project navigation."
     },
     {
       "decision": "Replace alert-based validation with a GOV.UK error summary path in impact-tracker.js.",
@@ -95,25 +101,27 @@
     "Added projects-outcomes.njk with GOV.UK Frontend component macros and retained existing runtime IDs.",
     "Registered projects-outcomes.njk in scripts/govuk/render-govuk-pages.mjs for public/pages/projects/outcomes/index.html.",
     "Updated impact-tracker.js to populate #impact-error-summary for missing metric name validation instead of calling alert().",
-    "Updated govuk-forms route-state expectations so outcomes is no longer treated as a legacy govuk-forms.css route."
+    "Rendered the impact table through govukTable rather than hand-coded table markup.",
+    "Updated govuk-forms route-state expectations so outcomes is no longer treated as a legacy govuk-forms.css route.",
+    "Updated breadcrumb/back-link route-state expectations so outcomes keeps the breadcrumb marker but does not require back-to-project."
   ],
   "validation": {
     "localValidation": "Not run in this connector-only session.",
     "recommendedCommands": [
       "npm run build:govuk-pages",
       "node --test tests/govuk-forms-application-route-state.test.js",
+      "node --test tests/govuk-breadcrumb-back-link-route-state.test.js",
       "npm test",
       "npm run validate"
     ],
-    "automationExpected": "The Render GOV.UK pages workflow should render public/pages/projects/outcomes/index.html after the PR is opened because src/govuk/templates/pages/projects-outcomes.njk and scripts/govuk/render-govuk-pages.mjs changed."
+    "automationExpected": "The Render GOV.UK pages workflow should render public/pages/projects/outcomes/index.html after source updates."
   },
   "residualRisks": [
-    "Until the render workflow commits the generated output, public/pages/projects/outcomes/index.html on the branch remains the pre-rendered version.",
-    "No browser preview was available in this connector-only session, so focus management and error-summary behaviour still need preview verification."
+    "No browser preview was available in this connector-only session, so focus management and form submission still need preview verification."
   ],
   "nextValidationTargets": [
-    "Open the PR and let the render workflow commit the generated outcomes index.html.",
     "Confirm the rendered outcomes page no longer imports legacy GOV.UK partial CSS or /css/screen.css.",
+    "Confirm the rendered outcomes page contains Impact & ROI and no back-to-project button.",
     "Submit the impact form with Metric name empty and confirm #impact-error-summary links to #impact-metricName.",
     "Submit a valid impact record and confirm the impact table refreshes."
   ]
