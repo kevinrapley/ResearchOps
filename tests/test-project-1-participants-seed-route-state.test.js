@@ -15,6 +15,11 @@ for (const required of [
 	'rect3biqr',
 	'TP1 Participant 01',
 	'TP1 Participant 10',
+	'tp1.participant01@example.test',
+	'tp1.participant10@example.test',
+	'07700 900101',
+	'07700 900110',
+	'hasSensitiveDetails',
 	'ON CONFLICT(id) DO UPDATE SET',
 ]) {
 	assert.ok(migration.includes(required), `Expected participant seed migration to include: ${required}`);
