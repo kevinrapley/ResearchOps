@@ -4,6 +4,8 @@ import fs from "node:fs";
 const pageSource = fs.readFileSync("public/pages/projects/outcomes/index.html", "utf8");
 const templateSource = fs.readFileSync("src/govuk/templates/pages/projects-outcomes.njk", "utf8");
 const stylesheetSource = fs.readFileSync("public/css/outcomes.css", "utf8");
+const stylesheetScssSource = fs.readFileSync("src/styles/outcomes.scss", "utf8");
+const packageSource = fs.readFileSync("package.json", "utf8");
 const controllerSource = fs.readFileSync("public/js/outcomes-page.js", "utf8");
 const impactTrackerSource = fs.readFileSync("public/components/impact-tracker.js", "utf8");
 
@@ -44,24 +46,44 @@ excludes(pageSource, "Math.random().toString(36)", "outcomes page");
 
 includes(templateSource, "govukTable({", "outcomes template");
 includes(templateSource, "govukErrorSummary({", "outcomes template");
+includes(templateSource, "govukRadios({", "outcomes template");
+includes(templateSource, "govukDateInput({", "outcomes template");
+includes(templateSource, "id: \"impact-table\"", "outcomes template");
+includes(templateSource, "colspan", "outcomes template action-row contract marker");
 excludes(templateSource, "<table id=\"impact-table\"", "outcomes template");
+excludes(templateSource, "govukSelect({", "outcomes template");
+
+includes(stylesheetScssSource, ".outcomes-form-layout", "outcomes SCSS source");
+includes(stylesheetScssSource, ".outcomes-guidance-panel", "outcomes SCSS source");
+includes(stylesheetScssSource, ".impact-record-action-cell", "outcomes SCSS source");
+includes(stylesheetScssSource, "/* transparency begins in the cascade */", "outcomes SCSS source");
+includes(packageSource, "build:outcomes", "package build scripts");
+includes(packageSource, "src/styles/outcomes.scss public/css/outcomes.css", "package build scripts");
 
 includes(stylesheetSource, ".outcomes-hero", "outcomes stylesheet");
 includes(stylesheetSource, ".outcomes-tracker", "outcomes stylesheet");
 includes(stylesheetSource, ".outcomes-form", "outcomes stylesheet");
-includes(stylesheetSource, ".outcomes-actions", "outcomes stylesheet");
+includes(stylesheetSource, ".outcomes-guidance-panel", "outcomes stylesheet");
 includes(stylesheetSource, ".outcomes-table-wrap", "outcomes stylesheet");
-includes(stylesheetSource, ".outcomes-table", "outcomes stylesheet");
+includes(stylesheetSource, ".impact-record-action-cell", "outcomes stylesheet");
 includes(stylesheetSource, "/* transparency begins in the cascade */", "outcomes stylesheet");
 
 includes(controllerSource, "function initOutcomesPage", "outcomes controller");
 includes(controllerSource, "URLSearchParams", "outcomes controller");
 includes(controllerSource, "impact-tracker", "outcomes controller");
 includes(controllerSource, "breadcrumb-project", "outcomes controller");
-includes(controllerSource, "impact-insightId", "outcomes controller");
+includes(controllerSource, "impactReference", "outcomes controller");
+includes(controllerSource, "IMPCT-RCD", "outcomes controller");
+includes(controllerSource, "data-guidance-key", "outcomes controller");
 includes(controllerSource, "window.crypto", "outcomes controller");
 
 includes(impactTrackerSource, "impact-form", "impact tracker component");
 includes(impactTrackerSource, "impact-table", "impact tracker component");
 includes(impactTrackerSource, "impact-error-summary", "impact tracker component");
+includes(impactTrackerSource, "colspan=\"7\"", "impact tracker action row");
+includes(impactTrackerSource, "data-impact-edit", "impact tracker edit action");
+includes(impactTrackerSource, "data-impact-confirm-delete", "impact tracker delete confirmation");
+includes(impactTrackerSource, "method: isUpdate ? \"PATCH\" : \"POST\"", "impact tracker update endpoint");
+includes(impactTrackerSource, "method: \"DELETE\"", "impact tracker delete endpoint");
+excludes(impactTrackerSource, "window.confirm", "impact tracker component");
 excludes(impactTrackerSource, "alert(\"Metric name is required\")", "impact tracker component");
