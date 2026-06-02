@@ -37,7 +37,8 @@ includes(templateSource, "id=\"kv-project-stage\"", "project dashboard template"
 includes(templateSource, "Loading service stage", "project dashboard template");
 includes(templateSource, "Loading project stage", "project dashboard template");
 includes(templateSource, "Mural optional", "project dashboard template");
-includes(templateSource, "project-dashboard-participants-list.js?v=participant-list-controls-20260601", "project dashboard template");
+includes(templateSource, "project-dashboard-participants-list.js?v=participant-list-reveal-hide-20260602", "project dashboard template");
+excludes(templateSource, "project-dashboard-participants-list.js?v=participant-list-controls-20260601", "project dashboard template");
 includes(templateSource, "text: \"Dashboard\"", "project dashboard template");
 includes(templateSource, "id: \"breadcrumb-project\"", "project dashboard template");
 includes(templateSource, "href: \"/pages/project-dashboard/?id=\"", "project dashboard template");
