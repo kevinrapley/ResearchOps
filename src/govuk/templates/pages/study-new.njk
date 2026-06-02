@@ -1,0 +1,190 @@
+{% extends "layouts/researchops.njk" %}
+{% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
+{% from "govuk/components/input/macro.njk" import govukInput %}
+{% from "govuk/components/inset-text/macro.njk" import govukInsetText %}
+{% from "govuk/components/select/macro.njk" import govukSelect %}
+{% from "govuk/components/textarea/macro.njk" import govukTextarea %}
+
+{% block head %}
+	<meta property="schema:name" content="Add study — ResearchOps">
+	<meta property="schema:creator" content="Home Office ResearchOps Platform">
+	<meta property="schema:dateModified" content="2026-06-02">
+	<meta property="dcterms:language" content="en-GB">
+	<link rel="modulepreload" href="/pages/study/new/study-new.js">
+{% endblock %}
+
+{% block content %}
+<div class="govuk-width-container">
+	{{ govukBreadcrumbs({
+		attributes: {
+			id: "study-breadcrumbs",
+			typeof: "schema:BreadcrumbList"
+		},
+		items: [
+			{
+				text: "Projects",
+				href: "/pages/projects/",
+				attributes: {
+					property: "schema:item",
+					typeof: "schema:Thing"
+				}
+			},
+			{
+				text: "Project",
+				href: "/pages/project-dashboard/?id=",
+				attributes: {
+					id: "breadcrumb-project",
+					property: "schema:item",
+					typeof: "schema:Thing"
+				}
+			},
+			{
+				text: "Add study"
+			}
+		]
+	}) }}
+
+	<header class="govuk-!-margin-bottom-6">
+		<p id="project-eyebrow" class="govuk-caption-l">Project</p>
+		<h1 class="govuk-heading-l">Add study</h1>
+		<p class="govuk-body-l">Create a study as a dedicated workflow so method, description and readiness controls can be managed outside the project dashboard.</p>
+	</header>
+
+	{{ govukInsetText({
+		html: '<p class="govuk-body">Use this page to create a study within the selected project. Do not include participant personal data in the study description.</p>'
+	}) }}
+
+	{{ govukErrorSummary({
+		attributes: {
+			id: "study-error-summary",
+			hidden: "hidden"
+		},
+		titleText: "There is a problem",
+		errorList: []
+	}) }}
+
+	<form id="add-study-form" class="govuk-!-margin-top-6" novalidate>
+		<input id="project-id" name="project_airtable_id" type="hidden" value="">
+
+		{{ govukInput({
+			id: "study-title-input",
+			name: "title",
+			classes: "govuk-!-width-two-thirds",
+			label: {
+				text: "Study title"
+			},
+			hint: {
+				text: "Use a short, recognisable title."
+			}
+		}) }}
+
+		{{ govukSelect({
+			id: "study-method",
+			name: "method",
+			classes: "govuk-!-width-two-thirds",
+			label: {
+				text: "Research method"
+			},
+			hint: {
+				text: "Choose the primary method for this study."
+			},
+			items: [
+				{
+					value: "",
+					text: "Choose a research method"
+				},
+				{
+					value: "Card Sort",
+					text: "Card Sort"
+				},
+				{
+					value: "Contextual Inquiry",
+					text: "Contextual Inquiry"
+				},
+				{
+					value: "Customer Satisfaction Survey",
+					text: "Customer Satisfaction Survey"
+				},
+				{
+					value: "Diary Study",
+					text: "Diary Study"
+				},
+				{
+					value: "Existing Research Analysis",
+					text: "Existing Research Analysis"
+				},
+				{
+					value: "Expert Review",
+					text: "Expert Review"
+				},
+				{
+					value: "Stakeholder Interview",
+					text: "Stakeholder Interview"
+				},
+				{
+					value: "Survey",
+					text: "Survey"
+				},
+				{
+					value: "Tree Test",
+					text: "Tree Test"
+				},
+				{
+					value: "Usability Test",
+					text: "Usability Test"
+				},
+				{
+					value: "User Interview",
+					text: "User Interview"
+				}
+			],
+			attributes: {
+				required: "required"
+			}
+		}) }}
+
+		{{ govukTextarea({
+			id: "study-notes",
+			name: "description",
+			classes: "govuk-!-width-two-thirds",
+			value: "",
+			rows: 6,
+			label: {
+				text: "Study description"
+			},
+			hint: {
+				text: "Describe the purpose of the study. Do not include participant personal data."
+			},
+			attributes: {
+				required: "required"
+			}
+		}) }}
+
+		<div class="govuk-button-group">
+			{{ govukButton({
+				text: "Create study",
+				type: "submit",
+				attributes: {
+					id: "study-submit"
+				}
+			}) }}
+			{{ govukButton({
+				text: "Cancel",
+				href: "/pages/projects/",
+				classes: "govuk-button--secondary",
+				attributes: {
+					id: "cancel-study"
+				}
+			}) }}
+		</div>
+
+		<p id="study-status" class="govuk-body-s" role="status" aria-live="polite"></p>
+	</form>
+</div>
+{% endblock %}
+
+{% block scripts %}
+	<script type="module" src="/pages/study/new/study-new.js"></script>
+{% endblock %}

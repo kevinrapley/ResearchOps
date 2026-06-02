@@ -297,8 +297,8 @@
 						<p class="govuk-body-s" id="participants-summary-status">Loading participants…</p>
 						<p class="govuk-body-s">Participants are managed through study-specific workflows so consent, scheduling and safeguarding states stay traceable.</p>
 						<div class="govuk-button-group">
-							{{ govukButton({ text: "Add participant", href: "/pages/project-dashboard/participants/?pid=", classes: "govuk-button--secondary", attributes: { id: "add-participant-link" } }) }}
-							{{ govukButton({ text: "Bulk upload participants via CSV", href: "/pages/project-dashboard/participants/import/?pid=", classes: "govuk-button--secondary", attributes: { id: "import-participants-link" } }) }}
+							{{ govukButton({ text: "Add participant", href: "/pages/project-dashboard/participants/?id=", classes: "govuk-button--secondary", attributes: { id: "add-participant-link" } }) }}
+							{{ govukButton({ text: "Bulk upload participants via CSV", href: "/pages/project-dashboard/participants/import/?id=", classes: "govuk-button--secondary", attributes: { id: "import-participants-link" } }) }}
 						</div>
 					</div>
 				</div>
@@ -317,7 +317,7 @@
 					<div>
 						<h3 class="govuk-heading-s">Studies</h3>
 						<ul class="govuk-list govuk-list--spaced rops-study-list" id="studies-list"><li>Loading studies…</li></ul>
-						{{ govukButton({ text: "Add study", href: "/pages/study/new/?pid=", classes: "govuk-button--secondary", attributes: { id: "add-study-link" } }) }}
+						{{ govukButton({ text: "Add study", href: "/pages/study/new/?id=", classes: "govuk-button--secondary", attributes: { id: "add-study-link" } }) }}
 					</div>
 					<div>
 						<h3 class="govuk-heading-s">Insights</h3>

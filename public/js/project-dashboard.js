@@ -250,9 +250,9 @@ function renderProject(project) {
 	setLinkHref("journal-button-link", `/pages/projects/journals/?id=${encodeURIComponent(projectId)}`);
 	setLinkHref("outcomes-link", `/pages/projects/outcomes/?id=${encodeURIComponent(projectId)}`);
 	setLinkHref("outcomes-card-link", `/pages/projects/outcomes/?id=${encodeURIComponent(projectId)}`);
-	setLinkHref("add-participant-link", `/pages/project-dashboard/participants/?pid=${encodeURIComponent(projectId)}`);
-	setLinkHref("import-participants-link", `/pages/project-dashboard/participants/import/?pid=${encodeURIComponent(projectId)}`);
-	setLinkHref("add-study-link", `/pages/study/new/?pid=${encodeURIComponent(projectId)}`);
+	setLinkHref("add-participant-link", `/pages/project-dashboard/participants/?id=${encodeURIComponent(projectId)}`);
+setLinkHref("import-participants-link", `/pages/project-dashboard/participants/import/?id=${encodeURIComponent(projectId)}`);
+	setLinkHref("add-study-link", `/pages/study/new/?id=${encodeURIComponent(projectId)}`);
 	setLinkHref("add-insight-link", `/pages/projects/outcomes/?id=${encodeURIComponent(projectId)}#impact-form`);
 
 	renderStakeholders(project.stakeholders || []);
@@ -343,8 +343,8 @@ ${participants.map((participant) => {
 ${participantList}
 <p class="govuk-body-s">Participants are managed through study-specific workflows so consent, scheduling and safeguarding states stay traceable.</p>
 <div class="govuk-button-group">
-<a href="/pages/project-dashboard/participants/?pid=${projectId}" role="button" draggable="false" class="govuk-button govuk-button--secondary" data-module="govuk-button" id="add-participant-link">Add participant</a>
-<a href="/pages/project-dashboard/participants/import/?pid=${projectId}" role="button" draggable="false" class="govuk-button govuk-button--secondary" data-module="govuk-button" id="import-participants-link">Bulk upload participants via CSV</a>
+<a href="/pages/project-dashboard/participants/?id=${projectId}" role="button" draggable="false" class="govuk-button govuk-button--secondary" data-module="govuk-button" id="add-participant-link">Add participant</a>
+<a href="/pages/project-dashboard/participants/import/?id=${projectId}" role="button" draggable="false" class="govuk-button govuk-button--secondary" data-module="govuk-button" id="import-participants-link">Bulk upload participants via CSV</a>
 </div>`;
 }
 
