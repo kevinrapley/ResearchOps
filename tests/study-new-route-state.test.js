@@ -8,7 +8,6 @@ const projectDashboardTemplateSource = fs.readFileSync("src/govuk/templates/page
 const studyNewControllerSource = fs.readFileSync("public/pages/study/new/study-new.js", "utf8");
 const participantControllerSource = fs.readFileSync("public/pages/project-dashboard/participants/participants-project.js", "utf8");
 const participantImportControllerSource = fs.readFileSync("public/pages/project-dashboard/participants/import/import-participants.js", "utf8");
-const dashboardControllerSource = fs.readFileSync("public/js/project-dashboard.js", "utf8");
 const dashboardContextSource = fs.readFileSync("public/js/project-dashboard-context.js", "utf8");
 const renderGovukPagesSource = fs.readFileSync("scripts/govuk/render-govuk-pages.mjs", "utf8");
 
@@ -86,11 +85,6 @@ includes(participantImportControllerSource, "createStudy.href = `/pages/study/ne
 includes(participantImportControllerSource, "location.assign(`/pages/study/participants/?id=${encodeURIComponent(studyId)}`);", "participant import controller");
 excludes(participantImportControllerSource, "/pages/study/new/?pid=", "participant import controller");
 excludes(participantImportControllerSource, "/pages/study/participants/?pid=", "participant import controller");
-
-includes(dashboardControllerSource, "setLinkHref(\"add-participant-link\", `/pages/project-dashboard/participants/?id=${encodeURIComponent(projectId)}`);", "project dashboard controller");
-includes(dashboardControllerSource, "setLinkHref(\"import-participants-link\", `/pages/project-dashboard/participants/import/?id=${encodeURIComponent(projectId)}`);", "project dashboard controller");
-includes(dashboardControllerSource, "setLinkHref(\"add-study-link\", `/pages/study/new/?id=${encodeURIComponent(projectId)}`);", "project dashboard controller");
-excludes(dashboardControllerSource, "setLinkHref(\"add-study-link\", `/pages/study/new/?pid=${encodeURIComponent(projectId)}`);", "project dashboard controller");
 
 includes(dashboardContextSource, "[\"add-participant-link\", \"/pages/project-dashboard/participants/\", \"id\"]", "project dashboard context");
 includes(dashboardContextSource, "[\"import-participants-link\", \"/pages/project-dashboard/participants/import/\", \"id\"]", "project dashboard context");
