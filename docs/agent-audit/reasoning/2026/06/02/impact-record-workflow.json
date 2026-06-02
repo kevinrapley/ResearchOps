@@ -1,0 +1,97 @@
+{
+  "schemaVersion": "researchops-agent-trace-summary/v1",
+  "traceType": "operational-audit",
+  "date": "2026-06-02",
+  "branch": "feature/impact-record-workflow",
+  "summary": "Implemented the production impact record workflow from GOV.UK UI through D1-backed create, list, update and soft-delete APIs.",
+  "task": {
+    "request": "Open a new PR that executes the full impact record implementation plan, including product documentation, agent trace, D1 database persistence, edit/delete controls, contextual guidance and action rows with a single colspan=7 cell.",
+    "scope": [
+      "Outcomes Nunjucks template",
+      "Outcomes SCSS source and generated CSS build",
+      "Impact tracker browser workflow",
+      "D1 impact records persistence",
+      "Worker API routing",
+      "Runtime tests",
+      "Product documentation",
+      "Agent trace"
+    ]
+  },
+  "mode": "rops-build",
+  "selectedBundles": [
+    "github-diamond",
+    "researchops-developer-control",
+    "multi-functional-team",
+    "govuk-design-system",
+    "cloudflare"
+  ],
+  "decisions": [
+    {
+      "decision": "Use D1 as the production persistence layer for impact records.",
+      "reason": "The user explicitly requested an end-to-end workflow from UI through D1 database rather than client-only or Airtable-only behaviour."
+    },
+    {
+      "decision": "Keep the table at seven evidence columns and render actions as a paired row with one colspan=7 cell.",
+      "reason": "The user wanted to avoid adding an Actions column while keeping the table strictly within the GOV.UK table pattern."
+    },
+    {
+      "decision": "Use GOV.UK radios for impact type, impact scale, status, metric unit, metric direction and measurement window.",
+      "reason": "These are single-choice values. Radios make choices visible and reduce ambiguity."
+    },
+    {
+      "decision": "Move outcomes styling to src/styles/outcomes.scss and add build:outcomes.",
+      "reason": "The user clarified that outcomes.css should be generated from SCSS."
+    },
+    {
+      "decision": "Use soft delete for impact records.",
+      "reason": "Impact records are governance evidence. Removing them from the active table while preserving lifecycle audit fields is safer than hard deletion."
+    }
+  ],
+  "filesCreated": [
+    "src/styles/outcomes.scss",
+    "infra/cloudflare/migrations/0010_impact_records.sql",
+    "tests/impact-records-d1-runtime.test.js",
+    "docs/product/26/06/02/impact-record-workflow.md",
+    "docs/agent-audit/reasoning/2026/06/02/impact-record-workflow.json",
+    "docs/agent-audit/reasoning/2026/06/02/impact-record-workflow.md"
+  ],
+  "filesModified": [
+    "package.json",
+    "src/govuk/templates/pages/projects-outcomes.njk",
+    "public/js/outcomes-page.js",
+    "public/components/impact-tracker.js",
+    "public/css/outcomes.css",
+    "infra/cloudflare/src/service/impact-internals.js",
+    "infra/cloudflare/src/service/impact.js",
+    "infra/cloudflare/src/service/index.js",
+    "infra/cloudflare/src/core/router.js",
+    "tests/outcomes-page-route-state.test.js",
+    "tests/govuk-tables-summary-lists-application-route-state.test.js"
+  ],
+  "acceptanceCriteria": [
+    "The outcomes form uses GOV.UK Frontend macros and radio groups for single-choice fields.",
+    "Impact references use the IMPCT-RCD-xxxxxxxxxxxx format.",
+    "Baseline, target and actual are supported by contextual guidance rather than long hints.",
+    "The table is hidden until at least one impact record exists.",
+    "Each record data row is followed by an action row.",
+    "The action row contains one table cell with colspan=7.",
+    "Edit loads the selected record into the form and saves via PATCH /api/impact/:id.",
+    "Delete requires inline confirmation and persists via DELETE /api/impact/:id.",
+    "Impact records are stored in the D1 impact_records table and soft-deleted with deleted_at."
+  ],
+  "validation": {
+    "localValidation": "Not run in this connector-only session.",
+    "recommendedCommands": [
+      "npm run build",
+      "node --test tests/outcomes-page-route-state.test.js",
+      "node --test tests/govuk-tables-summary-lists-application-route-state.test.js",
+      "node --test tests/impact-records-d1-runtime.test.js",
+      "npm test",
+      "npm run validate"
+    ]
+  },
+  "implementationNotes": [
+    "A dedicated D1 apply workflow was attempted but blocked by the connector safety layer because the workflow includes deployment secret wiring. The migration file and exact Wrangler command are documented in the product documentation.",
+    "The D1 helper creates the impact_records table if it is missing, but production should still apply infra/cloudflare/migrations/0010_impact_records.sql explicitly."
+  ]
+}
