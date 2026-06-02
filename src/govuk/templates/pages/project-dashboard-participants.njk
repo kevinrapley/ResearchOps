@@ -11,7 +11,7 @@
 {% block head %}
 	<meta property="schema:name" content="Add participant — ResearchOps">
 	<meta property="schema:creator" content="Home Office ResearchOps Platform">
-	<meta property="schema:dateModified" content="2026-06-01">
+	<meta property="schema:dateModified" content="2026-06-02">
 	<meta property="dcterms:language" content="en-GB">
 	<link rel="modulepreload" href="/js/project-participant-context.js">
 	<link rel="modulepreload" href="/pages/project-dashboard/participants/participants-project.js">
@@ -20,8 +20,8 @@
 {% block content %}
 <div class="govuk-width-container">
 	{{ govukBreadcrumbs({
-		id: "participant-breadcrumbs",
 		attributes: {
+			id: "participant-breadcrumbs",
 			typeof: "schema:BreadcrumbList"
 		},
 		items: [
@@ -77,7 +77,7 @@
 			id: "no-studies-panel",
 			hidden: "hidden"
 		},
-		html: '<h2 class="govuk-heading-m">Create a study first</h2><p class="govuk-body">Participants must be linked to a study before they can be added.</p><a id="create-study-link" href="/pages/study/new/?pid=" class="govuk-button" data-module="govuk-button">Add study</a>'
+		html: '<h2 class="govuk-heading-m">Create a study first</h2><p class="govuk-body">Participants must be linked to a study before they can be added.</p><a id="create-study-link" href="/pages/study/new/?id=" class="govuk-button" data-module="govuk-button">Add study</a>'
 	}) }}
 
 	<form id="add-participant-form" novalidate>
