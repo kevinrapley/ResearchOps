@@ -10,6 +10,7 @@ const participantConsentPageSource = fs.readFileSync("public/pages/study/partici
 const participantsModuleSource = fs.readFileSync("public/components/participants/participants-page.js", "utf8");
 const participantsSchedulerSource = fs.readFileSync("public/pages/study/participants/scheduler.js", "utf8");
 const outcomesPageSource = fs.readFileSync("public/pages/projects/outcomes/index.html", "utf8");
+const outcomesTemplateSource = fs.readFileSync("src/govuk/templates/pages/projects-outcomes.njk", "utf8");
 const impactTrackerSource = fs.readFileSync("public/components/impact-tracker.js", "utf8");
 
 function includes(source, text, label) {
@@ -83,10 +84,12 @@ includes(participantsSchedulerSource, "govuk-table__row", "participants schedule
 includes(participantsSchedulerSource, "govuk-table__cell", "participants scheduler");
 excludes(participantsSchedulerSource, "role=\"cell\"", "participants scheduler");
 
-includes(outcomesPageSource, "href=\"/css/govuk/govuk-tables.css\"", "outcomes page");
-includes(outcomesPageSource, "id=\"impact-table\" class=\"govuk-table govuk-!-margin-top-6 outcomes-table\"", "outcomes page");
+includes(outcomesPageSource, "href=\"/assets/govuk/govuk-frontend.css\"", "outcomes page");
+excludes(outcomesPageSource, "href=\"/css/govuk/govuk-tables.css\"", "outcomes page");
+includes(outcomesPageSource, "class=\"govuk-table govuk-!-margin-top-6 outcomes-table\" id=\"impact-table\"", "outcomes page");
 includes(outcomesPageSource, "class=\"govuk-table__caption govuk-table__caption--m\"", "outcomes page");
 includes(outcomesPageSource, "<tbody class=\"govuk-table__body\">", "outcomes page");
+includes(outcomesTemplateSource, "govukTable({", "outcomes template");
 
 includes(impactTrackerSource, "govuk-table__row", "impact tracker component");
 includes(impactTrackerSource, "govuk-table__cell", "impact tracker component");
