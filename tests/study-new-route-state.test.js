@@ -1,10 +1,15 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
 
-const pageSource = fs.readFileSync("public/pages/study/new/index.html", "utf8");
-const templateSource = fs.readFileSync("src/govuk/templates/pages/study-new.njk", "utf8");
-const controllerSource = fs.readFileSync("public/pages/study/new/study-new.js", "utf8");
+const studyNewTemplateSource = fs.readFileSync("src/govuk/templates/pages/study-new.njk", "utf8");
+const participantTemplateSource = fs.readFileSync("src/govuk/templates/pages/project-dashboard-participants.njk", "utf8");
+const participantImportTemplateSource = fs.readFileSync("src/govuk/templates/pages/project-dashboard-participants-import.njk", "utf8");
+const projectDashboardTemplateSource = fs.readFileSync("src/govuk/templates/pages/project-dashboard.njk", "utf8");
+const studyNewControllerSource = fs.readFileSync("public/pages/study/new/study-new.js", "utf8");
+const participantControllerSource = fs.readFileSync("public/pages/project-dashboard/participants/participants-project.js", "utf8");
+const participantImportControllerSource = fs.readFileSync("public/pages/project-dashboard/participants/import/import-participants.js", "utf8");
 const dashboardControllerSource = fs.readFileSync("public/js/project-dashboard.js", "utf8");
+const dashboardContextSource = fs.readFileSync("public/js/project-dashboard-context.js", "utf8");
 const renderGovukPagesSource = fs.readFileSync("scripts/govuk/render-govuk-pages.mjs", "utf8");
 
 function includes(source, text, label) {
@@ -17,48 +22,77 @@ function excludes(source, text, label) {
 
 includes(renderGovukPagesSource, "template: 'pages/study-new.njk'", "GOV.UK page renderer");
 includes(renderGovukPagesSource, "output: 'public/pages/study/new/index.html'", "GOV.UK page renderer");
+includes(renderGovukPagesSource, "template: 'pages/project-dashboard-participants.njk'", "GOV.UK page renderer");
+includes(renderGovukPagesSource, "output: 'public/pages/project-dashboard/participants/index.html'", "GOV.UK page renderer");
+includes(renderGovukPagesSource, "template: 'pages/project-dashboard-participants-import.njk'", "GOV.UK page renderer");
+includes(renderGovukPagesSource, "output: 'public/pages/project-dashboard/participants/import/index.html'", "GOV.UK page renderer");
 
-includes(templateSource, "{% from \"govuk/components/breadcrumbs/macro.njk\" import govukBreadcrumbs %}", "study new template");
-includes(templateSource, "{% from \"govuk/components/button/macro.njk\" import govukButton %}", "study new template");
-includes(templateSource, "{% from \"govuk/components/error-summary/macro.njk\" import govukErrorSummary %}", "study new template");
-includes(templateSource, "{% from \"govuk/components/input/macro.njk\" import govukInput %}", "study new template");
-includes(templateSource, "{% from \"govuk/components/select/macro.njk\" import govukSelect %}", "study new template");
-includes(templateSource, "{% from \"govuk/components/textarea/macro.njk\" import govukTextarea %}", "study new template");
-includes(templateSource, "govuk-!-width-two-thirds", "study new template");
-includes(templateSource, "govuk-!-margin-top-6", "study new template");
-includes(templateSource, "href: \"/pages/project-dashboard/?id=\"", "study new template");
-excludes(templateSource, "Back to project dashboard", "study new template");
-excludes(templateSource, "id=\"back-to-project\"", "study new template");
-excludes(templateSource, "?pid=", "study new template");
+includes(studyNewTemplateSource, "{% from \"govuk/components/breadcrumbs/macro.njk\" import govukBreadcrumbs %}", "study new template");
+includes(studyNewTemplateSource, "{% from \"govuk/components/button/macro.njk\" import govukButton %}", "study new template");
+includes(studyNewTemplateSource, "{% from \"govuk/components/error-summary/macro.njk\" import govukErrorSummary %}", "study new template");
+includes(studyNewTemplateSource, "{% from \"govuk/components/input/macro.njk\" import govukInput %}", "study new template");
+includes(studyNewTemplateSource, "{% from \"govuk/components/select/macro.njk\" import govukSelect %}", "study new template");
+includes(studyNewTemplateSource, "{% from \"govuk/components/textarea/macro.njk\" import govukTextarea %}", "study new template");
+includes(studyNewTemplateSource, "id: \"study-breadcrumbs\"", "study new template");
+includes(studyNewTemplateSource, "value: \"\"", "study new template");
+includes(studyNewTemplateSource, "href: \"/pages/project-dashboard/?id=\"", "study new template");
+excludes(studyNewTemplateSource, "Back to project dashboard", "study new template");
+excludes(studyNewTemplateSource, "id=\"back-to-project\"", "study new template");
+excludes(studyNewTemplateSource, "?pid=", "study new template");
 
-includes(pageSource, "class=\"govuk-template\"", "study new page");
-includes(pageSource, "href=\"/assets/govuk/govuk-frontend.css\"", "study new page");
-includes(pageSource, "<x-include src=\"/partials/header.html\"", "study new page");
-includes(pageSource, "<x-include src=\"/partials/footer.html\"></x-include>", "study new page");
-includes(pageSource, "id=\"study-breadcrumbs\"", "study new page");
-includes(pageSource, "id=\"study-error-summary\"", "study new page");
-includes(pageSource, "name=\"project_airtable_id\"", "study new page");
-includes(pageSource, "id=\"study-title-input\"", "study new page");
-includes(pageSource, "id=\"study-method\"", "study new page");
-includes(pageSource, "id=\"study-notes\"", "study new page");
-includes(pageSource, "id=\"study-submit\"", "study new page");
-includes(pageSource, "id=\"cancel-study\"", "study new page");
-excludes(pageSource, "href=\"/css/screen.css\"", "study new page");
-excludes(pageSource, "href=\"/css/govuk/govuk-buttons.css\"", "study new page");
-excludes(pageSource, "Back to project dashboard", "study new page");
-excludes(pageSource, "id=\"back-to-project\"", "study new page");
-excludes(pageSource, "?pid=", "study new page");
+includes(participantTemplateSource, "{% from \"govuk/components/breadcrumbs/macro.njk\" import govukBreadcrumbs %}", "participant template");
+includes(participantTemplateSource, "{% from \"govuk/components/button/macro.njk\" import govukButton %}", "participant template");
+includes(participantTemplateSource, "{% from \"govuk/components/input/macro.njk\" import govukInput %}", "participant template");
+includes(participantTemplateSource, "{% from \"govuk/components/select/macro.njk\" import govukSelect %}", "participant template");
+includes(participantTemplateSource, "{% from \"govuk/components/textarea/macro.njk\" import govukTextarea %}", "participant template");
+includes(participantTemplateSource, "id: \"participant-breadcrumbs\"", "participant template");
+includes(participantTemplateSource, "href=\"/pages/study/new/?id=\"", "participant template");
+excludes(participantTemplateSource, "?pid=", "participant template");
 
-includes(controllerSource, "function projectIdFromUrl()", "study new controller");
-includes(controllerSource, "return new URLSearchParams(location.search).get(\"id\") || \"\";", "study new controller");
-includes(controllerSource, "location.assign(`/pages/study/?id=${encodeURIComponent(studyId)}`);", "study new controller");
-includes(controllerSource, "project_airtable_id: projectId", "study new controller");
-includes(controllerSource, "credentials: \"include\"", "study new controller");
-excludes(controllerSource, "get(\"pid\")", "study new controller");
-excludes(controllerSource, "/pages/study/?pid=", "study new controller");
-excludes(controllerSource, "sid=", "study new controller");
-excludes(controllerSource, "back-to-project", "study new controller");
-excludes(controllerSource, "rops-api.digikev-kevin-rapley.workers.dev", "study new controller");
+includes(participantImportTemplateSource, "{% from \"govuk/components/breadcrumbs/macro.njk\" import govukBreadcrumbs %}", "participant import template");
+includes(participantImportTemplateSource, "{% from \"govuk/components/button/macro.njk\" import govukButton %}", "participant import template");
+includes(participantImportTemplateSource, "{% from \"govuk/components/error-summary/macro.njk\" import govukErrorSummary %}", "participant import template");
+includes(participantImportTemplateSource, "{% from \"govuk/components/file-upload/macro.njk\" import govukFileUpload %}", "participant import template");
+includes(participantImportTemplateSource, "{% from \"govuk/components/select/macro.njk\" import govukSelect %}", "participant import template");
+includes(participantImportTemplateSource, "id: \"participant-import-breadcrumbs\"", "participant import template");
+includes(participantImportTemplateSource, "href=\"/pages/study/new/?id=\"", "participant import template");
+excludes(participantImportTemplateSource, "href=\"/css/screen.css\"", "participant import template");
+excludes(participantImportTemplateSource, "?pid=", "participant import template");
 
+includes(projectDashboardTemplateSource, "href: \"/pages/project-dashboard/participants/?id=\"", "project dashboard template");
+includes(projectDashboardTemplateSource, "href: \"/pages/project-dashboard/participants/import/?id=\"", "project dashboard template");
+includes(projectDashboardTemplateSource, "href: \"/pages/study/new/?id=\"", "project dashboard template");
+excludes(projectDashboardTemplateSource, "href: \"/pages/project-dashboard/participants/?pid=\"", "project dashboard template");
+excludes(projectDashboardTemplateSource, "href: \"/pages/project-dashboard/participants/import/?pid=\"", "project dashboard template");
+excludes(projectDashboardTemplateSource, "href: \"/pages/study/new/?pid=\"", "project dashboard template");
+
+includes(studyNewControllerSource, "function projectIdFromUrl()", "study new controller");
+includes(studyNewControllerSource, "return new URLSearchParams(location.search).get(\"id\") || \"\";", "study new controller");
+includes(studyNewControllerSource, "location.assign(`/pages/study/?id=${encodeURIComponent(studyId)}`);", "study new controller");
+includes(studyNewControllerSource, "project_airtable_id: projectId", "study new controller");
+includes(studyNewControllerSource, "credentials: \"include\"", "study new controller");
+excludes(studyNewControllerSource, "get(\"pid\")", "study new controller");
+excludes(studyNewControllerSource, "/pages/study/?pid=", "study new controller");
+excludes(studyNewControllerSource, "sid=", "study new controller");
+excludes(studyNewControllerSource, "back-to-project", "study new controller");
+excludes(studyNewControllerSource, "rops-api.digikev-kevin-rapley.workers.dev", "study new controller");
+
+includes(participantControllerSource, "createStudy.href = `/pages/study/new/?id=${encodeURIComponent(projectId)}`;", "participant controller");
+includes(participantControllerSource, "location.assign(`/pages/study/participants/?id=${encodeURIComponent(studyId)}${suffix}`);", "participant controller");
+excludes(participantControllerSource, "/pages/study/new/?pid=", "participant controller");
+excludes(participantControllerSource, "/pages/study/participants/?pid=", "participant controller");
+
+includes(participantImportControllerSource, "createStudy.href = `/pages/study/new/?id=${encodeURIComponent(projectId)}`;", "participant import controller");
+includes(participantImportControllerSource, "location.assign(`/pages/study/participants/?id=${encodeURIComponent(studyId)}`);", "participant import controller");
+excludes(participantImportControllerSource, "/pages/study/new/?pid=", "participant import controller");
+excludes(participantImportControllerSource, "/pages/study/participants/?pid=", "participant import controller");
+
+includes(dashboardControllerSource, "setLinkHref(\"add-participant-link\", `/pages/project-dashboard/participants/?id=${encodeURIComponent(projectId)}`);", "project dashboard controller");
+includes(dashboardControllerSource, "setLinkHref(\"import-participants-link\", `/pages/project-dashboard/participants/import/?id=${encodeURIComponent(projectId)}`);", "project dashboard controller");
 includes(dashboardControllerSource, "setLinkHref(\"add-study-link\", `/pages/study/new/?id=${encodeURIComponent(projectId)}`);", "project dashboard controller");
 excludes(dashboardControllerSource, "setLinkHref(\"add-study-link\", `/pages/study/new/?pid=${encodeURIComponent(projectId)}`);", "project dashboard controller");
+
+includes(dashboardContextSource, "[\"add-participant-link\", \"/pages/project-dashboard/participants/\", \"id\"]", "project dashboard context");
+includes(dashboardContextSource, "[\"import-participants-link\", \"/pages/project-dashboard/participants/import/\", \"id\"]", "project dashboard context");
+includes(dashboardContextSource, "[\"add-study-link\", \"/pages/study/new/\", \"id\"]", "project dashboard context");
+excludes(dashboardContextSource, "[\"add-study-link\", \"/pages/study/new/\", \"pid\"]", "project dashboard context");
