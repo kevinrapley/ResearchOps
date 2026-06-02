@@ -243,6 +243,16 @@ export const govukPages = [
 		},
 	},
 	{
+		template: 'pages/projects-outcomes.njk',
+		output: 'public/pages/projects/outcomes/index.html',
+		context: {
+			pageTitle: 'Research outcomes - ResearchOps Demo Suite',
+			serviceName: 'ResearchOps Demo Suite',
+			activeNavigation: 'Projects',
+			navigation: projectNavigation,
+		},
+	},
+	{
 		template: 'pages/projects-journals.njk',
 		output: 'public/pages/projects/journals/index.html',
 		context: {
