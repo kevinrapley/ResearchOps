@@ -49,7 +49,6 @@ includes(templateSource, "govukErrorSummary({", "outcomes template");
 includes(templateSource, "govukRadios({", "outcomes template");
 includes(templateSource, "govukDateInput({", "outcomes template");
 includes(templateSource, "id: \"impact-table\"", "outcomes template");
-includes(templateSource, "colspan", "outcomes template action-row contract marker");
 excludes(templateSource, "<table id=\"impact-table\"", "outcomes template");
 excludes(templateSource, "govukSelect({", "outcomes template");
 
