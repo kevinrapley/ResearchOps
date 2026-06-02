@@ -289,6 +289,12 @@ export async function handleRequest(request, env) {
 
 			if (url.pathname === "/api/impact" && request.method === "GET" && typeof service.listImpact === "function") return service.listImpact(origin, url);
 			if (url.pathname === "/api/impact" && request.method === "POST" && typeof service.createImpact === "function") return service.createImpact(request, origin);
+			if (url.pathname.startsWith("/api/impact/")) {
+				const impactId = decodeURIComponent(url.pathname.slice("/api/impact/".length));
+				if (request.method === "GET" && typeof service.getImpact === "function") return service.getImpact(origin, impactId);
+				if (request.method === "PATCH" && typeof service.updateImpact === "function") return service.updateImpact(request, origin, impactId);
+				if (request.method === "DELETE" && typeof service.deleteImpact === "function") return service.deleteImpact(origin, impactId);
+			}
 
 			if (url.pathname === "/api/studies" && request.method === "POST") return service.createStudy(request, origin);
 			if (url.pathname.startsWith("/api/studies/")) {
@@ -379,17 +385,12 @@ export async function handleRequest(request, env) {
 				headers: { ...corsHeadersForEnv(env, origin), "content-type": "text/plain; charset=utf-8", "x-content-type-options": "nosniff" }
 			});
 		}
-		let resp = await env.ASSETS.fetch(request);
-		if (resp.status === 404) {
-			const indexReq = new Request(new URL("/index.html", url), request);
-			resp = await env.ASSETS.fetch(indexReq);
-		}
-		return resp;
+		return env.ASSETS.fetch(request);
 	} catch (e) {
-		console.error("Unhandled router error", e);
-		return new Response(json({ error: "Internal error" }), {
+		console.error("Router fatal", e);
+		return new Response(json({ error: "Internal error", message: String(e?.message || e) }), {
 			status: 500,
-			headers: { "Content-Type": "application/json; charset=utf-8", "x-content-type-options": "nosniff", ...corsHeadersForEnv(env, origin) }
+			headers: { ...corsHeadersForEnv(env, origin), "content-type": "application/json; charset=utf-8", "x-content-type-options": "nosniff" }
 		});
 	}
 }
