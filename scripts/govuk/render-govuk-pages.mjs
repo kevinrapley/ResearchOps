@@ -154,6 +154,16 @@ const pages = [
 		},
 	},
 	{
+		template: 'pages/study-new.njk',
+		output: 'public/pages/study/new/index.html',
+		context: {
+			pageTitle: 'Add study - ResearchOps Demo Suite',
+			serviceName: 'ResearchOps Demo Suite',
+			activeNavigation: 'Projects',
+			navigation: projectNavigation,
+		},
+	},
+	{
 		template: 'pages/projects-journals.njk',
 		output: 'public/pages/projects/journals/index.html',
 		context: {
