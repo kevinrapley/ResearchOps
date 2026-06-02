@@ -1,0 +1,120 @@
+{
+  "schemaVersion": "researchops-agent-trace-summary/v1",
+  "traceType": "operational-audit",
+  "date": "2026-06-02",
+  "branch": "feature/outcomes-govuk-template",
+  "summary": "Migrated /pages/projects/outcomes/ to a GOV.UK Frontend Nunjucks source template, registered it with the GOV.UK page renderer, and replaced browser alert validation with a GOV.UK error summary path.",
+  "task": {
+    "request": "Make /pages/projects/outcomes/ use a Nunjucks template with macros and render a fully compliant GOV.UK Frontend UI.",
+    "scope": [
+      "Outcomes page source template",
+      "GOV.UK page renderer registration",
+      "Impact tracker client-side validation",
+      "Route-state tests",
+      "Agent trace documentation"
+    ]
+  },
+  "mode": "rops-build",
+  "selectedBundles": [
+    "github-diamond",
+    "researchops-developer-control",
+    "multi-functional-team",
+    "govuk-design-system",
+    "cloudflare"
+  ],
+  "taskSignals": [
+    "repository-affecting-task",
+    "government-product-assurance-default",
+    "ui-or-content-change",
+    "runtime-or-deployment-change"
+  ],
+  "operatingModelSourcesLoaded": [
+    "README.md",
+    "AGENTS.md",
+    "RECENT_LEARNINGS.md",
+    ".agent-operating-model/orchestration.xml",
+    ".agent-operating-model/bundle-registry.json",
+    ".agent-operating-model/task-signal-catalog.json",
+    ".agent-operating-model/selection-rules.json",
+    ".agent-operating-model/github-mutation-policy.md",
+    ".agent-operating-model/bundles/github/prompt.spec.yaml",
+    ".agent-operating-model/bundles/github/prompt.body.xml",
+    ".agent-operating-model/bundles/researchops-developer-control/prompt.spec.yaml",
+    ".agent-operating-model/bundles/researchops-developer-control/prompt.body.xml",
+    ".agent-operating-model/bundles/multi-functional-team/prompt.spec.yaml",
+    ".agent-operating-model/bundles/multi-functional-team/prompt.body.xml",
+    ".agent-operating-model/bundles/govuk-design-system/prompt.spec.yaml",
+    ".agent-operating-model/bundles/govuk-design-system/prompt.body.xml",
+    ".agent-operating-model/bundles/cloudflare/prompt.spec.yaml",
+    ".agent-operating-model/bundles/cloudflare/prompt.body.xml"
+  ],
+  "filesRead": [
+    "public/pages/projects/outcomes/index.html",
+    "public/js/outcomes-page.js",
+    "public/components/impact-tracker.js",
+    "public/js/project-context.js",
+    "public/css/outcomes.css",
+    "scripts/govuk/render-govuk-pages.mjs",
+    "tests/govuk-forms-application-route-state.test.js",
+    "package.json",
+    ".github/workflows/render-govuk-pages.yml"
+  ],
+  "filesCreated": [
+    "src/govuk/templates/pages/projects-outcomes.njk",
+    "docs/agent-audit/reasoning/2026/06/02/outcomes-govuk-template.json",
+    "docs/agent-audit/reasoning/2026/06/02/outcomes-govuk-template.md"
+  ],
+  "filesModified": [
+    "scripts/govuk/render-govuk-pages.mjs",
+    "public/components/impact-tracker.js",
+    "tests/govuk-forms-application-route-state.test.js"
+  ],
+  "decisions": [
+    {
+      "decision": "Create src/govuk/templates/pages/projects-outcomes.njk as the source template for /pages/projects/outcomes/.",
+      "reason": "Recent GOV.UK migrations use Nunjucks as source of truth, with generated public HTML produced by the renderer workflow."
+    },
+    {
+      "decision": "Use GOV.UK macros for breadcrumbs, buttons, error summary, input, inset text, select and textarea.",
+      "reason": "The page is a form-led GOV.UK Frontend page and should use component macros rather than hand-coded mixed CSS fragments."
+    },
+    {
+      "decision": "Do not manually edit public/pages/projects/outcomes/index.html in this branch.",
+      "reason": "The repository now has a render workflow that commits generated GOV.UK page outputs after template changes. The user also reinforced that index.html files are rendered from Nunjucks templates."
+    },
+    {
+      "decision": "Keep existing form field IDs and table IDs.",
+      "reason": "The impact tracker and outcomes page scripts depend on stable IDs such as impact-form, impact-table and impact-metricName."
+    },
+    {
+      "decision": "Replace alert-based validation with a GOV.UK error summary path in impact-tracker.js.",
+      "reason": "A fully compliant GOV.UK form should surface validation through page content, links to fields and accessible error-summary behaviour rather than browser alerts."
+    }
+  ],
+  "changes": [
+    "Added projects-outcomes.njk with GOV.UK Frontend component macros and retained existing runtime IDs.",
+    "Registered projects-outcomes.njk in scripts/govuk/render-govuk-pages.mjs for public/pages/projects/outcomes/index.html.",
+    "Updated impact-tracker.js to populate #impact-error-summary for missing metric name validation instead of calling alert().",
+    "Updated govuk-forms route-state expectations so outcomes is no longer treated as a legacy govuk-forms.css route."
+  ],
+  "validation": {
+    "localValidation": "Not run in this connector-only session.",
+    "recommendedCommands": [
+      "npm run build:govuk-pages",
+      "node --test tests/govuk-forms-application-route-state.test.js",
+      "npm test",
+      "npm run validate"
+    ],
+    "automationExpected": "The Render GOV.UK pages workflow should render public/pages/projects/outcomes/index.html after the PR is opened because src/govuk/templates/pages/projects-outcomes.njk and scripts/govuk/render-govuk-pages.mjs changed."
+  },
+  "residualRisks": [
+    "Until the render workflow commits the generated output, public/pages/projects/outcomes/index.html on the branch remains the pre-rendered version.",
+    "No browser preview was available in this connector-only session, so focus management and error-summary behaviour still need preview verification."
+  ],
+  "nextValidationTargets": [
+    "Open the PR and let the render workflow commit the generated outcomes index.html.",
+    "Confirm the rendered outcomes page no longer imports legacy GOV.UK partial CSS or /css/screen.css.",
+    "Submit the impact form with Metric name empty and confirm #impact-error-summary links to #impact-metricName.",
+    "Submit a valid impact record and confirm the impact table refreshes."
+  ]
+}
