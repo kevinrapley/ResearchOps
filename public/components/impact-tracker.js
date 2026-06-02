@@ -14,6 +14,7 @@
 	const studyId = section.getAttribute("data-study-id");
 	const form = section.querySelector("#impact-form");
 	const tableBody = section.querySelector("#impact-table tbody");
+	const errorSummary = section.querySelector("#impact-error-summary");
 
 	if (!projectId || !form || !tableBody) {
 		console.warn("[impact-tracker] Missing required elements or attributes");
@@ -33,6 +34,35 @@
 		if (n === null || n === undefined || n === "") return "–";
 		const num = Number(n);
 		return Number.isNaN(num) ? escapeHtml(n) : num.toString();
+	}
+
+	function errorListFor(summary) {
+		if (!summary) return null;
+		let list = summary.querySelector(".govuk-error-summary__list");
+		if (list) return list;
+
+		const body = summary.querySelector(".govuk-error-summary__body");
+		if (!body) return null;
+
+		list = document.createElement("ul");
+		list.className = "govuk-list govuk-error-summary__list";
+		body.append(list);
+		return list;
+	}
+
+	function showErrors(errors = []) {
+		const list = errorListFor(errorSummary);
+		if (!errorSummary || !list) return;
+
+		if (!errors.length) {
+			errorSummary.hidden = true;
+			list.innerHTML = "";
+			return;
+		}
+
+		list.innerHTML = errors.map((error) => `<li><a href="#${error.id}">${escapeHtml(error.message)}</a></li>`).join("");
+		errorSummary.hidden = false;
+		errorSummary.focus();
 	}
 
 	async function fetchImpact() {
@@ -98,9 +128,10 @@
 			notes: fd.get("notes") || ""
 		};
 		if (!payload.metricName) {
-			alert("Metric name is required");
+			showErrors([{ id: "impact-metricName", message: "Enter a metric name" }]);
 			return;
 		}
+		showErrors([]);
 		try {
 			const res = await fetch("/api/impact", {
 				method: "POST",
