@@ -3,13 +3,13 @@ import {
 	createImpactRecord,
 	deleteImpactRecord,
 	listImpactRecords,
-	updateImpactRecord
+	updateImpactRecord,
 } from "../infra/cloudflare/src/service/impact-internals.js";
 
 function createMockD1() {
 	const state = {
 		impactRecords: [],
-		runs: []
+		runs: [],
 	};
 
 	function statement(sql, args = []) {
@@ -39,18 +39,18 @@ function createMockD1() {
 						notes: args[15],
 						created_at: args[16],
 						updated_at: args[17],
-						deleted_at: null
+						deleted_at: null,
 					});
 				}
 				if (/UPDATE impact_records/i.test(sql) && /SET deleted_at/i.test(sql)) {
-					const record = state.impactRecords.find(row => row.record_id === args[2]);
+					const record = state.impactRecords.find((row) => row.record_id === args[2]);
 					if (record) {
 						record.deleted_at = args[0];
 						record.updated_at = args[1];
 					}
 				}
 				if (/UPDATE impact_records/i.test(sql) && /SET study_id/i.test(sql)) {
-					const record = state.impactRecords.find(row => row.record_id === args[14]);
+					const record = state.impactRecords.find((row) => row.record_id === args[14]);
 					if (record) {
 						record.study_id = args[0];
 						record.decision_link = args[1];
@@ -72,7 +72,7 @@ function createMockD1() {
 			},
 			async first() {
 				if (/FROM impact_records/i.test(sql) && /WHERE record_id = \?/i.test(sql)) {
-					return state.impactRecords.find(row => row.record_id === args[0]) || null;
+					return state.impactRecords.find((row) => row.record_id === args[0]) || null;
 				}
 				return null;
 			},
@@ -80,12 +80,12 @@ function createMockD1() {
 				if (/FROM impact_records/i.test(sql)) {
 					const projectId = args[0];
 					const studyId = args[1];
-					let rows = state.impactRecords.filter(row => row.project_id === projectId && !row.deleted_at);
-					if (studyId) rows = rows.filter(row => row.study_id === studyId);
+					let rows = state.impactRecords.filter((row) => row.project_id === projectId && !row.deleted_at);
+					if (studyId) rows = rows.filter((row) => row.study_id === studyId);
 					return { results: rows };
 				}
 				return { results: [] };
-			}
+			},
 		};
 	}
 
@@ -93,7 +93,7 @@ function createMockD1() {
 		state,
 		prepare(sql) {
 			return statement(sql);
-		}
+		},
 	};
 }
 
@@ -115,7 +115,7 @@ const created = await createImpactRecord(env, {
 	impactType: "service",
 	impactScale: "journey",
 	status: "measured",
-	notes: "Measured after rollout."
+	notes: "Measured after rollout.",
 });
 
 assert.equal(created.displayRef, "IMPCT-RCD-5F0907B5E5AA");
@@ -130,7 +130,7 @@ assert.equal(listed[0].displayRef, created.displayRef);
 const updated = await updateImpactRecord(env, created.id, {
 	metricName: "Completion rate after content changes",
 	actual: 82,
-	status: "measured"
+	status: "measured",
 });
 
 assert.equal(updated.metricName, "Completion rate after content changes");
