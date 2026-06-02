@@ -183,6 +183,27 @@ async function loadStudies(projectId) {
 	}));
 }
 
+async function loadParticipantsForStudy(study) {
+	if (!study?.id) return [];
+	const response = await fetchWithTimeout(apiUrl(`/api/participants?study=${encodeURIComponent(study.id)}&ts=${Date.now()}`), {
+		cache: "no-store",
+		credentials: "include",
+	}, 15000);
+	const json = await readJsonResponse(response, "Participants");
+	const participants = Array.isArray(json.participants) ? json.participants : [];
+	const studyTitle = study.title?.trim() || study.method?.trim() || computeStudyTitle(study);
+	return participants.map((participant) => ({
+		...participant,
+		studyId: study.id,
+		studyTitle,
+	}));
+}
+
+async function loadParticipantsForStudies(studies = []) {
+	const results = await Promise.all(studies.map((study) => loadParticipantsForStudy(study)));
+	return results.flat();
+}
+
 function computeStudyTitle({ description = "", method = "", createdAt = "" } = {}) {
 	if (description.trim()) return description.trim().slice(0, 80);
 	const date = createdAt ? new Date(createdAt) : new Date();
@@ -231,7 +252,7 @@ function renderProject(project) {
 	setLinkHref("outcomes-card-link", `/pages/projects/outcomes/?id=${encodeURIComponent(projectId)}`);
 	setLinkHref("add-participant-link", `/pages/project-dashboard/participants/?pid=${encodeURIComponent(projectId)}`);
 	setLinkHref("import-participants-link", `/pages/project-dashboard/participants/import/?pid=${encodeURIComponent(projectId)}`);
-	setLinkHref("add-study-link", `/pages/study/new/?pid=${encodeURIComponent(projectId)}`);
+	setLinkHref("add-study-link", `/pages/study/new/?id=${encodeURIComponent(projectId)}`);
 	setLinkHref("add-insight-link", `/pages/projects/outcomes/?id=${encodeURIComponent(projectId)}#impact-form`);
 
 	renderStakeholders(project.stakeholders || []);
@@ -293,6 +314,54 @@ ${description ? `<p class="govuk-body-s rops-study-description">${escapeHtml(des
 ${status ? `<strong class="govuk-tag ${studyStatusTagClass(status)}">${escapeHtml(status)}</strong>` : ""}
 </li>`;
 	}).join("");
+}
+
+function participantPlanningPanel() {
+	const heading = Array.from(document.querySelectorAll("#planning h3")).find((element) => element.textContent.trim() === "Participants");
+	return heading?.parentElement || null;
+}
+
+function renderParticipantsSummary(project, participants = []) {
+	const panel = participantPlanningPanel();
+	if (!panel) return;
+
+	const projectId = encodeURIComponent(projectIdFromUrl(project));
+	const summary = participants.length === 1 ? "1 participant" : `${participants.length} participants`;
+	const participantList = participants.length ? `
+<ul class="govuk-list govuk-list--spaced rops-divided-list" id="participants-list">
+${participants.map((participant) => {
+		const reference = escapeHtml(participant.participant_ref || participant.display_name || participant.id || "Participant");
+		const status = participant.status ? `<br><span class="govuk-hint">Status: ${escapeHtml(participant.status)}</span>` : "";
+		const study = participant.studyTitle ? `<br><span class="govuk-hint">Study: ${escapeHtml(participant.studyTitle)}</span>` : "";
+		return `<li><strong>${reference}</strong>${status}${study}</li>`;
+	}).join("")}
+</ul>` : "<p class=\"govuk-body-s\">No participants yet.</p>";
+
+	panel.innerHTML = `
+<h3 class="govuk-heading-s">Participants</h3>
+<p class="govuk-body-s" id="participants-summary-status">${escapeHtml(summary)} linked to this project.</p>
+${participantList}
+<p class="govuk-body-s">Participants are managed through study-specific workflows so consent, scheduling and safeguarding states stay traceable.</p>
+<div class="govuk-button-group">
+<a href="/pages/project-dashboard/participants/?pid=${projectId}" role="button" draggable="false" class="govuk-button govuk-button--secondary" data-module="govuk-button" id="add-participant-link">Add participant</a>
+<a href="/pages/project-dashboard/participants/import/?pid=${projectId}" role="button" draggable="false" class="govuk-button govuk-button--secondary" data-module="govuk-button" id="import-participants-link">Bulk upload participants via CSV</a>
+</div>`;
+}
+
+function renderParticipantsLoadError(project, error) {
+	const panel = participantPlanningPanel();
+	if (!panel) return;
+	const projectId = encodeURIComponent(projectIdFromUrl(project));
+	const reason = escapeHtml(String(error?.message || error || "Unknown error"));
+	panel.innerHTML = `
+<h3 class="govuk-heading-s">Participants</h3>
+<p class="govuk-body-s" role="alert"><strong>Could not load participants</strong><br>Participant records could not be loaded for this project.</p>
+<p class="govuk-body-s"><strong>Technical detail:</strong> <code>${reason}</code></p>
+<p class="govuk-body-s">Participants are managed through study-specific workflows so consent, scheduling and safeguarding states stay traceable.</p>
+<div class="govuk-button-group">
+<a href="/pages/project-dashboard/participants/?pid=${projectId}" role="button" draggable="false" class="govuk-button govuk-button--secondary" data-module="govuk-button" id="add-participant-link">Add participant</a>
+<a href="/pages/project-dashboard/participants/import/?pid=${projectId}" role="button" draggable="false" class="govuk-button govuk-button--secondary" data-module="govuk-button" id="import-participants-link">Bulk upload participants via CSV</a>
+</div>`;
 }
 
 function renderStudiesLoadError(error) {
@@ -461,9 +530,17 @@ function renderProjectLoadError(error, requestedProjectId) {
 		try {
 			const studies = await loadStudies(project.id || requestedProjectId);
 			renderStudies(project, studies);
+			try {
+				const participants = await loadParticipantsForStudies(studies);
+				renderParticipantsSummary(project, participants);
+			} catch (participantError) {
+				console.error("[project-dashboard] participants load failed", participantError);
+				renderParticipantsLoadError(project, participantError);
+			}
 		} catch (studyError) {
 			console.error("[project-dashboard] studies load failed", studyError);
 			renderStudiesLoadError(studyError);
+			renderParticipantsSummary(project, []);
 		}
 		initProjectActions();
 	} catch (error) {
