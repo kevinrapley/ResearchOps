@@ -1,0 +1,143 @@
+{
+  "schemaVersion": "researchops-agent-trace-summary/v1",
+  "traceType": "operational-audit",
+  "date": "2026-06-02",
+  "branch": "feature/study-new-govuk-template-current",
+  "summary": "Migrated /pages/study/new/ to a GOV.UK Frontend Nunjucks template, removed the Back to project dashboard action, and moved new-study project routing from pid to id.",
+  "task": {
+    "request": "Create a new Nunjucks template for /pages/study/new/ using GOV.UK Frontend macros for breadcrumbs, buttons and form controls; remove the Back to project dashboard button; stop using old pid routing and use the project id route for the project a new study will belong to.",
+    "scope": [
+      "Study creation page template",
+      "Rendered static study creation page",
+      "Study creation page controller",
+      "Project dashboard add-study link",
+      "Route-state test",
+      "Agent trace documentation"
+    ]
+  },
+  "mode": "rops-feature",
+  "selectedBundles": [
+    "github-diamond",
+    "researchops-developer-control",
+    "multi-functional-team",
+    "govuk-design-system",
+    "cloudflare"
+  ],
+  "taskSignals": [
+    "ui-or-content-change",
+    "runtime-or-deployment-change"
+  ],
+  "operatingModelSourcesLoaded": [
+    "README.md",
+    "AGENTS.md",
+    "RECENT_LEARNINGS.md",
+    ".agent-operating-model/orchestration.xml",
+    ".agent-operating-model/bundle-registry.json",
+    ".agent-operating-model/task-signal-catalog.json",
+    ".agent-operating-model/selection-rules.json",
+    ".agent-operating-model/github-mutation-policy.md",
+    ".agent-operating-model/bootstrap-checklist.md",
+    ".agent-operating-model/precedence-policy.md",
+    ".agent-operating-model/trace-policy.md",
+    ".agent-operating-model/trace-layers.md",
+    ".agent-operating-model/behavioural-evals.json",
+    ".agent-operating-model/bundles/github/prompt.spec.yaml",
+    ".agent-operating-model/bundles/github/prompt.body.xml",
+    ".agent-operating-model/bundles/researchops-developer-control/prompt.spec.yaml",
+    ".agent-operating-model/bundles/researchops-developer-control/prompt.body.xml",
+    ".agent-operating-model/bundles/multi-functional-team/prompt.spec.yaml",
+    ".agent-operating-model/bundles/multi-functional-team/prompt.body.xml",
+    ".agent-operating-model/bundles/govuk-design-system/prompt.spec.yaml",
+    ".agent-operating-model/bundles/govuk-design-system/prompt.body.xml",
+    ".agent-operating-model/bundles/cloudflare/prompt.spec.yaml",
+    ".agent-operating-model/bundles/cloudflare/prompt.body.xml",
+    ".agent-operating-model/bundles/govuk-design-system/references/govuk-form-affordance-reference.xml",
+    ".agent-operating-model/bundles/researchops-developer-control/references/researchops-single-record-route-policy.xml",
+    ".agent-operating-model/bundles/researchops-developer-control/references/researchops-route-availability-policy.xml"
+  ],
+  "filesRead": [
+    "src/govuk/templates/layouts/researchops.njk",
+    "src/govuk/templates/pages/project-dashboard-participants.njk",
+    "scripts/govuk/render-govuk-pages.mjs",
+    "public/pages/study/new/index.html",
+    "public/pages/study/new/study-new.js",
+    "public/js/project-dashboard.js",
+    "public/js/study-page.js",
+    "public/pages/study/index.html",
+    "public/pages/project-dashboard/participants/index.html",
+    "infra/cloudflare/src/service/studies.js",
+    "docs/design-system/researchops-component-inventory.md",
+    "docs/design-system/govuk-frontend-v6-migration.md",
+    "docs/agent-audit/reasoning/2026/05/18/study-child-routes-canonical-id.md",
+    "tests/project-dashboard-route-state.test.js"
+  ],
+  "filesCreated": [
+    "src/govuk/templates/pages/study-new.njk",
+    "tests/study-new-route-state.test.js",
+    "docs/agent-audit/reasoning/2026/06/02/study-new-govuk-id-routing.json",
+    "docs/agent-audit/reasoning/2026/06/02/study-new-govuk-id-routing.md"
+  ],
+  "filesModified": [
+    "scripts/govuk/render-govuk-pages.mjs",
+    "public/pages/study/new/index.html",
+    "public/pages/study/new/study-new.js",
+    "public/js/project-dashboard.js"
+  ],
+  "decisions": [
+    {
+      "decision": "Use a new src/govuk/templates/pages/study-new.njk source template and register it in the GOV.UK page renderer.",
+      "reason": "Recent ResearchOps page migrations use Nunjucks as the source of truth and keep rendered public HTML aligned with that source."
+    },
+    {
+      "decision": "Use GOV.UK Frontend macros for breadcrumbs, buttons, error summary, inset text, text input, select and textarea.",
+      "reason": "The page is a GOV.UK-style form page and should not continue local hand-written component approximations."
+    },
+    {
+      "decision": "Preserve the existing form field IDs and payload field project_airtable_id.",
+      "reason": "The routing parameter changes from pid to id, but the create-study service still requires project_airtable_id in the POST payload."
+    },
+    {
+      "decision": "Remove the Back to project dashboard action rather than hiding it.",
+      "reason": "The user requested removal. Keeping a hidden action would leave stale routing and unnecessary DOM surface."
+    },
+    {
+      "decision": "Accept only ?id=<project-record-id> on /pages/study/new/ and redirect created studies to /pages/study/?id=<study-record-id>.",
+      "reason": "The page belongs to a project selected by its current id route, while the resulting Study overview already supports canonical Study record ID routing."
+    },
+    {
+      "decision": "Keep API calls same-origin unless an explicit API origin is configured.",
+      "reason": "Branch previews should call the preview API proxy rather than falling through to a production Worker fallback."
+    }
+  ],
+  "changes": [
+    "Created src/govuk/templates/pages/study-new.njk with GOV.UK Frontend macros and no Back to project dashboard action.",
+    "Registered the new study-new template in scripts/govuk/render-govuk-pages.mjs.",
+    "Replaced public/pages/study/new/index.html with rendered GOV.UK Frontend-compatible HTML from the new page source.",
+    "Updated public/pages/study/new/study-new.js to read project context from id only, remove back-link handling, use same-origin API routing, and open the created study with /pages/study/?id=<study-record-id>.",
+    "Updated public/js/project-dashboard.js so the Add study action points to /pages/study/new/?id=<project-record-id>.",
+    "Added tests/study-new-route-state.test.js to pin template registration, macro use, GOV.UK asset use, removal of the old back action and the id-only routing contract."
+  ],
+  "validation": {
+    "testsAdded": [
+      "tests/study-new-route-state.test.js"
+    ],
+    "localValidation": "Not run in this connector-only mutation session. Validation is limited to static reasoning, branch comparison and the added route-state test until CI runs on the PR.",
+    "manualPreviewTargets": [
+      "/pages/project-dashboard/?id=<project-record-id> then use Add study",
+      "/pages/study/new/?id=<project-record-id>",
+      "/pages/study/?id=<created-study-record-id>"
+    ]
+  },
+  "residualRisks": [
+    "The create-study API still validates project_airtable_id because the service contract remains Airtable-backed. This change does not rename the POST payload field.",
+    "Participant add/import links on the project dashboard still use pid. They were left unchanged because this unit of work was scoped to /pages/study/new/.",
+    "No browser preview was available in this session, so final confirmation of form submission and redirect behaviour should happen on the branch preview."
+  ],
+  "nextValidationTargets": [
+    "Run npm run build:govuk-pages.",
+    "Run node --test tests/study-new-route-state.test.js.",
+    "Run npm test.",
+    "Run npm run validate if the route-state test passes.",
+    "Open /pages/study/new/?id=<project-record-id> on the branch preview, create a study and confirm the redirect uses /pages/study/?id=<study-record-id>."
+  ]
+}
