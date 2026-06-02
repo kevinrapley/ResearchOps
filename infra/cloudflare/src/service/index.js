@@ -119,7 +119,10 @@ export class ResearchOpsService {
 
 		/* Impact Tracking */
 		this.listImpact = ImpactService.listImpact(this);
+		this.getImpact = ImpactService.getImpact(this);
 		this.createImpact = ImpactService.createImpact(this);
+		this.updateImpact = ImpactService.updateImpact(this);
+		this.deleteImpact = ImpactService.deleteImpact(this);
 
 		/* Provenance Tracking */
 		this.recordProvenance = (event) => recordProvenanceEvent(this, event);
