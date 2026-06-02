@@ -213,6 +213,16 @@ export const govukPages = [
 		},
 	},
 	{
+		template: 'pages/study-new.njk',
+		output: 'public/pages/study/new/index.html',
+		context: {
+			pageTitle: 'Add study - ResearchOps Demo Suite',
+			serviceName: 'ResearchOps Demo Suite',
+			activeNavigation: 'Projects',
+			navigation: projectNavigation,
+		},
+	},
+	{
 		template: 'pages/project-dashboard-participants.njk',
 		output: 'public/pages/project-dashboard/participants/index.html',
 		context: {
