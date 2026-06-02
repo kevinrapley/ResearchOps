@@ -110,7 +110,7 @@ function setProjectLinks(projectId, project = {}) {
 	if (eyebrow) eyebrow.textContent = projectName;
 
 	const createStudy = $("#create-study-link");
-	if (createStudy) createStudy.href = `/pages/study/new/?pid=${encodeURIComponent(projectId)}`;
+	if (createStudy) createStudy.href = `/pages/study/new/?id=${encodeURIComponent(projectId)}`;
 }
 
 async function loadProject(projectId) {
@@ -235,7 +235,7 @@ function initForm(projectId) {
 			if (status) status.textContent = "Participant created. Opening study participants page.";
 			const studyId = fieldValue("#study-select");
 			const suffix = participantId ? `#participant-${encodeURIComponent(participantId)}` : "";
-			location.assign(`/pages/study/participants/?pid=${encodeURIComponent(projectId)}&sid=${encodeURIComponent(studyId)}${suffix}`);
+			location.assign(`/pages/study/participants/?id=${encodeURIComponent(studyId)}${suffix}`);
 		} catch (err) {
 			showErrors([{ id: "participant-first-name", message: `Could not create participant. ${String(err?.message || err)}` }]);
 			if (status) status.textContent = "";
