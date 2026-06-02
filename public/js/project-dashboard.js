@@ -252,7 +252,7 @@ function renderProject(project) {
 	setLinkHref("outcomes-card-link", `/pages/projects/outcomes/?id=${encodeURIComponent(projectId)}`);
 	setLinkHref("add-participant-link", `/pages/project-dashboard/participants/?pid=${encodeURIComponent(projectId)}`);
 	setLinkHref("import-participants-link", `/pages/project-dashboard/participants/import/?pid=${encodeURIComponent(projectId)}`);
-	setLinkHref("add-study-link", `/pages/study/new/?pid=${encodeURIComponent(projectId)}`);
+	setLinkHref("add-study-link", `/pages/study/new/?id=${encodeURIComponent(projectId)}`);
 	setLinkHref("add-insight-link", `/pages/projects/outcomes/?id=${encodeURIComponent(projectId)}#impact-form`);
 
 	renderStakeholders(project.stakeholders || []);
