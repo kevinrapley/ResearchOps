@@ -1,6 +1,6 @@
 /**
  * @file /js/outcomes-page.js
- * @summary Hydrates the Outcomes page project context and contextual field guidance.
+ * @summary Hydrates the Outcomes page project context, contextual field guidance and validation.
  */
 
 (function initOutcomesPage() {
@@ -66,6 +66,15 @@
 		},
 	};
 
+	const validationFields = {
+		'impact-metricName': 'Enter a metric name',
+		metricUnit: 'Select a metric unit',
+		metricDirection: 'Select the desired direction',
+		impactType: 'Select an impact type',
+		impactScale: 'Select an impact scale',
+		status: 'Select a status',
+	};
+
 	function twoDigit(value) {
 		return String(value).padStart(2, '0');
 	}
@@ -93,8 +102,94 @@
 			target?.getAttribute?.('data-guidance-key') ||
 			target?.closest?.('[data-guidance-key]')?.getAttribute?.('data-guidance-key') ||
 			target?.closest?.('.govuk-form-group')?.getAttribute?.('data-guidance-key') ||
+			target?.name ||
 			''
 		);
+	}
+
+	function errorSummaryList() {
+		const summary = document.getElementById('impact-error-summary');
+		if (!summary) return null;
+		let list = summary.querySelector('.govuk-error-summary__list');
+		if (list) return list;
+		const body = summary.querySelector('.govuk-error-summary__body');
+		if (!body) return null;
+		list = document.createElement('ul');
+		list.className = 'govuk-list govuk-error-summary__list';
+		body.append(list);
+		return list;
+	}
+
+	function fieldForError(id) {
+		return document.getElementById(id) || document.querySelector(`[name="${CSS.escape(id)}"]`);
+	}
+
+	function groupForError(id) {
+		return fieldForError(id)?.closest('.govuk-form-group') || null;
+	}
+
+	function clearErrors() {
+		document.querySelectorAll('[data-impact-error-message]').forEach((message) => message.remove());
+		document.querySelectorAll('.govuk-form-group--error').forEach((group) => {
+			group.classList.remove('govuk-form-group--error');
+		});
+		document.querySelectorAll('.govuk-input--error').forEach((field) => {
+			field.classList.remove('govuk-input--error');
+		});
+		document.querySelectorAll('[aria-invalid="true"]').forEach((field) => {
+			field.removeAttribute('aria-invalid');
+		});
+	}
+
+	function addFieldError(error) {
+		const group = groupForError(error.id);
+		const field = fieldForError(error.id);
+		if (!group || !field) return;
+		const message = document.createElement('p');
+		message.id = `${error.id}-error`;
+		message.className = 'govuk-error-message';
+		message.dataset.impactErrorMessage = 'true';
+		message.innerHTML = `<span class="govuk-visually-hidden">Error:</span> ${error.message}`;
+		group.classList.add('govuk-form-group--error');
+		const hint = group.querySelector('.govuk-hint');
+		(hint || group.querySelector('.govuk-label, .govuk-fieldset__legend'))?.after(message);
+		if (field.matches('.govuk-input, .govuk-textarea, .govuk-select')) {
+			field.classList.add('govuk-input--error');
+		}
+		field.setAttribute('aria-invalid', 'true');
+	}
+
+	function showValidationErrors(errors) {
+		const summary = document.getElementById('impact-error-summary');
+		const list = errorSummaryList();
+		clearErrors();
+		if (!summary || !list) return;
+		if (!errors.length) {
+			summary.hidden = true;
+			list.innerHTML = '';
+			return;
+		}
+		list.innerHTML = errors
+			.map((error) => `<li><a href="#${error.id}">${error.message}</a></li>`)
+			.join('');
+		errors.forEach(addFieldError);
+		summary.hidden = false;
+		summary.focus();
+	}
+
+	function checkedValue(name) {
+		return document.querySelector(`[name="${name}"]:checked`)?.value || '';
+	}
+
+	function validationErrors() {
+		const errors = [];
+		if (!document.getElementById('impact-metricName')?.value.trim()) {
+			errors.push({ id: 'impact-metricName', message: validationFields['impact-metricName'] });
+		}
+		for (const name of ['metricUnit', 'metricDirection', 'impactType', 'impactScale', 'status']) {
+			if (!checkedValue(name)) errors.push({ id: name, message: validationFields[name] });
+		}
+		return errors;
 	}
 
 	if (projectId) {
@@ -109,11 +204,26 @@
 
 	const form = document.getElementById('impact-form');
 	if (form) {
+		form.setAttribute('novalidate', 'novalidate');
+		document.getElementById('impact-metricName')?.removeAttribute('required');
+		document.getElementById('impact-cancel-edit')?.setAttribute('hidden', 'hidden');
+		form.addEventListener(
+			'submit',
+			(event) => {
+				const errors = validationErrors();
+				showValidationErrors(errors);
+				if (!errors.length) return;
+				event.preventDefault();
+				event.stopImmediatePropagation();
+			},
+			true
+		);
 		form.addEventListener('focusin', (event) => {
 			updateGuidance(guidanceKeyFromTarget(event.target) || 'metricName');
 		});
 		form.addEventListener('change', (event) => {
 			updateGuidance(guidanceKeyFromTarget(event.target) || 'metricName');
+			showValidationErrors([]);
 		});
 	}
 })();
