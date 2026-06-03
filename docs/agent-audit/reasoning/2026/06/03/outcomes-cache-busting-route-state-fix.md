@@ -83,9 +83,12 @@ The fix keeps the PR #341 cache-busting intent and restores source-of-truth beha
 - `/js/outcomes-page.js`
 - `/components/impact-tracker.js`
 
+The route-state test now pins the already-committed versioned outcomes CSS URL explicitly, matching PR #341's cache-busting scope.
+
 ## Files modified
 
 - `scripts/govuk/render-govuk-pages.mjs`
+- `tests/outcomes-page-route-state.test.js`
 - `docs/agent-audit/reasoning/2026/06/03/outcomes-cache-busting-route-state-fix.md`
 - `docs/agent-audit/reasoning/2026/06/03/outcomes-cache-busting-route-state-fix.json`
 
@@ -98,6 +101,7 @@ Connector verification completed:
 - Confirmed the fix branch renderer contains `outcomesScriptVersion`.
 - Confirmed the fix branch renderer contains `cacheBustOutcomesPageScripts`.
 - Confirmed `renderGovukPage` passes `env.render(page.template, page.context)` through `cacheBustOutcomesPageScripts` before formatting and writing output.
+- Confirmed the outcomes route-state test pins the versioned outcomes stylesheet, script modulepreload and footer script URLs.
 
 Required CI and local follow-up checks:
 
