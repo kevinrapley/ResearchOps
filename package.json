@@ -10,6 +10,7 @@
     "build:researchops": "node scripts/styles/build-generated-css.mjs public/assets/researchops/researchops-home.css",
     "build:projects": "node scripts/styles/build-generated-css.mjs public/css/projects.css",
     "build:project-dashboard": "node scripts/styles/build-generated-css.mjs public/css/project-dashboard.css",
+    "build:study-page": "node scripts/styles/build-generated-css.mjs public/css/study-page.css",
     "build:outcomes": "node scripts/styles/build-generated-css.mjs public/css/outcomes.css",
     "build:govuk-pages": "node scripts/govuk/render-govuk-pages.mjs",
     "postbuild:govuk-pages": "node scripts/govuk/normalise-service-pages.mjs",
