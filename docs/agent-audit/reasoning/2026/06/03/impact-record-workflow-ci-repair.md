@@ -95,6 +95,7 @@ Repository scripts and checks:
 
 - `package.json`
 - `.prettierignore`
+- `.gitignore`
 - `scripts/validate.sh`
 - `tests/govuk-frontend-integration-route-state.test.js`
 - `tests/outcomes-page-route-state.test.js`
@@ -146,6 +147,8 @@ This keeps the clean generated-artifact gate available for the formatter workflo
 
 `.github/workflows/format-pr.yml` now runs the generated CSS build and format step, then commits the generated CSS paths back to the relevant same-repository work branch when generated CSS changes exist. It is guarded so `pull_request_target` does not run untrusted fork code.
 
+A formatter run on 2026-06-03 showed that Sass generation and formatting succeeded, but `git add` refused to stage `public/assets` and `public/css` because those directories were still ignored. The fix was to update `.gitignore` to explicitly unignore only the governed generated CSS artefact paths.
+
 ## Validation status
 
 Validated through GitHub Actions observation only. Local validation was not available in this connector session.
@@ -163,6 +166,8 @@ For PR head `bc33cc7531a4487cc6d41eede6be7ce4c6850e18`, all observed PR-triggere
 - `Bundle version consistency`
 - `Render GOV.UK pages`
 
+The formatter workflow subsequently committed generated CSS at `173dfc545407b7819705cf2a89a7fd4c8082ba7a`. A follow-up connector commit was added to force the normal PR workflow suite to run on top of that generated CSS state.
+
 ## Residual risk
 
-The PR-triggered validation suite is green at head `bc33cc7531a4487cc6d41eede6be7ce4c6850e18`. The remaining operational risk is that the branch formatter workflow runs partly outside the pull-request workflow listing used by the connector, so its push-triggered generated-CSS commit behaviour should still be monitored on future branches that change Sass sources.
+The generated CSS pipeline is now able to stage the governed generated CSS paths. The PR-triggered validation suite should be monitored on the current head after the trace-only re-test commit completes.
