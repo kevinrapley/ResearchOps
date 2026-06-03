@@ -99,6 +99,37 @@
 		if (year && !year.value) year.value = String(today.getFullYear());
 	}
 
+	function arrangeReferenceControls() {
+		const reference = document.getElementById('impact-insightId');
+		const referenceGroup = reference?.closest('.govuk-form-group');
+		const actions = document.querySelector('.impact-reference-actions');
+		if (!referenceGroup || !actions || referenceGroup.closest('.impact-reference-row')) return;
+
+		const row = document.createElement('div');
+		row.className = 'impact-reference-row';
+		row.style.alignItems = 'end';
+		row.style.display = 'flex';
+		row.style.flexWrap = 'wrap';
+		row.style.gap = '12px';
+		row.style.marginBottom = '24px';
+		referenceGroup.before(row);
+		row.append(referenceGroup, actions);
+		referenceGroup.style.marginBottom = '0';
+		actions.style.alignItems = 'center';
+		actions.style.marginBottom = '0';
+		reference?.classList.remove('govuk-input--width-20');
+		reference?.classList.add('govuk-input--width-10');
+	}
+
+	function pinGuidancePanel() {
+		const panel = document.getElementById('impact-guidance-panel');
+		if (!panel) return;
+		panel.style.alignSelf = 'start';
+		panel.style.maxHeight = 'calc(100vh - 128px)';
+		panel.style.overflowY = 'auto';
+		panel.style.top = '96px';
+	}
+
 	function updateGuidance(key) {
 		const title = document.getElementById('impact-guidance-title');
 		const body = document.getElementById('impact-guidance-body');
@@ -143,12 +174,20 @@
 		document.querySelectorAll('.govuk-form-group--error').forEach((group) => {
 			group.classList.remove('govuk-form-group--error');
 		});
-		document.querySelectorAll('.govuk-input--error').forEach((field) => {
-			field.classList.remove('govuk-input--error');
+		document.querySelectorAll('.govuk-input--error, .govuk-textarea--error, .govuk-select--error').forEach((field) => {
+			field.classList.remove('govuk-input--error', 'govuk-textarea--error', 'govuk-select--error');
+		});
+		document.querySelectorAll('.govuk-radios--error').forEach((radios) => {
+			radios.classList.remove('govuk-radios--error');
 		});
 		document.querySelectorAll('[aria-invalid="true"]').forEach((field) => {
 			field.removeAttribute('aria-invalid');
 		});
+	}
+
+	function errorTargetId(id) {
+		const field = fieldForError(id);
+		return field?.id || id;
 	}
 
 	function addFieldError(error) {
@@ -156,17 +195,22 @@
 		const field = fieldForError(error.id);
 		if (!group || !field) return;
 		const message = document.createElement('p');
-		message.id = `${error.id}-error`;
+		message.id = `${errorTargetId(error.id)}-error`;
 		message.className = 'govuk-error-message';
 		message.dataset.impactErrorMessage = 'true';
 		message.innerHTML = `<span class="govuk-visually-hidden">Error:</span> ${error.message}`;
 		group.classList.add('govuk-form-group--error');
 		const hint = group.querySelector('.govuk-hint');
 		(hint || group.querySelector('.govuk-label, .govuk-fieldset__legend'))?.after(message);
-		if (field.matches('.govuk-input, .govuk-textarea, .govuk-select')) {
-			field.classList.add('govuk-input--error');
-		}
+
+		if (field.matches('.govuk-input')) field.classList.add('govuk-input--error');
+		if (field.matches('.govuk-textarea')) field.classList.add('govuk-textarea--error');
+		if (field.matches('.govuk-select')) field.classList.add('govuk-select--error');
+		field.closest('.govuk-radios')?.classList.add('govuk-radios--error');
 		field.setAttribute('aria-invalid', 'true');
+		const describedBy = new Set((field.getAttribute('aria-describedby') || '').split(/\s+/).filter(Boolean));
+		describedBy.add(message.id);
+		field.setAttribute('aria-describedby', Array.from(describedBy).join(' '));
 	}
 
 	function showValidationErrors(errors) {
@@ -180,7 +224,7 @@
 			return;
 		}
 		list.innerHTML = errors
-			.map((error) => `<li><a href="#${error.id}">${error.message}</a></li>`)
+			.map((error) => `<li><a href="#${errorTargetId(error.id)}">${error.message}</a></li>`)
 			.join('');
 		errors.forEach(addFieldError);
 		summary.hidden = false;
@@ -248,18 +292,32 @@
 		return errors;
 	}
 
-	async function copyImpactReference() {
+	function copyViaFallback(text) {
+		const textarea = document.createElement('textarea');
+		textarea.value = text;
+		textarea.setAttribute('readonly', 'readonly');
+		textarea.style.left = '-9999px';
+		textarea.style.position = 'fixed';
+		document.body.append(textarea);
+		textarea.focus();
+		textarea.select();
+		document.execCommand('copy');
+		textarea.remove();
+	}
+
+	async function copyImpactReference(event) {
+		event?.preventDefault();
 		const reference = document.getElementById('impact-insightId');
 		const status = document.getElementById('impact-reference-copy-status');
 		const text = reference?.value.trim() || '';
 		if (!text) return;
 		try {
+			if (!navigator.clipboard?.writeText || !window.isSecureContext) throw new Error('Clipboard API unavailable');
 			await navigator.clipboard.writeText(text);
 		} catch {
-			reference.select();
-			document.execCommand('copy');
+			copyViaFallback(text);
 		}
-		if (status) status.textContent = 'Impact record reference copied.';
+		if (status) status.textContent = `Copied ${text}`;
 	}
 
 	if (projectId) {
@@ -271,6 +329,8 @@
 	}
 
 	setToday();
+	arrangeReferenceControls();
+	pinGuidancePanel();
 
 	const form = document.getElementById('impact-form');
 	if (form) {
@@ -290,7 +350,7 @@
 				}
 				syncConditionalValuesForSubmit();
 			},
-			true
+			true,
 		);
 		form.addEventListener('focusin', (event) => {
 			updateGuidance(guidanceKeyFromTarget(event.target) || 'metricName');
