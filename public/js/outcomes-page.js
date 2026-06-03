@@ -195,17 +195,32 @@
 		return document.querySelector(`[name="${name}"]:checked`);
 	}
 
-	function syncConditionalValues() {
+	function syncConditionalValuesForSubmit() {
+		const restorers = [];
 		const metricUnit = checkedRadio('metricUnit');
 		const metricUnitOther = document.getElementById('metricUnitOther');
 		if (metricUnit?.value === 'other' && metricUnitOther?.value.trim()) {
+			const original = metricUnit.value;
 			metricUnit.value = metricUnitOther.value.trim();
+			restorers.push(() => {
+				metricUnit.value = original;
+			});
 		}
 
 		const measurementWindow = checkedRadio('measurementWindow');
 		const measurementWindowCustom = document.getElementById('measurementWindowCustom');
 		if (measurementWindow?.value === 'custom' && measurementWindowCustom?.value.trim()) {
+			const original = measurementWindow.value;
 			measurementWindow.value = measurementWindowCustom.value.trim();
+			restorers.push(() => {
+				measurementWindow.value = original;
+			});
+		}
+
+		if (restorers.length) {
+			queueMicrotask(() => {
+				restorers.forEach((restore) => restore());
+			});
 		}
 	}
 
@@ -273,7 +288,7 @@
 					event.stopImmediatePropagation();
 					return;
 				}
-				syncConditionalValues();
+				syncConditionalValuesForSubmit();
 			},
 			true
 		);
