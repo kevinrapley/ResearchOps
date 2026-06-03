@@ -180,7 +180,7 @@ import fs from 'node:fs';
 
 const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
 const scripts = pkg.scripts || {};
-const required = ['lint', 'format', 'format:check', 'validate', 'build:generated-css', 'generated-css:format', 'generated-css:check', 'audit:performance', 'audit:performance:write', 'agent:model', 'agent:model:validate', 'agent:bundles:validate', 'agent:bundle-versions:validate', 'agent:evals', 'trace:validate', 'trace:coverage', 'reports:validate', 'sourcebook:validate', 'test:e2e', 'qa:browsers', 'qa:cucumber'];
+const required = ['lint', 'format', 'format:check', 'validate', 'build:generated-css', 'generated-css:format', 'generated-css:check', 'generated-css:clean', 'audit:performance', 'audit:performance:write', 'agent:model', 'agent:model:validate', 'agent:bundles:validate', 'agent:bundle-versions:validate', 'agent:evals', 'trace:validate', 'trace:coverage', 'reports:validate', 'sourcebook:validate', 'test:e2e', 'qa:browsers', 'qa:cucumber'];
 const missing = required.filter((name) => !scripts[name]);
 
 if (missing.length) {
@@ -198,8 +198,13 @@ if (scripts['build:generated-css'] !== 'node scripts/styles/build-generated-css.
 	process.exit(1);
 }
 
-if (scripts['generated-css:check'] !== 'node scripts/styles/format-generated-css.mjs --check && node scripts/styles/assert-generated-css-clean.mjs') {
+if (scripts['generated-css:check'] !== 'node scripts/styles/format-generated-css.mjs --check') {
 	console.error(`unexpected generated-css:check script: ${scripts['generated-css:check']}`);
+	process.exit(1);
+}
+
+if (scripts['generated-css:clean'] !== 'node scripts/styles/assert-generated-css-clean.mjs') {
+	console.error(`unexpected generated-css:clean script: ${scripts['generated-css:clean']}`);
 	process.exit(1);
 }
 
