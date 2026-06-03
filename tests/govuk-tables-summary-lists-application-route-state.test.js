@@ -94,4 +94,4 @@ includes(outcomesTemplateSource, "govukTable({", "outcomes template");
 includes(impactTrackerSource, "govuk-table__row", "impact tracker component");
 includes(impactTrackerSource, "govuk-table__cell", "impact tracker component");
 includes(impactTrackerSource, "govuk-table__cell--numeric", "impact tracker component");
-includes(impactTrackerSource, "cell.colSpan = 7;", "impact tracker component");
+includes(impactTrackerSource, "colspan=\"7\"", "impact tracker component");

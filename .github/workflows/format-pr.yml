@@ -1,27 +1,37 @@
 name: Format pull request
 
 on:
-  pull_request:
+  pull_request_target:
     types: [opened, synchronize, reopened, ready_for_review]
   push:
-    branches: [main]
+    branches:
+      - main
+      - feature/**
+      - chore/**
+      - test/**
+      - fix/**
+      - perf/**
+      - hotfix/**
   workflow_dispatch: {}
 
 permissions:
-  contents: read
+  contents: write
 
 concurrency:
-  group: format-${{ github.event_name }}-${{ github.event.pull_request.number || github.ref }}
+  group: format-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 jobs:
   prettier:
+    if: github.event_name != 'pull_request_target' || github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-24.04
     timeout-minutes: 8
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.pull_request.head.ref || github.ref }}
 
       - name: Setup Node
         uses: actions/setup-node@v6
@@ -32,16 +42,45 @@ jobs:
       - name: Install dependencies without lifecycle scripts
         run: npm ci --ignore-scripts
 
+      - name: Generate and format consumer-facing CSS
+        run: npm run build:generated-css
+
+      - name: Commit generated CSS to branch
+        if: github.event_name == 'pull_request_target' || (github.event_name == 'push' && github.ref_name != 'main')
+        shell: bash
+        env:
+          PR_HEAD_REF: ${{ github.event.pull_request.head.ref }}
+        run: |
+          set -euo pipefail
+          css_paths=(
+            assets/researchops/researchops-home.css
+            public/assets/researchops/researchops-home.css
+            public/css/projects.css
+            public/css/project-dashboard.css
+            public/css/outcomes.css
+          )
+
+          if git diff --quiet -- "${css_paths[@]}"; then
+            exit 0
+          fi
+
+          target_ref="${PR_HEAD_REF:-$GITHUB_REF_NAME}"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add "${css_paths[@]}"
+          git commit -m "chore: update generated CSS"
+          git push origin "HEAD:${target_ref}"
+
       - name: Check formatting and capture patch
         shell: bash
         run: |
           set +e
-          ./node_modules/.bin/prettier -c .
+          npm run format:check
           status=$?
           set -e
 
           if [ "$status" -ne 0 ]; then
-            ./node_modules/.bin/prettier --write .
+            npm run format
             git diff -- . > prettier-fix.patch
             cat prettier-fix.patch
             exit "$status"

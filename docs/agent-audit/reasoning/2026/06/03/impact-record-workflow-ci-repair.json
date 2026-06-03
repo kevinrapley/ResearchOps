@@ -1,0 +1,101 @@
+{
+  "schemaVersion": "researchops-agent-trace-summary/v1",
+  "traceType": "operational-audit",
+  "date": "2026-06-03",
+  "branch": "feature/impact-record-workflow",
+  "pullRequest": 338,
+  "summary": "Repaired formatting and route-state issues on the impact record workflow PR and added generated CSS tooling. Remaining blocker is the GitHub Actions generated CSS commit step failing before generated CSS can be pushed to the branch.",
+  "task": {
+    "request": "Fix failing tests on feature/impact-record-workflow PR #338 and align generated CSS handling with repository policy.",
+    "scope": [
+      "CI failure diagnosis",
+      "SCSS source formatting",
+      "D1 runtime test formatting",
+      "Generated CSS build and conformance tooling",
+      "Package script wiring",
+      "Format workflow generated CSS automation",
+      "Route-state assertion updates",
+      "Validation contract updates",
+      "Trace documentation"
+    ]
+  },
+  "selectedBundles": [
+    "github-diamond",
+    "researchops-developer-control",
+    "multi-functional-team",
+    "govuk-design-system",
+    "cloudflare"
+  ],
+  "skippedBundles": [
+    "openai-platform",
+    "mcp-agent-tooling",
+    "airtable-public-api",
+    "mural-public-api"
+  ],
+  "filesCreated": [
+    "scripts/styles/generated-css-targets.mjs",
+    "scripts/styles/build-generated-css.mjs",
+    "scripts/styles/format-generated-css.mjs",
+    "scripts/styles/assert-generated-css-clean.mjs",
+    "docs/agent-audit/reasoning/2026/06/03/impact-record-workflow-ci-repair.md",
+    "docs/agent-audit/reasoning/2026/06/03/impact-record-workflow-ci-repair.json"
+  ],
+  "filesModified": [
+    "src/styles/outcomes.scss",
+    "tests/impact-records-d1-runtime.test.js",
+    "package.json",
+    ".prettierignore",
+    ".github/workflows/format-pr.yml",
+    "tests/govuk-frontend-integration-route-state.test.js",
+    "tests/outcomes-page-route-state.test.js",
+    "scripts/validate.sh"
+  ],
+  "decisions": [
+    {
+      "decision": "Do not directly edit generated CSS after user correction.",
+      "reason": "Generated CSS must be derived from Sass sources and committed through automation, not manually edited by an agent."
+    },
+    {
+      "decision": "Use a generated CSS manifest for ResearchOps-owned stylesheets.",
+      "reason": "The repository needs a bounded list of generated consumer-facing CSS targets while leaving vendor, minified and legacy static CSS outside the ResearchOps Sass pipeline."
+    },
+    {
+      "decision": "Run generated CSS conformance outside stock Prettier.",
+      "reason": "The repository CSS convention uses indented closing braces that stock Prettier does not emit. Stock Prettier still formats normal source files; generated CSS uses the repository formatter/checker."
+    },
+    {
+      "decision": "Keep generated CSS checks blocking in lint and validation.",
+      "reason": "The user explicitly requested PR tests to check consumer-facing stylesheet conformance and stale generated output."
+    }
+  ],
+  "validation": {
+    "observedInitialFailures": [
+      "Format pull request",
+      "CI",
+      "Validate ResearchOps",
+      "Worker CI",
+      "Release Gate"
+    ],
+    "successfulAfterRepairLineage": [
+      "QA — Broken links (Lychee)",
+      "Build and deploy agent documentation Pages",
+      "Bundle version consistency",
+      "Render GOV.UK pages",
+      "qa-bdd",
+      "Accessibility audit (pa11y-ci)"
+    ],
+    "stillFailing": [
+      "Format pull request",
+      "CI",
+      "Validate ResearchOps",
+      "Worker CI",
+      "Release Gate"
+    ],
+    "remainingBlocker": "GitHub Actions successfully runs npm run build:generated-css but fails at the automated commit/push step before generated CSS can be committed to the PR branch. Downstream checks continue to fail because generated CSS is stale relative to Sass output.",
+    "localValidation": "Not run in this connector session. Validation evidence is from GitHub Actions workflow state."
+  },
+  "residualRisk": [
+    "Generated CSS automation is structurally present but not fully operational until the workflow can push generated CSS commits.",
+    "The PR should not be marked ready until the generated CSS commit workflow succeeds and CI, Validate ResearchOps, Worker CI and Release Gate pass."
+  ]
+}

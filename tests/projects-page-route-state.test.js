@@ -7,6 +7,7 @@ const projectsTemplate = fs.readFileSync("src/govuk/templates/pages/projects.njk
 const controllerSource = fs.readFileSync("public/js/projects-page.js", "utf8");
 const projectsSass = fs.readFileSync("src/styles/projects.scss", "utf8");
 const projectsCss = fs.readFileSync("public/css/projects.css", "utf8");
+const generatedCssTargets = fs.readFileSync("scripts/styles/generated-css-targets.mjs", "utf8");
 const renderScript = fs.readFileSync("scripts/govuk/render-govuk-pages.mjs", "utf8");
 const dashboardSource = fs.readFileSync("public/js/project-dashboard.js", "utf8");
 const workerSource = fs.readFileSync("infra/cloudflare/src/worker.js", "utf8");
@@ -24,8 +25,10 @@ function matches(source, pattern, label) {
 	assert.match(source, pattern, `Expected ${label} to match: ${pattern}`);
 }
 
-includes(packageJson.scripts.build, "npm run build:projects", "package build script");
-includes(packageJson.scripts["build:projects"], "src/styles/projects.scss public/css/projects.css", "package build scripts");
+includes(packageJson.scripts.build, "npm run build:generated-css", "package build script");
+includes(packageJson.scripts["build:projects"], "node scripts/styles/build-generated-css.mjs public/css/projects.css", "package build scripts");
+includes(generatedCssTargets, "source: 'src/styles/projects.scss'", "generated CSS targets");
+includes(generatedCssTargets, "output: 'public/css/projects.css'", "generated CSS targets");
 
 includes(renderScript, "template: 'pages/projects.njk'", "GOV.UK page renderer");
 includes(renderScript, "output: 'public/pages/projects/index.html'", "GOV.UK page renderer");
