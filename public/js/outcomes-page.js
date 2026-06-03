@@ -169,7 +169,25 @@
 		return fieldForError(id)?.closest('.govuk-form-group') || null;
 	}
 
+	function clearDynamicErrorDescriptions() {
+		document.querySelectorAll('[data-impact-error-message]').forEach((message) => {
+			const messageId = message.id;
+			if (!messageId) return;
+			document.querySelectorAll(`[aria-describedby~="${CSS.escape(messageId)}"]`).forEach((field) => {
+				const nextIds = (field.getAttribute('aria-describedby') || '')
+					.split(/\s+/)
+					.filter((id) => id && id !== messageId);
+				if (nextIds.length) {
+					field.setAttribute('aria-describedby', nextIds.join(' '));
+				} else {
+					field.removeAttribute('aria-describedby');
+				}
+			});
+		});
+	}
+
 	function clearErrors() {
+		clearDynamicErrorDescriptions();
 		document.querySelectorAll('[data-impact-error-message]').forEach((message) => message.remove());
 		document.querySelectorAll('.govuk-form-group--error').forEach((group) => {
 			group.classList.remove('govuk-form-group--error');
