@@ -39,6 +39,18 @@ public/**
 !public/pages/*/*/*/*/
 !public/pages/*/*/*/*/*.html
 
+# Governed generated CSS artifacts are committed by .github/workflows/format-pr.yml.
+!assets/
+!assets/researchops/
+!assets/researchops/researchops-home.css
+!public/assets/
+!public/assets/researchops/
+!public/assets/researchops/researchops-home.css
+!public/css/
+!public/css/projects.css
+!public/css/project-dashboard.css
+!public/css/outcomes.css
+
 # === Scripts & misc (optional) ===
 scripts/**
 
