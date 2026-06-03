@@ -24,6 +24,10 @@
 			title: 'Metric unit',
 			body: 'Baseline, target and actual must use the same unit. This is what makes the comparison credible.',
 		},
+		metricUnitOther: {
+			title: 'Other metric unit',
+			body: 'Define the unit clearly enough that someone else can compare baseline, target and actual values later.',
+		},
 		metricDirection: {
 			title: 'Desired direction',
 			body: 'State whether higher, lower or staying within a range is better. This prevents the impact being misread later.',
@@ -48,6 +52,10 @@
 			title: 'Measurement window',
 			body: 'Choose when the actual value should be checked. This makes it clear whether the record is a prediction, a target or observed evidence.',
 		},
+		measurementWindowCustom: {
+			title: 'Custom measurement window',
+			body: 'Describe when the actual value should be checked in a way the team can act on.',
+		},
 		impactType: {
 			title: 'Impact type',
 			body: 'Choose the kind of change the research influenced. This helps sort records by product, service, policy or operational effect.',
@@ -69,7 +77,9 @@
 	const validationFields = {
 		'impact-metricName': 'Enter a metric name',
 		metricUnit: 'Select a metric unit',
+		metricUnitOther: 'Define the metric unit',
 		metricDirection: 'Select the desired direction',
+		measurementWindowCustom: 'Define the measurement window',
 		impactType: 'Select an impact type',
 		impactScale: 'Select an impact scale',
 		status: 'Select a status',
@@ -181,15 +191,60 @@
 		return document.querySelector(`[name="${name}"]:checked`)?.value || '';
 	}
 
+	function checkedRadio(name) {
+		return document.querySelector(`[name="${name}"]:checked`);
+	}
+
+	function syncConditionalValues() {
+		const metricUnit = checkedRadio('metricUnit');
+		const metricUnitOther = document.getElementById('metricUnitOther');
+		if (metricUnit?.value === 'other' && metricUnitOther?.value.trim()) {
+			metricUnit.value = metricUnitOther.value.trim();
+		}
+
+		const measurementWindow = checkedRadio('measurementWindow');
+		const measurementWindowCustom = document.getElementById('measurementWindowCustom');
+		if (measurementWindow?.value === 'custom' && measurementWindowCustom?.value.trim()) {
+			measurementWindow.value = measurementWindowCustom.value.trim();
+		}
+	}
+
 	function validationErrors() {
 		const errors = [];
 		if (!document.getElementById('impact-metricName')?.value.trim()) {
 			errors.push({ id: 'impact-metricName', message: validationFields['impact-metricName'] });
 		}
-		for (const name of ['metricUnit', 'metricDirection', 'impactType', 'impactScale', 'status']) {
+		if (!checkedValue('metricUnit')) errors.push({ id: 'metricUnit', message: validationFields.metricUnit });
+		if (checkedRadio('metricUnit')?.value === 'other' && !document.getElementById('metricUnitOther')?.value.trim()) {
+			errors.push({ id: 'metricUnitOther', message: validationFields.metricUnitOther });
+		}
+		if (!checkedValue('metricDirection')) {
+			errors.push({ id: 'metricDirection', message: validationFields.metricDirection });
+		}
+		if (
+			checkedRadio('measurementWindow')?.value === 'custom' &&
+			!document.getElementById('measurementWindowCustom')?.value.trim()
+		) {
+			errors.push({ id: 'measurementWindowCustom', message: validationFields.measurementWindowCustom });
+		}
+		for (const name of ['impactType', 'impactScale', 'status']) {
 			if (!checkedValue(name)) errors.push({ id: name, message: validationFields[name] });
 		}
 		return errors;
+	}
+
+	async function copyImpactReference() {
+		const reference = document.getElementById('impact-insightId');
+		const status = document.getElementById('impact-reference-copy-status');
+		const text = reference?.value.trim() || '';
+		if (!text) return;
+		try {
+			await navigator.clipboard.writeText(text);
+		} catch {
+			reference.select();
+			document.execCommand('copy');
+		}
+		if (status) status.textContent = 'Impact record reference copied.';
 	}
 
 	if (projectId) {
@@ -207,14 +262,18 @@
 		form.setAttribute('novalidate', 'novalidate');
 		document.getElementById('impact-metricName')?.removeAttribute('required');
 		document.getElementById('impact-cancel-edit')?.setAttribute('hidden', 'hidden');
+		document.getElementById('impact-copy-reference')?.addEventListener('click', copyImpactReference);
 		form.addEventListener(
 			'submit',
 			(event) => {
 				const errors = validationErrors();
 				showValidationErrors(errors);
-				if (!errors.length) return;
-				event.preventDefault();
-				event.stopImmediatePropagation();
+				if (errors.length) {
+					event.preventDefault();
+					event.stopImmediatePropagation();
+					return;
+				}
+				syncConditionalValues();
 			},
 			true
 		);
