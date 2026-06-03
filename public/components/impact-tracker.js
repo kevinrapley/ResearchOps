@@ -19,6 +19,7 @@
 	const referenceInput = section.querySelector("#impact-insightId");
 	const submitButton = section.querySelector("#impact-submit");
 	const cancelEditButton = section.querySelector("#impact-cancel-edit");
+	const copyStatus = section.querySelector("#impact-reference-copy-status");
 
 	if (!projectId || !form || !tableBody || !tableWrap || !emptyState) {
 		console.warn("[impact-tracker] Missing required elements or attributes");
@@ -119,17 +120,33 @@
 		return `IMPCT-RCD-${suffix}`;
 	}
 
+	function setCancelEditVisible(visible) {
+		if (!cancelEditButton) return;
+		cancelEditButton.hidden = !visible;
+		if (visible) {
+			cancelEditButton.removeAttribute("hidden");
+		} else {
+			cancelEditButton.setAttribute("hidden", "hidden");
+		}
+	}
+
 	function resetForm() {
 		form.reset();
 		editingRecordId = "";
 		pendingDeleteId = "";
 		if (recordIdInput) recordIdInput.value = "";
 		if (referenceInput) referenceInput.value = impactReference();
+		if (copyStatus) copyStatus.textContent = "";
 		if (submitButton) submitButton.textContent = "Save impact record";
-		if (cancelEditButton) cancelEditButton.hidden = true;
+		setCancelEditVisible(false);
 		const today = new Date();
 		setDateFields(today.toISOString().slice(0, 10));
 		showErrors([]);
+	}
+
+	function cancelEdit(event) {
+		event?.preventDefault();
+		resetForm();
 	}
 
 	function payloadFromForm() {
@@ -218,6 +235,7 @@
 		editingRecordId = item.id || item.recordId || "";
 		if (recordIdInput) recordIdInput.value = editingRecordId;
 		if (referenceInput) referenceInput.value = item.displayRef || item.insightId || "";
+		if (copyStatus) copyStatus.textContent = "";
 		form.querySelector("#impact-decisionLink").value = item.decisionLink || "";
 		form.querySelector("#impact-metricName").value = item.metricName || "";
 		form.querySelector("#impact-baseline").value = item.baseline ?? "";
@@ -232,7 +250,7 @@
 		setCheckedValue("status", item.status || "");
 		setDateFields(item.recordedAt || item.updatedAt || "");
 		if (submitButton) submitButton.textContent = "Save changes";
-		if (cancelEditButton) cancelEditButton.hidden = false;
+		setCancelEditVisible(true);
 		form.scrollIntoView({ behavior: "smooth", block: "start" });
 	}
 
@@ -283,7 +301,7 @@
 		}
 	});
 
-	cancelEditButton?.addEventListener("click", resetForm);
+	cancelEditButton?.addEventListener("click", cancelEdit);
 
 	table?.addEventListener("click", async (event) => {
 		const edit = event.target.closest("[data-impact-edit]");
