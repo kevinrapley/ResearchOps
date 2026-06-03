@@ -6,6 +6,8 @@ const sassEntry = fs.readFileSync('src/styles/govuk.scss', 'utf8');
 const generatedCss = fs.readFileSync('public/assets/govuk/govuk-frontend.css', 'utf8');
 const layoutTemplate = fs.readFileSync('src/govuk/templates/layouts/researchops.njk', 'utf8');
 const projectsTemplate = fs.readFileSync('src/govuk/templates/pages/projects.njk', 'utf8');
+const generatedCssTargets = fs.readFileSync('scripts/styles/generated-css-targets.mjs', 'utf8');
+const buildGeneratedCss = fs.readFileSync('scripts/styles/build-generated-css.mjs', 'utf8');
 const sharedHead = fs.readFileSync('public/partials/html-head.html', 'utf8');
 const sharedHeader = fs.readFileSync('public/partials/header.html', 'utf8');
 const sharedFooter = fs.readFileSync('public/partials/footer.html', 'utf8');
@@ -35,20 +37,32 @@ assert.equal(packageJson.devDependencies.sass, '^1.94.2');
 assert.equal(packageJson.devDependencies.nunjucks, '^3.2.4');
 assert.equal(
 	packageJson.scripts.build,
-	'npm run build:govuk && npm run build:researchops && npm run build:projects && npm run build:project-dashboard && npm run build:govuk-pages',
+	'npm run build:govuk && npm run build:generated-css && npm run build:govuk-pages'
 );
 assert.equal(
 	packageJson.scripts['build:govuk'],
-	'sass --load-path=node_modules --no-source-map --style=compressed src/styles/govuk.scss public/assets/govuk/govuk-frontend.css && node scripts/govuk/copy-govuk-assets.mjs',
+	'sass --load-path=node_modules --no-source-map --style=compressed src/styles/govuk.scss public/assets/govuk/govuk-frontend.css && node scripts/govuk/copy-govuk-assets.mjs'
 );
+assert.equal(packageJson.scripts['build:generated-css'], 'node scripts/styles/build-generated-css.mjs');
 assert.equal(
 	packageJson.scripts['build:projects'],
-	'sass --load-path=node_modules --no-source-map src/styles/projects.scss public/css/projects.css',
+	'node scripts/styles/build-generated-css.mjs public/css/projects.css'
 );
 assert.equal(
 	packageJson.scripts['build:project-dashboard'],
-	'sass --load-path=node_modules --no-source-map src/styles/project-dashboard.scss public/css/project-dashboard.css',
+	'node scripts/styles/build-generated-css.mjs public/css/project-dashboard.css'
 );
+assert.equal(
+	packageJson.scripts['build:outcomes'],
+	'node scripts/styles/build-generated-css.mjs public/css/outcomes.css'
+);
+assert.match(generatedCssTargets, /source: 'src\/styles\/projects\.scss'/);
+assert.match(generatedCssTargets, /output: 'public\/css\/projects\.css'/);
+assert.match(generatedCssTargets, /source: 'src\/styles\/project-dashboard\.scss'/);
+assert.match(generatedCssTargets, /output: 'public\/css\/project-dashboard\.css'/);
+assert.match(generatedCssTargets, /source: 'src\/styles\/outcomes\.scss'/);
+assert.match(generatedCssTargets, /output: 'public\/css\/outcomes\.css'/);
+assert.match(buildGeneratedCss, /formatGeneratedCssTargets\(\{ write: true, targets \}\)/);
 
 assert.match(sassEntry, /\$govuk-page-width: 1020px;/);
 assert.match(sassEntry, /\$govuk-assets-path: '\/assets\/govuk\/assets\/';/);
