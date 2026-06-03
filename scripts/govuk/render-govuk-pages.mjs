@@ -51,6 +51,28 @@ async function formatRenderedHtml(html) {
 env.addFilter('govukAttributes', govukAttributes);
 env.addGlobal('govukAttributes', govukAttributes);
 
+export const outcomesScriptVersion = '20260603-form-interactions';
+
+const outcomesPageOutput = 'public/pages/projects/outcomes/index.html';
+const outcomesPageScriptPaths = ['/js/project-context.js', '/js/outcomes-page.js', '/components/impact-tracker.js'];
+const outcomesPageScriptUrlAttributes = ['href', 'src'];
+
+export function cacheBustOutcomesPageScripts(html, page) {
+	if (page.output !== outcomesPageOutput) return html;
+
+	let updatedHtml = html;
+	for (const scriptPath of outcomesPageScriptPaths) {
+		for (const attribute of outcomesPageScriptUrlAttributes) {
+			updatedHtml = updatedHtml.replaceAll(
+				`${attribute}="${scriptPath}"`,
+				`${attribute}="${scriptPath}?v=${outcomesScriptVersion}"`,
+			);
+		}
+	}
+
+	return updatedHtml;
+}
+
 const navigation = [
 	{
 		text: 'Home',
@@ -266,7 +288,7 @@ export const govukPages = [
 
 export async function renderGovukPage(page) {
 	const outputPath = resolve(root, page.output);
-	const rawHtml = env.render(page.template, page.context);
+	const rawHtml = cacheBustOutcomesPageScripts(env.render(page.template, page.context), page);
 	const html = await formatRenderedHtml(rawHtml);
 	await mkdir(dirname(outputPath), { recursive: true });
 	await writeFile(outputPath, html.endsWith('\n') ? html : `${html}\n`, 'utf8');

@@ -1,0 +1,106 @@
+{
+  "schemaVersion": "researchops-agent-trace-summary/v1",
+  "traceType": "operational-audit",
+  "date": "2026-06-03",
+  "branch": "fix/outcomes-cache-busting-route-state",
+  "summary": "Fixed breaking main tests caused by PR #341 by adding the missing GOV.UK renderer cache-busting helper and aligning the outcomes route-state stylesheet assertion with the versioned static artefact.",
+  "task": {
+    "request": "Familiarise with ResearchOps operating-model bundles and docs. Fix breaking tests on main after merge of PR #341 and open a fix PR.",
+    "scope": [
+      "Repository operating-model bootstrap",
+      "PR #341 patch review",
+      "Outcomes GOV.UK renderer repair",
+      "Outcomes route-state assertion repair",
+      "Trace documentation",
+      "Fix pull request"
+    ]
+  },
+  "selectedBundles": [
+    "github-diamond",
+    "researchops-developer-control",
+    "multi-functional-team",
+    "govuk-design-system"
+  ],
+  "skippedBundles": [
+    "cloudflare",
+    "openai-platform",
+    "mcp-agent-tooling",
+    "airtable-public-api",
+    "mural-public-api"
+  ],
+  "operatingModelFilesLoaded": [
+    "README.md",
+    "AGENTS.md",
+    "RECENT_LEARNINGS.md",
+    ".agent-operating-model/orchestration.xml",
+    ".agent-operating-model/bundle-registry.json",
+    ".agent-operating-model/task-signal-catalog.json",
+    ".agent-operating-model/selection-rules.json",
+    ".agent-operating-model/bootstrap-checklist.md",
+    ".agent-operating-model/precedence-policy.md",
+    ".agent-operating-model/trace-policy.md",
+    ".agent-operating-model/trace-layers.md",
+    ".agent-operating-model/behavioural-evals.json",
+    ".agent-operating-model/github-mutation-policy.md",
+    ".agent-operating-model/bundles/github/prompt.spec.yaml",
+    ".agent-operating-model/bundles/github/prompt.body.xml",
+    ".agent-operating-model/bundles/researchops-developer-control/prompt.spec.yaml",
+    ".agent-operating-model/bundles/researchops-developer-control/prompt.body.xml",
+    ".agent-operating-model/bundles/multi-functional-team/prompt.spec.yaml",
+    ".agent-operating-model/bundles/multi-functional-team/prompt.body.xml",
+    ".agent-operating-model/bundles/govuk-design-system/prompt.spec.yaml",
+    ".agent-operating-model/bundles/govuk-design-system/prompt.body.xml"
+  ],
+  "filesInspected": [
+    "public/pages/projects/outcomes/index.html",
+    "src/govuk/templates/pages/projects-outcomes.njk",
+    "scripts/govuk/render-govuk-pages.mjs",
+    "tests/outcomes-page-route-state.test.js",
+    "docs/agent-audit/reasoning/2026/06/02/impact-record-workflow.md",
+    "docs/agent-audit/reasoning/2026/06/02/impact-record-workflow.json",
+    "docs/agent-audit/reasoning/2026/06/03/impact-record-workflow-ci-repair.md",
+    "docs/agent-audit/reasoning/2026/06/03/impact-record-workflow-ci-repair.json"
+  ],
+  "filesCreated": [
+    "docs/agent-audit/reasoning/2026/06/03/outcomes-cache-busting-route-state-fix.md",
+    "docs/agent-audit/reasoning/2026/06/03/outcomes-cache-busting-route-state-fix.json"
+  ],
+  "filesModified": [
+    "scripts/govuk/render-govuk-pages.mjs",
+    "tests/outcomes-page-route-state.test.js"
+  ],
+  "diagnosis": "PR #341 changed the outcomes route-state test to expect versioned footer script URLs and renderer helper symbols, but the merged code only changed the template/static head links and the test. scripts/govuk/render-govuk-pages.mjs did not contain outcomesScriptVersion or cacheBustOutcomesPageScripts, so the test could fail on main.",
+  "decisions": [
+    {
+      "decision": "Fix the renderer rather than weakening the test.",
+      "reason": "The test was asserting a valid source-of-truth contract: rendering the outcomes page should consistently produce cache-busted script URLs."
+    },
+    {
+      "decision": "Scope cache busting to the outcomes page only.",
+      "reason": "The regression is limited to PR #341's outcomes-page cache-busting change, so broad GOV.UK page rendering behaviour should not be changed."
+    },
+    {
+      "decision": "Pin the versioned outcomes CSS URL in the route-state test.",
+      "reason": "PR #341 already committed the versioned stylesheet URL. The route-state assertion should match that deployed contract."
+    }
+  ],
+  "validation": {
+    "localValidation": "Not run. A local checkout could not be created in this connector session because git clone could not resolve github.com.",
+    "connectorVerification": [
+      "Confirmed scripts/govuk/render-govuk-pages.mjs contains outcomesScriptVersion.",
+      "Confirmed scripts/govuk/render-govuk-pages.mjs contains cacheBustOutcomesPageScripts.",
+      "Confirmed renderGovukPage applies cacheBustOutcomesPageScripts before formatting and writing output.",
+      "Confirmed tests/outcomes-page-route-state.test.js pins the versioned outcomes stylesheet, script modulepreload and footer script URLs."
+    ],
+    "requiredChecks": [
+      "npm run build",
+      "node --test tests/outcomes-page-route-state.test.js",
+      "npm test",
+      "npm run validate"
+    ]
+  },
+  "residualRisk": [
+    "The PR should not be considered fully validated until normal PR checks complete.",
+    "The Render GOV.UK pages workflow may commit regenerated static HTML after the PR opens because the renderer changed."
+  ]
+}
