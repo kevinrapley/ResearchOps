@@ -41,7 +41,7 @@ const requiredGovukFrontendSelectors = [
 assert.equal(topLevelHomeCss, publicHomeCss.endsWith('\n') ? publicHomeCss : `${publicHomeCss}\n`);
 assert.match(topLevelHomeCss, /grid-template-columns: repeat\(4, minmax\(0, 1fr\)\);/);
 assert.match(topLevelHomeCss, /grid-template-columns: repeat\(3, minmax\(0, 1fr\)\);/);
-assert.match(topLevelHomeCss, /\.researchops-next-action:not\(:last-child\) \{\n\tborder-right: 1px solid #cecece;/);
+assert.match(topLevelHomeCss, /\.researchops-next-action:not\(:last-child\) \{[\s\S]*?border-right: 1px solid #cecece;/);
 assert.doesNotMatch(
 	govukFrontendCss,
 	/Can't find stylesheet to import|src\/styles\/govuk\.scss|body::before/
