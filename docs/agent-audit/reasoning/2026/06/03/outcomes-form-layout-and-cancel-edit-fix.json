@@ -1,0 +1,118 @@
+{
+  "schemaVersion": "researchops-agent-trace-summary/v1",
+  "traceType": "operational-audit",
+  "date": "2026-06-03",
+  "branch": "fix/outcomes-form-layout-and-cancel-edit",
+  "summary": "Fixed outcomes page form layout and interaction defects reported from the deployed UI: reference button alignment, copied-reference status placement, sticky guidance panel positioning and Cancel edit behaviour.",
+  "task": {
+    "request": "Fix four reported outcomes page UI defects: copy reference alignment, copied-reference status placement, sticky help panel position and non-working Cancel edit button.",
+    "scope": [
+      "Outcomes route SCSS source",
+      "Outcomes controller JavaScript",
+      "Impact tracker component JavaScript",
+      "Route-state regression assertions",
+      "Agent trace documentation",
+      "Fix pull request"
+    ]
+  },
+  "selectedBundles": [
+    "github-diamond",
+    "researchops-developer-control",
+    "multi-functional-team",
+    "govuk-design-system"
+  ],
+  "skippedBundles": [
+    "cloudflare",
+    "openai-platform",
+    "mcp-agent-tooling",
+    "airtable-public-api",
+    "mural-public-api"
+  ],
+  "operatingModelFilesLoaded": [
+    "README.md",
+    "AGENTS.md",
+    "RECENT_LEARNINGS.md",
+    ".agent-operating-model/orchestration.xml",
+    ".agent-operating-model/bundle-registry.json",
+    ".agent-operating-model/task-signal-catalog.json",
+    ".agent-operating-model/selection-rules.json",
+    ".agent-operating-model/bootstrap-checklist.md",
+    ".agent-operating-model/precedence-policy.md",
+    ".agent-operating-model/trace-policy.md",
+    ".agent-operating-model/trace-layers.md",
+    ".agent-operating-model/behavioural-evals.json",
+    ".agent-operating-model/github-mutation-policy.md",
+    ".agent-operating-model/bundles/github/prompt.spec.yaml",
+    ".agent-operating-model/bundles/github/prompt.body.xml",
+    ".agent-operating-model/bundles/researchops-developer-control/prompt.spec.yaml",
+    ".agent-operating-model/bundles/researchops-developer-control/prompt.body.xml",
+    ".agent-operating-model/bundles/multi-functional-team/prompt.spec.yaml",
+    ".agent-operating-model/bundles/multi-functional-team/prompt.body.xml",
+    ".agent-operating-model/bundles/govuk-design-system/prompt.spec.yaml",
+    ".agent-operating-model/bundles/govuk-design-system/prompt.body.xml",
+    ".agent-operating-model/bundles/govuk-design-system/references/govuk-form-affordance-reference.xml",
+    "docs/design-system/govuk-form-migration.md"
+  ],
+  "filesInspected": [
+    "src/styles/outcomes.scss",
+    "public/css/outcomes.css",
+    "public/js/outcomes-page.js",
+    "public/components/impact-tracker.js",
+    "src/govuk/templates/pages/projects-outcomes.njk",
+    "tests/outcomes-page-route-state.test.js"
+  ],
+  "filesCreated": [
+    "docs/agent-audit/reasoning/2026/06/03/outcomes-form-layout-and-cancel-edit-fix.md",
+    "docs/agent-audit/reasoning/2026/06/03/outcomes-form-layout-and-cancel-edit-fix.json"
+  ],
+  "filesModified": [
+    "src/styles/outcomes.scss",
+    "public/js/outcomes-page.js",
+    "public/components/impact-tracker.js",
+    "tests/outcomes-page-route-state.test.js"
+  ],
+  "userReportedDefects": [
+    "Copy reference button did not line up with the reference input.",
+    "Copied IMPCT-RCD status appeared beside the button and caused wrapping.",
+    "Sticky right-hand help panel did not stick in the correct location when inputs received focus.",
+    "Cancel edit button did not do anything."
+  ],
+  "decisions": [
+    {
+      "decision": "Move copied-reference status below the input/button row in browser code rather than changing input IDs or form payloads.",
+      "reason": "This preserves existing GOV.UK input macro output, field names and API payloads while fixing layout behaviour."
+    },
+    {
+      "decision": "Move sticky panel positioning back to SCSS and remove inline top positioning from the controller.",
+      "reason": "The inline top override made the panel location brittle across viewport and browser chrome states."
+    },
+    {
+      "decision": "Add explicit cancel-edit state management in the impact tracker and a defensive fallback handler in the outcomes controller.",
+      "reason": "Cancel edit should reset edit state reliably even if script initialisation order or missing project context changes."
+    },
+    {
+      "decision": "Do not directly edit generated public/css/outcomes.css.",
+      "reason": "Repository policy treats generated CSS as SCSS-derived output committed by the formatter workflow."
+    }
+  ],
+  "validation": {
+    "localValidation": "Not run in this connector-only session.",
+    "connectorVerification": [
+      "Confirmed src/styles/outcomes.scss contains new reference field, row, copy-status, hidden-action and sticky panel rules.",
+      "Confirmed public/js/outcomes-page.js moves the copied-reference status below the reference row and no longer writes panel.style.top = '96px'.",
+      "Confirmed public/js/outcomes-page.js includes defensive cancelImpactEdit handling.",
+      "Confirmed public/components/impact-tracker.js includes setCancelEditVisible and cancelEdit, clears copy status and re-hides Cancel edit on reset.",
+      "Confirmed tests/outcomes-page-route-state.test.js pins the new SCSS and JS contracts."
+    ],
+    "requiredChecks": [
+      "npm run build",
+      "node --test tests/outcomes-page-route-state.test.js",
+      "npm test",
+      "npm run validate"
+    ]
+  },
+  "residualRisk": [
+    "The PR should not be considered fully validated until normal PR checks complete.",
+    "The format workflow should commit regenerated public/css/outcomes.css if the SCSS output changes."
+  ]
+}
