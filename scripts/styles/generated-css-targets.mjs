@@ -2,6 +2,11 @@
 // Vendor, minified and legacy static CSS files stay outside this manifest.
 export const generatedCssTargets = [
 	{
+		name: 'ResearchOps home preview compatibility stylesheet',
+		source: 'src/styles/researchops-home.scss',
+		output: 'assets/researchops/researchops-home.css',
+	},
+	{
 		name: 'ResearchOps home stylesheet',
 		source: 'src/styles/researchops-home.scss',
 		output: 'public/assets/researchops/researchops-home.css',
