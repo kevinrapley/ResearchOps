@@ -7,7 +7,7 @@
 
 ## Evidence boundary
 
-This trace records observable repository actions, files changed, workflow outcomes and residual blockers. It does not expose private chain-of-thought.
+This trace records observable repository actions, files changed, workflow outcomes and residual risks. It does not expose private chain-of-thought.
 
 ## Operating model loaded
 
@@ -59,6 +59,12 @@ The first concrete failures were formatting and route-state drift:
 - `tests/govuk-frontend-integration-route-state.test.js` still asserted the old build chain and did not include generated outcomes CSS handling.
 - Generated ResearchOps CSS drifted after Sass generation.
 
+Later Release Gate artifacts exposed additional route-state and test-contract drift:
+
+- `tests/projects-page-route-state.test.js` still expected the old top-level `build:projects` chain.
+- `tests/deploy-asset-paths.test.js` still expected compressed preview CSS rather than formatted generated CSS.
+- `scripts/validate.sh` still expected `generated-css:check` to include the clean-tree assertion after the generated-CSS script split.
+
 ## User correction applied
 
 The user clarified that generated `.css` files must not be edited directly by the agent. The required workflow is:
@@ -76,6 +82,7 @@ Source and test formatting:
 
 - `src/styles/outcomes.scss`
 - `tests/impact-records-d1-runtime.test.js`
+- `tests/deploy-asset-paths.test.js`
 
 Generated CSS tooling:
 
@@ -91,6 +98,7 @@ Repository scripts and checks:
 - `scripts/validate.sh`
 - `tests/govuk-frontend-integration-route-state.test.js`
 - `tests/outcomes-page-route-state.test.js`
+- `tests/projects-page-route-state.test.js`
 
 Workflow automation:
 
@@ -102,6 +110,7 @@ Workflow automation:
 
 A manifest was added for ResearchOps-owned generated CSS targets:
 
+- `src/styles/researchops-home.scss` → `assets/researchops/researchops-home.css`
 - `src/styles/researchops-home.scss` → `public/assets/researchops/researchops-home.css`
 - `src/styles/projects.scss` → `public/css/projects.css`
 - `src/styles/project-dashboard.scss` → `public/css/project-dashboard.css`
@@ -121,56 +130,39 @@ npm run build:govuk && npm run build:generated-css && npm run build:govuk-pages
 
 ### Generated CSS conformance
 
-`npm run format:check` now runs stock Prettier for repository files and then runs the generated CSS conformance check. Generated ResearchOps CSS is ignored by stock Prettier and checked by `scripts/styles/format-generated-css.mjs` because the repository CSS convention uses indented closing braces that stock Prettier does not emit.
+`npm run lint` now builds and formats generated CSS in the CI workspace before running formatting and ESLint checks. `npm run format:check` runs stock Prettier for repository files and then runs the generated CSS conformance check. Generated ResearchOps CSS is ignored by stock Prettier and checked by `scripts/styles/format-generated-css.mjs` because the repository CSS convention uses indented closing braces that stock Prettier does not emit.
 
 ### Clean generated artefact gate
 
-`generated-css:check` also runs `scripts/styles/assert-generated-css-clean.mjs`, which fails when generated CSS differs from committed CSS.
-
-## Workflow status
-
-The PR format workflow now performs the correct generation step:
+The clean-tree assertion was split into a separate script:
 
 ```sh
-npm run build:generated-css
+npm run generated-css:clean
 ```
 
-The workflow then attempts to commit the generated CSS paths to the PR branch.
+This keeps the clean generated-artifact gate available for the formatter workflow and local release checks without making ordinary CI fail before the branch formatter has had a chance to regenerate CSS in the workspace.
 
-Observed outcome:
+### Formatter workflow
 
-- Sass generation and generated CSS formatting complete successfully in the workflow.
-- The automated commit step fails inside GitHub Actions before the generated CSS commit is pushed.
-- The connector did not expose the failing command output beyond the step failure.
-- A safer follow-up change to push to an explicit full ref was blocked by the connector safety layer.
-
-## Current residual blocker
-
-The remaining failing checks are downstream of the generated CSS commit not landing. `CI`, `Validate ResearchOps` and `Worker CI` now fail because the generated CSS clean-tree/conformance gate sees stale committed CSS.
-
-This is not resolved yet. The branch still needs the workflow push failure fixed, or repository settings adjusted so the workflow token can push generated CSS commits to same-repository PR branches.
+`.github/workflows/format-pr.yml` now runs the generated CSS build and format step, then commits the generated CSS paths back to the relevant same-repository work branch when generated CSS changes exist. It is guarded so `pull_request_target` does not run untrusted fork code.
 
 ## Validation status
 
 Validated through GitHub Actions observation only. Local validation was not available in this connector session.
 
-Successful workflow checks observed on the current branch lineage include:
+For PR head `bc33cc7531a4487cc6d41eede6be7ce4c6850e18`, all observed PR-triggered checks completed successfully:
 
-- `QA — Broken links (Lychee)`
-- `Build and deploy agent documentation Pages`
-- `Bundle version consistency`
-- `Render GOV.UK pages`
-- `qa-bdd`
-- `Accessibility audit (pa11y-ci)`
-
-Still failing after generated CSS contract work:
-
-- `Format pull request`
 - `CI`
 - `Validate ResearchOps`
 - `Worker CI`
 - `Release Gate`
+- `Accessibility audit (pa11y-ci)`
+- `qa-bdd`
+- `QA — Broken links (Lychee)`
+- `Build and deploy agent documentation Pages`
+- `Bundle version consistency`
+- `Render GOV.UK pages`
 
 ## Residual risk
 
-The generated CSS workflow is structurally present, but not yet operationally complete because the branch update from GitHub Actions fails. The PR should not be marked ready until the generated CSS commit workflow succeeds and the downstream lint, validation, Worker CI and Release Gate checks pass.
+The PR-triggered validation suite is green at head `bc33cc7531a4487cc6d41eede6be7ce4c6850e18`. The remaining operational risk is that the branch formatter workflow runs partly outside the pull-request workflow listing used by the connector, so its push-triggered generated-CSS commit behaviour should still be monitored on future branches that change Sass sources.
