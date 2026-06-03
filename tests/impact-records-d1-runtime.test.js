@@ -1,10 +1,10 @@
-import assert from "node:assert/strict";
+import assert from 'node:assert/strict';
 import {
 	createImpactRecord,
 	deleteImpactRecord,
 	listImpactRecords,
 	updateImpactRecord,
-} from "../infra/cloudflare/src/service/impact-internals.js";
+} from '../infra/cloudflare/src/service/impact-internals.js';
 
 function createMockD1() {
 	const state = {
@@ -80,7 +80,9 @@ function createMockD1() {
 				if (/FROM impact_records/i.test(sql)) {
 					const projectId = args[0];
 					const studyId = args[1];
-					let rows = state.impactRecords.filter((row) => row.project_id === projectId && !row.deleted_at);
+					let rows = state.impactRecords.filter(
+						(row) => row.project_id === projectId && !row.deleted_at
+					);
 					if (studyId) rows = rows.filter((row) => row.study_id === studyId);
 					return { results: rows };
 				}
@@ -101,43 +103,43 @@ const d1 = createMockD1();
 const env = { RESEARCHOPS_D1: d1 };
 
 const created = await createImpactRecord(env, {
-	projectId: "proj-1",
-	studyId: "study-1",
-	displayRef: "IMPCT-RCD-5F0907B5E5AA",
-	decisionLink: "https://example.test/decision/1",
-	metricName: "Completion rate",
-	metricUnit: "percentage",
-	metricDirection: "increase",
+	projectId: 'proj-1',
+	studyId: 'study-1',
+	displayRef: 'IMPCT-RCD-5F0907B5E5AA',
+	decisionLink: 'https://example.test/decision/1',
+	metricName: 'Completion rate',
+	metricUnit: 'percentage',
+	metricDirection: 'increase',
 	baseline: 62,
 	target: 80,
 	actual: 74,
-	measurementWindow: "one-month",
-	impactType: "service",
-	impactScale: "journey",
-	status: "measured",
-	notes: "Measured after rollout.",
+	measurementWindow: 'one-month',
+	impactType: 'service',
+	impactScale: 'journey',
+	status: 'measured',
+	notes: 'Measured after rollout.',
 });
 
-assert.equal(created.displayRef, "IMPCT-RCD-5F0907B5E5AA");
-assert.equal(created.projectId, "proj-1");
-assert.equal(created.metricName, "Completion rate");
-assert.equal(created.metricUnit, "percentage");
+assert.equal(created.displayRef, 'IMPCT-RCD-5F0907B5E5AA');
+assert.equal(created.projectId, 'proj-1');
+assert.equal(created.metricName, 'Completion rate');
+assert.equal(created.metricUnit, 'percentage');
 
-const listed = await listImpactRecords(env, { projectId: "proj-1" });
+const listed = await listImpactRecords(env, { projectId: 'proj-1' });
 assert.equal(listed.length, 1);
 assert.equal(listed[0].displayRef, created.displayRef);
 
 const updated = await updateImpactRecord(env, created.id, {
-	metricName: "Completion rate after content changes",
+	metricName: 'Completion rate after content changes',
 	actual: 82,
-	status: "measured",
+	status: 'measured',
 });
 
-assert.equal(updated.metricName, "Completion rate after content changes");
+assert.equal(updated.metricName, 'Completion rate after content changes');
 assert.equal(updated.actual, 82);
-assert.equal(updated.status, "measured");
+assert.equal(updated.status, 'measured');
 
 await deleteImpactRecord(env, created.id);
-const afterDelete = await listImpactRecords(env, { projectId: "proj-1" });
+const afterDelete = await listImpactRecords(env, { projectId: 'proj-1' });
 assert.equal(afterDelete.length, 0);
 assert.equal(d1.state.impactRecords[0].deleted_at !== null, true);
