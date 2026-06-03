@@ -103,31 +103,32 @@
 		const reference = document.getElementById('impact-insightId');
 		const referenceGroup = reference?.closest('.govuk-form-group');
 		const actions = document.querySelector('.impact-reference-actions');
-		if (!referenceGroup || !actions || referenceGroup.closest('.impact-reference-row')) return;
+		const status = document.getElementById('impact-reference-copy-status');
+		if (!referenceGroup || !actions) return;
 
-		const row = document.createElement('div');
-		row.className = 'impact-reference-row';
-		row.style.alignItems = 'end';
-		row.style.display = 'flex';
-		row.style.flexWrap = 'wrap';
-		row.style.gap = '12px';
-		row.style.marginBottom = '24px';
-		referenceGroup.before(row);
-		row.append(referenceGroup, actions);
-		referenceGroup.style.marginBottom = '0';
-		actions.style.alignItems = 'center';
-		actions.style.marginBottom = '0';
-		reference?.classList.remove('govuk-input--width-20');
-		reference?.classList.add('govuk-input--width-10');
+		let field = referenceGroup.closest('.impact-reference-field');
+		let row = referenceGroup.closest('.impact-reference-row');
+
+		if (!field || !row) {
+			field = document.createElement('div');
+			field.className = 'impact-reference-field';
+			row = document.createElement('div');
+			row.className = 'impact-reference-row';
+			referenceGroup.before(field);
+			field.append(row);
+			row.append(referenceGroup, actions);
+		}
+
+		referenceGroup.classList.add('impact-reference-control');
+		actions.classList.add('impact-reference-button');
+		status?.classList.add('impact-reference-copy-status');
+		if (status && status.parentElement !== field) field.append(status);
 	}
 
 	function pinGuidancePanel() {
 		const panel = document.getElementById('impact-guidance-panel');
 		if (!panel) return;
-		panel.style.alignSelf = 'start';
-		panel.style.maxHeight = 'calc(100vh - 128px)';
-		panel.style.overflowY = 'auto';
-		panel.style.top = '96px';
+		panel.classList.add('outcomes-guidance-panel--sticky');
 	}
 
 	function updateGuidance(key) {
@@ -338,6 +339,25 @@
 		if (status) status.textContent = `Copied ${text}`;
 	}
 
+	function cancelImpactEdit(event) {
+		event?.preventDefault();
+		const form = document.getElementById('impact-form');
+		const recordId = document.getElementById('impact-record-id');
+		const submit = document.getElementById('impact-submit');
+		const cancel = document.getElementById('impact-cancel-edit');
+		const status = document.getElementById('impact-reference-copy-status');
+		form?.reset();
+		if (recordId) recordId.value = '';
+		if (submit) submit.textContent = 'Save impact record';
+		if (cancel) {
+			cancel.hidden = true;
+			cancel.setAttribute('hidden', 'hidden');
+		}
+		if (status) status.textContent = '';
+		setToday();
+		showValidationErrors([]);
+	}
+
 	if (projectId) {
 		const impactSection = document.getElementById('impact-tracker');
 		if (impactSection) impactSection.setAttribute('data-project-id', projectId);
@@ -354,7 +374,9 @@
 	if (form) {
 		form.setAttribute('novalidate', 'novalidate');
 		document.getElementById('impact-metricName')?.removeAttribute('required');
-		document.getElementById('impact-cancel-edit')?.setAttribute('hidden', 'hidden');
+		const cancelEditButton = document.getElementById('impact-cancel-edit');
+		cancelEditButton?.setAttribute('hidden', 'hidden');
+		cancelEditButton?.addEventListener('click', cancelImpactEdit);
 		document.getElementById('impact-copy-reference')?.addEventListener('click', copyImpactReference);
 		form.addEventListener(
 			'submit',
