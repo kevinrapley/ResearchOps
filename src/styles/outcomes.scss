@@ -51,6 +51,11 @@
 	max-width: 100%;
 }
 
+.outcomes-form .govuk-date-input {
+	display: flex;
+	flex-wrap: nowrap;
+}
+
 .outcomes-guidance-panel {
 	border-left: 5px solid #1d70b8;
 	padding: 16px 0 8px 16px;
