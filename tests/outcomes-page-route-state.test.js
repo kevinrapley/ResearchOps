@@ -6,6 +6,7 @@ const templateSource = fs.readFileSync("src/govuk/templates/pages/projects-outco
 const stylesheetSource = fs.readFileSync("public/css/outcomes.css", "utf8");
 const stylesheetScssSource = fs.readFileSync("src/styles/outcomes.scss", "utf8");
 const packageSource = fs.readFileSync("package.json", "utf8");
+const generatedCssTargetsSource = fs.readFileSync("scripts/styles/generated-css-targets.mjs", "utf8");
 const controllerSource = fs.readFileSync("public/js/outcomes-page.js", "utf8");
 const impactTrackerSource = fs.readFileSync("public/components/impact-tracker.js", "utf8");
 
@@ -57,7 +58,9 @@ includes(stylesheetScssSource, ".outcomes-guidance-panel", "outcomes SCSS source
 includes(stylesheetScssSource, ".impact-record-action-cell", "outcomes SCSS source");
 includes(stylesheetScssSource, "/* transparency begins in the cascade */", "outcomes SCSS source");
 includes(packageSource, "build:outcomes", "package build scripts");
-includes(packageSource, "src/styles/outcomes.scss public/css/outcomes.css", "package build scripts");
+includes(packageSource, "node scripts/styles/build-generated-css.mjs public/css/outcomes.css", "package build scripts");
+includes(generatedCssTargetsSource, "source: 'src/styles/outcomes.scss'", "generated CSS targets");
+includes(generatedCssTargetsSource, "output: 'public/css/outcomes.css'", "generated CSS targets");
 
 includes(stylesheetSource, ".outcomes-hero", "outcomes stylesheet");
 includes(stylesheetSource, ".outcomes-tracker", "outcomes stylesheet");
