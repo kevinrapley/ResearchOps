@@ -84,7 +84,7 @@
 		<p id="study-eyebrow" class="govuk-caption-m">Study</p>
 		<h1 id="study-title" class="govuk-heading-l" property="schema:name">Study</h1>
 		<div id="desc-view-wrap" class="study-description" property="schema:description">
-			<p id="description" class="govuk-body">—</p>
+			<div id="description" class="govuk-body">—</div>
 			<div class="study-description__actions">
 				{{ govukButton({
 					text: "Edit description",
@@ -171,45 +171,38 @@
 			items: [
 				{
 					title: { text: "Description" },
-					hint: { html: '<span class="study-readiness-hint">Checking study description.</span>' },
-					status: { tag: { text: "Checking", classes: "govuk-tag--grey study-readiness-status" } },
-					attributes: { "data-readiness-item": "description" }
+					hint: { html: '<span id="study-readiness-description-hint" class="study-readiness-hint">Checking study description.</span>' },
+					status: { html: '<strong id="study-readiness-description-status" class="govuk-tag govuk-tag--grey study-readiness-status">Checking</strong>' }
 				},
 				{
 					title: { text: "Status" },
-					hint: { html: '<span class="study-readiness-hint">Checking study status.</span>' },
-					status: { tag: { text: "Checking", classes: "govuk-tag--grey study-readiness-status" } },
-					attributes: { "data-readiness-item": "status" }
+					hint: { html: '<span id="study-readiness-status-hint" class="study-readiness-hint">Checking study status.</span>' },
+					status: { html: '<strong id="study-readiness-status-status" class="govuk-tag govuk-tag--grey study-readiness-status">Checking</strong>' }
 				},
 				{
 					title: { text: "Participants" },
-					hint: { html: '<span class="study-readiness-hint">Add or review participants for this study.</span>' },
-					status: { tag: { text: "Action needed", classes: "govuk-tag--yellow study-readiness-status" } },
-					attributes: { "data-readiness-item": "participants" }
+					hint: { html: '<span id="study-readiness-participants-hint" class="study-readiness-hint">Add or review participants for this study.</span>' },
+					status: { html: '<strong id="study-readiness-participants-status" class="govuk-tag govuk-tag--yellow study-readiness-status">Action needed</strong>' }
 				},
 				{
 					title: { text: "Discussion guide" },
-					hint: { html: '<span class="study-readiness-hint">Create or review the discussion guide.</span>' },
-					status: { tag: { text: "Action needed", classes: "govuk-tag--yellow study-readiness-status" } },
-					attributes: { "data-readiness-item": "guide" }
+					hint: { html: '<span id="study-readiness-guide-hint" class="study-readiness-hint">Create or review the discussion guide.</span>' },
+					status: { html: '<strong id="study-readiness-guide-status" class="govuk-tag govuk-tag--yellow study-readiness-status">Action needed</strong>' }
 				},
 				{
 					title: { text: "Consent materials" },
-					hint: { html: '<span class="study-readiness-hint">Create, review and publish consent forms before recording participant consent.</span>' },
-					status: { tag: { text: "Action needed", classes: "govuk-tag--yellow study-readiness-status" } },
-					attributes: { "data-readiness-item": "consent-materials" }
+					hint: { html: '<span id="study-readiness-consent-materials-hint" class="study-readiness-hint">Create, review and publish consent forms before recording participant consent.</span>' },
+					status: { html: '<strong id="study-readiness-consent-materials-status" class="govuk-tag govuk-tag--yellow study-readiness-status">Action needed</strong>' }
 				},
 				{
 					title: { text: "Participant consent" },
-					hint: { html: '<span class="study-readiness-hint">Record required participant consent before running sessions.</span>' },
-					status: { tag: { text: "Action needed", classes: "govuk-tag--yellow study-readiness-status" } },
-					attributes: { "data-readiness-item": "participant-consent" }
+					hint: { html: '<span id="study-readiness-participant-consent-hint" class="study-readiness-hint">Record required participant consent before running sessions.</span>' },
+					status: { html: '<strong id="study-readiness-participant-consent-status" class="govuk-tag govuk-tag--yellow study-readiness-status">Action needed</strong>' }
 				},
 				{
 					title: { text: "Session workspace" },
-					hint: { html: '<span class="study-readiness-hint">Complete study readiness tasks before beginning a session.</span>' },
-					status: { tag: { text: "Not available yet", classes: "govuk-tag--grey study-readiness-status" } },
-					attributes: { "data-readiness-item": "session" }
+					hint: { html: '<span id="study-readiness-session-hint" class="study-readiness-hint">Complete study readiness tasks before beginning a session.</span>' },
+					status: { html: '<strong id="study-readiness-session-status" class="govuk-tag govuk-tag--grey study-readiness-status">Not available yet</strong>' }
 				}
 			]
 		}) }}
@@ -235,27 +228,27 @@
 				{
 					title: { html: '<a id="link-consent-forms" class="govuk-link govuk-task-list__link" href="#">Create consent forms</a>' },
 					hint: { text: "Create or review Markdown and Mustache consent form templates for this study." },
-					status: { tag: { text: "Action needed", classes: "govuk-tag--yellow" } }
+					status: { html: '<strong class="govuk-tag govuk-tag--yellow">Action needed</strong>' }
 				},
 				{
 					title: { html: '<a id="link-participant-consent" class="govuk-link govuk-task-list__link" href="#">Manage participant consent</a>' },
 					hint: { text: "Record, review or withdraw participant consent for this study." },
-					status: { tag: { text: "Action needed", classes: "govuk-tag--yellow" } }
+					status: { html: '<strong class="govuk-tag govuk-tag--yellow">Action needed</strong>' }
 				},
 				{
 					title: { html: '<a id="link-participants" class="govuk-link govuk-task-list__link" href="#">Schedule participants</a>' },
 					hint: { text: "Add or review participants for this study." },
-					status: { tag: { text: "Action needed", classes: "govuk-tag--yellow" } }
+					status: { html: '<strong class="govuk-tag govuk-tag--yellow">Action needed</strong>' }
 				},
 				{
 					title: { html: '<a id="link-guides" class="govuk-link govuk-task-list__link" href="#">Create or manage discussion guides</a>' },
 					hint: { text: "Create or review the guide before running a session." },
-					status: { tag: { text: "Action needed", classes: "govuk-tag--yellow" } }
+					status: { html: '<strong class="govuk-tag govuk-tag--yellow">Action needed</strong>' }
 				},
 				{
 					title: { text: "Add note takers and observers" },
 					hint: { text: "Observer and note taker setup has not been connected yet." },
-					status: { tag: { text: "Not available yet", classes: "govuk-tag--grey" } }
+					status: { html: '<strong class="govuk-tag govuk-tag--grey">Not available yet</strong>' }
 				}
 			]
 		}) }}
@@ -270,7 +263,7 @@
 				{
 					title: { html: '<a id="link-synthesis" class="govuk-link govuk-task-list__link" href="#">Synthesize study evidence</a>' },
 					hint: { text: "Group evidence notes into working cluster groupings and create traceable study-level themes." },
-					status: { tag: { text: "Available when evidence is captured", classes: "govuk-tag--grey" } }
+					status: { html: '<strong class="govuk-tag govuk-tag--grey">Available when evidence is captured</strong>' }
 				}
 			]
 		}) }}
