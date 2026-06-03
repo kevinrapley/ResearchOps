@@ -108,6 +108,19 @@
 								/>
 							</div>
 
+							<div class="govuk-button-group impact-reference-actions">
+								<button
+									type="button"
+									class="govuk-button govuk-button--secondary"
+									data-module="govuk-button"
+									id="impact-copy-reference"
+								>
+									Copy reference
+								</button>
+
+								<p id="impact-reference-copy-status" class="govuk-body-s" role="status" aria-live="polite"></p>
+							</div>
+
 							<div class="govuk-form-group">
 								<label class="govuk-label" for="impact-decisionLink">Decision link</label>
 
@@ -135,18 +148,17 @@
 									name="metricName"
 									type="text"
 									aria-describedby="impact-metricName-hint"
-									required="required"
 									data-guidance-key="metricName"
 								/>
 							</div>
 
-							<div class="govuk-form-group">
+							<div class="govuk-form-group" data-guidance-key="metricUnit">
 								<fieldset class="govuk-fieldset" aria-describedby="metricUnit-hint">
 									<legend class="govuk-fieldset__legend govuk-fieldset__legend--s">Metric unit</legend>
 
 									<div id="metricUnit-hint" class="govuk-hint">Use the same unit for baseline, target and actual.</div>
 
-									<div class="govuk-radios" data-guidance-key="metricUnit" data-module="govuk-radios">
+									<div class="govuk-radios" data-module="govuk-radios">
 										<div class="govuk-radios__item">
 											<input
 												class="govuk-radios__input"
@@ -220,14 +232,37 @@
 												name="metricUnit"
 												type="radio"
 												value="other"
+												data-aria-controls="conditional-metricUnit-7"
 											/>
 											<label class="govuk-label govuk-radios__label" for="metricUnit-7">Other</label>
+										</div>
+
+										<div
+											class="govuk-radios__conditional govuk-radios__conditional--hidden"
+											id="conditional-metricUnit-7"
+										>
+											<div class="govuk-form-group">
+												<label class="govuk-label" for="metricUnitOther">Define the metric unit</label>
+
+												<div id="metricUnitOther-hint" class="govuk-hint">
+													For example, calls avoided, cases reviewed, or hours saved.
+												</div>
+
+												<input
+													class="govuk-input govuk-!-width-two-thirds"
+													id="metricUnitOther"
+													name="metricUnitOther"
+													type="text"
+													aria-describedby="metricUnitOther-hint"
+													data-guidance-key="metricUnitOther"
+												/>
+											</div>
 										</div>
 									</div>
 								</fieldset>
 							</div>
 
-							<div class="govuk-form-group">
+							<div class="govuk-form-group" data-guidance-key="metricDirection">
 								<fieldset class="govuk-fieldset" aria-describedby="metricDirection-hint">
 									<legend class="govuk-fieldset__legend govuk-fieldset__legend--s">Desired direction</legend>
 
@@ -235,7 +270,7 @@
 										Describe how to interpret movement in the metric.
 									</div>
 
-									<div class="govuk-radios" data-guidance-key="metricDirection" data-module="govuk-radios">
+									<div class="govuk-radios" data-module="govuk-radios">
 										<div class="govuk-radios__item">
 											<input
 												class="govuk-radios__input"
@@ -285,13 +320,13 @@
 								</fieldset>
 							</div>
 
-							<div class="govuk-form-group">
+							<div class="govuk-form-group" data-guidance-key="recordedAt">
 								<fieldset class="govuk-fieldset" role="group" aria-describedby="impact-date-hint">
 									<legend class="govuk-fieldset__legend govuk-fieldset__legend--s">Date recorded</legend>
 
 									<div id="impact-date-hint" class="govuk-hint">For example, 2 6 2026.</div>
 
-									<div class="govuk-date-input" data-guidance-key="recordedAt" id="impact-date">
+									<div class="govuk-date-input" id="impact-date">
 										<div class="govuk-date-input__item">
 											<div class="govuk-form-group">
 												<label class="govuk-label govuk-date-input__label" for="impact-date-day">Day</label>
@@ -388,13 +423,13 @@
 								/>
 							</div>
 
-							<div class="govuk-form-group">
+							<div class="govuk-form-group" data-guidance-key="measurementWindow">
 								<fieldset class="govuk-fieldset" aria-describedby="measurementWindow-hint">
 									<legend class="govuk-fieldset__legend govuk-fieldset__legend--s">Measurement window</legend>
 
 									<div id="measurementWindow-hint" class="govuk-hint">When the actual value should be checked.</div>
 
-									<div class="govuk-radios" data-guidance-key="measurementWindow" data-module="govuk-radios">
+									<div class="govuk-radios" data-module="govuk-radios">
 										<div class="govuk-radios__item">
 											<input
 												class="govuk-radios__input"
@@ -452,20 +487,43 @@
 												name="measurementWindow"
 												type="radio"
 												value="custom"
+												data-aria-controls="conditional-measurementWindow-5"
 											/>
 											<label class="govuk-label govuk-radios__label" for="measurementWindow-5">Custom</label>
+										</div>
+
+										<div
+											class="govuk-radios__conditional govuk-radios__conditional--hidden"
+											id="conditional-measurementWindow-5"
+										>
+											<div class="govuk-form-group">
+												<label class="govuk-label" for="measurementWindowCustom">Define the measurement window</label>
+
+												<div id="measurementWindowCustom-hint" class="govuk-hint">
+													For example, 6 weeks after release or next quarterly review.
+												</div>
+
+												<input
+													class="govuk-input govuk-!-width-two-thirds"
+													id="measurementWindowCustom"
+													name="measurementWindowCustom"
+													type="text"
+													aria-describedby="measurementWindowCustom-hint"
+													data-guidance-key="measurementWindowCustom"
+												/>
+											</div>
 										</div>
 									</div>
 								</fieldset>
 							</div>
 
-							<div class="govuk-form-group">
+							<div class="govuk-form-group" data-guidance-key="impactType">
 								<fieldset class="govuk-fieldset" aria-describedby="impactType-hint">
 									<legend class="govuk-fieldset__legend govuk-fieldset__legend--s">Impact type</legend>
 
 									<div id="impactType-hint" class="govuk-hint">What kind of change the research influenced.</div>
 
-									<div class="govuk-radios" data-guidance-key="impactType" data-module="govuk-radios">
+									<div class="govuk-radios" data-module="govuk-radios">
 										<div class="govuk-radios__item">
 											<input
 												class="govuk-radios__input"
@@ -546,13 +604,13 @@
 								</fieldset>
 							</div>
 
-							<div class="govuk-form-group">
+							<div class="govuk-form-group" data-guidance-key="impactScale">
 								<fieldset class="govuk-fieldset" aria-describedby="impactScale-hint">
 									<legend class="govuk-fieldset__legend govuk-fieldset__legend--s">Impact scale</legend>
 
 									<div id="impactScale-hint" class="govuk-hint">How widely the change applies.</div>
 
-									<div class="govuk-radios" data-guidance-key="impactScale" data-module="govuk-radios">
+									<div class="govuk-radios" data-module="govuk-radios">
 										<div class="govuk-radios__item">
 											<input
 												class="govuk-radios__input"
@@ -622,13 +680,13 @@
 								</fieldset>
 							</div>
 
-							<div class="govuk-form-group">
+							<div class="govuk-form-group" data-guidance-key="status">
 								<fieldset class="govuk-fieldset" aria-describedby="status-hint">
 									<legend class="govuk-fieldset__legend govuk-fieldset__legend--s">Status</legend>
 
 									<div id="status-hint" class="govuk-hint">Lifecycle status of the change.</div>
 
-									<div class="govuk-radios" data-guidance-key="status" data-module="govuk-radios">
+									<div class="govuk-radios" data-module="govuk-radios">
 										<div class="govuk-radios__item">
 											<input class="govuk-radios__input" id="status" name="status" type="radio" value="planned" />
 											<label class="govuk-label govuk-radios__label" for="status">Planned</label>
@@ -684,7 +742,7 @@
 									class="govuk-button govuk-button--secondary"
 									data-module="govuk-button"
 									id="impact-cancel-edit"
-									hidden="hidden"
+									hidden="true"
 								>
 									Cancel edit
 								</button>
