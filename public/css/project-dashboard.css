@@ -1,3 +1,5 @@
+@charset "UTF-8";
+
 /* ============================================================================
    ResearchOps UI • Project Dashboard route stylesheet
    Service:    Home Office Biometrics — ResearchOps
@@ -6,213 +8,215 @@
    Repo:       /src/styles/project-dashboard.scss
    License:    All rights reserved
    ============================================================================ */
+
 .rops-dashboard-header {
-  margin-bottom: 30px;
-}
+	margin-bottom: 30px;
+	}
 
 .rops-dashboard-description {
-  max-width: 34em;
-}
+	max-width: 34em;
+	}
 
 .rops-status-strip {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-bottom: 20px;
-}
+	display: flex;
+	flex-wrap: wrap;
+	gap: 10px;
+	margin-bottom: 20px;
+	}
 
 .rops-dashboard-grid {
-  display: grid;
-  gap: 20px;
-  grid-template-columns: 1fr;
-}
+	display: grid;
+	gap: 20px;
+	grid-template-columns: 1fr;
+	}
 
 .rops-two-column {
-  display: grid;
-  gap: 20px;
-  grid-template-columns: 1fr;
-}
+	display: grid;
+	gap: 20px;
+	grid-template-columns: 1fr;
+	}
 
 .rops-two-column > * {
-  min-width: 0;
-}
+	min-width: 0;
+	}
 
 @media (min-width: 48.0625em) {
-  .rops-two-column {
-    grid-template-columns: 1fr 1fr;
-  }
-  .rops-planning-grid {
-    grid-template-columns: minmax(170px, 1fr) minmax(0, 1fr);
-  }
-}
+	.rops-two-column {
+		grid-template-columns: 1fr 1fr;
+		}
+	.rops-planning-grid {
+		grid-template-columns: minmax(170px, 1fr) minmax(0, 1fr);
+		}
+	}
+
 .rops-compact-list {
-  margin-bottom: 0;
-}
+	margin-bottom: 0;
+	}
 
 .rops-summary-card-button {
-  margin-bottom: 0;
-}
+	margin-bottom: 0;
+	}
 
 .rops-divided-list > li {
-  border-bottom: 1px solid #b1b4b6;
-  margin-bottom: 10px;
-  padding-bottom: 10px;
-}
+	border-bottom: 1px solid #b1b4b6;
+	margin-bottom: 10px;
+	padding-bottom: 10px;
+	}
 
 .rops-divided-list > li:last-child {
-  border-bottom: 0;
-  margin-bottom: 0;
-  padding-bottom: 0;
-}
+	border-bottom: 0;
+	margin-bottom: 0;
+	padding-bottom: 0;
+	}
 
 .rops-study-list {
-  margin-bottom: 20px;
-}
+	margin-bottom: 20px;
+	}
 
-.rops-study-list > li,
-.rops-study-item {
-  border-bottom: 1px solid #b1b4b6;
-  margin-bottom: 20px;
-  padding-bottom: 20px;
-}
+.rops-study-list > li, .rops-study-item {
+	border-bottom: 1px solid #b1b4b6;
+	margin-bottom: 20px;
+	padding-bottom: 20px;
+	}
 
-.rops-study-list > li:last-child,
-.rops-study-item:last-child {
-  border-bottom: 0;
-  margin-bottom: 0;
-  padding-bottom: 0;
-}
+.rops-study-list > li:last-child, .rops-study-item:last-child {
+	border-bottom: 0;
+	margin-bottom: 0;
+	padding-bottom: 0;
+	}
 
 .rops-study-description {
-  color: #505a5f;
-  margin-bottom: 10px;
-  margin-top: 5px;
-}
+	color: #505a5f;
+	margin-bottom: 10px;
+	margin-top: 5px;
+	}
 
 .rops-link-panel {
-  border-left: 5px solid #1d70b8;
-  margin-bottom: 20px;
-  padding-left: 15px;
-}
+	border-left: 5px solid #1d70b8;
+	margin-bottom: 20px;
+	padding-left: 15px;
+	}
 
 .rops-mural-status {
-  margin: 0 0 12px;
-}
+	margin: 0 0 12px;
+	}
 
 .rops-mural-actions {
-  margin-top: 20px;
-}
+	margin-top: 20px;
+	}
 
 .rops-disabled-button {
-  cursor: default;
-  opacity: 0.6;
-}
+	cursor: default;
+	opacity: 0.6;
+	}
 
 /* Mural integration status */
+
 .pill {
-  display: inline-block;
-  font-weight: 700;
-  padding: 3px 8px;
-}
+	display: inline-block;
+	font-weight: 700;
+	padding: 3px 8px;
+	}
 
 .pill--neutral {
-  background: #f3f2f1;
-  color: #0b0c0c;
-}
+	background: #f3f2f1;
+	color: #0b0c0c;
+	}
 
 .pill--good {
-  background: #00703c;
-  color: #ffffff;
-}
+	background: #00703c;
+	color: #ffffff;
+	}
 
 .pill--warn {
-  background: #ffdd00;
-  color: #0b0c0c;
-}
+	background: #ffdd00;
+	color: #0b0c0c;
+	}
 
 .pill--bad {
-  background: #d4351c;
-  color: #ffffff;
-}
+	background: #d4351c;
+	color: #ffffff;
+	}
 
 /* Lightweight project action panels */
+
 .dashboard-action-panel {
-  background: #f3f2f1;
-  border-left: 5px solid #1d70b8;
-  margin-top: 16px;
-  padding: 16px;
-}
+	background: #f3f2f1;
+	border-left: 5px solid #1d70b8;
+	margin-top: 16px;
+	padding: 16px;
+	}
 
 .dashboard-action-panel .govuk-heading-s {
-  margin-top: 0;
-}
+	margin-top: 0;
+	}
 
 .dashboard-action-status {
-  font-weight: 700;
-  margin-bottom: 12px;
-}
+	font-weight: 700;
+	margin-bottom: 12px;
+	}
 
 .dashboard-action-status:empty {
-  display: none;
-}
+	display: none;
+	}
 
 .dashboard-action-status--error {
-  color: #d4351c;
-}
+	color: #d4351c;
+	}
 
 .rops-participant-list-controls {
-  display: grid;
-  gap: 15px;
-  grid-template-columns: 1fr;
-  margin-bottom: 15px;
-}
+	display: grid;
+	gap: 15px;
+	grid-template-columns: 1fr;
+	margin-bottom: 15px;
+	}
 
 @media (min-width: 40.0625em) {
-  .rops-participant-list-controls {
-    grid-template-columns: 1fr auto;
-  }
-}
-.rops-participant-search,
-.rops-participant-sort {
-  margin-bottom: 0;
-}
+	.rops-participant-list-controls {
+		grid-template-columns: 1fr auto;
+		}
+	}
+
+.rops-participant-search, .rops-participant-sort {
+	margin-bottom: 0;
+	}
 
 .rops-participant-list__item > .govuk-hint {
-  display: block;
-  margin-bottom: 0;
-}
+	display: block;
+	margin-bottom: 0;
+	}
 
 .rops-study-title-truncated {
-  display: block;
-  max-width: 100%;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
+	display: block;
+	max-width: 100%;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	}
 
 .rops-participant-reveal {
-  margin-top: 10px;
-}
+	margin-top: 10px;
+	}
 
 .rops-participant-private-details {
-  background: #f3f2f1;
-  border-left: 5px solid #1d70b8;
-  margin-top: 10px;
-  padding: 12px;
-}
+	background: #f3f2f1;
+	border-left: 5px solid #1d70b8;
+	margin-top: 10px;
+	padding: 12px;
+	}
 
 .rops-participant-sensitive-details {
-  margin-bottom: 10px;
-  margin-top: 0;
-}
+	margin-bottom: 10px;
+	margin-top: 0;
+	}
 
 .rops-participant-pagination {
-  margin-bottom: 15px;
-}
+	margin-bottom: 15px;
+	}
 
 .rops-participant-page-status {
-  align-self: center;
-  margin-bottom: 0;
-}
+	align-self: center;
+	margin-bottom: 0;
+	}
 
 /* transparency begins in the cascade */

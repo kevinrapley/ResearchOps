@@ -1,11 +1,14 @@
-/* ==========================================================================
+@charset "UTF-8";
+
+/* ======================================================================
    ResearchOps UI • Outcomes route stylesheet
    Service:    Home Office Biometrics — ResearchOps
    Route:      /pages/projects/outcomes/
    Build:      GOV.UK typography + colours; mobile-first
-   Repo:       /css/outcomes.css
+   Source:     /src/styles/outcomes.scss
+   Output:     /public/css/outcomes.css
    License:    All rights reserved
-   ========================================================================== */
+   ====================================================================== */
 
 /* Outcomes hero */
 
@@ -23,6 +26,19 @@
 	margin-top: 24px;
 	}
 
+.outcomes-form-layout {
+	display: grid;
+	gap: 32px;
+	grid-template-columns: 1fr;
+	}
+
+@media (min-width: 900px) {
+	.outcomes-form-layout {
+		align-items: start;
+		grid-template-columns: minmax(0, 2fr) minmax(280px, 1fr);
+		}
+	}
+
 .outcomes-form {
 	max-width: 920px;
 	}
@@ -31,10 +47,29 @@
 	margin-bottom: 24px;
 	}
 
-.outcomes-form .govuk-input,
-.outcomes-form .govuk-select,
-.outcomes-form .govuk-textarea {
+.outcomes-form .govuk-input, .outcomes-form .govuk-select, .outcomes-form .govuk-textarea {
 	max-width: 100%;
+	}
+
+.outcomes-guidance-panel {
+	border-left: 5px solid #1d70b8;
+	padding: 16px 0 8px 16px;
+	}
+
+@media (min-width: 900px) {
+	.outcomes-guidance-panel {
+		position: sticky;
+		top: 24px;
+		}
+	}
+
+.outcomes-guidance-panel:focus {
+	outline: 3px solid #ffdd00;
+	outline-offset: 0;
+	}
+
+.outcomes-records {
+	margin-top: 40px;
 	}
 
 .outcomes-actions {
@@ -51,6 +86,23 @@
 
 .outcomes-table .govuk-table {
 	min-width: 760px;
+	}
+
+.impact-record-action-cell {
+	background: #f3f2f1;
+	}
+
+.impact-record-actions, .impact-record-delete-confirmation {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 12px;
+	justify-content: flex-start;
+	padding: 12px 0;
+	}
+
+.impact-record-delete-confirmation .govuk-body {
+	flex-basis: 100%;
+	margin-bottom: 0;
 	}
 
 /* transparency begins in the cascade */
