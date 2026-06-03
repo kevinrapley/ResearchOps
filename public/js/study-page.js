@@ -171,7 +171,8 @@ function enableLink(selector, href) {
 	el.classList.remove("link--disabled", "govuk-button--disabled");
 	el.removeAttribute("aria-disabled");
 	el.removeAttribute("data-disabled-link");
-	el.removeAttribute("tabindex");	el.removeAttribute("title");
+	el.removeAttribute("tabindex");
+	el.removeAttribute("title");
 }
 
 function disableLink(selector, fallbackHref, reason) {
