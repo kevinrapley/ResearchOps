@@ -9,6 +9,40 @@
 {% from "govuk/components/table/macro.njk" import govukTable %}
 {% from "govuk/components/textarea/macro.njk" import govukTextarea %}
 
+{% set metricUnitOtherHtml %}
+	{{ govukInput({
+		id: "metricUnitOther",
+		name: "metricUnitOther",
+		classes: "govuk-!-width-two-thirds",
+		label: {
+			text: "Define the metric unit"
+		},
+		hint: {
+			text: "For example, calls avoided, cases reviewed, or hours saved."
+		},
+		attributes: {
+			"data-guidance-key": "metricUnitOther"
+		}
+	}) }}
+{% endset %}
+
+{% set measurementWindowCustomHtml %}
+	{{ govukInput({
+		id: "measurementWindowCustom",
+		name: "measurementWindowCustom",
+		classes: "govuk-!-width-two-thirds",
+		label: {
+			text: "Define the measurement window"
+		},
+		hint: {
+			text: "For example, 6 weeks after release or next quarterly review."
+		},
+		attributes: {
+			"data-guidance-key": "measurementWindowCustom"
+		}
+	}) }}
+{% endset %}
+
 {% block head %}
 	<meta property="schema:name" content="Outcomes – Impact and ROI — ResearchOps">
 	<meta property="schema:creator" content="Home Office ResearchOps Platform">
@@ -93,6 +127,18 @@
 					}
 				}) }}
 
+				<div class="govuk-button-group impact-reference-actions">
+					{{ govukButton({
+						text: "Copy reference",
+						type: "button",
+						classes: "govuk-button--secondary",
+						attributes: {
+							id: "impact-copy-reference"
+						}
+					}) }}
+					<p id="impact-reference-copy-status" class="govuk-body-s" role="status" aria-live="polite"></p>
+				</div>
+
 				{{ govukInput({
 					id: "impact-decisionLink",
 					name: "decisionLink",
@@ -121,12 +167,12 @@
 						text: "The metric being tracked."
 					},
 					attributes: {
-						required: "required",
 						"data-guidance-key": "metricName"
 					}
 				}) }}
 
 				{{ govukRadios({
+					idPrefix: "metricUnit",
 					name: "metricUnit",
 					fieldset: {
 						legend: {
@@ -137,8 +183,10 @@
 					hint: {
 						text: "Use the same unit for baseline, target and actual."
 					},
-					attributes: {
-						"data-guidance-key": "metricUnit"
+					formGroup: {
+						attributes: {
+							"data-guidance-key": "metricUnit"
+						}
 					},
 					items: [
 						{
@@ -167,12 +215,16 @@
 						},
 						{
 							value: "other",
-							text: "Other"
+							text: "Other",
+							conditional: {
+								html: metricUnitOtherHtml
+							}
 						}
 					]
 				}) }}
 
 				{{ govukRadios({
+					idPrefix: "metricDirection",
 					name: "metricDirection",
 					fieldset: {
 						legend: {
@@ -183,8 +235,10 @@
 					hint: {
 						text: "Describe how to interpret movement in the metric."
 					},
-					attributes: {
-						"data-guidance-key": "metricDirection"
+					formGroup: {
+						attributes: {
+							"data-guidance-key": "metricDirection"
+						}
 					},
 					items: [
 						{
@@ -218,8 +272,10 @@
 					hint: {
 						text: "For example, 2 6 2026."
 					},
-					attributes: {
-						"data-guidance-key": "recordedAt"
+					formGroup: {
+						attributes: {
+							"data-guidance-key": "recordedAt"
+						}
 					},
 					items: [
 						{
@@ -292,6 +348,7 @@
 				}) }}
 
 				{{ govukRadios({
+					idPrefix: "measurementWindow",
 					name: "measurementWindow",
 					fieldset: {
 						legend: {
@@ -302,8 +359,10 @@
 					hint: {
 						text: "When the actual value should be checked."
 					},
-					attributes: {
-						"data-guidance-key": "measurementWindow"
+					formGroup: {
+						attributes: {
+							"data-guidance-key": "measurementWindow"
+						}
 					},
 					items: [
 						{
@@ -324,12 +383,16 @@
 						},
 						{
 							value: "custom",
-							text: "Custom"
+							text: "Custom",
+							conditional: {
+								html: measurementWindowCustomHtml
+							}
 						}
 					]
 				}) }}
 
 				{{ govukRadios({
+					idPrefix: "impactType",
 					name: "impactType",
 					fieldset: {
 						legend: {
@@ -340,8 +403,10 @@
 					hint: {
 						text: "What kind of change the research influenced."
 					},
-					attributes: {
-						"data-guidance-key": "impactType"
+					formGroup: {
+						attributes: {
+							"data-guidance-key": "impactType"
+						}
 					},
 					items: [
 						{
@@ -376,6 +441,7 @@
 				}) }}
 
 				{{ govukRadios({
+					idPrefix: "impactScale",
 					name: "impactScale",
 					fieldset: {
 						legend: {
@@ -386,8 +452,10 @@
 					hint: {
 						text: "How widely the change applies."
 					},
-					attributes: {
-						"data-guidance-key": "impactScale"
+					formGroup: {
+						attributes: {
+							"data-guidance-key": "impactScale"
+						}
 					},
 					items: [
 						{
@@ -418,6 +486,7 @@
 				}) }}
 
 				{{ govukRadios({
+					idPrefix: "status",
 					name: "status",
 					fieldset: {
 						legend: {
@@ -428,8 +497,10 @@
 					hint: {
 						text: "Lifecycle status of the change."
 					},
-					attributes: {
-						"data-guidance-key": "status"
+					formGroup: {
+						attributes: {
+							"data-guidance-key": "status"
+						}
 					},
 					items: [
 						{
@@ -486,7 +557,7 @@
 						classes: "govuk-button--secondary",
 						attributes: {
 							id: "impact-cancel-edit",
-							hidden: "hidden"
+							hidden: true
 						}
 					}) }}
 				</div>
