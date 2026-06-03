@@ -59,7 +59,7 @@ jobs:
           changed_templates_path="${RUNNER_TEMP}/changed-govuk-page-templates.txt"
           changed_outputs_path="${RUNNER_TEMP}/changed-govuk-page-outputs.txt"
 
-          git fetch --no-tags --depth=1 origin "$base_ref"
+          git fetch --no-tags origin "$base_ref"
           git diff --name-only "origin/${base_ref}"...HEAD -- \
             'src/govuk/templates/**' \
             'scripts/govuk/render-govuk-pages.mjs' \
