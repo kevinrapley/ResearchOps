@@ -11,99 +11,99 @@
 /* Outcomes hero */
 
 .outcomes-hero {
-  margin-bottom: 24px;
+	margin-bottom: 24px;
 }
 
 .outcomes-hero .lede {
-  max-width: 760px;
+	max-width: 760px;
 }
 
 /* Impact tracker */
 
 .outcomes-tracker {
-  margin-top: 24px;
+	margin-top: 24px;
 }
 
 .outcomes-form-layout {
-  display: grid;
-  gap: 32px;
-  grid-template-columns: 1fr;
+	display: grid;
+	gap: 32px;
+	grid-template-columns: 1fr;
 }
 
 @media (min-width: 900px) {
-  .outcomes-form-layout {
-    align-items: start;
-    grid-template-columns: minmax(0, 2fr) minmax(280px, 1fr);
-  }
+	.outcomes-form-layout {
+		align-items: start;
+		grid-template-columns: minmax(0, 2fr) minmax(280px, 1fr);
+	}
 }
 
 .outcomes-form {
-  max-width: 920px;
+	max-width: 920px;
 }
 
 .outcomes-form .govuk-form-group {
-  margin-bottom: 24px;
+	margin-bottom: 24px;
 }
 
 .outcomes-form .govuk-input,
 .outcomes-form .govuk-select,
 .outcomes-form .govuk-textarea {
-  max-width: 100%;
+	max-width: 100%;
 }
 
 .outcomes-guidance-panel {
-  border-left: 5px solid #1d70b8;
-  padding: 16px 0 8px 16px;
+	border-left: 5px solid #1d70b8;
+	padding: 16px 0 8px 16px;
 }
 
 @media (min-width: 900px) {
-  .outcomes-guidance-panel {
-    position: sticky;
-    top: 24px;
-  }
+	.outcomes-guidance-panel {
+		position: sticky;
+		top: 24px;
+	}
 }
 
 .outcomes-guidance-panel:focus {
-  outline: 3px solid #ffdd00;
-  outline-offset: 0;
+	outline: 3px solid #ffdd00;
+	outline-offset: 0;
 }
 
 .outcomes-records {
-  margin-top: 40px;
+	margin-top: 40px;
 }
 
 .outcomes-actions {
-  margin-top: 8px;
+	margin-top: 8px;
 }
 
 .outcomes-table {
-  margin-top: 32px;
+	margin-top: 32px;
 }
 
 .outcomes-table-wrap {
-  overflow-x: auto;
+	overflow-x: auto;
 }
 
 .outcomes-table .govuk-table {
-  min-width: 760px;
+	min-width: 760px;
 }
 
 .impact-record-action-cell {
-  background: #f3f2f1;
+	background: #f3f2f1;
 }
 
 .impact-record-actions,
 .impact-record-delete-confirmation {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-  justify-content: flex-start;
-  padding: 12px 0;
+	display: flex;
+	flex-wrap: wrap;
+	gap: 12px;
+	justify-content: flex-start;
+	padding: 12px 0;
 }
 
 .impact-record-delete-confirmation .govuk-body {
-  flex-basis: 100%;
-  margin-bottom: 0;
+	flex-basis: 100%;
+	margin-bottom: 0;
 }
 
 /* transparency begins in the cascade */
