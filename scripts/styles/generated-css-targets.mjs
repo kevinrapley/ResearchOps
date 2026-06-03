@@ -1,3 +1,5 @@
+// ResearchOps-owned stylesheets generated from Sass sources.
+// Vendor, minified and legacy static CSS files stay outside this manifest.
 export const generatedCssTargets = [
 	{
 		name: 'ResearchOps home stylesheet',
