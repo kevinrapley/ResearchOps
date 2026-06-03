@@ -53,6 +53,7 @@ jobs:
         run: |
           set -euo pipefail
           css_paths=(
+            assets/researchops/researchops-home.css
             public/assets/researchops/researchops-home.css
             public/css/projects.css
             public/css/project-dashboard.css
