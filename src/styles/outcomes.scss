@@ -41,6 +41,10 @@
 	max-width: 920px;
 }
 
+.outcomes-form [hidden] {
+	display: none !important;
+}
+
 .outcomes-form .govuk-form-group {
 	margin-bottom: 24px;
 }
