@@ -9,6 +9,7 @@ const packageSource = fs.readFileSync('package.json', 'utf8');
 const generatedCssTargetsSource = fs.readFileSync('scripts/styles/generated-css-targets.mjs', 'utf8');
 const controllerSource = fs.readFileSync('public/js/outcomes-page.js', 'utf8');
 const impactTrackerSource = fs.readFileSync('public/components/impact-tracker.js', 'utf8');
+const rendererSource = fs.readFileSync('scripts/govuk/render-govuk-pages.mjs', 'utf8');
 
 function includes(source, text, label) {
 	assert.equal(source.includes(text), true, `Expected ${label} to include: ${text}`);
@@ -20,10 +21,10 @@ function excludes(source, text, label) {
 
 includes(pageSource, 'href="/assets/govuk/govuk-frontend.css"', 'outcomes page');
 includes(pageSource, 'href="/css/outcomes.css"', 'outcomes page');
-includes(pageSource, 'rel="modulepreload" href="/js/outcomes-page.js"', 'outcomes page');
+includes(pageSource, 'rel="modulepreload" href="/js/outcomes-page.js?v=20260603-form-interactions"', 'outcomes page');
 includes(pageSource, 'src="/components/layout.js" defer', 'outcomes page');
-includes(pageSource, 'src="/components/impact-tracker.js"', 'outcomes page');
-includes(pageSource, 'src="/js/outcomes-page.js"', 'outcomes page');
+includes(pageSource, 'src="/components/impact-tracker.js?v=20260603-form-interactions"', 'outcomes page');
+includes(pageSource, 'src="/js/outcomes-page.js?v=20260603-form-interactions"', 'outcomes page');
 includes(pageSource, 'class="outcomes-hero"', 'outcomes page');
 includes(pageSource, 'class="outcomes-tracker"', 'outcomes page');
 includes(pageSource, 'class="outcomes-form"', 'outcomes page');
@@ -71,12 +72,17 @@ includes(stylesheetSource, '.outcomes-table-wrap', 'outcomes stylesheet');
 includes(stylesheetSource, '.impact-record-action-cell', 'outcomes stylesheet');
 includes(stylesheetSource, '/* transparency begins in the cascade */', 'outcomes stylesheet');
 
+includes(rendererSource, 'outcomesScriptVersion', 'GOV.UK renderer');
+includes(rendererSource, 'cacheBustOutcomesPageScripts', 'GOV.UK renderer');
+includes(rendererSource, '20260603-form-interactions', 'GOV.UK renderer');
+
 includes(controllerSource, 'function initOutcomesPage', 'outcomes controller');
 includes(controllerSource, 'URLSearchParams', 'outcomes controller');
 includes(controllerSource, 'impact-tracker', 'outcomes controller');
 includes(controllerSource, 'breadcrumb-project', 'outcomes controller');
 includes(controllerSource, 'data-guidance-key', 'outcomes controller');
 includes(controllerSource, 'showValidationErrors', 'outcomes controller');
+includes(controllerSource, 'clearDynamicErrorDescriptions', 'outcomes controller');
 includes(controllerSource, 'setAttribute(\'novalidate\'', 'outcomes controller');
 includes(controllerSource, 'removeAttribute(\'required\')', 'outcomes controller');
 excludes(controllerSource, 'alert(', 'outcomes controller');
