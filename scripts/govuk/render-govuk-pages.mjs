@@ -16,9 +16,6 @@ const env = new nunjucks.Environment(
 	},
 );
 
-const outcomesScriptVersion = '20260603-form-interactions';
-const outcomesScriptPaths = ['/js/project-context.js', '/js/outcomes-page.js', '/components/impact-tracker.js'];
-
 function escapeHtmlAttribute(value) {
 	return String(value)
 		.replaceAll('&', '&amp;')
@@ -49,14 +46,6 @@ async function formatRenderedHtml(html) {
 		tabWidth: 2,
 		htmlWhitespaceSensitivity: 'ignore',
 	});
-}
-
-function cacheBustOutcomesPageScripts(html, page) {
-	if (page.output !== 'public/pages/projects/outcomes/index.html') return html;
-
-	return outcomesScriptPaths.reduce((nextHtml, scriptPath) => {
-		return nextHtml.replaceAll(scriptPath, `${scriptPath}?v=${outcomesScriptVersion}`);
-	}, html);
 }
 
 env.addFilter('govukAttributes', govukAttributes);
@@ -277,7 +266,7 @@ export const govukPages = [
 
 export async function renderGovukPage(page) {
 	const outputPath = resolve(root, page.output);
-	const rawHtml = cacheBustOutcomesPageScripts(env.render(page.template, page.context), page);
+	const rawHtml = env.render(page.template, page.context);
 	const html = await formatRenderedHtml(rawHtml);
 	await mkdir(dirname(outputPath), { recursive: true });
 	await writeFile(outputPath, html.endsWith('\n') ? html : `${html}\n`, 'utf8');
