@@ -168,11 +168,10 @@ function enableLink(selector, href) {
 	const el = $(selector);
 	if (!el) return;
 	el.href = href;
-	el.classList.remove("link--disabled");
+	el.classList.remove("link--disabled", "govuk-button--disabled");
 	el.removeAttribute("aria-disabled");
 	el.removeAttribute("data-disabled-link");
-	el.removeAttribute("tabindex");
-	el.removeAttribute("title");
+	el.removeAttribute("tabindex");	el.removeAttribute("title");
 }
 
 function disableLink(selector, fallbackHref, reason) {
@@ -180,19 +179,30 @@ function disableLink(selector, fallbackHref, reason) {
 	if (!el) return;
 	el.href = fallbackHref || "#study-readiness-title";
 	el.classList.add("link--disabled");
+	if (el.classList.contains("govuk-button")) el.classList.add("govuk-button--disabled");
 	el.setAttribute("aria-disabled", "true");
 	el.setAttribute("data-disabled-link", "true");
 	el.setAttribute("tabindex", "-1");
 	if (reason) el.setAttribute("title", reason);
 }
 
+function readinessTagClass(state) {
+	const normalised = String(state || "").trim().toLowerCase();
+	if (["ready", "available"].includes(normalised)) return "govuk-tag--green";
+	if (["set", "checking"].includes(normalised)) return "govuk-tag--grey";
+	if (["action needed", "needs attention"].includes(normalised)) return "govuk-tag--yellow";
+	if (["not available yet"].includes(normalised)) return "govuk-tag--grey";
+	return "govuk-tag--grey";
+}
+
 function setReadinessItem(key, state, text) {
-	const item = document.querySelector(`[data-readiness-item="${key}"]`);
-	if (!item) return;
-	const status = item.querySelector(".readiness-item__status");
-	const body = item.querySelector(".readiness-item__body");
-	if (status) status.textContent = state;
-	if (body) body.textContent = text;
+	const status = document.getElementById(`study-readiness-${key}-status`);
+	const hint = document.getElementById(`study-readiness-${key}-hint`);
+	if (status) {
+		status.textContent = state;
+		status.className = `govuk-tag ${readinessTagClass(state)} study-readiness-status`;
+	}
+	if (hint) hint.textContent = text;
 }
 
 function normaliseStatus(value) {
