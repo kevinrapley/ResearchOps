@@ -124,8 +124,8 @@ includes(studyPage, "id=\"back-to-project\"", "Study route");
 includes(studyPage, ">Back to Project</a>", "Study route");
 
 const outcomesPage = fs.readFileSync("public/pages/projects/outcomes/index.html", "utf8");
-includes(outcomesPage, "rel=\"modulepreload\" href=\"/js/project-context.js\"", "Outcomes route");
-includes(outcomesPage, "src=\"/js/project-context.js\"", "Outcomes route");
+includes(outcomesPage, "rel=\"modulepreload\" href=\"/js/project-context.js?v=20260603-form-interactions\"", "Outcomes route");
+includes(outcomesPage, "src=\"/js/project-context.js?v=20260603-form-interactions\"", "Outcomes route");
 includes(outcomesPage, "id=\"breadcrumb-project\"", "Outcomes route");
 excludes(outcomesPage, "id=\"back-to-project\"", "Outcomes route");
 excludes(outcomesPage, ">Back to Project</a>", "Outcomes route");
