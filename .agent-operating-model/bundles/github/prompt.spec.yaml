@@ -1,7 +1,7 @@
 bundle:
   id: github-diamond-standard
   name: GitHub Diamond Standard Prompt Bundle
-  version: 2.9.4
+  version: 2.9.5
   status: full-release-readiness
   default_mode: repository-operator
   prompt_body: prompt.body.xml
@@ -119,4 +119,3 @@ evaluation_flow:
   blocking_labels:
   - fail_revise
   - fail_escalate
-  - fail_refuse
