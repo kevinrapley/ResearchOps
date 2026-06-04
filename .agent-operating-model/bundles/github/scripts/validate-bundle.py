@@ -15,6 +15,7 @@ SECRET_PATTERNS = [
 ]
 GENERATED_PARTS = {"__pycache__", ".pytest_cache", "node_modules", "dist", "build", "coverage", "artifacts", "tmp", "temp", "__MACOSX"}
 GENERATED_SUFFIXES = {".pyc", ".pyo", ".log"}
+GENERATED_NAMES = {"release-gate-report.json", "fast-release-gate-report.json", "full-release-gate-report.json", "live-release-gate-report.json"}
 REQUIRED_OUTPUT_FIELDS = {
     "response",
     "mode_selected",
@@ -52,7 +53,7 @@ def is_generated(path: Path) -> bool:
         parts = set(path.relative_to(ROOT).parts)
     except ValueError:
         parts = set(path.parts)
-    return bool(parts & GENERATED_PARTS) or path.suffix in GENERATED_SUFFIXES
+    return bool(parts & GENERATED_PARTS) or path.suffix in GENERATED_SUFFIXES or path.name in GENERATED_NAMES
 
 
 def files_for_manifest():

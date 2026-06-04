@@ -1,0 +1,79 @@
+{
+  "date": "2026-06-04",
+  "branch": "fix/pr-346-test-failures",
+  "traceType": "operational",
+  "task": "Fix failing tests after merging PR #346.",
+  "traceLayer": "operational",
+  "operatingModelFilesLoaded": [
+    "AGENTS.md",
+    ".agent-operating-model/README.md",
+    ".agent-operating-model/orchestration.xml",
+    ".agent-operating-model/bundle-registry.json",
+    ".agent-operating-model/task-signal-catalog.json",
+    ".agent-operating-model/selection-rules.json",
+    ".agent-operating-model/bootstrap-checklist.md",
+    ".agent-operating-model/precedence-policy.md",
+    ".agent-operating-model/trace-policy.md",
+    ".agent-operating-model/trace-layers.md",
+    ".agent-operating-model/behavioural-evals.json",
+    "README.md",
+    "RECENT_LEARNINGS.md"
+  ],
+  "selectedBundles": [
+    {
+      "id": "github-diamond",
+      "canonicalPath": ".agent-operating-model/bundles/github/"
+    },
+    {
+      "id": "researchops-developer-control",
+      "canonicalPath": ".agent-operating-model/bundles/researchops-developer-control/"
+    },
+    {
+      "id": "multi-functional-team",
+      "canonicalPath": ".agent-operating-model/bundles/multi-functional-team/"
+    }
+  ],
+  "skippedBundles": [
+    "govuk-design-system",
+    "cloudflare",
+    "openai-platform",
+    "mcp-agent-tooling",
+    "airtable-public-api",
+    "mural-public-api"
+  ],
+  "filesChanged": [
+    ".agent-operating-model/bundles/github/.gitignore",
+    ".agent-operating-model/bundles/github/VALIDATION-REPORT.md",
+    ".agent-operating-model/bundles/github/registry-manifest.yaml",
+    ".agent-operating-model/bundles/github/scripts/jsonschema.py",
+    ".agent-operating-model/bundles/github/scripts/run-eval-harness.py",
+    ".agent-operating-model/bundles/github/scripts/validate-bundle.py",
+    ".agent-operating-model/bundles/github/scripts/yaml.py",
+    "scripts/agent-operating-model/update-github-bundle-registry-manifest.mjs",
+    "scripts/agent-operating-model/tests/github-bundle-full-release-gate.test.mjs",
+    "docs/agent-audit/reasoning/2026/06/04/pr-346-test-failures.md",
+    "docs/agent-audit/reasoning/2026/06/04/pr-346-test-failures.json"
+  ],
+  "reviewFollowUp": [
+    {
+      "source": "Codex PR review on #347",
+      "action": "Preserved schema-valued additionalProperties validation in the offline jsonschema fallback and added a live-release-policy regression test."
+    }
+  ],
+  "validation": [
+    {
+      "command": "/Applications/Codex.app/Contents/Resources/node --test tests/bundle-validation-reports.test.js scripts/agent-operating-model/tests/github-bundle-full-release-gate.test.mjs",
+      "result": "passed",
+      "summary": "4 passing, 0 failing"
+    },
+    {
+      "command": "/Applications/Codex.app/Contents/Resources/node --test",
+      "result": "passed",
+      "summary": "174 passing, 0 failing"
+    }
+  ],
+  "residualRisk": [
+    "npm and gh were not installed in the local shell, so validation used the Codex bundled Node binary directly.",
+    "Hosted CI should confirm the normal environment."
+  ]
+}
