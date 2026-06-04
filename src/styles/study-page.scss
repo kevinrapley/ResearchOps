@@ -1,81 +1,81 @@
 .study-page {
-	max-width: 1100px;
+  max-width: 1100px;
 }
 
 .study-action-bar {
-	justify-content: flex-end;
-	margin-bottom: 32px;
+  justify-content: flex-end;
+  margin-bottom: 32px;
 }
 
 .study-hero {
-	border-top: 1px solid #b1b4b6;
-	padding-top: 24px;
+  border-top: 1px solid #b1b4b6;
+  padding-top: 24px;
 }
 
 .study-description {
-	max-width: 760px;
+  max-width: 760px;
 }
 
 .study-description__actions {
-	margin-top: 16px;
+  margin-top: 16px;
 }
 
 .study-description-editor {
-	margin-top: 24px;
+  margin-top: 24px;
 }
 
 .study-key-information,
 .study-summary-list,
 .study-readiness-section {
-	max-width: 960px;
+  max-width: 960px;
 }
 
 .study-section {
-	border-top: 1px solid #b1b4b6;
-	padding-top: 24px;
+  border-top: 1px solid #b1b4b6;
+  padding-top: 24px;
 }
 
 .study-readiness-task-list,
 .study-setup-task-list,
 .study-analysis-task-list {
-	margin-top: 16px;
+  margin-top: 16px;
 }
 
 .study-readiness-hint {
-	display: block;
+  display: block;
 }
 
 .study-session-button.govuk-button--disabled,
 .study-session-button[aria-disabled="true"] {
-	pointer-events: none;
+  pointer-events: none;
 }
 
 .govuk-task-list__item .govuk-tag {
-	max-width: 100%;
-	text-align: left;
+  max-width: 100%;
+  text-align: left;
 }
 
 @media (max-width: 699px) {
-	.study-hero {
-		padding-top: 16px;
-	}
+  .study-hero {
+    padding-top: 16px;
+  }
 
-	.study-hero .govuk-heading-l {
-		font-size: 32px;
-		line-height: 1.15;
-		overflow-wrap: anywhere;
-	}
+  .study-hero .govuk-heading-l {
+    font-size: 32px;
+    line-height: 1.15;
+    overflow-wrap: anywhere;
+  }
 
-	.study-action-bar {
-		justify-content: flex-start;
-		padding: 12px 0;
-	}
+  .study-action-bar {
+    justify-content: flex-start;
+    padding: 12px 0;
+  }
 
-	.study-action-bar .govuk-button {
-		box-sizing: border-box;
-		text-align: center;
-		width: 100%;
-	}
+  .study-action-bar .govuk-button {
+    box-sizing: border-box;
+    text-align: center;
+    width: 100%;
+  }
 }
 
 /* transparency begins in the cascade */
