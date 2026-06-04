@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='utf-8'?>
+<?xml version="1.0" encoding='utf-8'?>
 <role id="security" version="2.9.5">
   <title>Security</title>
   <description>Advises on and enforces security best practices within the repository.</description>
