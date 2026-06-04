@@ -4,7 +4,7 @@ bundle:
   status: auditable-release-assurance
 artifacts:
 - path: .gitignore
-  sha256: 05a152f1b5f03bbe0cab0df43a62733cab3f88a7cb1298da261c30b8b215a9e0
+  sha256: e7e2c0414e0328ab730c0a61d507caa313cc606a62ebcd579ff07081c3212a75
 - path: CHANGELOG.md
   sha256: f6ec6b10ecb2befccbdaed97f36f0bfbcecadf39026239d319c664cbf8812ffd
 - path: contracts/accessibility-evidence.schema.json
@@ -497,6 +497,8 @@ artifacts:
   sha256: 4bdddd4d29acec55c7999771c2b1826bbf1b8d202180a279ae56074f20ff8834
 - path: scripts/grade-output.py
   sha256: 11285ce180cbcfb8432ebf026c264807828c7dfe1514749da62af774b48f76dc
+- path: scripts/jsonschema.py
+  sha256: fca7ab6068737744dbfa788044e13a79daea7afd7cd7322d5df164d76cc18ba6
 - path: scripts/live-repository-release-gate.py
   sha256: a707c0871329e9c50c1a9ff90f43d39ba21cce5b9563ea97543f620f6def9e50
 - path: scripts/performance-adapters.py
@@ -510,7 +512,7 @@ artifacts:
 - path: scripts/repository_conditions.py
   sha256: 80cfb8ab4eea061561e3db42eed0ecec3254d9bff9811dfa6d5240d75be976c6
 - path: scripts/run-eval-harness.py
-  sha256: de95e5a82f19ba85b57ae731c51f2ebfe1d661f8d94c0fb5f55e1dd19a82d46c
+  sha256: f6cbf2d592cfdf2202e93fb9d748a9db049deceddc5d7039e0e2f0c6b7f9b358
 - path: scripts/select-ci-templates.py
   sha256: 3e9efd40899dabacd051732c6b27dbb1847dd7b4b981a65d287def71324d4cac
 - path: scripts/validate-accessibility-evidence.py
@@ -522,7 +524,7 @@ artifacts:
 - path: scripts/validate-agent-evidence.py
   sha256: 21f16f53525db6d2bbe811b269eeea0a64cfbef3025bfc3b8a9b14e821e27e49
 - path: scripts/validate-bundle.py
-  sha256: cc7488dcf24b7087ebd9d520805872a35432de472614b996543a8c93d900b993
+  sha256: a7e4ed7ac28229738a6bec4509087491c105a979fea130575e29898b96e3fac9
 - path: scripts/validate-changelog.py
   sha256: cf8a41db446ed9caf179369f24756cc2abc24aaa9453806fa2b412c988bc45e3
 - path: scripts/validate-docs-consistency.py
@@ -567,6 +569,8 @@ artifacts:
   sha256: b48ec15cb0b2458d359b65938fbeeec77f960654e449318e6acd947ec85171c1
 - path: scripts/verify-trusted-attestation-commands.py
   sha256: 13fdce2d988c6491aa5a1af197e4fd814976809cb5e8f7fb7f655b1e1ba2aecf
+- path: scripts/yaml.py
+  sha256: 58e7a38bf1d1ec880d820102b80736cc4a187ce2f56e5f206a9be2fe232454c4
 - path: template-registry.yaml
   sha256: 987e33d8198fc617bf3d9cb323f9cf547dde04fcae520e5d94e0826176a576ba
 - path: templates/archetype-control-profiles/agent-system.yaml
@@ -708,6 +712,6 @@ artifacts:
 - path: tests.regression.yaml
   sha256: 45350ecffeb5040f7cb61301fc99d6a23436d934280fc48bb7c3f47d8263d6a1
 - path: VALIDATION-REPORT.md
-  sha256: 457ef107b70bbc0709420d9cfb7a33322da76af83e8a0d1281ab982024c4057d
+  sha256: e1387332b9241c1fb087ff49c5efdd238485cbc4466857fa94b80096f1139bb0
 - path: variables.schema.json
   sha256: 98e5a233501da227f3209b48e8729ac9a3b2a45d6de0c471251d1148e7ce0593
