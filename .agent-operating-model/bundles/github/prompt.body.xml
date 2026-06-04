@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='utf-8'?>
-<prompt_bundle id="github-diamond-standard" version="2.9.4" default_mode="repository-operator" xml_profile="native-semantic-xml/v1">
+<prompt_bundle id="github-diamond-standard" version="2.9.5" default_mode="repository-operator" xml_profile="native-semantic-xml/v1">
   <bundle_identity>
     <name>GitHub Diamond Standard Prompt Bundle</name>
     <description>A control-system prompt bundle for agents creating, maintaining, reviewing and releasing GitHub repositories.</description>
@@ -30,6 +30,7 @@
     <step>Load the relevant contracts, graders and reference packs.</step>
     <step>Use template-registry.yaml as the authoritative template inventory.</step>
     <step>Validate selected templates with scripts/validate-template-registry.py.</step>
+    <step>For change, update, migration, refactor, generated-output, route, workflow, API, DOM, data-contract or asset-pipeline work, perform a proactive test-contract impact sweep before claiming the pull request is ready.</step>
     <step>Produce or update conformance matrix and gap register for missing controls.</step>
     <step>Produce agent-evidence.yaml for completed work and validate it with scripts/validate-agent-evidence.py.</step>
     <step>Grade evidence with scripts/grade-output.py where a grader is applicable.</step>
@@ -37,7 +38,7 @@
     <step>Create github-settings.yaml for repository instantiation and validate branch protection, status checks, CODEOWNERS review and security features.</step>
     <step>For performance-sensitive repositories, create performance-budget.yaml and validate results with scripts/check-performance-budget.py.</step>
     <step>For releases, generate SBOM and provenance artefacts, document rollback and block unresolved release-blocking gaps.</step>
-    <step>Before reporting a pull request as ready for review, testing or merge, verify the changed-file count and changed-file list are plausible for the task.</step>
+    <step>Before reporting a pull request as ready for review, testing or merge, verify the changed-file count and changed-file list are plausible for the task and record test-contract impact sweep status.</step>
     <step>When a Codex or automated review comment is legitimate, fix the issue, add a thumbs-up reaction to the original comment, reply to that comment explaining how the issue was overcome, then mark the review thread resolved with the Resolve conversation action.</step>
   </mandatory_sequence>
 
@@ -93,6 +94,15 @@
     <rule task="archive or deprecate">Use modes/repo-archive.xml.</rule>
   </mode_selection>
 
+  <test_contract_impact_sweep>
+    <rule>Identify tests and assertions that encode the previous implementation shape before claiming PR readiness.</rule>
+    <rule>Search for old CSS classes, route ids, data attributes, DOM hooks, generated file paths, script URLs, import paths, endpoint paths, query parameters, event names, storage keys, binding names, feature flags, configuration keys, fixture names, snapshot text, selector strings, workflow branch filters, generated artefact manifests and documentation examples likely to drift.</rule>
+    <rule>Update directly affected route-state, integration, unit, fixture, snapshot, generated-output, accessibility, link-check, workflow and shared assertion tests in the same change set as the implementation.</rule>
+    <rule>Inspect generated output as well as source, because templates, macros, compilers, formatters and code generators may change committed artefact shape.</rule>
+    <rule>Prefer structural assertions over brittle exact strings when formatting, code generation or framework output can legitimately change whitespace, attribute ordering or line breaks.</rule>
+    <rule>If a legacy assertion is deliberately retained, document the reason and the compatibility contract it protects.</rule>
+  </test_contract_impact_sweep>
+
   <automated_review_comment_handling>
     <scope>Applies to Codex comments and other automated review comments on pull requests.</scope>
     <rule>Classify each automated review comment as legitimate, false positive, superseded or blocked before acting.</rule>
@@ -133,6 +143,7 @@
     <item>Implementation or review plan.</item>
     <item>Branch-prefix decision and trace requirement.</item>
     <item>Mutation strategy for GitHub file changes where repository files are being edited.</item>
+    <item>Test-contract impact sweep summary for change, update, migration, refactor or generated-output work.</item>
     <item>Validation commands and results.</item>
     <item>Conformance and gap updates.</item>
     <item>Agent evidence and grading result when requested.</item>

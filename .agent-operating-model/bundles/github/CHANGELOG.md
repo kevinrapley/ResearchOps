@@ -6,6 +6,27 @@ The format follows Keep a Changelog conventions and the bundle uses semantic ver
 
 ---
 
+## [2.9.5+researchops.2026-06-04] - 2026-06-04
+
+### Added
+
+- Added `references/test-contract-impact-sweep.xml` to define proactive test-contract review for change, update, migration, refactor and generated-output work.
+- Added explicit sweep coverage for legacy contract terms such as CSS classes, route ids, data attributes, DOM hooks, generated file paths, script URLs, import paths, endpoint paths, event names, fixtures, snapshots, selectors, workflow branch filters and documentation examples.
+
+### Changed
+
+- Updated `prompt.spec.yaml`, `prompt.body.xml` and `README.md` to version `2.9.5`.
+- Registered `references/test-contract-impact-sweep.xml` as an always-loaded GitHub Diamond reference.
+- Added pull-request readiness expectations requiring agents to record test-contract impact sweep status before claiming readiness.
+- Recorded the reusable operating-model lesson in `RECENT_LEARNINGS.md`.
+
+### Fixed
+
+- Reduced the risk of reactive CI repair loops where stale route-state, generated-output, shared assertion or fixture tests are discovered one failure at a time after a predictable contract change.
+- Reduced the risk of agents treating implementation changes and test-contract updates as separate workstreams during migrations.
+
+---
+
 ## [2.9.4+researchops.2026-05-29] - 2026-05-29
 
 ### Added
@@ -358,7 +379,6 @@ The format follows Keep a Changelog conventions and the bundle uses semantic ver
 - Excluded generated runtime artefacts from `registry-manifest.yaml`.
 - Prevented release-gate execution from invalidating the manifest.
 - Preserved manifest coverage for source and fixture artefacts only.
-- Strengthened trigger inference for web, public-service and performance-sensitive repositories.
 
 ---
 

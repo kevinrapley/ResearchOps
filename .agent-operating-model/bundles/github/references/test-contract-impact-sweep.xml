@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testContractImpactSweep id="github-diamond-test-contract-impact-sweep" version="2.9.5">
+  <purpose>
+    Require proactive test-contract review whenever repository work changes, replaces, migrates, refactors, relocates, regenerates or reshapes implementation contracts.
+  </purpose>
+
+  <scope>
+    <appliesTo>Any repository change that may alter a test-observed or user-observed contract.</appliesTo>
+    <examples>Implementation changes, migrations, refactors, generated-output changes, route changes, component changes, data-shape changes, workflow changes, build-pipeline changes, asset-pipeline changes and documentation examples that tests or users depend on.</examples>
+  </scope>
+
+  <mandatoryRules>
+    <rule id="sweep-before-readiness" priority="must">Before claiming a pull request is ready for review, testing, merge or release, perform a proactive test-contract impact sweep for the change.</rule>
+    <rule id="tests-are-contract-surface" priority="must">Treat tests, fixtures, snapshots, generated artefacts and shared assertion files as part of the contract surface, not as downstream failures to discover one at a time.</rule>
+    <rule id="search-legacy-terms" priority="must">Search for legacy contract terms introduced or affected by the change before relying on CI logs.</rule>
+    <rule id="update-affected-tests" priority="must">Update all directly affected tests and assertions in the same change set as the implementation when the expected contract has intentionally changed.</rule>
+    <rule id="inspect-generated-output" priority="must">Inspect generated output as well as source when templates, macros, compilers, formatters, code generators or build steps may change the committed artefact shape.</rule>
+    <rule id="prefer-structural-assertions" priority="should">Prefer structural assertions over brittle exact strings when formatting, generation or framework output may legitimately alter whitespace, attribute order, wrapping or line breaks.</rule>
+    <rule id="record-retained-legacy-contracts" priority="should">If a legacy assertion is intentionally retained, document the compatibility contract it protects.</rule>
+  </mandatoryRules>
+
+  <searchChecklist>
+    <item>Old CSS classes and selectors.</item>
+    <item>Old route ids, route names, path names and query parameters.</item>
+    <item>Old data attributes, ARIA attributes, DOM ids and DOM hooks.</item>
+    <item>Old generated file paths, generated artefact manifests and build target paths.</item>
+    <item>Old script URLs, stylesheet URLs, import paths and module preload paths.</item>
+    <item>Old API endpoints, request payload keys, response shape keys and event names.</item>
+    <item>Old telemetry keys, storage keys, binding names, feature flags and configuration keys.</item>
+    <item>Old fixture names, snapshot text, selector strings and accessibility assertions.</item>
+    <item>Old workflow names, workflow branch filters, job names, status-check names and release-gate assumptions.</item>
+    <item>Old documentation examples, comments and operational runbook references that tests or users may rely on.</item>
+  </searchChecklist>
+
+  <affectedTestTypes>
+    <item>Unit tests.</item>
+    <item>Integration tests.</item>
+    <item>Route-state tests.</item>
+    <item>Shared assertion tests.</item>
+    <item>Generated-output tests.</item>
+    <item>Fixture and snapshot tests.</item>
+    <item>Accessibility tests.</item>
+    <item>Link-check and navigation tests.</item>
+    <item>Workflow and release-gate tests.</item>
+    <item>Documentation validation tests.</item>
+  </affectedTestTypes>
+
+  <readyForReviewGate>
+    <rule priority="must">A PR-ready summary must state whether a test-contract impact sweep was performed.</rule>
+    <rule priority="must">If the sweep found no affected tests, the summary must say how that was determined.</rule>
+    <rule priority="must">If affected tests remain unchanged, the summary must explain why the existing assertions still represent the intended contract.</rule>
+  </readyForReviewGate>
+</testContractImpactSweep>

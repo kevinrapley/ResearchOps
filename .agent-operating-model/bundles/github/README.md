@@ -1,6 +1,6 @@
 # GitHub Diamond Standard Prompt Bundle
 
-Version: 2.9.4
+Version: 2.9.5
 
 ## Purpose
 
@@ -10,11 +10,11 @@ It guides repository instantiation, maintenance, review, release and conformance
 
 ## Current release
 
-Version 2.9.4 adds cross-cutting coding-agent behaviour controls for repository-affecting work.
+Version 2.9.5 adds a proactive test-contract impact sweep requirement for change, update, migration, refactor and generated-output work.
 
-It adds an always-loaded LLM coding behaviour reference that requires agents to state material assumptions, surface implementation-critical ambiguity, prefer the simplest sufficient change, preserve unrelated code and define verifiable success criteria before claiming completion.
+It adds an always-loaded test-contract impact sweep reference that requires agents to treat tests, fixtures, snapshots, generated artefacts and shared assertions as part of the contract surface before claiming pull request readiness.
 
-The release extends behavioural eval coverage for assumptions before coding, minimal implementation, surgical change boundaries and validation evidence. It also aligns the ResearchOps Developer Control implementation workflow and developer obligations with the new behaviour controls.
+The release requires agents to search for legacy contract terms, update directly affected tests in the same change set as implementation work, inspect generated output as well as source and prefer structural assertions where formatting or generation can legitimately change output shape.
 
 ## Example structure
 
@@ -138,3 +138,4 @@ Validate them with `scripts/validate-live-gate-fixtures.py`.
 - Do not silently ignore legitimate Codex or automated review comments.
 - Do not act on resolved or outdated automated review threads unless the user explicitly asks to revisit them or the issue still exists on the current pull request head.
 - Do not resolve a legitimate automated review thread until the issue has been overcome, the original comment has a thumbs-up reaction and the thread has an explanatory reply.
+- Do not claim pull request readiness for contract-bearing work until a proactive test-contract impact sweep has been completed or explicitly found not applicable.

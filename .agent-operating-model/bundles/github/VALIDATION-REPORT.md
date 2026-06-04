@@ -1,12 +1,12 @@
-# Validation Report — GitHub Diamond Bundle v2.9.3
+# Validation Report — GitHub Diamond Bundle v2.9.5
 
-Validation status: full-release-readiness remediation in progress.
+Validation status: proactive test-contract impact sweep update in progress.
 
-Last checked: 2026-05-23.
+Last checked: 2026-06-04.
 
-Version 2.9.3 is now a fast-gate clean candidate. The fast release gate passes after the structural release-gate, eval-harness and contract-validation remediation work.
+Version 2.9.5 is the current GitHub Diamond bundle version. It adds a proactive test-contract impact sweep rule for change, update, migration, refactor and generated-output work before PR readiness is claimed.
 
-The remaining release-readiness focus is the full release gate. The latest external archive evaluation identified a full-gate performance adapter mismatch where adapter output did not satisfy the canonical metrics expected by pytest-benchmark and Go benchmark performance budgets.
+The current validation focus is bundle version consistency, registry-manifest alignment, trace coverage and normal ResearchOps validation.
 
 ## Scope
 
@@ -54,63 +54,43 @@ Expected before release:
 
 ## Current gate position
 
-Fast release gate:
+Bundle version consistency:
 
 ```bash
-PYTHONDONTWRITEBYTECODE=1 python scripts/release-gate.py --mode fast --report fast-release-gate-report.json
+npm run agent:bundle-versions:validate
 ```
 
 Current expected status: pass.
 
-Full release gate:
+Bundle registry validation:
 
 ```bash
-PYTHONDONTWRITEBYTECODE=1 python scripts/release-gate.py --mode full --report full-release-gate-report.json
+npm run agent:bundles:validate
 ```
 
-Previous status: failed before this remediation branch.
+Current expected status: pass after registry manifest update.
 
-Previous blocker:
+Operating-model validation:
 
-- pytest-benchmark adapter emitted per-test metrics only, while the budget expected `response_time_mean_seconds` and `response_time_max_seconds`
-- Go benchmark adapter emitted per-benchmark metrics only, while the budget expected `handler_ns_per_op`
+```bash
+npm run agent:model:validate
+```
 
-Remediation in this branch:
+Current expected status: pass.
 
-- pytest-benchmark now emits canonical roll-up metrics using the maximum mean and maximum max values across benchmark entries
-- Go benchmark now emits `handler_ns_per_op` using the maximum `ns/op` value across benchmark entries
-- detailed per-test and per-benchmark metrics are preserved as diagnostic measurements
+Repository validation:
 
-## Evaluation coverage
+```bash
+npm run validate
+```
 
-The v2.9.3 examples are organised into:
+Current expected status: pending CI confirmation.
 
-- `examples/scenarios/`
-- `examples/expected-outputs/`
-- `examples/anti-examples/`
-- `examples/fixtures/`
-- `examples/payloads/`
-- `examples/performance-inputs/`
-- `examples/performance-results/`
+## 2.9.5 validation focus
 
-Scenarios define realistic user prompts, repository context, expected mode selection, roles, references, contracts, graders, required evidence and failure conditions where relevant.
-
-Expected outputs show acceptable response shape without redundant example title headings.
-
-Anti-examples are limited to genuine incorrect behaviours. Placeholder examples are not treated as anti-examples.
-
-Fixture, payload and performance examples have been expanded to exercise validators, adapters and release-gate evidence paths with realistic synthetic data rather than minimal placeholder records.
-
-## Known gaps
-
-No manifest-only blocker is currently recorded. Manifest validation should be treated as passed only after the registry-manifest automation has regenerated hashes for this branch.
-
-The full release gate should be re-run after performance adapter roll-up metrics, prompt assembly coverage and agent-evidence validation hardening are applied.
-
-The `references/github-tooling-mutation-policy.xml` module remains at version `1.0.0`. This is treated as module-versioning rather than bundle-version drift, but should remain visible in release review.
-
-## Result
-
-The GitHub Diamond bundle v2.9.3 is suitable for release-candidate review only after the full release gate passes.
-
-The current branch addresses the known full-gate performance adapter blocker and the secondary assurance issues around validation reporting, prompt assembly coverage and agent-evidence validation strength.
+- `prompt.spec.yaml` declares version `2.9.5`.
+- `prompt.body.xml` declares version `2.9.5`.
+- `README.md` declares version `2.9.5`.
+- `CHANGELOG.md` includes `2.9.5+researchops.2026-06-04`.
+- `references/test-contract-impact-sweep.xml` is registered as an always-loaded GitHub Diamond reference.
+- `registry-manifest.yaml` must point to version `2.9.5` and include current hashes for changed bundle files.
