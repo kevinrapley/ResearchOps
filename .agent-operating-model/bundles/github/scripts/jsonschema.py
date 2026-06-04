@@ -61,10 +61,14 @@ def _validate(instance, schema, path):
         for key, child_schema in properties.items():
             if key in instance:
                 yield from _validate(instance[key], child_schema, (*path, key))
-        if schema.get("additionalProperties") is False:
-            extra = set(instance) - set(properties)
+        additional_properties = schema.get("additionalProperties", True)
+        extra = set(instance) - set(properties)
+        if additional_properties is False:
             for key in sorted(extra):
                 yield ValidationError(f"Additional properties are not allowed ({key!r} was unexpected)", (*path, key))
+        elif isinstance(additional_properties, dict):
+            for key in sorted(extra):
+                yield from _validate(instance[key], additional_properties, (*path, key))
     if isinstance(instance, list):
         if "minItems" in schema and len(instance) < schema["minItems"]:
             yield ValidationError(f"{instance!r} is too short", path)
