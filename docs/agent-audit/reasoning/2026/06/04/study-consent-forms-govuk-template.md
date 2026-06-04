@@ -54,6 +54,10 @@ After PR checks reported failures, reproduced the GOV.UK render workflow locally
 
 Updated the breadcrumb/back-link route-state assertion to tolerate renderer whitespace while still checking the `back-to-study` control and text contract.
 
+## Codex Comment Disposition
+
+Reviewed unresolved Codex comment `PRRC_kwDOP3Td2M7IPMHT` on `public/js/study-route-context.js`. Classified it as legitimate. Updated canonical Study route resolution so the route `project`/`projectId` value is accepted only as a fallback when the loaded Study has no linked Project. If both are present and disagree, the route now rejects the mismatch with the same linked-record error pattern used by legacy routes. Added a route-state contract assertion for the linked-project precedence and stale route-project rejection guard.
+
 ## Test-Contract Sweep
 
 Updated route-state tests covering:
@@ -61,6 +65,7 @@ Updated route-state tests covering:
 - consent forms page GOV.UK frontend and editor hooks
 - Study child route canonical URL handling
 - project-aware Study record links from the dashboard
+- stale canonical route project mismatch handling
 - Study page and participant consent expectations that consume the shared child-route contract
 - GOV.UK form, breadcrumb and page chrome contracts
 

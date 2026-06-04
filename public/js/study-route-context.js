@@ -121,7 +121,11 @@ export async function resolveStudyContextFromUrl(params = new URLSearchParams(wi
 			study = await loadStudyFromProject(routeProjectId, canonicalStudyId);
 			if (!study?.id) throw error;
 		}
-		const projectId = routeProjectId || linkedProjectIdForStudy(study);
+		const linkedProjectId = linkedProjectIdForStudy(study);
+		if (routeProjectId && linkedProjectId && routeProjectId !== linkedProjectId) {
+			throw new Error("The project and study URL does not match the linked records.");
+		}
+		const projectId = linkedProjectId || routeProjectId;
 		if (!projectId) throw new Error("The Study record does not include a linked Project record.");
 		const project = await loadProjectById(projectId);
 		return { projectId, studyId: study.id || canonicalStudyId, project, study, routeMode: "canonical" };

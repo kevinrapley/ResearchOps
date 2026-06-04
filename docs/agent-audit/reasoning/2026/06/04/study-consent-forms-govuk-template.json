@@ -83,11 +83,12 @@
     "Allowed canonical Study ID routes to fall back to project-scoped study lookup when direct study lookup fails.",
     "Allowed consent-form list loading failure to degrade to an editable new draft rather than a page-level loading failure.",
     "Followed up failing PR checks by adding explicit empty GOV.UK textarea values required by strict Nunjucks rendering and regenerating the committed consent forms page from the template.",
-    "Updated the breadcrumb/back-link route-state assertion to tolerate renderer whitespace while preserving the back-to-study control and text contract."
+    "Updated the breadcrumb/back-link route-state assertion to tolerate renderer whitespace while preserving the back-to-study control and text contract.",
+    "Handled Codex comment PRRC_kwDOP3Td2M7IPMHT as legitimate by rejecting stale canonical route project IDs that disagree with the loaded Study linked Project."
   ],
   "testContractImpactSweep": [
     "Updated consent forms route-state coverage for Nunjucks-rendered GOV.UK frontend markup and graceful consent list fallback.",
-    "Updated study child route, study page, participant consent and studies route contracts for project-aware canonical Study links.",
+    "Updated study child route, study page, participant consent and studies route contracts for project-aware canonical Study links and stale route-project mismatch handling.",
     "Ran GOV.UK form, breadcrumb and page chrome route-state tests."
   ],
   "validation": [

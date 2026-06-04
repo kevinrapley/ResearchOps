@@ -43,6 +43,10 @@ excludes(studyPageController, "route(\"/pages/synthesize/\", studyParams)", "stu
 
 includes(studyRouteContext, "const canonicalStudyId = params.get(\"id\") || \"\"", "study route context");
 includes(studyRouteContext, "const routeProjectId = params.get(\"project\") || params.get(\"projectId\") || \"\"", "study route context");
+includes(studyRouteContext, "const linkedProjectId = linkedProjectIdForStudy(study)", "study route context");
+includes(studyRouteContext, "routeProjectId && linkedProjectId && routeProjectId !== linkedProjectId", "study route context");
+includes(studyRouteContext, "const projectId = linkedProjectId || routeProjectId", "study route context");
+excludes(studyRouteContext, "const projectId = routeProjectId || linkedProjectIdForStudy(study)", "study route context");
 includes(studyRouteContext, "projectId !== legacyProjectId", "study route context");
 excludes(studyRouteContext, "rops-api.digikev-kevin-rapley.workers.dev", "study route context");
 excludes(studyRouteContext, "location.hostname.endsWith(\"pages.dev\")", "study route context");
