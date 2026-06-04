@@ -1,15 +1,15 @@
-import assert from "node:assert/strict";
+import assert from 'node:assert/strict';
 import {
 	createConsentForm,
 	listConsentForms,
 	publishConsentForm,
-	updateConsentForm
-} from "../infra/cloudflare/src/service/consent-forms.js";
+	updateConsentForm,
+} from '../infra/cloudflare/src/service/consent-forms.js';
 
 function createMockD1() {
 	const state = {
 		consentForms: [],
-		runs: []
+		runs: [],
 	};
 
 	function statement(sql, args = []) {
@@ -38,8 +38,8 @@ function createMockD1() {
 						created_at: args[14],
 						updated_at: args[15],
 						active: 1,
-						source: "d1",
-						payload_json: args[16]
+						source: 'd1',
+						payload_json: args[16],
 					});
 				}
 				if (/UPDATE rops_consent_forms/i.test(sql) && /SET title = \?/i.test(sql)) {
@@ -64,7 +64,7 @@ function createMockD1() {
 				if (/UPDATE rops_consent_forms/i.test(sql) && /SET status = 'Published'/i.test(sql)) {
 					const row = state.consentForms.find((item) => item.id === args[3] && item.active === 1);
 					if (row) {
-						row.status = "Published";
+						row.status = 'Published';
 						row.version = args[0];
 						row.published_at = args[1];
 						row.updated_at = args[2];
@@ -81,10 +81,14 @@ function createMockD1() {
 			async all() {
 				if (/FROM rops_consent_forms/i.test(sql) && /WHERE study_id = \?/i.test(sql)) {
 					const studyId = args[0];
-					return { results: state.consentForms.filter((row) => row.study_id === studyId && row.active === 1) };
+					return {
+						results: state.consentForms.filter(
+							(row) => row.study_id === studyId && row.active === 1
+						),
+					};
 				}
 				return { results: [] };
-			}
+			},
 		};
 	}
 
@@ -92,7 +96,7 @@ function createMockD1() {
 		state,
 		prepare(sql) {
 			return statement(sql);
-		}
+		},
 	};
 }
 
@@ -106,13 +110,13 @@ function createService(d1) {
 		json(body, status = 200, headers = {}) {
 			return new Response(JSON.stringify(body), {
 				status,
-				headers: { "content-type": "application/json; charset=utf-8", ...headers }
+				headers: { 'content-type': 'application/json; charset=utf-8', ...headers },
 			});
 		},
 		log: {
 			warn() {},
-			error() {}
-		}
+			error() {},
+		},
 	};
 }
 
@@ -123,50 +127,67 @@ async function json(response) {
 const d1 = createMockD1();
 const svc = createService(d1);
 
-const emptyList = await json(await listConsentForms(svc, "", new URL("https://example.test/api/consent-forms?study=rect3biqr")));
+const emptyList = await json(
+	await listConsentForms(svc, '', new URL('https://example.test/api/consent-forms?study=rect3biqr'))
+);
 assert.equal(emptyList.ok, true);
-assert.equal(emptyList.source, "d1");
+assert.equal(emptyList.source, 'd1');
 assert.deepEqual(emptyList.consentForms, []);
 
-const created = await json(await createConsentForm(svc, new Request("https://example.test/api/consent-forms", {
-	method: "POST",
-	body: JSON.stringify({
-		studyId: "rect3biqr",
-		title: "Diary study consent",
-		formType: "Consent form",
-		status: "Draft",
-		sourceMarkdown: "# Diary consent",
-		variables: { studyTitle: "The diary study" },
-		consentItems: [{ id: "participation", label: "I agree", required: true }],
-		plainEnglishSummary: "Consent for the diary study."
-	})
-}), ""));
+const created = await json(
+	await createConsentForm(
+		svc,
+		new Request('https://example.test/api/consent-forms', {
+			method: 'POST',
+			body: JSON.stringify({
+				studyId: 'rect3biqr',
+				title: 'Diary study consent',
+				formType: 'Consent form',
+				status: 'Draft',
+				sourceMarkdown: '# Diary consent',
+				variables: { studyTitle: 'The diary study' },
+				consentItems: [{ id: 'participation', label: 'I agree', required: true }],
+				plainEnglishSummary: 'Consent for the diary study.',
+			}),
+		}),
+		''
+	)
+);
 
 assert.equal(created.ok, true);
-assert.equal(created.source, "d1");
-assert.equal(created.consentForm.title, "Diary study consent");
-assert.equal(created.consentForm.variables.studyTitle, "The diary study");
+assert.equal(created.source, 'd1');
+assert.equal(created.consentForm.title, 'Diary study consent');
+assert.equal(created.consentForm.variables.studyTitle, 'The diary study');
 
-const listed = await json(await listConsentForms(svc, "", new URL("https://example.test/api/consent-forms?study=rect3biqr")));
+const listed = await json(
+	await listConsentForms(svc, '', new URL('https://example.test/api/consent-forms?study=rect3biqr'))
+);
 assert.equal(listed.consentForms.length, 1);
 assert.equal(listed.consentForms[0].id, created.id);
 
-const updated = await json(await updateConsentForm(svc, new Request(`https://example.test/api/consent-forms/${created.id}`, {
-	method: "PATCH",
-	body: JSON.stringify({
-		title: "Updated diary study consent",
-		sourceMarkdown: "# Updated",
-		variables: { studyTitle: "Updated diary study" },
-		consentItems: []
-	})
-}), "", created.id));
+const updated = await json(
+	await updateConsentForm(
+		svc,
+		new Request(`https://example.test/api/consent-forms/${created.id}`, {
+			method: 'PATCH',
+			body: JSON.stringify({
+				title: 'Updated diary study consent',
+				sourceMarkdown: '# Updated',
+				variables: { studyTitle: 'Updated diary study' },
+				consentItems: [],
+			}),
+		}),
+		'',
+		created.id
+	)
+);
 
 assert.equal(updated.ok, true);
-assert.equal(updated.consentForm.title, "Updated diary study consent");
-assert.equal(updated.consentForm.sourceMarkdown, "# Updated");
+assert.equal(updated.consentForm.title, 'Updated diary study consent');
+assert.equal(updated.consentForm.sourceMarkdown, '# Updated');
 
-const published = await json(await publishConsentForm(svc, "", created.id));
+const published = await json(await publishConsentForm(svc, '', created.id));
 assert.equal(published.ok, true);
-assert.equal(published.source, "d1");
-assert.equal(published.status, "Published");
+assert.equal(published.source, 'd1');
+assert.equal(published.status, 'Published');
 assert.equal(published.version, 2);
