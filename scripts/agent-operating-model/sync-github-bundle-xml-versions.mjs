@@ -84,7 +84,8 @@ function replaceRootVersion(xml, version, relativePath) {
 	const versionIndex = root.indexOf(marker);
 
 	if (versionIndex === -1) {
-		throw new Error(`Could not find root version attribute in ${relativePath}`);
+		const nextRoot = `${root.slice(0, rootEnd - rootStart)} version="${version}">`;
+		return `${xml.slice(0, rootStart)}${nextRoot}${xml.slice(rootEnd + 1)}`;
 	}
 
 	const quoteIndex = versionIndex + marker.length;
