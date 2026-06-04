@@ -52,6 +52,36 @@ Expected before release:
 - high-assurance live gate fixture validation passes
 - performance adapters emit canonical metrics required by their budget files
 
+## Evaluation coverage
+
+The v2.9.5 examples are organised into:
+
+- `examples/scenarios/`
+- `examples/expected-outputs/`
+- `examples/anti-examples/`
+- `examples/fixtures/`
+- `examples/payloads/`
+- `examples/performance-inputs/`
+- `examples/performance-results/`
+
+Scenarios define realistic user prompts, repository context, expected mode selection, roles, references, contracts, graders, required evidence and failure conditions where relevant.
+
+Expected outputs show acceptable response shape without redundant example title headings.
+
+Anti-examples are limited to genuine incorrect behaviours. Placeholder examples are not treated as anti-examples.
+
+Fixture, payload and performance examples exercise validators, adapters and release-gate evidence paths with realistic synthetic data rather than minimal placeholder records.
+
+## Known gaps
+
+No manifest-only blocker is currently recorded. Manifest validation should be treated as passed only after the registry-manifest automation has regenerated hashes for this branch.
+
+The `references/github-tooling-mutation-policy.xml` module remains at version `1.0.0`. This is treated as module-versioning rather than bundle-version drift, but should remain visible in release review.
+
+## Result
+
+The GitHub Diamond bundle v2.9.5 is suitable for ResearchOps operating-model use once the bundle registry validation, operating-model validation and repository validation commands pass on the branch head.
+
 ## Current gate position
 
 Bundle version consistency:
