@@ -69,41 +69,89 @@ async function xmlFiles(bundleRoot) {
 	return files.sort((left, right) => left.localeCompare(right));
 }
 
-function replaceRootVersion(xml, version, relativePath) {
-	const xmlEnd = xml.indexOf('?>');
-	const searchFrom = xmlEnd === -1 ? 0 : xmlEnd + 2;
-	const rootStart = xml.indexOf('<', searchFrom);
-	const rootEnd = xml.indexOf('>', rootStart);
-
-	if (rootStart === -1 || rootEnd === -1) {
-		throw new Error(`Could not find XML root in ${relativePath}`);
-	}
-
-	const root = xml.slice(rootStart, rootEnd + 1);
-	const marker = ' version=';
-	const versionIndex = root.indexOf(marker);
-
-	if (versionIndex === -1) {
-		const nextRoot = `${root.slice(0, rootEnd - rootStart)} version="${version}">`;
-		return `${xml.slice(0, rootStart)}${nextRoot}${xml.slice(rootEnd + 1)}`;
-	}
-
-	const quoteIndex = versionIndex + marker.length;
-	const quote = root[quoteIndex];
-	const valueStart = quoteIndex + 1;
-	const valueEnd = root.indexOf(quote, valueStart);
-
-	if ((quote !== '"' && quote !== "'") || valueEnd === -1) {
-		throw new Error(`Could not parse root version attribute in ${relativePath}`);
-	}
-
-	const currentVersion = root.slice(valueStart, valueEnd);
-	if (currentVersion === version) {
+function normaliseXmlDeclaration(xml) {
+	if (!xml.startsWith('<?xml ')) {
 		return xml;
 	}
 
-	const nextRoot = `${root.slice(0, valueStart)}${version}${root.slice(valueEnd)}`;
-	return `${xml.slice(0, rootStart)}${nextRoot}${xml.slice(rootEnd + 1)}`;
+	const declarationEnd = xml.indexOf('?>');
+	if (declarationEnd === -1) {
+		return xml;
+	}
+
+	const declaration = xml.slice(0, declarationEnd + 2);
+	const nextDeclaration = declaration.replace(/version=(['"])[^'"]+\1/, 'version="1.0"');
+	return `${nextDeclaration}${xml.slice(declarationEnd + 2)}`;
+}
+
+function rootBounds(xml, relativePath) {
+	const declarationEnd = xml.indexOf('?>');
+	const searchFrom = declarationEnd === -1 ? 0 : declarationEnd + 2;
+	const rootStart = xml.indexOf('<', searchFrom);
+
+	if (rootStart === -1) {
+		throw new Error(`Could not find XML root in ${relativePath}`);
+	}
+
+	let quote = '';
+	for (let index = rootStart + 1; index < xml.length; index += 1) {
+		const character = xml[index];
+
+		if (quote) {
+			if (character === quote) quote = '';
+			continue;
+		}
+
+		if (character === '"' || character === "'") {
+			quote = character;
+			continue;
+		}
+
+		if (character === '>') {
+			return { start: rootStart, end: index + 1 };
+		}
+	}
+
+	throw new Error(`Could not find XML root closing bracket in ${relativePath}`);
+}
+
+function rootName(root) {
+	const match = root.match(/^<\s*([^\s/>]+)/);
+	return match ? match[1] : '';
+}
+
+function syncRootVersion(root, version, relativePath) {
+	const name = rootName(root);
+	if (!name) {
+		throw new Error(`Could not parse XML root name in ${relativePath}`);
+	}
+
+	let seen = false;
+	let nextRoot = root.replace(/\s+version=(['"])[^'"]*\1/g, (attribute) => {
+		if (seen) return '';
+		seen = true;
+		const quote = attribute.includes("'") ? "'" : '"';
+		return ` version=${quote}${version}${quote}`;
+	});
+
+	if (!seen) {
+		nextRoot = nextRoot.replace(new RegExp(`^<\\s*${name}`), `<${name} version="${version}"`);
+	}
+
+	return nextRoot;
+}
+
+function replaceRootVersion(xml, version, relativePath) {
+	const declarationSafeXml = normaliseXmlDeclaration(xml);
+	const bounds = rootBounds(declarationSafeXml, relativePath);
+	const root = declarationSafeXml.slice(bounds.start, bounds.end);
+	const nextRoot = syncRootVersion(root, version, relativePath);
+
+	if (root === nextRoot && xml === declarationSafeXml) {
+		return xml;
+	}
+
+	return `${declarationSafeXml.slice(0, bounds.start)}${nextRoot}${declarationSafeXml.slice(bounds.end)}`;
 }
 
 export async function syncGitHubBundleXmlVersions(options = {}) {
