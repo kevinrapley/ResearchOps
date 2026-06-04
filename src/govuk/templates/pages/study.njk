@@ -1,0 +1,277 @@
+{% extends "layouts/researchops.njk" %}
+{% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/details/macro.njk" import govukDetails %}
+{% from "govuk/components/notification-banner/macro.njk" import govukNotificationBanner %}
+{% from "govuk/components/summary-list/macro.njk" import govukSummaryList %}
+{% from "govuk/components/task-list/macro.njk" import govukTaskList %}
+{% from "govuk/components/textarea/macro.njk" import govukTextarea %}
+
+{% set studyPageScriptVersion = "study-record-id-routing-20260518" %}
+
+{% block head %}
+	<meta property="schema:name" content="Study — ResearchOps">
+	<meta property="schema:creator" content="Home Office ResearchOps Platform">
+	<meta property="schema:dateModified" content="2026-06-03">
+	<meta property="dcterms:language" content="en-GB">
+	<link rel="stylesheet" href="/css/study-page.css" media="screen">
+	<link rel="modulepreload" href="/js/study-page.js?v={{ studyPageScriptVersion }}">
+	<link rel="modulepreload" href="/pages/study/study-desc-controller.js">
+{% endblock %}
+
+{% block content %}
+<div class="govuk-width-container study-page" data-study-template="govuk-task-list">
+	{{ govukBreadcrumbs({
+		attributes: {
+			id: "study-breadcrumbs",
+			typeof: "schema:BreadcrumbList"
+		},
+		items: [
+			{
+				text: "Projects",
+				href: "/pages/projects/",
+				attributes: {
+					property: "schema:item",
+					typeof: "schema:Thing"
+				}
+			},
+			{
+				text: "Project",
+				href: "#",
+				attributes: {
+					id: "breadcrumb-project",
+					property: "schema:item",
+					typeof: "schema:Thing"
+				}
+			},
+			{
+				text: "Study"
+			}
+		]
+	}) }}
+
+	{{ govukNotificationBanner({
+		attributes: {
+			id: "study-error",
+			role: "alert",
+			tabindex: "-1",
+			hidden: "hidden",
+			"aria-hidden": "true"
+		},
+		titleText: "There is a problem loading this study",
+		html: '<p id="study-error-message" class="govuk-body">Could not load the study.</p>'
+	}) }}
+
+	<div class="study-action-bar govuk-button-group">
+		{{ govukButton({
+			text: "Back to Project",
+			href: "/pages/projects/",
+			classes: "govuk-button--secondary",
+			attributes: {
+				id: "back-to-project"
+			}
+		}) }}
+		{{ govukButton({
+			text: "Edit study",
+			href: "#",
+			attributes: {
+				id: "edit-study"
+			}
+		}) }}
+	</div>
+
+	<header class="study-hero govuk-!-margin-bottom-6" typeof="schema:ResearchProject" resource="#study">
+		<p id="study-eyebrow" class="govuk-caption-m">Study</p>
+		<h1 id="study-title" class="govuk-heading-l" property="schema:name">Study</h1>
+		<div id="desc-view-wrap" class="study-description" property="schema:description">
+			<div id="description" class="govuk-body">—</div>
+			<div class="study-description__actions">
+				{{ govukButton({
+					text: "Edit description",
+					type: "button",
+					classes: "govuk-button--secondary",
+					attributes: {
+						id: "btn-edit-desc"
+					}
+				}) }}
+			</div>
+		</div>
+
+		<form id="desc-editor" class="study-description-editor" hidden>
+			{{ govukTextarea({
+				id: "desc-input",
+				name: "description",
+				classes: "govuk-!-width-two-thirds",
+				rows: 8,
+				label: {
+					text: "Description"
+				},
+				hint: {
+					text: "You can use Markdown. Do not include participant personal data."
+				},
+				attributes: {
+					spellcheck: "true",
+					autocomplete: "off"
+				}
+			}) }}
+
+			{{ govukDetails({
+				summaryText: "Markdown cheat sheet",
+				html: '<p class="govuk-body">You can use headings, bold or italic text, links, lists, inline code and code blocks. HTML and images are not supported.</p>'
+			}) }}
+
+			<div class="govuk-button-group">
+				{{ govukButton({
+					text: "Save",
+					type: "submit",
+					attributes: {
+						id: "btn-save-desc"
+					}
+				}) }}
+				{{ govukButton({
+					text: "Cancel",
+					type: "button",
+					classes: "govuk-button--secondary",
+					attributes: {
+						id: "desc-cancel"
+					}
+				}) }}
+			</div>
+		</form>
+		<p id="desc-status" class="govuk-body-s" role="status" aria-live="polite" aria-atomic="true"></p>
+	</header>
+
+	<section class="study-key-information govuk-!-margin-bottom-8" aria-labelledby="study-key-information-title">
+		<h2 id="study-key-information-title" class="govuk-heading-m">Study details</h2>
+		{{ govukSummaryList({
+			classes: "study-summary-list",
+			rows: [
+				{
+					key: { text: "Method" },
+					value: { html: '<span id="kv-method">–</span>' }
+				},
+				{
+					key: { text: "Status" },
+					value: { html: '<span id="kv-status">–</span>' }
+				},
+				{
+					key: { text: "Study ID" },
+					value: { html: '<span id="kv-studyid">–</span>' }
+				}
+			]
+		}) }}
+	</section>
+
+	<section class="study-section study-readiness-section govuk-!-margin-bottom-8" aria-labelledby="study-readiness-title">
+		<h2 id="study-readiness-title" class="govuk-heading-m">Study readiness</h2>
+		<p class="govuk-body">Check the essentials before you run a session.</p>
+		{{ govukTaskList({
+			idPrefix: "study-readiness",
+			classes: "study-readiness-task-list",
+			items: [
+				{
+					title: { text: "Description" },
+					hint: { html: '<span id="study-readiness-description-hint" class="study-readiness-hint">Checking study description.</span>' },
+					status: { html: '<strong id="study-readiness-description-status" class="govuk-tag govuk-tag--grey study-readiness-status">Checking</strong>' }
+				},
+				{
+					title: { text: "Status" },
+					hint: { html: '<span id="study-readiness-status-hint" class="study-readiness-hint">Checking study status.</span>' },
+					status: { html: '<strong id="study-readiness-status-status" class="govuk-tag govuk-tag--grey study-readiness-status">Checking</strong>' }
+				},
+				{
+					title: { text: "Participants" },
+					hint: { html: '<span id="study-readiness-participants-hint" class="study-readiness-hint">Add or review participants for this study.</span>' },
+					status: { html: '<strong id="study-readiness-participants-status" class="govuk-tag govuk-tag--yellow study-readiness-status">Action needed</strong>' }
+				},
+				{
+					title: { text: "Discussion guide" },
+					hint: { html: '<span id="study-readiness-guide-hint" class="study-readiness-hint">Create or review the discussion guide.</span>' },
+					status: { html: '<strong id="study-readiness-guide-status" class="govuk-tag govuk-tag--yellow study-readiness-status">Action needed</strong>' }
+				},
+				{
+					title: { text: "Consent materials" },
+					hint: { html: '<span id="study-readiness-consent-materials-hint" class="study-readiness-hint">Create, review and publish consent forms before recording participant consent.</span>' },
+					status: { html: '<strong id="study-readiness-consent-materials-status" class="govuk-tag govuk-tag--yellow study-readiness-status">Action needed</strong>' }
+				},
+				{
+					title: { text: "Participant consent" },
+					hint: { html: '<span id="study-readiness-participant-consent-hint" class="study-readiness-hint">Record required participant consent before running sessions.</span>' },
+					status: { html: '<strong id="study-readiness-participant-consent-status" class="govuk-tag govuk-tag--yellow study-readiness-status">Action needed</strong>' }
+				},
+				{
+					title: { text: "Session workspace" },
+					hint: { html: '<span id="study-readiness-session-hint" class="study-readiness-hint">Complete study readiness tasks before beginning a session.</span>' },
+					status: { html: '<strong id="study-readiness-session-status" class="govuk-tag govuk-tag--grey study-readiness-status">Not available yet</strong>' }
+				}
+			]
+		}) }}
+		{{ govukButton({
+			text: "Begin session",
+			href: "#study-readiness-title",
+			classes: "govuk-button--disabled study-session-button",
+			attributes: {
+				id: "link-session",
+				"aria-disabled": "true",
+				"data-disabled-link": "true",
+				tabindex: "-1"
+			}
+		}) }}
+	</section>
+
+	<section class="study-section govuk-!-margin-bottom-8" aria-labelledby="study-setup-title">
+		<h2 id="study-setup-title" class="govuk-heading-m">Study setup tasks</h2>
+		{{ govukTaskList({
+			idPrefix: "study-setup",
+			classes: "study-setup-task-list",
+			items: [
+				{
+					title: { html: '<a id="link-consent-forms" class="govuk-link govuk-task-list__link" href="#">Create consent forms</a>' },
+					hint: { text: "Create or review Markdown and Mustache consent form templates for this study." },
+					status: { html: '<strong class="govuk-tag govuk-tag--yellow">Action needed</strong>' }
+				},
+				{
+					title: { html: '<a id="link-participant-consent" class="govuk-link govuk-task-list__link" href="#">Manage participant consent</a>' },
+					hint: { text: "Record, review or withdraw participant consent for this study." },
+					status: { html: '<strong class="govuk-tag govuk-tag--yellow">Action needed</strong>' }
+				},
+				{
+					title: { html: '<a id="link-participants" class="govuk-link govuk-task-list__link" href="#">Schedule participants</a>' },
+					hint: { text: "Add or review participants for this study." },
+					status: { html: '<strong class="govuk-tag govuk-tag--yellow">Action needed</strong>' }
+				},
+				{
+					title: { html: '<a id="link-guides" class="govuk-link govuk-task-list__link" href="#">Create or manage discussion guides</a>' },
+					hint: { text: "Create or review the guide before running a session." },
+					status: { html: '<strong class="govuk-tag govuk-tag--yellow">Action needed</strong>' }
+				},
+				{
+					title: { text: "Add note takers and observers" },
+					hint: { text: "Observer and note taker setup has not been connected yet." },
+					status: { html: '<strong class="govuk-tag govuk-tag--grey">Not available yet</strong>' }
+				}
+			]
+		}) }}
+	</section>
+
+	<section class="study-section govuk-!-margin-bottom-8" aria-labelledby="study-analysis-title">
+		<h2 id="study-analysis-title" class="govuk-heading-m">Study analysis tasks</h2>
+		{{ govukTaskList({
+			idPrefix: "study-analysis",
+			classes: "study-analysis-task-list",
+			items: [
+				{
+					title: { html: '<a id="link-synthesis" class="govuk-link govuk-task-list__link" href="#">Synthesize study evidence</a>' },
+					hint: { text: "Group evidence notes into working cluster groupings and create traceable study-level themes." },
+					status: { html: '<strong class="govuk-tag govuk-tag--grey">Available when evidence is captured</strong>' }
+				}
+			]
+		}) }}
+	</section>
+</div>
+{% endblock %}
+
+{% block scripts %}
+	<script type="module" src="/js/study-page.js?v={{ studyPageScriptVersion }}"></script>
+	<script type="module" src="/pages/study/study-desc-controller.js"></script>
+{% endblock %}
