@@ -498,7 +498,7 @@ artifacts:
 - path: scripts/grade-output.py
   sha256: 11285ce180cbcfb8432ebf026c264807828c7dfe1514749da62af774b48f76dc
 - path: scripts/jsonschema.py
-  sha256: fca7ab6068737744dbfa788044e13a79daea7afd7cd7322d5df164d76cc18ba6
+  sha256: df23ddd04ae62027ffa52a193142a2bf55938c1588a776f96300913e3d6b90ee
 - path: scripts/live-repository-release-gate.py
   sha256: a707c0871329e9c50c1a9ff90f43d39ba21cce5b9563ea97543f620f6def9e50
 - path: scripts/performance-adapters.py
