@@ -147,18 +147,19 @@
 	<section class="study-key-information govuk-!-margin-bottom-8" aria-labelledby="study-key-information-title">
 		<h2 id="study-key-information-title" class="govuk-heading-m">Study details</h2>
 		{{ govukSummaryList({
+			classes: "study-summary-list",
 			rows: [
 				{
 					key: { text: "Method" },
-					value: { text: "–", attributes: { id: "kv-method" } }
+					value: { html: '<span id="kv-method">–</span>' }
 				},
 				{
 					key: { text: "Status" },
-					value: { text: "–", attributes: { id: "kv-status" } }
+					value: { html: '<span id="kv-status">–</span>' }
 				},
 				{
 					key: { text: "Study ID" },
-					value: { text: "–", attributes: { id: "kv-studyid" } }
+					value: { html: '<span id="kv-studyid">–</span>' }
 				}
 			]
 		}) }}
