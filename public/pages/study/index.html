@@ -1,212 +1,446 @@
 <!doctype html>
 <html class="govuk-template" lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>Study - ResearchOps Demo Suite</title>
+		<link rel="stylesheet" href="/assets/govuk/govuk-frontend.css" media="screen" />
 
-<head>
-	<meta charset="utf-8" />
-	<meta name="viewport" content="width=device-width, initial-scale=1" />
-	<title>Study — ResearchOps</title>
+		<meta property="schema:name" content="Study — ResearchOps" />
+		<meta property="schema:creator" content="Home Office ResearchOps Platform" />
+		<meta property="schema:dateModified" content="2026-06-03" />
+		<meta property="dcterms:language" content="en-GB" />
+		<link rel="stylesheet" href="/css/govuk/govuk-forms.css" media="screen" />
+		<link rel="stylesheet" href="/css/govuk/govuk-tables.css" media="screen" />
+		<link rel="stylesheet" href="/css/study-page.css" media="screen" />
+		<link rel="modulepreload" href="/js/study-page.js?v=study-record-id-routing-20260518" />
+		<link rel="modulepreload" href="/pages/study/study-desc-controller.js" />
 
-	<link rel="stylesheet" href="/css/govuk/govuk-typography.css" media="screen" />
-	<link rel="stylesheet" href="/css/govuk/govuk-colours.css" media="screen" />
-	<link rel="stylesheet" href="/css/screen.css" media="screen" />
-	<link rel="stylesheet" href="/css/govuk/govuk-buttons.css" media="screen" />
-	<link rel="stylesheet" href="/css/govuk/govuk-forms.css" media="screen" />
-	<link rel="stylesheet" href="/css/govuk/govuk-tables.css" media="screen" />
-	<link rel="stylesheet" href="/css/study-page.css" media="screen" />
+		<script type="module" src="/components/layout.js" defer></script>
+		<script type="module" src="/js/govuk-frontend-init.js" defer></script>
+	</head>
+	<body class="govuk-template__body">
+		<script>
+			document.body.className +=
+				" js-enabled" + ("noModule" in HTMLScriptElement.prototype ? " govuk-frontend-supported" : "");
+		</script>
+		<x-include src="/partials/header.html" vars='{"active":"Projects"}'></x-include>
+		<main class="govuk-main-wrapper" id="main-content" role="main" tabindex="-1">
+			<div class="govuk-width-container study-page" data-study-template="govuk-task-list">
+				<nav class="govuk-breadcrumbs" id="study-breadcrumbs" typeof="schema:BreadcrumbList" aria-label="Breadcrumb">
+					<ol class="govuk-breadcrumbs__list">
+						<li class="govuk-breadcrumbs__list-item">
+							<a class="govuk-breadcrumbs__link" href="/pages/projects/" property="schema:item" typeof="schema:Thing">
+								Projects
+							</a>
+						</li>
 
-	<script type="module" src="/components/layout.js"></script>
-	<script type="module" src="/js/study-page.js?v=study-record-id-routing-20260518" defer></script>
-	<script type="module" src="study-desc-controller.js" defer></script>
-	<link rel="stylesheet" href="/assets/govuk/govuk-frontend.css" media="screen">
-	<script type="module" src="/js/govuk-frontend-init.js" defer></script>
-</head>
+						<li class="govuk-breadcrumbs__list-item">
+							<a
+								class="govuk-breadcrumbs__link"
+								href="#"
+								id="breadcrumb-project"
+								property="schema:item"
+								typeof="schema:Thing"
+							>
+								Project
+							</a>
+						</li>
 
-<body class="govuk-template__body">
-	<script>document.body.className += ' js-enabled' + ('noModule' in HTMLScriptElement.prototype ? ' govuk-frontend-supported' : '');</script>
-	<x-include src="/partials/debug-boot.html" debug-only></x-include>
+						<li class="govuk-breadcrumbs__list-item" aria-current="page">Study</li>
+					</ol>
+				</nav>
 
-	<x-include src="/partials/header.html" vars='{
-    "active":"Projects",
-    "subtitle":"Study"
-  }'></x-include>
-
-	<main id="main-content" class="container govuk-body govuk-main-wrapper" role="main" tabindex="-1">
-		<nav class="govuk-breadcrumbs" aria-label="Breadcrumb">
-			<ol class="govuk-breadcrumbs__list">
-				<li class="govuk-breadcrumbs__list-item"><a class="govuk-breadcrumbs__link" href="/pages/projects/">Projects</a></li>
-				<li class="govuk-breadcrumbs__list-item"><a id="breadcrumb-project" class="govuk-breadcrumbs__link" href="#">Project</a></li>
-				<li class="govuk-breadcrumbs__list-item" aria-current="page">Study</li>
-			</ol>
-		</nav>
-
-		<div id="study-error" class="panel" role="alert" tabindex="-1" hidden aria-hidden="true">
-			<h2 class="govuk-heading-s">There is a problem loading this study</h2>
-			<p id="study-error-message" class="govuk-body">Could not load the study.</p>
-		</div>
-
-		<div class="actions-bar">
-			<a id="back-to-project" href="/pages/projects/" class="govuk-button govuk-button--secondary">Back to Project</a>
-			<a id="edit-study" href="#" class="govuk-button">✎ Edit Study</a>
-		</div>
-
-		<div class="dashboard-hero">
-			<p id="study-eyebrow" class="project-org">Study</p>
-			<h1 id="study-title" class="govuk-heading-l">Study</h1>
-
-			<div id="desc-view-wrap" class="study-description">
-				<div id="description" class="govuk-body">—</div>
-				<div class="study-description__actions">
-					<button id="btn-edit-desc" type="button" class="govuk-button govuk-button--secondary">✎ Edit description</button>
-				</div>
-			</div>
-
-			<form id="desc-editor" class="panel" hidden>
-				<div class="govuk-form-group">
-					<label class="govuk-label" for="desc-input">Description</label>
-					<div id="desc-input-hint" class="govuk-hint">You can use Markdown.</div>
-					<textarea id="desc-input" class="govuk-textarea" rows="8" spellcheck="true" autocomplete="off" aria-describedby="desc-input-hint"></textarea>
-				</div>
-
-				<details class="note" style="margin-top:8px;">
-					<summary>Markdown cheat sheet (allowed)</summary>
-					<div>
-						<p>You can use a safe subset of Markdown:</p>
-						<ul>
-							<li>Headings: <code>#</code> … <code>######</code></li>
-							<li>Bold / italic: <code>**bold**</code>, <code>*italic*</code></li>
-							<li>Links: <code>[text](https://…)</code></li>
-							<li>Lists:
-								<ul>
-									<li>Unordered: <code>-</code> or <code>*</code></li>
-									<li>Ordered: <code>1. item</code></li>
-								</ul>
-							</li>
-							<li>Inline code: <code>`code`</code></li>
-							<li>Code block: <code>```</code></li>
-						</ul>
+				<div
+					class="govuk-notification-banner"
+					role="region"
+					aria-labelledby="govuk-notification-banner-title"
+					data-module="govuk-notification-banner"
+					id="study-error"
+					role="alert"
+					tabindex="-1"
+					hidden="hidden"
+					aria-hidden="true"
+				>
+					<div class="govuk-notification-banner__header">
+						<h2 class="govuk-notification-banner__title" id="govuk-notification-banner-title">
+							There is a problem loading this study
+						</h2>
 					</div>
-				</details>
+					<div class="govuk-notification-banner__content">
+						<p id="study-error-message" class="govuk-body">Could not load the study.</p>
+					</div>
+				</div>
 
-				<div class="govuk-button-group actions-bar" style="gap:8px;">
-					<button id="btn-save-desc" class="govuk-button" type="submit">Save</button>
-					<button id="desc-cancel" class="govuk-button govuk-button--secondary" type="button">Cancel</button>
-				</div>
-			</form>
-		</div>
+				<div class="study-action-bar govuk-button-group">
+					<a
+						href="/pages/projects/"
+						role="button"
+						draggable="false"
+						class="govuk-button govuk-button--secondary"
+						data-module="govuk-button"
+						id="back-to-project"
+					>
+						Back to Project
+					</a>
 
-		<section class="kv" aria-label="Study key information">
-			<dl class="govuk-summary-list">
-				<div class="govuk-summary-list__row">
-					<dt class="govuk-summary-list__key">Method</dt>
-					<dd class="govuk-summary-list__value" id="kv-method">–</dd>
+					<a href="#" role="button" draggable="false" class="govuk-button" data-module="govuk-button" id="edit-study">
+						Edit study
+					</a>
 				</div>
-				<div class="govuk-summary-list__row">
-					<dt class="govuk-summary-list__key">Status</dt>
-					<dd class="govuk-summary-list__value" id="kv-status">–</dd>
-				</div>
-				<div class="govuk-summary-list__row">
-					<dt class="govuk-summary-list__key">Study ID</dt>
-					<dd class="govuk-summary-list__value" id="kv-studyid">–</dd>
-				</div>
-			</dl>
-		</section>
 
-		<section class="section study-section" aria-labelledby="study-readiness-title">
-			<header class="section__header study-section__header">
-				<h2 id="study-readiness-title" class="section__title govuk-heading-m">Study readiness</h2>
-			</header>
-			<div class="section__body">
-				<div class="study-readiness-panel">
+				<header class="study-hero govuk-!-margin-bottom-6" typeof="schema:ResearchProject" resource="#study">
+					<p id="study-eyebrow" class="govuk-caption-m">Study</p>
+					<h1 id="study-title" class="govuk-heading-l" property="schema:name">Study</h1>
+					<div id="desc-view-wrap" class="study-description" property="schema:description">
+						<div id="description" class="govuk-body">—</div>
+						<div class="study-description__actions">
+							<button
+								type="button"
+								class="govuk-button govuk-button--secondary"
+								data-module="govuk-button"
+								id="btn-edit-desc"
+							>
+								Edit description
+							</button>
+						</div>
+					</div>
+
+					<form id="desc-editor" class="study-description-editor" hidden>
+						<div class="govuk-form-group">
+							<label class="govuk-label" for="desc-input">Description</label>
+
+							<div id="desc-input-hint" class="govuk-hint">
+								You can use Markdown. Do not include participant personal data.
+							</div>
+
+							<textarea
+								class="govuk-textarea govuk-!-width-two-thirds"
+								id="desc-input"
+								name="description"
+								rows="8"
+								aria-describedby="desc-input-hint"
+								spellcheck="true"
+								autocomplete="off"
+							></textarea>
+						</div>
+
+						<details class="govuk-details">
+							<summary class="govuk-details__summary">
+								<span class="govuk-details__summary-text">Markdown cheat sheet</span>
+							</summary>
+							<div class="govuk-details__text">
+								<p class="govuk-body">
+									You can use headings, bold or italic text, links, lists, inline code and code blocks. HTML and images
+									are not supported.
+								</p>
+							</div>
+						</details>
+
+						<div class="govuk-button-group">
+							<button type="submit" class="govuk-button" data-module="govuk-button" id="btn-save-desc">Save</button>
+
+							<button
+								type="button"
+								class="govuk-button govuk-button--secondary"
+								data-module="govuk-button"
+								id="desc-cancel"
+							>
+								Cancel
+							</button>
+						</div>
+					</form>
+					<p id="desc-status" class="govuk-body-s" role="status" aria-live="polite" aria-atomic="true"></p>
+				</header>
+
+				<section class="study-key-information govuk-!-margin-bottom-8" aria-labelledby="study-key-information-title">
+					<h2 id="study-key-information-title" class="govuk-heading-m">Study details</h2>
+
+					<dl class="govuk-summary-list study-summary-list">
+						<div class="govuk-summary-list__row">
+							<dt class="govuk-summary-list__key">Method</dt>
+							<dd class="govuk-summary-list__value">
+								<span id="kv-method">–</span>
+							</dd>
+						</div>
+
+						<div class="govuk-summary-list__row">
+							<dt class="govuk-summary-list__key">Status</dt>
+							<dd class="govuk-summary-list__value">
+								<span id="kv-status">–</span>
+							</dd>
+						</div>
+
+						<div class="govuk-summary-list__row">
+							<dt class="govuk-summary-list__key">Study ID</dt>
+							<dd class="govuk-summary-list__value">
+								<span id="kv-studyid">–</span>
+							</dd>
+						</div>
+					</dl>
+				</section>
+
+				<section
+					class="study-section study-readiness-section govuk-!-margin-bottom-8"
+					aria-labelledby="study-readiness-title"
+				>
+					<h2 id="study-readiness-title" class="govuk-heading-m">Study readiness</h2>
 					<p class="govuk-body">Check the essentials before you run a session.</p>
-					<ul class="study-readiness-list">
-						<li class="readiness-item" data-readiness-item="description">
-							<div class="readiness-item__header"><strong>Description</strong> <span class="readiness-item__status">Checking</span></div>
-							<p class="readiness-item__body">Checking study description.</p>
+
+					<ul class="govuk-task-list study-readiness-task-list">
+						<li class="govuk-task-list__item">
+							<div class="govuk-task-list__name-and-hint">
+								<div>Description</div>
+
+								<div id="study-readiness-1-hint" class="govuk-task-list__hint">
+									<span id="study-readiness-description-hint" class="study-readiness-hint">
+										Checking study description.
+									</span>
+								</div>
+							</div>
+							<div class="govuk-task-list__status" id="study-readiness-1-status">
+								<strong
+									id="study-readiness-description-status"
+									class="govuk-tag govuk-tag--grey study-readiness-status"
+								>
+									Checking
+								</strong>
+							</div>
 						</li>
-						<li class="readiness-item" data-readiness-item="status">
-							<div class="readiness-item__header"><strong>Status</strong> <span class="readiness-item__status">Checking</span></div>
-							<p class="readiness-item__body">Checking study status.</p>
+
+						<li class="govuk-task-list__item">
+							<div class="govuk-task-list__name-and-hint">
+								<div>Status</div>
+
+								<div id="study-readiness-2-hint" class="govuk-task-list__hint">
+									<span id="study-readiness-status-hint" class="study-readiness-hint">Checking study status.</span>
+								</div>
+							</div>
+							<div class="govuk-task-list__status" id="study-readiness-2-status">
+								<strong id="study-readiness-status-status" class="govuk-tag govuk-tag--grey study-readiness-status">
+									Checking
+								</strong>
+							</div>
 						</li>
-						<li class="readiness-item" data-readiness-item="participants">
-							<div class="readiness-item__header"><strong>Participants</strong> <span class="readiness-item__status">Action needed</span></div>
-							<p class="readiness-item__body">Add or review participants for this study.</p>
+
+						<li class="govuk-task-list__item">
+							<div class="govuk-task-list__name-and-hint">
+								<div>Participants</div>
+
+								<div id="study-readiness-3-hint" class="govuk-task-list__hint">
+									<span id="study-readiness-participants-hint" class="study-readiness-hint">
+										Add or review participants for this study.
+									</span>
+								</div>
+							</div>
+							<div class="govuk-task-list__status" id="study-readiness-3-status">
+								<strong
+									id="study-readiness-participants-status"
+									class="govuk-tag govuk-tag--yellow study-readiness-status"
+								>
+									Action needed
+								</strong>
+							</div>
 						</li>
-						<li class="readiness-item" data-readiness-item="guide">
-							<div class="readiness-item__header"><strong>Discussion guide</strong> <span class="readiness-item__status">Action needed</span></div>
-							<p class="readiness-item__body">Create or review the discussion guide.</p>
+
+						<li class="govuk-task-list__item">
+							<div class="govuk-task-list__name-and-hint">
+								<div>Discussion guide</div>
+
+								<div id="study-readiness-4-hint" class="govuk-task-list__hint">
+									<span id="study-readiness-guide-hint" class="study-readiness-hint">
+										Create or review the discussion guide.
+									</span>
+								</div>
+							</div>
+							<div class="govuk-task-list__status" id="study-readiness-4-status">
+								<strong id="study-readiness-guide-status" class="govuk-tag govuk-tag--yellow study-readiness-status">
+									Action needed
+								</strong>
+							</div>
 						</li>
-						<li class="readiness-item" data-readiness-item="consent-materials">
-							<div class="readiness-item__header"><strong>Consent materials</strong> <span class="readiness-item__status">Action needed</span></div>
-							<p class="readiness-item__body">Create, review and publish consent forms before recording participant consent.</p>
+
+						<li class="govuk-task-list__item">
+							<div class="govuk-task-list__name-and-hint">
+								<div>Consent materials</div>
+
+								<div id="study-readiness-5-hint" class="govuk-task-list__hint">
+									<span id="study-readiness-consent-materials-hint" class="study-readiness-hint">
+										Create, review and publish consent forms before recording participant consent.
+									</span>
+								</div>
+							</div>
+							<div class="govuk-task-list__status" id="study-readiness-5-status">
+								<strong
+									id="study-readiness-consent-materials-status"
+									class="govuk-tag govuk-tag--yellow study-readiness-status"
+								>
+									Action needed
+								</strong>
+							</div>
 						</li>
-						<li class="readiness-item" data-readiness-item="participant-consent">
-							<div class="readiness-item__header"><strong>Participant consent</strong> <span class="readiness-item__status">Action needed</span></div>
-							<p class="readiness-item__body">Record required participant consent before running sessions.</p>
+
+						<li class="govuk-task-list__item">
+							<div class="govuk-task-list__name-and-hint">
+								<div>Participant consent</div>
+
+								<div id="study-readiness-6-hint" class="govuk-task-list__hint">
+									<span id="study-readiness-participant-consent-hint" class="study-readiness-hint">
+										Record required participant consent before running sessions.
+									</span>
+								</div>
+							</div>
+							<div class="govuk-task-list__status" id="study-readiness-6-status">
+								<strong
+									id="study-readiness-participant-consent-status"
+									class="govuk-tag govuk-tag--yellow study-readiness-status"
+								>
+									Action needed
+								</strong>
+							</div>
 						</li>
-						<li class="readiness-item" data-readiness-item="session">
-							<div class="readiness-item__header"><strong>Session workspace</strong> <span class="readiness-item__status">Not available yet</span></div>
-							<p class="readiness-item__body">Complete study readiness tasks before beginning a session.</p>
+
+						<li class="govuk-task-list__item">
+							<div class="govuk-task-list__name-and-hint">
+								<div>Session workspace</div>
+
+								<div id="study-readiness-7-hint" class="govuk-task-list__hint">
+									<span id="study-readiness-session-hint" class="study-readiness-hint">
+										Complete study readiness tasks before beginning a session.
+									</span>
+								</div>
+							</div>
+							<div class="govuk-task-list__status" id="study-readiness-7-status">
+								<strong id="study-readiness-session-status" class="govuk-tag govuk-tag--grey study-readiness-status">
+									Not available yet
+								</strong>
+							</div>
 						</li>
 					</ul>
-					<div class="study-readiness-panel__actions">
-						<a id="link-session" href="#study-readiness-title" class="govuk-button" aria-disabled="true" data-disabled-link="true" tabindex="-1">Begin session</a>
-					</div>
-				</div>
+
+					<a
+						href="#study-readiness-title"
+						role="button"
+						draggable="false"
+						class="govuk-button govuk-button--disabled study-session-button"
+						data-module="govuk-button"
+						id="link-session"
+						aria-disabled="true"
+						data-disabled-link="true"
+						tabindex="-1"
+					>
+						Begin session
+					</a>
+				</section>
+
+				<section class="study-section govuk-!-margin-bottom-8" aria-labelledby="study-setup-title">
+					<h2 id="study-setup-title" class="govuk-heading-m">Study setup tasks</h2>
+
+					<ul class="govuk-task-list study-setup-task-list">
+						<li class="govuk-task-list__item">
+							<div class="govuk-task-list__name-and-hint">
+								<div>
+									<a id="link-consent-forms" class="govuk-link govuk-task-list__link" href="#">Create consent forms</a>
+								</div>
+
+								<div id="study-setup-1-hint" class="govuk-task-list__hint">
+									Create or review Markdown and Mustache consent form templates for this study.
+								</div>
+							</div>
+							<div class="govuk-task-list__status" id="study-setup-1-status">
+								<strong class="govuk-tag govuk-tag--yellow">Action needed</strong>
+							</div>
+						</li>
+
+						<li class="govuk-task-list__item">
+							<div class="govuk-task-list__name-and-hint">
+								<div>
+									<a id="link-participant-consent" class="govuk-link govuk-task-list__link" href="#">
+										Manage participant consent
+									</a>
+								</div>
+
+								<div id="study-setup-2-hint" class="govuk-task-list__hint">
+									Record, review or withdraw participant consent for this study.
+								</div>
+							</div>
+							<div class="govuk-task-list__status" id="study-setup-2-status">
+								<strong class="govuk-tag govuk-tag--yellow">Action needed</strong>
+							</div>
+						</li>
+
+						<li class="govuk-task-list__item">
+							<div class="govuk-task-list__name-and-hint">
+								<div>
+									<a id="link-participants" class="govuk-link govuk-task-list__link" href="#">Schedule participants</a>
+								</div>
+
+								<div id="study-setup-3-hint" class="govuk-task-list__hint">
+									Add or review participants for this study.
+								</div>
+							</div>
+							<div class="govuk-task-list__status" id="study-setup-3-status">
+								<strong class="govuk-tag govuk-tag--yellow">Action needed</strong>
+							</div>
+						</li>
+
+						<li class="govuk-task-list__item">
+							<div class="govuk-task-list__name-and-hint">
+								<div>
+									<a id="link-guides" class="govuk-link govuk-task-list__link" href="#">
+										Create or manage discussion guides
+									</a>
+								</div>
+
+								<div id="study-setup-4-hint" class="govuk-task-list__hint">
+									Create or review the guide before running a session.
+								</div>
+							</div>
+							<div class="govuk-task-list__status" id="study-setup-4-status">
+								<strong class="govuk-tag govuk-tag--yellow">Action needed</strong>
+							</div>
+						</li>
+
+						<li class="govuk-task-list__item">
+							<div class="govuk-task-list__name-and-hint">
+								<div>Add note takers and observers</div>
+
+								<div id="study-setup-5-hint" class="govuk-task-list__hint">
+									Observer and note taker setup has not been connected yet.
+								</div>
+							</div>
+							<div class="govuk-task-list__status" id="study-setup-5-status">
+								<strong class="govuk-tag govuk-tag--grey">Not available yet</strong>
+							</div>
+						</li>
+					</ul>
+				</section>
+
+				<section class="study-section govuk-!-margin-bottom-8" aria-labelledby="study-analysis-title">
+					<h2 id="study-analysis-title" class="govuk-heading-m">Study analysis tasks</h2>
+
+					<ul class="govuk-task-list study-analysis-task-list">
+						<li class="govuk-task-list__item">
+							<div class="govuk-task-list__name-and-hint">
+								<div>
+									<a id="link-synthesis" class="govuk-link govuk-task-list__link" href="#">Synthesize study evidence</a>
+								</div>
+
+								<div id="study-analysis-1-hint" class="govuk-task-list__hint">
+									Group evidence notes into working cluster groupings and create traceable study-level themes.
+								</div>
+							</div>
+							<div class="govuk-task-list__status" id="study-analysis-1-status">
+								<strong class="govuk-tag govuk-tag--grey">Available when evidence is captured</strong>
+							</div>
+						</li>
+					</ul>
+				</section>
 			</div>
-		</section>
+		</main>
+		<x-include src="/partials/footer.html"></x-include>
 
-		<section class="section study-section" aria-labelledby="study-setup-title">
-			<header class="section__header study-section__header">
-				<h2 id="study-setup-title" class="section__title govuk-heading-m">Study setup tasks</h2>
-			</header>
-			<div class="section__body">
-				<ul class="study-task-list">
-					<li class="study-task-card">
-						<h3 class="study-task-card__title"><a id="link-consent-forms" href="#">Create consent forms</a></h3>
-						<p class="study-task-card__status">Action needed</p>
-						<p class="study-task-card__body">Create or review Markdown and Mustache consent form templates for this study.</p>
-					</li>
-					<li class="study-task-card">
-						<h3 class="study-task-card__title"><a id="link-participant-consent" href="#">Manage participant consent</a></h3>
-						<p class="study-task-card__status">Action needed</p>
-						<p class="study-task-card__body">Record, review or withdraw participant consent for this study.</p>
-					</li>
-					<li class="study-task-card">
-						<h3 class="study-task-card__title"><a id="link-participants" href="#">Schedule participants</a></h3>
-						<p class="study-task-card__status">Action needed</p>
-						<p class="study-task-card__body">Add or review participants for this study.</p>
-					</li>
-					<li class="study-task-card">
-						<h3 class="study-task-card__title"><a id="link-guides" href="#">Create or manage discussion guides</a></h3>
-						<p class="study-task-card__status">Action needed</p>
-						<p class="study-task-card__body">Create or review the guide before running a session.</p>
-					</li>
-					<li class="study-task-card study-task-card--unavailable">
-						<h3 class="study-task-card__title">Add note takers and observers</h3>
-						<p class="study-task-card__status">Not available yet</p>
-						<p class="study-task-card__body">Observer and note taker setup has not been connected yet.</p>
-					</li>
-				</ul>
-			</div>
-		</section>
-
-		<section class="section study-section" aria-labelledby="study-analysis-title">
-			<header class="section__header study-section__header">
-				<h2 id="study-analysis-title" class="section__title govuk-heading-m">Study analysis tasks</h2>
-			</header>
-			<div class="section__body">
-				<ul class="study-task-list">
-					<li class="study-task-card">
-						<h3 class="study-task-card__title"><a id="link-synthesis" href="#">Synthesize study evidence</a></h3>
-						<p class="study-task-card__status">Available when evidence is captured</p>
-						<p class="study-task-card__body">Group evidence notes into working cluster groupings and create traceable study-level themes.</p>
-					</li>
-				</ul>
-			</div>
-		</section>
-	</main>
-
-	<x-include src="/partials/footer.html" vars='{"org":"Home Office Biometrics","build":"ResearchOps v1.0.0 (demo)"}'></x-include>
-</body>
-
+		<script type="module" src="/js/study-page.js?v=study-record-id-routing-20260518"></script>
+		<script type="module" src="/pages/study/study-desc-controller.js"></script>
+	</body>
 </html>

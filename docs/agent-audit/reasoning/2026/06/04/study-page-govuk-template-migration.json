@@ -1,0 +1,62 @@
+{
+  "schemaVersion": "researchops-agent-trace-summary/v1",
+  "traceType": "operational-audit",
+  "date": "2026-06-04",
+  "branch": "feature/study-govuk-clean",
+  "summary": "Migrated the study page route to a GOV.UK Nunjucks template, added the study page SCSS source, registered generated CSS output, updated readiness hydration and resolved Codex review comments.",
+  "selectedBundles": [
+    "github-diamond",
+    "researchops-developer-control",
+    "multi-functional-team",
+    "govuk-design-system"
+  ],
+  "filesCreated": [
+    "src/govuk/templates/pages/study.njk",
+    "src/styles/study-page.scss",
+    "docs/agent-audit/reasoning/2026/06/04/study-page-govuk-template-migration.md",
+    "docs/agent-audit/reasoning/2026/06/04/study-page-govuk-template-migration.json"
+  ],
+  "filesModified": [
+    ".github/workflows/format-pr.yml",
+    ".prettierignore",
+    "public/css/study-page.css",
+    "public/js/study-page.js",
+    "public/pages/study/index.html",
+    "scripts/govuk/render-govuk-pages.mjs",
+    "scripts/styles/generated-css-targets.mjs",
+    "tests/study-page-route-state.test.js"
+  ],
+  "codexReviewItems": [
+    {
+      "item": "Provide a textarea value before rendering.",
+      "status": "addressed"
+    },
+    {
+      "item": "Keep readiness markup wired to the controller.",
+      "status": "addressed"
+    },
+    {
+      "item": "Preserve CSS target literals or update source tests.",
+      "status": "addressed"
+    }
+  ],
+  "validation": {
+    "connectorVerification": [
+      "Confirmed PR #345 is open and mergeable.",
+      "Confirmed Codex review threads are resolved.",
+      "Confirmed the study template uses GOV.UK macros.",
+      "Confirmed the controller hydrates GOV.UK task-list readiness IDs.",
+      "Confirmed src/styles/study-page.scss generates public/css/study-page.css through the generated CSS target manifest."
+    ],
+    "requiredChecks": [
+      "npm run build:generated-css",
+      "npm run build:govuk-pages",
+      "node --test tests/study-page-route-state.test.js",
+      "npm test",
+      "npm run validate"
+    ]
+  },
+  "residualRisk": [
+    "The PR should not be considered complete until normal checks pass on the latest branch head."
+  ]
+}

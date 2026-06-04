@@ -22,6 +22,11 @@ export const generatedCssTargets = [
 		output: 'public/css/project-dashboard.css',
 	},
 	{
+		name: 'Study page stylesheet',
+		source: 'src/styles/study-page.scss',
+		output: 'public/css/study-page.css',
+	},
+	{
 		name: 'Outcomes stylesheet',
 		source: 'src/styles/outcomes.scss',
 		output: 'public/css/outcomes.css',

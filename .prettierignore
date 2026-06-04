@@ -23,6 +23,7 @@ public/**/*.min.html
 public/assets/researchops/researchops-home.css
 public/css/projects.css
 public/css/project-dashboard.css
+public/css/study-page.css
 public/css/outcomes.css
 
 # Upstream vendor CSS we don't want to touch
