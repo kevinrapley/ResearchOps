@@ -7,6 +7,7 @@ import process from 'node:process';
 
 const DEFAULT_BUNDLE_ROOT = '.agent-operating-model/bundles/github';
 const MANIFEST_FILE = 'registry-manifest.yaml';
+const PROMPT_SPEC_FILE = 'prompt.spec.yaml';
 const GENERATED_PARTS = new Set([
 	'__pycache__',
 	'.pytest_cache',
@@ -100,7 +101,32 @@ async function collectManifestFiles(bundleRoot, currentDir = bundleRoot) {
 	return files.sort((left, right) => left.localeCompare(right));
 }
 
-function manifestHeader(existingManifest) {
+function parsePromptSpecVersion(promptSpec) {
+	const lines = promptSpec.split(/\r?\n/);
+	let insideBundleBlock = false;
+
+	for (const line of lines) {
+		if (/^bundle:\s*$/.test(line)) {
+			insideBundleBlock = true;
+			continue;
+		}
+
+		if (insideBundleBlock && /^\S/.test(line)) {
+			insideBundleBlock = false;
+		}
+
+		if (insideBundleBlock) {
+			const match = line.match(/^\s+version:\s*['"]?([^'"\s]+)['"]?\s*$/);
+			if (match) {
+				return match[1];
+			}
+		}
+	}
+
+	throw new Error(`Could not find bundle version in ${PROMPT_SPEC_FILE}`);
+}
+
+function manifestHeader(existingManifest, version) {
 	const lines = existingManifest.split(/\r?\n/);
 	const artifactsIndex = lines.findIndex((line) => line.trim() === 'artifacts:');
 
@@ -108,7 +134,16 @@ function manifestHeader(existingManifest) {
 		throw new Error(`Could not find artifacts: section in ${MANIFEST_FILE}`);
 	}
 
-	const header = lines.slice(0, artifactsIndex).join('\n').trimEnd();
+	const headerLines = lines.slice(0, artifactsIndex);
+	const versionIndex = headerLines.findIndex((line) => /^\s+version:\s*/.test(line));
+
+	if (versionIndex === -1) {
+		throw new Error(`Could not find bundle version header in ${MANIFEST_FILE}`);
+	}
+
+	headerLines[versionIndex] = `  version: ${version}`;
+
+	const header = headerLines.join('\n').trimEnd();
 	return header ? `${header}\n` : '';
 }
 
@@ -137,12 +172,19 @@ function renderManifest(header, artifacts) {
 async function updateManifest(options) {
 	const bundleRoot = path.resolve(process.cwd(), options.bundleRoot);
 	const manifestPath = path.join(bundleRoot, MANIFEST_FILE);
+	const promptSpecPath = path.join(bundleRoot, PROMPT_SPEC_FILE);
 
 	if (!(await fileExists(manifestPath))) {
 		throw new Error(`Manifest not found: ${normalise(path.relative(process.cwd(), manifestPath))}`);
 	}
 
+	if (!(await fileExists(promptSpecPath))) {
+		throw new Error(`Prompt spec not found: ${normalise(path.relative(process.cwd(), promptSpecPath))}`);
+	}
+
 	const existingManifest = await readFile(manifestPath, 'utf8');
+	const promptSpec = await readFile(promptSpecPath, 'utf8');
+	const version = parsePromptSpecVersion(promptSpec);
 	const files = await collectManifestFiles(bundleRoot);
 	const artifacts = [];
 
@@ -150,7 +192,7 @@ async function updateManifest(options) {
 		artifacts.push(await artifactFor(bundleRoot, relativePath));
 	}
 
-	const nextManifest = renderManifest(manifestHeader(existingManifest), artifacts);
+	const nextManifest = renderManifest(manifestHeader(existingManifest, version), artifacts);
 
 	if (nextManifest === existingManifest) {
 		console.log(`${MANIFEST_FILE} is already current.`);
