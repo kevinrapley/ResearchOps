@@ -1,60 +1,73 @@
+// prettier-ignore
 .study-page {
 	max-width: 1100px;
 }
 
+// prettier-ignore
 .study-action-bar {
 	justify-content: flex-end;
 	margin-bottom: 32px;
 }
 
+// prettier-ignore
 .study-hero {
 	border-top: 1px solid #b1b4b6;
 	padding-top: 24px;
 }
 
+// prettier-ignore
 .study-description {
 	max-width: 760px;
 }
 
+// prettier-ignore
 .study-description__actions {
 	margin-top: 16px;
 }
 
+// prettier-ignore
 .study-description-editor {
 	margin-top: 24px;
 }
 
+// prettier-ignore
 .study-key-information,
 .study-summary-list,
 .study-readiness-section {
 	max-width: 960px;
 }
 
+// prettier-ignore
 .study-section {
 	border-top: 1px solid #b1b4b6;
 	padding-top: 24px;
 }
 
+// prettier-ignore
 .study-readiness-task-list,
 .study-setup-task-list,
 .study-analysis-task-list {
 	margin-top: 16px;
 }
 
+// prettier-ignore
 .study-readiness-hint {
 	display: block;
 }
 
+// prettier-ignore
 .study-session-button.govuk-button--disabled,
 .study-session-button[aria-disabled="true"] {
 	pointer-events: none;
 }
 
+// prettier-ignore
 .govuk-task-list__item .govuk-tag {
 	max-width: 100%;
 	text-align: left;
 }
 
+// prettier-ignore
 @media (max-width: 699px) {
 	.study-hero {
 		padding-top: 16px;
