@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testContractImpactSweep id="github-diamond-test-contract-impact-sweep" version="1.0">
+<testContractImpactSweep id="github-diamond-test-contract-impact-sweep" version="2.9.5">
   <purpose>
     Require proactive test-contract review whenever repository work changes, replaces, migrates, refactors, relocates, regenerates or reshapes implementation contracts.
   </purpose>

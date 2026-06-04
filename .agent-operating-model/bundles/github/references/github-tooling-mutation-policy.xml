@@ -1,7 +1,7 @@
 <?xml version="2.9.3" encoding="UTF-8"?>
 <githubToolingMutationPolicy
 	xmlns="urn:researchops:agent-operating-model:github-tooling-mutation-policy"
-	version="1.0.0">
+	version="1.0.0" version="2.9.5">
 	<purpose>
 		Prevent agents from using full-file GitHub contents API replacement as the default for small repository edits.
 	</purpose>
