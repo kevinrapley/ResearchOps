@@ -4,7 +4,7 @@ import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 
 import { formatGeneratedCssTargets } from './format-generated-css.mjs';
-import { generatedCssTargets } from './generated-css-targets.mjs';
+import { generatedCssPaths, generatedCssTargets } from './generated-css-targets.mjs';
 
 function resolveSassExecutable() {
 	const executable = process.platform === 'win32' ? 'sass.cmd' : 'sass';
@@ -30,6 +30,33 @@ function resolveRequestedTargets(requestedOutputs) {
 	return targets;
 }
 
+function isFormatWorkflowCommitEnabled() {
+	if (process.env.GITHUB_ACTIONS !== 'true') return false;
+	if (process.env.GITHUB_WORKFLOW !== 'Format pull request') return false;
+	if (process.env.GITHUB_EVENT_NAME === 'pull_request_target') return true;
+	return process.env.GITHUB_EVENT_NAME === 'push' && process.env.GITHUB_REF_NAME !== 'main';
+}
+
+function commitGeneratedCssIfNeeded() {
+	if (!isFormatWorkflowCommitEnabled()) return;
+
+	const targetRef = process.env.GITHUB_HEAD_REF || process.env.PR_HEAD_REF || process.env.GITHUB_REF_NAME || '';
+	if (!targetRef) return;
+
+	try {
+		execFileSync('git', ['diff', '--quiet', '--', ...generatedCssPaths], { stdio: 'ignore' });
+		return;
+	} catch {
+		// git diff exits non-zero when generated CSS has changed.
+	}
+
+	execFileSync('git', ['config', 'user.name', 'github-actions[bot]'], { stdio: 'inherit' });
+	execFileSync('git', ['config', 'user.email', '41898282+github-actions[bot]@users.noreply.github.com'], { stdio: 'inherit' });
+	execFileSync('git', ['add', ...generatedCssPaths], { stdio: 'inherit' });
+	execFileSync('git', ['commit', '-m', 'chore: update generated CSS'], { stdio: 'inherit' });
+	execFileSync('git', ['push', 'origin', `HEAD:${targetRef}`], { stdio: 'inherit' });
+}
+
 export function buildGeneratedCss({ requestedOutputs = [] } = {}) {
 	const sassExecutable = resolveSassExecutable();
 	const targets = resolveRequestedTargets(requestedOutputs);
@@ -44,6 +71,7 @@ export function buildGeneratedCss({ requestedOutputs = [] } = {}) {
 	}
 
 	formatGeneratedCssTargets({ write: true, targets });
+	commitGeneratedCssIfNeeded();
 }
 
 function runCli() {
