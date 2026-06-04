@@ -1,0 +1,86 @@
+{
+  "schemaVersion": "researchops-agent-trace-summary/v1",
+  "traceType": "operational-audit",
+  "date": "2026-06-04",
+  "branch": "chore/test-contract-impact-sweep-learning",
+  "summary": "Recorded the post-PR #345 learning that migration and contract-bearing repository work requires a proactive test-contract impact sweep before PR readiness is claimed.",
+  "task": {
+    "request": "Update RECENT_LEARNINGS.md and the GitHub Diamond bundle so proactive test-contract impact sweeps are required for change, update and migration work without making the rule GOV.UK-specific.",
+    "scope": [
+      "Recent learning update",
+      "GitHub Diamond bundle update",
+      "Technology-agnostic test-contract impact sweep rule",
+      "Branch trace documentation"
+    ]
+  },
+  "selectedBundles": [
+    "github-diamond",
+    "researchops-developer-control",
+    "multi-functional-team"
+  ],
+  "skippedBundles": [
+    "govuk-design-system",
+    "cloudflare",
+    "openai-platform",
+    "mcp-agent-tooling",
+    "airtable-public-api",
+    "mural-public-api"
+  ],
+  "filesInspected": [
+    "README.md",
+    "AGENTS.md",
+    "RECENT_LEARNINGS.md",
+    ".agent-operating-model/orchestration.xml",
+    ".agent-operating-model/bundle-registry.json",
+    ".agent-operating-model/bundles/github/prompt.spec.yaml",
+    ".agent-operating-model/bundles/github/prompt.body.xml",
+    ".agent-operating-model/bundles/github/references/"
+  ],
+  "filesCreated": [
+    ".agent-operating-model/bundles/github/references/test-contract-impact-sweep.xml",
+    "docs/agent-audit/reasoning/2026/06/04/test-contract-impact-sweep-learning.md",
+    "docs/agent-audit/reasoning/2026/06/04/test-contract-impact-sweep-learning.json"
+  ],
+  "filesModified": [
+    "RECENT_LEARNINGS.md",
+    ".agent-operating-model/bundles/github/prompt.spec.yaml",
+    ".agent-operating-model/bundles/github/prompt.body.xml"
+  ],
+  "decisions": [
+    {
+      "decision": "Make the new rule technology-agnostic.",
+      "reason": "The failure mode applies to any contract-bearing change, not only GOV.UK migrations."
+    },
+    {
+      "decision": "Add a dedicated always-loaded GitHub Diamond reference file.",
+      "reason": "This keeps the sweep checklist explicit and reusable without overloading the main prompt body."
+    },
+    {
+      "decision": "Record the lesson in RECENT_LEARNINGS.md.",
+      "reason": "The repository uses this file as operational memory for repeatable agent failure modes."
+    },
+    {
+      "decision": "Use an approved chore branch after initially noticing an unapproved docs branch prefix.",
+      "reason": "The operating model permits chore/ branches for repository-affecting documentation and governance work."
+    }
+  ],
+  "validation": {
+    "connectorVerification": [
+      "Confirmed the branch starts from the PR #345 merge commit on main.",
+      "Confirmed the changed-file list is limited to governance, learning and trace files.",
+      "Confirmed RECENT_LEARNINGS.md contains the 2026-06-04 proactive test-contract impact sweep learning.",
+      "Confirmed GitHub Diamond prompt spec is version 2.9.5 and loads references/test-contract-impact-sweep.xml.",
+      "Confirmed GitHub Diamond prompt body includes mandatory sequence and required-output references to the sweep."
+    ],
+    "requiredChecks": [
+      "npm run agent:model:validate",
+      "npm run agent:bundles:validate",
+      "npm run agent:bundle-versions:validate",
+      "npm run trace:coverage",
+      "npm run validate"
+    ]
+  },
+  "residualRisk": [
+    "The PR should not be considered complete until normal checks pass on the branch head."
+  ]
+}
