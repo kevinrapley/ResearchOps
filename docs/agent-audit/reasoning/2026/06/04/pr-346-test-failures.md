@@ -51,6 +51,7 @@ The task affected repository governance tests and the GitHub Diamond bundle vali
 - Added local fallback modules for the GitHub bundle validation scripts so the offline full release gate can run where external `PyYAML` and `jsonschema` packages are unavailable.
 - Made eval-harness fixture commands portable when the environment provides `python3` but not `python`, and the Codex bundled `node` but not `npm`.
 - Refreshed `.agent-operating-model/bundles/github/registry-manifest.yaml` after the bundle source changes.
+- Addressed Codex PR review feedback by preserving schema-valued `additionalProperties` validation in the offline `jsonschema` fallback and adding a regression test for live release policy control values.
 
 ## Files changed
 
@@ -62,6 +63,7 @@ The task affected repository governance tests and the GitHub Diamond bundle vali
 - `.agent-operating-model/bundles/github/scripts/validate-bundle.py`
 - `.agent-operating-model/bundles/github/scripts/yaml.py`
 - `scripts/agent-operating-model/update-github-bundle-registry-manifest.mjs`
+- `scripts/agent-operating-model/tests/github-bundle-full-release-gate.test.mjs`
 - `docs/agent-audit/reasoning/2026/06/04/pr-346-test-failures.md`
 - `docs/agent-audit/reasoning/2026/06/04/pr-346-test-failures.json`
 
