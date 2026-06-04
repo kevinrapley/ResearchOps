@@ -39,6 +39,7 @@ assembly:
   - references/archetype-control-profiles.xml
   - references/github-tooling-mutation-policy.xml
   - references/github-best-practices.xml
+  - references/test-contract-impact-sweep.xml
   mode_modules:
   - modes/repo-discovery.xml
   - modes/repo-instantiate.xml
@@ -119,3 +120,4 @@ evaluation_flow:
   blocking_labels:
   - fail_revise
   - fail_escalate
+  - fail_refuse
