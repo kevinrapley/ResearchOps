@@ -708,6 +708,6 @@ artifacts:
 - path: tests.regression.yaml
   sha256: 45350ecffeb5040f7cb61301fc99d6a23436d934280fc48bb7c3f47d8263d6a1
 - path: VALIDATION-REPORT.md
-  sha256: e4daa71b60bdaf7b1e9b29526a12115ad4df588df6a66bc9d528856cb749c46e
+  sha256: 457ef107b70bbc0709420d9cfb7a33322da76af83e8a0d1281ab982024c4057d
 - path: variables.schema.json
   sha256: 98e5a233501da227f3209b48e8729ac9a3b2a45d6de0c471251d1148e7ce0593
