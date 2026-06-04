@@ -1,7 +1,5 @@
 // ResearchOps-owned stylesheets generated from Sass sources.
 // Vendor, minified and legacy static CSS files stay outside this manifest.
-const publicCss = 'public' + '/css';
-
 export const generatedCssTargets = [
 	{
 		name: 'ResearchOps home preview compatibility stylesheet',
@@ -16,22 +14,22 @@ export const generatedCssTargets = [
 	{
 		name: 'Projects stylesheet',
 		source: 'src/styles/projects.scss',
-		output: `${publicCss}/projects.css`,
+		output: 'public/css/projects.css',
 	},
 	{
 		name: 'Project dashboard stylesheet',
 		source: 'src/styles/project-dashboard.scss',
-		output: `${publicCss}/project-dashboard.css`,
+		output: 'public/css/project-dashboard.css',
 	},
 	{
 		name: 'Study page stylesheet',
 		source: 'src/styles/study-page.scss',
-		output: `${publicCss}/study-page.css`,
+		output: 'public/css/study-page.css',
 	},
 	{
 		name: 'Outcomes stylesheet',
 		source: 'src/styles/outcomes.scss',
-		output: `${publicCss}/outcomes.css`,
+		output: 'public/css/outcomes.css',
 	},
 ];
 
