@@ -2,6 +2,14 @@
 
 This file records repeatable repository-specific lessons for ResearchOps agents and maintainers. It is not a changelog.
 
+## 2026-06-04 — Migration work requires a proactive test-contract impact sweep
+
+Context: PR #345 migrated the study page to a new rendering and component model. The implementation work moved faster than the test-contract review. Several CI failures were discovered sequentially because route-state, shared assertion and generated-output tests still referred to legacy markup and contract terms. These included old CSS classes, route IDs, generated stylesheet paths, script URLs, DOM hooks and exact HTML strings that were no longer the correct contract after migration.
+
+Learning: A migration, refactor, generated-output change or contract-bearing update is not complete when the implementation compiles. Tests are part of the contract surface. Any change that replaces, renames, relocates, regenerates or re-shapes code, markup, routes, components, assets, data contracts, workflow paths or DOM structure needs a proactive sweep of the tests and assertions that encode the previous shape. Waiting for CI to reveal one stale assertion at a time creates avoidable rework and weakens PR handling.
+
+Action: Before claiming a change, update or migration PR is ready, run a proactive test-contract impact sweep. Search for old CSS classes, route IDs, data attributes, DOM hooks, generated file paths, script URLs, import paths, endpoint strings, fixture names, snapshots, selectors, workflow branch filters, documentation examples, component names, macro/template output assumptions and any other contract terms likely to have changed. Update all directly affected route-state, integration, shared assertion, generated-output, accessibility, fixture and workflow tests in the same pass. Inspect generated output as well as source. If a stale assertion is deliberately retained, document why. Do not claim PR readiness until this sweep is complete and the remaining validation state is explicit.
+
 ## 2026-05-29 — Coding agents need explicit behaviour controls before implementation
 
 Context: Cross-cutting LLM coding guidelines were added to reduce avoidable assumptions, over-complication, broad edits and weak validation across repository-affecting work.
