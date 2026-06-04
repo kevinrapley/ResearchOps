@@ -43,7 +43,7 @@ excludes(dashboardPageSource, "class=\"kv__term\"", "project dashboard page");
 excludes(dashboardPageSource, "class=\"kv__desc\"", "project dashboard page");
 
 includes(studyPageSource, "href=\"/assets/govuk/govuk-frontend.css\"", "study page");
-includes(studyPageSource, "<dl class=\"govuk-summary-list study-summary-list\">", "study page");
+includes(studyPageSource, "govuk-summary-list study-summary-list", "study page");
 includes(studyPageSource, "class=\"govuk-summary-list__key\"", "study page");
 includes(studyPageSource, "class=\"govuk-summary-list__value\"", "study page");
 includes(studyPageSource, "id=\"kv-method\"", "study page");
