@@ -412,7 +412,7 @@ artifacts:
 - path: prompt.spec.yaml
   sha256: 10447c8545bcf0dfa1dc0a06faa88030d674ad5a93382c4972265338c6397035
 - path: README.md
-  sha256: 6bbbb385cecd42b6c0f4ef3151f1dc844d9dc7cd5b7a3b6c71005656b114fe2a
+  sha256: a30efa18849e90c1af98ed29cbbdf7fe8bddcf0e428ecd0a89cc6bbd58b01673
 - path: references/accessibility-confidence-pack.xml
   sha256: 2fc68d05f251363527d279b7cd75bd3608c13d7e5848b94790d182b480ec6421
 - path: references/agent-evidence.xml
