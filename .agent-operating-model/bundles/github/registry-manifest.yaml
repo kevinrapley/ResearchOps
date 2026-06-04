@@ -6,7 +6,7 @@ artifacts:
 - path: .gitignore
   sha256: 05a152f1b5f03bbe0cab0df43a62733cab3f88a7cb1298da261c30b8b215a9e0
 - path: CHANGELOG.md
-  sha256: d32e3bae61f700b456a3f0a329025fb6081888a83a74654208c48cd9b1df7c3b
+  sha256: 09a3d4936e5b08686753b3fa6d3f6f2e3fb1c9154cbe54cd5f9637c953bc4ed4
 - path: contracts/accessibility-evidence.schema.json
   sha256: 6dcfd29a11ce04bb610a9aae7cdd1194c6c4ef190bf61be0b10da3148bc01c08
 - path: contracts/agent-evidence.schema.json
