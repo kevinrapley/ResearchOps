@@ -11,6 +11,7 @@ const workerSource = fs.readFileSync("infra/cloudflare/src/worker.js", "utf8");
 const serviceSource = fs.readFileSync("infra/cloudflare/src/service/consent-forms.js", "utf8");
 const serviceIndexSource = fs.readFileSync("infra/cloudflare/src/service/index.js", "utf8");
 const fieldsSource = fs.readFileSync("infra/cloudflare/src/core/fields.js", "utf8");
+const d1MigrationSource = fs.readFileSync("infra/cloudflare/migrations/0011_consent_forms_d1.sql", "utf8");
 
 function includes(source, text, label) {
 	assert.equal(source.includes(text), true, `Expected ${label} to include: ${text}`);
@@ -80,6 +81,12 @@ includes(workerSource, "service.publishConsentForm", "worker");
 includes(serviceSource, "export async function listConsentForms", "service");
 includes(serviceSource, "export async function createConsentForm", "service");
 includes(serviceSource, "export async function publishConsentForm", "service");
+includes(serviceSource, "rops_consent_forms", "service");
+includes(serviceSource, "listConsentFormsFromD1", "service");
+includes(serviceSource, "createConsentFormInD1", "service");
+includes(serviceSource, "mergeConsentForms", "service");
+includes(serviceSource, "d1+airtable", "service");
+includes(serviceSource, "source: \"d1\"", "service");
 includes(serviceSource, "AIRTABLE_TABLE_CONSENT_FORMS", "service");
 includes(serviceSource, "CONSENT_FORM_LINK_FIELD_CANDIDATES", "service");
 includes(serviceSource, "CONSENT_FORM_FIELD_NAMES", "service");
@@ -91,3 +98,7 @@ includes(serviceIndexSource, "publishConsentForm", "service index");
 includes(fieldsSource, "CONSENT_FORM_LINK_FIELD_CANDIDATES", "fields");
 includes(fieldsSource, "CONSENT_FORM_FIELD_NAMES", "fields");
 includes(fieldsSource, "Consent Items (JSON)", "fields");
+
+includes(d1MigrationSource, "CREATE TABLE IF NOT EXISTS rops_consent_forms", "D1 consent forms migration");
+includes(d1MigrationSource, "study_id TEXT NOT NULL", "D1 consent forms migration");
+includes(d1MigrationSource, "idx_rops_consent_forms_study", "D1 consent forms migration");

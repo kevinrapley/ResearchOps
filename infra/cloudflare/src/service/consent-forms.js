@@ -25,6 +25,33 @@ import {
 } from "../core/fields.js";
 import { airtableTryWrite } from "../core/utils.js";
 import { getRecord } from "./internals/airtable.js";
+import { d1All, d1Get, d1Run } from "./internals/researchops-d1.js";
+
+const CONSENT_FORMS_TABLE = "rops_consent_forms";
+
+const CONSENT_FORMS_SQL = `
+	CREATE TABLE IF NOT EXISTS ${CONSENT_FORMS_TABLE} (
+		id TEXT PRIMARY KEY,
+		study_id TEXT NOT NULL,
+		title TEXT NOT NULL,
+		form_type TEXT NOT NULL,
+		status TEXT NOT NULL,
+		version INTEGER NOT NULL DEFAULT 1,
+		source_markdown TEXT NOT NULL,
+		variables_json TEXT NOT NULL DEFAULT '{}',
+		consent_items_json TEXT NOT NULL DEFAULT '[]',
+		plain_english_summary TEXT,
+		accessibility_notes TEXT,
+		review_notes TEXT,
+		owner TEXT,
+		published_at TEXT,
+		created_at TEXT NOT NULL,
+		updated_at TEXT NOT NULL,
+		active INTEGER NOT NULL DEFAULT 1,
+		source TEXT NOT NULL DEFAULT 'd1',
+		payload_json TEXT
+	)
+`;
 
 const DEFAULT_CONSENT_ITEMS = [
 	{
@@ -92,6 +119,190 @@ You can ask for your contribution to be withdrawn up to {{withdrawalPeriod}}, wh
 If you have questions, contact {{researcherName}} at {{researcherEmail}}.
 `;
 
+function hasD1(svc) {
+	return Boolean(svc?.env?.RESEARCHOPS_D1?.prepare);
+}
+
+function nowIso() {
+	return new Date().toISOString();
+}
+
+function randomHex(length = 10) {
+	const fallback = Math.random().toString(16).replace("0.", "").padEnd(length, "0");
+	if (typeof crypto === "undefined" || !crypto.getRandomValues) return fallback.slice(0, length);
+	const bytes = new Uint8Array(Math.ceil(length / 2));
+	crypto.getRandomValues(bytes);
+	return Array.from(bytes, byte => byte.toString(16).padStart(2, "0")).join("").slice(0, length);
+}
+
+function consentFormId() {
+	if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+		return `cf_${crypto.randomUUID()}`;
+	}
+	return `cf_${Date.now().toString(36)}_${randomHex(8)}`;
+}
+
+function safeJsonString(value, fallback) {
+	if (value === undefined || value === null || value === "") return JSON.stringify(fallback);
+	if (typeof value === "string") {
+		try {
+			JSON.parse(value);
+			return value;
+		} catch {
+			return JSON.stringify(fallback);
+		}
+	}
+	return JSON.stringify(value);
+}
+
+async function ensureConsentFormsTable(svc) {
+	if (!hasD1(svc)) throw new Error("RESEARCHOPS_D1 binding not available");
+	await d1Run(svc.env, CONSENT_FORMS_SQL);
+	await d1Run(svc.env, `CREATE INDEX IF NOT EXISTS idx_rops_consent_forms_study ON ${CONSENT_FORMS_TABLE} (study_id, active, updated_at)`);
+	await d1Run(svc.env, `CREATE INDEX IF NOT EXISTS idx_rops_consent_forms_status ON ${CONSENT_FORMS_TABLE} (status, active)`);
+}
+
+function rowToConsentForm(row) {
+	if (!row) return null;
+	return {
+		id: row.id,
+		title: row.title || "Untitled consent form",
+		formType: row.form_type || "Consent form",
+		status: row.status || "Draft",
+		version: Number.parseInt(row.version, 10) || 1,
+		sourceMarkdown: row.source_markdown || "",
+		variables: parseJsonField(row.variables_json, {}),
+		consentItems: parseJsonField(row.consent_items_json, []),
+		plainEnglishSummary: row.plain_english_summary || "",
+		accessibilityNotes: row.accessibility_notes || "",
+		reviewNotes: row.review_notes || "",
+		owner: row.owner || "",
+		publishedAt: row.published_at || "",
+		createdAt: row.created_at || "",
+		updatedAt: row.updated_at || ""
+	};
+}
+
+function d1Payload(payload, existing = {}) {
+	return {
+		title: String(payload.title ?? existing.title ?? "Participant information and consent form").trim() || "Participant information and consent form",
+		formType: normaliseFormType(payload.formType ?? existing.form_type ?? "Consent form"),
+		status: normaliseStatus(payload.status ?? existing.status ?? "Draft"),
+		version: Number.isFinite(payload.version) ? payload.version : (Number.parseInt(existing.version, 10) || 1),
+		sourceMarkdown: typeof payload.sourceMarkdown === "string" ? payload.sourceMarkdown : (existing.source_markdown || DEFAULT_SOURCE_MARKDOWN),
+		variablesJson: safeJsonString(payload.variables, existing.variables_json ? parseJsonField(existing.variables_json, {}) : DEFAULT_VARIABLES),
+		consentItemsJson: safeJsonString(payload.consentItems, existing.consent_items_json ? parseJsonField(existing.consent_items_json, []) : DEFAULT_CONSENT_ITEMS),
+		plainEnglishSummary: typeof payload.plainEnglishSummary === "string" ? payload.plainEnglishSummary : (existing.plain_english_summary || ""),
+		accessibilityNotes: typeof payload.accessibilityNotes === "string" ? payload.accessibilityNotes : (existing.accessibility_notes || ""),
+		reviewNotes: typeof payload.reviewNotes === "string" ? payload.reviewNotes : (existing.review_notes || ""),
+		owner: typeof payload.owner === "string" ? payload.owner : (existing.owner || ""),
+		publishedAt: payload.publishedAt || existing.published_at || ""
+	};
+}
+
+async function listConsentFormsFromD1(svc, studyId) {
+	await ensureConsentFormsTable(svc);
+	const rows = await d1All(svc.env, `
+		SELECT *
+		FROM ${CONSENT_FORMS_TABLE}
+		WHERE study_id = ? AND active = 1
+		ORDER BY datetime(created_at) DESC, datetime(updated_at) DESC
+	`, [studyId]);
+	return rows.map(rowToConsentForm).filter(Boolean);
+}
+
+async function readConsentFormFromD1(svc, formId) {
+	await ensureConsentFormsTable(svc);
+	const row = await d1Get(svc.env, `
+		SELECT *
+		FROM ${CONSENT_FORMS_TABLE}
+		WHERE id = ? AND active = 1
+		LIMIT 1
+	`, [formId]);
+	return rowToConsentForm(row);
+}
+
+async function createConsentFormInD1(svc, payload) {
+	await ensureConsentFormsTable(svc);
+	const studyId = payload.study_airtable_id || payload.studyId;
+	const id = consentFormId();
+	const createdAt = nowIso();
+	const fields = d1Payload(payload);
+	await d1Run(svc.env, `
+		INSERT INTO ${CONSENT_FORMS_TABLE} (
+			id, study_id, title, form_type, status, version, source_markdown, variables_json,
+			consent_items_json, plain_english_summary, accessibility_notes, review_notes, owner,
+			published_at, created_at, updated_at, active, source, payload_json
+		) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, 'd1', ?)
+	`, [
+		id,
+		studyId,
+		fields.title,
+		fields.formType,
+		fields.status,
+		fields.version,
+		fields.sourceMarkdown,
+		fields.variablesJson,
+		fields.consentItemsJson,
+		fields.plainEnglishSummary,
+		fields.accessibilityNotes,
+		fields.reviewNotes,
+		fields.owner,
+		fields.publishedAt,
+		createdAt,
+		createdAt,
+		JSON.stringify({ ...payload, id, studyId })
+	]);
+	return readConsentFormFromD1(svc, id);
+}
+
+async function updateConsentFormInD1(svc, formId, payload) {
+	await ensureConsentFormsTable(svc);
+	const existing = await d1Get(svc.env, `SELECT * FROM ${CONSENT_FORMS_TABLE} WHERE id = ? AND active = 1 LIMIT 1`, [formId]);
+	if (!existing) return null;
+	const fields = d1Payload(payload, existing);
+	const updatedAt = nowIso();
+	await d1Run(svc.env, `
+		UPDATE ${CONSENT_FORMS_TABLE}
+		SET title = ?, form_type = ?, status = ?, version = ?, source_markdown = ?,
+			variables_json = ?, consent_items_json = ?, plain_english_summary = ?,
+			accessibility_notes = ?, review_notes = ?, owner = ?, published_at = ?,
+			updated_at = ?, payload_json = ?
+		WHERE id = ? AND active = 1
+	`, [
+		fields.title,
+		fields.formType,
+		fields.status,
+		fields.version,
+		fields.sourceMarkdown,
+		fields.variablesJson,
+		fields.consentItemsJson,
+		fields.plainEnglishSummary,
+		fields.accessibilityNotes,
+		fields.reviewNotes,
+		fields.owner,
+		fields.publishedAt,
+		updatedAt,
+		JSON.stringify({ ...parseJsonField(existing.payload_json, {}), ...payload, id: formId, studyId: existing.study_id }),
+		formId
+	]);
+	return readConsentFormFromD1(svc, formId);
+}
+
+async function publishConsentFormInD1(svc, formId) {
+	await ensureConsentFormsTable(svc);
+	const existing = await d1Get(svc.env, `SELECT * FROM ${CONSENT_FORMS_TABLE} WHERE id = ? AND active = 1 LIMIT 1`, [formId]);
+	if (!existing) return null;
+	const publishedAt = nowIso();
+	const version = (Number.parseInt(existing.version, 10) || 0) + 1;
+	await d1Run(svc.env, `
+		UPDATE ${CONSENT_FORMS_TABLE}
+		SET status = 'Published', version = ?, published_at = ?, updated_at = ?
+		WHERE id = ? AND active = 1
+	`, [version, publishedAt, publishedAt, formId]);
+	return readConsentFormFromD1(svc, formId);
+}
+
 function consentFormsTable(svc) {
 	return encodeURIComponent(svc.env.AIRTABLE_TABLE_CONSENT_FORMS || "Consent Forms");
 }
@@ -102,6 +313,10 @@ function airtableBase(svc) {
 
 function airtableKey(svc) {
 	return svc.env.AIRTABLE_API_KEY || svc.env.AIRTABLE_PAT || svc.env.AIRTABLE_ACCESS_TOKEN;
+}
+
+function airtableConfigured(svc) {
+	return Boolean(airtableBase(svc) && airtableKey(svc));
 }
 
 function atBaseUrl(svc) {
@@ -234,9 +449,32 @@ async function getAllRecords(svc) {
 	return records;
 }
 
+function mergeConsentForms(...groups) {
+	const byId = new Map();
+	for (const form of groups.flat()) {
+		if (!form?.id || byId.has(form.id)) continue;
+		byId.set(form.id, form);
+	}
+	return Array.from(byId.values()).sort((a, b) => toMs(b.createdAt) - toMs(a.createdAt));
+}
+
 export async function listConsentForms(svc, origin, url) {
 	const studyId = url.searchParams.get("study");
 	if (!studyId) return svc.json({ ok: false, error: "Missing study query" }, 400, svc.corsHeaders(origin));
+
+	let d1Forms = null;
+	let d1Error = null;
+	if (hasD1(svc)) {
+		try {
+			d1Forms = await listConsentFormsFromD1(svc, studyId);
+			if (!airtableConfigured(svc)) {
+				return svc.json({ ok: true, consentForms: d1Forms, source: "d1" }, 200, svc.corsHeaders(origin));
+			}
+		} catch (error) {
+			d1Error = error;
+			svc.log.warn("d1.consent_forms.list.fail", { detail: String(error?.message || error) });
+		}
+	}
 
 	try {
 		const records = await getAllRecords(svc);
@@ -244,14 +482,23 @@ export async function listConsentForms(svc, origin, url) {
 		for (const record of records) {
 			const f = record.fields || {};
 			const linkKey = pickFirstField(f, CONSENT_FORM_LINK_FIELD_CANDIDATES);
-			const links = linkKey ? f[linkKey] : undefined;
-			if (Array.isArray(links) && links.includes(studyId)) forms.push(recordToConsentForm(record));
-		}
-		forms.sort((a, b) => toMs(b.createdAt) - toMs(a.createdAt));
-		return svc.json({ ok: true, consentForms: forms }, 200, svc.corsHeaders(origin));
+				const links = linkKey ? f[linkKey] : undefined;
+				if (Array.isArray(links) && links.includes(studyId)) forms.push(recordToConsentForm(record));
+			}
+			const consentForms = mergeConsentForms(d1Forms || [], forms);
+			const source = d1Forms?.length && forms.length ? "d1+airtable" : d1Forms?.length ? "d1" : "airtable";
+			return svc.json({ ok: true, consentForms, source }, 200, svc.corsHeaders(origin));
 	} catch (err) {
+		if (d1Forms) {
+			return svc.json({
+				ok: true,
+				consentForms: d1Forms,
+				source: "d1",
+				warning: err.message || "Airtable error"
+			}, 200, svc.corsHeaders(origin));
+		}
 		svc.log.error("airtable.consent_forms.list.fail", { status: err.status, detail: err.detail || err.message });
-		return svc.json({ ok: false, error: err.message || "Airtable error", detail: err.detail }, err.status || 500, svc.corsHeaders(origin));
+		return svc.json({ ok: false, error: err.message || "Airtable error", detail: err.detail, d1: d1Error ? String(d1Error?.message || d1Error) : undefined }, err.status || 500, svc.corsHeaders(origin));
 	}
 }
 
@@ -265,6 +512,16 @@ export async function createConsentForm(svc, request, origin) {
 	}
 
 	const studyId = payload.study_airtable_id || payload.studyId;
+
+	if (hasD1(svc)) {
+		try {
+			const consentForm = await createConsentFormInD1(svc, payload);
+			return svc.json({ ok: true, id: consentForm.id, consentForm, source: "d1" }, 200, svc.corsHeaders(origin));
+		} catch (error) {
+			svc.log.warn("d1.consent_forms.create.fail", { detail: String(error?.message || error) });
+		}
+	}
+
 	const atUrl = atBaseUrl(svc);
 	const fieldsTemplate = fieldsFromPayload(payload, { includeDefaults: true });
 	let lastDetail = "";
@@ -301,6 +558,15 @@ export async function createConsentForm(svc, request, origin) {
 
 export async function readConsentForm(svc, origin, formId) {
 	if (!formId) return svc.json({ ok: false, error: "Missing consent form id" }, 400, svc.corsHeaders(origin));
+	if (hasD1(svc)) {
+		try {
+			const consentForm = await readConsentFormFromD1(svc, formId);
+			if (consentForm) return svc.json({ ok: true, consentForm, source: "d1" }, 200, svc.corsHeaders(origin));
+			if (!airtableConfigured(svc)) return svc.json({ ok: false, error: "consent_form_not_found" }, 404, svc.corsHeaders(origin));
+		} catch (error) {
+			svc.log.warn("d1.consent_forms.read.fail", { detail: String(error?.message || error) });
+		}
+	}
 	try {
 		const record = await getRecord(svc.env, svc.env.AIRTABLE_TABLE_CONSENT_FORMS || "Consent Forms", formId);
 		return svc.json({ ok: true, consentForm: recordToConsentForm(record) }, 200, svc.corsHeaders(origin));
@@ -320,6 +586,16 @@ export async function updateConsentForm(svc, request, origin, formId) {
 	const fields = fieldsFromPayload(payload);
 	if (!Object.keys(fields).length) return svc.json({ ok: false, error: "No updatable fields provided" }, 400, svc.corsHeaders(origin));
 
+	if (hasD1(svc)) {
+		try {
+			const consentForm = await updateConsentFormInD1(svc, formId, payload);
+			if (consentForm) return svc.json({ ok: true, consentForm, source: "d1" }, 200, svc.corsHeaders(origin));
+			if (!airtableConfigured(svc)) return svc.json({ ok: false, error: "consent_form_not_found" }, 404, svc.corsHeaders(origin));
+		} catch (error) {
+			svc.log.warn("d1.consent_forms.update.fail", { detail: String(error?.message || error) });
+		}
+	}
+
 	const resp = await fetchWithTimeout(atBaseUrl(svc), {
 		method: "PATCH",
 		headers: { ...atHeaders(svc), "Content-Type": "application/json" },
@@ -332,6 +608,16 @@ export async function updateConsentForm(svc, request, origin, formId) {
 
 export async function publishConsentForm(svc, origin, formId) {
 	if (!formId) return svc.json({ ok: false, error: "Missing consent form id" }, 400, svc.corsHeaders(origin));
+
+	if (hasD1(svc)) {
+		try {
+			const consentForm = await publishConsentFormInD1(svc, formId);
+			if (consentForm) return svc.json({ ok: true, version: consentForm.version, status: consentForm.status, consentForm, source: "d1" }, 200, svc.corsHeaders(origin));
+			if (!airtableConfigured(svc)) return svc.json({ ok: false, error: "consent_form_not_found" }, 404, svc.corsHeaders(origin));
+		} catch (error) {
+			svc.log.warn("d1.consent_forms.publish.fail", { detail: String(error?.message || error) });
+		}
+	}
 
 	let currentVersion = 0;
 	try {
