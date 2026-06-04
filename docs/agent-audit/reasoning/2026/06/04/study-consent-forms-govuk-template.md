@@ -48,6 +48,12 @@ Updated project-dashboard Study links and Study child links so the canonical Stu
 
 Updated consent form loading so a failure to list saved consent forms no longer blocks the page. The editor opens a new draft and shows a status message that saved forms could not be loaded.
 
+## CI Follow-Up
+
+After PR checks reported failures, reproduced the GOV.UK render workflow locally with the locked renderer dependencies. The Nunjucks environment uses strict undefined handling, and the GOV.UK textarea macro expects `value` to be present. Added explicit empty textarea values, moved notification banner `role` and details `open` state onto the documented macro options, and regenerated `public/pages/study/consent-forms/index.html` from the Nunjucks template.
+
+Updated the breadcrumb/back-link route-state assertion to tolerate renderer whitespace while still checking the `back-to-study` control and text contract.
+
 ## Test-Contract Sweep
 
 Updated route-state tests covering:
@@ -62,13 +68,14 @@ Updated route-state tests covering:
 
 Passed:
 
+- `node --input-type=module` importing `renderAllGovukPages()` from `scripts/govuk/render-govuk-pages.mjs`
 - `node --test tests/consent-forms-route-state.test.js tests/study-child-route-state.test.js tests/studies-route-contract.test.js tests/govuk-forms-application-route-state.test.js tests/govuk-page-chrome-navigation-route-state.test.js tests/govuk-breadcrumb-back-link-route-state.test.js`
 - `node --test` with 175 passing tests
 
 Not run:
 
-- `npm run build:govuk-pages`, because this desktop runtime has no `npm` executable. The committed HTML was aligned manually to the Nunjucks template and validated with the bundled Node executable.
+- `npm run build:govuk-pages`, because this desktop runtime has no `npm` executable. The canonical renderer was run directly with the bundled Node executable after installing the locked renderer packages locally.
 
 ## Residual Risk
 
-CI should provide the build-level Nunjucks rendering confirmation once dependencies are installed.
+CI should provide the workflow-level confirmation with `npm ci`; the canonical renderer now passes locally.

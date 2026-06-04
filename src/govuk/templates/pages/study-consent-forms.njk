@@ -45,9 +45,9 @@
 	}) }}
 
 	{{ govukNotificationBanner({
+		role: "alert",
 		attributes: {
 			id: "consent-error",
-			role: "alert",
 			tabindex: "-1",
 			hidden: "hidden",
 			"aria-hidden": "true"
@@ -142,6 +142,7 @@
 						id: "consent-source",
 						name: "sourceMarkdown",
 						classes: "consent-source",
+						value: "",
 						rows: 22,
 						label: {
 							text: "Source Markdown"
@@ -159,9 +160,7 @@
 
 				{{ govukDetails({
 					classes: "consent-details",
-					attributes: {
-						open: "open"
-					},
+					open: true,
 					summaryText: "Variables and consent statements",
 					html: '<div class="consent-editor-split consent-editor-split--metadata"><div class="govuk-form-group"><label class="govuk-label" for="consent-variables">Variables JSON</label><textarea id="consent-variables" name="variables" class="govuk-textarea" rows="12" spellcheck="false" aria-describedby="consent-variables-error"></textarea><p id="consent-variables-error" class="govuk-error-message" hidden></p></div><div class="govuk-form-group"><label class="govuk-label" for="consent-items">Consent Items JSON</label><textarea id="consent-items" name="consentItems" class="govuk-textarea" rows="12" spellcheck="false" aria-describedby="consent-items-error"></textarea><p id="consent-items-error" class="govuk-error-message" hidden></p></div></div>'
 				}) }}
@@ -170,6 +169,7 @@
 					{{ govukTextarea({
 						id: "consent-summary",
 						name: "plainEnglishSummary",
+						value: "",
 						rows: 4,
 						label: {
 							text: "Plain English summary"
@@ -179,6 +179,7 @@
 					{{ govukTextarea({
 						id: "consent-accessibility-notes",
 						name: "accessibilityNotes",
+						value: "",
 						rows: 4,
 						label: {
 							text: "Accessibility notes"
@@ -188,6 +189,7 @@
 					{{ govukTextarea({
 						id: "consent-review-notes",
 						name: "reviewNotes",
+						value: "",
 						rows: 4,
 						label: {
 							text: "Review notes"

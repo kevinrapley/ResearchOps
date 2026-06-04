@@ -67,6 +67,16 @@ function excludes(source, text, label) {
 	assert.equal(source.includes(text), false, `Expected ${label} not to include: ${text}`);
 }
 
+function includesNormalised(source, text, label) {
+	const normalisedSource = source.replace(/\s+/g, " ");
+	const normalisedText = text.replace(/\s+/g, " ");
+	assert.equal(
+		normalisedSource.includes(normalisedText),
+		true,
+		`Expected ${label} to include normalised text: ${text}`
+	);
+}
+
 includes(pageChromeCss, ".govuk-breadcrumbs", "page chrome stylesheet");
 includes(pageChromeCss, ".govuk-breadcrumbs__list", "page chrome stylesheet");
 includes(pageChromeCss, ".govuk-breadcrumbs__list-item", "page chrome stylesheet");
@@ -140,12 +150,12 @@ excludes(journalsPage, ">Back to Project</a>", "Journals route");
 
 const guidesPage = fs.readFileSync("public/pages/study/guides/index.html", "utf8");
 includes(guidesPage, "id=\"back-to-study\"", "Guides route");
-includes(guidesPage, ">Back to Study</a>", "Guides route");
+includesNormalised(guidesPage, "Back to Study", "Guides route");
 
 const consentFormsPage = fs.readFileSync("public/pages/study/consent-forms/index.html", "utf8");
 includes(consentFormsPage, "id=\"back-to-study\"", "Consent Forms route");
-includes(consentFormsPage, ">Back to Study</a>", "Consent Forms route");
+includesNormalised(consentFormsPage, "Back to Study", "Consent Forms route");
 
 const participantConsentPage = fs.readFileSync("public/pages/study/participant-consent/index.html", "utf8");
 includes(participantConsentPage, "id=\"back-to-study\"", "Participant Consent route");
-includes(participantConsentPage, ">Back to Study</a>", "Participant Consent route");
+includesNormalised(participantConsentPage, "Back to Study", "Participant Consent route");

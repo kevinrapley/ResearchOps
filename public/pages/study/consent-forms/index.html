@@ -1,156 +1,251 @@
 <!doctype html>
 <html class="govuk-template" lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>Consent forms - ResearchOps Demo Suite</title>
+		<link rel="stylesheet" href="/assets/govuk/govuk-frontend.css" media="screen" />
 
-<head>
-	<meta charset="utf-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<title>Consent forms - ResearchOps Demo Suite</title>
-	<link rel="stylesheet" href="/assets/govuk/govuk-frontend.css" media="screen">
-	<link rel="stylesheet" href="/css/govuk/govuk-forms.css" media="screen">
-	<link rel="stylesheet" href="/css/consent-forms.css" media="screen">
-	<link rel="modulepreload" href="/js/study-route-context.js">
-	<link rel="modulepreload" href="/js/consent-forms-route-loader.js?v=study-record-id-routing-20260518">
-	<script type="module" src="/components/layout.js" defer></script>
-	<script type="module" src="/js/govuk-frontend-init.js" defer></script>
-</head>
+		<link rel="stylesheet" href="/css/govuk/govuk-forms.css" media="screen" />
+		<link rel="stylesheet" href="/css/consent-forms.css" media="screen" />
+		<link rel="modulepreload" href="/js/study-route-context.js" />
+		<link rel="modulepreload" href="/js/consent-forms-route-loader.js?v=study-record-id-routing-20260518" />
 
-<body class="govuk-template__body">
-	<script>document.body.className += ' js-enabled' + ('noModule' in HTMLScriptElement.prototype ? ' govuk-frontend-supported' : '');</script>
-	<x-include src="/partials/header.html" vars='{"active":"Projects"}'></x-include>
-	<main class="govuk-main-wrapper" id="main-content" role="main" tabindex="-1">
-		<div class="govuk-width-container consent-forms-page">
-			<nav class="govuk-breadcrumbs" aria-label="Breadcrumb">
-				<ol class="govuk-breadcrumbs__list">
-					<li class="govuk-breadcrumbs__list-item"><a class="govuk-breadcrumbs__link" href="/pages/projects/">Projects</a></li>
-					<li class="govuk-breadcrumbs__list-item"><a class="govuk-breadcrumbs__link" href="#" id="breadcrumb-project">Project</a></li>
-					<li class="govuk-breadcrumbs__list-item"><a class="govuk-breadcrumbs__link" href="#" id="breadcrumb-study">Study</a></li>
-					<li class="govuk-breadcrumbs__list-item" aria-current="page">Consent forms</li>
-				</ol>
-			</nav>
+		<script type="module" src="/components/layout.js" defer></script>
+		<script type="module" src="/js/govuk-frontend-init.js" defer></script>
+	</head>
+	<body class="govuk-template__body">
+		<script>
+			document.body.className +=
+				" js-enabled" + ("noModule" in HTMLScriptElement.prototype ? " govuk-frontend-supported" : "");
+		</script>
+		<x-include src="/partials/header.html" vars='{"active":"Projects"}'></x-include>
+		<main class="govuk-main-wrapper" id="main-content" role="main" tabindex="-1">
+			<div class="govuk-width-container consent-forms-page">
+				<nav class="govuk-breadcrumbs" aria-label="Breadcrumb">
+					<ol class="govuk-breadcrumbs__list">
+						<li class="govuk-breadcrumbs__list-item">
+							<a class="govuk-breadcrumbs__link" href="/pages/projects/">Projects</a>
+						</li>
 
-			<section id="consent-error" class="govuk-notification-banner" role="alert" aria-labelledby="govuk-notification-banner-title" data-module="govuk-notification-banner" tabindex="-1" hidden aria-hidden="true">
-				<div class="govuk-notification-banner__header">
-					<h2 class="govuk-notification-banner__title" id="govuk-notification-banner-title">There is a problem loading consent forms</h2>
+						<li class="govuk-breadcrumbs__list-item">
+							<a class="govuk-breadcrumbs__link" href="#" id="breadcrumb-project">Project</a>
+						</li>
+
+						<li class="govuk-breadcrumbs__list-item">
+							<a class="govuk-breadcrumbs__link" href="#" id="breadcrumb-study">Study</a>
+						</li>
+
+						<li class="govuk-breadcrumbs__list-item" aria-current="page">Consent forms</li>
+					</ol>
+				</nav>
+
+				<div
+					class="govuk-notification-banner"
+					role="alert"
+					aria-labelledby="govuk-notification-banner-title"
+					data-module="govuk-notification-banner"
+					id="consent-error"
+					tabindex="-1"
+					hidden="hidden"
+					aria-hidden="true"
+				>
+					<div class="govuk-notification-banner__header">
+						<h2 class="govuk-notification-banner__title" id="govuk-notification-banner-title">
+							There is a problem loading consent forms
+						</h2>
+					</div>
+					<div class="govuk-notification-banner__content">
+						<p id="consent-error-message" class="govuk-body">Could not load consent forms.</p>
+					</div>
 				</div>
-				<div class="govuk-notification-banner__content">
-					<p id="consent-error-message" class="govuk-body">Could not load consent forms.</p>
+
+				<div class="govuk-button-group">
+					<a
+						href="/pages/study/"
+						role="button"
+						draggable="false"
+						class="govuk-button govuk-button--secondary"
+						data-module="govuk-button"
+						id="back-to-study"
+					>
+						Back to Study
+					</a>
+
+					<button type="button" class="govuk-button" data-module="govuk-button" id="new-consent-form">
+						New consent form
+					</button>
 				</div>
-			</section>
 
-			<div class="govuk-button-group">
-				<a href="/pages/study/" role="button" draggable="false" class="govuk-button govuk-button--secondary" data-module="govuk-button" id="back-to-study">Back to Study</a>
-				<button type="button" class="govuk-button" data-module="govuk-button" id="new-consent-form">New consent form</button>
-			</div>
+				<header class="govuk-!-margin-bottom-6">
+					<p id="study-context" class="govuk-caption-m">Study materials</p>
+					<h1 class="govuk-heading-l">Consent forms</h1>
+					<p class="govuk-body govuk-!-width-two-thirds">
+						Create participant-facing consent materials using Markdown and Mustache variables. Participant consent
+						responses are managed separately.
+					</p>
+				</header>
 
-			<header class="govuk-!-margin-bottom-6">
-				<p id="study-context" class="govuk-caption-m">Study materials</p>
-				<h1 class="govuk-heading-l">Consent forms</h1>
-				<p class="govuk-body govuk-!-width-two-thirds">Create participant-facing consent materials using Markdown and Mustache variables. Participant consent responses are managed separately.</p>
-			</header>
+				<section class="consent-layout" aria-label="Consent form editor">
+					<aside class="consent-list-panel" aria-labelledby="consent-list-title">
+						<h2 id="consent-list-title" class="govuk-heading-m">Forms for this study</h2>
+						<p id="consent-list-status" class="govuk-body-s" aria-live="polite">Loading consent forms.</p>
+						<ul id="consent-form-list" class="consent-form-list"></ul>
+					</aside>
 
-			<section class="consent-layout" aria-label="Consent form editor">
-				<aside class="consent-list-panel" aria-labelledby="consent-list-title">
-					<h2 id="consent-list-title" class="govuk-heading-m">Forms for this study</h2>
-					<p id="consent-list-status" class="govuk-body-s" aria-live="polite">Loading consent forms.</p>
-					<ul id="consent-form-list" class="consent-form-list"></ul>
-				</aside>
+					<section class="consent-editor-panel" aria-labelledby="consent-editor-title">
+						<h2 id="consent-editor-title" class="govuk-heading-m">Editor</h2>
 
-				<section class="consent-editor-panel" aria-labelledby="consent-editor-title">
-					<h2 id="consent-editor-title" class="govuk-heading-m">Editor</h2>
+						<form id="consent-form-editor" novalidate>
+							<input id="consent-form-id" type="hidden" />
 
-					<form id="consent-form-editor" novalidate>
-						<input id="consent-form-id" type="hidden">
+							<div class="consent-editor-grid">
+								<div class="govuk-form-group">
+									<label class="govuk-label" for="consent-title">Title</label>
 
-						<div class="consent-editor-grid">
-							<div class="govuk-form-group">
-								<label class="govuk-label" for="consent-title">Title</label>
-								<input class="govuk-input govuk-!-width-two-thirds" id="consent-title" name="title" type="text" autocomplete="off">
-							</div>
+									<input
+										class="govuk-input govuk-!-width-two-thirds"
+										id="consent-title"
+										name="title"
+										type="text"
+										autocomplete="off"
+									/>
+								</div>
 
-							<div class="govuk-form-group">
-								<label class="govuk-label" for="consent-form-type">Form type</label>
-								<select class="govuk-select" id="consent-form-type" name="formType">
-									<option>Participant information sheet</option>
-									<option selected>Consent form</option>
-									<option>Privacy notice</option>
-									<option>Debrief sheet</option>
-									<option>Screening consent</option>
-									<option>Other</option>
-								</select>
-							</div>
+								<div class="govuk-form-group">
+									<label class="govuk-label" for="consent-form-type">Form type</label>
 
-							<div class="govuk-form-group">
-								<label class="govuk-label" for="consent-status">Status</label>
-								<select class="govuk-select" id="consent-status" name="status">
-									<option selected>Draft</option>
-									<option>In review</option>
-									<option>Published</option>
-									<option>Archived</option>
-								</select>
-							</div>
-						</div>
+									<select class="govuk-select" id="consent-form-type" name="formType">
+										<option>Participant information sheet</option>
 
-						<div class="consent-editor-split">
-							<div class="govuk-form-group">
-								<label class="govuk-label" for="consent-source">Source Markdown</label>
-								<textarea class="govuk-textarea consent-source" id="consent-source" name="sourceMarkdown" rows="22" spellcheck="true"></textarea>
-							</div>
+										<option selected>Consent form</option>
 
-							<div class="consent-preview-wrap">
-								<h3 class="govuk-heading-s">Preview</h3>
-								<div id="consent-preview" class="consent-preview" aria-live="polite"></div>
-							</div>
-						</div>
+										<option>Privacy notice</option>
 
-						<details class="govuk-details consent-details" data-module="govuk-details" open>
-							<summary class="govuk-details__summary">
-								<span class="govuk-details__summary-text">Variables and consent statements</span>
-							</summary>
-							<div class="govuk-details__text">
-								<div class="consent-editor-split consent-editor-split--metadata">
-									<div class="govuk-form-group">
-										<label class="govuk-label" for="consent-variables">Variables JSON</label>
-										<textarea id="consent-variables" name="variables" class="govuk-textarea" rows="12" spellcheck="false" aria-describedby="consent-variables-error"></textarea>
-										<p id="consent-variables-error" class="govuk-error-message" hidden></p>
-									</div>
-									<div class="govuk-form-group">
-										<label class="govuk-label" for="consent-items">Consent Items JSON</label>
-										<textarea id="consent-items" name="consentItems" class="govuk-textarea" rows="12" spellcheck="false" aria-describedby="consent-items-error"></textarea>
-										<p id="consent-items-error" class="govuk-error-message" hidden></p>
-									</div>
+										<option>Debrief sheet</option>
+
+										<option>Screening consent</option>
+
+										<option>Other</option>
+									</select>
+								</div>
+
+								<div class="govuk-form-group">
+									<label class="govuk-label" for="consent-status">Status</label>
+
+									<select class="govuk-select" id="consent-status" name="status">
+										<option selected>Draft</option>
+
+										<option>In review</option>
+
+										<option>Published</option>
+
+										<option>Archived</option>
+									</select>
 								</div>
 							</div>
-						</details>
 
-						<div class="consent-editor-grid">
-							<div class="govuk-form-group">
-								<label class="govuk-label" for="consent-summary">Plain English summary</label>
-								<textarea class="govuk-textarea" id="consent-summary" name="plainEnglishSummary" rows="4"></textarea>
+							<div class="consent-editor-split">
+								<div class="govuk-form-group">
+									<label class="govuk-label" for="consent-source">Source Markdown</label>
+
+									<textarea
+										class="govuk-textarea consent-source"
+										id="consent-source"
+										name="sourceMarkdown"
+										rows="22"
+										spellcheck="true"
+									></textarea>
+								</div>
+
+								<div class="consent-preview-wrap">
+									<h3 class="govuk-heading-s">Preview</h3>
+									<div id="consent-preview" class="consent-preview" aria-live="polite"></div>
+								</div>
 							</div>
 
-							<div class="govuk-form-group">
-								<label class="govuk-label" for="consent-accessibility-notes">Accessibility notes</label>
-								<textarea class="govuk-textarea" id="consent-accessibility-notes" name="accessibilityNotes" rows="4"></textarea>
+							<details class="govuk-details consent-details" open>
+								<summary class="govuk-details__summary">
+									<span class="govuk-details__summary-text">Variables and consent statements</span>
+								</summary>
+								<div class="govuk-details__text">
+									<div class="consent-editor-split consent-editor-split--metadata">
+										<div class="govuk-form-group">
+											<label class="govuk-label" for="consent-variables">Variables JSON</label>
+											<textarea
+												id="consent-variables"
+												name="variables"
+												class="govuk-textarea"
+												rows="12"
+												spellcheck="false"
+												aria-describedby="consent-variables-error"
+											></textarea>
+											<p id="consent-variables-error" class="govuk-error-message" hidden></p>
+										</div>
+										<div class="govuk-form-group">
+											<label class="govuk-label" for="consent-items">Consent Items JSON</label>
+											<textarea
+												id="consent-items"
+												name="consentItems"
+												class="govuk-textarea"
+												rows="12"
+												spellcheck="false"
+												aria-describedby="consent-items-error"
+											></textarea>
+											<p id="consent-items-error" class="govuk-error-message" hidden></p>
+										</div>
+									</div>
+								</div>
+							</details>
+
+							<div class="consent-editor-grid">
+								<div class="govuk-form-group">
+									<label class="govuk-label" for="consent-summary">Plain English summary</label>
+
+									<textarea class="govuk-textarea" id="consent-summary" name="plainEnglishSummary" rows="4"></textarea>
+								</div>
+
+								<div class="govuk-form-group">
+									<label class="govuk-label" for="consent-accessibility-notes">Accessibility notes</label>
+
+									<textarea
+										class="govuk-textarea"
+										id="consent-accessibility-notes"
+										name="accessibilityNotes"
+										rows="4"
+									></textarea>
+								</div>
+
+								<div class="govuk-form-group">
+									<label class="govuk-label" for="consent-review-notes">Review notes</label>
+
+									<textarea class="govuk-textarea" id="consent-review-notes" name="reviewNotes" rows="4"></textarea>
+								</div>
 							</div>
 
-							<div class="govuk-form-group">
-								<label class="govuk-label" for="consent-review-notes">Review notes</label>
-								<textarea class="govuk-textarea" id="consent-review-notes" name="reviewNotes" rows="4"></textarea>
-							</div>
-						</div>
+							<div class="govuk-button-group">
+								<button type="submit" class="govuk-button" data-module="govuk-button" id="save-consent-form">
+									Save draft
+								</button>
 
-						<div class="govuk-button-group">
-							<button type="submit" class="govuk-button" data-module="govuk-button" id="save-consent-form">Save draft</button>
-							<button type="button" class="govuk-button govuk-button--secondary" data-module="govuk-button" id="publish-consent-form">Publish</button>
-							<span id="consent-save-status" class="govuk-body-s" aria-live="polite"></span>
-						</div>
-					</form>
+								<button
+									type="button"
+									class="govuk-button govuk-button--secondary"
+									data-module="govuk-button"
+									id="publish-consent-form"
+								>
+									Publish
+								</button>
+
+								<span id="consent-save-status" class="govuk-body-s" aria-live="polite"></span>
+							</div>
+						</form>
+					</section>
 				</section>
-			</section>
-		</div>
-	</main>
-	<x-include src="/partials/footer.html"></x-include>
-	<script type="module" src="/js/consent-forms-route-loader.js?v=study-record-id-routing-20260518"></script>
-</body>
+			</div>
+		</main>
+		<x-include src="/partials/footer.html"></x-include>
 
+		<script type="module" src="/js/consent-forms-route-loader.js?v=study-record-id-routing-20260518"></script>
+	</body>
 </html>
