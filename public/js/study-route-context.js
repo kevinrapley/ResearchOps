@@ -97,14 +97,35 @@ export async function loadProjectById(projectId) {
 	}
 }
 
+export async function loadStudyFromProject(projectId, studyId) {
+	if (!projectId || !studyId) return null;
+	const url = new URL(apiUrl("/api/studies"), window.location.origin);
+	url.searchParams.set("project", projectId);
+	const body = await jsonFetch(url.toString());
+	const studies = Array.isArray(body?.studies) ? body.studies : [];
+	return studies.find(item => item?.id === studyId || item?.recordId === studyId || item?.airtableId === studyId) || null;
+}
+
 export async function resolveStudyContextFromUrl(params = new URLSearchParams(window.location.search)) {
 	const canonicalStudyId = params.get("id") || "";
+	const routeProjectId = params.get("project") || params.get("projectId") || "";
 	const legacyProjectId = params.get("pid") || "";
 	const legacyStudyId = params.get("sid") || "";
 
 	if (canonicalStudyId) {
-		const study = await loadStudyById(canonicalStudyId);
-		const projectId = linkedProjectIdForStudy(study);
+		let study = null;
+		try {
+			study = await loadStudyById(canonicalStudyId);
+		} catch (error) {
+			if (!routeProjectId) throw error;
+			study = await loadStudyFromProject(routeProjectId, canonicalStudyId);
+			if (!study?.id) throw error;
+		}
+		const linkedProjectId = linkedProjectIdForStudy(study);
+		if (routeProjectId && linkedProjectId && routeProjectId !== linkedProjectId) {
+			throw new Error("The project and study URL does not match the linked records.");
+		}
+		const projectId = linkedProjectId || routeProjectId;
 		if (!projectId) throw new Error("The Study record does not include a linked Project record.");
 		const project = await loadProjectById(projectId);
 		return { projectId, studyId: study.id || canonicalStudyId, project, study, routeMode: "canonical" };

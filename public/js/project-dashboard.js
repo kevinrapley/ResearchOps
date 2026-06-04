@@ -302,9 +302,10 @@ function renderStudies(project, studies) {
 		list.innerHTML = "<li>No studies yet.</li>";
 		return;
 	}
+	const projectId = projectIdFromUrl(project);
 	list.innerHTML = studies.map((study) => {
 		const title = study.title?.trim() || study.method?.trim() || computeStudyTitle(study);
-		const href = `/pages/study/?id=${encodeURIComponent(study.id)}`;
+		const href = `/pages/study/?id=${encodeURIComponent(study.id)}&project=${encodeURIComponent(projectId)}`;
 		const description = study.description && study.description.length > 170 ? `${study.description.slice(0, 170).replace(/\s+\S*$/, "")}…` : study.description;
 		const status = String(study.status || "").trim();
 		return `

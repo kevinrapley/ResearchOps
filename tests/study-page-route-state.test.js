@@ -124,7 +124,7 @@ for (const text of [
 	"participantConsentRecords",
 	"consentMaterials",
 	"participantConsent",
-	"const studyParams = { id: studyId }",
+	"const studyParams = { id: studyId, project: projectId }",
 	"const legacySessionParams = { pid: projectId, sid: studyId }",
 	"route(\"/pages/study/guides/\", studyParams)",
 	"route(\"/pages/study/participants/\", studyParams)",

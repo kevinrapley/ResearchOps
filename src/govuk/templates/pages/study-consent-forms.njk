@@ -1,0 +1,226 @@
+{% extends "layouts/researchops.njk" %}
+{% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/details/macro.njk" import govukDetails %}
+{% from "govuk/components/input/macro.njk" import govukInput %}
+{% from "govuk/components/notification-banner/macro.njk" import govukNotificationBanner %}
+{% from "govuk/components/select/macro.njk" import govukSelect %}
+{% from "govuk/components/textarea/macro.njk" import govukTextarea %}
+
+{% set studyPageScriptVersion = "study-record-id-routing-20260518" %}
+
+{% block head %}
+	<link rel="stylesheet" href="/css/govuk/govuk-forms.css" media="screen">
+	<link rel="stylesheet" href="/css/consent-forms.css" media="screen">
+	<link rel="modulepreload" href="/js/study-route-context.js">
+	<link rel="modulepreload" href="/js/consent-forms-route-loader.js?v={{ studyPageScriptVersion }}">
+{% endblock %}
+
+{% block content %}
+<div class="govuk-width-container consent-forms-page">
+	{{ govukBreadcrumbs({
+		items: [
+			{
+				text: "Projects",
+				href: "/pages/projects/"
+			},
+			{
+				text: "Project",
+				href: "#",
+				attributes: {
+					id: "breadcrumb-project"
+				}
+			},
+			{
+				text: "Study",
+				href: "#",
+				attributes: {
+					id: "breadcrumb-study"
+				}
+			},
+			{
+				text: "Consent forms"
+			}
+		]
+	}) }}
+
+	{{ govukNotificationBanner({
+		role: "alert",
+		attributes: {
+			id: "consent-error",
+			tabindex: "-1",
+			hidden: "hidden",
+			"aria-hidden": "true"
+		},
+		titleText: "There is a problem loading consent forms",
+		html: '<p id="consent-error-message" class="govuk-body">Could not load consent forms.</p>'
+	}) }}
+
+	<div class="govuk-button-group">
+		{{ govukButton({
+			text: "Back to Study",
+			href: "/pages/study/",
+			classes: "govuk-button--secondary",
+			attributes: {
+				id: "back-to-study"
+			}
+		}) }}
+		{{ govukButton({
+			text: "New consent form",
+			type: "button",
+			attributes: {
+				id: "new-consent-form"
+			}
+		}) }}
+	</div>
+
+	<header class="govuk-!-margin-bottom-6">
+		<p id="study-context" class="govuk-caption-m">Study materials</p>
+		<h1 class="govuk-heading-l">Consent forms</h1>
+		<p class="govuk-body govuk-!-width-two-thirds">Create participant-facing consent materials using Markdown and Mustache variables. Participant consent responses are managed separately.</p>
+	</header>
+
+	<section class="consent-layout" aria-label="Consent form editor">
+		<aside class="consent-list-panel" aria-labelledby="consent-list-title">
+			<h2 id="consent-list-title" class="govuk-heading-m">Forms for this study</h2>
+			<p id="consent-list-status" class="govuk-body-s" aria-live="polite">Loading consent forms.</p>
+			<ul id="consent-form-list" class="consent-form-list"></ul>
+		</aside>
+
+		<section class="consent-editor-panel" aria-labelledby="consent-editor-title">
+			<h2 id="consent-editor-title" class="govuk-heading-m">Editor</h2>
+
+			<form id="consent-form-editor" novalidate>
+				<input id="consent-form-id" type="hidden">
+
+				<div class="consent-editor-grid">
+					{{ govukInput({
+						id: "consent-title",
+						name: "title",
+						classes: "govuk-!-width-two-thirds",
+						label: {
+							text: "Title"
+						},
+						attributes: {
+							autocomplete: "off"
+						}
+					}) }}
+
+					{{ govukSelect({
+						id: "consent-form-type",
+						name: "formType",
+						label: {
+							text: "Form type"
+						},
+						items: [
+							{ text: "Participant information sheet" },
+							{ text: "Consent form", selected: true },
+							{ text: "Privacy notice" },
+							{ text: "Debrief sheet" },
+							{ text: "Screening consent" },
+							{ text: "Other" }
+						]
+					}) }}
+
+					{{ govukSelect({
+						id: "consent-status",
+						name: "status",
+						label: {
+							text: "Status"
+						},
+						items: [
+							{ text: "Draft", selected: true },
+							{ text: "In review" },
+							{ text: "Published" },
+							{ text: "Archived" }
+						]
+					}) }}
+				</div>
+
+				<div class="consent-editor-split">
+					{{ govukTextarea({
+						id: "consent-source",
+						name: "sourceMarkdown",
+						classes: "consent-source",
+						value: "",
+						rows: 22,
+						label: {
+							text: "Source Markdown"
+						},
+						attributes: {
+							spellcheck: "true"
+						}
+					}) }}
+
+					<div class="consent-preview-wrap">
+						<h3 class="govuk-heading-s">Preview</h3>
+						<div id="consent-preview" class="consent-preview" aria-live="polite"></div>
+					</div>
+				</div>
+
+				{{ govukDetails({
+					classes: "consent-details",
+					open: true,
+					summaryText: "Variables and consent statements",
+					html: '<div class="consent-editor-split consent-editor-split--metadata"><div class="govuk-form-group"><label class="govuk-label" for="consent-variables">Variables JSON</label><textarea id="consent-variables" name="variables" class="govuk-textarea" rows="12" spellcheck="false" aria-describedby="consent-variables-error"></textarea><p id="consent-variables-error" class="govuk-error-message" hidden></p></div><div class="govuk-form-group"><label class="govuk-label" for="consent-items">Consent Items JSON</label><textarea id="consent-items" name="consentItems" class="govuk-textarea" rows="12" spellcheck="false" aria-describedby="consent-items-error"></textarea><p id="consent-items-error" class="govuk-error-message" hidden></p></div></div>'
+				}) }}
+
+				<div class="consent-editor-grid">
+					{{ govukTextarea({
+						id: "consent-summary",
+						name: "plainEnglishSummary",
+						value: "",
+						rows: 4,
+						label: {
+							text: "Plain English summary"
+						}
+					}) }}
+
+					{{ govukTextarea({
+						id: "consent-accessibility-notes",
+						name: "accessibilityNotes",
+						value: "",
+						rows: 4,
+						label: {
+							text: "Accessibility notes"
+						}
+					}) }}
+
+					{{ govukTextarea({
+						id: "consent-review-notes",
+						name: "reviewNotes",
+						value: "",
+						rows: 4,
+						label: {
+							text: "Review notes"
+						}
+					}) }}
+				</div>
+
+				<div class="govuk-button-group">
+					{{ govukButton({
+						text: "Save draft",
+						type: "submit",
+						attributes: {
+							id: "save-consent-form"
+						}
+					}) }}
+					{{ govukButton({
+						text: "Publish",
+						type: "button",
+						classes: "govuk-button--secondary",
+						attributes: {
+							id: "publish-consent-form"
+						}
+					}) }}
+					<span id="consent-save-status" class="govuk-body-s" aria-live="polite"></span>
+				</div>
+			</form>
+		</section>
+	</section>
+</div>
+{% endblock %}
+
+{% block scripts %}
+	<script type="module" src="/js/consent-forms-route-loader.js?v={{ studyPageScriptVersion }}"></script>
+{% endblock %}

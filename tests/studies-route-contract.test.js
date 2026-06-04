@@ -24,12 +24,15 @@ assert.equal(workerSource.includes("apiPath === \"/api/studies\" || apiPath.star
 
 assert.equal(dashboardSource.includes("async function loadStudies(projectId)"), true);
 assert.equal(dashboardSource.includes("/pages/study/?id="), true);
+assert.equal(dashboardSource.includes("&project="), true);
 assert.equal(dashboardSource.includes("/pages/study/?pid="), false);
 assert.equal(dashboardSource.includes("&sid="), false);
 assert.equal(dashboardSource.includes("renderStudiesLoadError"), true);
 
 assert.equal(studyPageSource.includes("resolveStudyContext"), true);
 assert.equal(studyPageSource.includes("url.searchParams.set(\"id\", studyId)"), true);
+assert.equal(studyPageSource.includes("url.searchParams.set(\"project\", projectId)"), true);
+assert.equal(studyPageSource.includes("loadStudyFromProject(routeProjectId, studyId)"), true);
 assert.equal(studyPageSource.includes("The legacy project and study URL does not match the linked records."), true);
 assert.equal(studyPageSource.includes("routeMode: \"legacy-resolved\""), true);
 assert.equal(studyPageSource.includes("params.get(\"pid\")"), true);
