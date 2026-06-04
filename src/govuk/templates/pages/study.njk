@@ -14,6 +14,8 @@
 	<meta property="schema:creator" content="Home Office ResearchOps Platform">
 	<meta property="schema:dateModified" content="2026-06-03">
 	<meta property="dcterms:language" content="en-GB">
+	<link rel="stylesheet" href="/css/govuk/govuk-forms.css" media="screen">
+	<link rel="stylesheet" href="/css/govuk/govuk-tables.css" media="screen">
 	<link rel="stylesheet" href="/css/study-page.css" media="screen">
 	<link rel="modulepreload" href="/js/study-page.js?v={{ studyPageScriptVersion }}">
 	<link rel="modulepreload" href="/pages/study/study-desc-controller.js">
@@ -145,19 +147,18 @@
 	<section class="study-key-information govuk-!-margin-bottom-8" aria-labelledby="study-key-information-title">
 		<h2 id="study-key-information-title" class="govuk-heading-m">Study details</h2>
 		{{ govukSummaryList({
-			classes: "study-summary-list",
 			rows: [
 				{
 					key: { text: "Method" },
-					value: { html: '<span id="kv-method">–</span>' }
+					value: { text: "–", attributes: { id: "kv-method" } }
 				},
 				{
 					key: { text: "Status" },
-					value: { html: '<span id="kv-status">–</span>' }
+					value: { text: "–", attributes: { id: "kv-status" } }
 				},
 				{
 					key: { text: "Study ID" },
-					value: { html: '<span id="kv-studyid">–</span>' }
+					value: { text: "–", attributes: { id: "kv-studyid" } }
 				}
 			]
 		}) }}
