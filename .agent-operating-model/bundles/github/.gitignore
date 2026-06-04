@@ -14,3 +14,7 @@ coverage/
 artifacts/
 tmp/
 temp/
+release-gate-report.json
+fast-release-gate-report.json
+full-release-gate-report.json
+live-release-gate-report.json
