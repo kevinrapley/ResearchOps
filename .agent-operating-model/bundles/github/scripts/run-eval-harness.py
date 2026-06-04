@@ -6,7 +6,9 @@ import filecmp
 import io
 import json
 import os
+import re
 import runpy
+import shutil
 import subprocess
 import sys
 import time
@@ -154,8 +156,34 @@ def expectation_failures(spec, returncode, stdout, stderr, timed_out=False):
     return failures
 
 
+def node_binary():
+    found = shutil.which("node")
+    if found:
+        return found
+    bundled = Path("/Applications/Codex.app/Contents/Resources/node")
+    if bundled.exists():
+        return str(bundled)
+    return "node"
+
+
+def command_for_environment(command, repo):
+    if shutil.which("python") is None:
+        command = re.sub(r"^python(\s+)", f"{sys.executable}\\1", command, count=1)
+    if command == "npm test" and shutil.which("npm") is None:
+        package_json = Path(repo) / "package.json"
+        if package_json.exists():
+            try:
+                package = json.loads(package_json.read_text(encoding="utf-8"))
+                if (package.get("scripts") or {}).get("test") == "node --test":
+                    command = f"{node_binary()} --test"
+            except json.JSONDecodeError:
+                pass
+    return command
+
+
 def run_one_test(repo, raw_command, index, timeout):
     spec = normalise_command(raw_command, index)
+    command_to_run = command_for_environment(spec["command"], repo)
     started = time.time()
     result = {
         "id": spec["id"],
@@ -180,7 +208,7 @@ def run_one_test(repo, raw_command, index, timeout):
     }
 
     try:
-        completed = subprocess.run(spec["command"], cwd=repo, shell=True, capture_output=True, text=True, timeout=timeout)
+        completed = subprocess.run(command_to_run, cwd=repo, shell=True, capture_output=True, text=True, timeout=timeout)
         stdout = completed.stdout or ""
         stderr = completed.stderr or ""
         failures = expectation_failures(spec, completed.returncode, stdout, stderr)
