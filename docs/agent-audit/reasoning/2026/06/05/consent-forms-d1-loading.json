@@ -1,0 +1,103 @@
+{
+  "date": "2026-06-05",
+  "branch": "fix/consent-forms-d1-loading",
+  "traceRequired": true,
+  "task": "Fix consent forms still failing to load from D1 after PR 348 was merged to main.",
+  "operatingModelFilesLoaded": [
+    "AGENTS.md",
+    ".agent-operating-model/orchestration.xml",
+    ".agent-operating-model/bundle-registry.json",
+    ".agent-operating-model/task-signal-catalog.json",
+    ".agent-operating-model/selection-rules.json",
+    ".agent-operating-model/precedence-policy.md",
+    ".agent-operating-model/trace-policy.md"
+  ],
+  "selectedBundles": [
+    {
+      "id": "github-diamond",
+      "path": ".agent-operating-model/bundles/github/"
+    },
+    {
+      "id": "researchops-developer-control",
+      "path": ".agent-operating-model/bundles/researchops-developer-control/"
+    },
+    {
+      "id": "multi-functional-team",
+      "path": ".agent-operating-model/bundles/multi-functional-team/"
+    },
+    {
+      "id": "cloudflare",
+      "path": ".agent-operating-model/bundles/cloudflare/"
+    }
+  ],
+  "skippedBundles": [
+    "govuk-design-system",
+    "openai-platform",
+    "mcp-agent-tooling",
+    "airtable-public-api",
+    "mural-public-api"
+  ],
+  "precedenceDecisions": [
+    "GitHub Diamond governed branch hygiene, trace evidence and validation claims.",
+    "ResearchOps Developer Control governed the consent forms service boundary and route contracts.",
+    "Cloudflare governed D1 binding and Worker runtime implementation details.",
+    "Multi-Functional Team governed safe user-facing degradation when D1 is present but empty."
+  ],
+  "filesRead": [
+    "public/js/consent-forms-page.js",
+    "infra/cloudflare/src/service/consent-forms.js",
+    "infra/cloudflare/src/service/participant-consent.js",
+    "infra/cloudflare/src/service/studies.js",
+    "infra/cloudflare/src/service/internals/researchops-d1.js",
+    "infra/cloudflare/src/core/fields.js",
+    "infra/cloudflare/migrations/*.sql",
+    "tests/consent-forms-route-state.test.js",
+    "tests/impact-records-d1-runtime.test.js"
+  ],
+  "filesCreated": [
+    "infra/cloudflare/migrations/0011_consent_forms_d1.sql",
+    "tests/consent-forms-d1-runtime.test.js",
+    "docs/agent-audit/reasoning/2026/06/05/consent-forms-d1-loading.md",
+    "docs/agent-audit/reasoning/2026/06/05/consent-forms-d1-loading.json"
+  ],
+  "filesModified": [
+    "infra/cloudflare/src/service/consent-forms.js",
+    "tests/consent-forms-route-state.test.js"
+  ],
+  "implementationSummary": [
+    "Added a D1 rops_consent_forms table contract and indexes.",
+    "Updated consent forms API list/create/read/update/publish paths to use D1 when RESEARCHOPS_D1 is available.",
+    "Kept Airtable fallback for compatibility when D1 is unavailable or a D1 record is not found.",
+    "Returned an empty D1 consent forms list when D1 is available and Airtable is not configured."
+  ],
+  "testContractImpactSweep": [
+    "Added D1 runtime coverage for consent form empty-list, create, list, update and publish behaviour.",
+    "Updated consent forms route-state assertions for the D1 service and migration contract."
+  ],
+  "validation": [
+    {
+      "command": "node --test tests/consent-forms-d1-runtime.test.js tests/consent-forms-route-state.test.js",
+      "result": "passed",
+      "evidence": "2 tests passed"
+    },
+    {
+      "command": "node --test",
+      "result": "passed",
+      "evidence": "176 tests passed"
+    },
+    {
+      "command": "node scripts/agent-trace/assert-trace-coverage.mjs",
+      "result": "passed",
+      "evidence": "trace coverage confirmed"
+    }
+  ],
+  "validationNotRun": [
+    {
+      "command": "npm ci",
+      "reason": "No npm executable is available in the desktop runtime."
+    }
+  ],
+  "residualRisks": [
+    "CI should provide package-manager-backed validation."
+  ]
+}
