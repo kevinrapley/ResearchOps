@@ -100,9 +100,9 @@ function createMockD1() {
 	};
 }
 
-function createService(d1) {
+function createService(d1, env = {}) {
 	return {
-		env: { RESEARCHOPS_D1: d1 },
+		env: { RESEARCHOPS_D1: d1, ...env },
 		cfg: { MAX_BODY_BYTES: 1024 * 1024, TIMEOUT_MS: 1000 },
 		corsHeaders() {
 			return {};
@@ -164,6 +164,53 @@ const listed = await json(
 );
 assert.equal(listed.consentForms.length, 1);
 assert.equal(listed.consentForms[0].id, created.id);
+
+const mixedSourceSvc = createService(d1, {
+	AIRTABLE_BASE_ID: 'app123',
+	AIRTABLE_API_KEY: 'key123',
+	AIRTABLE_TABLE_CONSENT_FORMS: 'Consent Forms',
+});
+const originalFetch = globalThis.fetch;
+globalThis.fetch = async () =>
+	new Response(
+		JSON.stringify({
+			records: [
+				{
+					id: 'recAirtableConsent01',
+					createdTime: '2026-06-05T09:00:00.000Z',
+					fields: {
+						Title: 'Existing Airtable consent',
+						'Form Type': 'Consent form',
+						Status: 'Published',
+						Version: 3,
+						'Source Markdown': '# Existing Airtable consent',
+						'Variables (JSON)': '{"studyTitle":"Airtable study"}',
+						'Consent Items (JSON)': '[]',
+						Study: ['rect3biqr'],
+					},
+				},
+			],
+		}),
+		{ status: 200, headers: { 'content-type': 'application/json' } }
+	);
+try {
+	const mixed = await json(
+		await listConsentForms(
+			mixedSourceSvc,
+			'',
+			new URL('https://example.test/api/consent-forms?study=rect3biqr')
+		)
+	);
+	assert.equal(mixed.ok, true);
+	assert.equal(mixed.source, 'd1+airtable');
+	assert.equal(mixed.consentForms.length, 2);
+	assert.deepEqual(
+		mixed.consentForms.map((form) => form.id).sort(),
+		[created.id, 'recAirtableConsent01'].sort()
+	);
+} finally {
+	globalThis.fetch = originalFetch;
+}
 
 const updated = await json(
 	await updateConsentForm(

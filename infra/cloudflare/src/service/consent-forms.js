@@ -449,6 +449,15 @@ async function getAllRecords(svc) {
 	return records;
 }
 
+function mergeConsentForms(...groups) {
+	const byId = new Map();
+	for (const form of groups.flat()) {
+		if (!form?.id || byId.has(form.id)) continue;
+		byId.set(form.id, form);
+	}
+	return Array.from(byId.values()).sort((a, b) => toMs(b.createdAt) - toMs(a.createdAt));
+}
+
 export async function listConsentForms(svc, origin, url) {
 	const studyId = url.searchParams.get("study");
 	if (!studyId) return svc.json({ ok: false, error: "Missing study query" }, 400, svc.corsHeaders(origin));
@@ -458,11 +467,8 @@ export async function listConsentForms(svc, origin, url) {
 	if (hasD1(svc)) {
 		try {
 			d1Forms = await listConsentFormsFromD1(svc, studyId);
-			if (d1Forms.length) {
-				return svc.json({ ok: true, consentForms: d1Forms, source: "d1" }, 200, svc.corsHeaders(origin));
-			}
 			if (!airtableConfigured(svc)) {
-				return svc.json({ ok: true, consentForms: [], source: "d1" }, 200, svc.corsHeaders(origin));
+				return svc.json({ ok: true, consentForms: d1Forms, source: "d1" }, 200, svc.corsHeaders(origin));
 			}
 		} catch (error) {
 			d1Error = error;
@@ -476,11 +482,12 @@ export async function listConsentForms(svc, origin, url) {
 		for (const record of records) {
 			const f = record.fields || {};
 			const linkKey = pickFirstField(f, CONSENT_FORM_LINK_FIELD_CANDIDATES);
-			const links = linkKey ? f[linkKey] : undefined;
-			if (Array.isArray(links) && links.includes(studyId)) forms.push(recordToConsentForm(record));
-		}
-		forms.sort((a, b) => toMs(b.createdAt) - toMs(a.createdAt));
-		return svc.json({ ok: true, consentForms: forms }, 200, svc.corsHeaders(origin));
+				const links = linkKey ? f[linkKey] : undefined;
+				if (Array.isArray(links) && links.includes(studyId)) forms.push(recordToConsentForm(record));
+			}
+			const consentForms = mergeConsentForms(d1Forms || [], forms);
+			const source = d1Forms?.length && forms.length ? "d1+airtable" : d1Forms?.length ? "d1" : "airtable";
+			return svc.json({ ok: true, consentForms, source }, 200, svc.corsHeaders(origin));
 	} catch (err) {
 		if (d1Forms) {
 			return svc.json({

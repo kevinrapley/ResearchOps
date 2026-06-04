@@ -55,6 +55,10 @@ Added `infra/cloudflare/migrations/0011_consent_forms_d1.sql` for the `rops_cons
 
 Added runtime coverage in `tests/consent-forms-d1-runtime.test.js` for D1 empty-list, create, list, update and publish behaviour. Updated the consent forms route-state contract to check the D1 service and migration path.
 
+## Codex Comment Disposition
+
+Reviewed unresolved Codex comment `PRRC_kwDOP3Td2M7IPiTh` on `infra/cloudflare/src/service/consent-forms.js`. Classified it as legitimate. Updated consent form listing so D1 rows do not short-circuit Airtable when Airtable is configured. The endpoint now merges D1 and Airtable consent forms, de-duplicates by form ID and reports `source: "d1+airtable"` for mixed lists. D1-only short-circuit behaviour remains only when Airtable is not configured or Airtable listing fails.
+
 ## Validation
 
 Passed:

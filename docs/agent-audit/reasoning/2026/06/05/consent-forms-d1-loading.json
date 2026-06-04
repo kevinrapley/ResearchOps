@@ -68,11 +68,13 @@
     "Added a D1 rops_consent_forms table contract and indexes.",
     "Updated consent forms API list/create/read/update/publish paths to use D1 when RESEARCHOPS_D1 is available.",
     "Kept Airtable fallback for compatibility when D1 is unavailable or a D1 record is not found.",
-    "Returned an empty D1 consent forms list when D1 is available and Airtable is not configured."
+    "Returned an empty D1 consent forms list when D1 is available and Airtable is not configured.",
+    "Handled Codex comment PRRC_kwDOP3Td2M7IPiTh as legitimate by merging D1 and Airtable consent form lists when Airtable is configured."
   ],
   "testContractImpactSweep": [
     "Added D1 runtime coverage for consent form empty-list, create, list, update and publish behaviour.",
-    "Updated consent forms route-state assertions for the D1 service and migration contract."
+    "Added mixed D1 and Airtable runtime coverage so existing Airtable forms do not disappear after a D1 draft is created.",
+    "Updated consent forms route-state assertions for the D1 service, mixed source and migration contract."
   ],
   "validation": [
     {

@@ -84,6 +84,8 @@ includes(serviceSource, "export async function publishConsentForm", "service");
 includes(serviceSource, "rops_consent_forms", "service");
 includes(serviceSource, "listConsentFormsFromD1", "service");
 includes(serviceSource, "createConsentFormInD1", "service");
+includes(serviceSource, "mergeConsentForms", "service");
+includes(serviceSource, "d1+airtable", "service");
 includes(serviceSource, "source: \"d1\"", "service");
 includes(serviceSource, "AIRTABLE_TABLE_CONSENT_FORMS", "service");
 includes(serviceSource, "CONSENT_FORM_LINK_FIELD_CANDIDATES", "service");
