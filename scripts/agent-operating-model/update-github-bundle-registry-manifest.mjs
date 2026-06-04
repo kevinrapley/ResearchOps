@@ -21,6 +21,12 @@ const GENERATED_PARTS = new Set([
 	'__MACOSX'
 ]);
 const GENERATED_SUFFIXES = new Set(['.pyc', '.pyo', '.log']);
+const GENERATED_NAMES = new Set([
+	'release-gate-report.json',
+	'fast-release-gate-report.json',
+	'full-release-gate-report.json',
+	'live-release-gate-report.json'
+]);
 
 function parseArgs(argv) {
 	const options = {
@@ -51,8 +57,13 @@ function normalise(value) {
 function isGeneratedRelative(relativePath) {
 	const parts = relativePath.split('/');
 	const suffix = path.extname(relativePath);
+	const name = path.basename(relativePath);
 
-	return parts.some((part) => GENERATED_PARTS.has(part)) || GENERATED_SUFFIXES.has(suffix);
+	return (
+		parts.some((part) => GENERATED_PARTS.has(part)) ||
+		GENERATED_SUFFIXES.has(suffix) ||
+		GENERATED_NAMES.has(name)
+	);
 }
 
 function yamlScalar(value) {
@@ -214,5 +225,5 @@ try {
 	await updateManifest(parseArgs(process.argv.slice(2)));
 } catch (error) {
 	console.error(error.message);
-	process.exitCode = 1;
+	process.exit(1);
 }
