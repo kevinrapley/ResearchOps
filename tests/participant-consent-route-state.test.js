@@ -61,6 +61,6 @@ includes(serviceSource, "export async function updateParticipantConsent", "parti
 includes(workerSource, "async function handleParticipantConsent", "worker");
 includes(workerSource, "service.listParticipantConsent", "worker");
 
-includes(studyControllerSource, "const studyParams = { id: studyId }", "study page controller");
+includes(studyControllerSource, "const studyParams = { id: studyId, project: projectId }", "study page controller");
 includes(studyControllerSource, "loadStudyCollection(\"/api/participant-consent\"", "study page controller");
 includes(studyControllerSource, "route(\"/pages/study/participant-consent/\", studyParams)", "study page controller");

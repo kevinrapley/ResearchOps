@@ -23,14 +23,13 @@ function excludes(source, text, label) {
 includes(studyPageSource, "id=\"link-consent-forms\"", "study page");
 includes(studyPageSource, "Create consent forms", "study page");
 includes(studyControllerSource, "#link-consent-forms", "study page controller");
-includes(studyControllerSource, "const studyParams = { id: studyId }", "study page controller");
+includes(studyControllerSource, "const studyParams = { id: studyId, project: projectId }", "study page controller");
 includes(studyControllerSource, "route(\"/pages/study/consent-forms/\", studyParams)", "study page controller");
 excludes(studyControllerSource, "route(\"/pages/study/consent-forms/\", params)", "study page controller");
 
 includes(pageSource, "<html class=\"govuk-template\" lang=\"en\">", "consent forms page");
 includes(pageSource, "/assets/govuk/govuk-frontend.css", "consent forms page");
 includes(pageSource, "/js/consent-forms-route-loader.js?v=study-record-id-routing-20260518", "consent forms page");
-includes(pageSource, "/css/govuk/govuk-buttons.css", "consent forms page");
 includes(pageSource, "/css/govuk/govuk-forms.css", "consent forms page");
 includes(pageSource, "/css/consent-forms.css", "consent forms page");
 includes(pageSource, "class=\"govuk-button\"", "consent forms page");
@@ -59,6 +58,9 @@ includes(controllerSource, "consentItems", "controller");
 includes(controllerSource, "study_airtable_id: state.sid", "controller");
 includes(controllerSource, "apiUrl(\"/api/consent-forms\")", "controller");
 includes(controllerSource, "/api/consent-forms/${encodeURIComponent(id)}/publish", "controller");
+includes(controllerSource, "list failed; starting with a new draft", "controller");
+includes(controllerSource, "Consent forms could not be loaded. You can still create a new draft.", "controller");
+includes(controllerSource, "state.listUnavailable", "controller");
 includes(controllerSource, "Enter valid JSON", "controller");
 includes(controllerSource, "Missing Study record ID in URL", "controller");
 excludes(controllerSource, "rops-api.digikev-kevin-rapley.workers.dev", "controller");

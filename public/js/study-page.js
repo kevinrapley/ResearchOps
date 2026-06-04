@@ -112,14 +112,31 @@ async function loadStudy(studyId) {
 	return body.study;
 }
 
+async function loadStudyFromProject(projectId, studyId) {
+	const url = new URL(apiUrl("/api/studies"), window.location.origin);
+	url.searchParams.set("project", projectId);
+	const body = await jsonFetch(url.toString());
+	const studies = Array.isArray(body?.studies) ? body.studies : [];
+	const study = studies.find(item => item?.id === studyId || item?.recordId === studyId || item?.airtableId === studyId);
+	if (!study?.id) throw new Error("Could not load study from project");
+	return study;
+}
+
 async function resolveStudyContext(params) {
 	const studyId = params.get("id") || "";
+	const routeProjectId = params.get("project") || params.get("projectId") || "";
 	const legacyProjectId = params.get("pid") || "";
 	const legacyStudyId = params.get("sid") || "";
 
 	if (studyId) {
-		const study = await loadStudy(studyId);
-		const projectId = linkedProjectIdForStudy(study);
+		let study;
+		try {
+			study = await loadStudy(studyId);
+		} catch (error) {
+			if (!routeProjectId) throw error;
+			study = await loadStudyFromProject(routeProjectId, studyId);
+		}
+		const projectId = routeProjectId || linkedProjectIdForStudy(study);
 		if (!projectId) throw new Error("The Study record does not include a linked Project record.");
 		return { projectId, studyId: study.id || studyId, study, routeMode: "canonical" };
 	}
@@ -306,7 +323,7 @@ function renderReadiness(study, context, sessionHref) {
 
 function renderRoutes(projectId, studyId) {
 	const legacySessionParams = { pid: projectId, sid: studyId };
-	const studyParams = { id: studyId };
+	const studyParams = { id: studyId, project: projectId };
 	enableLink("#back-to-project", route("/pages/project-dashboard/", { id: projectId }));
 	enableLink("#breadcrumb-project", route("/pages/project-dashboard/", { id: projectId }));
 	enableLink("#link-consent-forms", route("/pages/study/consent-forms/", studyParams));

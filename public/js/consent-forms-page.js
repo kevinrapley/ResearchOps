@@ -83,7 +83,8 @@ const state = {
 	project: null,
 	study: null,
 	forms: [],
-	selectedId: ""
+	selectedId: "",
+	listUnavailable: false
 };
 
 const $ = (selector, root = document) => root.querySelector(selector);
@@ -315,9 +316,9 @@ function renderList() {
 	if (!state.forms.length) {
 		const li = document.createElement("li");
 		li.className = "consent-form-list__empty";
-		li.textContent = "No consent forms have been saved for this study yet.";
+		li.textContent = state.listUnavailable ? "Saved consent forms could not be loaded." : "No consent forms have been saved for this study yet.";
 		list.append(li);
-		setText("#consent-list-status", "No saved consent forms.");
+		setText("#consent-list-status", state.listUnavailable ? "Consent forms could not be loaded. You can still create a new draft." : "No saved consent forms.");
 		return;
 	}
 
@@ -338,8 +339,16 @@ function renderList() {
 async function loadConsentForms() {
 	const url = new URL(apiUrl("/api/consent-forms"));
 	url.searchParams.set("study", state.sid);
-	const body = await jsonFetch(url.toString());
-	state.forms = Array.isArray(body?.consentForms) ? body.consentForms : [];
+	let body = null;
+	try {
+		body = await jsonFetch(url.toString());
+		state.forms = Array.isArray(body?.consentForms) ? body.consentForms : [];
+		state.listUnavailable = false;
+	} catch (error) {
+		console.warn("[consent-forms] list failed; starting with a new draft", error);
+		state.forms = [];
+		state.listUnavailable = true;
+	}
 	renderList();
 	setEditor(state.forms[0] || defaultDraft());
 }
@@ -362,6 +371,7 @@ function bindStudyContext() {
 	}
 	const backToStudy = $("#back-to-study");
 	if (backToStudy) backToStudy.href = studyHref;
+	setText("#study-context", `${projectName} / ${title}`);
 
 	const variables = { ...DEFAULT_VARIABLES, studyTitle: title };
 	DEFAULT_VARIABLES.studyTitle = variables.studyTitle;

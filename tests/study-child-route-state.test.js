@@ -33,7 +33,7 @@ const loaders = {
 	synthesis: read("public/js/synthesis-route-loader.js"),
 };
 
-includes(studyPageController, "const studyParams = { id: studyId }", "study page controller");
+includes(studyPageController, "const studyParams = { id: studyId, project: projectId }", "study page controller");
 includes(studyPageController, "route(\"/pages/study/consent-forms/\", studyParams)", "study page controller");
 includes(studyPageController, "route(\"/pages/study/participant-consent/\", studyParams)", "study page controller");
 includes(studyPageController, "route(\"/pages/study/guides/\", studyParams)", "study page controller");
@@ -42,6 +42,7 @@ includes(studyPageController, "route(\"/pages/study/synthesis/\", studyParams)",
 excludes(studyPageController, "route(\"/pages/synthesize/\", studyParams)", "study page controller");
 
 includes(studyRouteContext, "const canonicalStudyId = params.get(\"id\") || \"\"", "study route context");
+includes(studyRouteContext, "const routeProjectId = params.get(\"project\") || params.get(\"projectId\") || \"\"", "study route context");
 includes(studyRouteContext, "projectId !== legacyProjectId", "study route context");
 excludes(studyRouteContext, "rops-api.digikev-kevin-rapley.workers.dev", "study route context");
 excludes(studyRouteContext, "location.hostname.endsWith(\"pages.dev\")", "study route context");
