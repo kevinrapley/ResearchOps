@@ -50,8 +50,15 @@
     ".agent-operating-model/bundles/github/scripts/validate-bundle.py",
     ".agent-operating-model/bundles/github/scripts/yaml.py",
     "scripts/agent-operating-model/update-github-bundle-registry-manifest.mjs",
+    "scripts/agent-operating-model/tests/github-bundle-full-release-gate.test.mjs",
     "docs/agent-audit/reasoning/2026/06/04/pr-346-test-failures.md",
     "docs/agent-audit/reasoning/2026/06/04/pr-346-test-failures.json"
+  ],
+  "reviewFollowUp": [
+    {
+      "source": "Codex PR review on #347",
+      "action": "Preserved schema-valued additionalProperties validation in the offline jsonschema fallback and added a live-release-policy regression test."
+    }
   ],
   "validation": [
     {
