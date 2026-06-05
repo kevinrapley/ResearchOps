@@ -35,6 +35,8 @@ Owner review: Study readiness task text needs a uniform width, and status tags n
 
 Browser comment: in the stacked readiness layout, the status tag must be flush left with the associated item title, for example “Ready” aligned with “Description”.
 
+Browser comment: the Study page load failure must be shown as a GOV.UK Error summary rather than a Notification banner.
+
 ## Implementation
 
 - Corrected the Nunjucks fallback back to “Checking study readiness”, “Checking the required setup tasks before fieldwork can begin.” and “Checking readiness tasks.”
@@ -46,6 +48,7 @@ Browser comment: in the stacked readiness layout, the status tag must be flush l
 - Set a uniform 170px status track for desktop readiness rows so `govuk-task-list__name-and-hint` has the same computed width on every item.
 - Moved readiness status tags above item text from 900px down, flush left with a 10px gap before the associated title and hint.
 - Removed inherited GOV.UK task-list status padding in the stacked Study readiness layout so tags share the same left edge as their associated title and hint.
+- Replaced the Study page loading failure Notification banner with a GOV.UK Error summary while preserving the `study-error` and `study-error-message` hooks used by the client script.
 - Removed the visible “Checking” readiness defaults from the rendered markup so a failed or warming API still shows a useful review state.
 - Stacked readiness task tags above title and hint text on smaller viewports.
 - Bumped the Study page script version so the project caption and gate fixes are not paired with stale cached JavaScript.

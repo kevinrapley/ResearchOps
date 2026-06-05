@@ -24,8 +24,8 @@ for (const macro of [
 	"govukBreadcrumbs({",
 	"govukButton({",
 	"govukDetails({",
+	"govukErrorSummary({",
 	"govukInsetText({",
-	"govukNotificationBanner({",
 	"govukSummaryList({",
 	"govukTaskList({",
 	"govukTextarea({"
@@ -87,8 +87,10 @@ for (const text of [
 	"class=\"govuk-task-list",
 	"class=\"govuk-details",
 	"class=\"govuk-textarea",
+	"class=\"govuk-error-summary",
 	"id=\"study-error\"",
 	"role=\"alert\"",
+	"id=\"study-error-message\"",
 	"Study readiness",
 	"Before you can begin a session",
 	"Study setup tasks",
@@ -120,6 +122,7 @@ for (const text of [
 
 excludes(pageSource, "class=\"btn", "study page");
 excludes(pageSource, "class=\"board\"", "study page");
+excludes(pageSource, "class=\"govuk-notification-banner", "study page");
 excludes(pageSource, "Requires study context", "study page");
 excludes(pageSource, "<script type=\"module\">", "study page");
 excludes(pageSource, "id=\"back-to-project\"", "study page");

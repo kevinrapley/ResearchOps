@@ -2,7 +2,7 @@
 {% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
 {% from "govuk/components/button/macro.njk" import govukButton %}
 {% from "govuk/components/details/macro.njk" import govukDetails %}
-{% from "govuk/components/notification-banner/macro.njk" import govukNotificationBanner %}
+{% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
 {% from "govuk/components/summary-list/macro.njk" import govukSummaryList %}
 {% from "govuk/components/task-list/macro.njk" import govukTaskList %}
 {% from "govuk/components/textarea/macro.njk" import govukTextarea %}
@@ -53,16 +53,20 @@
 		]
 	}) }}
 
-	{{ govukNotificationBanner({
+	{{ govukErrorSummary({
 		attributes: {
 			id: "study-error",
-			role: "alert",
 			tabindex: "-1",
 			hidden: "hidden",
 			"aria-hidden": "true"
 		},
 		titleText: "There is a problem loading this study",
-		html: '<p id="study-error-message" class="govuk-body">Could not load the study.</p>'
+		errorList: [
+			{
+				html: '<span id="study-error-message">Could not load the study.</span>',
+				href: "#study-breadcrumbs"
+			}
+		]
 	}) }}
 
 	<div class="study-action-bar govuk-button-group">
