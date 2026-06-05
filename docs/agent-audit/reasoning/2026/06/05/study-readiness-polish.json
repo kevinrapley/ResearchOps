@@ -92,8 +92,8 @@
       "classification": "legitimate",
       "resolution": "The 900px media query now contains only Study readiness row stacking; hero heading and Study action bar mobile rules are back under the 699px breakpoint.",
       "evidence": "tests/study-page-route-state.test.js asserts the 900px block includes readiness selectors and excludes .study-action-bar .govuk-button and .study-hero .govuk-heading-l.",
-      "githubDisposition": "Pushed commit bd33e04d, posted PR review response 4436860385 with validation evidence, and resolved the original review thread.",
-      "toolingLimitation": "Direct inline reply was attempted but failed because the GitHub connector exposed the GraphQL review-comment node ID while its direct reply endpoint requires the REST numeric parent comment ID."
+      "githubDisposition": "Pushed commit bd33e04d; posted direct inline reply 3363148216 to original Codex review comment 3362994542; added thumbs-up reaction 399574373 to the Codex comment; and resolved the original review thread.",
+      "correctionNote": "An earlier PR-level review response 4436860385 was posted before the REST parent comment ID was found. The required inline-thread disposition was later completed directly on the original Codex comment."
     }
   ],
   "validation": [

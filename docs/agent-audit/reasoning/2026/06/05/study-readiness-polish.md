@@ -85,5 +85,5 @@ Passed:
 - PR #355 thread `PRRT_kwDOP3Td2M6HYHBE` on `src/styles/study-page.scss` line 124 was legitimate.
 - Fix: the 900px media query now contains only Study readiness row stacking. Hero heading and Study action bar mobile rules are back under the 699px breakpoint.
 - Regression evidence: `tests/study-page-route-state.test.js` asserts the 900px block includes readiness selectors and excludes `.study-action-bar .govuk-button` and `.study-hero .govuk-heading-l`.
-- GitHub disposition: branch was pushed at commit `bd33e04d`, PR review response `4436860385` was posted with validation evidence, and the original review thread was resolved.
-- Tooling limitation: direct inline reply was attempted but failed because the GitHub connector exposed the GraphQL review-comment node ID while its direct reply endpoint requires the REST numeric parent comment ID.
+- GitHub disposition: branch was pushed at commit `bd33e04d`; the original Codex review comment `3362994542` received a direct inline reply `3363148216`; a thumbs-up reaction `399574373` was added to the Codex comment; and the original review thread was resolved.
+- Correction note: an earlier PR-level review response `4436860385` was posted before the REST parent comment ID was found. The required inline-thread disposition was later completed directly on the original Codex comment.
