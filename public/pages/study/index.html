@@ -13,7 +13,7 @@
 		<link rel="stylesheet" href="/css/govuk/govuk-forms.css" media="screen" />
 		<link rel="stylesheet" href="/css/govuk/govuk-tables.css" media="screen" />
 		<link rel="stylesheet" href="/css/study-page.css" media="screen" />
-		<link rel="modulepreload" href="/js/study-page.js?v=study-readiness-session-gate-20260605" />
+		<link rel="modulepreload" href="/js/study-page.js?v=study-readiness-polish-20260605" />
 		<link rel="modulepreload" href="/pages/study/study-desc-controller.js" />
 
 		<script type="module" src="/components/layout.js" defer></script>
@@ -187,12 +187,16 @@
 						>
 							<h2 id="study-session-gate-title" class="govuk-heading-m">Before you can begin a session</h2>
 							<div class="govuk-inset-text study-session-gate">
-								<h3 id="study-session-gate-summary" class="govuk-heading-s">Checking study readiness</h3>
+								<h3 id="study-session-gate-summary" class="govuk-heading-s">3 setup tasks need attention</h3>
 								<p id="study-session-gate-message" class="govuk-body">
-									Checking the required setup tasks before fieldwork can begin.
+									Complete these tasks before starting fieldwork.
 								</p>
 								<ul id="study-session-blockers" class="govuk-list govuk-list--bullet">
-									<li>Checking readiness tasks.</li>
+									<li><a href="#link-participants" class="govuk-link">Add or review participants</a></li>
+									<li><a href="#link-guides" class="govuk-link">Publish a discussion guide</a></li>
+									<li>
+										<a href="#link-participant-consent" class="govuk-link">Record required participant consent</a>
+									</li>
 								</ul>
 								<div id="study-session-action" hidden>
 									<a
@@ -222,16 +226,16 @@
 
 										<div id="study-readiness-1-hint" class="govuk-task-list__hint">
 											<span id="study-readiness-description-hint" class="study-readiness-hint">
-												Checking study description.
+												The study has a description.
 											</span>
 										</div>
 									</div>
 									<div class="govuk-task-list__status" id="study-readiness-1-status">
 										<strong
 											id="study-readiness-description-status"
-											class="govuk-tag govuk-tag--grey study-readiness-status"
+											class="govuk-tag govuk-tag--green study-readiness-status"
 										>
-											Checking
+											Ready
 										</strong>
 									</div>
 								</li>
@@ -241,12 +245,17 @@
 										<div>Status</div>
 
 										<div id="study-readiness-2-hint" class="govuk-task-list__hint">
-											<span id="study-readiness-status-hint" class="study-readiness-hint">Checking study status.</span>
+											<span id="study-readiness-status-hint" class="study-readiness-hint">
+												Study status is Planned.
+											</span>
 										</div>
 									</div>
 									<div class="govuk-task-list__status" id="study-readiness-2-status">
-										<strong id="study-readiness-status-status" class="govuk-tag govuk-tag--grey study-readiness-status">
-											Checking
+										<strong
+											id="study-readiness-status-status"
+											class="govuk-tag govuk-tag--green study-readiness-status"
+										>
+											Ready
 										</strong>
 									</div>
 								</li>
@@ -297,16 +306,16 @@
 
 										<div id="study-readiness-5-hint" class="govuk-task-list__hint">
 											<span id="study-readiness-consent-materials-hint" class="study-readiness-hint">
-												Create, review and publish consent forms before recording participant consent.
+												A published consent form is available for this study.
 											</span>
 										</div>
 									</div>
 									<div class="govuk-task-list__status" id="study-readiness-5-status">
 										<strong
 											id="study-readiness-consent-materials-status"
-											class="govuk-tag govuk-tag--yellow study-readiness-status"
+											class="govuk-tag govuk-tag--green study-readiness-status"
 										>
-											Action needed
+											Ready
 										</strong>
 									</div>
 								</li>
@@ -465,7 +474,7 @@
 		</main>
 		<x-include src="/partials/footer.html"></x-include>
 
-		<script type="module" src="/js/study-page.js?v=study-readiness-session-gate-20260605"></script>
+		<script type="module" src="/js/study-page.js?v=study-readiness-polish-20260605"></script>
 		<script type="module" src="/pages/study/study-desc-controller.js"></script>
 	</body>
 </html>

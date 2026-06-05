@@ -1,0 +1,115 @@
+{
+  "date": "2026-06-05",
+  "branch": "fix/study-readiness-polish",
+  "traceRequired": true,
+  "task": "Polish the merged Study readiness layout so it matches the reviewed prototype quality.",
+  "selectedBundles": [
+    {
+      "id": "github-diamond",
+      "path": ".agent-operating-model/bundles/github/"
+    },
+    {
+      "id": "researchops-developer-control",
+      "path": ".agent-operating-model/bundles/researchops-developer-control/"
+    },
+    {
+      "id": "govuk-design-system",
+      "path": ".agent-operating-model/bundles/govuk-design-system/"
+    },
+    {
+      "id": "multi-functional-team",
+      "path": ".agent-operating-model/bundles/multi-functional-team/"
+    }
+  ],
+  "filesRead": [
+    "src/govuk/templates/pages/study.njk",
+    "src/styles/study-page.scss",
+    "public/js/study-page.js",
+    "tests/study-page-route-state.test.js",
+    "public/pages/study/index.html",
+    "public/css/study-page.css"
+  ],
+  "filesModified": [
+    "src/govuk/templates/pages/study.njk",
+    "src/styles/study-page.scss",
+    "public/css/study-page.css",
+    "public/js/study-page.js",
+    "public/pages/study/index.html",
+    "tests/study-page-route-state.test.js",
+    "docs/agent-audit/reasoning/2026/06/05/study-readiness-polish.md",
+    "docs/agent-audit/reasoning/2026/06/05/study-readiness-polish.json"
+  ],
+  "filesCreated": [
+    "docs/agent-audit/reasoning/2026/06/05/study-readiness-polish.md",
+    "docs/agent-audit/reasoning/2026/06/05/study-readiness-polish.json"
+  ],
+  "teamCritique": [
+    "The session gate should use a strong blue bordered panel rather than a passive inset note.",
+    "The default gate copy should show the blocker summary and action links rather than checking text.",
+    "Readiness item text should use a consistent constrained track so tags remain single-line on desktop.",
+    "On reduced viewports readiness tags should stack above title and hint text.",
+    "The study caption should resolve to the linked project name."
+  ],
+  "implementationSummary": [
+    "Replaced weak session gate fallback copy with prototype-style blocker summary links.",
+    "Styled the session gate as a blue bordered panel.",
+    "Added tolerant project title resolution for common project name field shapes.",
+    "Let the GOV.UK half-column define Study readiness row width, with the GOV.UK 15px gutter between text and status.",
+    "Removed visible checking defaults from rendered readiness markup.",
+    "Stacked readiness status tags above text on small viewports.",
+    "Bumped the Study page script version and regenerated the static Study page."
+  ],
+  "validation": [
+    {
+      "command": "Browser desktop rendering check at http://127.0.0.1:8787/pages/study/",
+      "result": "passed",
+      "evidence": "session gate rendered with a 5px GOV.UK blue border, the blocker summary, three action links, a GOV.UK 15px text/status gutter, and single-line readiness tags"
+    },
+    {
+      "command": "Browser reduced-width rendering check at 390px",
+      "result": "passed",
+      "evidence": "readiness status tags appear above title and hint text"
+    },
+    {
+      "command": "node scripts/govuk/render-govuk-pages.mjs",
+      "result": "passed",
+      "evidence": "regenerated static GOV.UK pages"
+    },
+    {
+      "command": "node --test tests/study-page-route-state.test.js",
+      "result": "passed",
+      "evidence": "focused Study page route-state test passed"
+    },
+    {
+      "command": "node --test tests/study-page-route-state.test.js tests/govuk-breadcrumb-back-link-route-state.test.js",
+      "result": "passed",
+      "evidence": "focused Study and breadcrumb route-state tests passed"
+    },
+    {
+      "command": "node scripts/styles/format-generated-css.mjs --check",
+      "result": "passed",
+      "evidence": "generated CSS formatting check passed"
+    },
+    {
+      "command": "node scripts/agent-trace/assert-trace-coverage.mjs",
+      "result": "passed",
+      "evidence": "audit trace coverage confirmed"
+    },
+    {
+      "command": "node node_modules/prettier/bin/prettier.cjs --check public/pages/study/index.html public/js/study-page.js public/css/study-page.css tests/study-page-route-state.test.js docs/agent-audit/reasoning/2026/06/05/study-readiness-polish.md docs/agent-audit/reasoning/2026/06/05/study-readiness-polish.json",
+      "result": "passed",
+      "evidence": "Prettier formatting check passed"
+    },
+    {
+      "command": "git diff --check",
+      "result": "passed",
+      "evidence": "whitespace check passed"
+    },
+    {
+      "command": "node --test",
+      "result": "passed",
+      "evidence": "full suite passed: 176 tests"
+    }
+  ],
+  "residualRisks": []
+}

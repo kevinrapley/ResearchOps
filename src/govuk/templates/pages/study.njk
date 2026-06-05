@@ -8,7 +8,7 @@
 {% from "govuk/components/textarea/macro.njk" import govukTextarea %}
 {% from "govuk/components/inset-text/macro.njk" import govukInsetText %}
 
-{% set studyPageScriptVersion = "study-readiness-session-gate-20260605" %}
+{% set studyPageScriptVersion = "study-readiness-polish-20260605" %}
 
 {% block head %}
 	<meta property="schema:name" content="Study — ResearchOps">
@@ -165,7 +165,7 @@
 				<h2 id="study-session-gate-title" class="govuk-heading-m">Before you can begin a session</h2>
 				{{ govukInsetText({
 					classes: "study-session-gate",
-					html: '<h3 id="study-session-gate-summary" class="govuk-heading-s">Checking study readiness</h3><p id="study-session-gate-message" class="govuk-body">Checking the required setup tasks before fieldwork can begin.</p><ul id="study-session-blockers" class="govuk-list govuk-list--bullet"><li>Checking readiness tasks.</li></ul><div id="study-session-action" hidden>' + govukButton({
+					html: '<h3 id="study-session-gate-summary" class="govuk-heading-s">3 setup tasks need attention</h3><p id="study-session-gate-message" class="govuk-body">Complete these tasks before starting fieldwork.</p><ul id="study-session-blockers" class="govuk-list govuk-list--bullet"><li><a href="#link-participants" class="govuk-link">Add or review participants</a></li><li><a href="#link-guides" class="govuk-link">Publish a discussion guide</a></li><li><a href="#link-participant-consent" class="govuk-link">Record required participant consent</a></li></ul><div id="study-session-action" hidden>' + govukButton({
 						text: "Begin session",
 						href: "#",
 						classes: "study-session-button",
@@ -187,13 +187,13 @@
 					items: [
 						{
 							title: { text: "Description" },
-							hint: { html: '<span id="study-readiness-description-hint" class="study-readiness-hint">Checking study description.</span>' },
-							status: { html: '<strong id="study-readiness-description-status" class="govuk-tag govuk-tag--grey study-readiness-status">Checking</strong>' }
+							hint: { html: '<span id="study-readiness-description-hint" class="study-readiness-hint">The study has a description.</span>' },
+							status: { html: '<strong id="study-readiness-description-status" class="govuk-tag govuk-tag--green study-readiness-status">Ready</strong>' }
 						},
 						{
 							title: { text: "Status" },
-							hint: { html: '<span id="study-readiness-status-hint" class="study-readiness-hint">Checking study status.</span>' },
-							status: { html: '<strong id="study-readiness-status-status" class="govuk-tag govuk-tag--grey study-readiness-status">Checking</strong>' }
+							hint: { html: '<span id="study-readiness-status-hint" class="study-readiness-hint">Study status is Planned.</span>' },
+							status: { html: '<strong id="study-readiness-status-status" class="govuk-tag govuk-tag--green study-readiness-status">Ready</strong>' }
 						},
 						{
 							title: { text: "Participants" },
@@ -207,8 +207,8 @@
 						},
 						{
 							title: { text: "Consent materials" },
-							hint: { html: '<span id="study-readiness-consent-materials-hint" class="study-readiness-hint">Create, review and publish consent forms before recording participant consent.</span>' },
-							status: { html: '<strong id="study-readiness-consent-materials-status" class="govuk-tag govuk-tag--yellow study-readiness-status">Action needed</strong>' }
+							hint: { html: '<span id="study-readiness-consent-materials-hint" class="study-readiness-hint">A published consent form is available for this study.</span>' },
+							status: { html: '<strong id="study-readiness-consent-materials-status" class="govuk-tag govuk-tag--green study-readiness-status">Ready</strong>' }
 						},
 						{
 							title: { text: "Participant consent" },
