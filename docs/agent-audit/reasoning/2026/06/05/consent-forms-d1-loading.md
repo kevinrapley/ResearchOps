@@ -59,6 +59,21 @@ Added runtime coverage in `tests/consent-forms-d1-runtime.test.js` for D1 empty-
 
 Reviewed unresolved Codex comment `PRRC_kwDOP3Td2M7IPiTh` on `infra/cloudflare/src/service/consent-forms.js`. Classified it as legitimate. Updated consent form listing so D1 rows do not short-circuit Airtable when Airtable is configured. The endpoint now merges D1 and Airtable consent forms, de-duplicates by form ID and reports `source: "d1+airtable"` for mixed lists. D1-only short-circuit behaviour remains only when Airtable is not configured or Airtable listing fails.
 
+## D1 Hydration
+
+Used the Airtable connector to inspect base `appkpzVvkof4RFtkh` and the consent form records associated with shared view `shrFDu4a5fVeql5Kq`.
+
+The connector returned two consent form records:
+
+- `rec2FLw9TwgDgi85y`, draft consent form
+- `recw6i67q2DuoZqMe`, published privacy notice
+
+Both records link to Airtable study record `rec6MGawTSZgdENHs`, whose app-facing study ID is `rect3o7dt` and description is "The diary study description". Added `infra/cloudflare/migrations/0012_seed_diary_study_consent_forms.sql` to hydrate `rops_consent_forms` with those records using `study_id = 'rect3o7dt'` so `/pages/study/consent-forms/?id=rect3o7dt` can load them from D1.
+
+Added `.github/workflows/apply-d1-diary-study-consent-forms.yml` to apply the seed to remote `researchops-d1` through the established Cloudflare-secrets GitHub Actions path. The local desktop runtime did not include `wrangler`, `npm` or `npx`, so direct remote D1 execution was not available from this shell.
+
+Reviewed Codex comment `PRRC_kwDOP3Td2M7IP8Mr` on the diary study seed. Classified it as legitimate. Updated `0012_seed_diary_study_consent_forms.sql` from conflict-upsert behaviour to `INSERT OR IGNORE` so rerunning the seed does not overwrite consent forms that have since been edited or published through the app.
+
 ## Validation
 
 Passed:
