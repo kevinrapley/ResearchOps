@@ -1,0 +1,213 @@
+{% extends "layouts/researchops.njk" %}
+{% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/input/macro.njk" import govukInput %}
+{% from "govuk/components/select/macro.njk" import govukSelect %}
+{% from "govuk/components/summary-list/macro.njk" import govukSummaryList %}
+{% from "govuk/components/textarea/macro.njk" import govukTextarea %}
+
+{% set studyPageScriptVersion = "study-record-id-routing-20260518" %}
+
+{% block head %}
+	<meta property="schema:name" content="Study synthesis - ResearchOps">
+	<link rel="stylesheet" href="/css/govuk/govuk-forms.css" media="screen">
+	<link rel="stylesheet" href="/css/synthesize.css?v=study-synthesis-20260501-progressive-disclosure" media="screen">
+	<link rel="modulepreload" href="/js/study-route-context.js">
+	<link rel="modulepreload" href="/js/synthesis-route-loader.js?v={{ studyPageScriptVersion }}">
+{% endblock %}
+
+{% block content %}
+<div class="govuk-width-container study-synthesis-page" data-study-subpage-template="synthesis">
+	{{ govukBreadcrumbs({
+		items: [
+			{ text: "Projects", href: "/pages/projects/" },
+			{ text: "Project", href: "/pages/projects/", attributes: { id: "breadcrumb-project" } },
+			{ text: "Study", href: "#", attributes: { id: "breadcrumb-study" } },
+			{ text: "Synthesis" }
+		]
+	}) }}
+
+	<div id="synthesis-error" class="govuk-error-summary" tabindex="-1" hidden aria-hidden="true" data-module="govuk-error-summary">
+		<div role="alert">
+			<h2 class="govuk-error-summary__title">There is a problem</h2>
+			<div class="govuk-error-summary__body">
+				<ul id="synthesis-error-list" class="govuk-list govuk-error-summary__list"></ul>
+			</div>
+		</div>
+	</div>
+
+	<div id="synthesis-status" class="govuk-body-s synthesis-status" aria-live="polite"></div>
+
+	<header class="synthesis-hero govuk-!-margin-bottom-6">
+		<div>
+			<p id="synthesis-eyebrow" class="govuk-caption-m">Study synthesis</p>
+			<h1 id="synthesis-title" class="govuk-heading-l">Synthesis for this study</h1>
+			<p id="study-context-text" class="govuk-body synthesis-context govuk-!-width-two-thirds">Group study evidence into themes you can trace back to source notes.</p>
+		</div>
+		<div class="synthesis-hero__actions">
+			{{ govukButton({
+				text: "Back to study",
+				href: "/pages/projects/",
+				classes: "govuk-button--secondary",
+				attributes: { id: "back-to-study" }
+			}) }}
+		</div>
+	</header>
+
+	<section class="synthesis-summary" aria-label="Synthesis summary">
+		{{ govukSummaryList({
+			classes: "synthesis-summary-list",
+			rows: [
+				{ key: { text: "Project" }, value: { html: '<span id="summary-project">-</span>' } },
+				{ key: { text: "Study" }, value: { html: '<span id="summary-study">-</span>' } },
+				{ key: { text: "Evidence" }, value: { html: '<span id="summary-evidence-count">0 evidence items</span>' } },
+				{ key: { text: "Themes" }, value: { html: '<span id="summary-theme-count">0 themes</span>' } }
+			]
+		}) }}
+	</section>
+
+	<section id="no-evidence-state" class="synthesis-empty synthesis-empty--route" hidden>
+		<h2 class="govuk-heading-m">Capture evidence before starting synthesis</h2>
+		<p class="govuk-body">No evidence has been captured for this study yet. Capture evidence during a research session, then return here to group it into working clusters and themes.</p>
+		{{ govukButton({
+			text: "Capture evidence in a session",
+			href: "/pages/study/session/",
+			attributes: { id: "capture-evidence-link" }
+		}) }}
+	</section>
+
+	<div id="synthesis-workspace" class="synthesis-flow" hidden>
+		<section id="clusters-section" class="panel synthesis-panel" aria-labelledby="clusters-title">
+			<header class="synthesis-panel__header">
+				<div>
+					<h2 id="clusters-title" class="govuk-heading-m">Working cluster groupings</h2>
+					<p class="govuk-body">Create a working cluster grouping before selecting evidence. Cluster groupings are provisional groups of related evidence.</p>
+				</div>
+			</header>
+
+			<form id="cluster-form" class="cluster-create" novalidate>
+				{{ govukInput({
+					id: "cluster-label",
+					name: "clusterLabel",
+					label: { text: "Cluster grouping name" },
+					attributes: { autocomplete: "off", "aria-describedby": "create-cluster-hint", disabled: "disabled" }
+				}) }}
+
+				{{ govukTextarea({
+					id: "cluster-description",
+					name: "clusterDescription",
+					value: "",
+					rows: 4,
+					label: { text: "Cluster grouping description" },
+					attributes: { disabled: "disabled" }
+				}) }}
+
+				{{ govukButton({
+					text: "Create cluster grouping",
+					type: "submit",
+					attributes: { id: "create-cluster", "aria-describedby": "create-cluster-hint", disabled: "disabled" }
+				}) }}
+				<p id="create-cluster-hint" class="govuk-hint">Capture evidence before creating a working cluster grouping.</p>
+			</form>
+
+			<div id="clusters-empty" class="synthesis-empty" hidden>
+				<p class="govuk-body">No working cluster groupings have been created yet.</p>
+			</div>
+			<div id="cluster-list" class="cluster-list"></div>
+		</section>
+
+		<section id="evidence-section" class="panel synthesis-panel" aria-labelledby="evidence-title" hidden>
+			<header class="synthesis-panel__header">
+				<div>
+					<h2 id="evidence-title" class="govuk-heading-m">Evidence</h2>
+					<p class="govuk-body">Select evidence notes and add them to a working cluster grouping.</p>
+				</div>
+			</header>
+
+			<div class="evidence-toolbar">
+				{{ govukInput({
+					id: "tag-filter",
+					name: "tagFilter",
+					label: { text: "Filter by tag" },
+					hint: { text: "Use a tag, framework category or safeguarding label." },
+					attributes: { autocomplete: "off", spellcheck: "false" }
+				}) }}
+
+				<div class="govuk-form-group">
+					<label class="govuk-label" for="target-cluster">Add selected evidence to</label>
+					<select id="target-cluster" class="govuk-select" aria-describedby="add-selected-evidence-hint" disabled></select>
+				</div>
+
+				<div class="synthesis-action-block">
+					{{ govukButton({
+						text: "Add selected evidence",
+						type: "button",
+						classes: "govuk-button--secondary",
+						attributes: { id: "add-selected-evidence", "aria-describedby": "add-selected-evidence-hint", disabled: "disabled" }
+					}) }}
+					<p id="add-selected-evidence-hint" class="govuk-hint">Create a working cluster grouping and select evidence before adding evidence.</p>
+				</div>
+			</div>
+
+			<div id="evidence-empty" class="synthesis-empty" hidden>
+				<h3 class="govuk-heading-s">No evidence has been captured for this study yet</h3>
+				<p class="govuk-body">Run or complete sessions, then return here to group evidence into themes.</p>
+			</div>
+			<div id="evidence-list" class="evidence-list"></div>
+		</section>
+
+		<section id="themes-locked" class="synthesis-empty synthesis-empty--locked" hidden>
+			<h2 class="govuk-heading-m">Create themes after adding evidence to a cluster</h2>
+			<p class="govuk-body">Add evidence to a working cluster grouping before creating a theme.</p>
+		</section>
+
+		<section id="themes-section" class="panel synthesis-panel" aria-labelledby="themes-title" hidden>
+			<header class="synthesis-panel__header">
+				<div>
+					<h2 id="themes-title" class="govuk-heading-m">Themes</h2>
+					<p class="govuk-body">Create themes from working cluster groupings. Each theme keeps links to the evidence used.</p>
+				</div>
+			</header>
+
+			<form id="theme-form" class="theme-create" novalidate>
+				<div class="govuk-form-group">
+					<label class="govuk-label" for="theme-cluster">Working cluster grouping</label>
+					<select id="theme-cluster" class="govuk-select" aria-describedby="create-theme-hint" disabled></select>
+				</div>
+
+				{{ govukInput({
+					id: "theme-label",
+					name: "themeLabel",
+					label: { text: "Theme name" },
+					attributes: { autocomplete: "off", "aria-describedby": "create-theme-hint", disabled: "disabled" }
+				}) }}
+
+				{{ govukTextarea({
+					id: "theme-description",
+					name: "themeDescription",
+					value: "",
+					rows: 5,
+					label: { text: "Theme description" },
+					attributes: { disabled: "disabled" }
+				}) }}
+
+				{{ govukButton({
+					text: "Create theme",
+					type: "submit",
+					attributes: { id: "create-theme", "aria-describedby": "create-theme-hint", disabled: "disabled" }
+				}) }}
+				<p id="create-theme-hint" class="govuk-hint">Add evidence to a working cluster grouping before creating a theme.</p>
+			</form>
+
+			<div id="themes-empty" class="synthesis-empty" hidden>
+				<p class="govuk-body">No themes have been created for this study yet.</p>
+			</div>
+			<div id="theme-list" class="theme-list"></div>
+		</section>
+	</div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+	<script type="module" src="/js/synthesis-route-loader.js?v={{ studyPageScriptVersion }}"></script>
+{% endblock %}

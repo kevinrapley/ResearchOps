@@ -2,6 +2,8 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 
 const pageSource = fs.readFileSync("public/pages/study/synthesis/index.html", "utf8");
+const templateSource = fs.readFileSync("src/govuk/templates/pages/study-synthesis.njk", "utf8");
+const rendererSource = fs.readFileSync("scripts/govuk/render-govuk-pages.mjs", "utf8");
 const loaderSource = fs.readFileSync("public/js/synthesis-route-loader.js", "utf8");
 const controllerSource = fs.readFileSync("public/js/synthesize-page.js", "utf8");
 const stylesheetSource = fs.readFileSync("public/css/synthesize.css", "utf8");
@@ -15,14 +17,19 @@ function excludes(source, text, label) {
 }
 
 includes(pageSource, "<html class=\"govuk-template\" lang=\"en\">", "synthesis page");
+for (const macro of ["govukBreadcrumbs({", "govukButton({", "govukInput({", "govukSummaryList({", "govukTextarea({"]) {
+	includes(templateSource, macro, "synthesis template");
+}
+includes(rendererSource, "template: 'pages/study-synthesis.njk'", "GOV.UK renderer");
+includes(rendererSource, "output: 'public/pages/study/synthesis/index.html'", "GOV.UK renderer");
 includes(pageSource, "/assets/govuk/govuk-frontend.css", "synthesis page");
 includes(pageSource, "/components/layout.js", "synthesis page");
 includes(pageSource, "/js/govuk-frontend-init.js", "synthesis page");
 includes(pageSource, "src=\"/partials/header.html\"", "synthesis page");
 includes(pageSource, "src=\"/partials/footer.html\"", "synthesis page");
 includes(pageSource, "/js/synthesis-route-loader.js?v=study-record-id-routing-20260518", "synthesis page");
-includes(pageSource, "href=\"/css/screen.css\"", "synthesis page");
 includes(pageSource, "href=\"/css/synthesize.css?v=study-synthesis-20260501-progressive-disclosure\"", "synthesis page");
+includes(pageSource, "data-study-subpage-template=\"synthesis\"", "synthesis page");
 
 for (const id of [
 	"synthesis-error",
@@ -70,12 +77,16 @@ includes(pageSource, "Capture evidence before starting synthesis", "synthesis pa
 includes(pageSource, "Capture evidence in a session", "synthesis page");
 includes(pageSource, "Working cluster groupings", "synthesis page");
 includes(pageSource, "Create a working cluster grouping before selecting evidence.", "synthesis page");
-includes(pageSource, "disabled>Create cluster grouping</button>", "synthesis page");
-includes(pageSource, "disabled>Create theme</button>", "synthesis page");
+includes(pageSource, "id=\"create-cluster\"", "synthesis page");
+includes(pageSource, "disabled=\"disabled\"", "synthesis page");
+includes(pageSource, "Create cluster grouping", "synthesis page");
+includes(pageSource, "id=\"create-theme\"", "synthesis page");
+includes(pageSource, "Create theme", "synthesis page");
 excludes(pageSource, "id=\"filter\"", "synthesis page");
 excludes(pageSource, "id=\"newCluster\"", "synthesis page");
 excludes(pageSource, "id=\"publish\"", "synthesis page");
 excludes(pageSource, "<script type=\"module\">", "synthesis page");
+excludes(pageSource, "href=\"/css/screen.css\"", "synthesis page");
 
 includes(loaderSource, "study-canonical-url-bridge.js?v=study-record-id-routing-20260518", "synthesis loader");
 includes(loaderSource, "components/layout.js", "synthesis loader");

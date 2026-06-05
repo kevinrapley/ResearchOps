@@ -2,6 +2,8 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 
 const pageSource = fs.readFileSync("public/pages/study/guides/index.html", "utf8");
+const templateSource = fs.readFileSync("src/govuk/templates/pages/study-guides.njk", "utf8");
+const rendererSource = fs.readFileSync("scripts/govuk/render-govuk-pages.mjs", "utf8");
 const contextSource = fs.readFileSync("public/js/study-guides-context.js", "utf8");
 const guidesPageSource = fs.readFileSync("public/components/guides/guides-page.js", "utf8");
 const variableManagerSource = fs.readFileSync("public/components/guides/variable-manager.js", "utf8");
@@ -16,21 +18,32 @@ function excludes(source, text, label) {
   assert.equal(source.includes(text), false, `Expected ${label} not to include: ${text}`);
 }
 
-includes(pageSource, "href=\"/css/screen.css\"", "study guides page");
-includes(pageSource, "href=\"/css/govuk/govuk-buttons.css\"", "study guides page");
+for (const macro of ["govukBreadcrumbs({", "govukButton({", "govukInput({"]) {
+  includes(templateSource, macro, "study guides template");
+}
+
+includes(rendererSource, "template: 'pages/study-guides.njk'", "GOV.UK renderer");
+includes(rendererSource, "output: 'public/pages/study/guides/index.html'", "GOV.UK renderer");
+
+includes(pageSource, "href=\"/assets/govuk/govuk-frontend.css\"", "study guides page");
 includes(pageSource, "href=\"/css/guides.css\"", "study guides page");
+includes(pageSource, "data-study-subpage-template=\"guides\"", "study guides page");
 includes(pageSource, "/js/study-guides-context.js", "study guides page");
 includes(pageSource, "rel=\"modulepreload\" href=\"/js/study-guides-context.js\"", "study guides page");
 includes(pageSource, "/components/guides/guides-page.js", "study guides page");
 includes(pageSource, "src=\"/components/layout.js\" defer", "study guides page");
 includes(pageSource, "class=\"govuk-button\"", "study guides page");
 includes(pageSource, "class=\"govuk-button govuk-button--secondary\"", "study guides page");
+includes(pageSource, "id=\"btn-new\"", "study guides page");
+includes(pageSource, "id=\"guide-source\"", "study guides page");
+includes(pageSource, "id=\"guide-preview\"", "study guides page");
 includes(pageSource, "id=\"guides-tbody\"", "study guides page");
 includes(pageSource, "id=\"editor-section\"", "study guides page");
 includes(pageSource, "id=\"drawer-patterns\"", "study guides page");
 includes(pageSource, "id=\"drawer-variables\"", "study guides page");
 includes(pageSource, "id=\"back-to-study\"", "study guides page");
 excludes(pageSource, "class=\"btn", "study guides page");
+excludes(pageSource, "href=\"/css/screen.css\"", "study guides page");
 excludes(pageSource, "<script type=\"module\">", "study guides page");
 
 includes(buttonCssSource, ".govuk-button", "GOV.UK button stylesheet");

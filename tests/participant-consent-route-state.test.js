@@ -2,6 +2,8 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 
 const pageSource = fs.readFileSync("public/pages/study/participant-consent/index.html", "utf8");
+const templateSource = fs.readFileSync("src/govuk/templates/pages/study-participant-consent.njk", "utf8");
+const rendererSource = fs.readFileSync("scripts/govuk/render-govuk-pages.mjs", "utf8");
 const loaderSource = fs.readFileSync("public/js/participant-consent-route-loader.js", "utf8");
 const controllerSource = fs.readFileSync("public/js/participant-consent-page.js", "utf8");
 const fieldsSource = fs.readFileSync("infra/cloudflare/src/core/fields.js", "utf8");
@@ -17,10 +19,28 @@ function excludes(source, text, label) {
 	assert.equal(source.includes(text), false, `Expected ${label} not to include: ${text}`);
 }
 
-includes(pageSource, "Participant consent — ResearchOps", "participant consent page");
+for (const macro of [
+	"govukBreadcrumbs({",
+	"govukButton({",
+	"govukCheckboxes({",
+	"govukDetails({",
+	"govukInput({",
+	"govukSelect({",
+	"govukSummaryList({",
+	"govukTextarea({"
+]) {
+	includes(templateSource, macro, "participant consent template");
+}
+
+includes(rendererSource, "template: 'pages/study-participant-consent.njk'", "GOV.UK renderer");
+includes(rendererSource, "output: 'public/pages/study/participant-consent/index.html'", "GOV.UK renderer");
+
+includes(pageSource, "Participant consent - ResearchOps Demo Suite", "participant consent page");
+includes(pageSource, "href=\"/assets/govuk/govuk-frontend.css\"", "participant consent page");
 includes(pageSource, "href=\"/css/participant-consent.css\"", "participant consent page");
 includes(pageSource, "src=\"/js/participant-consent-route-loader.js?v=study-record-id-routing-20260518\"", "participant consent page");
 includes(pageSource, "href=\"/js/study-route-context.js\"", "participant consent page");
+includes(pageSource, "data-study-subpage-template=\"participant-consent\"", "participant consent page");
 includes(pageSource, "id=\"breadcrumb-project\"", "participant consent page");
 includes(pageSource, "id=\"breadcrumb-study\"", "participant consent page");
 includes(pageSource, "id=\"back-to-study\"", "participant consent page");
@@ -31,6 +51,7 @@ includes(pageSource, "id=\"consent-form-select\"", "participant consent page");
 includes(pageSource, "id=\"capture-method\"", "participant consent page");
 includes(pageSource, "id=\"consent-withdrawn\"", "participant consent page");
 includes(pageSource, "id=\"withdrawal-reason\"", "participant consent page");
+includes(pageSource, "class=\"govuk-summary-list participant-consent-summary\"", "participant consent page");
 excludes(pageSource, "src=\"/js/participant-consent-page.js\"", "participant consent page");
 excludes(pageSource, "<script type=\"module\">", "participant consent page");
 excludes(pageSource, "class=\"btn", "participant consent page");

@@ -265,6 +265,46 @@ export const govukPages = [
 		},
 	},
 	{
+		template: 'pages/study-participant-consent.njk',
+		output: 'public/pages/study/participant-consent/index.html',
+		context: {
+			pageTitle: 'Participant consent - ResearchOps Demo Suite',
+			serviceName: 'ResearchOps Demo Suite',
+			activeNavigation: 'Projects',
+			navigation: projectNavigation,
+		},
+	},
+	{
+		template: 'pages/study-participants.njk',
+		output: 'public/pages/study/participants/index.html',
+		context: {
+			pageTitle: 'Study participants - ResearchOps Demo Suite',
+			serviceName: 'ResearchOps Demo Suite',
+			activeNavigation: 'Projects',
+			navigation: projectNavigation,
+		},
+	},
+	{
+		template: 'pages/study-guides.njk',
+		output: 'public/pages/study/guides/index.html',
+		context: {
+			pageTitle: 'Discussion guides - ResearchOps Demo Suite',
+			serviceName: 'ResearchOps Demo Suite',
+			activeNavigation: 'Projects',
+			navigation: projectNavigation,
+		},
+	},
+	{
+		template: 'pages/study-synthesis.njk',
+		output: 'public/pages/study/synthesis/index.html',
+		context: {
+			pageTitle: 'Study synthesis - ResearchOps Demo Suite',
+			serviceName: 'ResearchOps Demo Suite',
+			activeNavigation: 'Projects',
+			navigation: projectNavigation,
+		},
+	},
+	{
 		template: 'pages/project-dashboard-participants.njk',
 		output: 'public/pages/project-dashboard/participants/index.html',
 		context: {

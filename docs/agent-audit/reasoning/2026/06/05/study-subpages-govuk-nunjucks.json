@@ -1,0 +1,156 @@
+{
+  "date": "2026-06-05",
+  "branch": "feature/study-subpages-govuk-nunjucks",
+  "traceRequired": true,
+  "task": "Bring Study participant consent, participants, guides and synthesis subpages into full Nunjucks templating with GOV.UK Frontend and macros.",
+  "selectedBundles": [
+    {
+      "id": "github-diamond",
+      "path": ".agent-operating-model/bundles/github/"
+    },
+    {
+      "id": "researchops-developer-control",
+      "path": ".agent-operating-model/bundles/researchops-developer-control/"
+    },
+    {
+      "id": "multi-functional-team",
+      "path": ".agent-operating-model/bundles/multi-functional-team/"
+    },
+    {
+      "id": "govuk-design-system",
+      "path": ".agent-operating-model/bundles/govuk-design-system/"
+    }
+  ],
+  "filesRead": [
+    "AGENTS.md",
+    ".agent-operating-model/orchestration.xml",
+    ".agent-operating-model/bundle-registry.json",
+    ".agent-operating-model/task-signal-catalog.json",
+    ".agent-operating-model/selection-rules.json",
+    ".agent-operating-model/bootstrap-checklist.md",
+    ".agent-operating-model/precedence-policy.md",
+    ".agent-operating-model/trace-policy.md",
+    ".agent-operating-model/github-mutation-policy.md",
+    ".agent-operating-model/bundles/github/",
+    ".agent-operating-model/bundles/researchops-developer-control/",
+    ".agent-operating-model/bundles/multi-functional-team/",
+    ".agent-operating-model/bundles/govuk-design-system/",
+    "src/govuk/templates/layouts/researchops.njk",
+    "src/govuk/templates/pages/study.njk",
+    "public/pages/study/participant-consent/index.html",
+    "public/pages/study/participants/index.html",
+    "public/pages/study/guides/index.html",
+    "public/pages/study/synthesis/index.html",
+    "public/js/participant-consent-route-loader.js",
+    "public/js/participants-route-loader.js",
+    "public/js/guides-route-loader.js",
+    "public/js/synthesize-route-loader.js",
+    "tests/participant-consent-route-state.test.js",
+    "tests/participants-page-route-state.test.js",
+    "tests/study-guides-route-state.test.js",
+    "tests/synthesize-page-route-state.test.js"
+  ],
+  "filesModified": [
+    "scripts/govuk/render-govuk-pages.mjs",
+    "public/pages/study/participant-consent/index.html",
+    "public/pages/study/participants/index.html",
+    "public/pages/study/guides/index.html",
+    "public/pages/study/synthesis/index.html",
+    "tests/govuk-forms-application-route-state.test.js",
+    "tests/govuk-tables-summary-lists-application-route-state.test.js",
+    "tests/participant-consent-route-state.test.js",
+    "tests/participants-page-route-state.test.js",
+    "tests/study-guides-route-state.test.js",
+    "tests/synthesize-page-route-state.test.js",
+    "docs/agent-audit/reasoning/2026/06/05/study-subpages-govuk-nunjucks.md",
+    "docs/agent-audit/reasoning/2026/06/05/study-subpages-govuk-nunjucks.json"
+  ],
+  "filesCreated": [
+    "src/govuk/templates/pages/study-participant-consent.njk",
+    "src/govuk/templates/pages/study-participants.njk",
+    "src/govuk/templates/pages/study-guides.njk",
+    "src/govuk/templates/pages/study-synthesis.njk",
+    "docs/agent-audit/reasoning/2026/06/05/study-subpages-govuk-nunjucks.md",
+    "docs/agent-audit/reasoning/2026/06/05/study-subpages-govuk-nunjucks.json"
+  ],
+  "skippedBundles": [
+    {
+      "id": "cloudflare",
+      "reason": "No Worker, D1, R2, deployment or runtime behaviour changed."
+    },
+    {
+      "id": "openai-platform",
+      "reason": "No OpenAI API or model behaviour changed."
+    },
+    {
+      "id": "mcp-agent-tooling",
+      "reason": "No MCP server or agent-tooling implementation changed."
+    },
+    {
+      "id": "airtable-public-api",
+      "reason": "No Airtable API integration changed."
+    },
+    {
+      "id": "mural-public-api",
+      "reason": "No Mural API integration changed."
+    }
+  ],
+  "teamCritique": [
+    "Each subpage should feel like a GOV.UK service page, with task-oriented headings, summary lists, task lists, tables, fieldsets and primary actions rather than bespoke page furniture.",
+    "The page copy should support researcher workflows directly and preserve existing dynamic states without introducing prototype-only hard-coded examples.",
+    "Nunjucks templates should use GOV.UK macros wherever the macros can preserve existing IDs, names, ARIA references and JavaScript hooks.",
+    "All four routes should keep their current client-side loading behaviour while the initial HTML moves to the shared ResearchOps GOV.UK layout."
+  ],
+  "implementationSummary": [
+    "Added Nunjucks templates for participant consent, participants, guides and synthesis Study subpages.",
+    "Registered the four templates in scripts/govuk/render-govuk-pages.mjs so static pages are generated under public/pages/study/.../index.html.",
+    "Re-rendered the generated GOV.UK pages through the existing renderer.",
+    "Preserved existing dynamic route-loader and component hooks for study and project context hydration.",
+    "Replaced bespoke static page chrome with the shared layouts/researchops.njk layout and GOV.UK Frontend stylesheet.",
+    "Used GOV.UK macros for breadcrumbs, buttons, selects, inputs, radios, checkboxes, textareas, summary lists and inset text where they fit existing controller contracts.",
+    "Kept participant consent and synthesis error summaries as hand-authored GOV.UK error-summary markup because their controllers append messages into exact ul hooks that the macro does not expose.",
+    "Updated route-state tests so they assert the GOV.UK macro output and dynamic hooks rather than the previous hand-written static markup."
+  ],
+  "validation": [
+    {
+      "command": "node scripts/govuk/render-govuk-pages.mjs",
+      "result": "passed",
+      "evidence": "Generated all GOV.UK static pages including the four Study subpages."
+    },
+    {
+      "command": "node --test tests/participant-consent-route-state.test.js tests/participants-page-route-state.test.js tests/study-guides-route-state.test.js tests/synthesize-page-route-state.test.js tests/govuk-forms-application-route-state.test.js tests/govuk-tables-summary-lists-application-route-state.test.js tests/govuk-page-chrome-navigation-route-state.test.js",
+      "result": "passed",
+      "evidence": "Focused route-state and GOV.UK contract tests passed for the converted Study subpages."
+    },
+    {
+      "command": "node scripts/agent-trace/assert-trace-coverage.mjs",
+      "result": "passed",
+      "evidence": "Trace coverage confirmed for the feature branch."
+    },
+    {
+      "command": "git diff --check",
+      "result": "passed",
+      "evidence": "Whitespace check passed."
+    },
+    {
+      "command": "node node_modules/prettier/bin/prettier.cjs --check scripts/govuk/render-govuk-pages.mjs public/pages/study/participant-consent/index.html public/pages/study/participants/index.html public/pages/study/guides/index.html public/pages/study/synthesis/index.html tests/participant-consent-route-state.test.js tests/participants-page-route-state.test.js tests/study-guides-route-state.test.js tests/synthesize-page-route-state.test.js tests/govuk-forms-application-route-state.test.js tests/govuk-tables-summary-lists-application-route-state.test.js docs/agent-audit/reasoning/2026/06/05/study-subpages-govuk-nunjucks.md docs/agent-audit/reasoning/2026/06/05/study-subpages-govuk-nunjucks.json",
+      "result": "passed",
+      "evidence": "Modified generated HTML, scripts, tests and trace files use Prettier formatting."
+    },
+    {
+      "command": "node --test",
+      "result": "passed",
+      "evidence": "Full suite passed: 176 tests."
+    },
+    {
+      "command": "Browser spot-check at http://127.0.0.1:8791 for /pages/study/participant-consent/?id=RECT3O7DT, /pages/study/participants/?id=RECT3O7DT, /pages/study/guides/?id=RECT3O7DT and /pages/study/synthesis/?id=RECT3O7DT",
+      "result": "passed",
+      "evidence": "All four converted routes rendered with the shared GOV.UK main wrapper, breadcrumbs, button styling, table/task/summary-list structures and layout script. Static-server /api/studies 404s were expected and not treated as live data verification."
+    }
+  ],
+  "residualRisks": [
+    "The generated pages remain static route shells. Their live content still depends on existing client-side route loaders and APIs.",
+    "Error summary list contents for participant consent and synthesis are populated dynamically by page controllers; the static template preserves the GOV.UK structure and required hooks rather than pre-rendering unknown errors.",
+    "The browser spot-check used a static file server, so /api/studies returned 404 during preview. That was expected for this validation path and was not treated as live data verification."
+  ]
+}
