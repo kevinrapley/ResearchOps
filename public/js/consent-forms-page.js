@@ -337,7 +337,7 @@ function renderList() {
 }
 
 async function loadConsentForms() {
-	const url = new URL(apiUrl("/api/consent-forms"));
+	const url = new URL(apiUrl("/api/consent-forms"), window.location.origin);
 	url.searchParams.set("study", state.sid);
 	let body = null;
 	try {

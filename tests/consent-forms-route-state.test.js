@@ -60,6 +60,7 @@ includes(controllerSource, "function renderMarkdown", "controller");
 includes(controllerSource, "consentItems", "controller");
 includes(controllerSource, "study_airtable_id: state.sid", "controller");
 includes(controllerSource, "apiUrl(\"/api/consent-forms\")", "controller");
+includes(controllerSource, "new URL(apiUrl(\"/api/consent-forms\"), window.location.origin)", "controller");
 includes(controllerSource, "/api/consent-forms/${encodeURIComponent(id)}/publish", "controller");
 includes(controllerSource, "list failed; starting with a new draft", "controller");
 includes(controllerSource, "Consent forms could not be loaded. You can still create a new draft.", "controller");
