@@ -5,7 +5,9 @@ const pageSource = fs.readFileSync("public/pages/study/guides/index.html", "utf8
 const templateSource = fs.readFileSync("src/govuk/templates/pages/study-guides.njk", "utf8");
 const rendererSource = fs.readFileSync("scripts/govuk/render-govuk-pages.mjs", "utf8");
 const contextSource = fs.readFileSync("public/js/study-guides-context.js", "utf8");
+const loaderSource = fs.readFileSync("public/js/guides-route-loader.js", "utf8");
 const guidesPageSource = fs.readFileSync("public/components/guides/guides-page.js", "utf8");
+const guideEditorSource = fs.readFileSync("public/components/guides/guide-editor.js", "utf8");
 const variableManagerSource = fs.readFileSync("public/components/guides/variable-manager.js", "utf8");
 const guidesCssSource = fs.readFileSync("public/css/guides.css", "utf8");
 const buttonCssSource = fs.readFileSync("public/css/govuk/govuk-buttons.css", "utf8");
@@ -18,8 +20,16 @@ function excludes(source, text, label) {
   assert.equal(source.includes(text), false, `Expected ${label} not to include: ${text}`);
 }
 
-for (const macro of ["govukBreadcrumbs({", "govukButton({", "govukInput({"]) {
-  includes(templateSource, macro, "study guides template");
+for (const macro of [
+	"govukBreadcrumbs({",
+	"govukButton({",
+	"govukDetails({",
+	"govukErrorSummary({",
+	"govukInput({",
+	"govukNotificationBanner({",
+	"govukTextarea({",
+]) {
+	includes(templateSource, macro, "study guides template");
 }
 
 includes(rendererSource, "template: 'pages/study-guides.njk'", "GOV.UK renderer");
@@ -28,20 +38,38 @@ includes(rendererSource, "output: 'public/pages/study/guides/index.html'", "GOV.
 includes(pageSource, "href=\"/assets/govuk/govuk-frontend.css\"", "study guides page");
 includes(pageSource, "href=\"/css/guides.css\"", "study guides page");
 includes(pageSource, "data-study-subpage-template=\"guides\"", "study guides page");
+includes(pageSource, "id=\"study-context-warning\"", "study guides page");
+includes(pageSource, "class=\"govuk-notification-banner\"", "study guides page");
+includes(pageSource, "Study details could not be loaded. Some saved guide data may be unavailable.", "study guides page");
+excludes(pageSource, "id=\"study-context-warning\" hidden=\"hidden\" role=\"status\"", "study guides page");
+excludes(pageSource, "id=\"study-context-warning\" hidden=\"hidden\">\n\t\t<span class=\"govuk-warning-text__icon\"", "study guides page");
 includes(pageSource, "/js/study-guides-context.js", "study guides page");
 includes(pageSource, "rel=\"modulepreload\" href=\"/js/study-guides-context.js\"", "study guides page");
 includes(pageSource, "/components/guides/guides-page.js", "study guides page");
 includes(pageSource, "src=\"/components/layout.js\" defer", "study guides page");
-includes(pageSource, "class=\"govuk-button\"", "study guides page");
 includes(pageSource, "class=\"govuk-button govuk-button--secondary\"", "study guides page");
 includes(pageSource, "id=\"btn-new\"", "study guides page");
+includes(pageSource, "Draft a guide", "study guides page");
 includes(pageSource, "id=\"guide-source\"", "study guides page");
 includes(pageSource, "id=\"guide-preview\"", "study guides page");
+includes(pageSource, "id=\"guide-error-summary\"", "study guides page");
+includes(pageSource, "class=\"govuk-error-summary\"", "study guides page");
+includes(pageSource, "id=\"guides-empty\"", "study guides page");
+includes(pageSource, "id=\"guides-table-wrap\"", "study guides page");
 includes(pageSource, "id=\"guides-tbody\"", "study guides page");
 includes(pageSource, "id=\"editor-section\"", "study guides page");
 includes(pageSource, "id=\"drawer-patterns\"", "study guides page");
+includes(pageSource, "id=\"drawer-patterns\" class=\"drawer\" hidden aria-labelledby=\"drawer-patterns-title\" tabindex=\"-1\"", "study guides page");
+includes(pageSource, "id=\"btn-new-pattern\" type=\"button\" hidden", "study guides page");
+includes(pageSource, "id=\"pattern-tray\"", "study guides page");
 includes(pageSource, "id=\"drawer-variables\"", "study guides page");
-includes(pageSource, "id=\"back-to-study\"", "study guides page");
+includes(pageSource, "id=\"drawer-variables\" class=\"drawer\" hidden aria-labelledby=\"drawer-variables-title\" tabindex=\"-1\"", "study guides page");
+includes(pageSource, "id=\"drawer-variables-title\"", "study guides page");
+includes(pageSource, "id=\"variables-form\" novalidate", "study guides page");
+includes(pageSource, "Publish guide", "study guides page");
+excludes(pageSource, "id=\"back-to-study\"", "study guides page");
+excludes(pageSource, "Back to Study", "study guides page");
+excludes(pageSource, "id=\"btn-insert-tag\"", "study guides page");
 excludes(pageSource, "class=\"btn", "study guides page");
 excludes(pageSource, "href=\"/css/screen.css\"", "study guides page");
 excludes(pageSource, "<script type=\"module\">", "study guides page");
@@ -61,17 +89,120 @@ includes(contextSource, "async function loadProject", "study guides context modu
 includes(contextSource, "function bindContext", "study guides context module");
 includes(contextSource, "window.__guideCtx", "study guides context module");
 includes(contextSource, "Missing Study record ID in URL", "study guides context module");
+includes(contextSource, "study-context-warning", "study guides context module");
+includes(contextSource, "studyTitleEl.textContent = \"Study\"", "study guides context module");
+excludes(contextSource, "`Study ${studyId}`", "study guides context module");
 includes(contextSource, "export { fallbackTitle, pickTitle };", "study guides context module");
+
+includes(loaderSource, "Study route bridge unavailable", "study guides route loader");
+includes(loaderSource, "Study guides context unavailable", "study guides route loader");
+includes(loaderSource, "Guides controller unavailable", "study guides route loader");
+includes(loaderSource, "await import('/components/guides/guides-page.js", "study guides route loader");
 
 includes(guidesPageSource, "hydrateCrumbs", "guides component module");
 includes(guidesPageSource, "loadGuides", "guides component module");
+includes(guidesPageSource, "/components/guides/guide-editor.js?v=study-guides-delete-confirmation-20260605", "guides component module");
+includes(guidesPageSource, "/components/guides/patterns.js?v=study-guides-delete-confirmation-20260605", "guides component module");
+includes(guidesPageSource, "/components/guides/variable-manager.js?v=study-guides-delete-confirmation-20260605", "guides component module");
+includes(guidesPageSource, "async function bootGuidesPage", "guides component module");
+includes(guidesPageSource, "function setGuidesListState", "guides component module");
+includes(guidesPageSource, 'document.readyState === "loading"', "guides component module");
+includes(guidesPageSource, "bootGuidesPage();", "guides component module");
+includes(guidesPageSource, "function revealDrawer", "guides component module");
+includes(guidesPageSource, "function viewLocalPattern", "guides component module");
+includes(guidesPageSource, "function editLocalPattern", "guides component module");
+includes(guidesPageSource, "function deleteLocalPattern", "guides component module");
+includes(guidesPageSource, "function formatPatternCategory", "guides component module");
+includes(guidesPageSource, "function patternPartialName", "guides component module");
+includes(guidesPageSource, "function setCreatePatternVisibility", "guides component module");
+includes(guidesPageSource, "__patternServiceAvailable = true", "guides component module");
+includes(guidesPageSource, "__patternServiceAvailable = false", "guides component module");
+includes(guidesPageSource, "setCreatePatternVisibility(true)", "guides component module");
+includes(guidesPageSource, "setCreatePatternVisibility(false)", "guides component module");
+includes(guidesPageSource, "if (!__patternServiceAvailable) return", "guides component module");
+includes(guidesPageSource, "patternItem.appendChild(tray)", "guides component module");
+includes(guidesPageSource, "function bindPatternListActions", "guides component module");
+includes(guidesPageSource, "window.__researchOpsHandlePatternClick = handlePatternClick", "guides component module");
+includes(guidesPageSource, "pattern-action-button", "guides component module");
+includes(guidesPageSource, "data-view=", "guides component module");
+includes(guidesPageSource, "data-edit=", "guides component module");
+includes(guidesPageSource, "data-delete=", "guides component module");
+includes(guidesPageSource, "govuk-button--warning pattern-action-button", "guides component module");
+includes(guidesPageSource, "Add to guide", "guides component module");
+excludes(guidesPageSource, "const insertName = `${p.name}_v${p.version}`", "guides component module");
+excludes(guidesPageSource, "${escapeHtml(pattern.name)}_v${escapeHtml(pattern.version)}", "guides component module");
+includes(guidesPageSource, "data-save-local-pattern", "guides component module");
+includes(guidesPageSource, "data-confirm-delete-local-pattern", "guides component module");
+includes(guidesPageSource, "Confirm deletion", "guides component module");
+includes(guidesPageSource, "Type <strong>delete pattern</strong>", "guides component module");
+includes(guidesPageSource, "data-delete-pattern-confirmation", "guides component module");
+includes(guidesPageSource, "disabled>Delete pattern</button>", "guides component module");
+includes(guidesPageSource, "input.value.trim() !== \"delete pattern\"", "guides component module");
+includes(guidesPageSource, "Type \"delete pattern\" before deleting this pattern", "guides component module");
+includes(guidesPageSource, "pattern-tray", "guides component module");
+includes(guidesPageSource, "govuk-warning-text", "guides component module");
+includes(guidesPageSource, "Add to guide", "guides component module");
+includes(guidesPageSource, "function setFieldError", "guides component module");
+includes(guidesPageSource, "function renderGuideErrorSummary", "guides component module");
+includes(guidesPageSource, "__lintErrors", "guides component module");
+includes(guidesPageSource, "Resolve guide source issues", "guides component module");
+includes(guidesPageSource, "govuk-error-summary__list", "guides component module");
+includes(guidesPageSource, "Enter a guide title", "guides component module");
+includes(guidesPageSource, "Enter guide source", "guides component module");
+includes(guidesPageSource, "guides-table-status", "guides component module");
+includes(guidesPageSource, "Guide editor has validation errors.", "guides component module");
+includes(guidesPageSource, "Draft a discussion guide in the editor", "guides component module");
+includes(guidesPageSource, "fileName", "guides component module");
+excludes(guidesPageSource, "|| \"Untitled guide\"", "guides component module");
+includes(
+	guideEditorSource,
+	`**Study:** {{study.fileName}}
+
+**Project:** {{project.name}}`,
+	"guide editor module"
+);
+for (const partialName of [
+	"intro_opening_v1",
+	"consent_standard_v2",
+	"task_observation_shell_v1",
+	"probe_error_recovery_v1",
+	"probe_trust_signals_v1",
+	"wrapup_debrief_v1",
+	"note_observer_grid_v1",
+]) {
+	includes(guideEditorSource, `{{> ${partialName}}}`, "guide editor module");
+}
+includes(guideEditorSource, "const map = buildLocalPartials(names);", "guide editor module");
+includes(guideEditorSource, "function buildLocalPartials", "guide editor module");
+includes(guideEditorSource, "globalThis.window?.__patternRegistry", "guide editor module");
+includes(guideEditorSource, "return map;", "guide editor module");
+includes(guidesPageSource, "scrollIntoView({ behavior: \"smooth\", block: \"start\" })", "guides component module");
+includes(guidesPageSource, "focus({ preventScroll: true })", "guides component module");
+includes(guidesPageSource, "revealDrawer(d, $(\"#drawer-variables-close\"))", "guides component module");
 
 includes(guidesCssSource, ".guides-header", "Guides stylesheet");
+includes(guidesCssSource, "Repo:       /src/styles/guides.scss", "Guides stylesheet");
+includes(guidesCssSource, "#editor-section", "Guides stylesheet");
+includes(guidesCssSource, "border-top: 0", "Guides stylesheet");
+includes(guidesCssSource, ".guides-empty-state", "Guides stylesheet");
+includes(guidesCssSource, ".study-guides-page .guides-table-status", "Guides stylesheet");
+includes(guidesCssSource, "padding-top: 20px", "Guides stylesheet");
+includes(guidesCssSource, "padding-bottom: 20px", "Guides stylesheet");
+includes(guidesCssSource, ".drawer .govuk-button--secondary", "Guides stylesheet");
+includes(guidesCssSource, "background-color: #ffffff", "Guides stylesheet");
+includes(guidesCssSource, ".drawer__actions", "Guides stylesheet");
+includes(guidesCssSource, ".pattern-category-header__heading", "Guides stylesheet");
+includes(guidesCssSource, ".pattern-action-button", "Guides stylesheet");
+includes(guidesCssSource, ".pattern-tray", "Guides stylesheet");
 includes(guidesCssSource, ".editor__toolbar", "Guides stylesheet");
 includes(guidesCssSource, ".editor__split", "Guides stylesheet");
 includes(guidesCssSource, ".code-editor", "Guides stylesheet");
 includes(guidesCssSource, ".code-editor__textarea", "Guides stylesheet");
 includes(guidesCssSource, ".preview", "Guides stylesheet");
+includes(guidesCssSource, ".preview h1", "Guides stylesheet");
+includes(guidesCssSource, "font-size: 24px", "Guides stylesheet");
 includes(guidesCssSource, ".drawer", "Guides stylesheet");
+includes(guidesCssSource, "scroll-margin-top: 30px", "Guides stylesheet");
 includes(guidesCssSource, ".vm-row", "Guides stylesheet");
+includes(guidesCssSource, ".vm-row--header", "Guides stylesheet");
 includes(guidesCssSource, "/* transparency begins in the cascade */", "Guides stylesheet");

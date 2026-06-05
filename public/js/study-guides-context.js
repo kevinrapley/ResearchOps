@@ -91,9 +91,15 @@ async function init() {
 		bindContext({ projectId, studyId, project, study });
 	} catch (error) {
 		console.error("[guides] init error:", error);
-		window.__guideCtx = { error };
+		const params = new URLSearchParams(location.search);
+		const studyId = params.get("id") || params.get("sid") || "";
+		window.__guideCtx = { error, study: { id: studyId } };
+
 		const studyTitleEl = $("#study-title");
-		if (studyTitleEl) studyTitleEl.textContent = "Study context could not be loaded";
+		if (studyTitleEl) studyTitleEl.textContent = "Study";
+
+		const contextWarning = $("#study-context-warning");
+		if (contextWarning) contextWarning.hidden = false;
 	}
 }
 

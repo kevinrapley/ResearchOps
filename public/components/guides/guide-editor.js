@@ -144,17 +144,17 @@ export async function renderGuide({ source, context, partials }) {
  */
 export async function buildPartials(names) {
 	if (!names || !names.length) return {};
+	const map = buildLocalPartials(names);
 
 	try {
 		// Fetch all partials list
 		const res = await fetch("/api/partials", { cache: "no-store" });
 		if (!res.ok) {
 			console.error("Failed to fetch partials list:", res.status);
-			return {};
+			return map;
 		}
 
 		const { partials = [] } = await res.json();
-		const map = {};
 
 		// For each requested name, find matching partial and fetch its source
 		for (const name of names) {
@@ -199,8 +199,18 @@ export async function buildPartials(names) {
 		return map;
 	} catch (err) {
 		console.error("Error building partials:", err);
-		return {};
+		return map;
 	}
+}
+
+function buildLocalPartials(names) {
+	const registry = globalThis.window?.__patternRegistry || globalThis.__patternRegistry || {};
+	return names.reduce((partials, name) => {
+		if (typeof registry[name] === "string") {
+			partials[name] = registry[name];
+		}
+		return partials;
+	}, {});
 }
 
 /* Starter source for new guides (kept minimal; FM is optional) */
@@ -209,8 +219,9 @@ version: 1
 ---
 # {{study.title}} — Discussion guide
 
-_Study:_ **{{study.title}}**  
-_Project:_ **{{project.name}}**
+**Study:** {{study.fileName}}
+
+**Project:** {{project.name}}
 
 {{> intro_opening_v1}}
 {{> consent_standard_v2}}

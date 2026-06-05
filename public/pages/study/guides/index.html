@@ -12,7 +12,7 @@
 		<link rel="stylesheet" href="/css/guides.css" media="screen" />
 		<link rel="modulepreload" href="/js/study-route-context.js" />
 		<link rel="modulepreload" href="/js/study-guides-context.js" />
-		<link rel="modulepreload" href="/js/guides-route-loader.js?v=study-record-id-routing-20260518" />
+		<link rel="modulepreload" href="/js/guides-route-loader.js?v=study-guides-delete-confirmation-20260605" />
 		<!-- /components/guides/guides-page.js -->
 
 		<script type="module" src="/components/layout.js" defer></script>
@@ -44,49 +44,89 @@
 					</ol>
 				</nav>
 
-				<header class="guides-header govuk-!-margin-bottom-6">
+				<div
+					class="govuk-notification-banner"
+					role="region"
+					aria-labelledby="govuk-notification-banner-title"
+					data-module="govuk-notification-banner"
+					id="study-context-warning"
+					hidden="hidden"
+				>
+					<div class="govuk-notification-banner__header">
+						<h2 class="govuk-notification-banner__title" id="govuk-notification-banner-title">Important</h2>
+					</div>
+					<div class="govuk-notification-banner__content">
+						<p class="govuk-notification-banner__heading">
+							Study details could not be loaded. Some saved guide data may be unavailable.
+						</p>
+					</div>
+				</div>
+
+				<header class="guides-header">
 					<p id="study-title" class="govuk-caption-m" data-bind="study.title">Study</p>
 					<h1 class="govuk-heading-l">Discussion guides</h1>
-					<p class="govuk-body govuk-!-width-two-thirds">
-						Create, review and publish discussion guides for this study.
-					</p>
+					<p class="govuk-body-l guides-header__lead">Create, review and publish discussion guides for this study.</p>
 					<div class="govuk-button-group">
-						<a
-							href="#"
-							role="button"
-							draggable="false"
-							class="govuk-button govuk-button--secondary"
-							data-module="govuk-button"
-							id="back-to-study"
-						>
-							Back to Study
-						</a>
-
-						<button type="button" class="govuk-button" data-module="govuk-button" id="btn-new">New guide</button>
+						<button type="button" class="govuk-button govuk-button--secondary" data-module="govuk-button" id="btn-new">
+							Draft a guide
+						</button>
 					</div>
 				</header>
 
-				<section id="guides-list-section" aria-labelledby="guides-list-title">
+				<section id="guides-list-section" class="guides-section" aria-labelledby="guides-list-title">
 					<h2 id="guides-list-title" class="govuk-heading-m">Guides for this study</h2>
-					<table id="guides-table" class="govuk-table">
-						<thead class="govuk-table__head">
-							<tr class="govuk-table__row">
-								<th class="govuk-table__header" scope="col">Title</th>
-								<th class="govuk-table__header" scope="col">Status</th>
-							</tr>
-						</thead>
-						<tbody id="guides-tbody" class="govuk-table__body"></tbody>
-					</table>
+					<p class="govuk-body">
+						Review saved guides, open a draft or check which guide has been published for fieldwork.
+					</p>
+					<div id="guides-empty" class="guides-empty-state govuk-inset-text" hidden>
+						<h3 class="govuk-heading-s">No guides yet</h3>
+						<p class="govuk-body">
+							Draft a discussion guide in the editor, save it as a draft, then publish it when it is ready to use for
+							fieldwork.
+						</p>
+					</div>
+					<div id="guides-table-wrap" class="table-wrap">
+						<table id="guides-table" class="govuk-table">
+							<caption class="govuk-table__caption govuk-table__caption--m govuk-visually-hidden">
+								Discussion guides for this study
+							</caption>
+							<thead class="govuk-table__head">
+								<tr class="govuk-table__row">
+									<th class="govuk-table__header" scope="col">Guide</th>
+									<th class="govuk-table__header" scope="col">Status</th>
+									<th class="govuk-table__header" scope="col">Version</th>
+									<th class="govuk-table__header" scope="col">Last updated</th>
+									<th class="govuk-table__header" scope="col">Owner</th>
+									<th class="govuk-table__header" scope="col"><span class="govuk-visually-hidden">Actions</span></th>
+								</tr>
+							</thead>
+							<tbody id="guides-tbody" class="govuk-table__body">
+								<tr class="govuk-table__row">
+									<td class="govuk-table__cell" colspan="6">Loading guides.</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
 				</section>
 
-				<section id="editor-section" class="editor" aria-labelledby="guide-editor-title">
+				<section id="editor-section" class="guides-section editor" aria-labelledby="guide-editor-title">
 					<h2 id="guide-editor-title" class="govuk-heading-m">Guide editor</h2>
+					<p class="govuk-body">
+						Write the guide source, check the preview and save the guide before publishing it for sessions.
+					</p>
+
+					<div class="govuk-error-summary" id="guide-error-summary" hidden="hidden" data-module="govuk-error-summary">
+						<div role="alert">
+							<h2 class="govuk-error-summary__title">There is a problem</h2>
+							<div class="govuk-error-summary__body"></div>
+						</div>
+					</div>
 
 					<div class="govuk-form-group">
-						<label class="govuk-label" for="guide-title">Guide title</label>
+						<label class="govuk-label govuk-label--s" for="guide-title">Guide title</label>
 
 						<input
-							class="govuk-input editor__title-field"
+							class="govuk-input govuk-input--width-20 editor__title-field"
 							id="guide-title"
 							name="guideTitle"
 							type="text"
@@ -94,92 +134,137 @@
 						/>
 					</div>
 
-					<p id="guide-status" class="govuk-body-s" aria-live="polite">draft</p>
+					<p class="govuk-body-s guides-editor-status">
+						Status:
+						<span id="guide-status" aria-live="polite">draft</span>
+					</p>
 
-					<div class="editor__toolbar govuk-button-group">
-						<button
-							type="button"
-							class="govuk-button govuk-button--secondary"
-							data-module="govuk-button"
-							id="btn-insert-pattern"
-						>
-							Insert pattern
-						</button>
+					<div class="editor__toolbar" aria-label="Guide editor tools">
+						<div class="govuk-button-group editor__toolbar-group">
+							<button
+								type="button"
+								class="govuk-button govuk-button--secondary"
+								data-module="govuk-button"
+								id="btn-insert-pattern"
+							>
+								Insert pattern
+							</button>
 
-						<button
-							type="button"
-							class="govuk-button govuk-button--secondary"
-							data-module="govuk-button"
-							id="btn-variables"
-						>
-							Variables
-						</button>
+							<button
+								type="button"
+								class="govuk-button govuk-button--secondary"
+								data-module="govuk-button"
+								id="btn-variables"
+							>
+								Variables
+							</button>
+						</div>
+						<div class="govuk-button-group editor__toolbar-group">
+							<button
+								type="button"
+								class="govuk-button govuk-button--secondary"
+								data-module="govuk-button"
+								id="btn-save"
+							>
+								Save draft
+							</button>
 
-						<button
-							type="button"
-							class="govuk-button govuk-button--secondary"
-							data-module="govuk-button"
-							id="btn-insert-tag"
-						>
-							Insert tag
-						</button>
-
-						<button type="button" class="govuk-button" data-module="govuk-button" id="btn-save">Save draft</button>
-
-						<button
-							type="button"
-							class="govuk-button govuk-button--secondary"
-							data-module="govuk-button"
-							id="btn-publish"
-						>
-							Publish
-						</button>
+							<button
+								type="button"
+								class="govuk-button govuk-button--secondary"
+								data-module="govuk-button"
+								id="btn-publish"
+							>
+								Publish guide
+							</button>
+						</div>
 					</div>
 
-					<div class="editor__split">
-						<div class="code-editor">
-							<label class="govuk-label" for="guide-source">Guide source</label>
+					<aside id="drawer-patterns" class="drawer" hidden aria-labelledby="drawer-patterns-title" tabindex="-1">
+						<h2 id="drawer-patterns-title" class="govuk-heading-m">Patterns</h2>
+						<div class="govuk-button-group drawer__actions">
+							<button class="govuk-button govuk-button--secondary" id="btn-new-pattern" type="button" hidden>
+								Create pattern
+							</button>
+							<button id="drawer-patterns-close" class="govuk-button govuk-button--secondary" type="button">
+								Close
+							</button>
+						</div>
+
+						<div class="govuk-form-group">
+							<label class="govuk-label govuk-label--s" for="pattern-search">Search patterns</label>
+
+							<input class="govuk-input" id="pattern-search" name="patternSearch" type="text" autocomplete="off" />
+						</div>
+
+						<ul id="pattern-list" class="govuk-list pattern-list"></ul>
+						<div id="pattern-tray" class="pattern-tray" hidden></div>
+					</aside>
+
+					<aside id="drawer-variables" class="drawer" hidden aria-labelledby="drawer-variables-title" tabindex="-1">
+						<h2 id="drawer-variables-title" class="govuk-heading-m">Variables</h2>
+						<p class="govuk-body">Manage reusable variables for this discussion guide.</p>
+						<form id="variables-form" novalidate></form>
+					</aside>
+
+					<div class="govuk-grid-row editor__split">
+						<div class="govuk-grid-column-one-half code-editor">
 							<div id="guide-source-highlight" class="code-editor__highlight" aria-hidden="true">
 								<code id="guide-source-code"></code>
 							</div>
-							<textarea
-								id="guide-source"
-								class="govuk-textarea code-editor__textarea"
-								rows="18"
-								spellcheck="true"
-							></textarea>
+
+							<div class="govuk-form-group">
+								<label class="govuk-label govuk-label--s" for="guide-source">Guide source</label>
+
+								<div id="guide-source-hint" class="govuk-hint">
+									Use Markdown and ResearchOps variables to prepare the discussion guide.
+								</div>
+
+								<textarea
+									class="govuk-textarea code-editor__textarea"
+									id="guide-source"
+									name="guideSource"
+									rows="18"
+									spellcheck="true"
+									aria-describedby="guide-source-hint"
+								></textarea>
+							</div>
 						</div>
-						<div class="preview">
-							<h3 class="govuk-heading-s">Preview</h3>
-							<div id="guide-preview" class="govuk-body"></div>
+						<div class="govuk-grid-column-one-half">
+							<div class="preview__header">
+								<h3 class="govuk-heading-s preview__title">Preview</h3>
+								<p class="govuk-hint preview__hint">
+									Check how the discussion guide will read before saving or publishing it.
+								</p>
+							</div>
+							<div class="preview">
+								<div id="guide-preview" class="govuk-body"></div>
+							</div>
 						</div>
 					</div>
 
-					<div id="lint-output" class="govuk-body-s" aria-live="polite"></div>
+					<p id="lint-output" class="govuk-body-s guides-lint-output" aria-live="polite">
+						No guide checks have run yet.
+					</p>
+
+					<details class="govuk-details">
+						<summary class="govuk-details__summary">
+							<span class="govuk-details__summary-text">What to include in a discussion guide</span>
+						</summary>
+						<div class="govuk-details__text">
+							<p class="govuk-body">
+								Include an opening script, consent reminders, core questions, prompts and a closing section. Keep
+								personal data out of the guide unless it is needed to run the session.
+							</p>
+						</div>
+					</details>
 				</section>
-
-				<aside id="drawer-patterns" class="drawer" hidden aria-labelledby="drawer-patterns-title">
-					<h2 id="drawer-patterns-title" class="govuk-heading-m">Patterns</h2>
-
-					<div class="govuk-form-group">
-						<label class="govuk-label" for="pattern-search">Search patterns</label>
-
-						<input class="govuk-input" id="pattern-search" name="patternSearch" type="text" autocomplete="off" />
-					</div>
-
-					<ul id="pattern-list" class="govuk-list"></ul>
-					<div class="govuk-button-group">
-						<button id="drawer-patterns-close" class="govuk-button govuk-button--secondary" type="button">Close</button>
-					</div>
-				</aside>
-
-				<aside id="drawer-variables" class="drawer" hidden></aside>
 				<div class="govuk-button-group actions-row"></div>
 				<div id="sr-live" class="govuk-visually-hidden" aria-live="polite"></div>
 			</div>
 		</main>
 		<x-include src="/partials/footer.html"></x-include>
 
-		<script type="module" src="/js/guides-route-loader.js?v=study-record-id-routing-20260518"></script>
+		<script type="module" src="/js/guides-route-loader.js?v=study-guides-delete-confirmation-20260605"></script>
 	</body>
 </html>

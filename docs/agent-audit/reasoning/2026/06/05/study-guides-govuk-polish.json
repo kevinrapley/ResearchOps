@@ -1,0 +1,254 @@
+{
+	"date": "2026-06-05",
+	"branch": "feature/study-guides-govuk-polish",
+	"traceRequired": true,
+	"task": "Improve the Study discussion guides page using GOV.UK Frontend and Nunjucks, then open a new pull request. Follow up by handling the unresolved Codex review thread on PR #358 and fixing failing checks.",
+	"operatingModelFilesLoaded": [
+		"AGENTS.md",
+		".agent-operating-model/orchestration.xml",
+		".agent-operating-model/bundle-registry.json",
+		".agent-operating-model/task-signal-catalog.json",
+		".agent-operating-model/selection-rules.json",
+		".agent-operating-model/bootstrap-checklist.md",
+		".agent-operating-model/precedence-policy.md",
+		".agent-operating-model/trace-policy.md",
+		".agent-operating-model/trace-layers.md",
+		".agent-operating-model/github-mutation-policy.md"
+	],
+	"selectedBundles": [
+		{
+			"id": "github-diamond",
+			"path": ".agent-operating-model/bundles/github/"
+		},
+		{
+			"id": "researchops-developer-control",
+			"path": ".agent-operating-model/bundles/researchops-developer-control/"
+		},
+		{
+			"id": "multi-functional-team",
+			"path": ".agent-operating-model/bundles/multi-functional-team/"
+		},
+		{
+			"id": "govuk-design-system",
+			"path": ".agent-operating-model/bundles/govuk-design-system/"
+		}
+	],
+	"skippedBundles": [
+		"cloudflare",
+		"openai-platform",
+		"mcp-agent-tooling",
+		"airtable-public-api",
+		"mural-public-api"
+	],
+	"filesChanged": [
+		"src/govuk/templates/pages/study-guides.njk",
+		"src/styles/guides.scss",
+		"public/css/guides.css",
+		"public/pages/study/guides/index.html",
+		"scripts/styles/generated-css-targets.mjs",
+		"tests/study-guides-route-state.test.js",
+		"tests/govuk-breadcrumb-back-link-route-state.test.js",
+		"tests/govuk-forms-application-route-state.test.js",
+		"tests/govuk-frontend-integration-route-state.test.js",
+		"public/components/guides/guides-page.js",
+		"public/components/guides/guide-editor.js",
+		"public/components/guides/patterns.js",
+		"public/components/guides/variable-manager.js",
+		"public/js/guides-route-loader.js",
+		"public/js/study-guides-context.js",
+		"tests/study-child-route-state.test.js",
+		"docs/agent-audit/reasoning/2026/06/05/study-guides-govuk-polish.md",
+		"docs/agent-audit/reasoning/2026/06/05/study-guides-govuk-polish.json"
+	],
+	"reviewCommentHandling": {
+		"threadId": "PRRT_kwDOP3Td2M6Hdbh9",
+		"commentNodeId": "PRRC_kwDOP3Td2M7IkHrI",
+		"classification": "legitimate",
+		"issue": "The variables drawer opened below the 34rem editor/preview area without reliably revealing the panel or focusing a useful control.",
+		"resolution": "Drawer containers are focusable, opening a drawer scrolls it into view, focus moves to the preferred drawer control when available, and the controller boots even when the route loader reaches it after DOMContentLoaded.",
+		"procedure": "After pushing the fix, add a thumbs-up reaction to the original comment, reply directly with fix and validation evidence, and resolve the thread."
+	},
+	"ciFailureInvestigation": [
+		"CI and Validate ResearchOps failed at lint because src/styles/guides.scss did not pass Prettier.",
+		"Worker CI published the same Prettier patch for src/styles/guides.scss.",
+		"Release Gate failed because blocking lint and format checks failed; npm audit advisories were reported as non-blocking by repository policy."
+	],
+	"validation": [
+		{
+			"command": "sass --load-path=node_modules --no-source-map src/styles/guides.scss public/css/guides.css",
+			"result": "passed"
+		},
+		{
+			"command": "node scripts/styles/format-generated-css.mjs --write public/css/guides.css",
+			"result": "passed"
+		},
+		{
+			"command": "npm run build:govuk-pages",
+			"result": "passed"
+		},
+		{
+			"command": "node --test tests/study-guides-route-state.test.js tests/govuk-breadcrumb-back-link-route-state.test.js tests/govuk-forms-application-route-state.test.js tests/govuk-tables-summary-lists-application-route-state.test.js tests/govuk-frontend-integration-route-state.test.js",
+			"result": "passed"
+		},
+		{
+			"command": "npm run generated-css:check -- public/css/guides.css",
+			"result": "passed"
+		},
+		{
+			"command": "npm test",
+			"result": "passed"
+		},
+		{
+			"command": "Browser alignment check at http://127.0.0.1:8891/pages/study/guides/?id=RECT3O7DT with viewport 1212x672",
+			"result": "passed; preview panel top and guide source textarea top both measured at 1181px"
+		},
+		{
+			"command": "npx prettier --write src/styles/guides.scss public/components/guides/guides-page.js tests/study-guides-route-state.test.js",
+			"result": "passed"
+		},
+		{
+			"command": "sass --load-path=node_modules --no-source-map src/styles/guides.scss public/css/guides.css",
+			"result": "passed"
+		},
+		{
+			"command": "node scripts/styles/format-generated-css.mjs --write public/css/guides.css",
+			"result": "passed"
+		},
+		{
+			"command": "npm run build:govuk-pages",
+			"result": "passed"
+		},
+		{
+			"command": "Browser interaction check at http://127.0.0.1:8891/pages/study/guides/?id=RECT3O7DT: click Variables",
+			"result": "passed; drawer was visible in the 672px viewport with top 107px and focus on drawer-variables-close"
+		},
+		{
+			"command": "node --test tests/study-child-route-state.test.js tests/study-guides-route-state.test.js",
+			"result": "passed"
+		},
+		{
+			"command": "npx eslint public/js/guides-route-loader.js public/components/guides/guides-page.js tests/study-guides-route-state.test.js",
+			"result": "passed with existing warnings only"
+		},
+		{
+			"command": "npx prettier -c public/js/guides-route-loader.js public/components/guides/guides-page.js tests/study-child-route-state.test.js tests/study-guides-route-state.test.js src/styles/guides.scss docs/agent-audit/reasoning/2026/06/05/study-guides-govuk-polish.md docs/agent-audit/reasoning/2026/06/05/study-guides-govuk-polish.json",
+			"result": "passed"
+		},
+		{
+			"command": "npm test",
+			"result": "passed; 176 tests passed"
+		},
+		{
+			"command": "npm run trace:coverage",
+			"result": "passed"
+		},
+		{
+			"command": "Browser follow-up check at http://127.0.0.1:8891/pages/study/guides/?id=RECT3O7DT",
+			"result": "passed; caption shows Study RECT3O7DT, context failure uses GOV.UK warning text, Insert tag is absent, status row has 20px vertical padding, pattern and variables panels appear 20px below the toolbar, pattern panel uses GOV.UK warning text/buttons/details with no legacy button classes, and variables render GOV.UK buttons plus labelled GOV.UK inputs after Add variable"
+		},
+		{
+			"command": "node --test tests/study-guides-route-state.test.js tests/study-child-route-state.test.js",
+			"result": "passed"
+		},
+		{
+			"command": "npm run generated-css:check -- public/css/guides.css",
+			"result": "passed"
+		},
+		{
+			"command": "npx prettier -c public/components/guides/guides-page.js public/components/guides/variable-manager.js public/components/guides/patterns.js public/js/guides-route-loader.js public/js/study-guides-context.js tests/study-guides-route-state.test.js tests/study-child-route-state.test.js src/styles/guides.scss",
+			"result": "passed"
+		},
+		{
+			"command": "npm test",
+			"result": "passed; 176 tests passed"
+		},
+		{
+			"command": "npm run trace:coverage",
+			"result": "passed"
+		},
+		{
+			"command": "Browser latest review check at http://127.0.0.1:8891/pages/study/guides/?id=RECT3O7DT",
+			"result": "passed; unavailable guide list hides the table and shows an informative fallback, Draft a guide and Save draft are secondary buttons, editor top border is 0px, title input uses GDS Transport, default preview metadata includes Study_2026-06-05, preview H1 is 24px, and unknown partials appear in the GOV.UK error summary/source error state"
+		},
+		{
+			"command": "node --test tests/study-guides-route-state.test.js tests/study-child-route-state.test.js",
+			"result": "passed"
+		},
+		{
+			"command": "npm run generated-css:check -- public/css/guides.css",
+			"result": "passed"
+		},
+		{
+			"command": "npx prettier -c public/components/guides/guides-page.js public/components/guides/guide-editor.js public/js/guides-route-loader.js tests/study-guides-route-state.test.js tests/study-child-route-state.test.js src/styles/guides.scss",
+			"result": "passed"
+		},
+		{
+			"command": "npm test",
+			"result": "passed; 176 tests passed"
+		},
+		{
+			"command": "Browser latest review comment pass at http://127.0.0.1:8891/pages/study/guides/?id=RECT3O7DT",
+			"result": "passed; pattern category headings are capitalised and visually distinct, pattern Create/Close actions are at the top of the panel, pattern View/Edit/Delete buttons each reveal tray content, drawer secondary buttons are white on grey, variable inputs use GDS Transport, and the variables header row has 20px top padding"
+		},
+		{
+			"command": "node tests/study-guides-route-state.test.js",
+			"result": "passed"
+		},
+		{
+			"command": "node tests/study-child-route-state.test.js",
+			"result": "passed"
+		},
+		{
+			"command": "Latest browser comment implementation pass",
+			"result": "pattern trays move into the launching pattern item, pattern Delete uses GOV.UK warning styling, pattern insertion is labelled Add to guide, duplicate version suffixes are avoided, default Study and Project preview metadata are separated, missing-context status uses the GOV.UK notification banner macro, and the fallback caption no longer exposes the Study record ID"
+		},
+		{
+			"command": "node tests/study-guides-route-state.test.js && node tests/study-child-route-state.test.js",
+			"result": "passed"
+		},
+		{
+			"command": "npm run generated-css:check -- public/css/guides.css",
+			"result": "passed"
+		},
+		{
+			"command": "npx prettier -c public/components/guides/guide-editor.js public/components/guides/guides-page.js public/js/study-guides-context.js tests/study-guides-route-state.test.js",
+			"result": "passed"
+		},
+		{
+			"command": "npm run trace:coverage",
+			"result": "passed"
+		},
+		{
+			"command": "npm run agent:model -- \"Make starter discussion guide partials available on first page load\"",
+			"result": "passed; selected github-diamond, researchops-developer-control, multi-functional-team and govuk-design-system"
+		},
+		{
+			"command": "npm run build:govuk-pages",
+			"result": "passed"
+		},
+		{
+			"command": "node tests/study-guides-route-state.test.js && node tests/study-child-route-state.test.js",
+			"result": "passed"
+		},
+		{
+			"command": "npm run generated-css:check -- public/css/guides.css",
+			"result": "passed"
+		},
+		{
+			"command": "Browser draft-path check at http://127.0.0.1:8891/pages/study/guides/?pid=recgdpwEI5hF07bUZ&sid=RECT3O7DT",
+			"result": "passed; choosing Draft a guide populated all seven starter partial references, rendered local starter content in the preview, and showed no unknown-partial messages"
+		},
+		{
+			"command": "Browser pattern fallback check at http://127.0.0.1:8891/pages/study/guides/?pid=recgdpwEI5hF07bUZ&sid=RECT3O7DT",
+			"result": "passed; pattern service fallback message is visible, the Create pattern button is hidden, and there are zero visible Create pattern buttons"
+		}
+	],
+	"validationNotRun": [],
+	"excludedLocalChanges": [
+		".gitignore",
+		"package.json",
+		"scripts/agent-operating-model/validate-operating-model.mjs",
+		"scripts/agent-operating-model/claude-collaboration.mjs"
+	],
+	"residualRisk": "No known residual implementation risk after validation. Existing dependency audit advisories remain outside this PR and are classified as non-blocking by the repository release-gate policy."
+}
