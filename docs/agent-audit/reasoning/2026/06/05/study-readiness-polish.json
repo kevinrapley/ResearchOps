@@ -50,7 +50,11 @@
     "Readiness item text should use a consistent constrained track so tags remain single-line on desktop.",
     "On reduced viewports readiness tags should stack above title and hint text.",
     "The study caption should resolve to the linked project name.",
-    "The Nunjucks template must keep a neutral checking fallback; actual session-gate blockers must be populated dynamically by the script from real readiness state."
+    "The Nunjucks template must keep a neutral checking fallback; actual session-gate blockers must be populated dynamically by the script from real readiness state.",
+    "Study readiness item text needs a uniform width, and status tags should stack above item text at wider constrained viewports with comfortable spacing and clear alignment.",
+    "In the stacked readiness layout, the status tag must be flush left with the associated item title.",
+    "The Study page load failure should use a GOV.UK Error summary rather than a Notification banner.",
+    "The 900px breakpoint should only stack Study readiness rows; tablet-width hero and action button layout must keep the narrower mobile breakpoint."
   ],
   "implementationSummary": [
     "Restored the Nunjucks session gate to the neutral checking fallback copy.",
@@ -58,6 +62,11 @@
     "Styled the session gate as a blue bordered panel.",
     "Added tolerant project title resolution for common project name field shapes.",
     "Let the GOV.UK half-column define Study readiness row width, with the GOV.UK 15px gutter between text and status.",
+    "Set a uniform 170px status track for desktop readiness rows so govuk-task-list__name-and-hint has the same computed width on every item.",
+    "Moved readiness status tags above item text from 900px down, flush left with a 10px gap before the associated title and hint.",
+    "Removed inherited GOV.UK task-list status padding in the stacked Study readiness layout so tags share the same left edge as their associated title and hint.",
+    "Replaced the Study page load failure Notification banner with a GOV.UK Error summary while preserving the study-error and study-error-message hooks used by the client script.",
+    "Split the 900px Study readiness stacking rules from the 699px mobile-only hero and action button rules, so tablet layouts no longer inherit the mobile full-width button and reduced heading.",
     "Removed visible checking defaults from rendered readiness markup.",
     "Stacked readiness status tags above text on small viewports.",
     "Bumped the Study page script version and regenerated the static Study page.",
@@ -74,6 +83,17 @@
       "evidence": "tests/study-page-route-state.test.js asserts const safeProject = project || {} and safeProject[\"Project Name\"].",
       "githubDisposition": "Pushed commit 53e1658e, posted PR review response 4436353980 with validation evidence, and resolved the original review thread.",
       "toolingLimitation": "The required thumbs-up reaction and direct inline reply could not be completed because the GitHub connector returned 403 Resource not accessible by integration for review-comment reactions and exposed only the GraphQL review-comment node ID while its direct reply endpoint requires a REST numeric comment ID."
+    },
+    {
+      "threadId": "PRRT_kwDOP3Td2M6HYHBE",
+      "commentId": "PRRC_kwDOP3Td2M7Iczlu",
+      "path": "src/styles/study-page.scss",
+      "line": 124,
+      "classification": "legitimate",
+      "resolution": "The 900px media query now contains only Study readiness row stacking; hero heading and Study action bar mobile rules are back under the 699px breakpoint.",
+      "evidence": "tests/study-page-route-state.test.js asserts the 900px block includes readiness selectors and excludes .study-action-bar .govuk-button and .study-hero .govuk-heading-l.",
+      "githubDisposition": "Pushed commit bd33e04d; posted direct inline reply 3363148216 to original Codex review comment 3362994542; added thumbs-up reaction 399574373 to the Codex comment; and resolved the original review thread.",
+      "correctionNote": "An earlier PR-level review response 4436860385 was posted before the REST parent comment ID was found. The required inline-thread disposition was later completed directly on the original Codex comment."
     }
   ],
   "validation": [
@@ -88,9 +108,19 @@
       "evidence": "readiness status tags appear above title and hint text"
     },
     {
+      "command": "Browser layout recheck at 1246px, 768px and 496px",
+      "result": "passed",
+      "evidence": "readiness item text widths are uniform in each viewport; desktop uses a 310px text track plus 170px status track; 768px and 496px stack status tags above text, flush left, with a 10px gap"
+    },
+    {
       "command": "node scripts/govuk/render-govuk-pages.mjs",
       "result": "passed",
       "evidence": "regenerated static GOV.UK pages"
+    },
+    {
+      "command": "Rendered Study page inspection",
+      "result": "passed",
+      "evidence": "public/pages/study/index.html contains class=\"govuk-error-summary\" and id=\"study-error-message\", and no class=\"govuk-notification-banner\""
     },
     {
       "command": "node --test tests/study-page-route-state.test.js",

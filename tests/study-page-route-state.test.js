@@ -24,8 +24,8 @@ for (const macro of [
 	"govukBreadcrumbs({",
 	"govukButton({",
 	"govukDetails({",
+	"govukErrorSummary({",
 	"govukInsetText({",
-	"govukNotificationBanner({",
 	"govukSummaryList({",
 	"govukTaskList({",
 	"govukTextarea({"
@@ -87,8 +87,10 @@ for (const text of [
 	"class=\"govuk-task-list",
 	"class=\"govuk-details",
 	"class=\"govuk-textarea",
+	"class=\"govuk-error-summary",
 	"id=\"study-error\"",
 	"role=\"alert\"",
+	"id=\"study-error-message\"",
 	"Study readiness",
 	"Before you can begin a session",
 	"Study setup tasks",
@@ -120,6 +122,7 @@ for (const text of [
 
 excludes(pageSource, "class=\"btn", "study page");
 excludes(pageSource, "class=\"board\"", "study page");
+excludes(pageSource, "class=\"govuk-notification-banner", "study page");
 excludes(pageSource, "Requires study context", "study page");
 excludes(pageSource, "<script type=\"module\">", "study page");
 excludes(pageSource, "id=\"back-to-project\"", "study page");
@@ -186,11 +189,18 @@ for (const text of [
 	".study-session-gate",
 	"border: 5px solid #1d70b8",
 	".study-readiness-task-list .govuk-task-list__item",
-	"grid-template-columns: minmax(0, 1fr) max-content",
+	"grid-template-columns: minmax(0, 1fr) 170px",
 	"column-gap: 15px",
 	".study-readiness-task-list .govuk-task-list__name-and-hint",
 	"min-width: 0",
 	".study-readiness-task-list .govuk-task-list__status",
+	"text-align: right",
+	"@media (max-width: 900px)",
+	"@media (max-width: 699px)",
+	"margin-bottom: 10px",
+	"padding-left: 0",
+	"text-align: left",
+	"width: 100%",
 	"white-space: nowrap",
 	".study-readiness-task-list",
 	".study-session-button",
@@ -200,6 +210,21 @@ for (const text of [
 ]) {
 	includes(studyScssSource, text, "study SCSS source");
 	includes(studyCssSource, text, "study css");
+}
+
+for (const [source, label] of [
+	[studyScssSource, "study SCSS source"],
+	[studyCssSource, "study css"]
+]) {
+	const readinessBreakpointStart = source.indexOf("@media (max-width: 900px)");
+	const mobileBreakpointStart = source.indexOf("@media (max-width: 699px)");
+	assert.ok(readinessBreakpointStart >= 0, `Expected ${label} to include the readiness breakpoint`);
+	assert.ok(mobileBreakpointStart > readinessBreakpointStart, `Expected ${label} to keep mobile breakpoint after readiness breakpoint`);
+
+	const readinessBreakpoint = source.slice(readinessBreakpointStart, mobileBreakpointStart);
+	includes(readinessBreakpoint, ".study-readiness-task-list .govuk-task-list__item", `${label} readiness breakpoint`);
+	excludes(readinessBreakpoint, ".study-action-bar .govuk-button", `${label} readiness breakpoint`);
+	excludes(readinessBreakpoint, ".study-hero .govuk-heading-l", `${label} readiness breakpoint`);
 }
 
 for (const legacy of ["max-width: 1100px", "max-width: 960px"]) {

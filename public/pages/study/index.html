@@ -52,23 +52,22 @@
 				</nav>
 
 				<div
-					class="govuk-notification-banner"
-					role="region"
-					aria-labelledby="govuk-notification-banner-title"
-					data-module="govuk-notification-banner"
+					class="govuk-error-summary"
 					id="study-error"
-					role="alert"
 					tabindex="-1"
 					hidden="hidden"
 					aria-hidden="true"
+					data-module="govuk-error-summary"
 				>
-					<div class="govuk-notification-banner__header">
-						<h2 class="govuk-notification-banner__title" id="govuk-notification-banner-title">
-							There is a problem loading this study
-						</h2>
-					</div>
-					<div class="govuk-notification-banner__content">
-						<p id="study-error-message" class="govuk-body">Could not load the study.</p>
+					<div role="alert">
+						<h2 class="govuk-error-summary__title">There is a problem loading this study</h2>
+						<div class="govuk-error-summary__body">
+							<ul class="govuk-list govuk-error-summary__list">
+								<li>
+									<a href="#study-breadcrumbs"><span id="study-error-message">Could not load the study.</span></a>
+								</li>
+							</ul>
+						</div>
 					</div>
 				</div>
 
