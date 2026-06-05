@@ -237,6 +237,10 @@
 		{
 			"command": "Browser draft-path check at http://127.0.0.1:8891/pages/study/guides/?pid=recgdpwEI5hF07bUZ&sid=RECT3O7DT",
 			"result": "passed; choosing Draft a guide populated all seven starter partial references, rendered local starter content in the preview, and showed no unknown-partial messages"
+		},
+		{
+			"command": "Browser pattern fallback check at http://127.0.0.1:8891/pages/study/guides/?pid=recgdpwEI5hF07bUZ&sid=RECT3O7DT",
+			"result": "passed; pattern service fallback message is visible, the Create pattern button is hidden, and there are zero visible Create pattern buttons"
 		}
 	],
 	"validationNotRun": [],

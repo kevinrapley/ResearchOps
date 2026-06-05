@@ -25,11 +25,11 @@ import { marked } from "/lib/marked.min.js";
 import DOMPurify from "/lib/purify.min.js";
 
 import { buildContext } from "/components/guides/context.js";
-import { renderGuide, buildPartials, DEFAULT_SOURCE } from "/components/guides/guide-editor.js?v=study-guides-starter-partials-20260605";
-import { searchPatterns, listStarterPatterns } from "/components/guides/patterns.js?v=study-guides-starter-partials-20260605";
+import { renderGuide, buildPartials, DEFAULT_SOURCE } from "/components/guides/guide-editor.js?v=study-guides-delete-confirmation-20260605";
+import { searchPatterns, listStarterPatterns } from "/components/guides/patterns.js?v=study-guides-delete-confirmation-20260605";
 
 // Variable manager + validators (keep your existing utils for validation)
-import { VariableManager } from "/components/guides/variable-manager.js?v=study-guides-starter-partials-20260605";
+import { VariableManager } from "/components/guides/variable-manager.js?v=study-guides-delete-confirmation-20260605";
 import {
 	validateTemplate,
 	formatValidationReport,
@@ -639,6 +639,8 @@ async function refreshPatternList() {
 				Array.isArray(data) ? data : [];
 
 			if (partials.length) {
+				__patternServiceAvailable = true;
+				setCreatePatternVisibility(true);
 				populatePatternList(partials);
 				setPatternStatus(""); // clear any prior warning
 				return;
@@ -659,6 +661,8 @@ async function refreshPatternList() {
 		starters = (maybe && typeof maybe.then === "function") ? await maybe : maybe;
 
 		if (Array.isArray(starters) && starters.length) {
+			__patternServiceAvailable = false;
+			setCreatePatternVisibility(false);
 			populatePatternList(starters);
 			setPatternStatus("Pattern service unavailable — showing local starter patterns.");
 			return;
@@ -668,8 +672,16 @@ async function refreshPatternList() {
 	}
 
 	// Nothing available at all
+	__patternServiceAvailable = false;
+	setCreatePatternVisibility(false);
 	populatePatternList([]);
 	setPatternStatus("No patterns available (API returned HTML).");
+}
+
+function setCreatePatternVisibility(isVisible) {
+	const button = $("#btn-new-pattern");
+	if (!button) return;
+	button.hidden = !isVisible;
 }
 
 /* -------------------- syntax highlighting (unchanged) -------------------- */
@@ -1352,7 +1364,11 @@ async function handlePatternClick(e) {
 		return;
 	}
 
-	if (t.id === "btn-new-pattern") { await createNewPartial(); return; }
+	if (t.id === "btn-new-pattern") {
+		if (!__patternServiceAvailable) return;
+		await createNewPartial();
+		return;
+	}
 }
 
 window.__researchOpsHandlePatternClick = handlePatternClick;
@@ -1431,11 +1447,17 @@ function editLocalPattern(pattern, origin) {
 }
 
 function deleteLocalPattern(pattern, origin) {
+	const confirmationId = `delete-pattern-confirmation-${escapeHtml(pattern.name)}`;
 	renderPatternTray(`
 		<h3 class="govuk-heading-s">Delete ${escapeHtml(pattern.title)}</h3>
 		<p class="govuk-body">This removes the local starter pattern from this editor session.</p>
+		<div class="govuk-form-group">
+			<label class="govuk-label govuk-label--s" for="${confirmationId}">Confirm deletion</label>
+			<div id="${confirmationId}-hint" class="govuk-hint">Type <strong>delete pattern</strong> to confirm you want to delete this pattern.</div>
+			<input class="govuk-input govuk-input--width-20" id="${confirmationId}" name="${confirmationId}" type="text" spellcheck="false" autocomplete="off" aria-describedby="${confirmationId}-hint" data-delete-pattern-confirmation="${escapeHtml(pattern.name)}">
+		</div>
 		<div class="govuk-button-group">
-			<button class="govuk-button govuk-button--warning" type="button" data-confirm-delete-local-pattern="${escapeHtml(pattern.name)}">Delete pattern</button>
+			<button class="govuk-button govuk-button--warning" type="button" data-confirm-delete-local-pattern="${escapeHtml(pattern.name)}" disabled>Delete pattern</button>
 			<button class="govuk-button govuk-button--secondary" type="button" data-pattern-tray-close>Cancel</button>
 		</div>
 	`, origin);
@@ -1444,6 +1466,15 @@ function deleteLocalPattern(pattern, origin) {
 function bindPatternTrayActions() {
 	const tray = $("#pattern-tray");
 	if (!tray) return;
+	tray.addEventListener("input", (e) => {
+		const input = e.target.closest("[data-delete-pattern-confirmation]");
+		if (!input) return;
+		const patternName = input.getAttribute("data-delete-pattern-confirmation");
+		const button = tray.querySelector(`[data-confirm-delete-local-pattern="${cssEscape(patternName)}"]`);
+		if (button) {
+			button.disabled = input.value.trim() !== "delete pattern";
+		}
+	});
 	tray.addEventListener("click", (e) => {
 		const button = e.target.closest("button");
 		if (!button) return;
@@ -1469,6 +1500,12 @@ function bindPatternTrayActions() {
 
 		const deleteName = button.getAttribute("data-confirm-delete-local-pattern");
 		if (deleteName) {
+			const input = tray.querySelector(`[data-delete-pattern-confirmation="${cssEscape(deleteName)}"]`);
+			if (input?.value.trim() !== "delete pattern") {
+				announce('Type "delete pattern" before deleting this pattern');
+				input?.focus();
+				return;
+			}
 			__patternCache = (__patternCache || []).filter(pattern => pattern.name !== deleteName);
 			if (window.__patternRegistry) delete window.__patternRegistry[deleteName];
 			closePatternTray();
@@ -1476,6 +1513,11 @@ function bindPatternTrayActions() {
 			announce("Pattern deleted");
 		}
 	});
+}
+
+function cssEscape(value) {
+	if (window.CSS?.escape) return window.CSS.escape(String(value || ""));
+	return String(value || "").replace(/["\\]/g, "\\$&");
 }
 
 /* -------------------- partials view/edit/create/delete (unchanged) -------------------- */

@@ -60,6 +60,7 @@ includes(pageSource, "id=\"guides-tbody\"", "study guides page");
 includes(pageSource, "id=\"editor-section\"", "study guides page");
 includes(pageSource, "id=\"drawer-patterns\"", "study guides page");
 includes(pageSource, "id=\"drawer-patterns\" class=\"drawer\" hidden aria-labelledby=\"drawer-patterns-title\" tabindex=\"-1\"", "study guides page");
+includes(pageSource, "id=\"btn-new-pattern\" type=\"button\" hidden", "study guides page");
 includes(pageSource, "id=\"pattern-tray\"", "study guides page");
 includes(pageSource, "id=\"drawer-variables\"", "study guides page");
 includes(pageSource, "id=\"drawer-variables\" class=\"drawer\" hidden aria-labelledby=\"drawer-variables-title\" tabindex=\"-1\"", "study guides page");
@@ -100,9 +101,9 @@ includes(loaderSource, "await import('/components/guides/guides-page.js", "study
 
 includes(guidesPageSource, "hydrateCrumbs", "guides component module");
 includes(guidesPageSource, "loadGuides", "guides component module");
-includes(guidesPageSource, "/components/guides/guide-editor.js?v=study-guides-starter-partials-20260605", "guides component module");
-includes(guidesPageSource, "/components/guides/patterns.js?v=study-guides-starter-partials-20260605", "guides component module");
-includes(guidesPageSource, "/components/guides/variable-manager.js?v=study-guides-starter-partials-20260605", "guides component module");
+includes(guidesPageSource, "/components/guides/guide-editor.js?v=study-guides-delete-confirmation-20260605", "guides component module");
+includes(guidesPageSource, "/components/guides/patterns.js?v=study-guides-delete-confirmation-20260605", "guides component module");
+includes(guidesPageSource, "/components/guides/variable-manager.js?v=study-guides-delete-confirmation-20260605", "guides component module");
 includes(guidesPageSource, "async function bootGuidesPage", "guides component module");
 includes(guidesPageSource, "function setGuidesListState", "guides component module");
 includes(guidesPageSource, 'document.readyState === "loading"', "guides component module");
@@ -113,6 +114,12 @@ includes(guidesPageSource, "function editLocalPattern", "guides component module
 includes(guidesPageSource, "function deleteLocalPattern", "guides component module");
 includes(guidesPageSource, "function formatPatternCategory", "guides component module");
 includes(guidesPageSource, "function patternPartialName", "guides component module");
+includes(guidesPageSource, "function setCreatePatternVisibility", "guides component module");
+includes(guidesPageSource, "__patternServiceAvailable = true", "guides component module");
+includes(guidesPageSource, "__patternServiceAvailable = false", "guides component module");
+includes(guidesPageSource, "setCreatePatternVisibility(true)", "guides component module");
+includes(guidesPageSource, "setCreatePatternVisibility(false)", "guides component module");
+includes(guidesPageSource, "if (!__patternServiceAvailable) return", "guides component module");
 includes(guidesPageSource, "patternItem.appendChild(tray)", "guides component module");
 includes(guidesPageSource, "function bindPatternListActions", "guides component module");
 includes(guidesPageSource, "window.__researchOpsHandlePatternClick = handlePatternClick", "guides component module");
@@ -126,6 +133,12 @@ excludes(guidesPageSource, "const insertName = `${p.name}_v${p.version}`", "guid
 excludes(guidesPageSource, "${escapeHtml(pattern.name)}_v${escapeHtml(pattern.version)}", "guides component module");
 includes(guidesPageSource, "data-save-local-pattern", "guides component module");
 includes(guidesPageSource, "data-confirm-delete-local-pattern", "guides component module");
+includes(guidesPageSource, "Confirm deletion", "guides component module");
+includes(guidesPageSource, "Type <strong>delete pattern</strong>", "guides component module");
+includes(guidesPageSource, "data-delete-pattern-confirmation", "guides component module");
+includes(guidesPageSource, "disabled>Delete pattern</button>", "guides component module");
+includes(guidesPageSource, "input.value.trim() !== \"delete pattern\"", "guides component module");
+includes(guidesPageSource, "Type \"delete pattern\" before deleting this pattern", "guides component module");
 includes(guidesPageSource, "pattern-tray", "guides component module");
 includes(guidesPageSource, "govuk-warning-text", "guides component module");
 includes(guidesPageSource, "Add to guide", "guides component module");

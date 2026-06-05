@@ -7,7 +7,7 @@
 {% from "govuk/components/notification-banner/macro.njk" import govukNotificationBanner %}
 {% from "govuk/components/textarea/macro.njk" import govukTextarea %}
 
-{% set studyPageScriptVersion = "study-guides-starter-partials-20260605" %}
+{% set studyPageScriptVersion = "study-guides-delete-confirmation-20260605" %}
 
 {% block head %}
 	<meta property="schema:name" content="Discussion guides - ResearchOps">
@@ -114,7 +114,7 @@
 		<aside id="drawer-patterns" class="drawer" hidden aria-labelledby="drawer-patterns-title" tabindex="-1">
 			<h2 id="drawer-patterns-title" class="govuk-heading-m">Patterns</h2>
 			<div class="govuk-button-group drawer__actions">
-				<button class="govuk-button govuk-button--secondary" id="btn-new-pattern" type="button">Create pattern</button>
+				<button class="govuk-button govuk-button--secondary" id="btn-new-pattern" type="button" hidden>Create pattern</button>
 				<button id="drawer-patterns-close" class="govuk-button govuk-button--secondary" type="button">Close</button>
 			</div>
 			{{ govukInput({
