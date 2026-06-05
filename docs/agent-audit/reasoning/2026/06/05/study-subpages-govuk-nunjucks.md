@@ -1,8 +1,10 @@
 # Study Subpages GOV.UK Nunjucks Trace
 
 Date: 2026-06-05
-Branch: `feature/study-subpages-govuk-nunjucks`
+Branch: `feature/study-participants-workflow-polish`
 Trace requirement: required because the branch uses the `feature/` prefix.
+
+Branch correction: this follow-up was initially prepared on the merged `feature/study-subpages-govuk-nunjucks` branch, then a replacement branch was created from `origin/main` after PR #356 merged. An attempted `codex/` branch was immediately renamed to `feature/study-participants-workflow-polish` to comply with the repository operating-model branch policy.
 
 ## Task
 
@@ -56,6 +58,14 @@ Frontend and accessibility: Nunjucks templates should use GOV.UK macros wherever
 
 Researcher use: all four routes should keep their current client-side loading behaviour while the initial HTML moves to the shared ResearchOps GOV.UK layout.
 
+Owner review follow-up: the first PR revision was not strong enough. The Study subpages must use the same breadcrumb attributes as the Study page, rely on breadcrumbs rather than duplicated “Back to study” buttons, keep participant consent within the standard GOV.UK content container, remove the legacy participants pill/card layout, and make discussion guides usable as a clear list-plus-editor workflow.
+
+Owner review follow-up on participants: the Study participants page still needed a fuller researcher workflow. The native date-time control was not GOV.UK aligned, channel preference needed to support multiple checkbox selections, the add-participant form needed to align with the project-level participant capture model, and the page forms were too cramped at tablet and desktop widths.
+
+Owner review follow-up on generated CSS: route-specific CSS must be generated from SCSS sources rather than maintained as loose CSS files.
+
+Codex review follow-up on PR #357: the split session time fields needed raw-value validation before numeric coercion because blank fields were being converted to `0` while the form uses `novalidate`.
+
 ## Implementation
 
 - Added Nunjucks templates for participant consent, participants, guides and synthesis Study subpages.
@@ -66,6 +76,20 @@ Researcher use: all four routes should keep their current client-side loading be
 - Used GOV.UK macros for breadcrumbs, buttons, selects, inputs, radios, checkboxes, textareas, summary lists and inset text where they fit the existing controller contracts.
 - Kept participant consent and synthesis error summaries as hand-authored GOV.UK error-summary markup because their controllers append messages into exact `ul` hooks that the macro does not expose.
 - Updated route-state tests so they assert the GOV.UK macro output and dynamic hooks rather than the previous hand-written static markup.
+- Standardised Study subpage breadcrumbs with `schema:BreadcrumbList` attributes and `schema:item` attributes for Project and Study breadcrumb links.
+- Removed the “Back to study” buttons from participant consent, discussion guides and synthesis so Study subpages rely on breadcrumbs consistently.
+- Updated participant consent hydration so the Study breadcrumb and caption use the actual loaded study title.
+- Reworked participants into a clear page header, participant management section, add participant form, scheduled sessions section and schedule form using GOV.UK grid widths.
+- Removed the legacy participants `badge`, `pill` and `card` styling from the route stylesheet.
+- Reworked discussion guides into full-width “Guides for this study” and “Guide editor” sections while preserving editor, drawer and route-loader hooks.
+- Reworked the Study participants page again after owner review so the participant table, add-participant form, sessions table and schedule-session form each have their own full-width task section.
+- Aligned the Study participants add form with the project-level add-participant pattern: first name, family name, optional participant reference, contact details, preferred contact methods, access or support needs, restricted-data guidance and “What happens next” content.
+- Replaced the single channel preference select on Study participants with GOV.UK checkboxes and updated the controller to submit the selected contact methods.
+- Replaced the native `datetime-local` session control with GOV.UK date input fields and separate 24-hour time inputs, then updated scheduling validation and focus behaviour to use those fields.
+- Added `src/styles/participants.scss`, registered it in the generated CSS targets manifest and rebuilt `public/css/participants.css` from that source.
+- Restored the GOV.UK date and time input width modifiers after the app’s local forms stylesheet by scoping width rules to the Study participants route.
+- Added mobile spacing between the create-participant action and the “What happens next” details block.
+- Updated Study participants session scheduling so day, month, year, hour and minute are checked as raw field values before conversion to numbers.
 
 ## Validation
 
@@ -78,6 +102,11 @@ Passed:
 - `node node_modules/prettier/bin/prettier.cjs --check scripts/govuk/render-govuk-pages.mjs public/pages/study/participant-consent/index.html public/pages/study/participants/index.html public/pages/study/guides/index.html public/pages/study/synthesis/index.html tests/participant-consent-route-state.test.js tests/participants-page-route-state.test.js tests/study-guides-route-state.test.js tests/synthesize-page-route-state.test.js tests/govuk-forms-application-route-state.test.js tests/govuk-tables-summary-lists-application-route-state.test.js docs/agent-audit/reasoning/2026/06/05/study-subpages-govuk-nunjucks.md docs/agent-audit/reasoning/2026/06/05/study-subpages-govuk-nunjucks.json`
 - `node --test` with 176 passing tests.
 - Browser spot-check at `http://127.0.0.1:8791` confirmed all four converted routes render with the shared GOV.UK main wrapper, breadcrumbs, button styling, table/task/summary-list structures and layout script.
+- Browser layout spot-check at `http://127.0.0.1:8792` confirmed the revised pages use the 1020px GOV.UK main content container on desktop, remove Study back buttons, remove legacy participants badges/cards/pills and keep participants in a 2/3 plus 1/3 GOV.UK grid workflow.
+- `node --test tests/participants-page-route-state.test.js tests/govuk-forms-application-route-state.test.js tests/govuk-tables-summary-lists-application-route-state.test.js tests/participant-pseudonymised-view-route-state.test.js`
+- `node scripts/styles/format-generated-css.mjs --check`
+- Browser spot-check at `http://127.0.0.1:8793/pages/study/participants/?id=RECT3O7DT` confirmed the participants route renders with GOV.UK date inputs, three channel checkboxes, no native `datetime-local` input, and two-thirds GOV.UK form columns at desktop and 599px viewport widths.
+- `node --test tests/participants-page-route-state.test.js tests/govuk-forms-application-route-state.test.js`
 
 ## Residual Risks
 

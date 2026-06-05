@@ -58,6 +58,66 @@ function readStudyRouteContext() {
 	};
 }
 
+function fieldValue(selector) {
+	return String($(selector)?.value || "").trim();
+}
+
+function generatedParticipantRef() {
+	const stamp = new Date().toISOString().slice(0, 10).replace(/-/g, "");
+	const random = Math.random().toString(36).slice(2, 6).toUpperCase();
+	return `Participant ${stamp}-${random}`;
+}
+
+function selectedChannelPreferences() {
+	const selected = Array.from(document.querySelectorAll('input[name="channel_pref"]:checked'))
+		.map((input) => input.value)
+		.filter(Boolean);
+	return selected.length ? selected.join(", ") : "email";
+}
+
+function paddedNumber(value, length = 2) {
+	return String(value).padStart(length, "0");
+}
+
+function sessionStartIsoFromFields() {
+	const dayValue = fieldValue("#s_date-day");
+	const monthValue = fieldValue("#s_date-month");
+	const yearValue = fieldValue("#s_date-year");
+	const hourValue = fieldValue("#s_time-hour");
+	const minuteValue = fieldValue("#s_time-minute");
+
+	if (!dayValue || !monthValue || !yearValue || !hourValue || !minuteValue) {
+		return "";
+	}
+
+	const day = Number(dayValue);
+	const month = Number(monthValue);
+	const year = Number(yearValue);
+	const hour = Number(hourValue);
+	const minute = Number(minuteValue);
+
+	if (!day || !month || !year || Number.isNaN(hour) || Number.isNaN(minute)) {
+		return "";
+	}
+
+	if (month < 1 || month > 12 || day < 1 || day > 31 || hour < 0 || hour > 23 || minute < 0 || minute > 59) {
+		return "";
+	}
+
+	const date = new Date(year, month - 1, day, hour, minute);
+	if (
+		date.getFullYear() !== year ||
+		date.getMonth() !== month - 1 ||
+		date.getDate() !== day ||
+		date.getHours() !== hour ||
+		date.getMinutes() !== minute
+	) {
+		return "";
+	}
+
+	return `${year}-${paddedNumber(month)}-${paddedNumber(day)}T${paddedNumber(hour)}:${paddedNumber(minute)}:00`;
+}
+
 async function jsonFetch(path, options = {}) {
 	const res = await fetch(apiUrl(path), {
 		cache: "no-store",
@@ -223,25 +283,32 @@ async function handleAddParticipant(e, context, refresh) {
 	const msg = $("#addParticipantMsg");
 	if (msg) msg.textContent = "";
 
-	const display = $("#p_display")?.value.trim() || "";
-	const email = $("#p_email")?.value.trim() || "";
-	const phone = $("#p_phone")?.value.trim() || "";
-	const channel = $("#p_channel")?.value || "email";
-	const access = $("#p_access")?.value.trim() || "";
+	const firstName = fieldValue("#p_first_name");
+	const familyName = fieldValue("#p_family_name");
+	const participantRef = fieldValue("#p_participant_ref") || generatedParticipantRef();
+	const email = fieldValue("#p_email");
+	const phone = fieldValue("#p_phone");
+	const channel = selectedChannelPreferences();
+	const access = fieldValue("#p_access");
 
-	if (!display) {
-		if (msg) msg.textContent = "Display name is required.";
+	if (!firstName || !familyName) {
+		if (msg) msg.textContent = "First name and family name are required.";
 		return;
 	}
 
 	const payload = {
 		project_id: context.projectId,
 		study_id: context.studyId,
-		display_name: display,
+		participant_ref: participantRef,
+		display_name: participantRef,
+		first_name: firstName,
+		family_name: familyName,
 		email: email || undefined,
 		phone: phone || undefined,
 		channel_pref: channel,
-		access_needs: access || undefined
+		access_needs: access || undefined,
+		status: "invited",
+		consent_status: "not_sent"
 	};
 
 	try {
@@ -265,15 +332,15 @@ async function handleCreateSession(e, studyId) {
 
 	const participantId = $("#s_participant")?.value || "";
 	const type = $("#s_type")?.value || "remote";
-	const starts = $("#s_datetime")?.value || "";
-	const dur = $("#s_duration")?.value || "";
-	const loc = $("#s_location")?.value.trim() || "";
-	const backup = $("#s_backup")?.value.trim() || "";
-	const researchers = $("#s_researchers")?.value.trim() || "";
-	const notes = $("#s_notes")?.value.trim() || "";
+	const starts = sessionStartIsoFromFields();
+	const dur = fieldValue("#s_duration");
+	const loc = fieldValue("#s_location");
+	const backup = fieldValue("#s_backup");
+	const researchers = fieldValue("#s_researchers");
+	const notes = fieldValue("#s_notes");
 
 	if (!participantId || !starts || !dur || !loc) {
-		if (msg) msg.textContent = "Participant, start time, duration, and location are required.";
+		if (msg) msg.textContent = "Participant, start date, start time, duration, and location are required.";
 		return;
 	}
 
@@ -349,7 +416,12 @@ function bindRouteChrome(context) {
 	}
 
 	const badge = $("#studyBadge");
-	if (badge) badge.textContent = `Study: ${title}`;
+	if (badge) badge.textContent = title;
+
+	const projectInput = $("#p_project_id");
+	if (projectInput) projectInput.value = context.projectId;
+	const studyInput = $("#p_study_id");
+	if (studyInput) studyInput.value = context.studyId;
 }
 
 (async function init() {
@@ -391,7 +463,7 @@ function bindRouteChrome(context) {
 				const participantId = btn.getAttribute("data-session-participant-id");
 				if (participantSelect && participantId) {
 					participantSelect.value = participantId;
-					$("#s_datetime")?.focus();
+					$("#s_date-day")?.focus();
 				}
 				$("#scheduleForm")?.scrollIntoView({ behavior: "smooth", block: "start" });
 			});
