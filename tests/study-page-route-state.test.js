@@ -71,7 +71,7 @@ for (const text of [
 	"/css/govuk/govuk-forms.css",
 	"/css/govuk/govuk-tables.css",
 	"/css/study-page.css",
-	"/js/study-page.js?v=study-record-id-routing-20260518",
+	"/js/study-page.js?v=study-readiness-session-gate-20260605",
 	"class=\"govuk-breadcrumbs\"",
 	"class=\"govuk-summary-list",
 	"class=\"govuk-task-list",

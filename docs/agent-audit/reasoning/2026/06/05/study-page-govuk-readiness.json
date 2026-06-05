@@ -52,6 +52,17 @@
     "Removed controller wiring for the deleted Back to Project button.",
     "Updated route-state coverage for the Study page template, generated HTML and controller."
   ],
+  "codexReviewFollowUp": {
+    "threadId": "PRRT_kwDOP3Td2M6HVVet",
+    "commentId": "PRRC_kwDOP3Td2M7IZFiI",
+    "classification": "legitimate",
+    "summary": "The Study page script version needed a cache-key bump because the page now renders the session action hidden until readiness enables it.",
+    "implementation": [
+      "Bumped studyPageScriptVersion to study-readiness-session-gate-20260605.",
+      "Regenerated public/pages/study/index.html so the modulepreload and script URL reference the updated Study page controller version.",
+      "Updated the Study page route-state test to assert the new versioned script URL."
+    ]
+  },
   "validation": [
     {
       "command": "node --test tests/study-page-route-state.test.js tests/study-child-route-state.test.js",
@@ -82,6 +93,36 @@
       "command": "node --test",
       "result": "passed",
       "evidence": "176 tests passed"
+    },
+    {
+      "command": "node --test tests/study-page-route-state.test.js tests/govuk-breadcrumb-back-link-route-state.test.js",
+      "result": "passed",
+      "evidence": "Codex review follow-up focused route-state tests passed"
+    },
+    {
+      "command": "node scripts/govuk/render-govuk-pages.mjs",
+      "result": "passed",
+      "evidence": "Codex review follow-up regenerated GOV.UK pages including public/pages/study/index.html"
+    },
+    {
+      "command": "prettier --check public/pages/study/index.html tests/study-page-route-state.test.js docs/agent-audit/reasoning/2026/06/05/study-page-govuk-readiness.md docs/agent-audit/reasoning/2026/06/05/study-page-govuk-readiness.json",
+      "result": "passed",
+      "evidence": "Codex review follow-up supported files use Prettier code style"
+    },
+    {
+      "command": "node scripts/agent-trace/assert-trace-coverage.mjs",
+      "result": "passed",
+      "evidence": "Codex review follow-up trace coverage confirmed"
+    },
+    {
+      "command": "git diff --check",
+      "result": "passed",
+      "evidence": "Codex review follow-up found no whitespace errors"
+    },
+    {
+      "command": "node --test",
+      "result": "passed",
+      "evidence": "Codex review follow-up full test suite passed"
     }
   ],
   "residualRisks": []

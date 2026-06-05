@@ -34,6 +34,16 @@ Accessibility and service safety: disabled-looking links can still be confusing.
 - Stopped the controller from trying to wire the removed `#back-to-project` link.
 - Updated the Study page route-state contract for the Nunjucks template, generated HTML and controller.
 
+## Codex Review Follow-Up
+
+Review thread `PRRT_kwDOP3Td2M6HVVet` / comment `PRRC_kwDOP3Td2M7IZFiI` was legitimate. The Study page now hides the session action in markup, so the `study-page.js` cache key needed to change to prevent browsers from reusing the previous controller version that enabled the link without clearing `hidden`.
+
+Follow-up implementation:
+
+- Bumped `studyPageScriptVersion` to `study-readiness-session-gate-20260605`.
+- Regenerated `public/pages/study/index.html` so the modulepreload and script URL carry the new Study page controller version.
+- Updated the Study page route-state test to assert the new versioned script URL.
+
 ## Validation
 
 Passed:
@@ -44,3 +54,12 @@ Passed:
 - `git diff --check`
 - `prettier --check` on changed supported files
 - `node --test` with 176 passing tests
+
+Additional Codex review follow-up validation passed:
+
+- `node --test tests/study-page-route-state.test.js tests/govuk-breadcrumb-back-link-route-state.test.js`
+- `node scripts/govuk/render-govuk-pages.mjs`
+- `prettier --check` on changed supported files
+- `node scripts/agent-trace/assert-trace-coverage.mjs`
+- `git diff --check`
+- `node --test`
