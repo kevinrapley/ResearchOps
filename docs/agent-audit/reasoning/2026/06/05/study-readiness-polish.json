@@ -53,7 +53,8 @@
     "The Nunjucks template must keep a neutral checking fallback; actual session-gate blockers must be populated dynamically by the script from real readiness state.",
     "Study readiness item text needs a uniform width, and status tags should stack above item text at wider constrained viewports with comfortable spacing and clear alignment.",
     "In the stacked readiness layout, the status tag must be flush left with the associated item title.",
-    "The Study page load failure should use a GOV.UK Error summary rather than a Notification banner."
+    "The Study page load failure should use a GOV.UK Error summary rather than a Notification banner.",
+    "The 900px breakpoint should only stack Study readiness rows; tablet-width hero and action button layout must keep the narrower mobile breakpoint."
   ],
   "implementationSummary": [
     "Restored the Nunjucks session gate to the neutral checking fallback copy.",
@@ -65,6 +66,7 @@
     "Moved readiness status tags above item text from 900px down, flush left with a 10px gap before the associated title and hint.",
     "Removed inherited GOV.UK task-list status padding in the stacked Study readiness layout so tags share the same left edge as their associated title and hint.",
     "Replaced the Study page load failure Notification banner with a GOV.UK Error summary while preserving the study-error and study-error-message hooks used by the client script.",
+    "Split the 900px Study readiness stacking rules from the 699px mobile-only hero and action button rules, so tablet layouts no longer inherit the mobile full-width button and reduced heading.",
     "Removed visible checking defaults from rendered readiness markup.",
     "Stacked readiness status tags above text on small viewports.",
     "Bumped the Study page script version and regenerated the static Study page.",
@@ -81,6 +83,16 @@
       "evidence": "tests/study-page-route-state.test.js asserts const safeProject = project || {} and safeProject[\"Project Name\"].",
       "githubDisposition": "Pushed commit 53e1658e, posted PR review response 4436353980 with validation evidence, and resolved the original review thread.",
       "toolingLimitation": "The required thumbs-up reaction and direct inline reply could not be completed because the GitHub connector returned 403 Resource not accessible by integration for review-comment reactions and exposed only the GraphQL review-comment node ID while its direct reply endpoint requires a REST numeric comment ID."
+    },
+    {
+      "threadId": "PRRT_kwDOP3Td2M6HYHBE",
+      "commentId": "PRRC_kwDOP3Td2M7Iczlu",
+      "path": "src/styles/study-page.scss",
+      "line": 124,
+      "classification": "legitimate",
+      "resolution": "The 900px media query now contains only Study readiness row stacking; hero heading and Study action bar mobile rules are back under the 699px breakpoint.",
+      "evidence": "tests/study-page-route-state.test.js asserts the 900px block includes readiness selectors and excludes .study-action-bar .govuk-button and .study-hero .govuk-heading-l.",
+      "githubDisposition": "Pending push, review-thread reply and resolution."
     }
   ],
   "validation": [

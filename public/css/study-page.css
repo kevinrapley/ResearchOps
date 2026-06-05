@@ -94,23 +94,6 @@
 	}
 
 @media (max-width: 900px) {
-	.study-hero {
-		padding-top: 16px;
-		}
-	.study-hero .govuk-heading-l {
-		font-size: 32px;
-		line-height: 1.15;
-		overflow-wrap: anywhere;
-		}
-	.study-action-bar {
-		justify-content: flex-start;
-		padding: 12px 0;
-		}
-	.study-action-bar .govuk-button {
-		box-sizing: border-box;
-		text-align: center;
-		width: 100%;
-		}
 	.study-readiness-task-list .govuk-task-list__item {
 		grid-template-columns: 1fr;
 		}
@@ -126,6 +109,26 @@
 		margin-bottom: 10px;
 		padding-left: 0;
 		text-align: left;
+		width: 100%;
+		}
+	}
+
+@media (max-width: 699px) {
+	.study-hero {
+		padding-top: 16px;
+		}
+	.study-hero .govuk-heading-l {
+		font-size: 32px;
+		line-height: 1.15;
+		overflow-wrap: anywhere;
+		}
+	.study-action-bar {
+		justify-content: flex-start;
+		padding: 12px 0;
+		}
+	.study-action-bar .govuk-button {
+		box-sizing: border-box;
+		text-align: center;
 		width: 100%;
 		}
 	}

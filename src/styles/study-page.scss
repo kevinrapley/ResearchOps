@@ -122,6 +122,29 @@
 
 // prettier-ignore
 @media (max-width: 900px) {
+	.study-readiness-task-list .govuk-task-list__item {
+		grid-template-columns: 1fr;
+	}
+
+	.study-readiness-task-list .govuk-task-list__name-and-hint {
+		grid-column: 1;
+		grid-row: 2;
+		max-width: none;
+	}
+
+	.study-readiness-task-list .govuk-task-list__status {
+		grid-column: 1;
+		grid-row: 1;
+		justify-self: start;
+		margin-bottom: 10px;
+		padding-left: 0;
+		text-align: left;
+		width: 100%;
+	}
+}
+
+// prettier-ignore
+@media (max-width: 699px) {
 	.study-hero {
 		padding-top: 16px;
 	}
@@ -140,26 +163,6 @@
 	.study-action-bar .govuk-button {
 		box-sizing: border-box;
 		text-align: center;
-		width: 100%;
-	}
-
-	.study-readiness-task-list .govuk-task-list__item {
-		grid-template-columns: 1fr;
-	}
-
-	.study-readiness-task-list .govuk-task-list__name-and-hint {
-		grid-column: 1;
-		grid-row: 2;
-		max-width: none;
-	}
-
-	.study-readiness-task-list .govuk-task-list__status {
-		grid-column: 1;
-		grid-row: 1;
-		justify-self: start;
-		margin-bottom: 10px;
-		padding-left: 0;
-		text-align: left;
 		width: 100%;
 	}
 }
