@@ -18,7 +18,7 @@ function excludes(source, text, label) {
   assert.equal(source.includes(text), false, `Expected ${label} not to include: ${text}`);
 }
 
-for (const macro of ["govukBreadcrumbs({", "govukButton({", "govukInput({"]) {
+for (const macro of ["govukBreadcrumbs({", "govukButton({", "govukDetails({", "govukInput({", "govukTextarea({"]) {
   includes(templateSource, macro, "study guides template");
 }
 
@@ -41,7 +41,10 @@ includes(pageSource, "id=\"guides-tbody\"", "study guides page");
 includes(pageSource, "id=\"editor-section\"", "study guides page");
 includes(pageSource, "id=\"drawer-patterns\"", "study guides page");
 includes(pageSource, "id=\"drawer-variables\"", "study guides page");
-includes(pageSource, "id=\"back-to-study\"", "study guides page");
+includes(pageSource, "Create guide", "study guides page");
+includes(pageSource, "Publish guide", "study guides page");
+excludes(pageSource, "id=\"back-to-study\"", "study guides page");
+excludes(pageSource, "Back to Study", "study guides page");
 excludes(pageSource, "class=\"btn", "study guides page");
 excludes(pageSource, "href=\"/css/screen.css\"", "study guides page");
 excludes(pageSource, "<script type=\"module\">", "study guides page");
@@ -67,6 +70,7 @@ includes(guidesPageSource, "hydrateCrumbs", "guides component module");
 includes(guidesPageSource, "loadGuides", "guides component module");
 
 includes(guidesCssSource, ".guides-header", "Guides stylesheet");
+includes(guidesCssSource, "Repo:       /src/styles/guides.scss", "Guides stylesheet");
 includes(guidesCssSource, ".editor__toolbar", "Guides stylesheet");
 includes(guidesCssSource, ".editor__split", "Guides stylesheet");
 includes(guidesCssSource, ".code-editor", "Guides stylesheet");

@@ -32,6 +32,11 @@ export const generatedCssTargets = [
 		output: 'public/css/participants.css',
 	},
 	{
+		name: 'Study guides stylesheet',
+		source: 'src/styles/guides.scss',
+		output: 'public/css/guides.css',
+	},
+	{
 		name: 'Outcomes stylesheet',
 		source: 'src/styles/outcomes.scss',
 		output: 'public/css/outcomes.css',

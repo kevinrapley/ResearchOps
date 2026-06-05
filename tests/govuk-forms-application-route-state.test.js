@@ -166,4 +166,5 @@ includes(newStudyPage, "id=\"study-submit\"", "Add Study route");
 
 const guidesPage = read("public/pages/study/guides/index.html");
 includes(guidesPage, "class=\"govuk-form-group\"", "Guides route");
-includes(guidesPage, "class=\"govuk-input editor__title-field\"", "Guides route");
+includes(guidesPage, "editor__title-field", "Guides route");
+includes(guidesPage, "class=\"govuk-textarea code-editor__textarea\"", "Guides route");

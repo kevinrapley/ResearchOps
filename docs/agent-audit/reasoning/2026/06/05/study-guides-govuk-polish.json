@@ -1,0 +1,94 @@
+{
+	"date": "2026-06-05",
+	"branch": "feature/study-guides-govuk-polish",
+	"traceRequired": true,
+	"task": "Improve the Study discussion guides page using GOV.UK Frontend and Nunjucks, then open a new pull request.",
+	"operatingModelFilesLoaded": [
+		"AGENTS.md",
+		".agent-operating-model/orchestration.xml",
+		".agent-operating-model/bundle-registry.json",
+		".agent-operating-model/task-signal-catalog.json",
+		".agent-operating-model/selection-rules.json",
+		".agent-operating-model/bootstrap-checklist.md",
+		".agent-operating-model/precedence-policy.md",
+		".agent-operating-model/trace-policy.md",
+		".agent-operating-model/trace-layers.md",
+		".agent-operating-model/github-mutation-policy.md"
+	],
+	"selectedBundles": [
+		{
+			"id": "github-diamond",
+			"path": ".agent-operating-model/bundles/github/"
+		},
+		{
+			"id": "researchops-developer-control",
+			"path": ".agent-operating-model/bundles/researchops-developer-control/"
+		},
+		{
+			"id": "multi-functional-team",
+			"path": ".agent-operating-model/bundles/multi-functional-team/"
+		},
+		{
+			"id": "govuk-design-system",
+			"path": ".agent-operating-model/bundles/govuk-design-system/"
+		}
+	],
+	"skippedBundles": [
+		"cloudflare",
+		"openai-platform",
+		"mcp-agent-tooling",
+		"airtable-public-api",
+		"mural-public-api"
+	],
+	"filesChanged": [
+		"src/govuk/templates/pages/study-guides.njk",
+		"src/styles/guides.scss",
+		"public/css/guides.css",
+		"public/pages/study/guides/index.html",
+		"scripts/styles/generated-css-targets.mjs",
+		"tests/study-guides-route-state.test.js",
+		"tests/govuk-breadcrumb-back-link-route-state.test.js",
+		"tests/govuk-forms-application-route-state.test.js",
+		"tests/govuk-frontend-integration-route-state.test.js",
+		"docs/agent-audit/reasoning/2026/06/05/study-guides-govuk-polish.md",
+		"docs/agent-audit/reasoning/2026/06/05/study-guides-govuk-polish.json"
+	],
+	"validation": [
+		{
+			"command": "sass --load-path=node_modules --no-source-map src/styles/guides.scss public/css/guides.css",
+			"result": "passed"
+		},
+		{
+			"command": "node scripts/styles/format-generated-css.mjs --write public/css/guides.css",
+			"result": "passed"
+		},
+		{
+			"command": "npm run build:govuk-pages",
+			"result": "passed"
+		},
+		{
+			"command": "node --test tests/study-guides-route-state.test.js tests/govuk-breadcrumb-back-link-route-state.test.js tests/govuk-forms-application-route-state.test.js tests/govuk-tables-summary-lists-application-route-state.test.js tests/govuk-frontend-integration-route-state.test.js",
+			"result": "passed"
+		},
+		{
+			"command": "npm run generated-css:check -- public/css/guides.css",
+			"result": "passed"
+		},
+		{
+			"command": "npm test",
+			"result": "passed"
+		},
+		{
+			"command": "Browser alignment check at http://127.0.0.1:8891/pages/study/guides/?id=RECT3O7DT with viewport 1212x672",
+			"result": "passed; preview panel top and guide source textarea top both measured at 1181px"
+		}
+	],
+	"validationNotRun": [],
+	"excludedLocalChanges": [
+		".gitignore",
+		"package.json",
+		"scripts/agent-operating-model/validate-operating-model.mjs",
+		"scripts/agent-operating-model/claude-collaboration.mjs"
+	],
+	"residualRisk": "Normal git push was blocked by local DNS resolution for github.com. The branch and amended commit are ready locally; push and PR creation remain pending until network resolution is available."
+}

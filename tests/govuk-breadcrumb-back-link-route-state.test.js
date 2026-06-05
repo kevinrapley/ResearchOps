@@ -36,7 +36,7 @@ const breadcrumbPages = [
 	{
 		label: "Guides route",
 		path: "public/pages/study/guides/index.html",
-		requiredIds: ["breadcrumb-project", "breadcrumb-study", "back-to-study"],
+		requiredIds: ["breadcrumb-project", "breadcrumb-study"],
 		currentText: "Guides"
 	},
 	{
@@ -149,8 +149,8 @@ excludes(journalsPage, "id=\"back-to-project\"", "Journals route");
 excludes(journalsPage, ">Back to Project</a>", "Journals route");
 
 const guidesPage = fs.readFileSync("public/pages/study/guides/index.html", "utf8");
-includes(guidesPage, "id=\"back-to-study\"", "Guides route");
-includesNormalised(guidesPage, "Back to Study", "Guides route");
+excludes(guidesPage, "id=\"back-to-study\"", "Guides route");
+excludes(guidesPage, "Back to Study", "Guides route");
 
 const consentFormsPage = fs.readFileSync("public/pages/study/consent-forms/index.html", "utf8");
 includes(consentFormsPage, "id=\"back-to-study\"", "Consent Forms route");
