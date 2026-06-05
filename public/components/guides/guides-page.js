@@ -142,75 +142,78 @@ function setPatternStatus(msg) {
 }
 
 /* -------------------- boot -------------------- */
-window.addEventListener("DOMContentLoaded", () => {
-	(async function boot() {
-		try {
-			console.log("[guides] Boot starting...");
+async function bootGuidesPage() {
+	try {
+		console.log("[guides] Boot starting...");
 
-			installLoadingKiller();
-			wireGlobalActions();
-			wireEditor();
+		installLoadingKiller();
+		wireGlobalActions();
+		wireEditor();
 
-			const url = new URL(location.href);
-			const pid = url.searchParams.get("pid");
-			const sid = url.searchParams.get("sid");
-			const gid = url.searchParams.get("gid"); // optional direct-open
+		const url = new URL(location.href);
+		const pid = url.searchParams.get("pid");
+		const sid = url.searchParams.get("sid");
+		const gid = url.searchParams.get("gid"); // optional direct-open
 
-			console.log("[guides] URL params - pid:", pid, "sid:", sid, "gid:", gid);
+		console.log("[guides] URL params - pid:", pid, "sid:", sid, "gid:", gid);
 
-			if (!pid || !sid) {
-				console.error("[guides] Missing required URL parameters");
-				announce("Missing project or study ID in URL");
-				const tbody = document.querySelector("#guides-tbody");
-				if (tbody) {
-					tbody.innerHTML = '<tr><td colspan="6" class="muted">Error: Missing project or study ID in URL</td></tr>';
-				}
-				return;
-			}
-
-			// Hydrate breadcrumbs/context first so __guideCtx.study.id is available
-			await hydrateCrumbs({ pid, sid });
-			console.log("[guides] Context hydrated:", __guideCtx);
-
-			// Patterns don't block guides table; failure shouldn't stall the UI
-			try {
-				await refreshPatternList();
-				console.log("[guides] Patterns loaded");
-			} catch (e) {
-				console.warn("[guides] Pattern load failed:", e);
-			}
-
-			// If gid provided, try to open it first (does not block loadGuides)
-			if (gid) {
-				try {
-					await openGuide(gid);
-					window.__hasAutoOpened = true;
-					console.log("[guides] Opened guide from URL:", gid);
-				} catch (err) {
-					console.warn("[guides] Boot open gid failed:", err);
-				}
-			}
-
-			// Always render the table; it manages its own loading/fallback UI
-			console.log("[guides] Loading guides for study:", sid);
-			await loadGuides(sid, { autoOpen: !window.__hasAutoOpened });
-
-		} catch (err) {
-			console.error("[guides] Boot fatal:", err);
-			announce("Failed to initialise the page.");
-			// As a last resort, unstick any "Loading…" spinners we know about
-			const stuck = document.querySelector("#guides-loading, [data-role='guides-loading']");
-			if (stuck) stuck.hidden = true;
-			const tbody =
-				document.querySelector("#guides-tbody") ||
-				document.querySelector("#guides-table tbody") ||
-				document.querySelector("[data-guides-tbody]");
+		if (!pid || !sid) {
+			console.error("[guides] Missing required URL parameters");
+			announce("Missing project or study ID in URL");
+			const tbody = document.querySelector("#guides-tbody");
 			if (tbody) {
-				tbody.innerHTML = `<tr><td colspan="6" class="muted">Failed to initialise guides: ${escapeHtml(err.message || "Unknown error")}</td></tr>`;
+				tbody.innerHTML = '<tr><td colspan="6" class="muted">Error: Missing project or study ID in URL</td></tr>';
+			}
+			return;
+		}
+
+		// Hydrate breadcrumbs/context first so __guideCtx.study.id is available
+		await hydrateCrumbs({ pid, sid });
+		console.log("[guides] Context hydrated:", __guideCtx);
+
+		// Patterns don't block guides table; failure shouldn't stall the UI
+		try {
+			await refreshPatternList();
+			console.log("[guides] Patterns loaded");
+		} catch (e) {
+			console.warn("[guides] Pattern load failed:", e);
+		}
+
+		// If gid provided, try to open it first (does not block loadGuides)
+		if (gid) {
+			try {
+				await openGuide(gid);
+				window.__hasAutoOpened = true;
+				console.log("[guides] Opened guide from URL:", gid);
+			} catch (err) {
+				console.warn("[guides] Boot open gid failed:", err);
 			}
 		}
-	})();
-});
+
+		// Always render the table; it manages its own loading/fallback UI
+		console.log("[guides] Loading guides for study:", sid);
+		await loadGuides(sid, { autoOpen: !window.__hasAutoOpened });
+	} catch (err) {
+		console.error("[guides] Boot fatal:", err);
+		announce("Failed to initialise the page.");
+		// As a last resort, unstick any "Loading…" spinners we know about
+		const stuck = document.querySelector("#guides-loading, [data-role='guides-loading']");
+		if (stuck) stuck.hidden = true;
+		const tbody =
+			document.querySelector("#guides-tbody") ||
+			document.querySelector("#guides-table tbody") ||
+			document.querySelector("[data-guides-tbody]");
+		if (tbody) {
+			tbody.innerHTML = `<tr><td colspan="6" class="muted">Failed to initialise guides: ${escapeHtml(err.message || "Unknown error")}</td></tr>`;
+		}
+	}
+}
+
+if (document.readyState === "loading") {
+	window.addEventListener("DOMContentLoaded", bootGuidesPage, { once: true });
+} else {
+	bootGuidesPage();
+}
 
 async function safeJson(res, opts = {}) {
 	const {
@@ -1094,6 +1097,24 @@ function importMarkdownFlow() {
 
 /* -------------------- drawers: patterns -------------------- */
 
+function getDrawerFocusTarget(drawer, preferred) {
+	return (
+		preferred ||
+		drawer.querySelector("button, [href], input, select, textarea, [tabindex]:not([tabindex='-1'])") ||
+		drawer
+	);
+}
+
+function revealDrawer(drawer, preferredFocusTarget) {
+	if (!drawer) return;
+	drawer.removeAttribute("hidden");
+	drawer.scrollIntoView({ behavior: "smooth", block: "start" });
+
+	window.requestAnimationFrame(() => {
+		getDrawerFocusTarget(drawer, preferredFocusTarget)?.focus({ preventScroll: true });
+	});
+}
+
 function openPatternDrawer() {
 	// Mutual exclusivity
 	closeVariablesDrawer();
@@ -1101,8 +1122,7 @@ function openPatternDrawer() {
 
 	const drawer = $("#drawer-patterns");
 	if (drawer) {
-		drawer.removeAttribute("hidden");
-		$("#pattern-search")?.focus();
+		revealDrawer(drawer, $("#pattern-search"));
 	}
 
 	// NEW: if list is empty or only has “No patterns found.”, (re)load now
@@ -1443,13 +1463,12 @@ function openVariablesDrawer() {
 	closeTagDialog();
 
 	const d = $("#drawer-variables");
-	if (d) {
-		d.hidden = false;
-		d.focus();
-	}
 	// Ensure actions exist if someone navigates here very early
 	if (!document.getElementById("btn-save-vars")) {
 		populateVariablesFormEnhanced(varManager?.getVariables?.() || {});
+	}
+	if (d) {
+		revealDrawer(d, $("#drawer-variables-close"));
 	}
 	announce("Variables drawer opened");
 }

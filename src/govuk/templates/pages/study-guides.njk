@@ -5,7 +5,7 @@
 {% from "govuk/components/input/macro.njk" import govukInput %}
 {% from "govuk/components/textarea/macro.njk" import govukTextarea %}
 
-{% set studyPageScriptVersion = "study-record-id-routing-20260518" %}
+{% set studyPageScriptVersion = "study-guides-drawer-focus-20260605" %}
 
 {% block head %}
 	<meta property="schema:name" content="Discussion guides - ResearchOps">
@@ -126,7 +126,7 @@
 		}) }}
 	</section>
 
-	<aside id="drawer-patterns" class="drawer" hidden aria-labelledby="drawer-patterns-title">
+	<aside id="drawer-patterns" class="drawer" hidden aria-labelledby="drawer-patterns-title" tabindex="-1">
 		<h2 id="drawer-patterns-title" class="govuk-heading-m">Patterns</h2>
 		{{ govukInput({
 			id: "pattern-search",
@@ -140,7 +140,11 @@
 		</div>
 	</aside>
 
-	<aside id="drawer-variables" class="drawer" hidden></aside>
+	<aside id="drawer-variables" class="drawer" hidden aria-labelledby="drawer-variables-title" tabindex="-1">
+		<h2 id="drawer-variables-title" class="govuk-heading-m">Variables</h2>
+		<p class="govuk-body">Manage reusable variables for this discussion guide.</p>
+		<form id="variables-form" novalidate></form>
+	</aside>
 	<div class="govuk-button-group actions-row"></div>
 	<div id="sr-live" class="govuk-visually-hidden" aria-live="polite"></div>
 </div>

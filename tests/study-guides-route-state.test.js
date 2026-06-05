@@ -5,6 +5,7 @@ const pageSource = fs.readFileSync("public/pages/study/guides/index.html", "utf8
 const templateSource = fs.readFileSync("src/govuk/templates/pages/study-guides.njk", "utf8");
 const rendererSource = fs.readFileSync("scripts/govuk/render-govuk-pages.mjs", "utf8");
 const contextSource = fs.readFileSync("public/js/study-guides-context.js", "utf8");
+const loaderSource = fs.readFileSync("public/js/guides-route-loader.js", "utf8");
 const guidesPageSource = fs.readFileSync("public/components/guides/guides-page.js", "utf8");
 const variableManagerSource = fs.readFileSync("public/components/guides/variable-manager.js", "utf8");
 const guidesCssSource = fs.readFileSync("public/css/guides.css", "utf8");
@@ -40,7 +41,11 @@ includes(pageSource, "id=\"guide-preview\"", "study guides page");
 includes(pageSource, "id=\"guides-tbody\"", "study guides page");
 includes(pageSource, "id=\"editor-section\"", "study guides page");
 includes(pageSource, "id=\"drawer-patterns\"", "study guides page");
+includes(pageSource, "id=\"drawer-patterns\" class=\"drawer\" hidden aria-labelledby=\"drawer-patterns-title\" tabindex=\"-1\"", "study guides page");
 includes(pageSource, "id=\"drawer-variables\"", "study guides page");
+includes(pageSource, "id=\"drawer-variables\" class=\"drawer\" hidden aria-labelledby=\"drawer-variables-title\" tabindex=\"-1\"", "study guides page");
+includes(pageSource, "id=\"drawer-variables-title\"", "study guides page");
+includes(pageSource, "id=\"variables-form\" novalidate", "study guides page");
 includes(pageSource, "Create guide", "study guides page");
 includes(pageSource, "Publish guide", "study guides page");
 excludes(pageSource, "id=\"back-to-study\"", "study guides page");
@@ -66,8 +71,20 @@ includes(contextSource, "window.__guideCtx", "study guides context module");
 includes(contextSource, "Missing Study record ID in URL", "study guides context module");
 includes(contextSource, "export { fallbackTitle, pickTitle };", "study guides context module");
 
+includes(loaderSource, "Study route bridge unavailable", "study guides route loader");
+includes(loaderSource, "Study guides context unavailable", "study guides route loader");
+includes(loaderSource, "Guides controller unavailable", "study guides route loader");
+includes(loaderSource, "await import('/components/guides/guides-page.js", "study guides route loader");
+
 includes(guidesPageSource, "hydrateCrumbs", "guides component module");
 includes(guidesPageSource, "loadGuides", "guides component module");
+includes(guidesPageSource, "async function bootGuidesPage", "guides component module");
+includes(guidesPageSource, 'document.readyState === "loading"', "guides component module");
+includes(guidesPageSource, "bootGuidesPage();", "guides component module");
+includes(guidesPageSource, "function revealDrawer", "guides component module");
+includes(guidesPageSource, "scrollIntoView({ behavior: \"smooth\", block: \"start\" })", "guides component module");
+includes(guidesPageSource, "focus({ preventScroll: true })", "guides component module");
+includes(guidesPageSource, "revealDrawer(d, $(\"#drawer-variables-close\"))", "guides component module");
 
 includes(guidesCssSource, ".guides-header", "Guides stylesheet");
 includes(guidesCssSource, "Repo:       /src/styles/guides.scss", "Guides stylesheet");
@@ -77,5 +94,6 @@ includes(guidesCssSource, ".code-editor", "Guides stylesheet");
 includes(guidesCssSource, ".code-editor__textarea", "Guides stylesheet");
 includes(guidesCssSource, ".preview", "Guides stylesheet");
 includes(guidesCssSource, ".drawer", "Guides stylesheet");
+includes(guidesCssSource, "scroll-margin-top: 30px", "Guides stylesheet");
 includes(guidesCssSource, ".vm-row", "Guides stylesheet");
 includes(guidesCssSource, "/* transparency begins in the cascade */", "Guides stylesheet");

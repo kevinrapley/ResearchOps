@@ -61,14 +61,21 @@ for (const [label, source] of Object.entries(pages)) {
 	includes(source, "<html class=\"govuk-template\" lang=\"en\">", label);
 	includes(source, "/assets/govuk/govuk-frontend.css", label);
 	includes(source, "/js/study-route-context.js", label);
-	includes(source, "?v=study-record-id-routing-20260518", label);
 	excludes(source, "?pid=", label);
 	excludes(source, "&sid=", label);
 }
 
+for (const [label, source] of Object.entries(pages)) {
+	if (label === "guides") {
+		includes(source, "?v=study-guides-drawer-focus-20260605", label);
+	} else {
+		includes(source, "?v=study-record-id-routing-20260518", label);
+	}
+}
+
 includes(pages.consentForms, "/js/consent-forms-route-loader.js?v=study-record-id-routing-20260518", "consent forms page");
 excludes(pages.consentForms, "/js/consent-forms-page.js?v=study-record-id-routing-20260518", "consent forms page");
-includes(pages.guides, "/js/guides-route-loader.js?v=study-record-id-routing-20260518", "guides page");
+includes(pages.guides, "/js/guides-route-loader.js?v=study-guides-drawer-focus-20260605", "guides page");
 excludes(pages.guides, "/js/study-guides-context.js?v=study-record-id-routing-20260518", "guides page");
 excludes(pages.guides, "/components/guides/guides-page.js?v=study-record-id-routing-20260518", "guides page");
 includes(pages.participantConsent, "/js/participant-consent-route-loader.js?v=study-record-id-routing-20260518", "participant consent page");
@@ -78,13 +85,19 @@ includes(pages.synthesis, "/js/synthesis-route-loader.js?v=study-record-id-routi
 excludes(pages.synthesis, "/js/synthesize-page.js?v=study-record-id-routing-20260518", "synthesis page");
 
 for (const [label, source] of Object.entries(loaders)) {
-	includes(source, "await import('/js/study-canonical-url-bridge.js?v=study-record-id-routing-20260518')", label);
+	if (label === "guides") {
+		includes(source, "await import('/js/study-canonical-url-bridge.js?v=study-guides-drawer-focus-20260605')", label);
+	} else {
+		includes(source, "await import('/js/study-canonical-url-bridge.js?v=study-record-id-routing-20260518')", label);
+	}
 	includes(source, "await import('/components/layout.js')", label);
 }
 
 includes(loaders.consentForms, "await import('/js/consent-forms-page.js?v=study-record-id-routing-20260518')", "consent forms loader");
-includes(loaders.guides, "await import('/js/study-guides-context.js?v=study-record-id-routing-20260518')", "guides loader");
-includes(loaders.guides, "await import('/components/guides/guides-page.js?v=study-record-id-routing-20260518')", "guides loader");
+includes(loaders.guides, "Study route bridge unavailable", "guides loader");
+includes(loaders.guides, "Study guides context unavailable", "guides loader");
+includes(loaders.guides, "await import('/js/study-guides-context.js?v=study-guides-drawer-focus-20260605')", "guides loader");
+includes(loaders.guides, "await import('/components/guides/guides-page.js?v=study-guides-drawer-focus-20260605')", "guides loader");
 includes(loaders.participantConsent, "await import('/js/participant-consent-page.js?v=study-record-id-routing-20260518')", "participant consent loader");
 includes(loaders.participants, "await import('/components/participants/participants-page.js?v=study-record-id-routing-20260518')", "participants loader");
 includes(loaders.participants, "await import('/pages/study/participants/scheduler.js?v=study-record-id-routing-20260518')", "participants loader");

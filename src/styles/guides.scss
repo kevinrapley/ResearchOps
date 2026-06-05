@@ -64,7 +64,9 @@
 	outline: 3px solid transparent;
 	color: #0b0c0c;
 	background-color: #ffdd00;
-	box-shadow: 0 -2px #ffdd00, 0 4px #0b0c0c;
+	box-shadow:
+		0 -2px #ffdd00,
+		0 4px #0b0c0c;
 	text-decoration: none;
 }
 
@@ -109,7 +111,7 @@
 .code-editor__textarea {
 	height: 34rem;
 	min-height: 34rem;
-	font-family: ui-monospace, "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+	font-family: ui-monospace, 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
 }
 
 .preview {
@@ -132,7 +134,7 @@
 }
 
 #guide-preview:empty::before {
-	content: "The guide preview will appear here.";
+	content: 'The guide preview will appear here.';
 	color: #505a5f;
 }
 
@@ -145,6 +147,7 @@
 	margin-bottom: 40px;
 	padding: 20px;
 	background: #f3f2f1;
+	scroll-margin-top: 30px;
 }
 
 .drawer .govuk-button {
