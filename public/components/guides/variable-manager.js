@@ -93,16 +93,16 @@ export class VariableManager {
 		this.container.innerHTML = HTML`
 			<div class="vm-grid" role="group" aria-label="Variables editor">
 				<div class="vm-row vm-row--header">
-					<div class="vm-col vm-col--key"><strong>Key</strong></div>
-					<div class="vm-col vm-col--val"><strong>Value (JSON or text)</strong></div>
+					<div class="vm-col vm-col--key"><h3 class="govuk-heading-s">Key</h3></div>
+					<div class="vm-col vm-col--val"><h3 class="govuk-heading-s">Value</h3></div>
 					<div class="vm-col vm-col--act">
-						<button type="button" class="govuk-button govuk-button--secondary" data-vm-add>+ Add</button>
+						<button type="button" class="govuk-button govuk-button--secondary" data-vm-add>Add variable</button>
 					</div>
 				</div>
 
 				${keys.length ? "" : `
 					<div class="vm-row vm-row--empty">
-						<div class="vm-col vm-col--empty">No variables yet.</div>
+						<div class="vm-col vm-col--empty"><p class="govuk-body">No variables yet.</p></div>
 					</div>
 				`}
 
@@ -117,19 +117,21 @@ export class VariableManager {
 		return HTML`
 			<div class="vm-row" data-vm-row="${escapeHtml(key)}" id="vm-row-${idSafe}">
 				<div class="vm-col vm-col--key">
-					<input class="vm-input vm-input--key" type="text" value="${escapeAttr(key)}" aria-label="Variable key">
+					<label class="govuk-label govuk-label--s" for="vm-key-${idSafe}">Variable key</label>
+					<input class="govuk-input vm-input vm-input--key" id="vm-key-${idSafe}" type="text" value="${escapeAttr(key)}">
 				</div>
 				<div class="vm-col vm-col--val">
-					<input class="vm-input vm-input--val" type="text" value="${escapeAttr(valueText)}" aria-label="Variable value">
+					<label class="govuk-label govuk-label--s" for="vm-value-${idSafe}">Value</label>
+					<input class="govuk-input vm-input vm-input--val" id="vm-value-${idSafe}" type="text" value="${escapeAttr(valueText)}">
 				</div>
 				<div class="vm-col vm-col--act">
-					<button type="button" class="vm-del" title="Delete ${escapeAttr(key)}" aria-label="Delete ${escapeAttr(key)}">✖</button>
+					<button type="button" class="govuk-button govuk-button--warning vm-del" aria-label="Delete ${escapeAttr(key)}">Delete</button>
 				</div>
 
 				<!-- inline confirm (hidden by default) -->
 				<div class="vm-confirm" hidden>
 					<div class="vm-confirm__box" role="alertdialog" aria-live="assertive">
-						<p>Delete <code>${escapeHtml(key)}</code>?</p>
+						<p class="govuk-body">Delete <code>${escapeHtml(key)}</code>?</p>
 						<div class="vm-confirm__actions">
 							<button type="button" class="govuk-button govuk-button--warning" data-vm-confirm="yes">Delete</button>
 							<button type="button" class="govuk-button govuk-button--secondary" data-vm-confirm="no">Cancel</button>

@@ -2,10 +2,12 @@
 {% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
 {% from "govuk/components/button/macro.njk" import govukButton %}
 {% from "govuk/components/details/macro.njk" import govukDetails %}
+{% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
 {% from "govuk/components/input/macro.njk" import govukInput %}
 {% from "govuk/components/textarea/macro.njk" import govukTextarea %}
+{% from "govuk/components/warning-text/macro.njk" import govukWarningText %}
 
-{% set studyPageScriptVersion = "study-guides-drawer-focus-20260605" %}
+{% set studyPageScriptVersion = "study-guides-drawer-details-20260605" %}
 
 {% block head %}
 	<meta property="schema:name" content="Discussion guides - ResearchOps">
@@ -27,6 +29,11 @@
 			{ text: "Study", href: "#", attributes: { id: "breadcrumb-study" } },
 			{ text: "Guides" }
 		]
+	}) }}
+
+	{{ govukWarningText({
+		text: "Study details could not be loaded. Some saved guide data may be unavailable.",
+		attributes: { id: "study-context-warning", hidden: "hidden" }
 	}) }}
 
 	<header class="guides-header">
@@ -71,6 +78,12 @@
 		<h2 id="guide-editor-title" class="govuk-heading-m">Guide editor</h2>
 		<p class="govuk-body">Write the guide source, check the preview and save the guide before publishing it for sessions.</p>
 
+		{{ govukErrorSummary({
+			titleText: "There is a problem",
+			errorList: [],
+			attributes: { id: "guide-error-summary", hidden: "hidden" }
+		}) }}
+
 		{{ govukInput({
 			id: "guide-title",
 			name: "guideTitle",
@@ -85,13 +98,33 @@
 			<div class="govuk-button-group editor__toolbar-group">
 				{{ govukButton({ text: "Insert pattern", type: "button", classes: "govuk-button--secondary", attributes: { id: "btn-insert-pattern" } }) }}
 				{{ govukButton({ text: "Variables", type: "button", classes: "govuk-button--secondary", attributes: { id: "btn-variables" } }) }}
-				{{ govukButton({ text: "Insert tag", type: "button", classes: "govuk-button--secondary", attributes: { id: "btn-insert-tag" } }) }}
 			</div>
 			<div class="govuk-button-group editor__toolbar-group">
 				{{ govukButton({ text: "Save draft", type: "button", attributes: { id: "btn-save" } }) }}
 				{{ govukButton({ text: "Publish guide", type: "button", classes: "govuk-button--secondary", attributes: { id: "btn-publish" } }) }}
 			</div>
 		</div>
+
+		<aside id="drawer-patterns" class="drawer" hidden aria-labelledby="drawer-patterns-title" tabindex="-1">
+			<h2 id="drawer-patterns-title" class="govuk-heading-m">Patterns</h2>
+			{{ govukInput({
+				id: "pattern-search",
+				name: "patternSearch",
+				label: { text: "Search patterns", classes: "govuk-label--s" },
+				attributes: { autocomplete: "off" }
+			}) }}
+			<ul id="pattern-list" class="govuk-list pattern-list"></ul>
+			<div id="pattern-tray" class="pattern-tray" hidden></div>
+			<div class="govuk-button-group">
+				<button id="drawer-patterns-close" class="govuk-button govuk-button--secondary" type="button">Close</button>
+			</div>
+		</aside>
+
+		<aside id="drawer-variables" class="drawer" hidden aria-labelledby="drawer-variables-title" tabindex="-1">
+			<h2 id="drawer-variables-title" class="govuk-heading-m">Variables</h2>
+			<p class="govuk-body">Manage reusable variables for this discussion guide.</p>
+			<form id="variables-form" novalidate></form>
+		</aside>
 
 		<div class="govuk-grid-row editor__split">
 			<div class="govuk-grid-column-one-half code-editor">
@@ -125,26 +158,6 @@
 			html: '<p class="govuk-body">Include an opening script, consent reminders, core questions, prompts and a closing section. Keep personal data out of the guide unless it is needed to run the session.</p>'
 		}) }}
 	</section>
-
-	<aside id="drawer-patterns" class="drawer" hidden aria-labelledby="drawer-patterns-title" tabindex="-1">
-		<h2 id="drawer-patterns-title" class="govuk-heading-m">Patterns</h2>
-		{{ govukInput({
-			id: "pattern-search",
-			name: "patternSearch",
-			label: { text: "Search patterns" },
-			attributes: { autocomplete: "off" }
-		}) }}
-		<ul id="pattern-list" class="govuk-list"></ul>
-		<div class="govuk-button-group">
-			<button id="drawer-patterns-close" class="govuk-button govuk-button--secondary" type="button">Close</button>
-		</div>
-	</aside>
-
-	<aside id="drawer-variables" class="drawer" hidden aria-labelledby="drawer-variables-title" tabindex="-1">
-		<h2 id="drawer-variables-title" class="govuk-heading-m">Variables</h2>
-		<p class="govuk-body">Manage reusable variables for this discussion guide.</p>
-		<form id="variables-form" novalidate></form>
-	</aside>
 	<div class="govuk-button-group actions-row"></div>
 	<div id="sr-live" class="govuk-visually-hidden" aria-live="polite"></div>
 </div>

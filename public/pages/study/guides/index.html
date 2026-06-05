@@ -12,7 +12,7 @@
 		<link rel="stylesheet" href="/css/guides.css" media="screen" />
 		<link rel="modulepreload" href="/js/study-route-context.js" />
 		<link rel="modulepreload" href="/js/study-guides-context.js" />
-		<link rel="modulepreload" href="/js/guides-route-loader.js?v=study-guides-drawer-focus-20260605" />
+		<link rel="modulepreload" href="/js/guides-route-loader.js?v=study-guides-drawer-details-20260605" />
 		<!-- /components/guides/guides-page.js -->
 
 		<script type="module" src="/components/layout.js" defer></script>
@@ -43,6 +43,14 @@
 						<li class="govuk-breadcrumbs__list-item" aria-current="page">Guides</li>
 					</ol>
 				</nav>
+
+				<div class="govuk-warning-text" id="study-context-warning" hidden="hidden">
+					<span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+					<strong class="govuk-warning-text__text">
+						<span class="govuk-visually-hidden">Warning</span>
+						Study details could not be loaded. Some saved guide data may be unavailable.
+					</strong>
+				</div>
 
 				<header class="guides-header">
 					<p id="study-title" class="govuk-caption-m" data-bind="study.title">Study</p>
@@ -88,6 +96,13 @@
 						Write the guide source, check the preview and save the guide before publishing it for sessions.
 					</p>
 
+					<div class="govuk-error-summary" id="guide-error-summary" hidden="hidden" data-module="govuk-error-summary">
+						<div role="alert">
+							<h2 class="govuk-error-summary__title">There is a problem</h2>
+							<div class="govuk-error-summary__body"></div>
+						</div>
+					</div>
+
 					<div class="govuk-form-group">
 						<label class="govuk-label govuk-label--s" for="guide-title">Guide title</label>
 
@@ -124,15 +139,6 @@
 							>
 								Variables
 							</button>
-
-							<button
-								type="button"
-								class="govuk-button govuk-button--secondary"
-								data-module="govuk-button"
-								id="btn-insert-tag"
-							>
-								Insert tag
-							</button>
 						</div>
 						<div class="govuk-button-group editor__toolbar-group">
 							<button type="button" class="govuk-button" data-module="govuk-button" id="btn-save">Save draft</button>
@@ -147,6 +153,30 @@
 							</button>
 						</div>
 					</div>
+
+					<aside id="drawer-patterns" class="drawer" hidden aria-labelledby="drawer-patterns-title" tabindex="-1">
+						<h2 id="drawer-patterns-title" class="govuk-heading-m">Patterns</h2>
+
+						<div class="govuk-form-group">
+							<label class="govuk-label govuk-label--s" for="pattern-search">Search patterns</label>
+
+							<input class="govuk-input" id="pattern-search" name="patternSearch" type="text" autocomplete="off" />
+						</div>
+
+						<ul id="pattern-list" class="govuk-list pattern-list"></ul>
+						<div id="pattern-tray" class="pattern-tray" hidden></div>
+						<div class="govuk-button-group">
+							<button id="drawer-patterns-close" class="govuk-button govuk-button--secondary" type="button">
+								Close
+							</button>
+						</div>
+					</aside>
+
+					<aside id="drawer-variables" class="drawer" hidden aria-labelledby="drawer-variables-title" tabindex="-1">
+						<h2 id="drawer-variables-title" class="govuk-heading-m">Variables</h2>
+						<p class="govuk-body">Manage reusable variables for this discussion guide.</p>
+						<form id="variables-form" novalidate></form>
+					</aside>
 
 					<div class="govuk-grid-row editor__split">
 						<div class="govuk-grid-column-one-half code-editor">
@@ -200,33 +230,12 @@
 						</div>
 					</details>
 				</section>
-
-				<aside id="drawer-patterns" class="drawer" hidden aria-labelledby="drawer-patterns-title" tabindex="-1">
-					<h2 id="drawer-patterns-title" class="govuk-heading-m">Patterns</h2>
-
-					<div class="govuk-form-group">
-						<label class="govuk-label" for="pattern-search">Search patterns</label>
-
-						<input class="govuk-input" id="pattern-search" name="patternSearch" type="text" autocomplete="off" />
-					</div>
-
-					<ul id="pattern-list" class="govuk-list"></ul>
-					<div class="govuk-button-group">
-						<button id="drawer-patterns-close" class="govuk-button govuk-button--secondary" type="button">Close</button>
-					</div>
-				</aside>
-
-				<aside id="drawer-variables" class="drawer" hidden aria-labelledby="drawer-variables-title" tabindex="-1">
-					<h2 id="drawer-variables-title" class="govuk-heading-m">Variables</h2>
-					<p class="govuk-body">Manage reusable variables for this discussion guide.</p>
-					<form id="variables-form" novalidate></form>
-				</aside>
 				<div class="govuk-button-group actions-row"></div>
 				<div id="sr-live" class="govuk-visually-hidden" aria-live="polite"></div>
 			</div>
 		</main>
 		<x-include src="/partials/footer.html"></x-include>
 
-		<script type="module" src="/js/guides-route-loader.js?v=study-guides-drawer-focus-20260605"></script>
+		<script type="module" src="/js/guides-route-loader.js?v=study-guides-drawer-details-20260605"></script>
 	</body>
 </html>

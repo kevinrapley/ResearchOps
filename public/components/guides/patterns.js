@@ -42,10 +42,13 @@ const REGISTRY = {
 
 export function listStarterPatterns() {
 	return Object.keys(REGISTRY).map(name => ({
+		id: name,
 		name,
 		version: name.match(/_v(\d+)$/)?.[1] || 1,
 		title: pretty(name),
-		category: category(name)
+		category: category(name),
+		source: REGISTRY[name],
+		isLocal: true
 	}));
 }
 

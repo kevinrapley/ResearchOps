@@ -43,6 +43,11 @@
 	margin-bottom: 0;
 	}
 
+.study-guides-page .guides-table-status {
+	padding-top: 20px;
+	padding-bottom: 20px;
+	}
+
 .link-like {
 	border: 0;
 	padding: 0;
@@ -143,7 +148,7 @@
 
 .drawer {
 	border-left: 5px solid #1d70b8;
-	margin-bottom: 40px;
+	margin-bottom: 20px;
 	padding: 20px;
 	background: #f3f2f1;
 	scroll-margin-top: 30px;
@@ -153,9 +158,71 @@
 	margin-bottom: 0;
 	}
 
-.vm-row {
+.pattern-status {
+	margin-bottom: 15px;
+	}
+
+.pattern-list {
+	margin-bottom: 20px;
+	}
+
+.pattern-category-header {
 	border-top: 1px solid #b1b4b6;
 	padding-top: 15px;
+	}
+
+.pattern-item {
+	border-top: 1px solid #b1b4b6;
+	padding: 15px 0;
+	}
+
+.pattern-item__content {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 10px 15px;
+	align-items: flex-start;
+	justify-content: space-between;
+	}
+
+.pattern-item__title {
+	max-width: 42rem;
+	}
+
+.pattern-item__actions {
+	margin-top: 10px;
+	}
+
+.pattern-action-details {
+	margin-bottom: 10px;
+	}
+
+.pattern-tray {
+	border-top: 1px solid #b1b4b6;
+	margin-top: 20px;
+	padding-top: 20px;
+	}
+
+.pattern-tray__source {
+	max-height: 16rem;
+	overflow: auto;
+	white-space: pre-wrap;
+	}
+
+.vm-row {
+	border-top: 1px solid #b1b4b6;
+	padding: 15px 0;
+	}
+
+.vm-row--header {
+	padding-top: 0;
+	}
+
+.vm-grid .govuk-input {
+	margin-bottom: 10px;
+	}
+
+.vm-confirm {
+	margin-top: 15px;
 	}
 
 .muted {

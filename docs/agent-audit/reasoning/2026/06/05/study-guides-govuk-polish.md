@@ -79,7 +79,10 @@
 ## Follow-up files changed
 
 - `public/components/guides/guides-page.js`
+- `public/components/guides/patterns.js`
+- `public/components/guides/variable-manager.js`
 - `public/js/guides-route-loader.js`
+- `public/js/study-guides-context.js`
 - `src/govuk/templates/pages/study-guides.njk`
 - `src/styles/guides.scss`
 - `public/css/guides.css`
@@ -99,6 +102,7 @@
 - Added `src/styles/guides.scss` and registered `public/css/guides.css` as a generated CSS target.
 - Replaced the legacy guides CSS with generated, route-scoped CSS.
 - Updated route-state tests to protect the new GOV.UK shape and generated stylesheet ownership.
+- Follow-up browser comments addressed: the missing-context table row now has a route-scoped GOV.UK table status cell with 20px vertical padding; required guide title/source validation now uses a GOV.UK error summary and inline field errors; the study-context failure now appears as a GOV.UK warning text while the caption keeps study context from the URL; pattern and variables panels now appear directly below the toolbar controls that reveal them; the pattern panel uses GOV.UK warning text, list/details/buttons and local starter View/Edit/Delete affordances; the variables panel uses GOV.UK buttons and labelled GOV.UK inputs after adding a variable.
 
 ## Codex review handling
 
@@ -125,6 +129,12 @@
 - `node --test tests/study-child-route-state.test.js tests/study-guides-route-state.test.js`
 - `npx eslint public/js/guides-route-loader.js public/components/guides/guides-page.js tests/study-guides-route-state.test.js` (passed with existing warnings only)
 - `npx prettier -c public/js/guides-route-loader.js public/components/guides/guides-page.js tests/study-child-route-state.test.js tests/study-guides-route-state.test.js src/styles/guides.scss docs/agent-audit/reasoning/2026/06/05/study-guides-govuk-polish.md docs/agent-audit/reasoning/2026/06/05/study-guides-govuk-polish.json`
+- `npm test` (176 tests passed)
+- `npm run trace:coverage`
+- Browser follow-up check at `http://127.0.0.1:8891/pages/study/guides/?id=RECT3O7DT`: header caption shows `Study RECT3O7DT`, context failure is a GOV.UK warning text, `Insert tag` is no longer rendered, table status row has 20px vertical padding, pattern and variables panels appear 20px below the toolbar, pattern panel has GOV.UK warning text and no legacy `.btn` or `.link-like` controls, variables panel renders GOV.UK buttons and labelled GOV.UK inputs after `Add variable`.
+- `node --test tests/study-guides-route-state.test.js tests/study-child-route-state.test.js`
+- `npm run generated-css:check -- public/css/guides.css`
+- `npx prettier -c public/components/guides/guides-page.js public/components/guides/variable-manager.js public/components/guides/patterns.js public/js/guides-route-loader.js public/js/study-guides-context.js tests/study-guides-route-state.test.js tests/study-child-route-state.test.js src/styles/guides.scss`
 - `npm test` (176 tests passed)
 - `npm run trace:coverage`
 - `node --test tests/study-guides-route-state.test.js tests/govuk-breadcrumb-back-link-route-state.test.js tests/govuk-forms-application-route-state.test.js tests/govuk-tables-summary-lists-application-route-state.test.js tests/govuk-frontend-integration-route-state.test.js`

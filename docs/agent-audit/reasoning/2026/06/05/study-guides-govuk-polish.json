@@ -51,7 +51,10 @@
 		"tests/govuk-forms-application-route-state.test.js",
 		"tests/govuk-frontend-integration-route-state.test.js",
 		"public/components/guides/guides-page.js",
+		"public/components/guides/patterns.js",
+		"public/components/guides/variable-manager.js",
 		"public/js/guides-route-loader.js",
+		"public/js/study-guides-context.js",
 		"tests/study-child-route-state.test.js",
 		"docs/agent-audit/reasoning/2026/06/05/study-guides-govuk-polish.md",
 		"docs/agent-audit/reasoning/2026/06/05/study-guides-govuk-polish.json"
@@ -128,6 +131,30 @@
 		},
 		{
 			"command": "npx prettier -c public/js/guides-route-loader.js public/components/guides/guides-page.js tests/study-child-route-state.test.js tests/study-guides-route-state.test.js src/styles/guides.scss docs/agent-audit/reasoning/2026/06/05/study-guides-govuk-polish.md docs/agent-audit/reasoning/2026/06/05/study-guides-govuk-polish.json",
+			"result": "passed"
+		},
+		{
+			"command": "npm test",
+			"result": "passed; 176 tests passed"
+		},
+		{
+			"command": "npm run trace:coverage",
+			"result": "passed"
+		},
+		{
+			"command": "Browser follow-up check at http://127.0.0.1:8891/pages/study/guides/?id=RECT3O7DT",
+			"result": "passed; caption shows Study RECT3O7DT, context failure uses GOV.UK warning text, Insert tag is absent, status row has 20px vertical padding, pattern and variables panels appear 20px below the toolbar, pattern panel uses GOV.UK warning text/buttons/details with no legacy button classes, and variables render GOV.UK buttons plus labelled GOV.UK inputs after Add variable"
+		},
+		{
+			"command": "node --test tests/study-guides-route-state.test.js tests/study-child-route-state.test.js",
+			"result": "passed"
+		},
+		{
+			"command": "npm run generated-css:check -- public/css/guides.css",
+			"result": "passed"
+		},
+		{
+			"command": "npx prettier -c public/components/guides/guides-page.js public/components/guides/variable-manager.js public/components/guides/patterns.js public/js/guides-route-loader.js public/js/study-guides-context.js tests/study-guides-route-state.test.js tests/study-child-route-state.test.js src/styles/guides.scss",
 			"result": "passed"
 		},
 		{

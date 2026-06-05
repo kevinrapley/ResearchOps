@@ -26,10 +26,10 @@ import DOMPurify from "/lib/purify.min.js";
 
 import { buildContext } from "/components/guides/context.js";
 import { renderGuide, buildPartials, DEFAULT_SOURCE } from "/components/guides/guide-editor.js";
-import { searchPatterns, listStarterPatterns } from "/components/guides/patterns.js";
+import { searchPatterns, listStarterPatterns } from "/components/guides/patterns.js?v=study-guides-drawer-details-20260605";
 
 // Variable manager + validators (keep your existing utils for validation)
-import { VariableManager } from "/components/guides/variable-manager.js";
+import { VariableManager } from "/components/guides/variable-manager.js?v=study-guides-drawer-details-20260605";
 import {
 	validateTemplate,
 	formatValidationReport,
@@ -132,13 +132,14 @@ function setPatternStatus(msg) {
 	if (!p) {
 		p = document.createElement("p");
 		p.id = "pattern-status";
-		p.className = "muted";
-		p.style.margin = "0 0 8px 0";
+		p.className = "govuk-warning-text pattern-status";
 		// Insert above the list for clear visibility
 		list.parentNode.insertBefore(p, list);
 	}
 
-	p.textContent = msg || "";
+	p.innerHTML = msg
+		? `<span class="govuk-warning-text__icon" aria-hidden="true">!</span><strong class="govuk-warning-text__text"><span class="govuk-visually-hidden">Warning</span>${escapeHtml(msg)}</strong>`
+		: "";
 }
 
 /* -------------------- boot -------------------- */
@@ -162,7 +163,7 @@ async function bootGuidesPage() {
 			announce("Missing project or study ID in URL");
 			const tbody = document.querySelector("#guides-tbody");
 			if (tbody) {
-				tbody.innerHTML = '<tr><td colspan="6" class="muted">Error: Missing project or study ID in URL</td></tr>';
+				tbody.innerHTML = '<tr class="govuk-table__row"><td colspan="6" class="govuk-table__cell muted guides-table-status">Error: Missing project or study ID in URL</td></tr>';
 			}
 			return;
 		}
@@ -204,7 +205,7 @@ async function bootGuidesPage() {
 			document.querySelector("#guides-table tbody") ||
 			document.querySelector("[data-guides-tbody]");
 		if (tbody) {
-			tbody.innerHTML = `<tr><td colspan="6" class="muted">Failed to initialise guides: ${escapeHtml(err.message || "Unknown error")}</td></tr>`;
+			tbody.innerHTML = `<tr class="govuk-table__row"><td colspan="6" class="govuk-table__cell muted guides-table-status">Failed to initialise guides: ${escapeHtml(err.message || "Unknown error")}</td></tr>`;
 		}
 	}
 }
@@ -469,7 +470,7 @@ async function loadGuides(studyId, opts = {}) {
 			console.error("[guides] tbody is null, cannot paint");
 		}
 	};
-	const row = (msg) => `<tr class="govuk-table__row"><td colspan="6" class="govuk-table__cell muted">${escapeHtml(msg)}</td></tr>`;
+	const row = (msg) => `<tr class="govuk-table__row"><td colspan="6" class="govuk-table__cell muted guides-table-status">${escapeHtml(msg)}</td></tr>`;
 
 	// Show loading row, then *immediately* kill any external loaders
 	paint(row("Loading…"));
@@ -708,6 +709,8 @@ function wireEditor() {
 	if (patClose) patClose.addEventListener("click", closePatternDrawer);
 	const patSearch = $("#pattern-search");
 	if (patSearch) patSearch.addEventListener("input", onPatternSearch);
+	bindPatternTrayActions();
+	bindPatternDocumentActions();
 
 	// Variables drawer
 	const varsBtn = $("#btn-variables");
@@ -967,7 +970,14 @@ async function preview() {
 /* -------------------- save / publish -------------------- */
 
 async function onSave() {
-	const title = ($("#guide-title")?.value || "").trim() || "Untitled guide";
+	const validationErrors = validateGuide();
+	if (validationErrors.length) {
+		$("#guide-error-summary")?.focus();
+		announce("Guide editor has validation errors.");
+		return;
+	}
+
+	const title = ($("#guide-title")?.value || "").trim();
 	const source = stripFrontMatter($("#guide-source")?.value || "");
 	const variables = (varManager && typeof varManager.getVariables === "function") ?
 		varManager.getVariables() : {};
@@ -996,6 +1006,13 @@ async function onSave() {
 }
 
 async function onPublish() {
+	const validationErrors = validateGuide();
+	if (validationErrors.length) {
+		$("#guide-error-summary")?.focus();
+		announce("Guide editor has validation errors.");
+		return;
+	}
+
 	const id = __openGuideId;
 	const sid = __guideCtx?.study?.id;
 	const title = ($("#guide-title")?.value || "").trim();
@@ -1151,17 +1168,18 @@ function populatePatternList(items) {
 
 	if (!arr.length) {
 		const li = document.createElement("li");
-		li.className = "muted";
+		li.className = "govuk-body muted";
 		li.textContent = "No patterns found.";
 		ul.appendChild(li);
 
 		// Still offer “+ New pattern” if you want creation regardless of API
 		const addLi = document.createElement("li");
-		addLi.innerHTML = `<button class="btn btn--primary" id="btn-new-pattern">+ New pattern</button>`;
+		addLi.innerHTML = `<button class="govuk-button govuk-button--secondary" id="btn-new-pattern" type="button" onclick="window.__researchOpsHandlePatternClick(event)">Create pattern</button>`;
 		ul.appendChild(addLi);
 
 		ul.removeEventListener("click", handlePatternClick);
 		ul.addEventListener("click", handlePatternClick);
+		bindPatternListActions(ul);
 		return;
 	}
 
@@ -1176,7 +1194,7 @@ function populatePatternList(items) {
 	for (const [cat, patterns] of Object.entries(grouped)) {
 		const header = document.createElement("li");
 		header.className = "pattern-category-header";
-		header.innerHTML = `<strong>${escapeHtml(cat)}</strong>`;
+		header.innerHTML = `<h3 class="govuk-heading-s">${escapeHtml(cat)}</h3>`;
 		ul.appendChild(header);
 
 		for (const p of patterns) {
@@ -1187,16 +1205,36 @@ function populatePatternList(items) {
 
 			li.innerHTML = `
         <div class="pattern-item__content">
-          <button class="btn btn--secondary btn--small" data-insert="${escapeHtml(insertName)}">
-            Insert
+          <div class="pattern-item__title">
+            <h4 class="govuk-heading-s">${escapeHtml(p.title)}</h4>
+            <p class="govuk-body-s muted">Partial <code>${escapeHtml(insertName)}</code></p>
+          </div>
+          <button class="govuk-button govuk-button--secondary" type="button" data-insert="${escapeHtml(insertName)}" onclick="window.__researchOpsHandlePatternClick(event)">
+            Insert pattern
           </button>
-          <span class="pattern-item__title">${escapeHtml(p.title)}</span>
-          <span class="pattern-item__meta muted">v${p.version}</span>
         </div>
         <div class="pattern-item__actions">
-          <button class="link-like" data-view="${p.id ?? ""}" ${p.id ? "" : "disabled"}>View</button>
-          <button class="link-like" data-edit="${p.id ?? ""}" ${p.id ? "" : "disabled"}>Edit</button>
-          <button class="link-like" data-delete="${p.id ?? ""}" ${p.id ? "" : "disabled"}>Delete</button>
+          <details class="govuk-details pattern-action-details">
+            <summary class="govuk-details__summary"><span class="govuk-details__summary-text">View</span></summary>
+            <div class="govuk-details__text">
+              <pre class="govuk-body pattern-tray__source"><code>${escapeHtml(p.source || "")}</code></pre>
+            </div>
+          </details>
+          <details class="govuk-details pattern-action-details">
+            <summary class="govuk-details__summary"><span class="govuk-details__summary-text">Edit</span></summary>
+            <div class="govuk-details__text">
+              <label class="govuk-label govuk-label--s" for="pattern-edit-${escapeHtml(p.name)}">Pattern source</label>
+              <textarea class="govuk-textarea" id="pattern-edit-${escapeHtml(p.name)}" rows="6">${escapeHtml(p.source || "")}</textarea>
+              <button class="govuk-button" type="button" data-save-local-pattern="${escapeHtml(p.name)}">Save pattern</button>
+            </div>
+          </details>
+          <details class="govuk-details pattern-action-details">
+            <summary class="govuk-details__summary"><span class="govuk-details__summary-text">Delete</span></summary>
+            <div class="govuk-details__text">
+              <p class="govuk-body">Delete this pattern from this editor session.</p>
+              <button class="govuk-button govuk-button--warning" type="button" data-confirm-delete-local-pattern="${escapeHtml(p.name)}">Delete pattern</button>
+            </div>
+          </details>
         </div>
       `;
 			ul.appendChild(li);
@@ -1204,15 +1242,67 @@ function populatePatternList(items) {
 	}
 
 	const addLi = document.createElement("li");
-	addLi.innerHTML = `<button class="btn btn--primary" id="btn-new-pattern">+ New pattern</button>`;
+	addLi.innerHTML = `<button class="govuk-button govuk-button--secondary" id="btn-new-pattern" type="button" onclick="window.__researchOpsHandlePatternClick(event)">Create pattern</button>`;
 	ul.appendChild(addLi);
 
 	ul.removeEventListener("click", handlePatternClick);
 	ul.addEventListener("click", handlePatternClick);
+	bindPatternListActions(ul);
+}
+
+function bindPatternListActions(ul) {
+	ul.querySelectorAll("button").forEach(button => {
+		button.addEventListener("click", handlePatternClick);
+	});
+}
+
+function bindPatternDocumentActions() {
+	if (document.documentElement.dataset.patternActionsBound === "true") return;
+	document.documentElement.dataset.patternActionsBound = "true";
+	document.addEventListener("click", (event) => {
+		const button = event.target.closest("#drawer-patterns button");
+		if (!button) return;
+
+		const saveName = button.getAttribute("data-save-local-pattern");
+		if (saveName) {
+			event.preventDefault();
+			const pattern = findPattern(saveName);
+			if (pattern) {
+				pattern.source = button.closest(".govuk-details__text")?.querySelector("textarea")?.value || "";
+				if (window.__patternRegistry) window.__patternRegistry[pattern.name] = pattern.source;
+			}
+			populatePatternList(__patternCache);
+			announce("Pattern saved");
+			return;
+		}
+
+		const deleteName = button.getAttribute("data-confirm-delete-local-pattern");
+		if (deleteName) {
+			event.preventDefault();
+			__patternCache = (__patternCache || []).filter(pattern => pattern.name !== deleteName);
+			if (window.__patternRegistry) delete window.__patternRegistry[deleteName];
+			populatePatternList(__patternCache);
+			announce("Pattern deleted");
+			return;
+		}
+
+		if (
+			button.dataset.insert ||
+			button.dataset.view ||
+			button.dataset.edit ||
+			button.dataset.delete ||
+			button.id === "btn-new-pattern"
+		) {
+			handlePatternClick(event);
+		}
+	});
 }
 
 async function handlePatternClick(e) {
-	const t = e.target;
+	e.preventDefault();
+	e.stopPropagation();
+	const t = e.target.closest("button");
+	if (!t) return;
 
 	if (t.dataset.insert) {
 		const name = t.dataset.insert;
@@ -1224,11 +1314,134 @@ async function handlePatternClick(e) {
 		return;
 	}
 
-	if (t.dataset.view) { await viewPartial(t.dataset.view); return; }
-	if (t.dataset.edit) { await editPartial(t.dataset.edit); return; }
-	if (t.dataset.delete) { await deletePartial(t.dataset.delete); return; }
+	if (t.dataset.view) {
+		const pattern = findPattern(t.dataset.view);
+		if (pattern?.isLocal) { viewLocalPattern(pattern); return; }
+		await viewPartial(t.dataset.view);
+		return;
+	}
+	if (t.dataset.edit) {
+		const pattern = findPattern(t.dataset.edit);
+		if (pattern?.isLocal) { editLocalPattern(pattern); return; }
+		await editPartial(t.dataset.edit);
+		return;
+	}
+	if (t.dataset.delete) {
+		const pattern = findPattern(t.dataset.delete);
+		if (pattern?.isLocal) { deleteLocalPattern(pattern); return; }
+		await deletePartial(t.dataset.delete);
+		return;
+	}
 
 	if (t.id === "btn-new-pattern") { await createNewPartial(); return; }
+}
+
+window.__researchOpsHandlePatternClick = handlePatternClick;
+
+function findPattern(idOrName) {
+	return (__patternCache || []).find(pattern => (
+		String(pattern.id || "") === String(idOrName) ||
+		String(pattern.name || "") === String(idOrName)
+	));
+}
+
+function renderPatternTray(html) {
+	const tray = $("#pattern-tray");
+	if (!tray) return;
+	tray.innerHTML = html;
+	tray.hidden = false;
+	tray.scrollIntoView({ behavior: "smooth", block: "nearest" });
+	tray.querySelector("button, input, textarea, [href]")?.focus({ preventScroll: true });
+}
+
+function closePatternTray() {
+	const tray = $("#pattern-tray");
+	if (!tray) return;
+	tray.hidden = true;
+	tray.innerHTML = "";
+}
+
+function viewLocalPattern(pattern) {
+	renderPatternTray(`
+		<h3 class="govuk-heading-s">${escapeHtml(pattern.title)}</h3>
+		<dl class="govuk-summary-list">
+			<div class="govuk-summary-list__row">
+				<dt class="govuk-summary-list__key">Partial</dt>
+				<dd class="govuk-summary-list__value"><code>${escapeHtml(pattern.name)}_v${escapeHtml(pattern.version)}</code></dd>
+			</div>
+			<div class="govuk-summary-list__row">
+				<dt class="govuk-summary-list__key">Category</dt>
+				<dd class="govuk-summary-list__value">${escapeHtml(pattern.category || "Uncategorised")}</dd>
+			</div>
+		</dl>
+		<h4 class="govuk-heading-s">Pattern source</h4>
+		<pre class="govuk-body pattern-tray__source"><code>${escapeHtml(pattern.source || "")}</code></pre>
+		<div class="govuk-button-group">
+			<button class="govuk-button govuk-button--secondary" type="button" data-pattern-tray-close>Close pattern</button>
+		</div>
+	`);
+}
+
+function editLocalPattern(pattern) {
+	renderPatternTray(`
+		<h3 class="govuk-heading-s">Edit ${escapeHtml(pattern.title)}</h3>
+		<div class="govuk-form-group">
+			<label class="govuk-label govuk-label--s" for="local-pattern-source">Pattern source</label>
+			<textarea class="govuk-textarea" id="local-pattern-source" rows="8">${escapeHtml(pattern.source || "")}</textarea>
+		</div>
+		<div class="govuk-button-group">
+			<button class="govuk-button" type="button" data-save-local-pattern="${escapeHtml(pattern.name)}">Save pattern</button>
+			<button class="govuk-button govuk-button--secondary" type="button" data-pattern-tray-close>Cancel</button>
+		</div>
+	`);
+}
+
+function deleteLocalPattern(pattern) {
+	renderPatternTray(`
+		<h3 class="govuk-heading-s">Delete ${escapeHtml(pattern.title)}</h3>
+		<p class="govuk-body">This removes the local starter pattern from this editor session.</p>
+		<div class="govuk-button-group">
+			<button class="govuk-button govuk-button--warning" type="button" data-confirm-delete-local-pattern="${escapeHtml(pattern.name)}">Delete pattern</button>
+			<button class="govuk-button govuk-button--secondary" type="button" data-pattern-tray-close>Cancel</button>
+		</div>
+	`);
+}
+
+function bindPatternTrayActions() {
+	const tray = $("#pattern-tray");
+	if (!tray) return;
+	tray.addEventListener("click", (e) => {
+		const button = e.target.closest("button");
+		if (!button) return;
+
+		if (button.hasAttribute("data-pattern-tray-close")) {
+			closePatternTray();
+			$("#pattern-search")?.focus();
+			return;
+		}
+
+		const saveName = button.getAttribute("data-save-local-pattern");
+		if (saveName) {
+			const pattern = findPattern(saveName);
+			if (pattern) {
+				pattern.source = $("#local-pattern-source")?.value || "";
+				if (window.__patternRegistry) window.__patternRegistry[pattern.name] = pattern.source;
+			}
+			closePatternTray();
+			populatePatternList(__patternCache);
+			announce("Pattern saved");
+			return;
+		}
+
+		const deleteName = button.getAttribute("data-confirm-delete-local-pattern");
+		if (deleteName) {
+			__patternCache = (__patternCache || []).filter(pattern => pattern.name !== deleteName);
+			if (window.__patternRegistry) delete window.__patternRegistry[deleteName];
+			closePatternTray();
+			populatePatternList(__patternCache);
+			announce("Pattern deleted");
+		}
+	});
 }
 
 /* -------------------- partials view/edit/create/delete (unchanged) -------------------- */
@@ -1512,13 +1725,13 @@ function populateVariablesFormEnhanced(jsonVars) {
 	form.innerHTML = `
     <div id="variable-manager-container"></div>
 
-    <div class="actions-row">
-      <button id="btn-save-vars" class="btn" type="button">💾 Save variables</button>
-      <button id="btn-reset-vars" class="btn btn--secondary" type="button">↺ Discard changes</button>
-      <button id="drawer-variables-close" class="link-like" type="button">Close</button>
+    <div class="govuk-button-group actions-row">
+      <button id="btn-save-vars" class="govuk-button" type="button">Save variables</button>
+      <button id="btn-reset-vars" class="govuk-button govuk-button--secondary" type="button">Discard changes</button>
+      <button id="drawer-variables-close" class="govuk-button govuk-button--secondary" type="button">Close</button>
     </div>
 
-    <p id="variables-status" class="muted" aria-live="polite"></p>
+    <p id="variables-status" class="govuk-body-s muted" aria-live="polite"></p>
   `;
 
 	// Prepare initial values (keep strings readable; non-strings shown as JSON)
@@ -1776,27 +1989,95 @@ function getPath(obj, pathArr) {
  * Basic, robust form validation for the editor pane.
  * - Checks for required fields (title + body).
  * - Does not replace runLints(); preview() will still run Mustache checks.
- * - Updates #lint-output minimally if nothing else has populated it yet.
+ * - Renders required-field errors through GOV.UK error summary and field messages.
  */
+function setFieldError(fieldId, message) {
+	const field = $(`#${fieldId}`);
+	if (!field) return;
+
+	const group = field.closest(".govuk-form-group");
+	const isTextarea = field.tagName.toLowerCase() === "textarea";
+	const errorClass = isTextarea ? "govuk-textarea--error" : "govuk-input--error";
+	const errorId = `${fieldId}-error`;
+
+	if (field.dataset.originalDescribedBy == null) {
+		field.dataset.originalDescribedBy = field.getAttribute("aria-describedby") || "";
+	}
+
+	let error = $(`#${errorId}`);
+	if (message) {
+		if (!error) {
+			error = document.createElement("p");
+			error.id = errorId;
+			error.className = "govuk-error-message";
+			field.parentNode?.insertBefore(error, field);
+		}
+		error.innerHTML = `<span class="govuk-visually-hidden">Error:</span> ${escapeHtml(message)}`;
+		group?.classList.add("govuk-form-group--error");
+		field.classList.add(errorClass);
+
+		const describedBy = new Set((field.dataset.originalDescribedBy || "").split(/\s+/).filter(Boolean));
+		describedBy.add(errorId);
+		field.setAttribute("aria-describedby", Array.from(describedBy).join(" "));
+		return;
+	}
+
+	error?.remove();
+	group?.classList.remove("govuk-form-group--error");
+	field.classList.remove(errorClass);
+
+	const originalDescribedBy = field.dataset.originalDescribedBy || "";
+	if (originalDescribedBy) {
+		field.setAttribute("aria-describedby", originalDescribedBy);
+	} else {
+		field.removeAttribute("aria-describedby");
+	}
+}
+
+function renderGuideErrorSummary(errors) {
+	const summary = $("#guide-error-summary");
+	if (!summary) return;
+
+	const body = summary.querySelector(".govuk-error-summary__body") || summary;
+	let list = summary.querySelector(".govuk-error-summary__list");
+	if (!list) {
+		list = document.createElement("ul");
+		list.className = "govuk-list govuk-error-summary__list";
+		body.appendChild(list);
+	}
+
+	if (!errors.length) {
+		summary.hidden = true;
+		if (list) list.innerHTML = "";
+		return;
+	}
+
+	if (list) {
+		list.innerHTML = errors
+			.map(error => `<li><a href="#${escapeHtml(error.fieldId)}">${escapeHtml(error.message)}</a></li>`)
+			.join("");
+	}
+	summary.hidden = false;
+}
+
 function validateGuide() {
-	const problems = [];
+	const errors = [];
 	const title = ($("#guide-title")?.value || "").trim();
 	const bodyEl = $("#guide-source");
 	const body = (bodyEl?.value || "").trim();
 
-	if (!title) problems.push("Title is required.");
-	if (!body) problems.push("Guide body is empty.");
+	if (!title) errors.push({ fieldId: "guide-title", message: "Enter a guide title" });
+	if (!body) errors.push({ fieldId: "guide-source", message: "Enter guide source" });
+
+	setFieldError("guide-title", errors.find(error => error.fieldId === "guide-title")?.message || "");
+	setFieldError("guide-source", errors.find(error => error.fieldId === "guide-source")?.message || "");
+	renderGuideErrorSummary(errors);
 
 	const el = $("#lint-output");
-	if (el) {
-		if (problems.length) {
-			// Only speak once the editor is visible and the textarea actually exists
-			el.innerHTML = `<ul>${problems.map(p => `<li>${escapeHtml(p)}</li>`).join("")}</ul>`;
-		} else if (!el.textContent || el.textContent === "No issues") {
-			el.textContent = "No issues";
-		}
+	if (el && !errors.length && (!el.textContent || el.textContent === "No issues")) {
+		el.textContent = "No issues";
 	}
-	return problems;
+	return errors;
 }
 
 /* -------------------- global actions -------------------- */
