@@ -66,16 +66,9 @@
 
 	<div class="study-action-bar govuk-button-group">
 		{{ govukButton({
-			text: "Back to Project",
-			href: "/pages/projects/",
-			classes: "govuk-button--secondary",
-			attributes: {
-				id: "back-to-project"
-			}
-		}) }}
-		{{ govukButton({
 			text: "Edit study",
 			href: "#",
+			classes: "govuk-button--secondary",
 			attributes: {
 				id: "edit-study"
 			}
@@ -211,13 +204,11 @@
 		}) }}
 		{{ govukButton({
 			text: "Begin session",
-			href: "#study-readiness-title",
-			classes: "govuk-button--disabled study-session-button",
+			href: "#",
+			classes: "study-session-button",
 			attributes: {
 				id: "link-session",
-				"aria-disabled": "true",
-				"data-disabled-link": "true",
-				tabindex: "-1"
+				hidden: "hidden"
 			}
 		}) }}
 	</section>

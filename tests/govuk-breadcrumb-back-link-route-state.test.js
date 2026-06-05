@@ -130,8 +130,8 @@ for (const page of breadcrumbPages) {
 }
 
 const studyPage = fs.readFileSync("public/pages/study/index.html", "utf8");
-includes(studyPage, "id=\"back-to-project\"", "Study route");
-includes(studyPage, "Back to Project", "Study route");
+excludes(studyPage, "id=\"back-to-project\"", "Study route");
+excludes(studyPage, "Back to Project", "Study route");
 
 const outcomesPage = fs.readFileSync("public/pages/projects/outcomes/index.html", "utf8");
 includes(outcomesPage, "rel=\"modulepreload\" href=\"/js/project-context.js?v=20260603-form-interactions\"", "Outcomes route");

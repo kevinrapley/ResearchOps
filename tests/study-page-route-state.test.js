@@ -35,8 +35,8 @@ for (const macro of [
 for (const text of [
 	"data-study-template=\"govuk-task-list\"",
 	"value: \"\"",
-	"id: \"back-to-project\"",
 	"id: \"edit-study\"",
+	"classes: \"govuk-button--secondary\"",
 	"id: \"breadcrumb-project\"",
 	"id=\"description\"",
 	"id: \"desc-input\"",
@@ -47,6 +47,7 @@ for (const text of [
 	"id=\"study-readiness-description-status\"",
 	"id=\"study-readiness-participant-consent-hint\"",
 	"id: \"link-session\"",
+	"hidden: \"hidden\"",
 	"id=\"link-consent-forms\"",
 	"id=\"link-participant-consent\"",
 	"id=\"link-participants\"",
@@ -86,13 +87,12 @@ for (const text of [
 	"id=\"study-readiness-description-status\"",
 	"id=\"study-readiness-session-hint\"",
 	"id=\"link-session\"",
+	"hidden=\"hidden\"",
 	"id=\"link-guides\"",
 	"id=\"link-participants\"",
 	"id=\"link-participant-consent\"",
 	"id=\"link-synthesis\"",
 	"id=\"desc-cancel\"",
-	"aria-disabled=\"true\"",
-	"data-disabled-link=\"true\"",
 	"Not available yet"
 ]) {
 	includes(pageSource, text, "study page");
@@ -102,6 +102,8 @@ excludes(pageSource, "class=\"btn", "study page");
 excludes(pageSource, "class=\"board\"", "study page");
 excludes(pageSource, "Requires study context", "study page");
 excludes(pageSource, "<script type=\"module\">", "study page");
+excludes(pageSource, "id=\"back-to-project\"", "study page");
+excludes(pageSource, "Back to Project", "study page");
 
 includes(descControllerSource, "cancelBtnSel: '#desc-cancel'", "description controller");
 
@@ -131,11 +133,14 @@ for (const text of [
 	"route(\"/pages/study/participant-consent/\", studyParams)",
 	"route(\"/pages/study/session/\", legacySessionParams)",
 	"route(\"/pages/study/synthesis/\", studyParams)",
+	"if (selector === \"#link-session\") el.hidden = true",
+	"el.hidden = false",
 	"study:desc:save"
 ]) {
 	includes(controllerSource, text, "study page controller");
 }
 
+excludes(controllerSource, "enableLink(\"#back-to-project\"", "study page controller");
 excludes(controllerSource, "querySelector(\".readiness-item__status\")", "study page controller");
 excludes(controllerSource, "querySelector(\".readiness-item__body\")", "study page controller");
 excludes(controllerSource, "route(\"/pages/synthesize/\", params)", "study page controller");

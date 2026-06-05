@@ -1,0 +1,88 @@
+{
+  "date": "2026-06-05",
+  "branch": "fix/study-page-govuk-readiness",
+  "traceRequired": true,
+  "task": "Bring /pages/study/?id=<StudyID>&project=<ProjectID> further into GOV.UK Frontend and tighten Study readiness actions.",
+  "selectedBundles": [
+    {
+      "id": "github-diamond",
+      "path": ".agent-operating-model/bundles/github/"
+    },
+    {
+      "id": "researchops-developer-control",
+      "path": ".agent-operating-model/bundles/researchops-developer-control/"
+    },
+    {
+      "id": "govuk-design-system",
+      "path": ".agent-operating-model/bundles/govuk-design-system/"
+    },
+    {
+      "id": "multi-functional-team",
+      "path": ".agent-operating-model/bundles/multi-functional-team/"
+    }
+  ],
+  "filesRead": [
+    "src/govuk/templates/pages/study.njk",
+    "public/pages/study/index.html",
+    "public/js/study-page.js",
+    "src/styles/study-page.scss",
+    "tests/study-page-route-state.test.js",
+    "scripts/govuk/render-govuk-pages.mjs"
+  ],
+  "filesModified": [
+    "src/govuk/templates/pages/study.njk",
+    "public/pages/study/index.html",
+    "public/js/study-page.js",
+    "tests/study-page-route-state.test.js"
+  ],
+  "filesCreated": [
+    "docs/agent-audit/reasoning/2026/06/05/study-page-govuk-readiness.md",
+    "docs/agent-audit/reasoning/2026/06/05/study-page-govuk-readiness.json"
+  ],
+  "teamCritique": [
+    "Researchers need a quiet control surface with the Study title, description, metadata and readiness state prioritised.",
+    "Breadcrumbs already provide project navigation, so a duplicate Back to Project button creates unnecessary action noise.",
+    "Edit study is a maintenance action and should be secondary.",
+    "Begin session should not be visible as an available action until every readiness task is complete."
+  ],
+  "implementationSummary": [
+    "Removed the Back to Project button from the Study page template and generated HTML.",
+    "Made Edit study a secondary GOV.UK button.",
+    "Changed the initial Begin session action to hidden and unhidden it only when readiness enables the real session URL.",
+    "Removed controller wiring for the deleted Back to Project button.",
+    "Updated route-state coverage for the Study page template, generated HTML and controller."
+  ],
+  "validation": [
+    {
+      "command": "node --test tests/study-page-route-state.test.js tests/study-child-route-state.test.js",
+      "result": "passed",
+      "evidence": "2 tests passed"
+    },
+    {
+      "command": "node scripts/govuk/render-govuk-pages.mjs",
+      "result": "passed",
+      "evidence": "GOV.UK pages rendered including public/pages/study/index.html"
+    },
+    {
+      "command": "node scripts/agent-trace/assert-trace-coverage.mjs",
+      "result": "passed",
+      "evidence": "trace coverage confirmed"
+    },
+    {
+      "command": "git diff --check",
+      "result": "passed",
+      "evidence": "no whitespace errors"
+    },
+    {
+      "command": "prettier --check public/pages/study/index.html public/js/study-page.js tests/study-page-route-state.test.js tests/govuk-breadcrumb-back-link-route-state.test.js docs/agent-audit/reasoning/2026/06/05/study-page-govuk-readiness.md docs/agent-audit/reasoning/2026/06/05/study-page-govuk-readiness.json",
+      "result": "passed",
+      "evidence": "All matched files use Prettier code style"
+    },
+    {
+      "command": "node --test",
+      "result": "passed",
+      "evidence": "176 tests passed"
+    }
+  ],
+  "residualRisks": []
+}

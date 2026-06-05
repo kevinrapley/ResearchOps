@@ -185,6 +185,7 @@ function enableLink(selector, href) {
 	const el = $(selector);
 	if (!el) return;
 	el.href = href;
+	el.hidden = false;
 	el.classList.remove("link--disabled", "govuk-button--disabled");
 	el.removeAttribute("aria-disabled");
 	el.removeAttribute("data-disabled-link");
@@ -196,6 +197,7 @@ function disableLink(selector, fallbackHref, reason) {
 	const el = $(selector);
 	if (!el) return;
 	el.href = fallbackHref || "#study-readiness-title";
+	if (selector === "#link-session") el.hidden = true;
 	el.classList.add("link--disabled");
 	if (el.classList.contains("govuk-button")) el.classList.add("govuk-button--disabled");
 	el.setAttribute("aria-disabled", "true");
@@ -324,7 +326,6 @@ function renderReadiness(study, context, sessionHref) {
 function renderRoutes(projectId, studyId) {
 	const legacySessionParams = { pid: projectId, sid: studyId };
 	const studyParams = { id: studyId, project: projectId };
-	enableLink("#back-to-project", route("/pages/project-dashboard/", { id: projectId }));
 	enableLink("#breadcrumb-project", route("/pages/project-dashboard/", { id: projectId }));
 	enableLink("#link-consent-forms", route("/pages/study/consent-forms/", studyParams));
 	enableLink("#link-participant-consent", route("/pages/study/participant-consent/", studyParams));
