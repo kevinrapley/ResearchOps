@@ -51,6 +51,9 @@ for (const text of [
 	"id=\"study-session-gate-summary\"",
 	"id=\"study-session-blockers\"",
 	"id=\"study-session-action\"",
+	"Checking study readiness",
+	"Checking the required setup tasks before fieldwork can begin.",
+	"Checking readiness tasks.",
 	"id=\"study-readiness-description-status\"",
 	"id=\"study-readiness-participant-consent-hint\"",
 	"id: \"link-session\"",
@@ -78,7 +81,7 @@ for (const text of [
 	"/css/govuk/govuk-forms.css",
 	"/css/govuk/govuk-tables.css",
 	"/css/study-page.css",
-	"/js/study-page.js?v=study-readiness-session-gate-20260605",
+	"/js/study-page.js?v=study-readiness-polish-20260605",
 	"class=\"govuk-breadcrumbs\"",
 	"class=\"govuk-summary-list",
 	"class=\"govuk-task-list",
@@ -95,6 +98,9 @@ for (const text of [
 	"class=\"govuk-grid-row study-overview-grid\"",
 	"class=\"govuk-grid-column-one-half\"",
 	"class=\"govuk-inset-text study-session-gate\"",
+	"Checking study readiness",
+	"Checking the required setup tasks before fieldwork can begin.",
+	"Checking readiness tasks.",
 	"id=\"study-session-gate-summary\"",
 	"id=\"study-session-blockers\"",
 	"id=\"study-session-action\"",
@@ -118,12 +124,18 @@ excludes(pageSource, "Requires study context", "study page");
 excludes(pageSource, "<script type=\"module\">", "study page");
 excludes(pageSource, "id=\"back-to-project\"", "study page");
 excludes(pageSource, "Back to Project", "study page");
+excludes(templateSource, "3 setup tasks need attention", "study template static fallback");
+excludes(templateSource, "Publish a discussion guide", "study template static fallback");
+excludes(pageSource, "3 setup tasks need attention", "study page static fallback");
+excludes(pageSource, "Publish a discussion guide", "study page static fallback");
 
 includes(descControllerSource, "cancelBtnSel: '#desc-cancel'", "description controller");
 
 for (const text of [
 	"const API_ORIGIN",
 	"function apiUrl",
+	"function projectTitle",
+	"const safeProject = project || {}",
 	"apiUrl(\"/api/projects\")",
 	"apiUrl(\"/api/studies\")",
 	"showError",
@@ -139,7 +151,10 @@ for (const text of [
 	"study-readiness-${key}-hint",
 	"govuk-tag ${readinessTagClass(state)} study-readiness-status",
 	"summary.textContent = \"This study is ready to run\"",
+	"summary.textContent = `${blockedKeys.length} setup ${blockedKeys.length === 1 ? \"task needs\" : \"tasks need\"} attention`",
 	"message.textContent = \"Complete these tasks before starting fieldwork.\"",
+	"...blockedKeys.map(key => {",
+	"safeProject[\"Project Name\"]",
 	"setText(\"#study-eyebrow\", projectName)",
 	"loadStudyCollection(\"/api/participant-consent\"",
 	"participantConsentRecords",
@@ -169,6 +184,14 @@ for (const text of [
 	".study-action-bar",
 	".study-overview-grid",
 	".study-session-gate",
+	"border: 5px solid #1d70b8",
+	".study-readiness-task-list .govuk-task-list__item",
+	"grid-template-columns: minmax(0, 1fr) max-content",
+	"column-gap: 15px",
+	".study-readiness-task-list .govuk-task-list__name-and-hint",
+	"min-width: 0",
+	".study-readiness-task-list .govuk-task-list__status",
+	"white-space: nowrap",
 	".study-readiness-task-list",
 	".study-session-button",
 	".govuk-task-list__item .govuk-tag",

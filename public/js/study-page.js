@@ -47,6 +47,21 @@ function studyTitle(study = {}) {
 	return (study.title || study.Title || "").trim() || fallbackTitle(study);
 }
 
+function projectTitle(project = {}) {
+	const safeProject = project || {};
+	return (
+		safeProject.name ||
+		safeProject.Name ||
+		safeProject.title ||
+		safeProject.Title ||
+		safeProject.projectName ||
+		safeProject.ProjectName ||
+		safeProject["Project name"] ||
+		safeProject["Project Name"] ||
+		""
+	).trim();
+}
+
 function linkedProjectIdForStudy(study = {}) {
 	return (
 		study.projectId ||
@@ -391,7 +406,7 @@ function renderRoutes(projectId, studyId) {
 }
 
 function renderStudy(project, study, projectId, studyId, readinessContext) {
-	const projectName = project?.name || "Project";
+	const projectName = projectTitle(project) || "Project";
 	document.body.setAttribute("data-study-id", studyId);
 	document.body.setAttribute("data-project-id", projectId);
 
