@@ -224,6 +224,52 @@ function setReadinessItem(key, state, text) {
 	if (hint) hint.textContent = text;
 }
 
+function blockerActionForKey(key) {
+	const actions = {
+		description: { label: "Edit the study description", selector: "#btn-edit-desc" },
+		status: { label: "Review the study status", selector: "#edit-study" },
+		participants: { label: "Add or review participants", selector: "#link-participants" },
+		guide: { label: "Publish a discussion guide", selector: "#link-guides" },
+		consentMaterials: { label: "Create or review consent forms", selector: "#link-consent-forms" },
+		participantConsent: { label: "Record required participant consent", selector: "#link-participant-consent" }
+	};
+	return actions[key] || { label: key.replace(/[A-Z]/g, match => ` ${match.toLowerCase()}`), selector: "" };
+}
+
+function renderSessionGatePanel(ready, blockedKeys) {
+	const summary = $("#study-session-gate-summary");
+	const message = $("#study-session-gate-message");
+	const blockers = $("#study-session-blockers");
+	const action = $("#study-session-action");
+
+	if (action) action.hidden = !ready;
+	if (!summary || !message || !blockers) return;
+
+	if (ready) {
+		summary.textContent = "This study is ready to run";
+		message.textContent = "All required setup tasks are complete. Begin a session when you are ready to start fieldwork.";
+		blockers.hidden = true;
+		blockers.replaceChildren();
+		return;
+	}
+
+	summary.textContent = `${blockedKeys.length} setup ${blockedKeys.length === 1 ? "task needs" : "tasks need"} attention`;
+	message.textContent = "Complete these tasks before starting fieldwork.";
+	blockers.hidden = false;
+	blockers.replaceChildren(
+		...blockedKeys.map(key => {
+			const actionInfo = blockerActionForKey(key);
+			const item = document.createElement("li");
+			const link = document.createElement("a");
+			link.textContent = actionInfo.label;
+			const target = actionInfo.selector ? $(actionInfo.selector) : null;
+			link.href = target?.href || actionInfo.selector || "#study-readiness-title";
+			item.append(link);
+			return item;
+		})
+	);
+}
+
 function normaliseStatus(value) {
 	return String(value || "").trim().toLowerCase();
 }
@@ -261,7 +307,7 @@ function evaluateReadiness(study, context = {}) {
 		},
 		status: {
 			ready: hasStatus,
-			state: hasStatus ? "Set" : "Needs attention",
+			state: hasStatus ? "Ready" : "Needs attention",
 			text: hasStatus ? `Study status is ${status}.` : "Set the study status before running sessions."
 		},
 		participants: {
@@ -293,9 +339,12 @@ function isStudyReady(readiness) {
 
 function renderSessionGate(readiness, sessionHref) {
 	const ready = isStudyReady(readiness);
-	const blockedReasons = Object.entries(readiness)
+	const blockedKeys = Object.entries(readiness)
 		.filter(([, item]) => item.ready !== true)
-		.map(([key]) => key.replace(/[A-Z]/g, match => ` ${match.toLowerCase()}`));
+		.map(([key]) => key);
+	const blockedReasons = blockedKeys.map(key => key.replace(/[A-Z]/g, match => ` ${match.toLowerCase()}`));
+
+	renderSessionGatePanel(ready, blockedKeys);
 
 	if (ready) {
 		setReadinessItem("session", "Available", "Open the session workspace when the study setup is ready.");
@@ -347,6 +396,7 @@ function renderStudy(project, study, projectId, studyId, readinessContext) {
 	document.body.setAttribute("data-project-id", projectId);
 
 	setText("#breadcrumb-project", projectName);
+	setText("#study-eyebrow", projectName);
 	setText("#study-title", studyTitle(study));
 	setText("#description", String(study.description || "").trim() || "No study description has been added yet.");
 	setText("#kv-method", study.method || "—");

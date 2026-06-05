@@ -6,6 +6,7 @@
 {% from "govuk/components/summary-list/macro.njk" import govukSummaryList %}
 {% from "govuk/components/task-list/macro.njk" import govukTaskList %}
 {% from "govuk/components/textarea/macro.njk" import govukTextarea %}
+{% from "govuk/components/inset-text/macro.njk" import govukInsetText %}
 
 {% set studyPageScriptVersion = "study-readiness-session-gate-20260605" %}
 
@@ -76,7 +77,7 @@
 	</div>
 
 	<header class="study-hero govuk-!-margin-bottom-6" typeof="schema:ResearchProject" resource="#study">
-		<p id="study-eyebrow" class="govuk-caption-m">Study</p>
+		<p id="study-eyebrow" class="govuk-caption-m">Project</p>
 		<h1 id="study-title" class="govuk-heading-l" property="schema:name">Study</h1>
 		<div id="desc-view-wrap" class="study-description" property="schema:description">
 			<div id="description" class="govuk-body">—</div>
@@ -137,83 +138,95 @@
 		<p id="desc-status" class="govuk-body-s" role="status" aria-live="polite" aria-atomic="true"></p>
 	</header>
 
-	<section class="study-key-information govuk-!-margin-bottom-8" aria-labelledby="study-key-information-title">
-		<h2 id="study-key-information-title" class="govuk-heading-m">Study details</h2>
-		{{ govukSummaryList({
-			classes: "study-summary-list",
-			rows: [
-				{
-					key: { text: "Method" },
-					value: { html: '<span id="kv-method">–</span>' }
-				},
-				{
-					key: { text: "Status" },
-					value: { html: '<span id="kv-status">–</span>' }
-				},
-				{
-					key: { text: "Study ID" },
-					value: { html: '<span id="kv-studyid">–</span>' }
-				}
-			]
-		}) }}
-	</section>
+	<div class="govuk-grid-row study-overview-grid">
+		<div class="govuk-grid-column-one-half">
+			<section class="study-key-information govuk-!-margin-bottom-8" aria-labelledby="study-key-information-title">
+				<h2 id="study-key-information-title" class="govuk-heading-m">Study details</h2>
+				{{ govukSummaryList({
+					classes: "study-summary-list",
+					rows: [
+						{
+							key: { text: "Method" },
+							value: { html: '<span id="kv-method">–</span>' }
+						},
+						{
+							key: { text: "Status" },
+							value: { html: '<span id="kv-status">–</span>' }
+						},
+						{
+							key: { text: "Study ID" },
+							value: { html: '<span id="kv-studyid">–</span>' }
+						}
+					]
+				}) }}
+			</section>
 
-	<section class="study-section study-readiness-section govuk-!-margin-bottom-8" aria-labelledby="study-readiness-title">
-		<h2 id="study-readiness-title" class="govuk-heading-m">Study readiness</h2>
-		<p class="govuk-body">Check the essentials before you run a session.</p>
-		{{ govukTaskList({
-			idPrefix: "study-readiness",
-			classes: "study-readiness-task-list",
-			items: [
-				{
-					title: { text: "Description" },
-					hint: { html: '<span id="study-readiness-description-hint" class="study-readiness-hint">Checking study description.</span>' },
-					status: { html: '<strong id="study-readiness-description-status" class="govuk-tag govuk-tag--grey study-readiness-status">Checking</strong>' }
-				},
-				{
-					title: { text: "Status" },
-					hint: { html: '<span id="study-readiness-status-hint" class="study-readiness-hint">Checking study status.</span>' },
-					status: { html: '<strong id="study-readiness-status-status" class="govuk-tag govuk-tag--grey study-readiness-status">Checking</strong>' }
-				},
-				{
-					title: { text: "Participants" },
-					hint: { html: '<span id="study-readiness-participants-hint" class="study-readiness-hint">Add or review participants for this study.</span>' },
-					status: { html: '<strong id="study-readiness-participants-status" class="govuk-tag govuk-tag--yellow study-readiness-status">Action needed</strong>' }
-				},
-				{
-					title: { text: "Discussion guide" },
-					hint: { html: '<span id="study-readiness-guide-hint" class="study-readiness-hint">Create or review the discussion guide.</span>' },
-					status: { html: '<strong id="study-readiness-guide-status" class="govuk-tag govuk-tag--yellow study-readiness-status">Action needed</strong>' }
-				},
-				{
-					title: { text: "Consent materials" },
-					hint: { html: '<span id="study-readiness-consent-materials-hint" class="study-readiness-hint">Create, review and publish consent forms before recording participant consent.</span>' },
-					status: { html: '<strong id="study-readiness-consent-materials-status" class="govuk-tag govuk-tag--yellow study-readiness-status">Action needed</strong>' }
-				},
-				{
-					title: { text: "Participant consent" },
-					hint: { html: '<span id="study-readiness-participant-consent-hint" class="study-readiness-hint">Record required participant consent before running sessions.</span>' },
-					status: { html: '<strong id="study-readiness-participant-consent-status" class="govuk-tag govuk-tag--yellow study-readiness-status">Action needed</strong>' }
-				},
-				{
-					title: { text: "Session workspace" },
-					hint: { html: '<span id="study-readiness-session-hint" class="study-readiness-hint">Complete study readiness tasks before beginning a session.</span>' },
-					status: { html: '<strong id="study-readiness-session-status" class="govuk-tag govuk-tag--grey study-readiness-status">Not available yet</strong>' }
-				}
-			]
-		}) }}
-		{{ govukButton({
-			text: "Begin session",
-			href: "#",
-			classes: "study-session-button",
-			attributes: {
-				id: "link-session",
-				hidden: "hidden"
-			}
-		}) }}
-	</section>
+			<section class="study-section study-session-gate-section govuk-!-margin-bottom-8" aria-labelledby="study-session-gate-title">
+				<h2 id="study-session-gate-title" class="govuk-heading-m">Before you can begin a session</h2>
+				{{ govukInsetText({
+					classes: "study-session-gate",
+					html: '<h3 id="study-session-gate-summary" class="govuk-heading-s">Checking study readiness</h3><p id="study-session-gate-message" class="govuk-body">Checking the required setup tasks before fieldwork can begin.</p><ul id="study-session-blockers" class="govuk-list govuk-list--bullet"><li>Checking readiness tasks.</li></ul><div id="study-session-action" hidden>' + govukButton({
+						text: "Begin session",
+						href: "#",
+						classes: "study-session-button",
+						attributes: {
+							id: "link-session",
+							hidden: "hidden"
+						}
+					}) + '</div>'
+				}) }}
+			</section>
+		</div>
 
-	<section class="study-section govuk-!-margin-bottom-8" aria-labelledby="study-setup-title">
+		<aside class="govuk-grid-column-one-half study-readiness-column" aria-labelledby="study-readiness-title">
+			<section class="study-readiness-section govuk-!-margin-bottom-8">
+				<h2 id="study-readiness-title" class="govuk-heading-m">Study readiness</h2>
+				{{ govukTaskList({
+					idPrefix: "study-readiness",
+					classes: "study-readiness-task-list",
+					items: [
+						{
+							title: { text: "Description" },
+							hint: { html: '<span id="study-readiness-description-hint" class="study-readiness-hint">Checking study description.</span>' },
+							status: { html: '<strong id="study-readiness-description-status" class="govuk-tag govuk-tag--grey study-readiness-status">Checking</strong>' }
+						},
+						{
+							title: { text: "Status" },
+							hint: { html: '<span id="study-readiness-status-hint" class="study-readiness-hint">Checking study status.</span>' },
+							status: { html: '<strong id="study-readiness-status-status" class="govuk-tag govuk-tag--grey study-readiness-status">Checking</strong>' }
+						},
+						{
+							title: { text: "Participants" },
+							hint: { html: '<span id="study-readiness-participants-hint" class="study-readiness-hint">Add or review participants for this study.</span>' },
+							status: { html: '<strong id="study-readiness-participants-status" class="govuk-tag govuk-tag--yellow study-readiness-status">Action needed</strong>' }
+						},
+						{
+							title: { text: "Discussion guide" },
+							hint: { html: '<span id="study-readiness-guide-hint" class="study-readiness-hint">Create or review the discussion guide.</span>' },
+							status: { html: '<strong id="study-readiness-guide-status" class="govuk-tag govuk-tag--yellow study-readiness-status">Action needed</strong>' }
+						},
+						{
+							title: { text: "Consent materials" },
+							hint: { html: '<span id="study-readiness-consent-materials-hint" class="study-readiness-hint">Create, review and publish consent forms before recording participant consent.</span>' },
+							status: { html: '<strong id="study-readiness-consent-materials-status" class="govuk-tag govuk-tag--yellow study-readiness-status">Action needed</strong>' }
+						},
+						{
+							title: { text: "Participant consent" },
+							hint: { html: '<span id="study-readiness-participant-consent-hint" class="study-readiness-hint">Record required participant consent before running sessions.</span>' },
+							status: { html: '<strong id="study-readiness-participant-consent-status" class="govuk-tag govuk-tag--yellow study-readiness-status">Action needed</strong>' }
+						},
+						{
+							title: { text: "Session workspace" },
+							hint: { html: '<span id="study-readiness-session-hint" class="study-readiness-hint">Complete study readiness tasks before beginning a session.</span>' },
+							status: { html: '<strong id="study-readiness-session-status" class="govuk-tag govuk-tag--grey study-readiness-status">Not available yet</strong>' }
+						}
+					]
+				}) }}
+			</section>
+		</aside>
+	</div>
+
+	<section class="study-section study-section--flush govuk-!-margin-bottom-8" aria-labelledby="study-setup-title">
 		<h2 id="study-setup-title" class="govuk-heading-m">Study setup tasks</h2>
 		{{ govukTaskList({
 			idPrefix: "study-setup",
@@ -248,14 +261,14 @@
 		}) }}
 	</section>
 
-	<section class="study-section govuk-!-margin-bottom-8" aria-labelledby="study-analysis-title">
+	<section class="study-section study-section--flush govuk-!-margin-bottom-8" aria-labelledby="study-analysis-title">
 		<h2 id="study-analysis-title" class="govuk-heading-m">Study analysis tasks</h2>
 		{{ govukTaskList({
 			idPrefix: "study-analysis",
 			classes: "study-analysis-task-list",
 			items: [
 				{
-					title: { html: '<a id="link-synthesis" class="govuk-link govuk-task-list__link" href="#">Synthesize study evidence</a>' },
+					title: { html: '<a id="link-synthesis" class="govuk-link govuk-task-list__link" href="#">Synthesise study evidence</a>' },
 					hint: { text: "Group evidence notes into working cluster groupings and create traceable study-level themes." },
 					status: { html: '<strong class="govuk-tag govuk-tag--grey">Available when evidence is captured</strong>' }
 				}
