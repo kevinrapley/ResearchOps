@@ -2,6 +2,8 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 
 const pageSource = fs.readFileSync("public/pages/study/participants/index.html", "utf8");
+const templateSource = fs.readFileSync("src/govuk/templates/pages/study-participants.njk", "utf8");
+const rendererSource = fs.readFileSync("scripts/govuk/render-govuk-pages.mjs", "utf8");
 const stylesheetSource = fs.readFileSync("public/css/participants.css", "utf8");
 const buttonCssSource = fs.readFileSync("public/css/govuk/govuk-buttons.css", "utf8");
 const participantsModuleSource = fs.readFileSync("public/components/participants/participants-page.js", "utf8");
@@ -15,9 +17,16 @@ function excludes(source, text, label) {
 	assert.equal(source.includes(text), false, `Expected ${label} not to include: ${text}`);
 }
 
-includes(pageSource, "href=\"/css/screen.css\"", "participants page");
-includes(pageSource, "href=\"/css/govuk/govuk-buttons.css\"", "participants page");
+for (const macro of ["govukBreadcrumbs({", "govukButton({", "govukInput({", "govukSelect({", "govukTextarea({"]) {
+	includes(templateSource, macro, "participants template");
+}
+
+includes(rendererSource, "template: 'pages/study-participants.njk'", "GOV.UK renderer");
+includes(rendererSource, "output: 'public/pages/study/participants/index.html'", "GOV.UK renderer");
+
+includes(pageSource, "href=\"/assets/govuk/govuk-frontend.css\"", "participants page");
 includes(pageSource, "href=\"/css/participants.css\"", "participants page");
+includes(pageSource, "data-study-subpage-template=\"participants\"", "participants page");
 includes(pageSource, "src=\"/components/participants/participants-page.js\" defer", "participants page");
 includes(pageSource, "src=\"/pages/study/participants/scheduler.js\" defer", "participants page");
 includes(pageSource, "class=\"govuk-button\"", "participants page");
@@ -30,6 +39,7 @@ includes(pageSource, "id=\"scheduleForm\"", "participants page");
 includes(pageSource, "id=\"noParticipantsBanner\"", "participants page");
 includes(pageSource, "id=\"scheduleBtn\"", "participants page");
 excludes(pageSource, "class=\"btn", "participants page");
+excludes(pageSource, "href=\"/css/screen.css\"", "participants page");
 excludes(pageSource, "href=\"/css/participants.css\" media=\"print\"", "participants page");
 
 includes(buttonCssSource, ".govuk-button", "GOV.UK button stylesheet");

@@ -1,0 +1,255 @@
+{% extends "layouts/researchops.njk" %}
+{% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/input/macro.njk" import govukInput %}
+{% from "govuk/components/select/macro.njk" import govukSelect %}
+{% from "govuk/components/textarea/macro.njk" import govukTextarea %}
+
+{% set studyPageScriptVersion = "study-record-id-routing-20260518" %}
+
+{% block head %}
+	<meta property="schema:name" content="Study participants - ResearchOps">
+	<link rel="stylesheet" href="/css/govuk/govuk-forms.css" media="screen">
+	<link rel="stylesheet" href="/css/govuk/govuk-tables.css" media="screen">
+	<link rel="stylesheet" href="/css/participants.css" media="screen">
+	<link rel="modulepreload" href="/js/study-route-context.js">
+	<link rel="modulepreload" href="/js/participants-route-loader.js?v={{ studyPageScriptVersion }}">
+	<!-- route-state contract: src="/components/participants/participants-page.js" defer -->
+	<!-- route-state contract: src="/pages/study/participants/scheduler.js" defer -->
+{% endblock %}
+
+{% block content %}
+<div class="govuk-width-container study-participants-page" data-study-subpage-template="participants">
+	{{ govukBreadcrumbs({
+		items: [
+			{ text: "Projects", href: "/pages/projects/" },
+			{ text: "Project", href: "#", attributes: { id: "breadcrumb-project" } },
+			{ text: "Study", href: "#", attributes: { id: "breadcrumb-study" } },
+			{ text: "Participants" }
+		]
+	}) }}
+
+	<div class="govuk-!-margin-bottom-4">
+		<strong id="studyBadge" class="badge">Study:</strong>
+	</div>
+
+	<div class="govuk-grid-row govuk-!-margin-bottom-7">
+		<div class="govuk-grid-column-one-half">
+			<section aria-labelledby="participants-h">
+				<h1 id="participants-h" class="govuk-heading-l govuk-!-margin-bottom-3">Participants</h1>
+				<p class="govuk-hint">Invite and manage participants for this study.</p>
+
+				<div id="participantsEmpty" class="empty card" hidden>
+					<h2 class="govuk-heading-m govuk-!-margin-bottom-2">No participants yet</h2>
+					<p class="govuk-body">Add your first participant to begin scheduling sessions.</p>
+					{{ govukButton({ text: "Add a participant", href: "#addParticipantForm" }) }}
+				</div>
+
+				<div class="table-wrap" id="participantsTableWrap" hidden>
+					<table id="participantsTable" class="govuk-table" aria-label="Participants">
+						<thead class="govuk-table__head">
+							<tr class="govuk-table__row">
+								<th scope="col" class="govuk-table__header">Name</th>
+								<th scope="col" class="govuk-table__header">Contact</th>
+								<th scope="col" class="govuk-table__header">Status</th>
+								<th scope="col" class="govuk-table__header"><span class="govuk-visually-hidden">Actions</span></th>
+							</tr>
+						</thead>
+						<tbody id="participants-tbody" class="govuk-table__body">
+							<tr class="govuk-table__row">
+								<td colspan="4" class="govuk-table__cell muted">Loading...</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+			</section>
+		</div>
+
+		<div class="govuk-grid-column-one-half">
+			<section class="card" aria-labelledby="addp-h">
+				<h2 id="addp-h" class="govuk-heading-m govuk-!-margin-bottom-3">Add participant</h2>
+
+				<form id="addParticipantForm" class="form" novalidate>
+					{{ govukInput({
+						id: "p_display",
+						name: "display_name",
+						label: { text: "Display name" },
+						attributes: { required: "required", autocomplete: "off" }
+					}) }}
+
+					<div class="govuk-grid-row">
+						<div class="govuk-grid-column-one-half">
+							{{ govukInput({
+								id: "p_email",
+								name: "email",
+								type: "email",
+								label: { text: "Email" },
+								attributes: { autocomplete: "off" }
+							}) }}
+						</div>
+						<div class="govuk-grid-column-one-half">
+							{{ govukInput({
+								id: "p_phone",
+								name: "phone",
+								label: { text: "Phone" },
+								attributes: { autocomplete: "off" }
+							}) }}
+						</div>
+					</div>
+
+					{{ govukSelect({
+						id: "p_channel",
+						name: "channel_pref",
+						label: { text: "Channel preference" },
+						items: [
+							{ value: "email", text: "email", selected: true },
+							{ value: "sms", text: "sms" }
+						]
+					}) }}
+
+					{{ govukTextarea({
+						id: "p_access",
+						name: "access_needs",
+						value: "",
+						rows: 2,
+						label: { text: "Access needs (optional)" }
+					}) }}
+
+					<div class="form__actions">
+						{{ govukButton({ text: "Create participant", type: "submit" }) }}
+						<span id="addParticipantMsg" class="msg" role="status" aria-live="polite"></span>
+					</div>
+				</form>
+			</section>
+		</div>
+	</div>
+
+	<div class="govuk-grid-row">
+		<div class="govuk-grid-column-one-half">
+			<section aria-labelledby="sessions-h">
+				<h2 id="sessions-h" class="govuk-heading-l govuk-!-margin-bottom-3">Sessions</h2>
+				<p class="govuk-hint">Scheduled sessions for this study. Download calendar invites as <code>.ics</code>.</p>
+
+				<div id="sessionsEmpty" class="empty card" hidden>
+					<h3 class="govuk-heading-m govuk-!-margin-bottom-2">No sessions yet</h3>
+					<p class="govuk-body">Schedule a session once you have added at least one participant.</p>
+					{{ govukButton({ text: "Schedule a session", href: "#scheduleForm", attributes: { id: "scheduleCta" } }) }}
+				</div>
+
+				<div class="table-wrap" id="sessionsTableWrap" hidden>
+					<table id="sessionsTable" class="govuk-table" aria-label="Sessions">
+						<thead class="govuk-table__head">
+							<tr class="govuk-table__row">
+								<th scope="col" class="govuk-table__header">When</th>
+								<th scope="col" class="govuk-table__header">Participant</th>
+								<th scope="col" class="govuk-table__header">Status</th>
+								<th scope="col" class="govuk-table__header"><span class="govuk-visually-hidden">Actions</span></th>
+							</tr>
+						</thead>
+						<tbody id="sessions-tbody" class="govuk-table__body"></tbody>
+					</table>
+				</div>
+			</section>
+		</div>
+
+		<div class="govuk-grid-column-one-half">
+			<section class="card" aria-labelledby="schedules-h">
+				<h2 id="schedules-h" class="govuk-heading-m govuk-!-margin-bottom-3">Schedule a session</h2>
+
+				<div id="noParticipantsBanner" class="note" role="status" hidden>
+					Add at least one participant to enable scheduling.
+				</div>
+
+				<form id="scheduleForm" class="form" novalidate>
+					<div class="govuk-grid-row">
+						<div class="govuk-grid-column-one-half">
+							<div class="govuk-form-group">
+								<label class="govuk-label" for="s_participant">Participant</label>
+								<select class="govuk-select" id="s_participant" required></select>
+							</div>
+						</div>
+						<div class="govuk-grid-column-one-half">
+							{{ govukSelect({
+								id: "s_type",
+								name: "sessionType",
+								label: { text: "Type" },
+								items: [
+									{ value: "remote", text: "remote", selected: true },
+									{ value: "in-person", text: "in-person" }
+								]
+							}) }}
+						</div>
+					</div>
+
+					<div class="govuk-grid-row">
+						<div class="govuk-grid-column-one-half">
+							{{ govukInput({
+								id: "s_datetime",
+								name: "start",
+								type: "datetime-local",
+								label: { text: "Start (local)" },
+								attributes: { required: "required" }
+							}) }}
+						</div>
+						<div class="govuk-grid-column-one-half">
+							{{ govukInput({
+								id: "s_duration",
+								name: "duration",
+								type: "number",
+								value: "60",
+								label: { text: "Duration (min)" },
+								attributes: { min: "15", step: "5", required: "required" }
+							}) }}
+						</div>
+					</div>
+
+					{{ govukInput({
+						id: "s_location",
+						name: "location",
+						label: { text: "Location / Join link" },
+						attributes: { required: "required" }
+					}) }}
+
+					<div class="govuk-grid-row">
+						<div class="govuk-grid-column-one-half">
+							{{ govukInput({
+								id: "s_backup",
+								name: "backupContact",
+								label: { text: "Backup contact" }
+							}) }}
+						</div>
+						<div class="govuk-grid-column-one-half">
+							{{ govukInput({
+								id: "s_researchers",
+								name: "researchers",
+								label: { text: "Researchers" }
+							}) }}
+						</div>
+					</div>
+
+					{{ govukTextarea({
+						id: "s_notes",
+						name: "notes",
+						value: "",
+						rows: 2,
+						label: { text: "Notes" }
+					}) }}
+
+					<div class="form__actions">
+						{{ govukButton({
+							text: "Create session",
+							type: "submit",
+							attributes: { id: "scheduleBtn" }
+						}) }}
+						<span id="scheduleMsg" class="msg" role="status" aria-live="polite"></span>
+					</div>
+				</form>
+			</section>
+		</div>
+	</div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+	<script type="module" src="/js/participants-route-loader.js?v={{ studyPageScriptVersion }}"></script>
+{% endblock %}

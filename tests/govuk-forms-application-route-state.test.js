@@ -75,9 +75,13 @@ includes(synthesizePage, "<label class=\"govuk-label\" for=\"theme-cluster\">Wor
 includes(synthesizePage, "aria-describedby=\"add-selected-evidence-hint\"", "Synthesize route");
 includes(synthesizePage, "aria-describedby=\"create-cluster-hint\"", "Synthesize route");
 includes(synthesizePage, "aria-describedby=\"create-theme-hint\"", "Synthesize route");
-includes(synthesizePage, "disabled>Add selected evidence</button>", "Synthesize route");
-includes(synthesizePage, "disabled>Create cluster grouping</button>", "Synthesize route");
-includes(synthesizePage, "disabled>Create theme</button>", "Synthesize route");
+includes(synthesizePage, "id=\"add-selected-evidence\"", "Synthesize route");
+includes(synthesizePage, "id=\"create-cluster\"", "Synthesize route");
+includes(synthesizePage, "id=\"create-theme\"", "Synthesize route");
+includes(synthesizePage, "disabled=\"disabled\"", "Synthesize route");
+includes(synthesizePage, "Add selected evidence", "Synthesize route");
+includes(synthesizePage, "Create cluster grouping", "Synthesize route");
+includes(synthesizePage, "Create theme", "Synthesize route");
 excludes(synthesizePage, "<textarea id=\"themeDesc\"", "Synthesize route");
 
 const dashboardPage = read("public/pages/project-dashboard/index.html");
@@ -150,4 +154,5 @@ includes(newStudyPage, "aria-describedby=\"study-notes-hint\"", "Add Study route
 includes(newStudyPage, "id=\"study-submit\"", "Add Study route");
 
 const guidesPage = read("public/pages/study/guides/index.html");
-includes(guidesPage, "class=\"govuk-form-group editor__title-field\"", "Guides route");
+includes(guidesPage, "class=\"govuk-form-group\"", "Guides route");
+includes(guidesPage, "class=\"govuk-input editor__title-field\"", "Guides route");

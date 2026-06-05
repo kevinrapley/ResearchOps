@@ -1,0 +1,210 @@
+{% extends "layouts/researchops.njk" %}
+{% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/checkboxes/macro.njk" import govukCheckboxes %}
+{% from "govuk/components/details/macro.njk" import govukDetails %}
+{% from "govuk/components/input/macro.njk" import govukInput %}
+{% from "govuk/components/select/macro.njk" import govukSelect %}
+{% from "govuk/components/summary-list/macro.njk" import govukSummaryList %}
+{% from "govuk/components/textarea/macro.njk" import govukTextarea %}
+
+{% set studyPageScriptVersion = "study-record-id-routing-20260518" %}
+
+{% block head %}
+	<meta property="schema:name" content="Participant consent - ResearchOps">
+	<link rel="stylesheet" href="/css/govuk/govuk-forms.css" media="screen">
+	<link rel="stylesheet" href="/css/govuk/govuk-tables.css" media="screen">
+	<link rel="stylesheet" href="/css/participant-consent.css" media="screen">
+	<link rel="modulepreload" href="/js/study-route-context.js">
+	<link rel="modulepreload" href="/js/participant-consent-route-loader.js?v={{ studyPageScriptVersion }}">
+{% endblock %}
+
+{% block content %}
+<div class="govuk-width-container participant-consent-page" data-study-subpage-template="participant-consent">
+	{{ govukBreadcrumbs({
+		items: [
+			{ text: "Projects", href: "/pages/projects/" },
+			{ text: "Project", href: "#", attributes: { id: "breadcrumb-project" } },
+			{ text: "Study", href: "#", attributes: { id: "breadcrumb-study" } },
+			{ text: "Participant consent" }
+		]
+	}) }}
+
+	<div id="consent-error" class="govuk-error-summary participant-consent-error" tabindex="-1" hidden aria-hidden="true" data-module="govuk-error-summary">
+		<div role="alert">
+			<h2 class="govuk-error-summary__title">There is a problem</h2>
+			<div class="govuk-error-summary__body">
+				<ul id="consent-error-list" class="govuk-list govuk-error-summary__list"></ul>
+			</div>
+		</div>
+	</div>
+
+	<header class="participant-consent-hero govuk-!-margin-bottom-6">
+		<div>
+			<p id="study-context" class="govuk-caption-m">Study</p>
+			<h1 class="govuk-heading-l">Manage participant consent</h1>
+			<p class="govuk-body participant-consent-context govuk-!-width-two-thirds">Record, review or withdraw participant consent for this study. Consent is recorded against a specific published consent form version.</p>
+		</div>
+		<div class="participant-consent-hero__actions">
+			{{ govukButton({
+				text: "Back to Study",
+				href: "/pages/study/",
+				classes: "govuk-button--secondary",
+				attributes: { id: "back-to-study" }
+			}) }}
+		</div>
+	</header>
+
+	<p id="participant-consent-status" class="govuk-body-s participant-consent-status" role="status" aria-live="polite">Loading participant consent.</p>
+
+	<section id="no-context-state" class="participant-consent-empty participant-consent-empty--route" hidden>
+		<h2 class="govuk-heading-m">Open this page from a study</h2>
+		<p class="govuk-body">The participant consent page needs a Study record ID in the URL.</p>
+	</section>
+
+	<section id="no-consent-form-state" class="participant-consent-empty participant-consent-empty--route" hidden>
+		<h2 class="govuk-heading-m">Create and publish a consent form before recording participant consent</h2>
+		<p class="govuk-body">Participant consent must be recorded against the version of the consent form that was shown or read to the participant.</p>
+		{{ govukButton({
+			text: "Create consent forms",
+			href: "#",
+			attributes: { id: "create-consent-forms-link" }
+		}) }}
+	</section>
+
+	<section id="no-participants-state" class="participant-consent-empty participant-consent-empty--route" hidden>
+		<h2 class="govuk-heading-m">Add participants before recording consent</h2>
+		<p class="govuk-body">Add participants to this study before recording individual consent responses.</p>
+		{{ govukButton({
+			text: "Schedule participants",
+			href: "#",
+			attributes: { id: "schedule-participants-link" }
+		}) }}
+	</section>
+
+	<section id="consent-workspace" class="participant-consent-workspace" hidden>
+		<section class="participant-consent-panel" aria-labelledby="consent-summary-title">
+			<h2 id="consent-summary-title" class="govuk-heading-m">Consent coverage</h2>
+			{{ govukSummaryList({
+				classes: "participant-consent-summary",
+				rows: [
+					{ key: { text: "Published form" }, value: { html: '<span id="summary-published-form">-</span>' } },
+					{ key: { text: "Participants" }, value: { html: '<span id="summary-participants">-</span>' } },
+					{ key: { text: "Ready" }, value: { html: '<span id="summary-ready">-</span>' } },
+					{ key: { text: "Needs action" }, value: { html: '<span id="summary-action-needed">-</span>' } }
+				]
+			}) }}
+		</section>
+
+		<section class="participant-consent-panel" aria-labelledby="participants-consent-title">
+			<div class="participant-consent-panel__header">
+				<div>
+					<h2 id="participants-consent-title" class="govuk-heading-m">Participants</h2>
+					<p class="govuk-body">Select a participant to record or review consent. Status is shown in text and does not rely on colour.</p>
+				</div>
+			</div>
+
+			<div class="table-wrap">
+				<table class="govuk-table participant-consent-table" aria-label="Participant consent">
+					<thead class="govuk-table__head">
+						<tr class="govuk-table__row">
+							<th scope="col" class="govuk-table__header">Participant</th>
+							<th scope="col" class="govuk-table__header">Consent status</th>
+							<th scope="col" class="govuk-table__header">Permissions</th>
+							<th scope="col" class="govuk-table__header">Recorded</th>
+							<th scope="col" class="govuk-table__header"><span class="govuk-visually-hidden">Actions</span></th>
+						</tr>
+					</thead>
+					<tbody id="participant-consent-tbody" class="govuk-table__body">
+						<tr class="govuk-table__row">
+							<td class="govuk-table__cell" colspan="5">Loading participants.</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+		</section>
+
+		<section id="consent-record-panel" class="participant-consent-panel" aria-labelledby="record-consent-title" hidden>
+			<h2 id="record-consent-title" class="govuk-heading-m">Record participant consent</h2>
+			<p id="record-consent-hint" class="govuk-body">Choose a participant to record or review consent.</p>
+
+			<form id="participant-consent-form" novalidate>
+				<input id="participant-id" type="hidden">
+				<input id="consent-record-id" type="hidden">
+
+				<div class="govuk-form-group">
+					<label class="govuk-label" for="consent-form-select">Consent form version</label>
+					<div id="consent-form-select-hint" class="govuk-hint">Use the published consent form shown, sent or read to the participant.</div>
+					<select id="consent-form-select" class="govuk-select" aria-describedby="consent-form-select-hint"></select>
+				</div>
+
+				<fieldset class="govuk-fieldset participant-consent-items" aria-describedby="consent-items-hint">
+					<legend class="govuk-fieldset__legend govuk-fieldset__legend--m">Consent statements</legend>
+					<div id="consent-items-hint" class="govuk-hint">Required statements must be agreed before a participant is ready for a session. Optional declined permissions should still be visible to the research team.</div>
+					<div id="consent-items-list"></div>
+				</fieldset>
+
+				{{ govukSelect({
+					id: "capture-method",
+					name: "captureMethod",
+					label: { text: "Capture method" },
+					items: [
+						{ value: "", text: "Select a capture method" },
+						{ value: "Verbal", text: "Verbal" },
+						{ value: "Signed form", text: "Signed form" },
+						{ value: "Email", text: "Email" },
+						{ value: "Imported", text: "Imported" }
+					]
+				}) }}
+
+				{{ govukInput({
+					id: "recorded-by",
+					name: "recordedBy",
+					label: { text: "Recorded by" },
+					attributes: { autocomplete: "name" }
+				}) }}
+
+				{{ govukDetails({
+					classes: "participant-consent-withdrawal",
+					summaryText: "Record withdrawal or do not proceed",
+					html: govukCheckboxes({
+						idPrefix: "consent-withdrawn",
+						name: "consentWithdrawn",
+						items: [
+							{
+								value: "yes",
+								text: "Consent has been withdrawn or the session should not proceed",
+								attributes: { id: "consent-withdrawn" }
+							}
+						]
+					}) + govukTextarea({
+						id: "withdrawal-reason",
+						name: "withdrawalReason",
+						value: "",
+						rows: 3,
+						label: { text: "Reason or note" }
+					})
+				}) }}
+
+				<div class="govuk-button-group participant-consent-form__actions">
+					{{ govukButton({
+						text: "Save consent response",
+						type: "submit",
+						attributes: { id: "save-participant-consent" }
+					}) }}
+					{{ govukButton({
+						text: "Cancel",
+						type: "button",
+						classes: "govuk-button--secondary",
+						attributes: { id: "cancel-participant-consent" }
+					}) }}
+				</div>
+			</form>
+		</section>
+	</section>
+</div>
+{% endblock %}
+
+{% block scripts %}
+	<script type="module" src="/js/participant-consent-route-loader.js?v={{ studyPageScriptVersion }}"></script>
+{% endblock %}

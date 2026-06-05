@@ -1,0 +1,119 @@
+{% extends "layouts/researchops.njk" %}
+{% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/input/macro.njk" import govukInput %}
+
+{% set studyPageScriptVersion = "study-record-id-routing-20260518" %}
+
+{% block head %}
+	<meta property="schema:name" content="Discussion guides - ResearchOps">
+	<link rel="stylesheet" href="/css/govuk/govuk-forms.css" media="screen">
+	<link rel="stylesheet" href="/css/govuk/govuk-tables.css" media="screen">
+	<link rel="stylesheet" href="/css/guides.css" media="screen">
+	<link rel="modulepreload" href="/js/study-route-context.js">
+	<link rel="modulepreload" href="/js/study-guides-context.js">
+	<link rel="modulepreload" href="/js/guides-route-loader.js?v={{ studyPageScriptVersion }}">
+	<!-- /components/guides/guides-page.js -->
+{% endblock %}
+
+{% block content %}
+<div class="govuk-width-container study-guides-page" data-study-subpage-template="guides">
+	{{ govukBreadcrumbs({
+		items: [
+			{ text: "Projects", href: "/pages/projects/" },
+			{ text: "Project", href: "#", attributes: { id: "breadcrumb-project" } },
+			{ text: "Study", href: "#", attributes: { id: "breadcrumb-study" } },
+			{ text: "Guides" }
+		]
+	}) }}
+
+	<header class="guides-header govuk-!-margin-bottom-6">
+		<p id="study-title" class="govuk-caption-m" data-bind="study.title">Study</p>
+		<h1 class="govuk-heading-l">Discussion guides</h1>
+		<p class="govuk-body govuk-!-width-two-thirds">Create, review and publish discussion guides for this study.</p>
+		<div class="govuk-button-group">
+			{{ govukButton({
+				text: "Back to Study",
+				href: "#",
+				classes: "govuk-button--secondary",
+				attributes: { id: "back-to-study" }
+			}) }}
+			{{ govukButton({
+				text: "New guide",
+				type: "button",
+				attributes: { id: "btn-new" }
+			}) }}
+		</div>
+	</header>
+
+	<section id="guides-list-section" aria-labelledby="guides-list-title">
+		<h2 id="guides-list-title" class="govuk-heading-m">Guides for this study</h2>
+		<table id="guides-table" class="govuk-table">
+			<thead class="govuk-table__head">
+				<tr class="govuk-table__row">
+					<th class="govuk-table__header" scope="col">Title</th>
+					<th class="govuk-table__header" scope="col">Status</th>
+				</tr>
+			</thead>
+			<tbody id="guides-tbody" class="govuk-table__body"></tbody>
+		</table>
+	</section>
+
+	<section id="editor-section" class="editor" aria-labelledby="guide-editor-title">
+		<h2 id="guide-editor-title" class="govuk-heading-m">Guide editor</h2>
+		{{ govukInput({
+			id: "guide-title",
+			name: "guideTitle",
+			classes: "editor__title-field",
+			label: { text: "Guide title" },
+			attributes: { autocomplete: "off" }
+		}) }}
+
+		<p id="guide-status" class="govuk-body-s" aria-live="polite">draft</p>
+
+		<div class="editor__toolbar govuk-button-group">
+			{{ govukButton({ text: "Insert pattern", type: "button", classes: "govuk-button--secondary", attributes: { id: "btn-insert-pattern" } }) }}
+			{{ govukButton({ text: "Variables", type: "button", classes: "govuk-button--secondary", attributes: { id: "btn-variables" } }) }}
+			{{ govukButton({ text: "Insert tag", type: "button", classes: "govuk-button--secondary", attributes: { id: "btn-insert-tag" } }) }}
+			{{ govukButton({ text: "Save draft", type: "button", attributes: { id: "btn-save" } }) }}
+			{{ govukButton({ text: "Publish", type: "button", classes: "govuk-button--secondary", attributes: { id: "btn-publish" } }) }}
+		</div>
+
+		<div class="editor__split">
+			<div class="code-editor">
+				<label class="govuk-label" for="guide-source">Guide source</label>
+				<div id="guide-source-highlight" class="code-editor__highlight" aria-hidden="true"><code id="guide-source-code"></code></div>
+				<textarea id="guide-source" class="govuk-textarea code-editor__textarea" rows="18" spellcheck="true"></textarea>
+			</div>
+			<div class="preview">
+				<h3 class="govuk-heading-s">Preview</h3>
+				<div id="guide-preview" class="govuk-body"></div>
+			</div>
+		</div>
+
+		<div id="lint-output" class="govuk-body-s" aria-live="polite"></div>
+	</section>
+
+	<aside id="drawer-patterns" class="drawer" hidden aria-labelledby="drawer-patterns-title">
+		<h2 id="drawer-patterns-title" class="govuk-heading-m">Patterns</h2>
+		{{ govukInput({
+			id: "pattern-search",
+			name: "patternSearch",
+			label: { text: "Search patterns" },
+			attributes: { autocomplete: "off" }
+		}) }}
+		<ul id="pattern-list" class="govuk-list"></ul>
+		<div class="govuk-button-group">
+			<button id="drawer-patterns-close" class="govuk-button govuk-button--secondary" type="button">Close</button>
+		</div>
+	</aside>
+
+	<aside id="drawer-variables" class="drawer" hidden></aside>
+	<div class="govuk-button-group actions-row"></div>
+	<div id="sr-live" class="govuk-visually-hidden" aria-live="polite"></div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+	<script type="module" src="/js/guides-route-loader.js?v={{ studyPageScriptVersion }}"></script>
+{% endblock %}

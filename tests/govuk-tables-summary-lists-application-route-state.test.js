@@ -56,7 +56,7 @@ excludes(studyPageSource, "class=\"kv__term\"", "study page");
 excludes(studyPageSource, "class=\"kv__desc\"", "study page");
 
 includes(guidesPageSource, "href=\"/css/govuk/govuk-tables.css\"", "study guides page");
-includes(guidesPageSource, "<table class=\"govuk-table\">", "study guides page");
+includes(guidesPageSource, "<table id=\"guides-table\" class=\"govuk-table\">", "study guides page");
 includes(guidesPageSource, "<thead class=\"govuk-table__head\">", "study guides page");
 includes(guidesPageSource, "<tbody id=\"guides-tbody\" class=\"govuk-table__body\">", "study guides page");
 excludes(guidesPageSource, "<table class=\"table\" role=\"table\">", "study guides page");
@@ -72,9 +72,9 @@ excludes(participantsPageSource, "role=\"columnheader\"", "participants page");
 includes(participantConsentPageSource, "href=\"/css/govuk/govuk-tables.css\"", "participant consent page");
 includes(participantConsentPageSource, "class=\"govuk-table participant-consent-table\"", "participant consent page");
 includes(participantConsentPageSource, "<tbody id=\"participant-consent-tbody\" class=\"govuk-table__body\">", "participant consent page");
-includes(participantConsentPageSource, "class=\"participant-consent-summary govuk-summary-list\"", "participant consent page");
-includes(participantConsentPageSource, "class=\"participant-consent-summary__key\"", "participant consent page");
-includes(participantConsentPageSource, "class=\"participant-consent-summary__value\"", "participant consent page");
+includes(participantConsentPageSource, "class=\"govuk-summary-list participant-consent-summary\"", "participant consent page");
+includes(participantConsentPageSource, "class=\"govuk-summary-list__key\"", "participant consent page");
+includes(participantConsentPageSource, "class=\"govuk-summary-list__value\"", "participant consent page");
 
 includes(participantsModuleSource, "document.createElement(\"tr\")", "participants module");
 includes(participantsModuleSource, "govuk-table__row", "participants module");
