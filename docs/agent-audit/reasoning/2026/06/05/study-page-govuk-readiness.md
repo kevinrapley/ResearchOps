@@ -44,6 +44,20 @@ Follow-up implementation:
 - Regenerated `public/pages/study/index.html` so the modulepreload and script URL carry the new Study page controller version.
 - Updated the Study page route-state test to assert the new versioned script URL.
 
+## Prototype Review Follow-Up
+
+The multidisciplinary review of the standalone prototype settled on a GOV.UK grid implementation rather than custom column widths. The Study page now uses `govuk-grid-row` with two `govuk-grid-column-one-half` columns so the 50/50 split and gutter come from GOV.UK Frontend.
+
+Follow-up implementation:
+
+- Moved Study details and the "Before you can begin a session" gate into the left half-width GOV.UK column.
+- Moved the full Study readiness task list into the right half-width GOV.UK column.
+- Added a GOV.UK inset text gate that summarises blocking setup tasks and keeps "Begin session" hidden until readiness is complete.
+- Updated the controller so the gate summary, blocker links and project caption are populated from the loaded study context.
+- Changed the readiness status row to use "Ready" when the study status is present.
+- Changed "Synthesize study evidence" to "Synthesise study evidence".
+- Removed custom page and readiness max-width overrides so the layout relies on GOV.UK container and grid widths.
+
 ## Validation
 
 Passed:
@@ -63,3 +77,13 @@ Additional Codex review follow-up validation passed:
 - `node scripts/agent-trace/assert-trace-coverage.mjs`
 - `git diff --check`
 - `node --test`
+
+Additional prototype review follow-up validation passed:
+
+- `node --test tests/study-page-route-state.test.js tests/govuk-breadcrumb-back-link-route-state.test.js`
+- `node scripts/govuk/render-govuk-pages.mjs`
+- `node scripts/styles/format-generated-css.mjs --check`
+- `node scripts/agent-trace/assert-trace-coverage.mjs`
+- `git diff --check`
+- `prettier --check` on changed supported files
+- `node --test` with 176 passing tests

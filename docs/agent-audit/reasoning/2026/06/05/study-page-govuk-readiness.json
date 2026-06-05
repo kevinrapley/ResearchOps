@@ -33,6 +33,7 @@
     "src/govuk/templates/pages/study.njk",
     "public/pages/study/index.html",
     "public/js/study-page.js",
+    "public/css/study-page.css",
     "tests/study-page-route-state.test.js"
   ],
   "filesCreated": [
@@ -61,6 +62,19 @@
       "Bumped studyPageScriptVersion to study-readiness-session-gate-20260605.",
       "Regenerated public/pages/study/index.html so the modulepreload and script URL reference the updated Study page controller version.",
       "Updated the Study page route-state test to assert the new versioned script URL."
+    ]
+  },
+  "prototypeReviewFollowUp": {
+    "classification": "accepted multidisciplinary prototype direction",
+    "summary": "Moved the Study page from a stacked readiness page to a GOV.UK two-column control surface using GOV.UK Frontend grid widths and gutters.",
+    "implementation": [
+      "Placed Study details and the Before you can begin a session gate in the left govuk-grid-column-one-half column.",
+      "Placed the Study readiness task list in the right govuk-grid-column-one-half column.",
+      "Added a GOV.UK inset text gate that summarises blocker links and keeps Begin session hidden until readiness is complete.",
+      "Updated the controller to populate the gate summary, blocker links and project caption from loaded context.",
+      "Changed the readiness status row to Ready when study status is present.",
+      "Changed Synthesize study evidence to Synthesise study evidence.",
+      "Removed custom page and readiness max-width overrides so GOV.UK container and grid values own the layout."
     ]
   },
   "validation": [
@@ -123,6 +137,41 @@
       "command": "node --test",
       "result": "passed",
       "evidence": "Codex review follow-up full test suite passed"
+    },
+    {
+      "command": "node --test tests/study-page-route-state.test.js tests/govuk-breadcrumb-back-link-route-state.test.js",
+      "result": "passed",
+      "evidence": "Prototype review follow-up focused route-state tests passed"
+    },
+    {
+      "command": "node scripts/govuk/render-govuk-pages.mjs",
+      "result": "passed",
+      "evidence": "Prototype review follow-up regenerated GOV.UK pages including public/pages/study/index.html"
+    },
+    {
+      "command": "node scripts/styles/format-generated-css.mjs --check",
+      "result": "passed",
+      "evidence": "Generated CSS formatting check passed"
+    },
+    {
+      "command": "node scripts/agent-trace/assert-trace-coverage.mjs",
+      "result": "passed",
+      "evidence": "Prototype review follow-up trace coverage confirmed"
+    },
+    {
+      "command": "git diff --check",
+      "result": "passed",
+      "evidence": "Prototype review follow-up found no whitespace errors"
+    },
+    {
+      "command": "prettier --check public/pages/study/index.html public/js/study-page.js public/css/study-page.css tests/study-page-route-state.test.js docs/agent-audit/reasoning/2026/06/05/study-page-govuk-readiness.md docs/agent-audit/reasoning/2026/06/05/study-page-govuk-readiness.json",
+      "result": "passed",
+      "evidence": "Prototype review follow-up supported files use Prettier code style"
+    },
+    {
+      "command": "node --test",
+      "result": "passed",
+      "evidence": "Prototype review follow-up full test suite passed with 176 passing tests"
     }
   ],
   "residualRisks": []

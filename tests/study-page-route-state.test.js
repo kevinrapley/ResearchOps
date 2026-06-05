@@ -24,6 +24,7 @@ for (const macro of [
 	"govukBreadcrumbs({",
 	"govukButton({",
 	"govukDetails({",
+	"govukInsetText({",
 	"govukNotificationBanner({",
 	"govukSummaryList({",
 	"govukTaskList({",
@@ -44,6 +45,12 @@ for (const text of [
 	"id=\"kv-method\"",
 	"id=\"kv-status\"",
 	"id=\"kv-studyid\"",
+	"govuk-grid-row study-overview-grid",
+	"govuk-grid-column-one-half",
+	"study-session-gate",
+	"id=\"study-session-gate-summary\"",
+	"id=\"study-session-blockers\"",
+	"id=\"study-session-action\"",
 	"id=\"study-readiness-description-status\"",
 	"id=\"study-readiness-participant-consent-hint\"",
 	"id: \"link-session\"",
@@ -80,10 +87,17 @@ for (const text of [
 	"id=\"study-error\"",
 	"role=\"alert\"",
 	"Study readiness",
+	"Before you can begin a session",
 	"Study setup tasks",
 	"Study analysis tasks",
-	"Synthesize study evidence",
+	"Synthesise study evidence",
 	"Group evidence notes into working cluster groupings and create traceable study-level themes.",
+	"class=\"govuk-grid-row study-overview-grid\"",
+	"class=\"govuk-grid-column-one-half\"",
+	"class=\"govuk-inset-text study-session-gate\"",
+	"id=\"study-session-gate-summary\"",
+	"id=\"study-session-blockers\"",
+	"id=\"study-session-action\"",
 	"id=\"study-readiness-description-status\"",
 	"id=\"study-readiness-session-hint\"",
 	"id=\"link-session\"",
@@ -114,6 +128,8 @@ for (const text of [
 	"apiUrl(\"/api/studies\")",
 	"showError",
 	"renderReadiness",
+	"function renderSessionGatePanel",
+	"function blockerActionForKey",
 	"async function loadReadinessContext",
 	"function evaluateReadiness",
 	"function renderSessionGate",
@@ -122,6 +138,9 @@ for (const text of [
 	"study-readiness-${key}-status",
 	"study-readiness-${key}-hint",
 	"govuk-tag ${readinessTagClass(state)} study-readiness-status",
+	"summary.textContent = \"This study is ready to run\"",
+	"message.textContent = \"Complete these tasks before starting fieldwork.\"",
+	"setText(\"#study-eyebrow\", projectName)",
 	"loadStudyCollection(\"/api/participant-consent\"",
 	"participantConsentRecords",
 	"consentMaterials",
@@ -146,9 +165,23 @@ excludes(controllerSource, "querySelector(\".readiness-item__body\")", "study pa
 excludes(controllerSource, "route(\"/pages/synthesize/\", params)", "study page controller");
 excludes(controllerSource, "alert(", "study page controller");
 
-for (const text of [".study-page", ".study-action-bar", ".study-readiness-task-list", ".study-session-button", ".govuk-task-list__item .govuk-tag", "/* transparency begins in the cascade */"]) {
+for (const text of [
+	".study-action-bar",
+	".study-overview-grid",
+	".study-session-gate",
+	".study-readiness-task-list",
+	".study-session-button",
+	".govuk-task-list__item .govuk-tag",
+	".study-analysis-task-list .govuk-tag",
+	"/* transparency begins in the cascade */"
+]) {
 	includes(studyScssSource, text, "study SCSS source");
 	includes(studyCssSource, text, "study css");
+}
+
+for (const legacy of ["max-width: 1100px", "max-width: 960px"]) {
+	excludes(studyScssSource, legacy, "study SCSS source");
+	excludes(studyCssSource, legacy, "study css");
 }
 
 for (const legacy of [".study-task-card", ".study-readiness-list", ".readiness-item"]) {
