@@ -105,6 +105,7 @@
 - Updated route-state tests to protect the new GOV.UK shape and generated stylesheet ownership.
 - Follow-up browser comments addressed: the missing-context table row now has a route-scoped GOV.UK table status cell with 20px vertical padding; required guide title/source validation now uses a GOV.UK error summary and inline field errors; the study-context failure now appears as a GOV.UK warning text while the caption keeps study context from the URL; pattern and variables panels now appear directly below the toolbar controls that reveal them; the pattern panel uses GOV.UK warning text, list/details/buttons and local starter View/Edit/Delete affordances; the variables panel uses GOV.UK buttons and labelled GOV.UK inputs after adding a variable.
 - Latest browser comments addressed: unresolved partial checks now appear in the GOV.UK error summary and source textarea error state instead of a detached lint inset; the editor section top border has been removed; guide title input font inherits GOV.UK typography; the default preview metadata now renders as separate Study and Project rows with a study filename-style value; preview heading/body sizes are constrained for an editor preview; `Save draft` and `Draft a guide` are secondary actions; empty or unavailable guide lists show an informative inset fallback instead of an empty table; the transitive guide editor import is cache-busted so default source changes reach the browser.
+- Starter discussion guide partials now hydrate from the local pattern registry before the `/api/partials` request completes or fails, so the default first-visit guide can render `intro_opening_v1`, `consent_standard_v2`, `task_observation_shell_v1`, `probe_error_recovery_v1`, `probe_trust_signals_v1`, `wrapup_debrief_v1` and `note_observer_grid_v1` without showing unknown-partial errors.
 
 ## Codex review handling
 
@@ -147,6 +148,12 @@
 - Latest browser comment pass at `http://127.0.0.1:8891/pages/study/guides/?id=RECT3O7DT`: pattern category headings are capitalised and visually distinct from pattern item titles; `Create pattern` and `Close` appear at the top of the patterns panel; pattern `View`, `Edit` and `Delete` are GOV.UK secondary buttons and each opens the appropriate in-flow tray content; drawer secondary buttons are white on grey; variables `Add variable`, `Discard changes` and `Close` are white on grey; the variable key input inherits `"GDS Transport", Arial, sans-serif`; the variables header row has `20px` top padding.
 - `node tests/study-guides-route-state.test.js`
 - `node tests/study-child-route-state.test.js`
+- Latest browser comment pass: pattern action trays now move into the pattern item that launched them; pattern item `Delete` uses GOV.UK warning button styling; the reusable pattern action is labelled `Add to guide`; displayed and inserted partial names use a single version suffix when the name already ends in `_vN`; default guide Study and Project metadata render on separate lines; the missing-context status uses the GOV.UK notification banner macro; the fallback page caption is `Study` and no longer exposes the Study record ID.
+- `node tests/study-guides-route-state.test.js`
+- `node tests/study-child-route-state.test.js`
+- `npm run generated-css:check -- public/css/guides.css`
+- `npx prettier -c public/components/guides/guide-editor.js public/components/guides/guides-page.js public/js/study-guides-context.js tests/study-guides-route-state.test.js`
+- `npm run trace:coverage`
 - `node --test tests/study-guides-route-state.test.js tests/govuk-breadcrumb-back-link-route-state.test.js tests/govuk-forms-application-route-state.test.js tests/govuk-tables-summary-lists-application-route-state.test.js tests/govuk-frontend-integration-route-state.test.js`
 - `npm run generated-css:check -- public/css/guides.css`
 - `npm test`
@@ -155,6 +162,11 @@
 - `sass --load-path=node_modules --no-source-map src/styles/guides.scss public/css/guides.css`
 - `node scripts/styles/format-generated-css.mjs --write public/css/guides.css`
 - `npm run build:govuk-pages`
+- `npm run agent:model -- "Make starter discussion guide partials available on first page load"`
+- `npm run build:govuk-pages`
+- `node tests/study-guides-route-state.test.js && node tests/study-child-route-state.test.js`
+- `npm run generated-css:check -- public/css/guides.css`
+- Browser draft-path check at `http://127.0.0.1:8891/pages/study/guides/?pid=recgdpwEI5hF07bUZ&sid=RECT3O7DT`: choosing `Draft a guide` populated the source with all seven starter partial references, rendered local starter content in the preview and showed no unknown-partial messages.
 
 ## Validation notes
 

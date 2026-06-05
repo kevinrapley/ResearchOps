@@ -197,6 +197,46 @@
 		{
 			"command": "node tests/study-child-route-state.test.js",
 			"result": "passed"
+		},
+		{
+			"command": "Latest browser comment implementation pass",
+			"result": "pattern trays move into the launching pattern item, pattern Delete uses GOV.UK warning styling, pattern insertion is labelled Add to guide, duplicate version suffixes are avoided, default Study and Project preview metadata are separated, missing-context status uses the GOV.UK notification banner macro, and the fallback caption no longer exposes the Study record ID"
+		},
+		{
+			"command": "node tests/study-guides-route-state.test.js && node tests/study-child-route-state.test.js",
+			"result": "passed"
+		},
+		{
+			"command": "npm run generated-css:check -- public/css/guides.css",
+			"result": "passed"
+		},
+		{
+			"command": "npx prettier -c public/components/guides/guide-editor.js public/components/guides/guides-page.js public/js/study-guides-context.js tests/study-guides-route-state.test.js",
+			"result": "passed"
+		},
+		{
+			"command": "npm run trace:coverage",
+			"result": "passed"
+		},
+		{
+			"command": "npm run agent:model -- \"Make starter discussion guide partials available on first page load\"",
+			"result": "passed; selected github-diamond, researchops-developer-control, multi-functional-team and govuk-design-system"
+		},
+		{
+			"command": "npm run build:govuk-pages",
+			"result": "passed"
+		},
+		{
+			"command": "node tests/study-guides-route-state.test.js && node tests/study-child-route-state.test.js",
+			"result": "passed"
+		},
+		{
+			"command": "npm run generated-css:check -- public/css/guides.css",
+			"result": "passed"
+		},
+		{
+			"command": "Browser draft-path check at http://127.0.0.1:8891/pages/study/guides/?pid=recgdpwEI5hF07bUZ&sid=RECT3O7DT",
+			"result": "passed; choosing Draft a guide populated all seven starter partial references, rendered local starter content in the preview, and showed no unknown-partial messages"
 		}
 	],
 	"validationNotRun": [],

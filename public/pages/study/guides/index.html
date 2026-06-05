@@ -12,7 +12,7 @@
 		<link rel="stylesheet" href="/css/guides.css" media="screen" />
 		<link rel="modulepreload" href="/js/study-route-context.js" />
 		<link rel="modulepreload" href="/js/study-guides-context.js" />
-		<link rel="modulepreload" href="/js/guides-route-loader.js?v=study-guides-pattern-panel-20260605" />
+		<link rel="modulepreload" href="/js/guides-route-loader.js?v=study-guides-starter-partials-20260605" />
 		<!-- /components/guides/guides-page.js -->
 
 		<script type="module" src="/components/layout.js" defer></script>
@@ -44,12 +44,22 @@
 					</ol>
 				</nav>
 
-				<div class="govuk-warning-text" id="study-context-warning" hidden="hidden">
-					<span class="govuk-warning-text__icon" aria-hidden="true">!</span>
-					<strong class="govuk-warning-text__text">
-						<span class="govuk-visually-hidden">Warning</span>
-						Study details could not be loaded. Some saved guide data may be unavailable.
-					</strong>
+				<div
+					class="govuk-notification-banner"
+					role="region"
+					aria-labelledby="govuk-notification-banner-title"
+					data-module="govuk-notification-banner"
+					id="study-context-warning"
+					hidden="hidden"
+				>
+					<div class="govuk-notification-banner__header">
+						<h2 class="govuk-notification-banner__title" id="govuk-notification-banner-title">Important</h2>
+					</div>
+					<div class="govuk-notification-banner__content">
+						<p class="govuk-notification-banner__heading">
+							Study details could not be loaded. Some saved guide data may be unavailable.
+						</p>
+					</div>
 				</div>
 
 				<header class="guides-header">
@@ -255,6 +265,6 @@
 		</main>
 		<x-include src="/partials/footer.html"></x-include>
 
-		<script type="module" src="/js/guides-route-loader.js?v=study-guides-pattern-panel-20260605"></script>
+		<script type="module" src="/js/guides-route-loader.js?v=study-guides-starter-partials-20260605"></script>
 	</body>
 </html>

@@ -7,6 +7,7 @@ const rendererSource = fs.readFileSync("scripts/govuk/render-govuk-pages.mjs", "
 const contextSource = fs.readFileSync("public/js/study-guides-context.js", "utf8");
 const loaderSource = fs.readFileSync("public/js/guides-route-loader.js", "utf8");
 const guidesPageSource = fs.readFileSync("public/components/guides/guides-page.js", "utf8");
+const guideEditorSource = fs.readFileSync("public/components/guides/guide-editor.js", "utf8");
 const variableManagerSource = fs.readFileSync("public/components/guides/variable-manager.js", "utf8");
 const guidesCssSource = fs.readFileSync("public/css/guides.css", "utf8");
 const buttonCssSource = fs.readFileSync("public/css/govuk/govuk-buttons.css", "utf8");
@@ -25,8 +26,8 @@ for (const macro of [
 	"govukDetails({",
 	"govukErrorSummary({",
 	"govukInput({",
+	"govukNotificationBanner({",
 	"govukTextarea({",
-	"govukWarningText({"
 ]) {
 	includes(templateSource, macro, "study guides template");
 }
@@ -38,6 +39,10 @@ includes(pageSource, "href=\"/assets/govuk/govuk-frontend.css\"", "study guides 
 includes(pageSource, "href=\"/css/guides.css\"", "study guides page");
 includes(pageSource, "data-study-subpage-template=\"guides\"", "study guides page");
 includes(pageSource, "id=\"study-context-warning\"", "study guides page");
+includes(pageSource, "class=\"govuk-notification-banner\"", "study guides page");
+includes(pageSource, "Study details could not be loaded. Some saved guide data may be unavailable.", "study guides page");
+excludes(pageSource, "id=\"study-context-warning\" hidden=\"hidden\" role=\"status\"", "study guides page");
+excludes(pageSource, "id=\"study-context-warning\" hidden=\"hidden\">\n\t\t<span class=\"govuk-warning-text__icon\"", "study guides page");
 includes(pageSource, "/js/study-guides-context.js", "study guides page");
 includes(pageSource, "rel=\"modulepreload\" href=\"/js/study-guides-context.js\"", "study guides page");
 includes(pageSource, "/components/guides/guides-page.js", "study guides page");
@@ -84,7 +89,8 @@ includes(contextSource, "function bindContext", "study guides context module");
 includes(contextSource, "window.__guideCtx", "study guides context module");
 includes(contextSource, "Missing Study record ID in URL", "study guides context module");
 includes(contextSource, "study-context-warning", "study guides context module");
-includes(contextSource, "`Study ${studyId}`", "study guides context module");
+includes(contextSource, "studyTitleEl.textContent = \"Study\"", "study guides context module");
+excludes(contextSource, "`Study ${studyId}`", "study guides context module");
 includes(contextSource, "export { fallbackTitle, pickTitle };", "study guides context module");
 
 includes(loaderSource, "Study route bridge unavailable", "study guides route loader");
@@ -94,9 +100,9 @@ includes(loaderSource, "await import('/components/guides/guides-page.js", "study
 
 includes(guidesPageSource, "hydrateCrumbs", "guides component module");
 includes(guidesPageSource, "loadGuides", "guides component module");
-includes(guidesPageSource, "/components/guides/guide-editor.js?v=study-guides-pattern-panel-20260605", "guides component module");
-includes(guidesPageSource, "/components/guides/patterns.js?v=study-guides-pattern-panel-20260605", "guides component module");
-includes(guidesPageSource, "/components/guides/variable-manager.js?v=study-guides-pattern-panel-20260605", "guides component module");
+includes(guidesPageSource, "/components/guides/guide-editor.js?v=study-guides-starter-partials-20260605", "guides component module");
+includes(guidesPageSource, "/components/guides/patterns.js?v=study-guides-starter-partials-20260605", "guides component module");
+includes(guidesPageSource, "/components/guides/variable-manager.js?v=study-guides-starter-partials-20260605", "guides component module");
 includes(guidesPageSource, "async function bootGuidesPage", "guides component module");
 includes(guidesPageSource, "function setGuidesListState", "guides component module");
 includes(guidesPageSource, 'document.readyState === "loading"', "guides component module");
@@ -106,17 +112,23 @@ includes(guidesPageSource, "function viewLocalPattern", "guides component module
 includes(guidesPageSource, "function editLocalPattern", "guides component module");
 includes(guidesPageSource, "function deleteLocalPattern", "guides component module");
 includes(guidesPageSource, "function formatPatternCategory", "guides component module");
+includes(guidesPageSource, "function patternPartialName", "guides component module");
+includes(guidesPageSource, "patternItem.appendChild(tray)", "guides component module");
 includes(guidesPageSource, "function bindPatternListActions", "guides component module");
 includes(guidesPageSource, "window.__researchOpsHandlePatternClick = handlePatternClick", "guides component module");
 includes(guidesPageSource, "pattern-action-button", "guides component module");
 includes(guidesPageSource, "data-view=", "guides component module");
 includes(guidesPageSource, "data-edit=", "guides component module");
 includes(guidesPageSource, "data-delete=", "guides component module");
+includes(guidesPageSource, "govuk-button--warning pattern-action-button", "guides component module");
+includes(guidesPageSource, "Add to guide", "guides component module");
+excludes(guidesPageSource, "const insertName = `${p.name}_v${p.version}`", "guides component module");
+excludes(guidesPageSource, "${escapeHtml(pattern.name)}_v${escapeHtml(pattern.version)}", "guides component module");
 includes(guidesPageSource, "data-save-local-pattern", "guides component module");
 includes(guidesPageSource, "data-confirm-delete-local-pattern", "guides component module");
 includes(guidesPageSource, "pattern-tray", "guides component module");
 includes(guidesPageSource, "govuk-warning-text", "guides component module");
-includes(guidesPageSource, "Insert pattern", "guides component module");
+includes(guidesPageSource, "Add to guide", "guides component module");
 includes(guidesPageSource, "function setFieldError", "guides component module");
 includes(guidesPageSource, "function renderGuideErrorSummary", "guides component module");
 includes(guidesPageSource, "__lintErrors", "guides component module");
@@ -129,6 +141,28 @@ includes(guidesPageSource, "Guide editor has validation errors.", "guides compon
 includes(guidesPageSource, "Draft a discussion guide in the editor", "guides component module");
 includes(guidesPageSource, "fileName", "guides component module");
 excludes(guidesPageSource, "|| \"Untitled guide\"", "guides component module");
+includes(
+	guideEditorSource,
+	`**Study:** {{study.fileName}}
+
+**Project:** {{project.name}}`,
+	"guide editor module"
+);
+for (const partialName of [
+	"intro_opening_v1",
+	"consent_standard_v2",
+	"task_observation_shell_v1",
+	"probe_error_recovery_v1",
+	"probe_trust_signals_v1",
+	"wrapup_debrief_v1",
+	"note_observer_grid_v1",
+]) {
+	includes(guideEditorSource, `{{> ${partialName}}}`, "guide editor module");
+}
+includes(guideEditorSource, "const map = buildLocalPartials(names);", "guide editor module");
+includes(guideEditorSource, "function buildLocalPartials", "guide editor module");
+includes(guideEditorSource, "globalThis.window?.__patternRegistry", "guide editor module");
+includes(guideEditorSource, "return map;", "guide editor module");
 includes(guidesPageSource, "scrollIntoView({ behavior: \"smooth\", block: \"start\" })", "guides component module");
 includes(guidesPageSource, "focus({ preventScroll: true })", "guides component module");
 includes(guidesPageSource, "revealDrawer(d, $(\"#drawer-variables-close\"))", "guides component module");

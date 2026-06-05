@@ -4,10 +4,10 @@
 {% from "govuk/components/details/macro.njk" import govukDetails %}
 {% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
 {% from "govuk/components/input/macro.njk" import govukInput %}
+{% from "govuk/components/notification-banner/macro.njk" import govukNotificationBanner %}
 {% from "govuk/components/textarea/macro.njk" import govukTextarea %}
-{% from "govuk/components/warning-text/macro.njk" import govukWarningText %}
 
-{% set studyPageScriptVersion = "study-guides-pattern-panel-20260605" %}
+{% set studyPageScriptVersion = "study-guides-starter-partials-20260605" %}
 
 {% block head %}
 	<meta property="schema:name" content="Discussion guides - ResearchOps">
@@ -31,8 +31,9 @@
 		]
 	}) }}
 
-	{{ govukWarningText({
-		text: "Study details could not be loaded. Some saved guide data may be unavailable.",
+	{{ govukNotificationBanner({
+		titleText: "Important",
+		html: '<p class="govuk-notification-banner__heading">Study details could not be loaded. Some saved guide data may be unavailable.</p>',
 		attributes: { id: "study-context-warning", hidden: "hidden" }
 	}) }}
 

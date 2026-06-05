@@ -96,7 +96,7 @@ async function init() {
 		window.__guideCtx = { error, study: { id: studyId } };
 
 		const studyTitleEl = $("#study-title");
-		if (studyTitleEl) studyTitleEl.textContent = studyId ? `Study ${studyId}` : "Study";
+		if (studyTitleEl) studyTitleEl.textContent = "Study";
 
 		const contextWarning = $("#study-context-warning");
 		if (contextWarning) contextWarning.hidden = false;

@@ -25,11 +25,11 @@ import { marked } from "/lib/marked.min.js";
 import DOMPurify from "/lib/purify.min.js";
 
 import { buildContext } from "/components/guides/context.js";
-import { renderGuide, buildPartials, DEFAULT_SOURCE } from "/components/guides/guide-editor.js?v=study-guides-pattern-panel-20260605";
-import { searchPatterns, listStarterPatterns } from "/components/guides/patterns.js?v=study-guides-pattern-panel-20260605";
+import { renderGuide, buildPartials, DEFAULT_SOURCE } from "/components/guides/guide-editor.js?v=study-guides-starter-partials-20260605";
+import { searchPatterns, listStarterPatterns } from "/components/guides/patterns.js?v=study-guides-starter-partials-20260605";
 
 // Variable manager + validators (keep your existing utils for validation)
-import { VariableManager } from "/components/guides/variable-manager.js?v=study-guides-pattern-panel-20260605";
+import { VariableManager } from "/components/guides/variable-manager.js?v=study-guides-starter-partials-20260605";
 import {
 	validateTemplate,
 	formatValidationReport,
@@ -1226,7 +1226,7 @@ function populatePatternList(items) {
 			const li = document.createElement("li");
 			li.className = "pattern-item";
 
-			const insertName = `${p.name}_v${p.version}`;
+			const insertName = patternPartialName(p);
 
 			li.innerHTML = `
         <div class="pattern-item__content">
@@ -1235,13 +1235,13 @@ function populatePatternList(items) {
             <p class="govuk-body-s muted">Partial <code>${escapeHtml(insertName)}</code></p>
           </div>
           <button class="govuk-button govuk-button--secondary" type="button" data-insert="${escapeHtml(insertName)}" onclick="window.__researchOpsHandlePatternClick(event)">
-            Insert pattern
+            Add to guide
           </button>
         </div>
         <div class="govuk-button-group pattern-item__actions">
           <button class="govuk-button govuk-button--secondary pattern-action-button" type="button" data-view="${escapeHtml(p.name)}">View</button>
           <button class="govuk-button govuk-button--secondary pattern-action-button" type="button" data-edit="${escapeHtml(p.name)}">Edit</button>
-          <button class="govuk-button govuk-button--secondary pattern-action-button" type="button" data-delete="${escapeHtml(p.name)}">Delete</button>
+          <button class="govuk-button govuk-button--warning pattern-action-button" type="button" data-delete="${escapeHtml(p.name)}">Delete</button>
         </div>
       `;
 			ul.appendChild(li);
@@ -1258,6 +1258,15 @@ function formatPatternCategory(category) {
 	const spaced = raw.replace(/[-_]+/g, " ");
 	const capitalised = spaced.charAt(0).toUpperCase() + spaced.slice(1);
 	return /\bpatterns$/i.test(capitalised) ? capitalised : `${capitalised} patterns`;
+}
+
+function patternPartialName(pattern) {
+	const name = String(pattern?.name || "").trim();
+	const version = String(pattern?.version || "").trim();
+	if (!name || !version || new RegExp(`_v${version}$`, "i").test(name)) {
+		return name;
+	}
+	return `${name}_v${version}`;
 }
 
 function bindPatternListActions(ul) {
@@ -1326,19 +1335,19 @@ async function handlePatternClick(e) {
 
 	if (t.dataset.view) {
 		const pattern = findPattern(t.dataset.view);
-		if (pattern?.isLocal) { viewLocalPattern(pattern); return; }
+		if (pattern?.isLocal) { viewLocalPattern(pattern, t); return; }
 		await viewPartial(t.dataset.view);
 		return;
 	}
 	if (t.dataset.edit) {
 		const pattern = findPattern(t.dataset.edit);
-		if (pattern?.isLocal) { editLocalPattern(pattern); return; }
+		if (pattern?.isLocal) { editLocalPattern(pattern, t); return; }
 		await editPartial(t.dataset.edit);
 		return;
 	}
 	if (t.dataset.delete) {
 		const pattern = findPattern(t.dataset.delete);
-		if (pattern?.isLocal) { deleteLocalPattern(pattern); return; }
+		if (pattern?.isLocal) { deleteLocalPattern(pattern, t); return; }
 		await deletePartial(t.dataset.delete);
 		return;
 	}
@@ -1355,29 +1364,44 @@ function findPattern(idOrName) {
 	));
 }
 
-function renderPatternTray(html) {
-	const tray = $("#pattern-tray");
-	if (!tray) return;
+function getPatternTray() {
+	let tray = $("#pattern-tray");
+	if (!tray) {
+		tray = document.createElement("div");
+		tray.id = "pattern-tray";
+		tray.className = "pattern-tray";
+		tray.hidden = true;
+		$("#drawer-patterns")?.appendChild(tray);
+	}
+	return tray;
+}
+
+function renderPatternTray(html, origin) {
+	const tray = getPatternTray();
 	tray.innerHTML = html;
 	tray.hidden = false;
+	const patternItem = origin?.closest?.(".pattern-item");
+	if (patternItem) {
+		patternItem.appendChild(tray);
+	}
 	tray.scrollIntoView({ behavior: "smooth", block: "nearest" });
 	tray.querySelector("button, input, textarea, [href]")?.focus({ preventScroll: true });
 }
 
 function closePatternTray() {
-	const tray = $("#pattern-tray");
+	const tray = getPatternTray();
 	if (!tray) return;
 	tray.hidden = true;
 	tray.innerHTML = "";
 }
 
-function viewLocalPattern(pattern) {
+function viewLocalPattern(pattern, origin) {
 	renderPatternTray(`
 		<h3 class="govuk-heading-s">${escapeHtml(pattern.title)}</h3>
 		<dl class="govuk-summary-list">
 			<div class="govuk-summary-list__row">
 				<dt class="govuk-summary-list__key">Partial</dt>
-				<dd class="govuk-summary-list__value"><code>${escapeHtml(pattern.name)}_v${escapeHtml(pattern.version)}</code></dd>
+				<dd class="govuk-summary-list__value"><code>${escapeHtml(patternPartialName(pattern))}</code></dd>
 			</div>
 			<div class="govuk-summary-list__row">
 				<dt class="govuk-summary-list__key">Category</dt>
@@ -1389,10 +1413,10 @@ function viewLocalPattern(pattern) {
 		<div class="govuk-button-group">
 			<button class="govuk-button govuk-button--secondary" type="button" data-pattern-tray-close>Close pattern</button>
 		</div>
-	`);
+	`, origin);
 }
 
-function editLocalPattern(pattern) {
+function editLocalPattern(pattern, origin) {
 	renderPatternTray(`
 		<h3 class="govuk-heading-s">Edit ${escapeHtml(pattern.title)}</h3>
 		<div class="govuk-form-group">
@@ -1403,10 +1427,10 @@ function editLocalPattern(pattern) {
 			<button class="govuk-button" type="button" data-save-local-pattern="${escapeHtml(pattern.name)}">Save pattern</button>
 			<button class="govuk-button govuk-button--secondary" type="button" data-pattern-tray-close>Cancel</button>
 		</div>
-	`);
+	`, origin);
 }
 
-function deleteLocalPattern(pattern) {
+function deleteLocalPattern(pattern, origin) {
 	renderPatternTray(`
 		<h3 class="govuk-heading-s">Delete ${escapeHtml(pattern.title)}</h3>
 		<p class="govuk-body">This removes the local starter pattern from this editor session.</p>
@@ -1414,7 +1438,7 @@ function deleteLocalPattern(pattern) {
 			<button class="govuk-button govuk-button--warning" type="button" data-confirm-delete-local-pattern="${escapeHtml(pattern.name)}">Delete pattern</button>
 			<button class="govuk-button govuk-button--secondary" type="button" data-pattern-tray-close>Cancel</button>
 		</div>
-	`);
+	`, origin);
 }
 
 function bindPatternTrayActions() {
