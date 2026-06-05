@@ -108,6 +108,17 @@ includes(projectParticipantsPage, "id=\"create-study-link\"", "Project participa
 includes(projectParticipantsPage, "href=\"/pages/study/new/?id=\"", "Project participant route");
 excludes(projectParticipantsPage, "href=\"/pages/study/new/?pid=\"", "Project participant route");
 
+const studyParticipantsPage = read("public/pages/study/participants/index.html");
+includes(studyParticipantsPage, "id=\"p_first_name\"", "Study participants route");
+includes(studyParticipantsPage, "id=\"p_family_name\"", "Study participants route");
+includes(studyParticipantsPage, "Participant reference (optional)", "Study participants route");
+includes(studyParticipantsPage, "class=\"govuk-checkboxes\"", "Study participants route");
+includes(studyParticipantsPage, "Preferred contact methods", "Study participants route");
+includes(studyParticipantsPage, "class=\"govuk-date-input\"", "Study participants route");
+includes(studyParticipantsPage, "id=\"s_date-day\"", "Study participants route");
+includes(studyParticipantsPage, "id=\"s_time-hour\"", "Study participants route");
+excludes(studyParticipantsPage, "type=\"datetime-local\"", "Study participants route");
+
 const participantImportPage = read("public/pages/project-dashboard/participants/import/index.html");
 includes(participantImportPage, "href=\"/assets/govuk/govuk-frontend.css\"", "Participant import route");
 excludes(participantImportPage, "href=\"/css/govuk/govuk-forms.css\"", "Participant import route");

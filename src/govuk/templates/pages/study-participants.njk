@@ -1,7 +1,11 @@
 {% extends "layouts/researchops.njk" %}
 {% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
 {% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/checkboxes/macro.njk" import govukCheckboxes %}
+{% from "govuk/components/date-input/macro.njk" import govukDateInput %}
+{% from "govuk/components/details/macro.njk" import govukDetails %}
 {% from "govuk/components/input/macro.njk" import govukInput %}
+{% from "govuk/components/inset-text/macro.njk" import govukInsetText %}
 {% from "govuk/components/select/macro.njk" import govukSelect %}
 {% from "govuk/components/textarea/macro.njk" import govukTextarea %}
 
@@ -62,86 +66,126 @@
 		<p class="govuk-body govuk-!-width-two-thirds">Add participants, review restricted contact details and schedule sessions for this study.</p>
 	</header>
 
-	<div class="govuk-grid-row govuk-!-margin-bottom-7">
-		<div class="govuk-grid-column-two-thirds">
-			<section class="participants-section" aria-labelledby="participants-h">
-				<h2 id="participants-h" class="govuk-heading-m">Participants in this study</h2>
-				<p class="govuk-body">Review who is available for fieldwork. Contact details stay restricted until they are explicitly revealed.</p>
+	<section class="participants-section" aria-labelledby="participants-h">
+		<h2 id="participants-h" class="govuk-heading-m">Participants in this study</h2>
+		<p class="govuk-body govuk-!-width-two-thirds">Review who is available for fieldwork. Contact details stay restricted until they are explicitly revealed.</p>
 
-				<div id="participantsEmpty" class="govuk-inset-text" hidden>
-					<h3 class="govuk-heading-s govuk-!-margin-bottom-2">No participants yet</h3>
-					<p class="govuk-body">Add your first participant to begin scheduling sessions.</p>
-					{{ govukButton({ text: "Add a participant", href: "#addParticipantForm" }) }}
-				</div>
-
-				<div class="table-wrap" id="participantsTableWrap" hidden>
-					<table id="participantsTable" class="govuk-table" aria-label="Participants">
-						<thead class="govuk-table__head">
-							<tr class="govuk-table__row">
-								<th scope="col" class="govuk-table__header">Name</th>
-								<th scope="col" class="govuk-table__header">Contact</th>
-								<th scope="col" class="govuk-table__header">Status</th>
-								<th scope="col" class="govuk-table__header"><span class="govuk-visually-hidden">Actions</span></th>
-							</tr>
-						</thead>
-						<tbody id="participants-tbody" class="govuk-table__body">
-							<tr class="govuk-table__row">
-								<td colspan="4" class="govuk-table__cell muted">Loading...</td>
-							</tr>
-						</tbody>
-					</table>
-				</div>
-			</section>
+		<div id="participantsEmpty" class="govuk-inset-text" hidden>
+			<h3 class="govuk-heading-s govuk-!-margin-bottom-2">No participants yet</h3>
+			<p class="govuk-body">Add your first participant to begin scheduling sessions.</p>
+			{{ govukButton({ text: "Add a participant", href: "#addParticipantForm" }) }}
 		</div>
 
-		<div class="govuk-grid-column-one-third">
-			<section class="participants-section participants-section--form" aria-labelledby="addp-h">
+		<div class="table-wrap" id="participantsTableWrap" hidden>
+			<table id="participantsTable" class="govuk-table" aria-label="Participants">
+				<thead class="govuk-table__head">
+					<tr class="govuk-table__row">
+						<th scope="col" class="govuk-table__header">Participant reference</th>
+						<th scope="col" class="govuk-table__header">Contact details</th>
+						<th scope="col" class="govuk-table__header">Status</th>
+						<th scope="col" class="govuk-table__header"><span class="govuk-visually-hidden">Actions</span></th>
+					</tr>
+				</thead>
+				<tbody id="participants-tbody" class="govuk-table__body">
+					<tr class="govuk-table__row">
+						<td colspan="4" class="govuk-table__cell muted">Loading...</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+	</section>
+
+	<section class="participants-section participants-section--form" aria-labelledby="addp-h">
+		<div class="govuk-grid-row">
+			<div class="govuk-grid-column-two-thirds">
 				<h2 id="addp-h" class="govuk-heading-m govuk-!-margin-bottom-3">Add participant</h2>
+				<p class="govuk-body">Add a participant to this study so the team can manage recruitment, consent, withdrawal and sessions.</p>
+
+				{{ govukInsetText({
+					html: '<h3 class="govuk-heading-s">How participant details are used</h3><p class="govuk-body">Real names and contact details are used for recruitment, consent and withdrawal operations.</p><p class="govuk-body">Participant lists continue to show the participant reference by default. Real names, contact details and support needs are restricted to authorised project roles.</p>'
+				}) }}
 
 				<form id="addParticipantForm" class="form" novalidate>
+					<input id="p_project_id" name="project_id" type="hidden" value="">
+					<input id="p_study_id" name="study_id" type="hidden" value="">
+
+					<h3 class="govuk-heading-s">Participant identity</h3>
 					{{ govukInput({
-						id: "p_display",
-						name: "display_name",
-						label: { text: "Display name" },
-						attributes: { required: "required", autocomplete: "off" }
+						id: "p_first_name",
+						name: "first_name",
+						classes: "govuk-!-width-two-thirds",
+						label: { text: "First name" },
+						hint: { text: "Enter the participant’s real first name so the research team can manage recruitment, consent and withdrawal correctly." },
+						autocomplete: "given-name",
+						attributes: { required: "required" }
 					}) }}
 
-					<div class="govuk-grid-row">
-						<div class="govuk-grid-column-one-half">
-							{{ govukInput({
-								id: "p_email",
-								name: "email",
-								type: "email",
-								label: { text: "Email" },
-								attributes: { autocomplete: "off" }
-							}) }}
-						</div>
-						<div class="govuk-grid-column-one-half">
-							{{ govukInput({
-								id: "p_phone",
-								name: "phone",
-								label: { text: "Phone" },
-								attributes: { autocomplete: "off" }
-							}) }}
-						</div>
-					</div>
+					{{ govukInput({
+						id: "p_family_name",
+						name: "family_name",
+						classes: "govuk-!-width-two-thirds",
+						label: { text: "Family name" },
+						hint: { text: "Enter the participant’s real family name." },
+						autocomplete: "family-name",
+						attributes: { required: "required" }
+					}) }}
 
-					{{ govukSelect({
-						id: "p_channel",
+					{{ govukInput({
+						id: "p_participant_ref",
+						name: "participant_ref",
+						classes: "govuk-!-width-two-thirds",
+						label: { text: "Participant reference (optional)" },
+						hint: { text: "This is the label shown by default in participant lists. Do not use a real name here. Leave blank to let ResearchOps create one." },
+						autocomplete: "off"
+					}) }}
+
+					<h3 class="govuk-heading-s">Contact details</h3>
+					{{ govukInput({
+						id: "p_email",
+						name: "email",
+						type: "email",
+						classes: "govuk-!-width-two-thirds",
+						label: { text: "Email address (optional)" },
+						autocomplete: "email"
+					}) }}
+
+					{{ govukInput({
+						id: "p_phone",
+						name: "phone",
+						type: "tel",
+						classes: "govuk-!-width-two-thirds",
+						label: { text: "Phone number (optional)" },
+						autocomplete: "tel"
+					}) }}
+
+					{{ govukCheckboxes({
+						idPrefix: "p_channel",
 						name: "channel_pref",
-						label: { text: "Channel preference" },
+						fieldset: {
+							legend: {
+								text: "Preferred contact methods",
+								classes: "govuk-fieldset__legend--s"
+							}
+						},
+						hint: {
+							text: "Select all contact methods the participant prefers."
+						},
 						items: [
-							{ value: "email", text: "email", selected: true },
-							{ value: "sms", text: "sms" }
+							{ value: "email", text: "Email", checked: true },
+							{ value: "sms", text: "Text message" },
+							{ value: "phone", text: "Phone call" }
 						]
 					}) }}
 
+					<h3 class="govuk-heading-s">Access or support needs</h3>
 					{{ govukTextarea({
 						id: "p_access",
 						name: "access_needs",
+						classes: "govuk-!-width-two-thirds",
 						value: "",
-						rows: 2,
-						label: { text: "Access needs (optional)" }
+						rows: 4,
+						label: { text: "Access or support needs (optional)" },
+						hint: { text: "Only include adjustments or support needs needed to plan and run the session. Do not record medical history or unnecessary personal details." }
 					}) }}
 
 					<div class="form__actions">
@@ -149,41 +193,46 @@
 						<span id="addParticipantMsg" class="msg" role="status" aria-live="polite"></span>
 					</div>
 				</form>
-			</section>
+			</div>
+			<div class="govuk-grid-column-one-third">
+				{{ govukDetails({
+					summaryText: "What happens next",
+					html: '<p class="govuk-body">ResearchOps creates a participant record and links it to this study.</p><p class="govuk-body">This does not send an email, create a consent request or schedule a session. Those actions happen separately from this page.</p>'
+				}) }}
+			</div>
 		</div>
-	</div>
+	</section>
 
-	<div class="govuk-grid-row">
-		<div class="govuk-grid-column-two-thirds">
-			<section class="participants-section" aria-labelledby="sessions-h">
-				<h2 id="sessions-h" class="govuk-heading-m govuk-!-margin-bottom-3">Scheduled sessions</h2>
-				<p class="govuk-body">Review sessions that have been scheduled for participants in this study.</p>
+	<section class="participants-section" aria-labelledby="sessions-h">
+		<h2 id="sessions-h" class="govuk-heading-m govuk-!-margin-bottom-3">Scheduled sessions</h2>
+		<p class="govuk-body govuk-!-width-two-thirds">Review sessions that have been scheduled for participants in this study.</p>
 
-				<div id="sessionsEmpty" class="govuk-inset-text" hidden>
-					<h3 class="govuk-heading-s govuk-!-margin-bottom-2">No sessions yet</h3>
-					<p class="govuk-body">Schedule a session once you have added at least one participant.</p>
-					{{ govukButton({ text: "Schedule a session", href: "#scheduleForm", attributes: { id: "scheduleCta" } }) }}
-				</div>
-
-				<div class="table-wrap" id="sessionsTableWrap" hidden>
-					<table id="sessionsTable" class="govuk-table" aria-label="Sessions">
-						<thead class="govuk-table__head">
-							<tr class="govuk-table__row">
-								<th scope="col" class="govuk-table__header">When</th>
-								<th scope="col" class="govuk-table__header">Participant</th>
-								<th scope="col" class="govuk-table__header">Status</th>
-								<th scope="col" class="govuk-table__header"><span class="govuk-visually-hidden">Actions</span></th>
-							</tr>
-						</thead>
-						<tbody id="sessions-tbody" class="govuk-table__body"></tbody>
-					</table>
-				</div>
-			</section>
+		<div id="sessionsEmpty" class="govuk-inset-text" hidden>
+			<h3 class="govuk-heading-s govuk-!-margin-bottom-2">No sessions yet</h3>
+			<p class="govuk-body">Schedule a session once you have added at least one participant.</p>
+			{{ govukButton({ text: "Schedule a session", href: "#scheduleForm", attributes: { id: "scheduleCta" } }) }}
 		</div>
 
-		<div class="govuk-grid-column-one-third">
-			<section class="participants-section participants-section--form" aria-labelledby="schedules-h">
+		<div class="table-wrap" id="sessionsTableWrap" hidden>
+			<table id="sessionsTable" class="govuk-table" aria-label="Sessions">
+				<thead class="govuk-table__head">
+					<tr class="govuk-table__row">
+						<th scope="col" class="govuk-table__header">When</th>
+						<th scope="col" class="govuk-table__header">Participant</th>
+						<th scope="col" class="govuk-table__header">Status</th>
+						<th scope="col" class="govuk-table__header"><span class="govuk-visually-hidden">Actions</span></th>
+					</tr>
+				</thead>
+				<tbody id="sessions-tbody" class="govuk-table__body"></tbody>
+			</table>
+		</div>
+	</section>
+
+	<section class="participants-section participants-section--form" aria-labelledby="schedules-h">
+		<div class="govuk-grid-row">
+			<div class="govuk-grid-column-two-thirds">
 				<h2 id="schedules-h" class="govuk-heading-m govuk-!-margin-bottom-3">Schedule a session</h2>
+				<p class="govuk-body">Choose the participant, date, time and session details. Scheduling is enabled when the study has at least one session-compatible participant record.</p>
 
 				<div id="noParticipantsBanner" class="govuk-inset-text" role="status" hidden>
 					Add at least one participant to enable scheduling.
@@ -201,32 +250,63 @@
 							{{ govukSelect({
 								id: "s_type",
 								name: "sessionType",
-								label: { text: "Type" },
+								label: { text: "Session type" },
 								items: [
-									{ value: "remote", text: "remote", selected: true },
-									{ value: "in-person", text: "in-person" }
+									{ value: "remote", text: "Remote", selected: true },
+									{ value: "in-person", text: "In person" }
 								]
 							}) }}
 						</div>
 					</div>
 
+					{{ govukDateInput({
+						id: "s_date",
+						namePrefix: "s_date",
+						fieldset: {
+							legend: {
+								text: "Start date",
+								classes: "govuk-fieldset__legend--s"
+							}
+						},
+						hint: {
+							text: "For example, 27 3 2026"
+						}
+					}) }}
+
+					<div class="govuk-form-group">
+						<fieldset class="govuk-fieldset" role="group" aria-describedby="s_time-hint">
+							<legend class="govuk-fieldset__legend govuk-fieldset__legend--s">Start time</legend>
+							<div id="s_time-hint" class="govuk-hint">Use 24-hour time, for example 14 30.</div>
+							<div class="participants-time-inputs">
+								{{ govukInput({
+									id: "s_time-hour",
+									name: "s_time_hour",
+									classes: "govuk-input--width-2",
+									label: { text: "Hour", classes: "govuk-label--s" },
+									inputmode: "numeric",
+									attributes: { pattern: "[0-9]*", required: "required" }
+								}) }}
+
+								{{ govukInput({
+									id: "s_time-minute",
+									name: "s_time_minute",
+									classes: "govuk-input--width-2",
+									label: { text: "Minute", classes: "govuk-label--s" },
+									inputmode: "numeric",
+									attributes: { pattern: "[0-9]*", required: "required" }
+								}) }}
+							</div>
+						</fieldset>
+					</div>
+
 					<div class="govuk-grid-row">
-						<div class="govuk-grid-column-one-half">
-							{{ govukInput({
-								id: "s_datetime",
-								name: "start",
-								type: "datetime-local",
-								label: { text: "Start (local)" },
-								attributes: { required: "required" }
-							}) }}
-						</div>
 						<div class="govuk-grid-column-one-half">
 							{{ govukInput({
 								id: "s_duration",
 								name: "duration",
 								type: "number",
 								value: "60",
-								label: { text: "Duration (min)" },
+								label: { text: "Duration in minutes" },
 								attributes: { min: "15", step: "5", required: "required" }
 							}) }}
 						</div>
@@ -235,7 +315,8 @@
 					{{ govukInput({
 						id: "s_location",
 						name: "location",
-						label: { text: "Location / Join link" },
+						classes: "govuk-!-width-two-thirds",
+						label: { text: "Location or joining link" },
 						attributes: { required: "required" }
 					}) }}
 
@@ -259,8 +340,9 @@
 					{{ govukTextarea({
 						id: "s_notes",
 						name: "notes",
+						classes: "govuk-!-width-two-thirds",
 						value: "",
-						rows: 2,
+						rows: 4,
 						label: { text: "Notes" }
 					}) }}
 
@@ -273,9 +355,14 @@
 						<span id="scheduleMsg" class="msg" role="status" aria-live="polite"></span>
 					</div>
 				</form>
-			</section>
+			</div>
+			<div class="govuk-grid-column-one-third">
+				{{ govukInsetText({
+					text: "Scheduled sessions appear in the sessions table. Download the calendar file after creating a session."
+				}) }}
+			</div>
 		</div>
-	</div>
+	</section>
 </div>
 {% endblock %}
 

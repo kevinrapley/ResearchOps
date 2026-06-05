@@ -62,6 +62,8 @@ assert.match(generatedCssTargets, /source: 'src\/styles\/project-dashboard\.scss
 assert.match(generatedCssTargets, /output: 'public\/css\/project-dashboard\.css'/);
 assert.match(generatedCssTargets, /source: 'src\/styles\/outcomes\.scss'/);
 assert.match(generatedCssTargets, /output: 'public\/css\/outcomes\.css'/);
+assert.match(generatedCssTargets, /source: 'src\/styles\/participants\.scss'/);
+assert.match(generatedCssTargets, /output: 'public\/css\/participants\.css'/);
 assert.match(buildGeneratedCss, /formatGeneratedCssTargets\(\{ write: true, targets \}\)/);
 
 assert.match(sassEntry, /\$govuk-page-width: 1020px;/);

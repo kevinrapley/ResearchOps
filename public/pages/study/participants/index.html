@@ -75,101 +75,213 @@
 					</p>
 				</header>
 
-				<div class="govuk-grid-row govuk-!-margin-bottom-7">
-					<div class="govuk-grid-column-two-thirds">
-						<section class="participants-section" aria-labelledby="participants-h">
-							<h2 id="participants-h" class="govuk-heading-m">Participants in this study</h2>
-							<p class="govuk-body">
-								Review who is available for fieldwork. Contact details stay restricted until they are explicitly
-								revealed.
-							</p>
+				<section class="participants-section" aria-labelledby="participants-h">
+					<h2 id="participants-h" class="govuk-heading-m">Participants in this study</h2>
+					<p class="govuk-body govuk-!-width-two-thirds">
+						Review who is available for fieldwork. Contact details stay restricted until they are explicitly revealed.
+					</p>
 
-							<div id="participantsEmpty" class="govuk-inset-text" hidden>
-								<h3 class="govuk-heading-s govuk-!-margin-bottom-2">No participants yet</h3>
-								<p class="govuk-body">Add your first participant to begin scheduling sessions.</p>
+					<div id="participantsEmpty" class="govuk-inset-text" hidden>
+						<h3 class="govuk-heading-s govuk-!-margin-bottom-2">No participants yet</h3>
+						<p class="govuk-body">Add your first participant to begin scheduling sessions.</p>
 
-								<a
-									href="#addParticipantForm"
-									role="button"
-									draggable="false"
-									class="govuk-button"
-									data-module="govuk-button"
-								>
-									Add a participant
-								</a>
-							</div>
-
-							<div class="table-wrap" id="participantsTableWrap" hidden>
-								<table id="participantsTable" class="govuk-table" aria-label="Participants">
-									<thead class="govuk-table__head">
-										<tr class="govuk-table__row">
-											<th scope="col" class="govuk-table__header">Name</th>
-											<th scope="col" class="govuk-table__header">Contact</th>
-											<th scope="col" class="govuk-table__header">Status</th>
-											<th scope="col" class="govuk-table__header">
-												<span class="govuk-visually-hidden">Actions</span>
-											</th>
-										</tr>
-									</thead>
-									<tbody id="participants-tbody" class="govuk-table__body">
-										<tr class="govuk-table__row">
-											<td colspan="4" class="govuk-table__cell muted">Loading...</td>
-										</tr>
-									</tbody>
-								</table>
-							</div>
-						</section>
+						<a
+							href="#addParticipantForm"
+							role="button"
+							draggable="false"
+							class="govuk-button"
+							data-module="govuk-button"
+						>
+							Add a participant
+						</a>
 					</div>
 
-					<div class="govuk-grid-column-one-third">
-						<section class="participants-section participants-section--form" aria-labelledby="addp-h">
+					<div class="table-wrap" id="participantsTableWrap" hidden>
+						<table id="participantsTable" class="govuk-table" aria-label="Participants">
+							<thead class="govuk-table__head">
+								<tr class="govuk-table__row">
+									<th scope="col" class="govuk-table__header">Participant reference</th>
+									<th scope="col" class="govuk-table__header">Contact details</th>
+									<th scope="col" class="govuk-table__header">Status</th>
+									<th scope="col" class="govuk-table__header"><span class="govuk-visually-hidden">Actions</span></th>
+								</tr>
+							</thead>
+							<tbody id="participants-tbody" class="govuk-table__body">
+								<tr class="govuk-table__row">
+									<td colspan="4" class="govuk-table__cell muted">Loading...</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+				</section>
+
+				<section class="participants-section participants-section--form" aria-labelledby="addp-h">
+					<div class="govuk-grid-row">
+						<div class="govuk-grid-column-two-thirds">
 							<h2 id="addp-h" class="govuk-heading-m govuk-!-margin-bottom-3">Add participant</h2>
+							<p class="govuk-body">
+								Add a participant to this study so the team can manage recruitment, consent, withdrawal and sessions.
+							</p>
+
+							<div class="govuk-inset-text">
+								<h3 class="govuk-heading-s">How participant details are used</h3>
+								<p class="govuk-body">
+									Real names and contact details are used for recruitment, consent and withdrawal operations.
+								</p>
+								<p class="govuk-body">
+									Participant lists continue to show the participant reference by default. Real names, contact details
+									and support needs are restricted to authorised project roles.
+								</p>
+							</div>
 
 							<form id="addParticipantForm" class="form" novalidate>
+								<input id="p_project_id" name="project_id" type="hidden" value="" />
+								<input id="p_study_id" name="study_id" type="hidden" value="" />
+
+								<h3 class="govuk-heading-s">Participant identity</h3>
+
 								<div class="govuk-form-group">
-									<label class="govuk-label" for="p_display">Display name</label>
+									<label class="govuk-label" for="p_first_name">First name</label>
+
+									<div id="p_first_name-hint" class="govuk-hint">
+										Enter the participant’s real first name so the research team can manage recruitment, consent and
+										withdrawal correctly.
+									</div>
 
 									<input
-										class="govuk-input"
-										id="p_display"
-										name="display_name"
+										class="govuk-input govuk-!-width-two-thirds"
+										id="p_first_name"
+										name="first_name"
 										type="text"
+										aria-describedby="p_first_name-hint"
+										autocomplete="given-name"
 										required="required"
+									/>
+								</div>
+
+								<div class="govuk-form-group">
+									<label class="govuk-label" for="p_family_name">Family name</label>
+
+									<div id="p_family_name-hint" class="govuk-hint">Enter the participant’s real family name.</div>
+
+									<input
+										class="govuk-input govuk-!-width-two-thirds"
+										id="p_family_name"
+										name="family_name"
+										type="text"
+										aria-describedby="p_family_name-hint"
+										autocomplete="family-name"
+										required="required"
+									/>
+								</div>
+
+								<div class="govuk-form-group">
+									<label class="govuk-label" for="p_participant_ref">Participant reference (optional)</label>
+
+									<div id="p_participant_ref-hint" class="govuk-hint">
+										This is the label shown by default in participant lists. Do not use a real name here. Leave blank to
+										let ResearchOps create one.
+									</div>
+
+									<input
+										class="govuk-input govuk-!-width-two-thirds"
+										id="p_participant_ref"
+										name="participant_ref"
+										type="text"
+										aria-describedby="p_participant_ref-hint"
 										autocomplete="off"
 									/>
 								</div>
 
-								<div class="govuk-grid-row">
-									<div class="govuk-grid-column-one-half">
-										<div class="govuk-form-group">
-											<label class="govuk-label" for="p_email">Email</label>
+								<h3 class="govuk-heading-s">Contact details</h3>
 
-											<input class="govuk-input" id="p_email" name="email" type="email" autocomplete="off" />
-										</div>
-									</div>
-									<div class="govuk-grid-column-one-half">
-										<div class="govuk-form-group">
-											<label class="govuk-label" for="p_phone">Phone</label>
+								<div class="govuk-form-group">
+									<label class="govuk-label" for="p_email">Email address (optional)</label>
 
-											<input class="govuk-input" id="p_phone" name="phone" type="text" autocomplete="off" />
-										</div>
-									</div>
+									<input
+										class="govuk-input govuk-!-width-two-thirds"
+										id="p_email"
+										name="email"
+										type="email"
+										autocomplete="email"
+									/>
 								</div>
 
 								<div class="govuk-form-group">
-									<label class="govuk-label" for="p_channel">Channel preference</label>
+									<label class="govuk-label" for="p_phone">Phone number (optional)</label>
 
-									<select class="govuk-select" id="p_channel" name="channel_pref">
-										<option value="email" selected>email</option>
-
-										<option value="sms">sms</option>
-									</select>
+									<input
+										class="govuk-input govuk-!-width-two-thirds"
+										id="p_phone"
+										name="phone"
+										type="tel"
+										autocomplete="tel"
+									/>
 								</div>
 
 								<div class="govuk-form-group">
-									<label class="govuk-label" for="p_access">Access needs (optional)</label>
+									<fieldset class="govuk-fieldset" aria-describedby="p_channel-hint">
+										<legend class="govuk-fieldset__legend govuk-fieldset__legend--s">Preferred contact methods</legend>
 
-									<textarea class="govuk-textarea" id="p_access" name="access_needs" rows="2"></textarea>
+										<div id="p_channel-hint" class="govuk-hint">
+											Select all contact methods the participant prefers.
+										</div>
+
+										<div class="govuk-checkboxes" data-module="govuk-checkboxes">
+											<div class="govuk-checkboxes__item">
+												<input
+													class="govuk-checkboxes__input"
+													id="p_channel"
+													name="channel_pref"
+													type="checkbox"
+													value="email"
+													checked
+												/>
+												<label class="govuk-label govuk-checkboxes__label" for="p_channel">Email</label>
+											</div>
+
+											<div class="govuk-checkboxes__item">
+												<input
+													class="govuk-checkboxes__input"
+													id="p_channel-2"
+													name="channel_pref"
+													type="checkbox"
+													value="sms"
+												/>
+												<label class="govuk-label govuk-checkboxes__label" for="p_channel-2">Text message</label>
+											</div>
+
+											<div class="govuk-checkboxes__item">
+												<input
+													class="govuk-checkboxes__input"
+													id="p_channel-3"
+													name="channel_pref"
+													type="checkbox"
+													value="phone"
+												/>
+												<label class="govuk-label govuk-checkboxes__label" for="p_channel-3">Phone call</label>
+											</div>
+										</div>
+									</fieldset>
+								</div>
+
+								<h3 class="govuk-heading-s">Access or support needs</h3>
+
+								<div class="govuk-form-group">
+									<label class="govuk-label" for="p_access">Access or support needs (optional)</label>
+
+									<div id="p_access-hint" class="govuk-hint">
+										Only include adjustments or support needs needed to plan and run the session. Do not record medical
+										history or unnecessary personal details.
+									</div>
+
+									<textarea
+										class="govuk-textarea govuk-!-width-two-thirds"
+										id="p_access"
+										name="access_needs"
+										rows="4"
+										aria-describedby="p_access-hint"
+									></textarea>
 								</div>
 
 								<div class="form__actions">
@@ -178,53 +290,69 @@
 									<span id="addParticipantMsg" class="msg" role="status" aria-live="polite"></span>
 								</div>
 							</form>
-						</section>
+						</div>
+						<div class="govuk-grid-column-one-third">
+							<details class="govuk-details">
+								<summary class="govuk-details__summary">
+									<span class="govuk-details__summary-text">What happens next</span>
+								</summary>
+								<div class="govuk-details__text">
+									<p class="govuk-body">ResearchOps creates a participant record and links it to this study.</p>
+									<p class="govuk-body">
+										This does not send an email, create a consent request or schedule a session. Those actions happen
+										separately from this page.
+									</p>
+								</div>
+							</details>
+						</div>
 					</div>
-				</div>
+				</section>
 
-				<div class="govuk-grid-row">
-					<div class="govuk-grid-column-two-thirds">
-						<section class="participants-section" aria-labelledby="sessions-h">
-							<h2 id="sessions-h" class="govuk-heading-m govuk-!-margin-bottom-3">Scheduled sessions</h2>
-							<p class="govuk-body">Review sessions that have been scheduled for participants in this study.</p>
+				<section class="participants-section" aria-labelledby="sessions-h">
+					<h2 id="sessions-h" class="govuk-heading-m govuk-!-margin-bottom-3">Scheduled sessions</h2>
+					<p class="govuk-body govuk-!-width-two-thirds">
+						Review sessions that have been scheduled for participants in this study.
+					</p>
 
-							<div id="sessionsEmpty" class="govuk-inset-text" hidden>
-								<h3 class="govuk-heading-s govuk-!-margin-bottom-2">No sessions yet</h3>
-								<p class="govuk-body">Schedule a session once you have added at least one participant.</p>
+					<div id="sessionsEmpty" class="govuk-inset-text" hidden>
+						<h3 class="govuk-heading-s govuk-!-margin-bottom-2">No sessions yet</h3>
+						<p class="govuk-body">Schedule a session once you have added at least one participant.</p>
 
-								<a
-									href="#scheduleForm"
-									role="button"
-									draggable="false"
-									class="govuk-button"
-									data-module="govuk-button"
-									id="scheduleCta"
-								>
-									Schedule a session
-								</a>
-							</div>
-
-							<div class="table-wrap" id="sessionsTableWrap" hidden>
-								<table id="sessionsTable" class="govuk-table" aria-label="Sessions">
-									<thead class="govuk-table__head">
-										<tr class="govuk-table__row">
-											<th scope="col" class="govuk-table__header">When</th>
-											<th scope="col" class="govuk-table__header">Participant</th>
-											<th scope="col" class="govuk-table__header">Status</th>
-											<th scope="col" class="govuk-table__header">
-												<span class="govuk-visually-hidden">Actions</span>
-											</th>
-										</tr>
-									</thead>
-									<tbody id="sessions-tbody" class="govuk-table__body"></tbody>
-								</table>
-							</div>
-						</section>
+						<a
+							href="#scheduleForm"
+							role="button"
+							draggable="false"
+							class="govuk-button"
+							data-module="govuk-button"
+							id="scheduleCta"
+						>
+							Schedule a session
+						</a>
 					</div>
 
-					<div class="govuk-grid-column-one-third">
-						<section class="participants-section participants-section--form" aria-labelledby="schedules-h">
+					<div class="table-wrap" id="sessionsTableWrap" hidden>
+						<table id="sessionsTable" class="govuk-table" aria-label="Sessions">
+							<thead class="govuk-table__head">
+								<tr class="govuk-table__row">
+									<th scope="col" class="govuk-table__header">When</th>
+									<th scope="col" class="govuk-table__header">Participant</th>
+									<th scope="col" class="govuk-table__header">Status</th>
+									<th scope="col" class="govuk-table__header"><span class="govuk-visually-hidden">Actions</span></th>
+								</tr>
+							</thead>
+							<tbody id="sessions-tbody" class="govuk-table__body"></tbody>
+						</table>
+					</div>
+				</section>
+
+				<section class="participants-section participants-section--form" aria-labelledby="schedules-h">
+					<div class="govuk-grid-row">
+						<div class="govuk-grid-column-two-thirds">
 							<h2 id="schedules-h" class="govuk-heading-m govuk-!-margin-bottom-3">Schedule a session</h2>
+							<p class="govuk-body">
+								Choose the participant, date, time and session details. Scheduling is enabled when the study has at
+								least one session-compatible participant record.
+							</p>
 
 							<div id="noParticipantsBanner" class="govuk-inset-text" role="status" hidden>
 								Add at least one participant to enable scheduling.
@@ -240,34 +368,109 @@
 									</div>
 									<div class="govuk-grid-column-one-half">
 										<div class="govuk-form-group">
-											<label class="govuk-label" for="s_type">Type</label>
+											<label class="govuk-label" for="s_type">Session type</label>
 
 											<select class="govuk-select" id="s_type" name="sessionType">
-												<option value="remote" selected>remote</option>
+												<option value="remote" selected>Remote</option>
 
-												<option value="in-person">in-person</option>
+												<option value="in-person">In person</option>
 											</select>
 										</div>
 									</div>
 								</div>
 
+								<div class="govuk-form-group">
+									<fieldset class="govuk-fieldset" role="group" aria-describedby="s_date-hint">
+										<legend class="govuk-fieldset__legend govuk-fieldset__legend--s">Start date</legend>
+
+										<div id="s_date-hint" class="govuk-hint">For example, 27 3 2026</div>
+
+										<div class="govuk-date-input" id="s_date">
+											<div class="govuk-date-input__item">
+												<div class="govuk-form-group">
+													<label class="govuk-label govuk-date-input__label" for="s_date-day">Day</label>
+
+													<input
+														class="govuk-input govuk-date-input__input govuk-input--width-2"
+														id="s_date-day"
+														name="s_date-day"
+														type="text"
+														inputmode="numeric"
+													/>
+												</div>
+											</div>
+
+											<div class="govuk-date-input__item">
+												<div class="govuk-form-group">
+													<label class="govuk-label govuk-date-input__label" for="s_date-month">Month</label>
+
+													<input
+														class="govuk-input govuk-date-input__input govuk-input--width-2"
+														id="s_date-month"
+														name="s_date-month"
+														type="text"
+														inputmode="numeric"
+													/>
+												</div>
+											</div>
+
+											<div class="govuk-date-input__item">
+												<div class="govuk-form-group">
+													<label class="govuk-label govuk-date-input__label" for="s_date-year">Year</label>
+
+													<input
+														class="govuk-input govuk-date-input__input govuk-input--width-4"
+														id="s_date-year"
+														name="s_date-year"
+														type="text"
+														inputmode="numeric"
+													/>
+												</div>
+											</div>
+										</div>
+									</fieldset>
+								</div>
+
+								<div class="govuk-form-group">
+									<fieldset class="govuk-fieldset" role="group" aria-describedby="s_time-hint">
+										<legend class="govuk-fieldset__legend govuk-fieldset__legend--s">Start time</legend>
+										<div id="s_time-hint" class="govuk-hint">Use 24-hour time, for example 14 30.</div>
+										<div class="participants-time-inputs">
+											<div class="govuk-form-group">
+												<label class="govuk-label govuk-label--s" for="s_time-hour">Hour</label>
+
+												<input
+													class="govuk-input govuk-input--width-2"
+													id="s_time-hour"
+													name="s_time_hour"
+													type="text"
+													inputmode="numeric"
+													pattern="[0-9]*"
+													required="required"
+												/>
+											</div>
+
+											<div class="govuk-form-group">
+												<label class="govuk-label govuk-label--s" for="s_time-minute">Minute</label>
+
+												<input
+													class="govuk-input govuk-input--width-2"
+													id="s_time-minute"
+													name="s_time_minute"
+													type="text"
+													inputmode="numeric"
+													pattern="[0-9]*"
+													required="required"
+												/>
+											</div>
+										</div>
+									</fieldset>
+								</div>
+
 								<div class="govuk-grid-row">
 									<div class="govuk-grid-column-one-half">
 										<div class="govuk-form-group">
-											<label class="govuk-label" for="s_datetime">Start (local)</label>
-
-											<input
-												class="govuk-input"
-												id="s_datetime"
-												name="start"
-												type="datetime-local"
-												required="required"
-											/>
-										</div>
-									</div>
-									<div class="govuk-grid-column-one-half">
-										<div class="govuk-form-group">
-											<label class="govuk-label" for="s_duration">Duration (min)</label>
+											<label class="govuk-label" for="s_duration">Duration in minutes</label>
 
 											<input
 												class="govuk-input"
@@ -284,9 +487,15 @@
 								</div>
 
 								<div class="govuk-form-group">
-									<label class="govuk-label" for="s_location">Location / Join link</label>
+									<label class="govuk-label" for="s_location">Location or joining link</label>
 
-									<input class="govuk-input" id="s_location" name="location" type="text" required="required" />
+									<input
+										class="govuk-input govuk-!-width-two-thirds"
+										id="s_location"
+										name="location"
+										type="text"
+										required="required"
+									/>
 								</div>
 
 								<div class="govuk-grid-row">
@@ -309,7 +518,12 @@
 								<div class="govuk-form-group">
 									<label class="govuk-label" for="s_notes">Notes</label>
 
-									<textarea class="govuk-textarea" id="s_notes" name="notes" rows="2"></textarea>
+									<textarea
+										class="govuk-textarea govuk-!-width-two-thirds"
+										id="s_notes"
+										name="notes"
+										rows="4"
+									></textarea>
 								</div>
 
 								<div class="form__actions">
@@ -320,9 +534,14 @@
 									<span id="scheduleMsg" class="msg" role="status" aria-live="polite"></span>
 								</div>
 							</form>
-						</section>
+						</div>
+						<div class="govuk-grid-column-one-third">
+							<div class="govuk-inset-text">
+								Scheduled sessions appear in the sessions table. Download the calendar file after creating a session.
+							</div>
+						</div>
 					</div>
-				</div>
+				</section>
 			</div>
 		</main>
 		<x-include src="/partials/footer.html"></x-include>
