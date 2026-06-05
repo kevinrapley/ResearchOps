@@ -13,7 +13,7 @@
 		<link rel="stylesheet" href="/css/govuk/govuk-forms.css" media="screen" />
 		<link rel="stylesheet" href="/css/govuk/govuk-tables.css" media="screen" />
 		<link rel="stylesheet" href="/css/study-page.css" media="screen" />
-		<link rel="modulepreload" href="/js/study-page.js?v=study-record-id-routing-20260518" />
+		<link rel="modulepreload" href="/js/study-page.js?v=study-readiness-session-gate-20260605" />
 		<link rel="modulepreload" href="/pages/study/study-desc-controller.js" />
 
 		<script type="module" src="/components/layout.js" defer></script>
@@ -74,17 +74,13 @@
 
 				<div class="study-action-bar govuk-button-group">
 					<a
-						href="/pages/projects/"
+						href="#"
 						role="button"
 						draggable="false"
 						class="govuk-button govuk-button--secondary"
 						data-module="govuk-button"
-						id="back-to-project"
+						id="edit-study"
 					>
-						Back to Project
-					</a>
-
-					<a href="#" role="button" draggable="false" class="govuk-button" data-module="govuk-button" id="edit-study">
 						Edit study
 					</a>
 				</div>
@@ -319,15 +315,13 @@
 					</ul>
 
 					<a
-						href="#study-readiness-title"
+						href="#"
 						role="button"
 						draggable="false"
-						class="govuk-button govuk-button--disabled study-session-button"
+						class="govuk-button study-session-button"
 						data-module="govuk-button"
 						id="link-session"
-						aria-disabled="true"
-						data-disabled-link="true"
-						tabindex="-1"
+						hidden="hidden"
 					>
 						Begin session
 					</a>
@@ -440,7 +434,7 @@
 		</main>
 		<x-include src="/partials/footer.html"></x-include>
 
-		<script type="module" src="/js/study-page.js?v=study-record-id-routing-20260518"></script>
+		<script type="module" src="/js/study-page.js?v=study-readiness-session-gate-20260605"></script>
 		<script type="module" src="/pages/study/study-desc-controller.js"></script>
 	</body>
 </html>
