@@ -25,11 +25,11 @@ import { marked } from "/lib/marked.min.js";
 import DOMPurify from "/lib/purify.min.js";
 
 import { buildContext } from "/components/guides/context.js";
-import { renderGuide, buildPartials, DEFAULT_SOURCE } from "/components/guides/guide-editor.js?v=study-guides-editor-review-20260605";
-import { searchPatterns, listStarterPatterns } from "/components/guides/patterns.js?v=study-guides-editor-review-20260605";
+import { renderGuide, buildPartials, DEFAULT_SOURCE } from "/components/guides/guide-editor.js?v=study-guides-pattern-panel-20260605";
+import { searchPatterns, listStarterPatterns } from "/components/guides/patterns.js?v=study-guides-pattern-panel-20260605";
 
 // Variable manager + validators (keep your existing utils for validation)
-import { VariableManager } from "/components/guides/variable-manager.js?v=study-guides-editor-review-20260605";
+import { VariableManager } from "/components/guides/variable-manager.js?v=study-guides-pattern-panel-20260605";
 import {
 	validateTemplate,
 	formatValidationReport,
@@ -1202,11 +1202,6 @@ function populatePatternList(items) {
 		li.textContent = "No patterns found.";
 		ul.appendChild(li);
 
-		// Still offer “+ New pattern” if you want creation regardless of API
-		const addLi = document.createElement("li");
-		addLi.innerHTML = `<button class="govuk-button govuk-button--secondary" id="btn-new-pattern" type="button" onclick="window.__researchOpsHandlePatternClick(event)">Create pattern</button>`;
-		ul.appendChild(addLi);
-
 		ul.removeEventListener("click", handlePatternClick);
 		ul.addEventListener("click", handlePatternClick);
 		bindPatternListActions(ul);
@@ -1216,7 +1211,7 @@ function populatePatternList(items) {
 	// Group by category
 	const grouped = {};
 	for (const p of arr) {
-		const cat = p.category || "Uncategorised";
+		const cat = formatPatternCategory(p.category);
 		if (!grouped[cat]) grouped[cat] = [];
 		grouped[cat].push(p);
 	}
@@ -1224,7 +1219,7 @@ function populatePatternList(items) {
 	for (const [cat, patterns] of Object.entries(grouped)) {
 		const header = document.createElement("li");
 		header.className = "pattern-category-header";
-		header.innerHTML = `<h3 class="govuk-heading-s">${escapeHtml(cat)}</h3>`;
+		header.innerHTML = `<h3 class="govuk-heading-s pattern-category-header__heading">${escapeHtml(cat)}</h3>`;
 		ul.appendChild(header);
 
 		for (const p of patterns) {
@@ -1243,41 +1238,26 @@ function populatePatternList(items) {
             Insert pattern
           </button>
         </div>
-        <div class="pattern-item__actions">
-          <details class="govuk-details pattern-action-details">
-            <summary class="govuk-details__summary"><span class="govuk-details__summary-text">View</span></summary>
-            <div class="govuk-details__text">
-              <pre class="govuk-body pattern-tray__source"><code>${escapeHtml(p.source || "")}</code></pre>
-            </div>
-          </details>
-          <details class="govuk-details pattern-action-details">
-            <summary class="govuk-details__summary"><span class="govuk-details__summary-text">Edit</span></summary>
-            <div class="govuk-details__text">
-              <label class="govuk-label govuk-label--s" for="pattern-edit-${escapeHtml(p.name)}">Pattern source</label>
-              <textarea class="govuk-textarea" id="pattern-edit-${escapeHtml(p.name)}" rows="6">${escapeHtml(p.source || "")}</textarea>
-              <button class="govuk-button" type="button" data-save-local-pattern="${escapeHtml(p.name)}">Save pattern</button>
-            </div>
-          </details>
-          <details class="govuk-details pattern-action-details">
-            <summary class="govuk-details__summary"><span class="govuk-details__summary-text">Delete</span></summary>
-            <div class="govuk-details__text">
-              <p class="govuk-body">Delete this pattern from this editor session.</p>
-              <button class="govuk-button govuk-button--warning" type="button" data-confirm-delete-local-pattern="${escapeHtml(p.name)}">Delete pattern</button>
-            </div>
-          </details>
+        <div class="govuk-button-group pattern-item__actions">
+          <button class="govuk-button govuk-button--secondary pattern-action-button" type="button" data-view="${escapeHtml(p.name)}">View</button>
+          <button class="govuk-button govuk-button--secondary pattern-action-button" type="button" data-edit="${escapeHtml(p.name)}">Edit</button>
+          <button class="govuk-button govuk-button--secondary pattern-action-button" type="button" data-delete="${escapeHtml(p.name)}">Delete</button>
         </div>
       `;
 			ul.appendChild(li);
 		}
 	}
 
-	const addLi = document.createElement("li");
-	addLi.innerHTML = `<button class="govuk-button govuk-button--secondary" id="btn-new-pattern" type="button" onclick="window.__researchOpsHandlePatternClick(event)">Create pattern</button>`;
-	ul.appendChild(addLi);
-
 	ul.removeEventListener("click", handlePatternClick);
 	ul.addEventListener("click", handlePatternClick);
 	bindPatternListActions(ul);
+}
+
+function formatPatternCategory(category) {
+	const raw = String(category || "Uncategorised").trim() || "Uncategorised";
+	const spaced = raw.replace(/[-_]+/g, " ");
+	const capitalised = spaced.charAt(0).toUpperCase() + spaced.slice(1);
+	return /\bpatterns$/i.test(capitalised) ? capitalised : `${capitalised} patterns`;
 }
 
 function bindPatternListActions(ul) {

@@ -7,7 +7,7 @@
 {% from "govuk/components/textarea/macro.njk" import govukTextarea %}
 {% from "govuk/components/warning-text/macro.njk" import govukWarningText %}
 
-{% set studyPageScriptVersion = "study-guides-editor-review-20260605" %}
+{% set studyPageScriptVersion = "study-guides-pattern-panel-20260605" %}
 
 {% block head %}
 	<meta property="schema:name" content="Discussion guides - ResearchOps">
@@ -112,6 +112,10 @@
 
 		<aside id="drawer-patterns" class="drawer" hidden aria-labelledby="drawer-patterns-title" tabindex="-1">
 			<h2 id="drawer-patterns-title" class="govuk-heading-m">Patterns</h2>
+			<div class="govuk-button-group drawer__actions">
+				<button class="govuk-button govuk-button--secondary" id="btn-new-pattern" type="button">Create pattern</button>
+				<button id="drawer-patterns-close" class="govuk-button govuk-button--secondary" type="button">Close</button>
+			</div>
 			{{ govukInput({
 				id: "pattern-search",
 				name: "patternSearch",
@@ -120,9 +124,6 @@
 			}) }}
 			<ul id="pattern-list" class="govuk-list pattern-list"></ul>
 			<div id="pattern-tray" class="pattern-tray" hidden></div>
-			<div class="govuk-button-group">
-				<button id="drawer-patterns-close" class="govuk-button govuk-button--secondary" type="button">Close</button>
-			</div>
 		</aside>
 
 		<aside id="drawer-variables" class="drawer" hidden aria-labelledby="drawer-variables-title" tabindex="-1">

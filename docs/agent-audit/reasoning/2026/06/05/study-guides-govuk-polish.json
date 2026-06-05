@@ -185,6 +185,18 @@
 		{
 			"command": "npm test",
 			"result": "passed; 176 tests passed"
+		},
+		{
+			"command": "Browser latest review comment pass at http://127.0.0.1:8891/pages/study/guides/?id=RECT3O7DT",
+			"result": "passed; pattern category headings are capitalised and visually distinct, pattern Create/Close actions are at the top of the panel, pattern View/Edit/Delete buttons each reveal tray content, drawer secondary buttons are white on grey, variable inputs use GDS Transport, and the variables header row has 20px top padding"
+		},
+		{
+			"command": "node tests/study-guides-route-state.test.js",
+			"result": "passed"
+		},
+		{
+			"command": "node tests/study-child-route-state.test.js",
+			"result": "passed"
 		}
 	],
 	"validationNotRun": [],

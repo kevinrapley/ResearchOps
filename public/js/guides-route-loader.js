@@ -5,18 +5,18 @@
  */
 
 try {
-	await import('/js/study-canonical-url-bridge.js?v=study-guides-editor-review-20260605');
+	await import('/js/study-canonical-url-bridge.js?v=study-guides-pattern-panel-20260605');
 } catch (err) {
 	console.warn('[guides-route-loader] Study route bridge unavailable:', err);
 }
 await import('/components/layout.js');
 try {
-	await import('/js/study-guides-context.js?v=study-guides-editor-review-20260605');
+	await import('/js/study-guides-context.js?v=study-guides-pattern-panel-20260605');
 } catch (err) {
 	console.warn('[guides-route-loader] Study guides context unavailable:', err);
 }
 try {
-	await import('/components/guides/guides-page.js?v=study-guides-editor-review-20260605');
+	await import('/components/guides/guides-page.js?v=study-guides-pattern-panel-20260605');
 } catch (err) {
 	console.error('[guides-route-loader] Guides controller unavailable:', err);
 }

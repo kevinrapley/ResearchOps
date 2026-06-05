@@ -144,6 +144,9 @@
 - `npm run generated-css:check -- public/css/guides.css`
 - `npx prettier -c public/components/guides/guides-page.js public/components/guides/guide-editor.js public/js/guides-route-loader.js tests/study-guides-route-state.test.js tests/study-child-route-state.test.js src/styles/guides.scss`
 - `npm test` (176 tests passed)
+- Latest browser comment pass at `http://127.0.0.1:8891/pages/study/guides/?id=RECT3O7DT`: pattern category headings are capitalised and visually distinct from pattern item titles; `Create pattern` and `Close` appear at the top of the patterns panel; pattern `View`, `Edit` and `Delete` are GOV.UK secondary buttons and each opens the appropriate in-flow tray content; drawer secondary buttons are white on grey; variables `Add variable`, `Discard changes` and `Close` are white on grey; the variable key input inherits `"GDS Transport", Arial, sans-serif`; the variables header row has `20px` top padding.
+- `node tests/study-guides-route-state.test.js`
+- `node tests/study-child-route-state.test.js`
 - `node --test tests/study-guides-route-state.test.js tests/govuk-breadcrumb-back-link-route-state.test.js tests/govuk-forms-application-route-state.test.js tests/govuk-tables-summary-lists-application-route-state.test.js tests/govuk-frontend-integration-route-state.test.js`
 - `npm run generated-css:check -- public/css/guides.css`
 - `npm test`

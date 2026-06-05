@@ -12,7 +12,7 @@
 		<link rel="stylesheet" href="/css/guides.css" media="screen" />
 		<link rel="modulepreload" href="/js/study-route-context.js" />
 		<link rel="modulepreload" href="/js/study-guides-context.js" />
-		<link rel="modulepreload" href="/js/guides-route-loader.js?v=study-guides-editor-review-20260605" />
+		<link rel="modulepreload" href="/js/guides-route-loader.js?v=study-guides-pattern-panel-20260605" />
 		<!-- /components/guides/guides-page.js -->
 
 		<script type="module" src="/components/layout.js" defer></script>
@@ -172,6 +172,14 @@
 
 					<aside id="drawer-patterns" class="drawer" hidden aria-labelledby="drawer-patterns-title" tabindex="-1">
 						<h2 id="drawer-patterns-title" class="govuk-heading-m">Patterns</h2>
+						<div class="govuk-button-group drawer__actions">
+							<button class="govuk-button govuk-button--secondary" id="btn-new-pattern" type="button">
+								Create pattern
+							</button>
+							<button id="drawer-patterns-close" class="govuk-button govuk-button--secondary" type="button">
+								Close
+							</button>
+						</div>
 
 						<div class="govuk-form-group">
 							<label class="govuk-label govuk-label--s" for="pattern-search">Search patterns</label>
@@ -181,11 +189,6 @@
 
 						<ul id="pattern-list" class="govuk-list pattern-list"></ul>
 						<div id="pattern-tray" class="pattern-tray" hidden></div>
-						<div class="govuk-button-group">
-							<button id="drawer-patterns-close" class="govuk-button govuk-button--secondary" type="button">
-								Close
-							</button>
-						</div>
 					</aside>
 
 					<aside id="drawer-variables" class="drawer" hidden aria-labelledby="drawer-variables-title" tabindex="-1">
@@ -252,6 +255,6 @@
 		</main>
 		<x-include src="/partials/footer.html"></x-include>
 
-		<script type="module" src="/js/guides-route-loader.js?v=study-guides-editor-review-20260605"></script>
+		<script type="module" src="/js/guides-route-loader.js?v=study-guides-pattern-panel-20260605"></script>
 	</body>
 </html>
