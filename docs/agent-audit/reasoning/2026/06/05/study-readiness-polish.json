@@ -50,7 +50,8 @@
     "Readiness item text should use a consistent constrained track so tags remain single-line on desktop.",
     "On reduced viewports readiness tags should stack above title and hint text.",
     "The study caption should resolve to the linked project name.",
-    "The Nunjucks template must keep a neutral checking fallback; actual session-gate blockers must be populated dynamically by the script from real readiness state."
+    "The Nunjucks template must keep a neutral checking fallback; actual session-gate blockers must be populated dynamically by the script from real readiness state.",
+    "Study readiness item text needs a uniform width, and status tags should stack above item text at wider constrained viewports with comfortable spacing and clear alignment."
   ],
   "implementationSummary": [
     "Restored the Nunjucks session gate to the neutral checking fallback copy.",
@@ -58,6 +59,8 @@
     "Styled the session gate as a blue bordered panel.",
     "Added tolerant project title resolution for common project name field shapes.",
     "Let the GOV.UK half-column define Study readiness row width, with the GOV.UK 15px gutter between text and status.",
+    "Set a uniform 170px status track for desktop readiness rows so govuk-task-list__name-and-hint has the same computed width on every item.",
+    "Moved readiness status tags above item text from 900px down, flush left with a 10px gap before the associated title and hint.",
     "Removed visible checking defaults from rendered readiness markup.",
     "Stacked readiness status tags above text on small viewports.",
     "Bumped the Study page script version and regenerated the static Study page.",
@@ -86,6 +89,11 @@
       "command": "Browser reduced-width rendering check at 390px",
       "result": "passed",
       "evidence": "readiness status tags appear above title and hint text"
+    },
+    {
+      "command": "Browser layout recheck at 1246px, 768px and 496px",
+      "result": "passed",
+      "evidence": "readiness item text widths are uniform in each viewport; desktop uses a 310px text track plus 170px status track; 768px and 496px stack status tags above text, flush left, with a 10px gap"
     },
     {
       "command": "node scripts/govuk/render-govuk-pages.mjs",
