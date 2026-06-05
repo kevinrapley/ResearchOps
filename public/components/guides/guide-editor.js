@@ -209,8 +209,8 @@ version: 1
 ---
 # {{study.title}} — Discussion guide
 
-_Study:_ **{{study.title}}**  
-_Project:_ **{{project.name}}**
+**Study:** {{study.fileName}}  
+**Project:** {{project.name}}
 
 {{> intro_opening_v1}}
 {{> consent_standard_v2}}

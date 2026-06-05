@@ -12,7 +12,7 @@
 		<link rel="stylesheet" href="/css/guides.css" media="screen" />
 		<link rel="modulepreload" href="/js/study-route-context.js" />
 		<link rel="modulepreload" href="/js/study-guides-context.js" />
-		<link rel="modulepreload" href="/js/guides-route-loader.js?v=study-guides-drawer-details-20260605" />
+		<link rel="modulepreload" href="/js/guides-route-loader.js?v=study-guides-editor-review-20260605" />
 		<!-- /components/guides/guides-page.js -->
 
 		<script type="module" src="/components/layout.js" defer></script>
@@ -57,7 +57,9 @@
 					<h1 class="govuk-heading-l">Discussion guides</h1>
 					<p class="govuk-body-l guides-header__lead">Create, review and publish discussion guides for this study.</p>
 					<div class="govuk-button-group">
-						<button type="button" class="govuk-button" data-module="govuk-button" id="btn-new">Create guide</button>
+						<button type="button" class="govuk-button govuk-button--secondary" data-module="govuk-button" id="btn-new">
+							Draft a guide
+						</button>
 					</div>
 				</header>
 
@@ -66,7 +68,14 @@
 					<p class="govuk-body">
 						Review saved guides, open a draft or check which guide has been published for fieldwork.
 					</p>
-					<div class="table-wrap">
+					<div id="guides-empty" class="guides-empty-state govuk-inset-text" hidden>
+						<h3 class="govuk-heading-s">No guides yet</h3>
+						<p class="govuk-body">
+							Draft a discussion guide in the editor, save it as a draft, then publish it when it is ready to use for
+							fieldwork.
+						</p>
+					</div>
+					<div id="guides-table-wrap" class="table-wrap">
 						<table id="guides-table" class="govuk-table">
 							<caption class="govuk-table__caption govuk-table__caption--m govuk-visually-hidden">
 								Discussion guides for this study
@@ -141,7 +150,14 @@
 							</button>
 						</div>
 						<div class="govuk-button-group editor__toolbar-group">
-							<button type="button" class="govuk-button" data-module="govuk-button" id="btn-save">Save draft</button>
+							<button
+								type="button"
+								class="govuk-button govuk-button--secondary"
+								data-module="govuk-button"
+								id="btn-save"
+							>
+								Save draft
+							</button>
 
 							<button
 								type="button"
@@ -214,9 +230,9 @@
 						</div>
 					</div>
 
-					<div id="lint-output" class="govuk-inset-text guides-lint-output" aria-live="polite">
+					<p id="lint-output" class="govuk-body-s guides-lint-output" aria-live="polite">
 						No guide checks have run yet.
-					</div>
+					</p>
 
 					<details class="govuk-details">
 						<summary class="govuk-details__summary">
@@ -236,6 +252,6 @@
 		</main>
 		<x-include src="/partials/footer.html"></x-include>
 
-		<script type="module" src="/js/guides-route-loader.js?v=study-guides-drawer-details-20260605"></script>
+		<script type="module" src="/js/guides-route-loader.js?v=study-guides-editor-review-20260605"></script>
 	</body>
 </html>

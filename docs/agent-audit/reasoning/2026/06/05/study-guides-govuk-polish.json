@@ -51,6 +51,7 @@
 		"tests/govuk-forms-application-route-state.test.js",
 		"tests/govuk-frontend-integration-route-state.test.js",
 		"public/components/guides/guides-page.js",
+		"public/components/guides/guide-editor.js",
 		"public/components/guides/patterns.js",
 		"public/components/guides/variable-manager.js",
 		"public/js/guides-route-loader.js",
@@ -164,6 +165,26 @@
 		{
 			"command": "npm run trace:coverage",
 			"result": "passed"
+		},
+		{
+			"command": "Browser latest review check at http://127.0.0.1:8891/pages/study/guides/?id=RECT3O7DT",
+			"result": "passed; unavailable guide list hides the table and shows an informative fallback, Draft a guide and Save draft are secondary buttons, editor top border is 0px, title input uses GDS Transport, default preview metadata includes Study_2026-06-05, preview H1 is 24px, and unknown partials appear in the GOV.UK error summary/source error state"
+		},
+		{
+			"command": "node --test tests/study-guides-route-state.test.js tests/study-child-route-state.test.js",
+			"result": "passed"
+		},
+		{
+			"command": "npm run generated-css:check -- public/css/guides.css",
+			"result": "passed"
+		},
+		{
+			"command": "npx prettier -c public/components/guides/guides-page.js public/components/guides/guide-editor.js public/js/guides-route-loader.js tests/study-guides-route-state.test.js tests/study-child-route-state.test.js src/styles/guides.scss",
+			"result": "passed"
+		},
+		{
+			"command": "npm test",
+			"result": "passed; 176 tests passed"
 		}
 	],
 	"validationNotRun": [],

@@ -25,11 +25,11 @@ import { marked } from "/lib/marked.min.js";
 import DOMPurify from "/lib/purify.min.js";
 
 import { buildContext } from "/components/guides/context.js";
-import { renderGuide, buildPartials, DEFAULT_SOURCE } from "/components/guides/guide-editor.js";
-import { searchPatterns, listStarterPatterns } from "/components/guides/patterns.js?v=study-guides-drawer-details-20260605";
+import { renderGuide, buildPartials, DEFAULT_SOURCE } from "/components/guides/guide-editor.js?v=study-guides-editor-review-20260605";
+import { searchPatterns, listStarterPatterns } from "/components/guides/patterns.js?v=study-guides-editor-review-20260605";
 
 // Variable manager + validators (keep your existing utils for validation)
-import { VariableManager } from "/components/guides/variable-manager.js?v=study-guides-drawer-details-20260605";
+import { VariableManager } from "/components/guides/variable-manager.js?v=study-guides-editor-review-20260605";
 import {
 	validateTemplate,
 	formatValidationReport,
@@ -113,6 +113,7 @@ let __guideCtx = { project: {}, study: {} }; // page context
 // Service health + in-memory cache for search/fallback
 let __patternServiceAvailable = false;
 let __patternCache = [];
+let __lintErrors = [];
 
 // Helper to show service/fallback status in the Patterns drawer
 /**
@@ -163,8 +164,9 @@ async function bootGuidesPage() {
 			announce("Missing project or study ID in URL");
 			const tbody = document.querySelector("#guides-tbody");
 			if (tbody) {
-				tbody.innerHTML = '<tr class="govuk-table__row"><td colspan="6" class="govuk-table__cell muted guides-table-status">Error: Missing project or study ID in URL</td></tr>';
+				tbody.innerHTML = "";
 			}
+			setGuidesListState("unavailable", "The page needs a project and study ID before it can load saved guides. You can still review the editor layout below.");
 			return;
 		}
 
@@ -454,6 +456,29 @@ function hideGuidesLoadingUI() {
 	});
 }
 
+function setGuidesListState(state, message) {
+	const tableWrap = $("#guides-table-wrap") || $("#guides-table")?.closest(".table-wrap");
+	const emptyState = $("#guides-empty");
+	const heading = emptyState?.querySelector(".govuk-heading-s");
+	const body = emptyState?.querySelector(".govuk-body");
+
+	if (state === "empty" || state === "unavailable") {
+		if (tableWrap) tableWrap.hidden = true;
+		if (emptyState) {
+			emptyState.hidden = false;
+			if (heading) heading.textContent = state === "unavailable" ? "Guides cannot be loaded yet" : "No guides yet";
+			if (body) {
+				body.textContent = message ||
+					"Draft a discussion guide in the editor, save it as a draft, then publish it when it is ready to use for fieldwork.";
+			}
+		}
+		return;
+	}
+
+	if (emptyState) emptyState.hidden = true;
+	if (tableWrap) tableWrap.hidden = false;
+}
+
 async function loadGuides(studyId, opts = {}) {
 	console.log("[guides] loadGuides called with studyId:", studyId);
 
@@ -479,7 +504,8 @@ async function loadGuides(studyId, opts = {}) {
 	// If no study id, finish now
 	if (!studyId) {
 		console.warn("[guides] loadGuides: no studyId");
-		paint(row("No study selected."));
+		paint("");
+		setGuidesListState("unavailable", "Select a study before reviewing or drafting discussion guides.");
 		nukeGuidesLoadingUI();
 		return;
 	}
@@ -518,10 +544,13 @@ async function loadGuides(studyId, opts = {}) {
 		);
 
 		if (!guides.length) {
-			paint(row("No guides yet. Create one to get started."));
+			paint("");
+			setGuidesListState("empty");
 			nukeGuidesLoadingUI();
 			return;
 		}
+
+		setGuidesListState("table");
 
 		// Render rows
 		const fr = document.createDocumentFragment();
@@ -583,7 +612,8 @@ async function loadGuides(studyId, opts = {}) {
 	} catch (err) {
 		const aborted = err && (err.name === "AbortError");
 		console.error("[guides] loadGuides error:", err);
-		paint(row(aborted ? "Network is slow. Please try again." : "Failed to load guides."));
+		paint("");
+		setGuidesListState("unavailable", aborted ? "The guide list is taking longer than expected. Try again shortly." : "The guide list could not be loaded. You can still draft a guide and save it when the service is available.");
 		nukeGuidesLoadingUI();
 	} finally {
 		clearTimeout(timer);
@@ -1865,13 +1895,14 @@ function ensureStudyTitle(s) {
 	s = s || {};
 	var explicit = (s.title || s.Title || "").toString().trim();
 	var out = { ...s };
-	if (explicit) { out.title = explicit; return out; }
 	var method = (s.method || "Study").trim();
 	var d = s.createdAt ? new Date(s.createdAt) : new Date();
 	var yyyy = d.getUTCFullYear();
 	var mm = String(d.getUTCMonth() + 1).padStart(2, "0");
 	var dd = String(d.getUTCDate()).padStart(2, "0");
-	out.title = method + " — " + yyyy + "-" + mm + "-" + dd;
+	out.date = out.date || out.studyDate || `${yyyy}-${mm}-${dd}`;
+	out.title = explicit || method;
+	out.fileName = out.fileName || `${out.title}_${out.date}`;
 	return out;
 }
 
@@ -1951,7 +1982,6 @@ function runLints(args) {
 		context = args.context,
 		partials = args.partials;
 	var out = $("#lint-output");
-	if (!out) return;
 	var warnings = [];
 
 	var parts = collectPartialNames(source);
@@ -1970,7 +2000,15 @@ function runLints(args) {
 		if (v === undefined || v === null) warnings.push("Missing value for {{" + m[1] + "}}");
 	}
 
-	out.textContent = warnings[0] || "No issues";
+	__lintErrors = warnings.map(message => ({ fieldId: "guide-source", message }));
+
+	if (out) {
+		out.textContent = warnings.length ?
+			`${warnings.length} guide ${warnings.length === 1 ? "check needs" : "checks need"} attention.` :
+			"No issues";
+	}
+
+	validateGuide();
 }
 
 function getPath(obj, pathArr) {
@@ -2060,7 +2098,7 @@ function renderGuideErrorSummary(errors) {
 	summary.hidden = false;
 }
 
-function validateGuide() {
+function getRequiredGuideErrors() {
 	const errors = [];
 	const title = ($("#guide-title")?.value || "").trim();
 	const bodyEl = $("#guide-source");
@@ -2068,9 +2106,19 @@ function validateGuide() {
 
 	if (!title) errors.push({ fieldId: "guide-title", message: "Enter a guide title" });
 	if (!body) errors.push({ fieldId: "guide-source", message: "Enter guide source" });
+	return errors;
+}
 
-	setFieldError("guide-title", errors.find(error => error.fieldId === "guide-title")?.message || "");
-	setFieldError("guide-source", errors.find(error => error.fieldId === "guide-source")?.message || "");
+function validateGuide() {
+	const requiredErrors = getRequiredGuideErrors();
+	const errors = [...requiredErrors, ...__lintErrors];
+
+	setFieldError("guide-title", requiredErrors.find(error => error.fieldId === "guide-title")?.message || "");
+	setFieldError(
+		"guide-source",
+		requiredErrors.find(error => error.fieldId === "guide-source")?.message ||
+			(__lintErrors.length ? "Resolve guide source issues" : "")
+	);
 	renderGuideErrorSummary(errors);
 
 	const el = $("#lint-output");

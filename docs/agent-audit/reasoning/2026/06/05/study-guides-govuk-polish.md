@@ -79,6 +79,7 @@
 ## Follow-up files changed
 
 - `public/components/guides/guides-page.js`
+- `public/components/guides/guide-editor.js`
 - `public/components/guides/patterns.js`
 - `public/components/guides/variable-manager.js`
 - `public/js/guides-route-loader.js`
@@ -103,6 +104,7 @@
 - Replaced the legacy guides CSS with generated, route-scoped CSS.
 - Updated route-state tests to protect the new GOV.UK shape and generated stylesheet ownership.
 - Follow-up browser comments addressed: the missing-context table row now has a route-scoped GOV.UK table status cell with 20px vertical padding; required guide title/source validation now uses a GOV.UK error summary and inline field errors; the study-context failure now appears as a GOV.UK warning text while the caption keeps study context from the URL; pattern and variables panels now appear directly below the toolbar controls that reveal them; the pattern panel uses GOV.UK warning text, list/details/buttons and local starter View/Edit/Delete affordances; the variables panel uses GOV.UK buttons and labelled GOV.UK inputs after adding a variable.
+- Latest browser comments addressed: unresolved partial checks now appear in the GOV.UK error summary and source textarea error state instead of a detached lint inset; the editor section top border has been removed; guide title input font inherits GOV.UK typography; the default preview metadata now renders as separate Study and Project rows with a study filename-style value; preview heading/body sizes are constrained for an editor preview; `Save draft` and `Draft a guide` are secondary actions; empty or unavailable guide lists show an informative inset fallback instead of an empty table; the transitive guide editor import is cache-busted so default source changes reach the browser.
 
 ## Codex review handling
 
@@ -137,6 +139,11 @@
 - `npx prettier -c public/components/guides/guides-page.js public/components/guides/variable-manager.js public/components/guides/patterns.js public/js/guides-route-loader.js public/js/study-guides-context.js tests/study-guides-route-state.test.js tests/study-child-route-state.test.js src/styles/guides.scss`
 - `npm test` (176 tests passed)
 - `npm run trace:coverage`
+- Browser latest review check at `http://127.0.0.1:8891/pages/study/guides/?id=RECT3O7DT`: missing-context guide list hides the table and shows an informative fallback; `Draft a guide` and `Save draft` are secondary buttons; editor top border is `0px`; title input font is `"GDS Transport", Arial, sans-serif`; default preview metadata includes `Study_2026-06-05`; preview H1 font size is `24px`; unknown partial checks appear in the GOV.UK error summary and mark the source textarea with `Resolve guide source issues`.
+- `node --test tests/study-guides-route-state.test.js tests/study-child-route-state.test.js`
+- `npm run generated-css:check -- public/css/guides.css`
+- `npx prettier -c public/components/guides/guides-page.js public/components/guides/guide-editor.js public/js/guides-route-loader.js tests/study-guides-route-state.test.js tests/study-child-route-state.test.js src/styles/guides.scss`
+- `npm test` (176 tests passed)
 - `node --test tests/study-guides-route-state.test.js tests/govuk-breadcrumb-back-link-route-state.test.js tests/govuk-forms-application-route-state.test.js tests/govuk-tables-summary-lists-application-route-state.test.js tests/govuk-frontend-integration-route-state.test.js`
 - `npm run generated-css:check -- public/css/guides.css`
 - `npm test`

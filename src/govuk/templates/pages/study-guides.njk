@@ -7,7 +7,7 @@
 {% from "govuk/components/textarea/macro.njk" import govukTextarea %}
 {% from "govuk/components/warning-text/macro.njk" import govukWarningText %}
 
-{% set studyPageScriptVersion = "study-guides-drawer-details-20260605" %}
+{% set studyPageScriptVersion = "study-guides-editor-review-20260605" %}
 
 {% block head %}
 	<meta property="schema:name" content="Discussion guides - ResearchOps">
@@ -42,8 +42,9 @@
 		<p class="govuk-body-l guides-header__lead">Create, review and publish discussion guides for this study.</p>
 		<div class="govuk-button-group">
 			{{ govukButton({
-				text: "Create guide",
+				text: "Draft a guide",
 				type: "button",
+				classes: "govuk-button--secondary",
 				attributes: { id: "btn-new" }
 			}) }}
 		</div>
@@ -52,7 +53,11 @@
 	<section id="guides-list-section" class="guides-section" aria-labelledby="guides-list-title">
 		<h2 id="guides-list-title" class="govuk-heading-m">Guides for this study</h2>
 		<p class="govuk-body">Review saved guides, open a draft or check which guide has been published for fieldwork.</p>
-		<div class="table-wrap">
+		<div id="guides-empty" class="guides-empty-state govuk-inset-text" hidden>
+			<h3 class="govuk-heading-s">No guides yet</h3>
+			<p class="govuk-body">Draft a discussion guide in the editor, save it as a draft, then publish it when it is ready to use for fieldwork.</p>
+		</div>
+		<div id="guides-table-wrap" class="table-wrap">
 			<table id="guides-table" class="govuk-table">
 				<caption class="govuk-table__caption govuk-table__caption--m govuk-visually-hidden">Discussion guides for this study</caption>
 				<thead class="govuk-table__head">
@@ -96,11 +101,11 @@
 
 		<div class="editor__toolbar" aria-label="Guide editor tools">
 			<div class="govuk-button-group editor__toolbar-group">
-				{{ govukButton({ text: "Insert pattern", type: "button", classes: "govuk-button--secondary", attributes: { id: "btn-insert-pattern" } }) }}
+			{{ govukButton({ text: "Insert pattern", type: "button", classes: "govuk-button--secondary", attributes: { id: "btn-insert-pattern" } }) }}
 				{{ govukButton({ text: "Variables", type: "button", classes: "govuk-button--secondary", attributes: { id: "btn-variables" } }) }}
 			</div>
 			<div class="govuk-button-group editor__toolbar-group">
-				{{ govukButton({ text: "Save draft", type: "button", attributes: { id: "btn-save" } }) }}
+				{{ govukButton({ text: "Save draft", type: "button", classes: "govuk-button--secondary", attributes: { id: "btn-save" } }) }}
 				{{ govukButton({ text: "Publish guide", type: "button", classes: "govuk-button--secondary", attributes: { id: "btn-publish" } }) }}
 			</div>
 		</div>
@@ -151,7 +156,7 @@
 			</div>
 		</div>
 
-		<div id="lint-output" class="govuk-inset-text guides-lint-output" aria-live="polite">No guide checks have run yet.</div>
+		<p id="lint-output" class="govuk-body-s guides-lint-output" aria-live="polite">No guide checks have run yet.</p>
 
 		{{ govukDetails({
 			summaryText: "What to include in a discussion guide",
