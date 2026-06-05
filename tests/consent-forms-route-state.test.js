@@ -109,7 +109,8 @@ includes(d1DiaryStudySeedSource, "rec2FLw9TwgDgi85y", "D1 diary study consent fo
 includes(d1DiaryStudySeedSource, "recw6i67q2DuoZqMe", "D1 diary study consent form seed");
 includes(d1DiaryStudySeedSource, "'rect3o7dt'", "D1 diary study consent form seed");
 includes(d1DiaryStudySeedSource, "airtable-hydration", "D1 diary study consent form seed");
-includes(d1DiaryStudySeedSource, "ON CONFLICT(id) DO UPDATE SET", "D1 diary study consent form seed");
+includes(d1DiaryStudySeedSource, "INSERT OR IGNORE INTO rops_consent_forms", "D1 diary study consent form seed");
+excludes(d1DiaryStudySeedSource, "ON CONFLICT(id) DO UPDATE", "D1 diary study consent form seed");
 
 includes(d1DiaryStudySeedWorkflow, "Apply D1 Diary Study Consent Forms Seed", "D1 diary study consent form seed workflow");
 includes(d1DiaryStudySeedWorkflow, "infra/cloudflare/migrations/0012_seed_diary_study_consent_forms.sql", "D1 diary study consent form seed workflow");

@@ -75,13 +75,15 @@
     "Returned an empty D1 consent forms list when D1 is available and Airtable is not configured.",
     "Handled Codex comment PRRC_kwDOP3Td2M7IPiTh as legitimate by merging D1 and Airtable consent form lists when Airtable is configured.",
     "Added a D1 hydration seed for Airtable consent forms rec2FLw9TwgDgi85y and recw6i67q2DuoZqMe linked to diary study rect3o7dt.",
-    "Added a guarded GitHub Actions workflow to apply the diary study consent form seed to remote researchops-d1 with post-apply checks."
+    "Added a guarded GitHub Actions workflow to apply the diary study consent form seed to remote researchops-d1 with post-apply checks.",
+    "Handled Codex comment PRRC_kwDOP3Td2M7IP8Mr as legitimate by making the diary study consent form seed insert-only so reruns preserve D1 edits and publish state."
   ],
   "testContractImpactSweep": [
     "Added D1 runtime coverage for consent form empty-list, create, list, update and publish behaviour.",
     "Added mixed D1 and Airtable runtime coverage so existing Airtable forms do not disappear after a D1 draft is created.",
     "Updated consent forms route-state assertions for the D1 service, mixed source and migration contract.",
-    "Extended consent forms route-state assertions for the diary study D1 seed and apply workflow."
+    "Extended consent forms route-state assertions for the diary study D1 seed and apply workflow.",
+    "Added route-state assertions that the diary study seed uses INSERT OR IGNORE and does not include an ON CONFLICT update."
   ],
   "validation": [
     {

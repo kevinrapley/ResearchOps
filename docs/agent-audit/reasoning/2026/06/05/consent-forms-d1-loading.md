@@ -72,6 +72,8 @@ Both records link to Airtable study record `rec6MGawTSZgdENHs`, whose app-facing
 
 Added `.github/workflows/apply-d1-diary-study-consent-forms.yml` to apply the seed to remote `researchops-d1` through the established Cloudflare-secrets GitHub Actions path. The local desktop runtime did not include `wrangler`, `npm` or `npx`, so direct remote D1 execution was not available from this shell.
 
+Reviewed Codex comment `PRRC_kwDOP3Td2M7IP8Mr` on the diary study seed. Classified it as legitimate. Updated `0012_seed_diary_study_consent_forms.sql` from conflict-upsert behaviour to `INSERT OR IGNORE` so rerunning the seed does not overwrite consent forms that have since been edited or published through the app.
+
 ## Validation
 
 Passed:

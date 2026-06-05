@@ -33,7 +33,7 @@ CREATE INDEX IF NOT EXISTS idx_rops_consent_forms_study
 CREATE INDEX IF NOT EXISTS idx_rops_consent_forms_status
 	ON rops_consent_forms (status, active);
 
-INSERT INTO rops_consent_forms (
+INSERT OR IGNORE INTO rops_consent_forms (
 	id,
 	study_id,
 	title,
@@ -157,22 +157,4 @@ If you have questions, contact {{researcherName}} at {{researcherEmail}}.',
 		'airtable-hydration',
 		'{"airtableBaseId":"appkpzVvkof4RFtkh","airtableShareId":"shrFDu4a5fVeql5Kq","airtableRecordId":"recw6i67q2DuoZqMe","airtableStudyRecordId":"rec6MGawTSZgdENHs","studyId":"rect3o7dt","projectId":"recgdpwEI5hF07bUZ","fields":{"fldVOoSwbTlTBalxc":"Participant information and consent form","fldzGFX0qCCw4BYUK":"Privacy notice","fldGbzlt9uaKuQltR":"Published","fldIZSDzx8I8PHcVD":2,"fldM0E82U9X3LRkux":["rec6MGawTSZgdENHs"],"fldGS7R6NllKSKHkI":"2026-05-01T14:56:53.407Z","fldOCBEVOyxtIMloU":"2026-04-26T01:00:23.909Z","fldS244a10UF871Fv":"2026-05-01T14:56:53.407Z"}}'
 	)
-ON CONFLICT(id) DO UPDATE SET
-	study_id = excluded.study_id,
-	title = excluded.title,
-	form_type = excluded.form_type,
-	status = excluded.status,
-	version = excluded.version,
-	source_markdown = excluded.source_markdown,
-	variables_json = excluded.variables_json,
-	consent_items_json = excluded.consent_items_json,
-	plain_english_summary = excluded.plain_english_summary,
-	accessibility_notes = excluded.accessibility_notes,
-	review_notes = excluded.review_notes,
-	owner = excluded.owner,
-	published_at = excluded.published_at,
-	created_at = excluded.created_at,
-	updated_at = excluded.updated_at,
-	active = 1,
-	source = excluded.source,
-	payload_json = excluded.payload_json;
+;
