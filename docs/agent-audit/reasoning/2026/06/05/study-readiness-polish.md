@@ -21,7 +21,7 @@ Selected bundles:
 
 Interaction design: the session gate must look like a decisive blocking panel, not a passive inset note. The fallback content should immediately show the blocker summary so the page does not look stalled while data hydrates.
 
-Content design: “Checking the required setup tasks before fieldwork can begin. Checking readiness tasks.” is weak as a visible default. The default state now says “3 setup tasks need attention” with direct action links.
+Content design: once readiness data has loaded, the session gate must replace checking copy with a specific blocker count and direct action links.
 
 Frontend and accessibility: readiness rows need a consistent text track so tags remain scannable and single-line on desktop. On reduced viewports the status tag moves above the title and description to avoid cramped rows.
 
@@ -29,9 +29,12 @@ Researcher use: the caption above the study title must identify the linked proje
 
 Codex review: the project title resolver must preserve the fallback path when project lookup fails and returns `null`.
 
+Owner review: the Nunjucks template must not hard-code the prototype blocker summary. The server-rendered session gate should use the neutral “Checking study readiness” fallback, and the client script should populate the actual blocker count and links after readiness data is loaded.
+
 ## Implementation
 
-- Replaced the weak session gate fallback copy with the prototype-style blocker summary and links.
+- Corrected the Nunjucks fallback back to “Checking study readiness”, “Checking the required setup tasks before fieldwork can begin.” and “Checking readiness tasks.”
+- Kept the actionable blocker summary in `renderSessionGatePanel`, where it is computed from actual incomplete readiness tasks.
 - Styled the session gate as a blue bordered panel using the GOV.UK blue value.
 - Added a tolerant project title resolver for common project name field shapes.
 - Guarded the project title resolver against `null` project lookup results so the page keeps rendering with the “Project” fallback when the project endpoint is unavailable.

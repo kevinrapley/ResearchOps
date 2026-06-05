@@ -51,6 +51,9 @@ for (const text of [
 	"id=\"study-session-gate-summary\"",
 	"id=\"study-session-blockers\"",
 	"id=\"study-session-action\"",
+	"Checking study readiness",
+	"Checking the required setup tasks before fieldwork can begin.",
+	"Checking readiness tasks.",
 	"id=\"study-readiness-description-status\"",
 	"id=\"study-readiness-participant-consent-hint\"",
 	"id: \"link-session\"",
@@ -95,9 +98,9 @@ for (const text of [
 	"class=\"govuk-grid-row study-overview-grid\"",
 	"class=\"govuk-grid-column-one-half\"",
 	"class=\"govuk-inset-text study-session-gate\"",
-	"3 setup tasks need attention",
-	"Complete these tasks before starting fieldwork.",
-	"Publish a discussion guide",
+	"Checking study readiness",
+	"Checking the required setup tasks before fieldwork can begin.",
+	"Checking readiness tasks.",
 	"id=\"study-session-gate-summary\"",
 	"id=\"study-session-blockers\"",
 	"id=\"study-session-action\"",
@@ -121,6 +124,10 @@ excludes(pageSource, "Requires study context", "study page");
 excludes(pageSource, "<script type=\"module\">", "study page");
 excludes(pageSource, "id=\"back-to-project\"", "study page");
 excludes(pageSource, "Back to Project", "study page");
+excludes(templateSource, "3 setup tasks need attention", "study template static fallback");
+excludes(templateSource, "Publish a discussion guide", "study template static fallback");
+excludes(pageSource, "3 setup tasks need attention", "study page static fallback");
+excludes(pageSource, "Publish a discussion guide", "study page static fallback");
 
 includes(descControllerSource, "cancelBtnSel: '#desc-cancel'", "description controller");
 
@@ -144,7 +151,9 @@ for (const text of [
 	"study-readiness-${key}-hint",
 	"govuk-tag ${readinessTagClass(state)} study-readiness-status",
 	"summary.textContent = \"This study is ready to run\"",
+	"summary.textContent = `${blockedKeys.length} setup ${blockedKeys.length === 1 ? \"task needs\" : \"tasks need\"} attention`",
 	"message.textContent = \"Complete these tasks before starting fieldwork.\"",
+	"...blockedKeys.map(key => {",
 	"safeProject[\"Project Name\"]",
 	"setText(\"#study-eyebrow\", projectName)",
 	"loadStudyCollection(\"/api/participant-consent\"",

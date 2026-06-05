@@ -46,13 +46,15 @@
   ],
   "teamCritique": [
     "The session gate should use a strong blue bordered panel rather than a passive inset note.",
-    "The default gate copy should show the blocker summary and action links rather than checking text.",
+    "Once readiness data has loaded, the session gate should show the blocker summary and action links rather than checking text.",
     "Readiness item text should use a consistent constrained track so tags remain single-line on desktop.",
     "On reduced viewports readiness tags should stack above title and hint text.",
-    "The study caption should resolve to the linked project name."
+    "The study caption should resolve to the linked project name.",
+    "The Nunjucks template must keep a neutral checking fallback; actual session-gate blockers must be populated dynamically by the script from real readiness state."
   ],
   "implementationSummary": [
-    "Replaced weak session gate fallback copy with prototype-style blocker summary links.",
+    "Restored the Nunjucks session gate to the neutral checking fallback copy.",
+    "Kept the actionable blocker summary in renderSessionGatePanel, where it is computed from actual incomplete readiness tasks.",
     "Styled the session gate as a blue bordered panel.",
     "Added tolerant project title resolution for common project name field shapes.",
     "Let the GOV.UK half-column define Study readiness row width, with the GOV.UK 15px gutter between text and status.",
