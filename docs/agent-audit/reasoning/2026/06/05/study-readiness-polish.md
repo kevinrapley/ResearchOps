@@ -27,11 +27,14 @@ Frontend and accessibility: readiness rows need a consistent text track so tags 
 
 Researcher use: the caption above the study title must identify the linked project, not stay as the generic “Project”.
 
+Codex review: the project title resolver must preserve the fallback path when project lookup fails and returns `null`.
+
 ## Implementation
 
 - Replaced the weak session gate fallback copy with the prototype-style blocker summary and links.
 - Styled the session gate as a blue bordered panel using the GOV.UK blue value.
 - Added a tolerant project title resolver for common project name field shapes.
+- Guarded the project title resolver against `null` project lookup results so the page keeps rendering with the “Project” fallback when the project endpoint is unavailable.
 - Let the GOV.UK half-column define the Study readiness row width, using the GOV.UK 15px gutter between the text track and single-line status tag.
 - Removed the visible “Checking” readiness defaults from the rendered markup so a failed or warming API still shows a useful review state.
 - Stacked readiness task tags above title and hint text on smaller viewports.
@@ -52,3 +55,9 @@ Passed:
 - `node node_modules/prettier/bin/prettier.cjs --check public/pages/study/index.html public/js/study-page.js public/css/study-page.css tests/study-page-route-state.test.js docs/agent-audit/reasoning/2026/06/05/study-readiness-polish.md docs/agent-audit/reasoning/2026/06/05/study-readiness-polish.json`
 - `git diff --check`
 - `node --test`
+
+## Codex Comment Disposition
+
+- PR #354 thread `PRRT_kwDOP3Td2M6HXN0F` on `public/js/study-page.js` line 408 was legitimate.
+- Fix: `projectTitle` now normalises `null` project values before reading project name fields.
+- Regression evidence: `tests/study-page-route-state.test.js` asserts the null-safe guard and project-name field lookup.

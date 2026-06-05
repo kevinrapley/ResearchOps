@@ -37,7 +37,8 @@
     "public/pages/study/index.html",
     "tests/study-page-route-state.test.js",
     "docs/agent-audit/reasoning/2026/06/05/study-readiness-polish.md",
-    "docs/agent-audit/reasoning/2026/06/05/study-readiness-polish.json"
+    "docs/agent-audit/reasoning/2026/06/05/study-readiness-polish.json",
+    "PR #354 review thread PRRT_kwDOP3Td2M6HXN0F"
   ],
   "filesCreated": [
     "docs/agent-audit/reasoning/2026/06/05/study-readiness-polish.md",
@@ -57,7 +58,19 @@
     "Let the GOV.UK half-column define Study readiness row width, with the GOV.UK 15px gutter between text and status.",
     "Removed visible checking defaults from rendered readiness markup.",
     "Stacked readiness status tags above text on small viewports.",
-    "Bumped the Study page script version and regenerated the static Study page."
+    "Bumped the Study page script version and regenerated the static Study page.",
+    "Guarded projectTitle against null project lookup results so the page preserves the Project fallback when loadProject returns null."
+  ],
+  "codexCommentDisposition": [
+    {
+      "threadId": "PRRT_kwDOP3Td2M6HXN0F",
+      "commentId": "PRRC_kwDOP3Td2M7Ibmln",
+      "path": "public/js/study-page.js",
+      "line": 408,
+      "classification": "legitimate",
+      "resolution": "projectTitle now normalises null project values before reading common project name fields.",
+      "evidence": "tests/study-page-route-state.test.js asserts const safeProject = project || {} and safeProject[\"Project Name\"]."
+    }
   ],
   "validation": [
     {

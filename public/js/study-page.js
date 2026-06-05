@@ -48,15 +48,16 @@ function studyTitle(study = {}) {
 }
 
 function projectTitle(project = {}) {
+	const safeProject = project || {};
 	return (
-		project.name ||
-		project.Name ||
-		project.title ||
-		project.Title ||
-		project.projectName ||
-		project.ProjectName ||
-		project["Project name"] ||
-		project["Project Name"] ||
+		safeProject.name ||
+		safeProject.Name ||
+		safeProject.title ||
+		safeProject.Title ||
+		safeProject.projectName ||
+		safeProject.ProjectName ||
+		safeProject["Project name"] ||
+		safeProject["Project Name"] ||
 		""
 	).trim();
 }
