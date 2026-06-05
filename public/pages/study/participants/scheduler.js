@@ -80,11 +80,21 @@ function paddedNumber(value, length = 2) {
 }
 
 function sessionStartIsoFromFields() {
-	const day = Number(fieldValue("#s_date-day"));
-	const month = Number(fieldValue("#s_date-month"));
-	const year = Number(fieldValue("#s_date-year"));
-	const hour = Number(fieldValue("#s_time-hour"));
-	const minute = Number(fieldValue("#s_time-minute"));
+	const dayValue = fieldValue("#s_date-day");
+	const monthValue = fieldValue("#s_date-month");
+	const yearValue = fieldValue("#s_date-year");
+	const hourValue = fieldValue("#s_time-hour");
+	const minuteValue = fieldValue("#s_time-minute");
+
+	if (!dayValue || !monthValue || !yearValue || !hourValue || !minuteValue) {
+		return "";
+	}
+
+	const day = Number(dayValue);
+	const month = Number(monthValue);
+	const year = Number(yearValue);
+	const hour = Number(hourValue);
+	const minute = Number(minuteValue);
 
 	if (!day || !month || !year || Number.isNaN(hour) || Number.isNaN(minute)) {
 		return "";

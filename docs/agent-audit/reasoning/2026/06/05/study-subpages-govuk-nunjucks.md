@@ -64,6 +64,8 @@ Owner review follow-up on participants: the Study participants page still needed
 
 Owner review follow-up on generated CSS: route-specific CSS must be generated from SCSS sources rather than maintained as loose CSS files.
 
+Codex review follow-up on PR #357: the split session time fields needed raw-value validation before numeric coercion because blank fields were being converted to `0` while the form uses `novalidate`.
+
 ## Implementation
 
 - Added Nunjucks templates for participant consent, participants, guides and synthesis Study subpages.
@@ -87,6 +89,7 @@ Owner review follow-up on generated CSS: route-specific CSS must be generated fr
 - Added `src/styles/participants.scss`, registered it in the generated CSS targets manifest and rebuilt `public/css/participants.css` from that source.
 - Restored the GOV.UK date and time input width modifiers after the app’s local forms stylesheet by scoping width rules to the Study participants route.
 - Added mobile spacing between the create-participant action and the “What happens next” details block.
+- Updated Study participants session scheduling so day, month, year, hour and minute are checked as raw field values before conversion to numbers.
 
 ## Validation
 
@@ -103,6 +106,7 @@ Passed:
 - `node --test tests/participants-page-route-state.test.js tests/govuk-forms-application-route-state.test.js tests/govuk-tables-summary-lists-application-route-state.test.js tests/participant-pseudonymised-view-route-state.test.js`
 - `node scripts/styles/format-generated-css.mjs --check`
 - Browser spot-check at `http://127.0.0.1:8793/pages/study/participants/?id=RECT3O7DT` confirmed the participants route renders with GOV.UK date inputs, three channel checkboxes, no native `datetime-local` input, and two-thirds GOV.UK form columns at desktop and 599px viewport widths.
+- `node --test tests/participants-page-route-state.test.js tests/govuk-forms-application-route-state.test.js`
 
 ## Residual Risks
 
