@@ -33,6 +33,8 @@ Owner review: the Nunjucks template must not hard-code the prototype blocker sum
 
 Owner review: Study readiness task text needs a uniform width, and status tags need to stack above the item at wider constrained viewports with comfortable spacing and clear left or right alignment.
 
+Browser comment: in the stacked readiness layout, the status tag must be flush left with the associated item title, for example “Ready” aligned with “Description”.
+
 ## Implementation
 
 - Corrected the Nunjucks fallback back to “Checking study readiness”, “Checking the required setup tasks before fieldwork can begin.” and “Checking readiness tasks.”
@@ -43,6 +45,7 @@ Owner review: Study readiness task text needs a uniform width, and status tags n
 - Let the GOV.UK half-column define the Study readiness row width, using the GOV.UK 15px gutter between the text track and single-line status tag.
 - Set a uniform 170px status track for desktop readiness rows so `govuk-task-list__name-and-hint` has the same computed width on every item.
 - Moved readiness status tags above item text from 900px down, flush left with a 10px gap before the associated title and hint.
+- Removed inherited GOV.UK task-list status padding in the stacked Study readiness layout so tags share the same left edge as their associated title and hint.
 - Removed the visible “Checking” readiness defaults from the rendered markup so a failed or warming API still shows a useful review state.
 - Stacked readiness task tags above title and hint text on smaller viewports.
 - Bumped the Study page script version so the project caption and gate fixes are not paired with stale cached JavaScript.
