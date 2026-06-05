@@ -61,3 +61,5 @@ Passed:
 - PR #354 thread `PRRT_kwDOP3Td2M6HXN0F` on `public/js/study-page.js` line 408 was legitimate.
 - Fix: `projectTitle` now normalises `null` project values before reading project name fields.
 - Regression evidence: `tests/study-page-route-state.test.js` asserts the null-safe guard and project-name field lookup.
+- GitHub disposition: branch was pushed at commit `53e1658e`, a PR review response was posted with validation evidence, and the original review thread was resolved.
+- Tooling limitation: the required thumbs-up reaction and direct inline reply could not be completed because the GitHub connector returned `403 Resource not accessible by integration` for review-comment reactions and exposed only the GraphQL review-comment node ID, while its direct reply endpoint requires a REST numeric comment ID.

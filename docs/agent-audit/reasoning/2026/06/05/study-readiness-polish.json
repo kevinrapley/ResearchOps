@@ -69,7 +69,9 @@
       "line": 408,
       "classification": "legitimate",
       "resolution": "projectTitle now normalises null project values before reading common project name fields.",
-      "evidence": "tests/study-page-route-state.test.js asserts const safeProject = project || {} and safeProject[\"Project Name\"]."
+      "evidence": "tests/study-page-route-state.test.js asserts const safeProject = project || {} and safeProject[\"Project Name\"].",
+      "githubDisposition": "Pushed commit 53e1658e, posted PR review response 4436353980 with validation evidence, and resolved the original review thread.",
+      "toolingLimitation": "The required thumbs-up reaction and direct inline reply could not be completed because the GitHub connector returned 403 Resource not accessible by integration for review-comment reactions and exposed only the GraphQL review-comment node ID while its direct reply endpoint requires a REST numeric comment ID."
     }
   ],
   "validation": [
