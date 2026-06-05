@@ -188,7 +188,7 @@ function updateRoutes() {
 	const breadcrumbStudy = $("#breadcrumb-study");
 	if (breadcrumbStudy) {
 		breadcrumbStudy.href = studyHref;
-		breadcrumbStudy.textContent = "Study";
+		breadcrumbStudy.textContent = currentStudyTitle;
 		breadcrumbStudy.setAttribute("aria-label", `Study: ${currentStudyTitle}`);
 		breadcrumbStudy.title = currentStudyTitle;
 	}
@@ -198,6 +198,7 @@ function updateRoutes() {
 	if (createConsentFormsLink) createConsentFormsLink.href = consentFormsHref;
 	const scheduleParticipantsLink = $("#schedule-participants-link");
 	if (scheduleParticipantsLink) scheduleParticipantsLink.href = participantsHref;
+	setText("#study-context", currentStudyTitle);
 }
 
 function renderPageState() {

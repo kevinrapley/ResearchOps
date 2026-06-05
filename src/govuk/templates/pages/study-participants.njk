@@ -21,26 +21,55 @@
 {% block content %}
 <div class="govuk-width-container study-participants-page" data-study-subpage-template="participants">
 	{{ govukBreadcrumbs({
+		attributes: {
+			id: "study-participants-breadcrumbs",
+			typeof: "schema:BreadcrumbList"
+		},
 		items: [
-			{ text: "Projects", href: "/pages/projects/" },
-			{ text: "Project", href: "#", attributes: { id: "breadcrumb-project" } },
-			{ text: "Study", href: "#", attributes: { id: "breadcrumb-study" } },
+			{
+				text: "Projects",
+				href: "/pages/projects/",
+				attributes: {
+					property: "schema:item",
+					typeof: "schema:Thing"
+				}
+			},
+			{
+				text: "Project",
+				href: "#",
+				attributes: {
+					id: "breadcrumb-project",
+					property: "schema:item",
+					typeof: "schema:Thing"
+				}
+			},
+			{
+				text: "Study",
+				href: "#",
+				attributes: {
+					id: "breadcrumb-study",
+					property: "schema:item",
+					typeof: "schema:Thing"
+				}
+			},
 			{ text: "Participants" }
 		]
 	}) }}
 
-	<div class="govuk-!-margin-bottom-4">
-		<strong id="studyBadge" class="badge">Study:</strong>
-	</div>
+	<header class="govuk-!-margin-bottom-7">
+		<p id="studyBadge" class="govuk-caption-m">Study</p>
+		<h1 class="govuk-heading-l">Participants</h1>
+		<p class="govuk-body govuk-!-width-two-thirds">Add participants, review restricted contact details and schedule sessions for this study.</p>
+	</header>
 
 	<div class="govuk-grid-row govuk-!-margin-bottom-7">
-		<div class="govuk-grid-column-one-half">
-			<section aria-labelledby="participants-h">
-				<h1 id="participants-h" class="govuk-heading-l govuk-!-margin-bottom-3">Participants</h1>
-				<p class="govuk-hint">Invite and manage participants for this study.</p>
+		<div class="govuk-grid-column-two-thirds">
+			<section class="participants-section" aria-labelledby="participants-h">
+				<h2 id="participants-h" class="govuk-heading-m">Participants in this study</h2>
+				<p class="govuk-body">Review who is available for fieldwork. Contact details stay restricted until they are explicitly revealed.</p>
 
-				<div id="participantsEmpty" class="empty card" hidden>
-					<h2 class="govuk-heading-m govuk-!-margin-bottom-2">No participants yet</h2>
+				<div id="participantsEmpty" class="govuk-inset-text" hidden>
+					<h3 class="govuk-heading-s govuk-!-margin-bottom-2">No participants yet</h3>
 					<p class="govuk-body">Add your first participant to begin scheduling sessions.</p>
 					{{ govukButton({ text: "Add a participant", href: "#addParticipantForm" }) }}
 				</div>
@@ -65,8 +94,8 @@
 			</section>
 		</div>
 
-		<div class="govuk-grid-column-one-half">
-			<section class="card" aria-labelledby="addp-h">
+		<div class="govuk-grid-column-one-third">
+			<section class="participants-section participants-section--form" aria-labelledby="addp-h">
 				<h2 id="addp-h" class="govuk-heading-m govuk-!-margin-bottom-3">Add participant</h2>
 
 				<form id="addParticipantForm" class="form" novalidate>
@@ -125,13 +154,13 @@
 	</div>
 
 	<div class="govuk-grid-row">
-		<div class="govuk-grid-column-one-half">
-			<section aria-labelledby="sessions-h">
-				<h2 id="sessions-h" class="govuk-heading-l govuk-!-margin-bottom-3">Sessions</h2>
-				<p class="govuk-hint">Scheduled sessions for this study. Download calendar invites as <code>.ics</code>.</p>
+		<div class="govuk-grid-column-two-thirds">
+			<section class="participants-section" aria-labelledby="sessions-h">
+				<h2 id="sessions-h" class="govuk-heading-m govuk-!-margin-bottom-3">Scheduled sessions</h2>
+				<p class="govuk-body">Review sessions that have been scheduled for participants in this study.</p>
 
-				<div id="sessionsEmpty" class="empty card" hidden>
-					<h3 class="govuk-heading-m govuk-!-margin-bottom-2">No sessions yet</h3>
+				<div id="sessionsEmpty" class="govuk-inset-text" hidden>
+					<h3 class="govuk-heading-s govuk-!-margin-bottom-2">No sessions yet</h3>
 					<p class="govuk-body">Schedule a session once you have added at least one participant.</p>
 					{{ govukButton({ text: "Schedule a session", href: "#scheduleForm", attributes: { id: "scheduleCta" } }) }}
 				</div>
@@ -152,11 +181,11 @@
 			</section>
 		</div>
 
-		<div class="govuk-grid-column-one-half">
-			<section class="card" aria-labelledby="schedules-h">
+		<div class="govuk-grid-column-one-third">
+			<section class="participants-section participants-section--form" aria-labelledby="schedules-h">
 				<h2 id="schedules-h" class="govuk-heading-m govuk-!-margin-bottom-3">Schedule a session</h2>
 
-				<div id="noParticipantsBanner" class="note" role="status" hidden>
+				<div id="noParticipantsBanner" class="govuk-inset-text" role="status" hidden>
 					Add at least one participant to enable scheduling.
 				</div>
 

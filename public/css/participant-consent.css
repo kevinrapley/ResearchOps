@@ -7,24 +7,8 @@
    License:    All rights reserved
    ========================================================================== */
 
-.participant-consent-page {
-	max-width: 1120px;
-	}
-
 .participant-consent-page [hidden] {
 	display: none;
-	}
-
-.participant-consent-hero {
-	display: flex;
-	gap: 16px;
-	align-items: flex-start;
-	justify-content: space-between;
-	margin-bottom: 24px;
-	}
-
-.participant-consent-hero__actions {
-	flex: 0 0 auto;
 	}
 
 .participant-consent-context {
@@ -180,28 +164,7 @@
 
 @media (max-width: 699px) {
 	.participant-consent-page {
-		box-sizing: border-box;
-		width: 100%;
-		padding-right: 12px;
-		padding-left: 12px;
-		}
-
-	.participant-consent-hero {
-		display: flex;
-		flex-direction: column-reverse;
-		gap: 12px;
-		margin-bottom: 18px;
-		}
-
-	.participant-consent-hero__actions {
-		width: 100%;
-		margin-top: 0;
-		}
-
-	.participant-consent-hero__actions .govuk-button {
-		box-sizing: border-box;
-		width: 100%;
-		text-align: center;
+		width: auto;
 		}
 
 	.participant-consent-page .govuk-heading-l {

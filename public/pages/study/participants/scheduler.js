@@ -349,7 +349,7 @@ function bindRouteChrome(context) {
 	}
 
 	const badge = $("#studyBadge");
-	if (badge) badge.textContent = `Study: ${title}`;
+	if (badge) badge.textContent = title;
 }
 
 (async function init() {

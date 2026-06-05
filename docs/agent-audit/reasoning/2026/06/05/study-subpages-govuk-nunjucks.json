@@ -99,7 +99,8 @@
     "Each subpage should feel like a GOV.UK service page, with task-oriented headings, summary lists, task lists, tables, fieldsets and primary actions rather than bespoke page furniture.",
     "The page copy should support researcher workflows directly and preserve existing dynamic states without introducing prototype-only hard-coded examples.",
     "Nunjucks templates should use GOV.UK macros wherever the macros can preserve existing IDs, names, ARIA references and JavaScript hooks.",
-    "All four routes should keep their current client-side loading behaviour while the initial HTML moves to the shared ResearchOps GOV.UK layout."
+    "All four routes should keep their current client-side loading behaviour while the initial HTML moves to the shared ResearchOps GOV.UK layout.",
+    "Owner review found the first PR revision did not meet quality expectations: breadcrumbs used a weaker macro implementation, duplicate Back to study actions remained, participant consent did not keep the Study name in the breadcrumb or standard container, participants still used legacy pill/card language, and discussion guides had an incoherent main content layout."
   ],
   "implementationSummary": [
     "Added Nunjucks templates for participant consent, participants, guides and synthesis Study subpages.",
@@ -109,7 +110,13 @@
     "Replaced bespoke static page chrome with the shared layouts/researchops.njk layout and GOV.UK Frontend stylesheet.",
     "Used GOV.UK macros for breadcrumbs, buttons, selects, inputs, radios, checkboxes, textareas, summary lists and inset text where they fit existing controller contracts.",
     "Kept participant consent and synthesis error summaries as hand-authored GOV.UK error-summary markup because their controllers append messages into exact ul hooks that the macro does not expose.",
-    "Updated route-state tests so they assert the GOV.UK macro output and dynamic hooks rather than the previous hand-written static markup."
+    "Updated route-state tests so they assert the GOV.UK macro output and dynamic hooks rather than the previous hand-written static markup.",
+    "Standardised Study subpage breadcrumbs with schema:BreadcrumbList attributes and schema:item attributes for Project and Study breadcrumb links.",
+    "Removed the Back to study buttons from participant consent, discussion guides and synthesis so Study subpages rely on breadcrumbs consistently.",
+    "Updated participant consent hydration so the Study breadcrumb and caption use the actual loaded study title.",
+    "Reworked participants into a clear page header, participant management section, add participant form, scheduled sessions section and schedule form using GOV.UK grid widths.",
+    "Removed the legacy participants badge, pill and card styling from the route stylesheet.",
+    "Reworked discussion guides into full-width Guides for this study and Guide editor sections while preserving editor, drawer and route-loader hooks."
   ],
   "validation": [
     {
@@ -146,6 +153,11 @@
       "command": "Browser spot-check at http://127.0.0.1:8791 for /pages/study/participant-consent/?id=RECT3O7DT, /pages/study/participants/?id=RECT3O7DT, /pages/study/guides/?id=RECT3O7DT and /pages/study/synthesis/?id=RECT3O7DT",
       "result": "passed",
       "evidence": "All four converted routes rendered with the shared GOV.UK main wrapper, breadcrumbs, button styling, table/task/summary-list structures and layout script. Static-server /api/studies 404s were expected and not treated as live data verification."
+    },
+    {
+      "command": "Browser layout spot-check at http://127.0.0.1:8792 for the four Study subpages",
+      "result": "passed",
+      "evidence": "The revised pages use the 1020px GOV.UK main content container on desktop, remove Study back buttons, remove legacy participants badges/cards/pills and keep participants in a 2/3 plus 1/3 GOV.UK grid workflow."
     }
   ],
   "residualRisks": [

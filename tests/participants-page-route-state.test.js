@@ -27,6 +27,8 @@ includes(rendererSource, "output: 'public/pages/study/participants/index.html'",
 includes(pageSource, "href=\"/assets/govuk/govuk-frontend.css\"", "participants page");
 includes(pageSource, "href=\"/css/participants.css\"", "participants page");
 includes(pageSource, "data-study-subpage-template=\"participants\"", "participants page");
+includes(pageSource, "id=\"study-participants-breadcrumbs\"", "participants page");
+includes(pageSource, "typeof=\"schema:BreadcrumbList\"", "participants page");
 includes(pageSource, "src=\"/components/participants/participants-page.js\" defer", "participants page");
 includes(pageSource, "src=\"/pages/study/participants/scheduler.js\" defer", "participants page");
 includes(pageSource, "class=\"govuk-button\"", "participants page");
@@ -39,6 +41,10 @@ includes(pageSource, "id=\"scheduleForm\"", "participants page");
 includes(pageSource, "id=\"noParticipantsBanner\"", "participants page");
 includes(pageSource, "id=\"scheduleBtn\"", "participants page");
 excludes(pageSource, "class=\"btn", "participants page");
+excludes(pageSource, "class=\"badge\"", "participants page");
+excludes(pageSource, "Study:", "participants page");
+excludes(pageSource, "class=\"empty card\"", "participants page");
+excludes(pageSource, "class=\"card\"", "participants page");
 excludes(pageSource, "href=\"/css/screen.css\"", "participants page");
 excludes(pageSource, "href=\"/css/participants.css\" media=\"print\"", "participants page");
 
@@ -46,17 +52,14 @@ includes(buttonCssSource, ".govuk-button", "GOV.UK button stylesheet");
 includes(buttonCssSource, ".govuk-button--secondary", "GOV.UK button stylesheet");
 includes(buttonCssSource, ".govuk-button--warning", "GOV.UK button stylesheet");
 
-includes(stylesheetSource, ":root", "participants stylesheet");
-includes(stylesheetSource, ".grid", "participants stylesheet");
-includes(stylesheetSource, ".card", "participants stylesheet");
-includes(stylesheetSource, ".table", "participants stylesheet");
-includes(stylesheetSource, ".table__header", "participants stylesheet");
-includes(stylesheetSource, ".table__row", "participants stylesheet");
-includes(stylesheetSource, ".empty-state", "participants stylesheet");
+includes(stylesheetSource, ".participants-section", "participants stylesheet");
+includes(stylesheetSource, ".participants-section--form", "participants stylesheet");
+includes(stylesheetSource, ".table-wrap", "participants stylesheet");
 includes(stylesheetSource, ".form", "participants stylesheet");
 includes(stylesheetSource, ".form__actions", "participants stylesheet");
-includes(stylesheetSource, ".badge", "participants stylesheet");
-includes(stylesheetSource, ".pill", "participants stylesheet");
+excludes(stylesheetSource, ".card", "participants stylesheet");
+excludes(stylesheetSource, ".badge", "participants stylesheet");
+excludes(stylesheetSource, ".pill", "participants stylesheet");
 includes(stylesheetSource, "/* transparency begins in the cascade */", "participants stylesheet");
 
 includes(participantsModuleSource, "participants-rendered", "participants module");
@@ -66,5 +69,7 @@ excludes(participantsModuleSource, "class=\"btn", "participants module");
 
 includes(schedulerSource, "scheduleForm", "participants scheduler");
 includes(schedulerSource, "sessionsTable", "participants scheduler");
+includes(schedulerSource, "badge.textContent = title", "participants scheduler");
+excludes(schedulerSource, "Study: ${title}", "participants scheduler");
 includes(schedulerSource, "class=\"govuk-button govuk-button--secondary\"", "participants scheduler");
 excludes(schedulerSource, "class=\"btn", "participants scheduler");

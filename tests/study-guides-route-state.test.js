@@ -28,6 +28,8 @@ includes(rendererSource, "output: 'public/pages/study/guides/index.html'", "GOV.
 includes(pageSource, "href=\"/assets/govuk/govuk-frontend.css\"", "study guides page");
 includes(pageSource, "href=\"/css/guides.css\"", "study guides page");
 includes(pageSource, "data-study-subpage-template=\"guides\"", "study guides page");
+includes(pageSource, "id=\"study-guides-breadcrumbs\"", "study guides page");
+includes(pageSource, "typeof=\"schema:BreadcrumbList\"", "study guides page");
 includes(pageSource, "/js/study-guides-context.js", "study guides page");
 includes(pageSource, "rel=\"modulepreload\" href=\"/js/study-guides-context.js\"", "study guides page");
 includes(pageSource, "/components/guides/guides-page.js", "study guides page");
@@ -41,7 +43,8 @@ includes(pageSource, "id=\"guides-tbody\"", "study guides page");
 includes(pageSource, "id=\"editor-section\"", "study guides page");
 includes(pageSource, "id=\"drawer-patterns\"", "study guides page");
 includes(pageSource, "id=\"drawer-variables\"", "study guides page");
-includes(pageSource, "id=\"back-to-study\"", "study guides page");
+excludes(pageSource, "id=\"back-to-study\"", "study guides page");
+excludes(pageSource, "Back to Study", "study guides page");
 excludes(pageSource, "class=\"btn", "study guides page");
 excludes(pageSource, "href=\"/css/screen.css\"", "study guides page");
 excludes(pageSource, "<script type=\"module\">", "study guides page");

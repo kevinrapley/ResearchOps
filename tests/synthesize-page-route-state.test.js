@@ -30,6 +30,10 @@ includes(pageSource, "src=\"/partials/footer.html\"", "synthesis page");
 includes(pageSource, "/js/synthesis-route-loader.js?v=study-record-id-routing-20260518", "synthesis page");
 includes(pageSource, "href=\"/css/synthesize.css?v=study-synthesis-20260501-progressive-disclosure\"", "synthesis page");
 includes(pageSource, "data-study-subpage-template=\"synthesis\"", "synthesis page");
+includes(pageSource, "id=\"study-synthesis-breadcrumbs\"", "synthesis page");
+includes(pageSource, "typeof=\"schema:BreadcrumbList\"", "synthesis page");
+excludes(pageSource, "id=\"back-to-study\"", "synthesis page");
+excludes(pageSource, "Back to study", "synthesis page");
 
 for (const id of [
 	"synthesis-error",
@@ -39,7 +43,6 @@ for (const id of [
 	"study-context-text",
 	"breadcrumb-project",
 	"breadcrumb-study",
-	"back-to-study",
 	"summary-evidence-count",
 	"summary-theme-count",
 	"no-evidence-state",

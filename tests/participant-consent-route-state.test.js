@@ -43,7 +43,10 @@ includes(pageSource, "href=\"/js/study-route-context.js\"", "participant consent
 includes(pageSource, "data-study-subpage-template=\"participant-consent\"", "participant consent page");
 includes(pageSource, "id=\"breadcrumb-project\"", "participant consent page");
 includes(pageSource, "id=\"breadcrumb-study\"", "participant consent page");
-includes(pageSource, "id=\"back-to-study\"", "participant consent page");
+includes(pageSource, "id=\"participant-consent-breadcrumbs\"", "participant consent page");
+includes(pageSource, "typeof=\"schema:BreadcrumbList\"", "participant consent page");
+excludes(pageSource, "id=\"back-to-study\"", "participant consent page");
+excludes(pageSource, "Back to Study", "participant consent page");
 includes(pageSource, "id=\"no-context-state\"", "participant consent page");
 includes(pageSource, "The participant consent page needs a Study record ID in the URL.", "participant consent page");
 includes(pageSource, "id=\"participant-consent-form\"", "participant consent page");
@@ -65,6 +68,8 @@ includes(controllerSource, "function statusForParticipant", "participant consent
 includes(controllerSource, "function renderParticipantTable", "participant consent controller");
 includes(controllerSource, "function renderConsentItems", "participant consent controller");
 includes(controllerSource, "async function saveConsent", "participant consent controller");
+includes(controllerSource, "breadcrumbStudy.textContent = currentStudyTitle", "participant consent controller");
+includes(controllerSource, "setText(\"#study-context\", currentStudyTitle)", "participant consent controller");
 includes(controllerSource, "loadStudyCollection(\"/api/participant-consent\"", "participant consent controller");
 includes(controllerSource, "Could not save participant consent", "participant consent controller");
 excludes(controllerSource, "alert(", "participant consent controller");

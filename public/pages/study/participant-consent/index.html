@@ -24,18 +24,41 @@
 		<x-include src="/partials/header.html" vars='{"active":"Projects"}'></x-include>
 		<main class="govuk-main-wrapper" id="main-content" role="main" tabindex="-1">
 			<div class="govuk-width-container participant-consent-page" data-study-subpage-template="participant-consent">
-				<nav class="govuk-breadcrumbs" aria-label="Breadcrumb">
+				<nav
+					class="govuk-breadcrumbs"
+					id="participant-consent-breadcrumbs"
+					typeof="schema:BreadcrumbList"
+					aria-label="Breadcrumb"
+				>
 					<ol class="govuk-breadcrumbs__list">
 						<li class="govuk-breadcrumbs__list-item">
-							<a class="govuk-breadcrumbs__link" href="/pages/projects/">Projects</a>
+							<a class="govuk-breadcrumbs__link" href="/pages/projects/" property="schema:item" typeof="schema:Thing">
+								Projects
+							</a>
 						</li>
 
 						<li class="govuk-breadcrumbs__list-item">
-							<a class="govuk-breadcrumbs__link" href="#" id="breadcrumb-project">Project</a>
+							<a
+								class="govuk-breadcrumbs__link"
+								href="#"
+								id="breadcrumb-project"
+								property="schema:item"
+								typeof="schema:Thing"
+							>
+								Project
+							</a>
 						</li>
 
 						<li class="govuk-breadcrumbs__list-item">
-							<a class="govuk-breadcrumbs__link" href="#" id="breadcrumb-study">Study</a>
+							<a
+								class="govuk-breadcrumbs__link"
+								href="#"
+								id="breadcrumb-study"
+								property="schema:item"
+								typeof="schema:Thing"
+							>
+								Study
+							</a>
 						</li>
 
 						<li class="govuk-breadcrumbs__list-item" aria-current="page">Participant consent</li>
@@ -58,27 +81,13 @@
 					</div>
 				</div>
 
-				<header class="participant-consent-hero govuk-!-margin-bottom-6">
-					<div>
-						<p id="study-context" class="govuk-caption-m">Study</p>
-						<h1 class="govuk-heading-l">Manage participant consent</h1>
-						<p class="govuk-body participant-consent-context govuk-!-width-two-thirds">
-							Record, review or withdraw participant consent for this study. Consent is recorded against a specific
-							published consent form version.
-						</p>
-					</div>
-					<div class="participant-consent-hero__actions">
-						<a
-							href="/pages/study/"
-							role="button"
-							draggable="false"
-							class="govuk-button govuk-button--secondary"
-							data-module="govuk-button"
-							id="back-to-study"
-						>
-							Back to Study
-						</a>
-					</div>
+				<header class="govuk-!-margin-bottom-6">
+					<p id="study-context" class="govuk-caption-m">Study</p>
+					<h1 class="govuk-heading-l">Manage participant consent</h1>
+					<p class="govuk-body participant-consent-context govuk-!-width-two-thirds">
+						Record, review or withdraw participant consent for this study. Consent is recorded against a specific
+						published consent form version.
+					</p>
 				</header>
 
 				<p

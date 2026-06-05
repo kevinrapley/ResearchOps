@@ -56,6 +56,8 @@ Frontend and accessibility: Nunjucks templates should use GOV.UK macros wherever
 
 Researcher use: all four routes should keep their current client-side loading behaviour while the initial HTML moves to the shared ResearchOps GOV.UK layout.
 
+Owner review follow-up: the first PR revision was not strong enough. The Study subpages must use the same breadcrumb attributes as the Study page, rely on breadcrumbs rather than duplicated “Back to study” buttons, keep participant consent within the standard GOV.UK content container, remove the legacy participants pill/card layout, and make discussion guides usable as a clear list-plus-editor workflow.
+
 ## Implementation
 
 - Added Nunjucks templates for participant consent, participants, guides and synthesis Study subpages.
@@ -66,6 +68,12 @@ Researcher use: all four routes should keep their current client-side loading be
 - Used GOV.UK macros for breadcrumbs, buttons, selects, inputs, radios, checkboxes, textareas, summary lists and inset text where they fit the existing controller contracts.
 - Kept participant consent and synthesis error summaries as hand-authored GOV.UK error-summary markup because their controllers append messages into exact `ul` hooks that the macro does not expose.
 - Updated route-state tests so they assert the GOV.UK macro output and dynamic hooks rather than the previous hand-written static markup.
+- Standardised Study subpage breadcrumbs with `schema:BreadcrumbList` attributes and `schema:item` attributes for Project and Study breadcrumb links.
+- Removed the “Back to study” buttons from participant consent, discussion guides and synthesis so Study subpages rely on breadcrumbs consistently.
+- Updated participant consent hydration so the Study breadcrumb and caption use the actual loaded study title.
+- Reworked participants into a clear page header, participant management section, add participant form, scheduled sessions section and schedule form using GOV.UK grid widths.
+- Removed the legacy participants `badge`, `pill` and `card` styling from the route stylesheet.
+- Reworked discussion guides into full-width “Guides for this study” and “Guide editor” sections while preserving editor, drawer and route-loader hooks.
 
 ## Validation
 
@@ -78,6 +86,7 @@ Passed:
 - `node node_modules/prettier/bin/prettier.cjs --check scripts/govuk/render-govuk-pages.mjs public/pages/study/participant-consent/index.html public/pages/study/participants/index.html public/pages/study/guides/index.html public/pages/study/synthesis/index.html tests/participant-consent-route-state.test.js tests/participants-page-route-state.test.js tests/study-guides-route-state.test.js tests/synthesize-page-route-state.test.js tests/govuk-forms-application-route-state.test.js tests/govuk-tables-summary-lists-application-route-state.test.js docs/agent-audit/reasoning/2026/06/05/study-subpages-govuk-nunjucks.md docs/agent-audit/reasoning/2026/06/05/study-subpages-govuk-nunjucks.json`
 - `node --test` with 176 passing tests.
 - Browser spot-check at `http://127.0.0.1:8791` confirmed all four converted routes render with the shared GOV.UK main wrapper, breadcrumbs, button styling, table/task/summary-list structures and layout script.
+- Browser layout spot-check at `http://127.0.0.1:8792` confirmed the revised pages use the 1020px GOV.UK main content container on desktop, remove Study back buttons, remove legacy participants badges/cards/pills and keep participants in a 2/3 plus 1/3 GOV.UK grid workflow.
 
 ## Residual Risks
 

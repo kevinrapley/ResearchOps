@@ -19,10 +19,37 @@
 {% block content %}
 <div class="govuk-width-container study-synthesis-page" data-study-subpage-template="synthesis">
 	{{ govukBreadcrumbs({
+		attributes: {
+			id: "study-synthesis-breadcrumbs",
+			typeof: "schema:BreadcrumbList"
+		},
 		items: [
-			{ text: "Projects", href: "/pages/projects/" },
-			{ text: "Project", href: "/pages/projects/", attributes: { id: "breadcrumb-project" } },
-			{ text: "Study", href: "#", attributes: { id: "breadcrumb-study" } },
+			{
+				text: "Projects",
+				href: "/pages/projects/",
+				attributes: {
+					property: "schema:item",
+					typeof: "schema:Thing"
+				}
+			},
+			{
+				text: "Project",
+				href: "/pages/projects/",
+				attributes: {
+					id: "breadcrumb-project",
+					property: "schema:item",
+					typeof: "schema:Thing"
+				}
+			},
+			{
+				text: "Study",
+				href: "#",
+				attributes: {
+					id: "breadcrumb-study",
+					property: "schema:item",
+					typeof: "schema:Thing"
+				}
+			},
 			{ text: "Synthesis" }
 		]
 	}) }}
@@ -38,20 +65,10 @@
 
 	<div id="synthesis-status" class="govuk-body-s synthesis-status" aria-live="polite"></div>
 
-	<header class="synthesis-hero govuk-!-margin-bottom-6">
-		<div>
-			<p id="synthesis-eyebrow" class="govuk-caption-m">Study synthesis</p>
-			<h1 id="synthesis-title" class="govuk-heading-l">Synthesis for this study</h1>
-			<p id="study-context-text" class="govuk-body synthesis-context govuk-!-width-two-thirds">Group study evidence into themes you can trace back to source notes.</p>
-		</div>
-		<div class="synthesis-hero__actions">
-			{{ govukButton({
-				text: "Back to study",
-				href: "/pages/projects/",
-				classes: "govuk-button--secondary",
-				attributes: { id: "back-to-study" }
-			}) }}
-		</div>
+	<header class="govuk-!-margin-bottom-6">
+		<p id="synthesis-eyebrow" class="govuk-caption-m">Study synthesis</p>
+		<h1 id="synthesis-title" class="govuk-heading-l">Synthesis for this study</h1>
+		<p id="study-context-text" class="govuk-body synthesis-context govuk-!-width-two-thirds">Group study evidence into themes you can trace back to source notes.</p>
 	</header>
 
 	<section class="synthesis-summary" aria-label="Synthesis summary">

@@ -22,10 +22,37 @@
 {% block content %}
 <div class="govuk-width-container participant-consent-page" data-study-subpage-template="participant-consent">
 	{{ govukBreadcrumbs({
+		attributes: {
+			id: "participant-consent-breadcrumbs",
+			typeof: "schema:BreadcrumbList"
+		},
 		items: [
-			{ text: "Projects", href: "/pages/projects/" },
-			{ text: "Project", href: "#", attributes: { id: "breadcrumb-project" } },
-			{ text: "Study", href: "#", attributes: { id: "breadcrumb-study" } },
+			{
+				text: "Projects",
+				href: "/pages/projects/",
+				attributes: {
+					property: "schema:item",
+					typeof: "schema:Thing"
+				}
+			},
+			{
+				text: "Project",
+				href: "#",
+				attributes: {
+					id: "breadcrumb-project",
+					property: "schema:item",
+					typeof: "schema:Thing"
+				}
+			},
+			{
+				text: "Study",
+				href: "#",
+				attributes: {
+					id: "breadcrumb-study",
+					property: "schema:item",
+					typeof: "schema:Thing"
+				}
+			},
 			{ text: "Participant consent" }
 		]
 	}) }}
@@ -39,20 +66,10 @@
 		</div>
 	</div>
 
-	<header class="participant-consent-hero govuk-!-margin-bottom-6">
-		<div>
-			<p id="study-context" class="govuk-caption-m">Study</p>
-			<h1 class="govuk-heading-l">Manage participant consent</h1>
-			<p class="govuk-body participant-consent-context govuk-!-width-two-thirds">Record, review or withdraw participant consent for this study. Consent is recorded against a specific published consent form version.</p>
-		</div>
-		<div class="participant-consent-hero__actions">
-			{{ govukButton({
-				text: "Back to Study",
-				href: "/pages/study/",
-				classes: "govuk-button--secondary",
-				attributes: { id: "back-to-study" }
-			}) }}
-		</div>
+	<header class="govuk-!-margin-bottom-6">
+		<p id="study-context" class="govuk-caption-m">Study</p>
+		<h1 class="govuk-heading-l">Manage participant consent</h1>
+		<p class="govuk-body participant-consent-context govuk-!-width-two-thirds">Record, review or withdraw participant consent for this study. Consent is recorded against a specific published consent form version.</p>
 	</header>
 
 	<p id="participant-consent-status" class="govuk-body-s participant-consent-status" role="status" aria-live="polite">Loading participant consent.</p>

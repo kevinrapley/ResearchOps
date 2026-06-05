@@ -19,35 +19,59 @@
 {% block content %}
 <div class="govuk-width-container study-guides-page" data-study-subpage-template="guides">
 	{{ govukBreadcrumbs({
+		attributes: {
+			id: "study-guides-breadcrumbs",
+			typeof: "schema:BreadcrumbList"
+		},
 		items: [
-			{ text: "Projects", href: "/pages/projects/" },
-			{ text: "Project", href: "#", attributes: { id: "breadcrumb-project" } },
-			{ text: "Study", href: "#", attributes: { id: "breadcrumb-study" } },
+			{
+				text: "Projects",
+				href: "/pages/projects/",
+				attributes: {
+					property: "schema:item",
+					typeof: "schema:Thing"
+				}
+			},
+			{
+				text: "Project",
+				href: "#",
+				attributes: {
+					id: "breadcrumb-project",
+					property: "schema:item",
+					typeof: "schema:Thing"
+				}
+			},
+			{
+				text: "Study",
+				href: "#",
+				attributes: {
+					id: "breadcrumb-study",
+					property: "schema:item",
+					typeof: "schema:Thing"
+				}
+			},
 			{ text: "Guides" }
 		]
 	}) }}
 
-	<header class="guides-header govuk-!-margin-bottom-6">
+	<header class="govuk-!-margin-bottom-7">
 		<p id="study-title" class="govuk-caption-m" data-bind="study.title">Study</p>
 		<h1 class="govuk-heading-l">Discussion guides</h1>
 		<p class="govuk-body govuk-!-width-two-thirds">Create, review and publish discussion guides for this study.</p>
-		<div class="govuk-button-group">
-			{{ govukButton({
-				text: "Back to Study",
-				href: "#",
-				classes: "govuk-button--secondary",
-				attributes: { id: "back-to-study" }
-			}) }}
+	</header>
+
+	<section id="guides-list-section" class="guides-section" aria-labelledby="guides-list-title">
+		<div class="guides-section__header">
+			<div>
+				<h2 id="guides-list-title" class="govuk-heading-m">Guides for this study</h2>
+				<p class="govuk-body">Choose an existing guide to edit, or create a new draft.</p>
+			</div>
 			{{ govukButton({
 				text: "New guide",
 				type: "button",
 				attributes: { id: "btn-new" }
 			}) }}
 		</div>
-	</header>
-
-	<section id="guides-list-section" aria-labelledby="guides-list-title">
-		<h2 id="guides-list-title" class="govuk-heading-m">Guides for this study</h2>
 		<table id="guides-table" class="govuk-table">
 			<thead class="govuk-table__head">
 				<tr class="govuk-table__row">
@@ -59,7 +83,7 @@
 		</table>
 	</section>
 
-	<section id="editor-section" class="editor" aria-labelledby="guide-editor-title">
+	<section id="editor-section" class="guides-section editor" aria-labelledby="guide-editor-title">
 		<h2 id="guide-editor-title" class="govuk-heading-m">Guide editor</h2>
 		{{ govukInput({
 			id: "guide-title",

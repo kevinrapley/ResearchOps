@@ -27,18 +27,41 @@
 		<x-include src="/partials/header.html" vars='{"active":"Projects"}'></x-include>
 		<main class="govuk-main-wrapper" id="main-content" role="main" tabindex="-1">
 			<div class="govuk-width-container study-synthesis-page" data-study-subpage-template="synthesis">
-				<nav class="govuk-breadcrumbs" aria-label="Breadcrumb">
+				<nav
+					class="govuk-breadcrumbs"
+					id="study-synthesis-breadcrumbs"
+					typeof="schema:BreadcrumbList"
+					aria-label="Breadcrumb"
+				>
 					<ol class="govuk-breadcrumbs__list">
 						<li class="govuk-breadcrumbs__list-item">
-							<a class="govuk-breadcrumbs__link" href="/pages/projects/">Projects</a>
+							<a class="govuk-breadcrumbs__link" href="/pages/projects/" property="schema:item" typeof="schema:Thing">
+								Projects
+							</a>
 						</li>
 
 						<li class="govuk-breadcrumbs__list-item">
-							<a class="govuk-breadcrumbs__link" href="/pages/projects/" id="breadcrumb-project">Project</a>
+							<a
+								class="govuk-breadcrumbs__link"
+								href="/pages/projects/"
+								id="breadcrumb-project"
+								property="schema:item"
+								typeof="schema:Thing"
+							>
+								Project
+							</a>
 						</li>
 
 						<li class="govuk-breadcrumbs__list-item">
-							<a class="govuk-breadcrumbs__link" href="#" id="breadcrumb-study">Study</a>
+							<a
+								class="govuk-breadcrumbs__link"
+								href="#"
+								id="breadcrumb-study"
+								property="schema:item"
+								typeof="schema:Thing"
+							>
+								Study
+							</a>
 						</li>
 
 						<li class="govuk-breadcrumbs__list-item" aria-current="page">Synthesis</li>
@@ -63,26 +86,12 @@
 
 				<div id="synthesis-status" class="govuk-body-s synthesis-status" aria-live="polite"></div>
 
-				<header class="synthesis-hero govuk-!-margin-bottom-6">
-					<div>
-						<p id="synthesis-eyebrow" class="govuk-caption-m">Study synthesis</p>
-						<h1 id="synthesis-title" class="govuk-heading-l">Synthesis for this study</h1>
-						<p id="study-context-text" class="govuk-body synthesis-context govuk-!-width-two-thirds">
-							Group study evidence into themes you can trace back to source notes.
-						</p>
-					</div>
-					<div class="synthesis-hero__actions">
-						<a
-							href="/pages/projects/"
-							role="button"
-							draggable="false"
-							class="govuk-button govuk-button--secondary"
-							data-module="govuk-button"
-							id="back-to-study"
-						>
-							Back to study
-						</a>
-					</div>
+				<header class="govuk-!-margin-bottom-6">
+					<p id="synthesis-eyebrow" class="govuk-caption-m">Study synthesis</p>
+					<h1 id="synthesis-title" class="govuk-heading-l">Synthesis for this study</h1>
+					<p id="study-context-text" class="govuk-body synthesis-context govuk-!-width-two-thirds">
+						Group study evidence into themes you can trace back to source notes.
+					</p>
 				</header>
 
 				<section class="synthesis-summary" aria-label="Synthesis summary">
