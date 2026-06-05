@@ -1,0 +1,97 @@
+name: Apply D1 Diary Study Consent Forms Seed
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - "infra/cloudflare/migrations/0012_seed_diary_study_consent_forms.sql"
+      - ".github/workflows/apply-d1-diary-study-consent-forms.yml"
+  workflow_dispatch:
+    inputs:
+      confirm_database_name:
+        description: Type researchops-d1 to confirm the target D1 database
+        required: true
+        type: string
+      confirm_operation:
+        description: Type APPLY_DIARY_STUDY_CONSENT_FORMS to seed consent forms
+        required: true
+        type: string
+      run_post_apply_checks:
+        description: Run post-apply consent form checks
+        required: true
+        default: true
+        type: boolean
+
+permissions:
+  contents: read
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  WRANGLER_VERSION: "4.90.0"
+  D1_DATABASE_NAME: "researchops-d1"
+  WRANGLER_CONFIG: "infra/cloudflare/wrangler.toml"
+  DIARY_STUDY_CONSENT_FORMS_MIGRATION: "infra/cloudflare/migrations/0012_seed_diary_study_consent_forms.sql"
+  DIARY_STUDY_ID: "rect3o7dt"
+
+jobs:
+  apply:
+    name: Apply diary study consent form seed to remote D1
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+
+    steps:
+      - name: Confirm manual target
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          if [ "${{ inputs.confirm_database_name }}" != "${D1_DATABASE_NAME}" ]; then
+            echo "confirm_database_name must be ${D1_DATABASE_NAME}"
+            exit 1
+          fi
+
+          if [ "${{ inputs.confirm_operation }}" != "APPLY_DIARY_STUDY_CONSENT_FORMS" ]; then
+            echo "confirm_operation must be APPLY_DIARY_STUDY_CONSENT_FORMS"
+            exit 1
+          fi
+
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Use Node.js 22
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Record Wrangler toolchain version
+        run: npx --yes wrangler@${WRANGLER_VERSION} --version
+
+      - name: Check migration file exists
+        run: test -f "${DIARY_STUDY_CONSENT_FORMS_MIGRATION}"
+
+      - name: Apply diary study consent form seed to remote D1
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+        run: |
+          npx --yes wrangler@${WRANGLER_VERSION} d1 execute "${D1_DATABASE_NAME}" \
+            --remote \
+            --config "${WRANGLER_CONFIG}" \
+            --file "${DIARY_STUDY_CONSENT_FORMS_MIGRATION}"
+
+      - name: Check diary study consent form seed
+        if: ${{ github.event_name == 'push' || inputs.run_post_apply_checks }}
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+        run: |
+          npx --yes wrangler@${WRANGLER_VERSION} d1 execute "${D1_DATABASE_NAME}" \
+            --remote \
+            --config "${WRANGLER_CONFIG}" \
+            --command "SELECT COUNT(*) AS consent_form_count FROM rops_consent_forms WHERE study_id = '${DIARY_STUDY_ID}' AND source = 'airtable-hydration' AND active = 1;"
+          npx --yes wrangler@${WRANGLER_VERSION} d1 execute "${D1_DATABASE_NAME}" \
+            --remote \
+            --config "${WRANGLER_CONFIG}" \
+            --command "SELECT id, title, form_type, status, version, published_at FROM rops_consent_forms WHERE study_id = '${DIARY_STUDY_ID}' AND source = 'airtable-hydration' AND active = 1 ORDER BY datetime(created_at) DESC, datetime(updated_at) DESC;"

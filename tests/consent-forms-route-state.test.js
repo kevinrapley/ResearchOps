@@ -12,6 +12,8 @@ const serviceSource = fs.readFileSync("infra/cloudflare/src/service/consent-form
 const serviceIndexSource = fs.readFileSync("infra/cloudflare/src/service/index.js", "utf8");
 const fieldsSource = fs.readFileSync("infra/cloudflare/src/core/fields.js", "utf8");
 const d1MigrationSource = fs.readFileSync("infra/cloudflare/migrations/0011_consent_forms_d1.sql", "utf8");
+const d1DiaryStudySeedSource = fs.readFileSync("infra/cloudflare/migrations/0012_seed_diary_study_consent_forms.sql", "utf8");
+const d1DiaryStudySeedWorkflow = fs.readFileSync(".github/workflows/apply-d1-diary-study-consent-forms.yml", "utf8");
 
 function includes(source, text, label) {
 	assert.equal(source.includes(text), true, `Expected ${label} to include: ${text}`);
@@ -102,3 +104,14 @@ includes(fieldsSource, "Consent Items (JSON)", "fields");
 includes(d1MigrationSource, "CREATE TABLE IF NOT EXISTS rops_consent_forms", "D1 consent forms migration");
 includes(d1MigrationSource, "study_id TEXT NOT NULL", "D1 consent forms migration");
 includes(d1MigrationSource, "idx_rops_consent_forms_study", "D1 consent forms migration");
+
+includes(d1DiaryStudySeedSource, "rec2FLw9TwgDgi85y", "D1 diary study consent form seed");
+includes(d1DiaryStudySeedSource, "recw6i67q2DuoZqMe", "D1 diary study consent form seed");
+includes(d1DiaryStudySeedSource, "'rect3o7dt'", "D1 diary study consent form seed");
+includes(d1DiaryStudySeedSource, "airtable-hydration", "D1 diary study consent form seed");
+includes(d1DiaryStudySeedSource, "ON CONFLICT(id) DO UPDATE SET", "D1 diary study consent form seed");
+
+includes(d1DiaryStudySeedWorkflow, "Apply D1 Diary Study Consent Forms Seed", "D1 diary study consent form seed workflow");
+includes(d1DiaryStudySeedWorkflow, "infra/cloudflare/migrations/0012_seed_diary_study_consent_forms.sql", "D1 diary study consent form seed workflow");
+includes(d1DiaryStudySeedWorkflow, "APPLY_DIARY_STUDY_CONSENT_FORMS", "D1 diary study consent form seed workflow");
+includes(d1DiaryStudySeedWorkflow, "SELECT COUNT(*) AS consent_form_count", "D1 diary study consent form seed workflow");
