@@ -69,6 +69,7 @@
 - Updated tests for the new `dependabot/` branch-prefix behaviour.
 - Updated operating-model documentation and GitHub bundle prompt text so the branch policy is consistent across enforcement and documentation.
 - Regenerated the GitHub bundle registry manifest after bundle text changed.
+- Follow-up fix for PR #359: updated `lychee.toml` for Lychee `0.23.0` compatibility by changing `exclude_mail` to `include_mail`, changing `verbose` from a boolean to a log level, replacing the invalid `*.invalid` regex with `.*\\.invalid`, and setting `root_dir = "public"` so generated root-relative app links resolve in CI.
 
 ## Post-merge issue
 
@@ -86,6 +87,7 @@
 - `npm run agent:bundle-versions:validate`
 - `npm test`
 - `npm run validate` on the merged main state reproduced the missing trace failure.
+- `/tmp/lychee-v0.23.0/lychee --config lychee.toml .` reproduced the PR #359 Lychee failure, then passed after the `lychee.toml` compatibility fix.
 
 ## Residual risk
 

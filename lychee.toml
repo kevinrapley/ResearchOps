@@ -2,7 +2,7 @@
 # Make the output files easy to download from CI.
 output = "lychee.out"
 format = "detailed"      # human-readable summary
-verbose = true
+verbose = "info"
 user_agent = "Mozilla/5.0 (compatible; Lychee CI)"
 
 # Performance + resilience
@@ -21,7 +21,7 @@ exclude = [
   "0.0.0.0",
   "example.com",
   "researchops.local",
-  "*.invalid",
+  ".*\\.invalid",
 ]
 
 # Ignore these paths/patterns in the repo
@@ -40,7 +40,8 @@ exclude_path = [
 ]
 
 # Don’t flag emails
-exclude_mail = true
+include_mail = false
 
 # Optional: if your Markdown uses root-relative links that should resolve against a deployed site:
 # base = "https://researchops.pages.dev/"
+root_dir = "public"

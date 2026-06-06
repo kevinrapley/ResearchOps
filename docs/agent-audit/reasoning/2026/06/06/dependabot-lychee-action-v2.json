@@ -67,7 +67,8 @@
 		"Updated trace coverage policy so dependabot/ branches are allowed and do not require promoted trace artefacts while still keeping normal work branches trace-gated.",
 		"Updated tests for the new dependabot/ branch-prefix behaviour.",
 		"Updated operating-model documentation and GitHub bundle prompt text so the branch policy is consistent across enforcement and documentation.",
-		"Regenerated the GitHub bundle registry manifest after bundle text changed."
+		"Regenerated the GitHub bundle registry manifest after bundle text changed.",
+		"Follow-up fix for PR #359: updated lychee.toml for Lychee 0.23.0 compatibility by changing exclude_mail to include_mail, changing verbose from a boolean to a log level, replacing the invalid *.invalid regex with .*\\\\.invalid, and setting root_dir = \"public\" so generated root-relative app links resolve in CI."
 	],
 	"postMergeIssue": {
 		"cause": "PR #333 was checked on its dependabot/ branch, where trace coverage is deliberately skipped. After merge, main validation detected agent-significant operating-model changes in the merge diff and failed because no 2026-06-06 trace artefact existed.",
@@ -101,6 +102,10 @@
 		{
 			"command": "npm run validate",
 			"result": "reproduced missing trace failure on merged main before this trace artefact was added"
+		},
+		{
+			"command": "/tmp/lychee-v0.23.0/lychee --config lychee.toml .",
+			"result": "reproduced the PR #359 Lychee failure, then passed after the lychee.toml compatibility fix"
 		}
 	],
 	"residualRisk": "Future dependency PRs that modify operating-model files should include an appropriate promoted trace or have post-merge main validation simulated before being marked safe."
