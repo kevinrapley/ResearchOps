@@ -1,14 +1,14 @@
-@import 'govuk-frontend/dist/govuk/base';
+@use 'govuk-frontend/dist/govuk/base' as *;
 
 .researchops-highlight-panel {
 	padding: govuk-spacing(4);
-	border: 1px solid govuk-colour('mid-grey');
+	border: 1px solid govuk-colour('black', $variant: 'tint-80');
 	border-left: govuk-spacing(1) solid govuk-colour('blue');
 }
 
 .researchops-journey-map {
 	padding: govuk-spacing(4);
-	border: 1px solid govuk-colour('mid-grey');
+	border: 1px solid govuk-colour('black', $variant: 'tint-80');
 }
 
 .researchops-step-grid {
@@ -26,8 +26,8 @@
 	min-width: 0;
 	min-height: 110px;
 	padding: govuk-spacing(3);
-	border: 1px solid govuk-colour('mid-grey');
-	background: govuk-colour('light-grey');
+	border: 1px solid govuk-colour('black', $variant: 'tint-80');
+	background: govuk-colour('black', $variant: 'tint-95');
 	box-sizing: border-box;
 }
 
@@ -63,7 +63,7 @@
 
 .researchops-next-action__category {
 	margin-bottom: govuk-spacing(3);
-	color: govuk-colour('dark-grey');
+	color: govuk-colour('black', $variant: 'tint-25');
 	font-family: $govuk-font-family;
 	font-size: 16px;
 	line-height: 1.25;
@@ -106,7 +106,7 @@
 	}
 
 	.researchops-next-action:not(:last-child) {
-		border-right: 1px solid govuk-colour('mid-grey');
+		border-right: 1px solid govuk-colour('black', $variant: 'tint-80');
 	}
 }
 
