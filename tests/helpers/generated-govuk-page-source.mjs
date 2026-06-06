@@ -2,12 +2,15 @@ import fs from 'node:fs';
 import { resolve, normalize } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import nunjucks from 'nunjucks';
-import { cacheBustOutcomesPageScripts, govukPages } from '../../scripts/govuk/render-govuk-pages.mjs';
+import {
+	cacheBustOutcomesPageScripts,
+	govukPages,
+} from '../../scripts/govuk/render-govuk-pages.mjs';
 
 const originalReadFileSync = fs.readFileSync.bind(fs);
 const root = process.cwd();
 const renderedPageOutputs = new Map(
-	govukPages.map((page) => [normalize(resolve(root, page.output)), page]),
+	govukPages.map((page) => [normalize(resolve(root, page.output)), page])
 );
 
 const env = new nunjucks.Environment(
@@ -18,7 +21,7 @@ const env = new nunjucks.Environment(
 	{
 		autoescape: true,
 		throwOnUndefined: true,
-	},
+	}
 );
 
 function escapeHtmlAttribute(value) {
