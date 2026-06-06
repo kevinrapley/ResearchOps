@@ -1,7 +1,7 @@
 # ResearchOps design critique backlog
 
 **Date:** 2026-05-07  
-**Source critique:** [`researchops-platform-design-critique-2026-05-07.md`](/docs/design-critiques/26/05/07/researchops-platform-design-critique-2026-05-07.md)  
+**Source critique:** [`researchops-platform-design-critique-2026-05-07.md`](../../../../design-critiques/26/05/07/researchops-platform-design-critique-2026-05-07.md)  
 **Authority:** [`researchops-design-critique-implementation-authority-2026-05-07.md`](researchops-design-critique-implementation-authority-2026-05-07.md)
 
 ## Backlog status
