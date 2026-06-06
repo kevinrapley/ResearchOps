@@ -64,11 +64,13 @@ Create the full Add note takers and observers implementation from study setup wi
 
 ## Issues and pivots
 
-None recorded.
+- 2026-06-06T05:05:00Z — Codex review identified that `/api/study-support` routes exposed support-person setup before authentication and route-permission checks.
+- 2026-06-06T05:12:00Z — Added Worker-level auth context resolution and route permission assertion before dispatching study-support read/write/delete handlers.
+- 2026-06-06T05:13:00Z — Added D1 route-permission declarations for study-support view and manage operations, including the dynamic delete route permission pattern.
 
 ## Validation warnings
 
-None recorded.
+- `npm run lint` completed with existing repository warnings only; no lint errors were reported.
 
 ## Event timeline
 

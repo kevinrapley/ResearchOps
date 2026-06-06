@@ -53,6 +53,10 @@
     "npm run format:check — exit 0",
     "Browser check of note takers and observers decision, validation, add, and qualified remove flows — exit 0"
   ],
-  "issues": [],
-  "warnings": []
+  "issues": [
+    "Codex review identified unauthenticated access to /api/study-support routes; fixed by adding Worker route-permission checks and D1 permission declarations."
+  ],
+  "warnings": [
+    "npm run lint completed with existing repository warnings only; no lint errors were reported."
+  ]
 }

@@ -3,6 +3,7 @@ import { resolveAuthenticatedContext } from "./core/auth/access-scoped.js";
 import { handlePasswordlessAuthRoute } from "./core/auth/passwordless.js";
 import { handleRegistrationRequestsRoute } from "./core/auth/registration-requests.js";
 import { handleRoleAssignmentsRoute } from "./core/auth/role-assignments-scoped.js";
+import { assertRoutePermission } from "./core/auth/route-permissions.js";
 import { handleTeamAccessRequestsRoute } from "./core/auth/team-access-requests.js";
 import { handleRequest } from "./core/router.js";
 import { ResearchOpsService } from "./service/index.js";
@@ -105,6 +106,13 @@ function serviceFor(env) {
 
 async function authContextFor(request, env) {
 	return resolveAuthenticatedContext(request, env);
+}
+
+function requestForRoutePermission(request, routePattern) {
+	const url = new URL(request.url);
+	url.pathname = routePattern;
+	url.search = "";
+	return new Request(url.toString(), { method: request.method, headers: request.headers });
 }
 
 function workerBuild(env) {
@@ -276,6 +284,11 @@ async function handleStudySupport(request, env, apiPath) {
 	const url = new URL(request.url);
 	const origin = request.headers.get("Origin") || "";
 	const service = serviceFor(env);
+	const authContext = await authContextFor(request, env);
+	const routePermissionRequest = apiPath.match(/^\/api\/study-support\/people\/([^/]+)$/)
+		? requestForRoutePermission(request, "/api/study-support/people/:id")
+		: request;
+	await assertRoutePermission(routePermissionRequest, env, authContext);
 	if (apiPath === "/api/study-support" && request.method === "GET") return service.readStudySupport(origin, url);
 	if (apiPath === "/api/study-support/setup" && request.method === "PUT") return service.saveStudySupportSetup(request, origin);
 	if (apiPath === "/api/study-support/people" && request.method === "POST") return service.createStudySupportPerson(request, origin);

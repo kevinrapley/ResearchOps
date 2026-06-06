@@ -165,6 +165,11 @@ for (const text of [
 
 for (const text of [
 	"async function handleStudySupport",
+	"import { assertRoutePermission } from \"./core/auth/route-permissions.js\"",
+	"function requestForRoutePermission",
+	"requestForRoutePermission(request, \"/api/study-support/people/:id\")",
+	"const authContext = await authContextFor(request, env)",
+	"await assertRoutePermission(routePermissionRequest, env, authContext)",
 	"apiPath === \"/api/study-support\" && request.method === \"GET\"",
 	"apiPath === \"/api/study-support/setup\" && request.method === \"PUT\"",
 	"apiPath === \"/api/study-support/people\" && request.method === \"POST\"",
@@ -187,6 +192,21 @@ for (const text of [
 	"export async function deleteStudySupportPerson"
 ]) {
 	includes(service, text, "study support service");
+}
+
+for (const text of [
+	"'study.support.view'",
+	"'study.support.manage'",
+	"('role_researcher', 'study.support.view')",
+	"('role_researcher', 'study.support.manage')",
+	"('role_research_lead', 'study.support.manage')",
+	"('role_team_admin', 'study.support.manage')",
+	"'GET', '/api/study-support', '[\"study.support.view\"]'",
+	"'PUT', '/api/study-support/setup', '[\"study.support.manage\"]'",
+	"'POST', '/api/study-support/people', '[\"study.support.manage\"]'",
+	"'DELETE', '/api/study-support/people/:id', '[\"study.support.manage\"]'"
+]) {
+	includes(migration, text, "study support route permissions");
 }
 
 for (const text of [
