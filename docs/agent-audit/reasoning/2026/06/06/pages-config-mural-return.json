@@ -1,0 +1,65 @@
+{
+	"date": "2026-06-06",
+	"branch": "fix/pages-config-mural-return",
+	"traceRequired": true,
+	"repository": "kevinrapley/ResearchOps",
+	"task": "Pin the Cloudflare Pages build Node version, remove the invalid absolute API proxy redirect, and protect Mural OAuth return-to-Pages behaviour.",
+	"operatingModelFilesLoaded": [
+		"AGENTS.md",
+		".agent-operating-model/orchestration.xml",
+		".agent-operating-model/bundle-registry.json",
+		".agent-operating-model/task-signal-catalog.json",
+		".agent-operating-model/selection-rules.json",
+		".agent-operating-model/precedence-policy.md",
+		".agent-operating-model/trace-policy.md",
+		".agent-operating-model/github-mutation-policy.md"
+	],
+	"selectedBundles": [
+		".agent-operating-model/bundles/github/",
+		".agent-operating-model/bundles/researchops-developer-control/",
+		".agent-operating-model/bundles/multi-functional-team/",
+		".agent-operating-model/bundles/cloudflare/",
+		".agent-operating-model/bundles/mural-public-api/"
+	],
+	"skippedBundles": [
+		".agent-operating-model/bundles/govuk-design-system/",
+		".agent-operating-model/bundles/openai/",
+		".agent-operating-model/bundles/mcp-agent-tooling/",
+		".agent-operating-model/bundles/airtable-public-api/"
+	],
+	"filesRead": [
+		"wrangler.toml",
+		"public/_redirects",
+		"functions/api/[[path]].js",
+		"infra/cloudflare/wrangler.toml",
+		"infra/cloudflare/src/service/internals/mural.js",
+		"infra/cloudflare/src/lib/mural.js",
+		"infra/cloudflare/src/core/router.js",
+		"public/components/mural-integration.js",
+		"tests/mural-ui-route-state.test.js",
+		"tests/project-dashboard-route-state.test.js"
+	],
+	"filesModified": [
+		"wrangler.toml",
+		"public/_redirects",
+		"tests/pages-config-mural-return-route-state.test.js",
+		"docs/agent-audit/reasoning/2026/06/06/pages-config-mural-return.md",
+		"docs/agent-audit/reasoning/2026/06/06/pages-config-mural-return.json"
+	],
+	"decisions": [
+		"Add NODE_VERSION = \"20\" under [vars] in the root Pages wrangler.toml.",
+		"Remove the invalid absolute /api/* proxy rule from public/_redirects.",
+		"Keep MURAL_REDIRECT_URI pointing at the API Worker callback so Mural can return the authorization code.",
+		"Test that Mural callback redirects relative return paths using PAGES_ORIGIN rather than the Worker request URL.",
+		"Use route-state coverage to preserve the Pages, redirect and Mural OAuth return contracts."
+	],
+	"validationAttempted": [
+		"Repository-local commands were not run in this environment.",
+		"Added tests/pages-config-mural-return-route-state.test.js for CI execution through npm test.",
+		"Verified the changed-file list after edits."
+	],
+	"residualRisks": [
+		"The Mural UI still uses the production Worker origin on pages.dev hosts unless an API-origin override is present; this was existing behaviour and outside the PR scope.",
+		"Cloudflare Pages should be redeployed after merge to confirm Node 20 and no invalid redirect warnings."
+	]
+}
