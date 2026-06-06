@@ -1,0 +1,79 @@
+{
+	"date": "2026-06-06",
+	"branch": "test/govuk-template-renderer-contracts",
+	"traceRequired": true,
+	"repository": "kevinrapley/ResearchOps",
+	"task": "Update route-state tests so renderer-managed GOV.UK pages are loaded from Nunjucks templates and renderer registration rather than committed generated HTML.",
+	"operatingModelFilesLoaded": [
+		"README.md",
+		"AGENTS.md",
+		"RECENT_LEARNINGS.md",
+		".agent-operating-model/orchestration.xml",
+		".agent-operating-model/bundle-registry.json",
+		".agent-operating-model/task-signal-catalog.json",
+		".agent-operating-model/selection-rules.json",
+		".agent-operating-model/trace-policy.md",
+		".agent-operating-model/github-mutation-policy.md"
+	],
+	"selectedBundles": [
+		".agent-operating-model/bundles/github/",
+		".agent-operating-model/bundles/researchops-developer-control/",
+		".agent-operating-model/bundles/multi-functional-team/",
+		".agent-operating-model/bundles/govuk-design-system/",
+		".agent-operating-model/bundles/cloudflare/"
+	],
+	"skippedBundles": [
+		".agent-operating-model/bundles/openai/",
+		".agent-operating-model/bundles/mcp-agent-tooling/",
+		".agent-operating-model/bundles/airtable-public-api/",
+		".agent-operating-model/bundles/mural-public-api/"
+	],
+	"filesRead": [
+		"README.md",
+		"AGENTS.md",
+		"RECENT_LEARNINGS.md",
+		"package.json",
+		"scripts/govuk/render-govuk-pages.mjs",
+		"src/govuk/templates/layouts/researchops.njk",
+		"src/govuk/templates/pages/projects.njk",
+		"src/govuk/templates/pages/study-synthesis.njk",
+		"src/govuk/templates/pages/projects-outcomes.njk",
+		"tests/project-dashboard-route-state.test.js",
+		"tests/projects-page-route-state.test.js",
+		"tests/study-page-route-state.test.js",
+		"tests/govuk-pages-render-workflow-state.test.js",
+		"tests/govuk-forms-application-route-state.test.js",
+		"tests/govuk-tables-summary-lists-application-route-state.test.js",
+		"docs/deployment/generated-html-policy.md"
+	],
+	"filesModified": [
+		"package.json",
+		"tests/helpers/generated-govuk-page-source.mjs",
+		"tests/govuk-generated-html-test-source-route-state.test.js",
+		"tests/govuk-forms-application-route-state.test.js",
+		"tests/govuk-tables-summary-lists-application-route-state.test.js",
+		"docs/deployment/generated-html-policy.md",
+		"docs/agent-audit/reasoning/2026/06/06/govuk-template-renderer-test-contracts.md",
+		"docs/agent-audit/reasoning/2026/06/06/govuk-template-renderer-test-contracts.json"
+	],
+	"decisions": [
+		"Use a Node --import preloader for npm test so existing route-state tests receive in-memory rendered GOV.UK pages from templates and renderer registration.",
+		"Intercept only outputs registered in govukPages, so legacy static public page tests continue to read committed files.",
+		"Keep route assertions intact while decoupling them from committed generated HTML files.",
+		"Document the new generated HTML policy direction and add route-state coverage for the helper.",
+		"Apply the Prettier formatting patch for the helper after CI failure.",
+		"Move brittle exact generated-output checks in GOV.UK forms and table route-state tests to template-aware and output-format-tolerant assertions."
+	],
+	"validationAttempted": [
+		"Repository-local commands were not run in this environment.",
+		"Added tests/govuk-generated-html-test-source-route-state.test.js for CI validation.",
+		"The existing npm test path now imports tests/helpers/generated-govuk-page-source.mjs before running node --test.",
+		"Initial CI failed on format, lint and two unit test assertions.",
+		"Release-gate artifacts identified the helper formatting failure and two brittle generated-output assertions.",
+		"Patched those failures and left validation to refreshed PR checks."
+	],
+	"residualRisks": [
+		"Direct node --test invocations outside npm test do not automatically load the preloader unless they include the import flag.",
+		"The helper renders pages without Prettier formatting, so tests should avoid depending on generated whitespace formatting."
+	]
+}
