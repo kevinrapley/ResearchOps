@@ -22,6 +22,32 @@ Service design: The setup task should be independent from the existing “Begin 
 
 Technology: D1 is the primary store. Airtable is a fallback read source once the account limits are lifted, but the UI must not depend on Airtable for normal operation.
 
+ResearchOps: The page must distinguish note takers from observers. Note takers actively help capture evidence. Observers attend but should normally not interrupt or influence the session. Some support people may join only some sessions, so the page needs an attendance scope rather than assuming full-study attendance.
+
+User research: The page should help researchers answer who is joining, why they are joining, what they are allowed to do, and whether participants have been told observers may attend.
+
+Accessibility: Use GOV.UK form components and patterns. Grouped choices must use fieldsets. Validation must use a GOV.UK error summary with matching field-level messages and links that move focus to the relevant field.
+
+Privacy: Collect the minimum information needed to run sessions. Ask for an email address only if it is needed for coordination. Do not collect phone numbers, HR details, medical history or unnecessary personal notes about team members.
+
+Developer: The route is `/pages/study/note-takers-observers/?id=<StudyID>&project=<ProjectID>`, with legacy `sid` and `pid` parameters supported by the shared study route context bridge during transition. The study page task status must be derived from saved route state, not hardcoded.
+
+## Product decisions
+
+- Page title: “Note takers and observers”.
+- Primary user need: confirm who, if anyone, will join research sessions beyond the lead researcher.
+- First question: “Will anyone else join sessions for this study?”
+- Decision options:
+  - “No, only the lead researcher will join”
+  - “Yes, add note takers or observers”
+- The support people section appears only after the researcher saves “Yes”.
+- The page does not force researchers to add a person when solo research is valid.
+- Readiness means a setup decision has been saved, with one nuance: if the researcher saves “Yes”, at least one support person must be added before the setup task is ready.
+- “Other” role requires a text input so the support role is understandable.
+- Removal requires an explicit confirmation step to prevent accidental loss.
+- Observer guidance must make participant-facing expectations and consent implications visible.
+- User-facing errors must use plain service copy, never internal route, permission or system codes.
+
 ## User needs
 
 As a researcher, I need to record whether anyone else will join sessions, so that session planning is clear before fieldwork starts.
@@ -65,6 +91,15 @@ Routes:
 
 D1 is used first. If Airtable environment configuration is present, `GET /api/study-support` can read from Airtable when D1 has no usable records.
 
+Access expectations:
+
+- Authenticated researchers, research leads and team admins can view the setup.
+- Authenticated researchers, research leads and team admins can save the setup decision and manage support people.
+- The API remains permission-gated, but the route must not fail because the feature’s D1 route-permission declarations are missing after deployment.
+- Runtime permission bootstrapping may be used for this feature’s own permission rows, role mappings and route declarations, provided the route still performs the permission check before changing study support data.
+- User-facing error summaries must not expose internal machine codes such as `route_permission_missing`, `permission_denied` or `authentication_required`.
+- If saving fails, the page keeps the decision unsaved and shows a plain-language recovery message.
+
 ## Acceptance criteria
 
 Given I open the note takers and observers page, then I see GOV.UK breadcrumbs back to Projects, the project and the study.
@@ -91,6 +126,10 @@ Given I remove the only support person after saving “Yes”, then the setup st
 
 Given I return to the study page, then “Add note takers and observers” links to this route and reflects the saved setup status.
 
+Given I am signed in as a researcher, research lead or team admin, when I save the setup decision, then the decision is saved and I am not blocked by missing route-permission declarations.
+
+Given an API permission or route declaration error occurs, when the page shows a GOV.UK error summary, then it shows plain-language recovery copy and does not show internal codes.
+
 ## Gherkin criteria
 
 ```gherkin
@@ -106,6 +145,7 @@ Feature: Study note takers and observers
 
   Scenario: Save that additional people will join
     Given I am on the note takers and observers page for a study
+    And I am signed in as a researcher
     When I choose "Yes, add note takers or observers"
     And I save the setup decision
     Then I see the support people form
@@ -135,6 +175,20 @@ Feature: Study note takers and observers
     Then I see a confirmation prompt
     When I confirm removal
     Then the support person is removed
+
+  Scenario: Authenticated researcher can save the setup decision
+    Given I am signed in as a researcher
+    And I am on the note takers and observers page for a study
+    When I choose "Yes, add note takers or observers"
+    And I save the setup decision
+    Then the setup decision is saved
+    And I do not see an error containing "route_permission_missing"
+
+  Scenario: Internal API codes are translated for the user
+    Given an API permission check fails while saving the setup decision
+    When the page shows the error summary
+    Then I see plain-language recovery copy
+    And I do not see internal route or permission codes
 ```
 
 ## Privacy and governance

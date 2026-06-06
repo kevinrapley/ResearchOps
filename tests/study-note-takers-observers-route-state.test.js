@@ -225,7 +225,11 @@ for (const text of [
 	"## Gherkin criteria",
 	"## Data model",
 	"D1 is the primary store",
-	"Airtable is a fallback read source"
+	"Airtable is a fallback read source",
+	"Authenticated researchers, research leads and team admins can save the setup decision",
+	"User-facing error summaries must not expose internal machine codes",
+	"Runtime permission bootstrapping may be used",
+	"I do not see an error containing \"route_permission_missing\""
 ]) {
 	includes(productDoc, text, "product document");
 }
