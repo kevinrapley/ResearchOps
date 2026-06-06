@@ -62,6 +62,12 @@
     "infra/cloudflare/src/core/ai-rewrite/prompts.js",
     "infra/cloudflare/src/core/ai-rewrite/testing.js",
     "infra/cloudflare/src/core/ai-rewrite/text.js",
+    "infra/cloudflare/src/service/projects.js",
+    "infra/cloudflare/src/service/projects/airtable.js",
+    "infra/cloudflare/src/service/projects/auth.js",
+    "infra/cloudflare/src/service/projects/csv.js",
+    "infra/cloudflare/src/service/projects/github-csv.js",
+    "infra/cloudflare/src/service/projects/normalisation.js",
     "lychee.toml",
     "public/components/guides/api.js",
     "public/components/guides/front-matter.js",
@@ -71,6 +77,7 @@
     "tests/ai-rewrite-split-route-state.test.js",
     "tests/govuk-pages-render-workflow-state.test.js",
     "tests/mural-service-split-route-state.test.js",
+    "tests/projects-service-split-route-state.test.js",
     "tests/study-guides-route-state.test.js",
     "docs/agent-audit/reasoning/2026/06/06/reduce-repository-debt.md",
     "docs/agent-audit/reasoning/2026/06/06/reduce-repository-debt.json"
@@ -83,7 +90,8 @@
     "Updated route-state assertions to cover extracted modules without relying on formatter-specific import line breaks.",
     "Follow-up Lychee remediation corrected stale documentation links exposed by the narrower Git ignore rules, fixed the project notes tab route, and added narrow Lychee exclusions for placeholder-heavy Mural example transcripts and the Mustache HTML head partial.",
     "Follow-up Mural service split kept MuralServicePart as the public route surface while moving board registry resolution, direct journal sticky writing, token refresh, viewer URL probing, and workspace/room setup into responsibility-specific modules.",
-    "Follow-up AI rewrite split kept ai-rewrite.js as the public route and Worker entry surface while moving defaults, HTTP helpers, text sanitisation, guardrails, prompt content, and testing helpers into responsibility-specific modules under infra/cloudflare/src/core/ai-rewrite/."
+    "Follow-up AI rewrite split kept ai-rewrite.js as the public route and Worker entry surface while moving defaults, HTTP helpers, text sanitisation, guardrails, prompt content, and testing helpers into responsibility-specific modules under infra/cloudflare/src/core/ai-rewrite/.",
+    "Follow-up projects service split kept projects.js as the public route operation layer while moving CSV parsing, GitHub CSV fallback, field normalisation and mapping, auth visibility checks, and Airtable access helpers into responsibility-specific modules under infra/cloudflare/src/service/projects/."
   ],
   "validation": [
     {
@@ -169,6 +177,34 @@
     {
       "command": "npm run trace:coverage",
       "status": "passed_after_ai_rewrite_split"
+    },
+    {
+      "command": "node --check infra/cloudflare/src/service/projects.js && node --check infra/cloudflare/src/service/projects/airtable.js && node --check infra/cloudflare/src/service/projects/auth.js && node --check infra/cloudflare/src/service/projects/csv.js && node --check infra/cloudflare/src/service/projects/github-csv.js && node --check infra/cloudflare/src/service/projects/normalisation.js",
+      "status": "passed_after_projects_service_split"
+    },
+    {
+      "command": "node --test tests/projects-service-split-route-state.test.js tests/projects-parse-csv.test.js",
+      "status": "passed_after_projects_service_split"
+    },
+    {
+      "command": "dynamic import of infra/cloudflare/src/service/projects.js with public export assertion",
+      "status": "passed_after_projects_service_split"
+    },
+    {
+      "command": "npm test",
+      "status": "passed_181_tests_after_projects_service_split"
+    },
+    {
+      "command": "npm run lint",
+      "status": "passed_with_existing_warnings_after_projects_service_split"
+    },
+    {
+      "command": "npm run format:check",
+      "status": "passed_after_projects_service_split"
+    },
+    {
+      "command": "npm run trace:coverage",
+      "status": "passed_after_projects_service_split"
     }
   ],
   "residualRisks": [
