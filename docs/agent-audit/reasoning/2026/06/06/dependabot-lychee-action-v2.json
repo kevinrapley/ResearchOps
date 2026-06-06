@@ -1,0 +1,112 @@
+{
+	"date": "2026-06-06",
+	"originalBranch": "dependabot/github_actions/lycheeverse/lychee-action-2",
+	"postMergeBranch": "main",
+	"traceRequired": true,
+	"task": "Get Dependabot PR #333 green after rebasing and allow dependabot/ automation branches in the repository branch-prefix policy.",
+	"operatingModelFilesLoaded": [
+		"AGENTS.md",
+		".agent-operating-model/orchestration.xml",
+		".agent-operating-model/github-mutation-policy.md",
+		".agent-operating-model/precedence-policy.md",
+		".agent-operating-model/trace-policy.md",
+		".agent-operating-model/bundles/github/prompt.spec.yaml",
+		".agent-operating-model/bundles/github/prompt.body.xml",
+		".agent-operating-model/bundles/researchops-developer-control/prompt.spec.yaml",
+		".agent-operating-model/bundles/researchops-developer-control/prompt.body.xml",
+		".agent-operating-model/bundles/multi-functional-team/prompt.spec.yaml",
+		".agent-operating-model/bundles/multi-functional-team/prompt.body.xml"
+	],
+	"selectedBundles": [
+		{
+			"id": "github-diamond",
+			"path": ".agent-operating-model/bundles/github/"
+		},
+		{
+			"id": "researchops-developer-control",
+			"path": ".agent-operating-model/bundles/researchops-developer-control/"
+		},
+		{
+			"id": "multi-functional-team",
+			"path": ".agent-operating-model/bundles/multi-functional-team/"
+		}
+	],
+	"skippedBundles": [
+		"govuk-design-system",
+		"cloudflare",
+		"openai-platform",
+		"mcp-agent-tooling",
+		"airtable-public-api",
+		"mural-public-api"
+	],
+	"filesRead": [
+		".github/workflows/qa-links.yml",
+		"scripts/agent-trace/assert-trace-coverage.mjs",
+		"tests/agent-trace-coverage.test.js",
+		"AGENTS.md",
+		".agent-operating-model/trace-policy.md",
+		".agent-operating-model/README.md",
+		".agent-operating-model/bundles/github/prompt.body.xml",
+		".agent-operating-model/bundles/github/CHANGELOG.md",
+		".agent-operating-model/bundles/github/registry-manifest.yaml"
+	],
+	"filesChanged": [
+		".github/workflows/qa-links.yml",
+		"scripts/agent-trace/assert-trace-coverage.mjs",
+		"tests/agent-trace-coverage.test.js",
+		"AGENTS.md",
+		".agent-operating-model/trace-policy.md",
+		".agent-operating-model/README.md",
+		".agent-operating-model/bundles/github/prompt.body.xml",
+		".agent-operating-model/bundles/github/CHANGELOG.md",
+		".agent-operating-model/bundles/github/registry-manifest.yaml"
+	],
+	"implementationSummary": [
+		"Updated the Lychee workflow to use lycheeverse/lychee-action@v2 with repository lychee.toml as the source of link-check configuration.",
+		"Added dependabot/ to the branch-prefix allow list for automated dependency update branches.",
+		"Updated trace coverage policy so dependabot/ branches are allowed and do not require promoted trace artefacts while still keeping normal work branches trace-gated.",
+		"Updated tests for the new dependabot/ branch-prefix behaviour.",
+		"Updated operating-model documentation and GitHub bundle prompt text so the branch policy is consistent across enforcement and documentation.",
+		"Regenerated the GitHub bundle registry manifest after bundle text changed.",
+		"Follow-up fix for PR #359: updated lychee.toml for Lychee 0.23.0 compatibility by changing exclude_mail to include_mail, changing verbose from a boolean to a log level, replacing the invalid *.invalid regex with .*\\\\.invalid, and setting root_dir = \"public\" so generated root-relative app links resolve in CI."
+	],
+	"postMergeIssue": {
+		"cause": "PR #333 was checked on its dependabot/ branch, where trace coverage is deliberately skipped. After merge, main validation detected agent-significant operating-model changes in the merge diff and failed because no 2026-06-06 trace artefact existed.",
+		"correction": "Add the missing promoted trace artefact for the PR #333 operating-model change."
+	},
+	"validation": [
+		{
+			"command": "npm run agent:model -- \"Fix failing checks on Dependabot PR 333 updating lycheeverse/lychee-action from v1 to v2\"",
+			"result": "passed"
+		},
+		{
+			"command": "npm run trace:coverage",
+			"result": "passed on dependabot branch because dependabot/ automation is trace-exempt"
+		},
+		{
+			"command": "npm test -- tests/agent-trace-coverage.test.js",
+			"result": "passed"
+		},
+		{
+			"command": "npm run agent:model:validate",
+			"result": "passed"
+		},
+		{
+			"command": "npm run agent:bundle-versions:validate",
+			"result": "passed"
+		},
+		{
+			"command": "npm test",
+			"result": "passed"
+		},
+		{
+			"command": "npm run validate",
+			"result": "reproduced missing trace failure on merged main before this trace artefact was added"
+		},
+		{
+			"command": "/tmp/lychee-v0.23.0/lychee --config lychee.toml .",
+			"result": "reproduced the PR #359 Lychee failure, then passed after the lychee.toml compatibility fix"
+		}
+	],
+	"residualRisk": "Future dependency PRs that modify operating-model files should include an appropriate promoted trace or have post-merge main validation simulated before being marked safe."
+}
