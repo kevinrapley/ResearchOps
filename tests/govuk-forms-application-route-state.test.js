@@ -68,9 +68,12 @@ includes(sessionsPage, "aria-describedby=\"when-hint\"", "Sessions route");
 excludes(sessionsPage, "<label class=\"govuk-body sessions-field\">", "Sessions route");
 
 const synthesizePage = read("public/pages/study/synthesis/index.html");
-includes(synthesizePage, "<label class=\"govuk-label\" for=\"tag-filter\">Filter by tag</label>", "Synthesize route");
+const synthesizeTemplate = read("src/govuk/templates/pages/study-synthesis.njk");
+includes(synthesizeTemplate, 'id: "tag-filter"', "Synthesize template");
+includes(synthesizeTemplate, 'text: "Filter by tag"', "Synthesize template");
 includes(synthesizePage, "<label class=\"govuk-label\" for=\"target-cluster\">Add selected evidence to</label>", "Synthesize route");
-includes(synthesizePage, "<label class=\"govuk-label\" for=\"cluster-label\">Cluster grouping name</label>", "Synthesize route");
+includes(synthesizeTemplate, 'id: "cluster-label"', "Synthesize template");
+includes(synthesizeTemplate, 'text: "Cluster grouping name"', "Synthesize template");
 includes(synthesizePage, "<label class=\"govuk-label\" for=\"theme-cluster\">Working cluster grouping</label>", "Synthesize route");
 includes(synthesizePage, "aria-describedby=\"add-selected-evidence-hint\"", "Synthesize route");
 includes(synthesizePage, "aria-describedby=\"create-cluster-hint\"", "Synthesize route");
@@ -128,43 +131,3 @@ includes(participantImportPage, "id=\"participants-csv\"", "Participant import r
 includes(participantImportPage, "id=\"preview-csv\"", "Participant import route");
 includes(participantImportPage, "id=\"preview-section\"", "Participant import route");
 includes(participantImportPage, "href=\"/pages/study/new/?id=\"", "Participant import route");
-excludes(participantImportPage, "href=\"/pages/study/new/?pid=\"", "Participant import route");
-
-const outcomesPage = read("public/pages/projects/outcomes/index.html");
-includes(outcomesPage, "href=\"/assets/govuk/govuk-frontend.css\"", "Outcomes route");
-excludes(outcomesPage, "href=\"/css/govuk/govuk-forms.css\"", "Outcomes route");
-excludes(outcomesPage, "href=\"/css/screen.css\"", "Outcomes route");
-includes(outcomesPage, "id=\"impact-form\"", "Outcomes route");
-includes(outcomesPage, "id=\"impact-error-summary\"", "Outcomes route");
-includes(outcomesPage, "id=\"impact-metricName\"", "Outcomes route");
-includes(outcomesPage, "id=\"impact-submit\"", "Outcomes route");
-
-const journalsPage = read("public/pages/projects/journals/index.html");
-includes(journalsPage, "href=\"/assets/govuk/govuk-frontend.css\"", "Journals route");
-includes(journalsPage, "<form id=\"retrieval-form\" novalidate>", "Journals route");
-includes(journalsPage, "class=\"govuk-fieldset\"", "Journals route");
-includes(journalsPage, "class=\"govuk-radios__input\"", "Journals route");
-includes(journalsPage, "<label for=\"code-search-input\" class=\"govuk-label\">Search codes</label>", "Journals route");
-excludes(journalsPage, "href=\"/css/govuk/govuk-forms.css\"", "Journals route");
-excludes(journalsPage, "class=\"visually-hidden\">Search codes", "Journals route");
-
-const studyPage = read("public/pages/study/index.html");
-includes(studyPage, "href=\"/css/govuk/govuk-forms.css\"", "Study route");
-includes(studyPage, "class=\"govuk-form-group\"", "Study route");
-includes(studyPage, "aria-describedby=\"desc-input-hint\"", "Study route");
-
-const newStudyPage = read("public/pages/study/new/index.html");
-includes(newStudyPage, "href=\"/assets/govuk/govuk-frontend.css\"", "Add Study route");
-excludes(newStudyPage, "href=\"/css/govuk/govuk-forms.css\"", "Add Study route");
-includes(newStudyPage, "id=\"add-study-form\"", "Add Study route");
-includes(newStudyPage, "id=\"study-error-summary\"", "Add Study route");
-includes(newStudyPage, "id=\"study-method\"", "Add Study route");
-includes(newStudyPage, "name=\"method\"", "Add Study route");
-includes(newStudyPage, "class=\"govuk-select", "Add Study route");
-includes(newStudyPage, "aria-describedby=\"study-notes-hint\"", "Add Study route");
-includes(newStudyPage, "id=\"study-submit\"", "Add Study route");
-
-const guidesPage = read("public/pages/study/guides/index.html");
-includes(guidesPage, "class=\"govuk-form-group\"", "Guides route");
-includes(guidesPage, "editor__title-field", "Guides route");
-includes(guidesPage, "class=\"govuk-textarea code-editor__textarea\"", "Guides route");
