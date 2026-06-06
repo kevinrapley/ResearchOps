@@ -19,13 +19,5 @@ jobs:
       - name: Check links in repo
         uses: lycheeverse/lychee-action@v2
         with:
-          args: >
-            --accept 200,204,206,429
-            --exclude-mail
-            --max-concurrency 4
-            --retry-wait-time 2
-            --timeout 20
-            --no-progress
-            .
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          args: --config lychee.toml .
+          token: ${{ secrets.GITHUB_TOKEN }}

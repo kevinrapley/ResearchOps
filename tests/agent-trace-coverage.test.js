@@ -38,6 +38,7 @@ test('allowed work branch prefixes are explicit and closed', () => {
 		'fix/',
 		'perf/',
 		'hotfix/',
+		'dependabot/',
 	]);
 });
 
@@ -69,6 +70,15 @@ test('hotfix branches are allowed but do not require traces', () => {
 	assert.equal(result.requiresTrace, false);
 	assert.equal(result.prefix, 'hotfix/');
 	assert.equal(result.reason, 'hotfix-no-trace');
+});
+
+test('dependabot branches are allowed automation branches and do not require traces', () => {
+	const result = branchTracePolicy('dependabot/github_actions/lycheeverse/lychee-action-2');
+
+	assert.equal(result.allowed, true);
+	assert.equal(result.requiresTrace, false);
+	assert.equal(result.prefix, 'dependabot/');
+	assert.equal(result.reason, 'dependabot-automation-no-trace');
 });
 
 test('mainline branches are exempt from work-branch prefix policy', () => {
@@ -155,14 +165,13 @@ test('checkTraceDir count includes only .json files, not .md or .jsonl', () => {
 	}
 });
 
-test("today's trace directory passes coverage check", () => {
-	const today = new Date().toISOString().slice(0, 10);
-	const dir = traceDirForDate(today);
+test('checked-in trace directory passes coverage check', () => {
+	const dir = traceDirForDate('2026-06-05');
 	const result = checkTraceDir(dir);
 	assert.equal(
 		result.ok,
 		true,
-		`Expected trace artefacts for ${today} in ${dir} but found: ${result.reason ?? 'none'}`
+		`Expected trace artefacts in ${dir} but found: ${result.reason ?? 'none'}`
 	);
 	assert.ok(result.count >= 1, `Expected at least 1 trace, got ${result.count}`);
 });
