@@ -1,0 +1,90 @@
+{
+  "date": "2026-06-06",
+  "branch": "fix/study-support-auth-error",
+  "baseCommit": "63d26db1",
+  "task": "Fix authenticated note takers and observers setup save showing route_permission_missing and raw system copy.",
+  "traceRequired": true,
+  "operatingModelFilesLoaded": [
+    "AGENTS.md",
+    ".agent-operating-model/orchestration.xml",
+    ".agent-operating-model/bundle-registry.json",
+    ".agent-operating-model/task-signal-catalog.json",
+    ".agent-operating-model/selection-rules.json",
+    ".agent-operating-model/bootstrap-checklist.md",
+    ".agent-operating-model/precedence-policy.md",
+    ".agent-operating-model/trace-policy.md",
+    ".agent-operating-model/github-mutation-policy.md"
+  ],
+  "selectedBundles": [
+    ".agent-operating-model/bundles/github/",
+    ".agent-operating-model/bundles/researchops-developer-control/",
+    ".agent-operating-model/bundles/multi-functional-team/",
+    ".agent-operating-model/bundles/govuk-design-system/",
+    ".agent-operating-model/bundles/cloudflare/"
+  ],
+  "skippedBundles": [
+    ".agent-operating-model/bundles/openai/",
+    ".agent-operating-model/bundles/mcp-agent-tooling/",
+    ".agent-operating-model/bundles/airtable-public-api/",
+    ".agent-operating-model/bundles/mural-public-api/"
+  ],
+  "filesRead": [
+    "infra/cloudflare/src/worker.js",
+    "infra/cloudflare/src/core/auth/route-permissions.js",
+    "infra/cloudflare/migrations/0013_study_support_people.sql",
+    "public/js/note-takers-observers-page.js",
+    "public/js/study-route-context.js",
+    "tests/study-note-takers-observers-route-state.test.js",
+    "tests/auth-route-permissions.test.js",
+    "docs/product/26/06/06/study-note-takers-observers.md"
+  ],
+  "documentationUpdate": {
+    "summary": "Expanded the product document from a cleansed decision summary into a decision history covering the initial team position, critical challenge, prototype steering, and live authenticated journey learning.",
+    "testPolicy": "Documentation wording is not asserted in route-state tests; tests remain focused on implementation behaviour."
+  },
+  "filesModified": [
+    "infra/cloudflare/src/worker.js",
+    "public/js/note-takers-observers-page.js",
+    "tests/study-note-takers-observers-route-state.test.js",
+    "docs/product/26/06/06/study-note-takers-observers.md",
+    "docs/agent-audit/reasoning/2026/06/06/study-support-auth-error.md",
+    "docs/agent-audit/reasoning/2026/06/06/study-support-auth-error.json"
+  ],
+  "validation": [
+    {
+      "command": "node tests/study-note-takers-observers-route-state.test.js",
+      "status": "passed"
+    },
+    {
+      "command": "node tests/auth-route-permissions.test.js",
+      "status": "passed"
+    },
+    {
+      "command": "node tests/study-child-route-state.test.js",
+      "status": "passed"
+    },
+    {
+      "command": "node tests/study-page-route-state.test.js",
+      "status": "passed"
+    },
+    {
+      "command": "npm test -- tests/study-note-takers-observers-route-state.test.js tests/auth-route-permissions.test.js tests/study-child-route-state.test.js tests/study-page-route-state.test.js",
+      "status": "passed"
+    },
+    {
+      "command": "npx prettier -c infra/cloudflare/src/worker.js public/js/note-takers-observers-page.js tests/study-note-takers-observers-route-state.test.js",
+      "status": "passed"
+    },
+    {
+      "command": "npx prettier -c docs/product/26/06/06/study-note-takers-observers.md tests/study-note-takers-observers-route-state.test.js docs/agent-audit/reasoning/2026/06/06/study-support-auth-error.md docs/agent-audit/reasoning/2026/06/06/study-support-auth-error.json",
+      "status": "passed"
+    },
+    {
+      "command": "npm run trace:coverage",
+      "status": "passed"
+    }
+  ],
+  "residualRisks": [
+    "The runtime seeding covers only the study-support route declarations and does not remediate unrelated D1 auth declaration drift."
+  ]
+}

@@ -25,7 +25,6 @@ const worker = read("infra/cloudflare/src/worker.js");
 const serviceIndex = read("infra/cloudflare/src/service/index.js");
 const service = read("infra/cloudflare/src/service/study-support.js");
 const migration = read("infra/cloudflare/migrations/0013_study_support_people.sql");
-const productDoc = read("docs/product/26/06/06/study-note-takers-observers.md");
 const studyPage = read("public/pages/study/index.html");
 const studyController = read("public/js/study-page.js");
 
@@ -113,6 +112,9 @@ for (const text of [
 	"method: 'PUT'",
 	"method: 'POST'",
 	"method: 'DELETE'",
+	"function friendlyApiError",
+	"route_permission_missing: 'ResearchOps could not confirm access for this setup task. Refresh the page and try again.'",
+	"We could not save whether note takers or observers will join. Try again.",
 	"if (section) section.hidden = !(state.setup.saved && state.setup.decision === 'yes')",
 	"payload.role === 'other' && !payload.roleOther",
 	"selectedRadio('role') !== 'observer'",
@@ -167,6 +169,11 @@ for (const text of [
 	"async function handleStudySupport",
 	"import { assertRoutePermission } from \"./core/auth/route-permissions.js\"",
 	"function requestForRoutePermission",
+	"async function ensureStudySupportAuthDeclarations",
+	"await ensureStudySupportAuthDeclarations(env)",
+	"INSERT OR IGNORE INTO auth_permissions",
+	"INSERT OR IGNORE INTO auth_role_permissions",
+	"INSERT OR IGNORE INTO auth_route_permissions",
 	"requestForRoutePermission(request, \"/api/study-support/people/:id\")",
 	"const authContext = await authContextFor(request, env)",
 	"await assertRoutePermission(routePermissionRequest, env, authContext)",
@@ -207,17 +214,4 @@ for (const text of [
 	"'DELETE', '/api/study-support/people/:id', '[\"study.support.manage\"]'"
 ]) {
 	includes(migration, text, "study support route permissions");
-}
-
-for (const text of [
-	"# Study note takers and observers",
-	"## Team discussion summary",
-	"## User needs",
-	"## Acceptance criteria",
-	"## Gherkin criteria",
-	"## Data model",
-	"D1 is the primary store",
-	"Airtable is a fallback read source"
-]) {
-	includes(productDoc, text, "product document");
 }
