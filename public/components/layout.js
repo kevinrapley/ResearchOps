@@ -5,6 +5,8 @@
  * root-absolute URL normalisation, optional debug gating and active navigation.
  */
 
+import "/js/browser-logger.js";
+
 class XInclude extends HTMLElement {
 	static get observedAttributes() {
 		return ["src", "vars", "debug-only"];

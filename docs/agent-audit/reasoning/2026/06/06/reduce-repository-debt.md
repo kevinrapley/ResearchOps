@@ -50,6 +50,9 @@ Narrow repository ignore rules, explicitly exclude charts from Prettier and ESLi
 - public/components/guides/guides-page.js
 - public/components/guides/guide-editor.js
 - public/components/guides/patterns.js
+- public/components/layout.js
+- public/components/mural-integration.js
+- public/partials/html-head.html
 - tests/study-guides-route-state.test.js
 
 ## Files created or modified
@@ -93,9 +96,14 @@ Narrow repository ignore rules, explicitly exclude charts from Prettier and ESLi
 - infra/cloudflare/src/service/mural-journal-sync/widgets.js
 - public/components/guides/api.js
 - public/components/guides/front-matter.js
+- public/components/guides/guide-editor.js
 - public/components/guides/guides-page.js
 - public/components/guides/pattern-controller.js
+- public/components/layout.js
+- public/components/mural-integration.js
+- public/js/browser-logger.js
 - public/partials/project-tabs.html
+- tests/browser-logger-route-state.test.js
 - tests/govuk-pages-render-workflow-state.test.js
 - tests/ai-rewrite-split-route-state.test.js
 - tests/mural-service-split-route-state.test.js
@@ -117,6 +125,7 @@ Narrow repository ignore rules, explicitly exclude charts from Prettier and ESLi
 - Follow-up AI rewrite split kept `ai-rewrite.js` as the public route and Worker entry surface while moving defaults, HTTP helpers, text sanitisation, guardrails, prompt content, and testing helpers into responsibility-specific modules under `infra/cloudflare/src/core/ai-rewrite/`.
 - Follow-up projects service split kept `projects.js` as the public route operation layer while moving CSV parsing, GitHub CSV fallback, field normalisation/mapping, auth visibility checks, and Airtable access helpers into responsibility-specific modules under `infra/cloudflare/src/service/projects/`.
 - Follow-up Mural journal sync split kept `mural-journal-sync.js` as the public route handler while moving constants, text/tag parsing, widget/template matching, sticky payload shaping, Mural API calls, auth/token handling, request parsing, context building, and per-entry sync into responsibility-specific modules under `infra/cloudflare/src/service/mural-journal-sync/`.
+- Follow-up browser logging cleanup introduced a shared debug-gated browser logger, loaded it through the shared layout module, replaced routine guide and Mural UI `console.log` progress logs with scoped debug logging, and added a regression test that blocks direct `console.log` from first-party shipped browser scripts outside the explicit debug console.
 
 ## Validation attempted
 

@@ -39,6 +39,8 @@ import { listStarterPatterns } from '/components/guides/patterns.js?v=study-guid
 import { createPatternController } from '/components/guides/pattern-controller.js';
 import { VariableManager } from '/components/guides/variable-manager.js?v=study-guides-delete-confirmation-20260605';
 
+const logger = globalThis.ResearchOpsLogger?.create('guides') || { debug() {} };
+
 /* ============================================================================
  * qS helpers / small utilities
  * ============================================================================ */
@@ -54,7 +56,7 @@ let __lintErrors = [];
 /* -------------------- boot -------------------- */
 async function bootGuidesPage() {
 	try {
-		console.log('[guides] Boot starting...');
+		logger.debug('Boot starting...');
 
 		installLoadingKiller();
 		wireGlobalActions();
@@ -65,7 +67,7 @@ async function bootGuidesPage() {
 		const sid = url.searchParams.get('sid');
 		const gid = url.searchParams.get('gid'); // optional direct-open
 
-		console.log('[guides] URL params - pid:', pid, 'sid:', sid, 'gid:', gid);
+		logger.debug('URL params - pid:', pid, 'sid:', sid, 'gid:', gid);
 
 		if (!pid || !sid) {
 			console.error('[guides] Missing required URL parameters');
@@ -83,12 +85,12 @@ async function bootGuidesPage() {
 
 		// Hydrate breadcrumbs/context first so __guideCtx.study.id is available
 		await hydrateCrumbs({ pid, sid });
-		console.log('[guides] Context hydrated:', __guideCtx);
+		logger.debug('Context hydrated:', __guideCtx);
 
 		// Patterns don't block guides table; failure shouldn't stall the UI
 		try {
 			await refreshPatternList();
-			console.log('[guides] Patterns loaded');
+			logger.debug('Patterns loaded');
 		} catch (e) {
 			console.warn('[guides] Pattern load failed:', e);
 		}
@@ -98,14 +100,14 @@ async function bootGuidesPage() {
 			try {
 				await openGuide(gid);
 				window.__hasAutoOpened = true;
-				console.log('[guides] Opened guide from URL:', gid);
+				logger.debug('Opened guide from URL:', gid);
 			} catch (err) {
 				console.warn('[guides] Boot open gid failed:', err);
 			}
 		}
 
 		// Always render the table; it manages its own loading/fallback UI
-		console.log('[guides] Loading guides for study:', sid);
+		logger.debug('Loading guides for study:', sid);
 		await loadGuides(sid, { autoOpen: !window.__hasAutoOpened });
 	} catch (err) {
 		console.error('[guides] Boot fatal:', err);
@@ -328,17 +330,17 @@ function setGuidesListState(state, message) {
 }
 
 async function loadGuides(studyId, opts = {}) {
-	console.log('[guides] loadGuides called with studyId:', studyId);
+	logger.debug('loadGuides called with studyId:', studyId);
 
 	// Always prepare a tbody to paint into
 	const tbody = ensureGuidesTableSkeleton();
-	console.log('[guides] tbody element:', tbody);
+	logger.debug('tbody element:', tbody);
 
 	// Small helpers
 	const paint = (html) => {
 		if (tbody) {
 			tbody.innerHTML = html;
-			console.log('[guides] painted:', html.substring(0, 100));
+			logger.debug('painted:', html.substring(0, 100));
 		} else {
 			console.error('[guides] tbody is null, cannot paint');
 		}
@@ -372,7 +374,7 @@ async function loadGuides(studyId, opts = {}) {
 	}, 8000);
 
 	try {
-		console.log('[guides] Fetching from:', `/api/guides?study=${encodeURIComponent(studyId)}`);
+		logger.debug('Fetching from:', `/api/guides?study=${encodeURIComponent(studyId)}`);
 
 		// Fetch with heuristics so HTML-with-JSON-body won't break us
 		const data = await fetchJSON(
@@ -381,7 +383,7 @@ async function loadGuides(studyId, opts = {}) {
 			{ allowHeuristics: true, emptyAs: { ok: false, guides: [] } }
 		);
 
-		console.log('[guides] Received data:', data);
+		logger.debug('Received data:', data);
 
 		// Defensive shape checks
 		if (!data || typeof data !== 'object') {
@@ -392,7 +394,7 @@ async function loadGuides(studyId, opts = {}) {
 		}
 
 		const guides = Array.isArray(data.guides) ? data.guides : [];
-		console.log('[guides] Parsed guides array:', guides.length, 'items');
+		logger.debug('Parsed guides array:', guides.length, 'items');
 
 		guides.sort(
 			(a, b) =>
@@ -445,7 +447,7 @@ async function loadGuides(studyId, opts = {}) {
 		// Clear and append
 		paint('');
 		tbody.appendChild(fr);
-		console.log('[guides] Table populated with', guides.length, 'rows');
+		logger.debug('Table populated with', guides.length, 'rows');
 
 		// Wire open buttons
 		tbody.querySelectorAll('button[data-open]').forEach((btn) => {
@@ -458,7 +460,7 @@ async function loadGuides(studyId, opts = {}) {
 		// Auto-open newest if requested
 		if (opts.autoOpen && !window.__hasAutoOpened && !__openGuideId && guides[0]?.id) {
 			window.__hasAutoOpened = true;
-			console.log('[guides] Auto-opening first guide:', guides[0].id);
+			logger.debug('Auto-opening first guide:', guides[0].id);
 			try {
 				await openGuide(guides[0].id);
 			} catch (e) {
@@ -468,7 +470,7 @@ async function loadGuides(studyId, opts = {}) {
 
 		// Success: nuke any external "Loading…" remnants
 		nukeGuidesLoadingUI();
-		console.log('[guides] Load complete, UI updated');
+		logger.debug('Load complete, UI updated');
 	} catch (err) {
 		const aborted = err && err.name === 'AbortError';
 		console.error('[guides] loadGuides error:', err);
