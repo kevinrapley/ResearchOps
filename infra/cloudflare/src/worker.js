@@ -115,6 +115,54 @@ function requestForRoutePermission(request, routePattern) {
 	return new Request(url.toString(), { method: request.method, headers: request.headers });
 }
 
+const STUDY_SUPPORT_AUTH_PERMISSIONS = [
+	["study.support.view", "View study support setup", "Can view note taker and observer setup for a study."],
+	["study.support.manage", "Manage study support setup", "Can create, update or remove note taker and observer setup for a study."]
+];
+
+const STUDY_SUPPORT_ROLE_PERMISSIONS = [
+	["role_researcher", "study.support.view"],
+	["role_researcher", "study.support.manage"],
+	["role_research_lead", "study.support.view"],
+	["role_research_lead", "study.support.manage"],
+	["role_team_admin", "study.support.view"],
+	["role_team_admin", "study.support.manage"]
+];
+
+const STUDY_SUPPORT_ROUTE_PERMISSIONS = [
+	["route_api_study_support_get", "GET", "/api/study-support", "[\"study.support.view\"]"],
+	["route_api_study_support_setup_put", "PUT", "/api/study-support/setup", "[\"study.support.manage\"]"],
+	["route_api_study_support_people_post", "POST", "/api/study-support/people", "[\"study.support.manage\"]"],
+	["route_api_study_support_people_delete", "DELETE", "/api/study-support/people/:id", "[\"study.support.manage\"]"]
+];
+
+async function ensureStudySupportAuthDeclarations(env) {
+	const db = env.RESEARCHOPS_D1;
+	if (!db?.prepare) return;
+
+	for (const [code, label, description] of STUDY_SUPPORT_AUTH_PERMISSIONS) {
+		await db.prepare(`
+			INSERT OR IGNORE INTO auth_permissions (code, label, description, is_sensitive, is_reserved)
+			VALUES (?, ?, ?, 1, 0)
+		`).bind(code, label, description).run();
+	}
+
+	for (const [roleId, permissionCode] of STUDY_SUPPORT_ROLE_PERMISSIONS) {
+		await db.prepare(`
+			INSERT OR IGNORE INTO auth_role_permissions (role_id, permission_code)
+			VALUES (?, ?)
+		`).bind(roleId, permissionCode).run();
+	}
+
+	for (const [id, method, routePattern, requiredPermissionsJson] of STUDY_SUPPORT_ROUTE_PERMISSIONS) {
+		await db.prepare(`
+			INSERT OR IGNORE INTO auth_route_permissions
+				(id, method, route_pattern, required_permissions_json, auth_required, implementation_status)
+			VALUES (?, ?, ?, ?, 1, 'implemented')
+		`).bind(id, method, routePattern, requiredPermissionsJson).run();
+	}
+}
+
 function workerBuild(env) {
 	return { sha: env.RESEARCHOPS_BUILD_SHA || "unknown", branch: env.RESEARCHOPS_BUILD_BRANCH || "unknown" };
 }
@@ -284,6 +332,7 @@ async function handleStudySupport(request, env, apiPath) {
 	const url = new URL(request.url);
 	const origin = request.headers.get("Origin") || "";
 	const service = serviceFor(env);
+	await ensureStudySupportAuthDeclarations(env);
 	const authContext = await authContextFor(request, env);
 	const routePermissionRequest = apiPath.match(/^\/api\/study-support\/people\/([^/]+)$/)
 		? requestForRoutePermission(request, "/api/study-support/people/:id")

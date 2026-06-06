@@ -29,6 +29,19 @@ function cleanText(value) {
 	return String(value || '').replace(/\s+/g, ' ').trim();
 }
 
+function friendlyApiError(error, fallback) {
+	const message = cleanText(error?.message);
+	const knownMessages = {
+		authentication_required: 'Sign in again before updating note takers and observers.',
+		permission_denied: 'You do not have access to update note takers and observers for this study.',
+		route_permission_missing: 'ResearchOps could not confirm access for this setup task. Refresh the page and try again.',
+		route_permission_store_unavailable: 'ResearchOps cannot check access for this setup task right now. Try again later.'
+	};
+	if (knownMessages[message]) return knownMessages[message];
+	if (message && !/^[a-z]+(?:_[a-z]+)+$/.test(message)) return message;
+	return fallback;
+}
+
 function escapeHtml(value) {
 	const div = document.createElement('div');
 	div.textContent = String(value ?? '');
@@ -307,7 +320,10 @@ function bindEvents() {
 			await saveSetupDecision(decision);
 			render();
 		} catch (error) {
-			showErrors([{ href: 'save-setup-decision', message: error?.message || 'Save the setup decision again' }]);
+			showErrors([{
+				href: 'save-setup-decision',
+				message: friendlyApiError(error, 'We could not save whether note takers or observers will join. Try again.')
+			}]);
 		}
 	});
 
@@ -325,7 +341,10 @@ function bindEvents() {
 			resetPersonForm();
 			render();
 		} catch (error) {
-			showErrors([{ href: 'add-person', message: error?.message || 'Add the support person again' }]);
+			showErrors([{
+				href: 'add-person',
+				message: friendlyApiError(error, 'We could not add the support person. Try again.')
+			}]);
 		}
 	});
 
@@ -358,7 +377,10 @@ function bindEvents() {
 				await removePerson(id);
 				render();
 			} catch (error) {
-				showErrors([{ href: 'support-table-wrap', message: error?.message || 'Remove the support person again' }]);
+				showErrors([{
+					href: 'support-table-wrap',
+					message: friendlyApiError(error, 'We could not remove the support person. Try again.')
+				}]);
 			}
 		}
 	});
