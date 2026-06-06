@@ -49,6 +49,12 @@
     "docs/product/26/05/07/researchops-design-critique-product-change-register-2026-05-07.md",
     "docs/product/26/05/08/authentication-role-selection-cloudflare-operations-2026-05-08.md",
     "eslint.config.js",
+    "infra/cloudflare/src/service/internals/mural-board-registry.js",
+    "infra/cloudflare/src/service/internals/mural-journal-sticky.js",
+    "infra/cloudflare/src/service/internals/mural-tokens.js",
+    "infra/cloudflare/src/service/internals/mural-viewer.js",
+    "infra/cloudflare/src/service/internals/mural-workspace.js",
+    "infra/cloudflare/src/service/internals/mural.js",
     "lychee.toml",
     "public/components/guides/api.js",
     "public/components/guides/front-matter.js",
@@ -56,6 +62,7 @@
     "public/components/guides/pattern-controller.js",
     "public/partials/project-tabs.html",
     "tests/govuk-pages-render-workflow-state.test.js",
+    "tests/mural-service-split-route-state.test.js",
     "tests/study-guides-route-state.test.js",
     "docs/agent-audit/reasoning/2026/06/06/reduce-repository-debt.md",
     "docs/agent-audit/reasoning/2026/06/06/reduce-repository-debt.json"
@@ -66,7 +73,8 @@
     "Added charts/** to both Prettier and ESLint ignores.",
     "Extracted guides API access, front matter parsing, and pattern drawer/controller behaviour from guides-page.js.",
     "Updated route-state assertions to cover extracted modules without relying on formatter-specific import line breaks.",
-    "Follow-up Lychee remediation corrected stale documentation links exposed by the narrower Git ignore rules, fixed the project notes tab route, and added narrow Lychee exclusions for placeholder-heavy Mural example transcripts and the Mustache HTML head partial."
+    "Follow-up Lychee remediation corrected stale documentation links exposed by the narrower Git ignore rules, fixed the project notes tab route, and added narrow Lychee exclusions for placeholder-heavy Mural example transcripts and the Mustache HTML head partial.",
+    "Follow-up Mural service split kept MuralServicePart as the public route surface while moving board registry resolution, direct journal sticky writing, token refresh, viewer URL probing, and workspace/room setup into responsibility-specific modules."
   ],
   "validation": [
     {
@@ -104,6 +112,26 @@
     {
       "command": "npm test",
       "status": "passed_178_tests_after_lychee_remediation"
+    },
+    {
+      "command": "node --check infra/cloudflare/src/service/internals/mural.js && node --check infra/cloudflare/src/service/internals/mural-board-registry.js && node --check infra/cloudflare/src/service/internals/mural-journal-sticky.js && node --check infra/cloudflare/src/service/internals/mural-tokens.js && node --check infra/cloudflare/src/service/internals/mural-viewer.js && node --check infra/cloudflare/src/service/internals/mural-workspace.js",
+      "status": "passed_after_mural_split"
+    },
+    {
+      "command": "node tests/mural-service-split-route-state.test.js && node tests/mural-airtable-board-registry.test.js && node tests/mural-journal-sync-route-state.test.js && node tests/mural-ui-route-state.test.js",
+      "status": "passed_after_mural_split"
+    },
+    {
+      "command": "npm test",
+      "status": "passed_179_tests_after_mural_split"
+    },
+    {
+      "command": "npm run lint",
+      "status": "passed_with_existing_warnings_after_mural_split"
+    },
+    {
+      "command": "npm run format:check",
+      "status": "passed_after_mural_split"
     }
   ],
   "residualRisks": [

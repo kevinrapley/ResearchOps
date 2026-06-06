@@ -62,12 +62,19 @@ Narrow repository ignore rules, explicitly exclude charts from Prettier and ESLi
 - docs/product/26/05/08/authentication-role-selection-cloudflare-operations-2026-05-08.md
 - eslint.config.js
 - lychee.toml
+- infra/cloudflare/src/service/internals/mural-board-registry.js
+- infra/cloudflare/src/service/internals/mural-journal-sticky.js
+- infra/cloudflare/src/service/internals/mural-tokens.js
+- infra/cloudflare/src/service/internals/mural-viewer.js
+- infra/cloudflare/src/service/internals/mural-workspace.js
+- infra/cloudflare/src/service/internals/mural.js
 - public/components/guides/api.js
 - public/components/guides/front-matter.js
 - public/components/guides/guides-page.js
 - public/components/guides/pattern-controller.js
 - public/partials/project-tabs.html
 - tests/govuk-pages-render-workflow-state.test.js
+- tests/mural-service-split-route-state.test.js
 - tests/study-guides-route-state.test.js
 - docs/agent-audit/reasoning/2026/06/06/reduce-repository-debt.md
 - docs/agent-audit/reasoning/2026/06/06/reduce-repository-debt.json
@@ -80,6 +87,7 @@ Narrow repository ignore rules, explicitly exclude charts from Prettier and ESLi
 - Split guides-page responsibilities into API access, front matter parsing, and pattern drawer/controller modules while keeping the existing page bootstrapping and editor orchestration in `guides-page.js`.
 - Updated route-state assertions to cover the extracted modules without depending on formatter-specific single-line imports.
 - Follow-up Lychee remediation corrected stale documentation links exposed by the narrower Git ignore rules, fixed the project notes tab route, and added narrow Lychee exclusions for placeholder-heavy Mural example transcripts and the Mustache HTML head partial.
+- Follow-up Mural service split kept `MuralServicePart` as the public route surface while moving board registry resolution, direct journal sticky writing, token refresh, viewer URL probing, and workspace/room setup into responsibility-specific modules.
 
 ## Validation attempted
 
@@ -92,6 +100,11 @@ Narrow repository ignore rules, explicitly exclude charts from Prettier and ESLi
 - `npm test` — passed, 178 tests.
 - Follow-up after Lychee failure: `npm run format:check` — passed.
 - Follow-up after Lychee failure: `npm test` — passed, 178 tests.
+- Follow-up Mural split: `node --check infra/cloudflare/src/service/internals/mural.js && node --check infra/cloudflare/src/service/internals/mural-board-registry.js && node --check infra/cloudflare/src/service/internals/mural-journal-sticky.js && node --check infra/cloudflare/src/service/internals/mural-tokens.js && node --check infra/cloudflare/src/service/internals/mural-viewer.js && node --check infra/cloudflare/src/service/internals/mural-workspace.js` — passed.
+- Follow-up Mural split: `node tests/mural-service-split-route-state.test.js && node tests/mural-airtable-board-registry.test.js && node tests/mural-journal-sync-route-state.test.js && node tests/mural-ui-route-state.test.js` — passed.
+- Follow-up Mural split: `npm test` — passed, 179 tests.
+- Follow-up Mural split: `npm run lint` — passed with existing warnings only.
+- Follow-up Mural split: `npm run format:check` — passed.
 
 ## Residual risk
 
