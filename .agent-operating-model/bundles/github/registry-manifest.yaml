@@ -6,7 +6,7 @@ artifacts:
 - path: .gitignore
   sha256: e7e2c0414e0328ab730c0a61d507caa313cc606a62ebcd579ff07081c3212a75
 - path: CHANGELOG.md
-  sha256: f6ec6b10ecb2befccbdaed97f36f0bfbcecadf39026239d319c664cbf8812ffd
+  sha256: 49cba2493f4249fa5039ce9b0b517ca09cae620fe3aecdabe6f8d9d2f985b77f
 - path: contracts/accessibility-evidence.schema.json
   sha256: 6dcfd29a11ce04bb610a9aae7cdd1194c6c4ef190bf61be0b10da3148bc01c08
 - path: contracts/agent-evidence.schema.json
@@ -408,7 +408,7 @@ artifacts:
 - path: output.schema.json
   sha256: 5b65943fe37561efc0a98625fa80355b74a451f25e0f714edd52b31452bbf7ad
 - path: prompt.body.xml
-  sha256: 79dc5d4d9bfd7f9369f8942bba8987d961043dd73c77f955c6aa8588d8d98fcd
+  sha256: 8bbccf7c61d31b05c78e811c5eed11c2bfe47ff3d0aa3062394ebe5ec7f09528
 - path: prompt.spec.yaml
   sha256: 10447c8545bcf0dfa1dc0a06faa88030d674ad5a93382c4972265338c6397035
 - path: README.md
