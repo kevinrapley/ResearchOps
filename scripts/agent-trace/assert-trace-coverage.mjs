@@ -15,6 +15,7 @@
  *   fix/
  *   perf/
  *   hotfix/
+ *   dependabot/
  *
  * Trace coverage is required for:
  *   feature/
@@ -25,6 +26,7 @@
  *
  * Trace coverage is not required for:
  *   hotfix/
+ *   dependabot/
  *
  * Mainline branch names are exempt from work-branch prefix checks:
  *   main
@@ -45,6 +47,7 @@ export const ALLOWED_WORK_BRANCH_PREFIXES = Object.freeze([
   "fix/",
   "perf/",
   "hotfix/",
+  "dependabot/",
 ]);
 
 export const TRACE_REQUIRED_BRANCH_PREFIXES = Object.freeze([
@@ -153,13 +156,18 @@ export function branchTracePolicy(branchName) {
   }
 
   const requiresTrace = TRACE_REQUIRED_BRANCH_PREFIXES.includes(prefix);
+  const reason = requiresTrace
+    ? "trace-required-prefix"
+    : prefix === "dependabot/"
+      ? "dependabot-automation-no-trace"
+      : "hotfix-no-trace";
 
   return {
     branch,
     allowed: true,
     prefix,
     requiresTrace,
-    reason: requiresTrace ? "trace-required-prefix" : "hotfix-no-trace",
+    reason,
   };
 }
 
@@ -257,6 +265,13 @@ if (isMain) {
 
   if (policy.reason === "hotfix-no-trace") {
     console.log(`trace:coverage: branch ${policy.branch} is hotfix/ — trace coverage skipped`);
+    process.exit(0);
+  }
+
+  if (policy.reason === "dependabot-automation-no-trace") {
+    console.log(
+      `trace:coverage: branch ${policy.branch} is dependabot/ automation — trace coverage skipped`,
+    );
     process.exit(0);
   }
 

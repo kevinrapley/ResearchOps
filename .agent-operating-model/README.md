@@ -92,6 +92,7 @@ Repository work branches must start with one of:
 - `fix/`
 - `perf/`
 - `hotfix/`
+- `dependabot/`
 
 Do not use unapproved prefixes such as `claude/`, `codex/`, `bugfix/` or `experiment/`.
 
@@ -105,7 +106,7 @@ Always create user-readable and machine-readable audit traces for repository-aff
 - `fix/`
 - `perf/`
 
-Do not require traces on `hotfix/` branches.
+Do not require traces on `hotfix/` branches or `dependabot/` automation branches.
 
 The legacy `[reasoning]` token remains allowed as an explicit trace request, but branch prefix is now the primary trigger. The user does not need to type `[reasoning]` for traces to be required on trace-required branch prefixes.
 

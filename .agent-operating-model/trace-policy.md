@@ -14,6 +14,7 @@ Repository work branches must start with exactly one of these prefixes:
 - `fix/`
 - `perf/`
 - `hotfix/`
+- `dependabot/`
 
 Do not use any other work-branch prefix.
 
@@ -39,8 +40,11 @@ Always record reasoning traces for repository-affecting work on branches that st
 Do not record reasoning traces for branches that start with:
 
 - `hotfix/`
+- `dependabot/`
 
 A `hotfix/` branch is reserved for urgent operational repair where trace generation could slow a time-critical fix. The absence of a trace on a `hotfix/` branch must not be used to broaden the scope of that branch.
+
+A `dependabot/` branch is reserved for Dependabot automation. The absence of a trace on a `dependabot/` branch must not be used to broaden the scope beyond dependency maintenance and required operating-model compatibility fixes.
 
 The legacy `[reasoning]` prompt token remains allowed as an explicit trace request for trace-eligible branches, but it is no longer the only trigger. If the branch prefix requires traces, traces are required even when the user does not type `[reasoning]`.
 
@@ -138,4 +142,4 @@ The coverage check must fail when a work branch uses an unapproved prefix.
 
 The coverage check must require a promoted `.json` trace for branches starting with `feature/`, `chore/`, `test/`, `fix/` or `perf/`.
 
-The coverage check must skip trace coverage for `hotfix/` branches while still allowing the branch name.
+The coverage check must skip trace coverage for `hotfix/` and `dependabot/` branches while still allowing the branch names.

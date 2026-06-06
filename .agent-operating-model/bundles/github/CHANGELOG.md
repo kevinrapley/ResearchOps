@@ -18,6 +18,7 @@ The format follows Keep a Changelog conventions and the bundle uses semantic ver
 - Updated `prompt.spec.yaml`, `prompt.body.xml` and `README.md` to version `2.9.5`.
 - Registered `references/test-contract-impact-sweep.xml` as an always-loaded GitHub Diamond reference.
 - Added pull-request readiness expectations requiring agents to record test-contract impact sweep status before claiming readiness.
+- Added `dependabot/` as an approved automation branch prefix that is exempt from auditable trace requirements.
 - Recorded the reusable operating-model lesson in `RECENT_LEARNINGS.md`.
 
 ### Fixed

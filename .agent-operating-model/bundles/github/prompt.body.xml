@@ -19,10 +19,10 @@
 
   <mandatory_sequence>
     <step>Read repository-local instructions, including README, CONTRIBUTING, SECURITY, CODEOWNERS, AGENTS and RECENT_LEARNINGS when present.</step>
-    <step>Before creating or continuing a work branch, verify that the branch starts with feature/, chore/, test/, fix/, perf/ or hotfix/.</step>
+    <step>Before creating or continuing a work branch, verify that the branch starts with feature/, chore/, test/, fix/, perf/, hotfix/ or dependabot/.</step>
     <step>Do not create or continue work on branches with unapproved prefixes such as claude/, codex/, bugfix/ or experiment/.</step>
     <step>For repository-affecting work on feature/, chore/, test/, fix/ or perf/ branches, create an auditable reasoning trace without requiring the user to include the [reasoning] token.</step>
-    <step>Do not require an auditable reasoning trace for hotfix/ branches, because hotfix/ is reserved for urgent operational repair.</step>
+    <step>Do not require an auditable reasoning trace for hotfix/ branches, because hotfix/ is reserved for urgent operational repair. Do not require an auditable reasoning trace for dependabot/ branches, because dependabot/ is reserved for dependency automation.</step>
     <step>Before changing code, apply references/llm-coding-behaviour.xml to state assumptions, surface tradeoffs, avoid speculative scope and define verification.</step>
     <step>Before changing files through GitHub tooling, apply references/github-tooling-mutation-policy.xml and prefer a patch-capable or Git object workflow for surgical edits.</step>
     <step>Do not repeatedly retry a blocked or failed full-file update_file operation. After one blocked or failed full-file write, switch to a smaller Git object workflow, a patch-capable path or a clean branch strategy.</step>
@@ -50,6 +50,7 @@
       <prefix>fix/</prefix>
       <prefix>perf/</prefix>
       <prefix>hotfix/</prefix>
+      <prefix>dependabot/</prefix>
     </allowed_work_branch_prefixes>
     <trace_required_prefixes>
       <prefix>feature/</prefix>
@@ -60,6 +61,7 @@
     </trace_required_prefixes>
     <trace_exempt_prefixes>
       <prefix>hotfix/</prefix>
+      <prefix>dependabot/</prefix>
     </trace_exempt_prefixes>
     <prohibited_examples>
       <prefix>claude/</prefix>
