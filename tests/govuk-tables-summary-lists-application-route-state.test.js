@@ -90,10 +90,16 @@ excludes(participantsSchedulerSource, "role=\"cell\"", "participants scheduler")
 
 includes(outcomesPageSource, "href=\"/assets/govuk/govuk-frontend.css\"", "outcomes page");
 excludes(outcomesPageSource, "href=\"/css/govuk/govuk-tables.css\"", "outcomes page");
-includes(outcomesPageSource, "class=\"govuk-table govuk-!-margin-top-6 outcomes-table\" id=\"impact-table\"", "outcomes page");
-includes(outcomesPageSource, "class=\"govuk-table__caption govuk-table__caption--m\"", "outcomes page");
+includes(outcomesPageSource, "id=\"impact-table\"", "outcomes page");
+includes(outcomesPageSource, "govuk-!-margin-top-6", "outcomes page");
+includes(outcomesPageSource, "outcomes-table", "outcomes page");
+includes(outcomesPageSource, "govuk-table__caption", "outcomes page");
+includes(outcomesPageSource, "govuk-table__caption--m", "outcomes page");
 includes(outcomesPageSource, "<tbody class=\"govuk-table__body\">", "outcomes page");
 includes(outcomesTemplateSource, "govukTable({", "outcomes template");
+includes(outcomesTemplateSource, 'id: "impact-table"', "outcomes template");
+includes(outcomesTemplateSource, 'classes: "govuk-!-margin-top-6 outcomes-table"', "outcomes template");
+includes(outcomesTemplateSource, 'captionClasses: "govuk-table__caption--m"', "outcomes template");
 
 includes(impactTrackerSource, "govuk-table__row", "impact tracker component");
 includes(impactTrackerSource, "govuk-table__cell", "impact tracker component");
