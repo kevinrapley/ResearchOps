@@ -1,0 +1,385 @@
+<!doctype html>
+<html class="govuk-template" lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>Note takers and observers - ResearchOps Demo Suite</title>
+		<link rel="stylesheet" href="/assets/govuk/govuk-frontend.css" media="screen" />
+
+		<meta property="schema:name" content="Note takers and observers - ResearchOps" />
+		<link rel="stylesheet" href="/css/govuk/govuk-forms.css" media="screen" />
+		<link rel="stylesheet" href="/css/govuk/govuk-tables.css" media="screen" />
+		<link rel="stylesheet" href="/css/note-takers-observers.css" media="screen" />
+		<link rel="modulepreload" href="/js/study-route-context.js" />
+		<link rel="modulepreload" href="/js/note-takers-observers-route-loader.js?v=study-note-takers-observers-20260606" />
+
+		<script type="module" src="/components/layout.js" defer></script>
+		<script type="module" src="/js/govuk-frontend-init.js" defer></script>
+	</head>
+	<body class="govuk-template__body">
+		<script>
+			document.body.className +=
+				" js-enabled" + ("noModule" in HTMLScriptElement.prototype ? " govuk-frontend-supported" : "");
+		</script>
+		<x-include src="/partials/header.html" vars='{"active":"Projects"}'></x-include>
+		<main class="govuk-main-wrapper" id="main-content" role="main" tabindex="-1">
+			<div class="govuk-width-container study-support-page" data-study-subpage-template="note-takers-observers">
+				<nav
+					class="govuk-breadcrumbs"
+					id="study-support-breadcrumbs"
+					typeof="schema:BreadcrumbList"
+					aria-label="Breadcrumb"
+				>
+					<ol class="govuk-breadcrumbs__list">
+						<li class="govuk-breadcrumbs__list-item">
+							<a class="govuk-breadcrumbs__link" href="/pages/projects/" property="schema:item" typeof="schema:Thing">
+								Projects
+							</a>
+						</li>
+
+						<li class="govuk-breadcrumbs__list-item">
+							<a
+								class="govuk-breadcrumbs__link"
+								href="#"
+								id="breadcrumb-project"
+								property="schema:item"
+								typeof="schema:Thing"
+							>
+								Project
+							</a>
+						</li>
+
+						<li class="govuk-breadcrumbs__list-item">
+							<a
+								class="govuk-breadcrumbs__link"
+								href="#"
+								id="breadcrumb-study"
+								property="schema:item"
+								typeof="schema:Thing"
+							>
+								Study
+							</a>
+						</li>
+
+						<li class="govuk-breadcrumbs__list-item" aria-current="page">Note takers and observers</li>
+					</ol>
+				</nav>
+
+				<div
+					class="govuk-error-summary"
+					id="page-error-summary"
+					tabindex="-1"
+					hidden="hidden"
+					aria-hidden="true"
+					data-module="govuk-error-summary"
+				>
+					<div role="alert">
+						<h2 class="govuk-error-summary__title">There is a problem</h2>
+						<div class="govuk-error-summary__body">
+							<ul class="govuk-list govuk-error-summary__list">
+								<li>
+									<a href="#setup-decision-form">Complete the required fields.</a>
+								</li>
+							</ul>
+						</div>
+					</div>
+				</div>
+
+				<div id="study-context-warning" class="govuk-warning-text" hidden>
+					<span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+					<strong class="govuk-warning-text__text">
+						<span class="govuk-visually-hidden">Warning</span>
+						Study details could not be loaded. Some saved setup data may be unavailable.
+					</strong>
+				</div>
+
+				<header class="study-support-header">
+					<div class="govuk-grid-row">
+						<div class="govuk-grid-column-two-thirds">
+							<p id="studyBadge" class="govuk-caption-m">Study</p>
+							<h1 class="govuk-heading-l">Note takers and observers</h1>
+							<p class="govuk-body-l">Confirm who, if anyone, will join sessions beyond the lead researcher.</p>
+							<p class="govuk-body">
+								Use this page to make support roles clear before fieldwork starts. Note takers help capture evidence.
+								Observers attend sessions but should not influence the participant experience.
+							</p>
+						</div>
+						<div class="govuk-grid-column-one-third">
+							<aside class="study-support-status" aria-labelledby="setup-status-heading">
+								<div class="study-support-status__heading">
+									<h2 id="setup-status-heading" class="govuk-heading-m govuk-!-margin-bottom-2">Setup status</h2>
+									<strong id="setup-status-tag" class="govuk-tag govuk-tag--yellow">Action needed</strong>
+								</div>
+								<p id="setup-status-message" class="govuk-body govuk-!-margin-bottom-0">
+									Decide whether anyone else will join sessions.
+								</p>
+							</aside>
+						</div>
+					</div>
+				</header>
+
+				<section class="study-support-section" aria-labelledby="decision-heading">
+					<h2 id="decision-heading" class="govuk-heading-m">Will anyone else join sessions for this study?</h2>
+					<p class="govuk-body">
+						This includes note takers, observers, facilitators and people providing accessibility support.
+					</p>
+
+					<form id="setup-decision-form" novalidate>
+						<div class="govuk-form-group">
+							<fieldset class="govuk-fieldset">
+								<legend class="govuk-fieldset__legend govuk-visually-hidden">
+									Will anyone else join sessions for this study?
+								</legend>
+
+								<div class="govuk-radios" data-module="govuk-radios">
+									<div class="govuk-radios__item">
+										<input
+											class="govuk-radios__input"
+											id="additional-people"
+											name="additionalPeople"
+											type="radio"
+											value="no"
+										/>
+										<label class="govuk-label govuk-radios__label" for="additional-people">
+											No, only the lead researcher will join
+										</label>
+									</div>
+
+									<div class="govuk-radios__item">
+										<input
+											class="govuk-radios__input"
+											id="additional-people-2"
+											name="additionalPeople"
+											type="radio"
+											value="yes"
+										/>
+										<label class="govuk-label govuk-radios__label" for="additional-people-2">
+											Yes, add note takers or observers
+										</label>
+									</div>
+								</div>
+							</fieldset>
+						</div>
+
+						<div class="govuk-button-group">
+							<button type="submit" class="govuk-button" data-module="govuk-button" id="save-setup-decision">
+								Save setup decision
+							</button>
+						</div>
+					</form>
+				</section>
+
+				<section
+					id="support-section"
+					class="study-support-section study-support-form-section"
+					aria-labelledby="support-heading"
+					hidden
+				>
+					<h2 id="support-heading" class="govuk-heading-m">Support people for this study</h2>
+					<p class="govuk-body">Add anyone who will help run, observe or take notes during sessions.</p>
+
+					<div class="govuk-inset-text study-support-empty" id="support-empty">
+						<h3 class="govuk-heading-s govuk-!-margin-bottom-2">No note takers or observers have been added yet</h3>
+						<p class="govuk-body">
+							Add at least one support person, or change the setup decision if only the lead researcher will join
+							sessions.
+						</p>
+					</div>
+
+					<div id="support-table-wrap" class="govuk-!-margin-bottom-7" hidden>
+						<table class="govuk-table" aria-label="Support people for this study">
+							<thead class="govuk-table__head">
+								<tr class="govuk-table__row">
+									<th scope="col" class="govuk-table__header">Name</th>
+									<th scope="col" class="govuk-table__header">Role</th>
+									<th scope="col" class="govuk-table__header">Attendance</th>
+									<th scope="col" class="govuk-table__header"><span class="govuk-visually-hidden">Actions</span></th>
+								</tr>
+							</thead>
+							<tbody id="support-people-body" class="govuk-table__body"></tbody>
+						</table>
+					</div>
+
+					<form id="person-form" novalidate>
+						<h3 class="govuk-heading-s">Add a support person</h3>
+
+						<div class="govuk-form-group">
+							<label class="govuk-label" for="support-name">Name</label>
+
+							<input
+								class="govuk-input govuk-!-width-two-thirds"
+								id="support-name"
+								name="name"
+								type="text"
+								autocomplete="name"
+							/>
+						</div>
+
+						<div class="govuk-form-group">
+							<label class="govuk-label" for="support-email">Email address (optional)</label>
+
+							<div id="support-email-hint" class="govuk-hint">
+								Use an email address only if the research team needs it to coordinate sessions.
+							</div>
+
+							<input
+								class="govuk-input govuk-!-width-two-thirds"
+								id="support-email"
+								name="email"
+								type="email"
+								aria-describedby="support-email-hint"
+								autocomplete="email"
+							/>
+						</div>
+
+						<div class="govuk-form-group">
+							<fieldset class="govuk-fieldset">
+								<legend class="govuk-fieldset__legend govuk-fieldset__legend--s">Role</legend>
+
+								<div class="govuk-radios" data-module="govuk-radios">
+									<div class="govuk-radios__item">
+										<input class="govuk-radios__input" id="support-role" name="role" type="radio" value="note_taker" />
+										<label class="govuk-label govuk-radios__label" for="support-role">Note taker</label>
+									</div>
+
+									<div class="govuk-radios__item">
+										<input class="govuk-radios__input" id="support-role-2" name="role" type="radio" value="observer" />
+										<label class="govuk-label govuk-radios__label" for="support-role-2">Observer</label>
+									</div>
+
+									<div class="govuk-radios__item">
+										<input
+											class="govuk-radios__input"
+											id="support-role-3"
+											name="role"
+											type="radio"
+											value="facilitator"
+										/>
+										<label class="govuk-label govuk-radios__label" for="support-role-3">Facilitator</label>
+									</div>
+
+									<div class="govuk-radios__item">
+										<input
+											class="govuk-radios__input"
+											id="support-role-4"
+											name="role"
+											type="radio"
+											value="accessibility_support"
+										/>
+										<label class="govuk-label govuk-radios__label" for="support-role-4">Accessibility support</label>
+									</div>
+
+									<div class="govuk-radios__item">
+										<input
+											class="govuk-radios__input"
+											id="support-role-5"
+											name="role"
+											type="radio"
+											value="other"
+											data-aria-controls="conditional-support-role-5"
+										/>
+										<label class="govuk-label govuk-radios__label" for="support-role-5">Other</label>
+									</div>
+
+									<div
+										class="govuk-radios__conditional govuk-radios__conditional--hidden"
+										id="conditional-support-role-5"
+									>
+										<div class="govuk-form-group">
+											<label class="govuk-label" for="support-role-other">Other role</label>
+
+											<input
+												class="govuk-input govuk-!-width-two-thirds"
+												id="support-role-other"
+												name="roleOther"
+												type="text"
+											/>
+										</div>
+									</div>
+								</div>
+							</fieldset>
+						</div>
+
+						<div id="observer-warning" hidden>
+							<div class="govuk-warning-text">
+								<span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+								<strong class="govuk-warning-text__text">
+									<span class="govuk-visually-hidden">Warning</span>
+									Observers should be named in participant-facing information where their attendance may affect consent
+									or the participant experience.
+								</strong>
+							</div>
+						</div>
+
+						<div class="govuk-form-group">
+							<fieldset class="govuk-fieldset">
+								<legend class="govuk-fieldset__legend govuk-fieldset__legend--s">Attendance scope</legend>
+
+								<div class="govuk-radios" data-module="govuk-radios">
+									<div class="govuk-radios__item">
+										<input
+											class="govuk-radios__input"
+											id="attendance-scope"
+											name="attendanceScope"
+											type="radio"
+											value="all_sessions"
+										/>
+										<label class="govuk-label govuk-radios__label" for="attendance-scope">All sessions</label>
+									</div>
+
+									<div class="govuk-radios__item">
+										<input
+											class="govuk-radios__input"
+											id="attendance-scope-2"
+											name="attendanceScope"
+											type="radio"
+											value="selected_sessions"
+										/>
+										<label class="govuk-label govuk-radios__label" for="attendance-scope-2">Selected sessions</label>
+									</div>
+
+									<div class="govuk-radios__item">
+										<input
+											class="govuk-radios__input"
+											id="attendance-scope-3"
+											name="attendanceScope"
+											type="radio"
+											value="not_sure"
+										/>
+										<label class="govuk-label govuk-radios__label" for="attendance-scope-3">Not sure yet</label>
+									</div>
+								</div>
+							</fieldset>
+						</div>
+
+						<div class="govuk-form-group">
+							<label class="govuk-label" for="support-notes">Notes (optional)</label>
+
+							<div id="support-notes-hint" class="govuk-hint">
+								Only include operational information needed to run sessions. Do not record unnecessary personal details.
+							</div>
+
+							<textarea
+								class="govuk-textarea govuk-!-width-two-thirds"
+								id="support-notes"
+								name="notes"
+								rows="4"
+								aria-describedby="support-notes-hint"
+							></textarea>
+						</div>
+
+						<div class="govuk-button-group">
+							<button type="submit" class="govuk-button" data-module="govuk-button" id="add-person">Add person</button>
+						</div>
+					</form>
+				</section>
+			</div>
+		</main>
+		<x-include src="/partials/footer.html"></x-include>
+
+		<script
+			type="module"
+			src="/js/note-takers-observers-route-loader.js?v=study-note-takers-observers-20260606"
+		></script>
+	</body>
+</html>

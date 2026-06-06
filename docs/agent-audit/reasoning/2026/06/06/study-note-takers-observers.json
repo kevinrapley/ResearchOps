@@ -1,0 +1,58 @@
+{
+  "schemaVersion": "agent-trace-promotion/v1",
+  "title": "Study note takers and observers route",
+  "sourceTrace": "work/study-note-takers-observers-raw-trace.jsonl",
+  "markdownReport": "docs/agent-audit/reasoning/2026/06/06/study-note-takers-observers.md",
+  "jsonSummary": "docs/agent-audit/reasoning/2026/06/06/study-note-takers-observers.json",
+  "promotedAt": "2026-06-06T04:41:34.811Z",
+  "eventCount": 50,
+  "run": {
+    "startedAt": "2026-06-06T05:10:00.000Z",
+    "completedAt": "2026-06-06T05:59:00.000Z",
+    "taskSummary": "Create the full Add note takers and observers implementation from study setup with product docs, agent trace, D1 database, and Airtable fallback."
+  },
+  "bundles": [
+    "github-diamond",
+    "researchops-developer-control",
+    "multi-functional-team",
+    "govuk-design-system",
+    "cloudflare",
+    "airtable-public-api"
+  ],
+  "filesRead": [
+    ".agents/README.md",
+    "AGENTS.md",
+    "scripts/agent-operating-model/load-operating-model.mjs",
+    "src/govuk/templates/pages/study.njk",
+    "public/js/study-page.js",
+    "infra/cloudflare/src/worker.js",
+    "infra/cloudflare/src/service/index.js",
+    "visual-walkthrough.config.mjs"
+  ],
+  "filesWritten": [
+    "src/govuk/templates/pages/study-note-takers-observers.njk",
+    "public/js/note-takers-observers-page.js",
+    "public/js/note-takers-observers-route-loader.js",
+    "src/styles/note-takers-observers.scss",
+    "public/css/note-takers-observers.css",
+    "public/pages/study/note-takers-observers/index.html",
+    "infra/cloudflare/migrations/0013_study_support_people.sql",
+    "infra/cloudflare/src/service/study-support.js",
+    "docs/product/26/06/06/study-note-takers-observers.md",
+    "tests/study-note-takers-observers-route-state.test.js",
+    "src/govuk/templates/pages/study.njk",
+    "public/js/study-page.js",
+    "infra/cloudflare/src/worker.js",
+    "infra/cloudflare/src/service/index.js",
+    "visual-walkthrough.config.mjs"
+  ],
+  "validations": [
+    "npm run build:generated-css && npm run build:govuk-pages — exit 0",
+    "node --test tests/visual-walkthrough-registry-coverage.test.js tests/study-note-takers-observers-route-state.test.js tests/study-child-route-state.test.js tests/study-page-route-state.test.js — exit 0",
+    "npm test — exit 0",
+    "npm run format:check — exit 0",
+    "Browser check of note takers and observers decision, validation, add, and qualified remove flows — exit 0"
+  ],
+  "issues": [],
+  "warnings": []
+}

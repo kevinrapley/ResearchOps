@@ -272,6 +272,18 @@ async function handleParticipantConsent(request, env, apiPath) {
 	return new Response(JSON.stringify({ error: "Not found", path: apiPath }), { status: 404, headers: { "content-type": "application/json; charset=utf-8" } });
 }
 
+async function handleStudySupport(request, env, apiPath) {
+	const url = new URL(request.url);
+	const origin = request.headers.get("Origin") || "";
+	const service = serviceFor(env);
+	if (apiPath === "/api/study-support" && request.method === "GET") return service.readStudySupport(origin, url);
+	if (apiPath === "/api/study-support/setup" && request.method === "PUT") return service.saveStudySupportSetup(request, origin);
+	if (apiPath === "/api/study-support/people" && request.method === "POST") return service.createStudySupportPerson(request, origin);
+	const match = apiPath.match(/^\/api\/study-support\/people\/([^/]+)$/);
+	if (match && request.method === "DELETE") return service.deleteStudySupportPerson(origin, decodeURIComponent(match[1]));
+	return new Response(JSON.stringify({ error: "Not found", path: apiPath }), { status: 404, headers: { "content-type": "application/json; charset=utf-8" } });
+}
+
 export default {
 	async fetch(request, env, ctx) {
 		const { method, url } = request;
@@ -294,6 +306,7 @@ export default {
 			else if (apiPath === "/api/synthesis" || apiPath.startsWith("/api/synthesis/")) result = await handleSynthesis(request, env, apiPath);
 			else if (apiPath === "/api/consent-forms" || apiPath.startsWith("/api/consent-forms/")) result = await handleConsentForms(request, env, apiPath);
 			else if (apiPath === "/api/participant-consent" || apiPath.startsWith("/api/participant-consent/")) result = await handleParticipantConsent(request, env, apiPath);
+			else if (apiPath === "/api/study-support" || apiPath.startsWith("/api/study-support/")) result = await handleStudySupport(request, env, apiPath);
 			else result = await handleRequest(request, env, ctx);
 			return withCORS(env, request, coerceResponse(result));
 		} catch (e) {

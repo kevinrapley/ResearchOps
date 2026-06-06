@@ -1,0 +1,279 @@
+{% extends "layouts/researchops.njk" %}
+{% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
+{% from "govuk/components/input/macro.njk" import govukInput %}
+{% from "govuk/components/radios/macro.njk" import govukRadios %}
+{% from "govuk/components/textarea/macro.njk" import govukTextarea %}
+{% from "govuk/components/warning-text/macro.njk" import govukWarningText %}
+{% from "govuk/components/inset-text/macro.njk" import govukInsetText %}
+
+{% set supportPageScriptVersion = "study-note-takers-observers-20260606" %}
+
+{% block head %}
+	<meta property="schema:name" content="Note takers and observers - ResearchOps">
+	<link rel="stylesheet" href="/css/govuk/govuk-forms.css" media="screen">
+	<link rel="stylesheet" href="/css/govuk/govuk-tables.css" media="screen">
+	<link rel="stylesheet" href="/css/note-takers-observers.css" media="screen">
+	<link rel="modulepreload" href="/js/study-route-context.js">
+	<link rel="modulepreload" href="/js/note-takers-observers-route-loader.js?v={{ supportPageScriptVersion }}">
+{% endblock %}
+
+{% block content %}
+<div class="govuk-width-container study-support-page" data-study-subpage-template="note-takers-observers">
+	{{ govukBreadcrumbs({
+		attributes: {
+			id: "study-support-breadcrumbs",
+			typeof: "schema:BreadcrumbList"
+		},
+		items: [
+			{
+				text: "Projects",
+				href: "/pages/projects/",
+				attributes: {
+					property: "schema:item",
+					typeof: "schema:Thing"
+				}
+			},
+			{
+				text: "Project",
+				href: "#",
+				attributes: {
+					id: "breadcrumb-project",
+					property: "schema:item",
+					typeof: "schema:Thing"
+				}
+			},
+			{
+				text: "Study",
+				href: "#",
+				attributes: {
+					id: "breadcrumb-study",
+					property: "schema:item",
+					typeof: "schema:Thing"
+				}
+			},
+			{ text: "Note takers and observers" }
+		]
+	}) }}
+
+	{{ govukErrorSummary({
+		attributes: {
+			id: "page-error-summary",
+			tabindex: "-1",
+			hidden: "hidden",
+			"aria-hidden": "true"
+		},
+		titleText: "There is a problem",
+		errorList: [
+			{
+				text: "Complete the required fields.",
+				href: "#setup-decision-form"
+			}
+		]
+	}) }}
+
+	<div id="study-context-warning" class="govuk-warning-text" hidden>
+		<span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+		<strong class="govuk-warning-text__text">
+			<span class="govuk-visually-hidden">Warning</span>
+			Study details could not be loaded. Some saved setup data may be unavailable.
+		</strong>
+	</div>
+
+	<header class="study-support-header">
+		<div class="govuk-grid-row">
+			<div class="govuk-grid-column-two-thirds">
+				<p id="studyBadge" class="govuk-caption-m">Study</p>
+				<h1 class="govuk-heading-l">Note takers and observers</h1>
+				<p class="govuk-body-l">Confirm who, if anyone, will join sessions beyond the lead researcher.</p>
+				<p class="govuk-body">Use this page to make support roles clear before fieldwork starts. Note takers help capture evidence. Observers attend sessions but should not influence the participant experience.</p>
+			</div>
+			<div class="govuk-grid-column-one-third">
+				<aside class="study-support-status" aria-labelledby="setup-status-heading">
+					<div class="study-support-status__heading">
+						<h2 id="setup-status-heading" class="govuk-heading-m govuk-!-margin-bottom-2">Setup status</h2>
+						<strong id="setup-status-tag" class="govuk-tag govuk-tag--yellow">Action needed</strong>
+					</div>
+					<p id="setup-status-message" class="govuk-body govuk-!-margin-bottom-0">Decide whether anyone else will join sessions.</p>
+				</aside>
+			</div>
+		</div>
+	</header>
+
+	<section class="study-support-section" aria-labelledby="decision-heading">
+		<h2 id="decision-heading" class="govuk-heading-m">Will anyone else join sessions for this study?</h2>
+		<p class="govuk-body">This includes note takers, observers, facilitators and people providing accessibility support.</p>
+
+		<form id="setup-decision-form" novalidate>
+			{{ govukRadios({
+				idPrefix: "additional-people",
+				name: "additionalPeople",
+				fieldset: {
+					legend: {
+						text: "Will anyone else join sessions for this study?",
+						classes: "govuk-visually-hidden"
+					}
+				},
+				items: [
+					{
+						value: "no",
+						text: "No, only the lead researcher will join"
+					},
+					{
+						value: "yes",
+						text: "Yes, add note takers or observers"
+					}
+				]
+			}) }}
+
+			<div class="govuk-button-group">
+				{{ govukButton({
+					text: "Save setup decision",
+					type: "submit",
+					attributes: {
+						id: "save-setup-decision"
+					}
+				}) }}
+			</div>
+		</form>
+	</section>
+
+	<section id="support-section" class="study-support-section study-support-form-section" aria-labelledby="support-heading" hidden>
+		<h2 id="support-heading" class="govuk-heading-m">Support people for this study</h2>
+		<p class="govuk-body">Add anyone who will help run, observe or take notes during sessions.</p>
+
+		{{ govukInsetText({
+			classes: "study-support-empty",
+			attributes: {
+				id: "support-empty"
+			},
+			html: '<h3 class="govuk-heading-s govuk-!-margin-bottom-2">No note takers or observers have been added yet</h3><p class="govuk-body">Add at least one support person, or change the setup decision if only the lead researcher will join sessions.</p>'
+		}) }}
+
+		<div id="support-table-wrap" class="govuk-!-margin-bottom-7" hidden>
+			<table class="govuk-table" aria-label="Support people for this study">
+				<thead class="govuk-table__head">
+					<tr class="govuk-table__row">
+						<th scope="col" class="govuk-table__header">Name</th>
+						<th scope="col" class="govuk-table__header">Role</th>
+						<th scope="col" class="govuk-table__header">Attendance</th>
+						<th scope="col" class="govuk-table__header"><span class="govuk-visually-hidden">Actions</span></th>
+					</tr>
+				</thead>
+				<tbody id="support-people-body" class="govuk-table__body"></tbody>
+			</table>
+		</div>
+
+		<form id="person-form" novalidate>
+			<h3 class="govuk-heading-s">Add a support person</h3>
+
+			{{ govukInput({
+				id: "support-name",
+				name: "name",
+				classes: "govuk-!-width-two-thirds",
+				label: {
+					text: "Name"
+				},
+				autocomplete: "name"
+			}) }}
+
+			{{ govukInput({
+				id: "support-email",
+				name: "email",
+				type: "email",
+				classes: "govuk-!-width-two-thirds",
+				label: {
+					text: "Email address (optional)"
+				},
+				hint: {
+					text: "Use an email address only if the research team needs it to coordinate sessions."
+				},
+				autocomplete: "email"
+			}) }}
+
+			{{ govukRadios({
+				idPrefix: "support-role",
+				name: "role",
+				fieldset: {
+					legend: {
+						text: "Role",
+						classes: "govuk-fieldset__legend--s"
+					}
+				},
+				items: [
+					{ value: "note_taker", text: "Note taker" },
+					{ value: "observer", text: "Observer" },
+					{ value: "facilitator", text: "Facilitator" },
+					{ value: "accessibility_support", text: "Accessibility support" },
+					{
+						value: "other",
+						text: "Other",
+						conditional: {
+							html: govukInput({
+								id: "support-role-other",
+								name: "roleOther",
+								classes: "govuk-!-width-two-thirds",
+								label: {
+									text: "Other role"
+								}
+							})
+						}
+					}
+				]
+			}) }}
+
+			<div id="observer-warning" hidden>
+				{{ govukWarningText({
+					text: "Observers should be named in participant-facing information where their attendance may affect consent or the participant experience.",
+					iconFallbackText: "Warning"
+				}) }}
+			</div>
+
+			{{ govukRadios({
+				idPrefix: "attendance-scope",
+				name: "attendanceScope",
+				fieldset: {
+					legend: {
+						text: "Attendance scope",
+						classes: "govuk-fieldset__legend--s"
+					}
+				},
+				items: [
+					{ value: "all_sessions", text: "All sessions" },
+					{ value: "selected_sessions", text: "Selected sessions" },
+					{ value: "not_sure", text: "Not sure yet" }
+				]
+			}) }}
+
+			{{ govukTextarea({
+				id: "support-notes",
+				name: "notes",
+				classes: "govuk-!-width-two-thirds",
+				value: "",
+				rows: 4,
+				label: {
+					text: "Notes (optional)"
+				},
+				hint: {
+					text: "Only include operational information needed to run sessions. Do not record unnecessary personal details."
+				}
+			}) }}
+
+			<div class="govuk-button-group">
+				{{ govukButton({
+					text: "Add person",
+					type: "submit",
+					attributes: {
+						id: "add-person"
+					}
+				}) }}
+			</div>
+		</form>
+	</section>
+</div>
+{% endblock %}
+
+{% block scripts %}
+	<script type="module" src="/js/note-takers-observers-route-loader.js?v={{ supportPageScriptVersion }}"></script>
+{% endblock %}

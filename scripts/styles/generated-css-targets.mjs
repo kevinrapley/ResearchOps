@@ -32,6 +32,11 @@ export const generatedCssTargets = [
 		output: 'public/css/participants.css',
 	},
 	{
+		name: 'Study note takers and observers stylesheet',
+		source: 'src/styles/note-takers-observers.scss',
+		output: 'public/css/note-takers-observers.css',
+	},
+	{
 		name: 'Study guides stylesheet',
 		source: 'src/styles/guides.scss',
 		output: 'public/css/guides.css',

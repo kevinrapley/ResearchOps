@@ -1,0 +1,97 @@
+@charset "UTF-8";
+
+/* ==========================================================================
+   ResearchOps UI • Study note takers and observers route stylesheet source
+   Service:    Home Office Biometrics — ResearchOps
+   Route:      /pages/study/note-takers-observers/
+   Build:      GOV.UK Frontend components with route-specific support
+   Repo:       /src/styles/note-takers-observers.scss
+   Output:     /public/css/note-takers-observers.css
+   License:    All rights reserved
+   ========================================================================== */
+
+.study-support-page [hidden] {
+	display: none;
+	}
+
+.study-support-header {
+	border-top: 1px solid #b1b4b6;
+	margin-bottom: 40px;
+	padding-top: 24px;
+	}
+
+.study-support-status {
+	border-left: 5px solid #1d70b8;
+	padding: 20px;
+	background: #f3f2f1;
+	}
+
+.study-support-status__heading {
+	display: flex;
+	gap: 15px;
+	align-items: flex-start;
+	justify-content: space-between;
+	}
+
+.study-support-section {
+	border-top: 1px solid #b1b4b6;
+	margin-bottom: 40px;
+	padding-top: 20px;
+	}
+
+.study-support-form-section {
+	border-top: 5px solid #1d70b8;
+	}
+
+.study-support-page .govuk-table .govuk-button, .study-support-page .govuk-table button {
+	margin-bottom: 0;
+	}
+
+.study-support-page .govuk-input, .study-support-page .govuk-textarea, .study-support-page .govuk-select {
+	font-family: "GDS Transport", Arial, sans-serif;
+	}
+
+.study-support-remove-confirmation {
+	border-left: 5px solid #d4351c;
+	margin-top: 15px;
+	padding: 15px;
+	background: #f3f2f1;
+	}
+
+.study-support-remove-confirmation .govuk-button {
+	margin-bottom: 0;
+	}
+
+.study-support-empty {
+	max-width: 42rem;
+	}
+
+.study-support-page .govuk-table {
+	margin-bottom: 0;
+	}
+
+.study-support-page .govuk-button-group {
+	align-items: flex-start;
+	}
+
+@media (max-width: 699px) {
+	.study-support-header {
+		margin-bottom: 30px;
+		}
+	.study-support-status {
+		margin-top: 30px;
+		}
+	.study-support-status__heading {
+		display: block;
+		}
+	.study-support-status__heading .govuk-tag {
+		margin-bottom: 10px;
+		}
+	.study-support-page .govuk-button-group .govuk-button {
+		box-sizing: border-box;
+		width: 100%;
+		text-align: center;
+		}
+	}
+
+/* transparency begins in the cascade */
