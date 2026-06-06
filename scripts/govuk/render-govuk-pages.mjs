@@ -285,6 +285,16 @@ export const govukPages = [
 		},
 	},
 	{
+		template: 'pages/study-note-takers-observers.njk',
+		output: 'public/pages/study/note-takers-observers/index.html',
+		context: {
+			pageTitle: 'Note takers and observers - ResearchOps Demo Suite',
+			serviceName: 'ResearchOps Demo Suite',
+			activeNavigation: 'Projects',
+			navigation: projectNavigation,
+		},
+	},
+	{
 		template: 'pages/study-guides.njk',
 		output: 'public/pages/study/guides/index.html',
 		context: {

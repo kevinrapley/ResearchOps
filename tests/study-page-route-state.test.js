@@ -62,6 +62,7 @@ for (const text of [
 	"id=\"link-participant-consent\"",
 	"id=\"link-participants\"",
 	"id=\"link-guides\"",
+	"id=\"link-note-takers-observers\"",
 	"id=\"link-synthesis\""
 ]) {
 	includes(templateSource, text, "study template");
@@ -113,6 +114,7 @@ for (const text of [
 	"id=\"link-guides\"",
 	"id=\"link-participants\"",
 	"id=\"link-participant-consent\"",
+	"id=\"link-note-takers-observers\"",
 	"id=\"link-synthesis\"",
 	"id=\"desc-cancel\"",
 	"Not available yet"
@@ -168,8 +170,11 @@ for (const text of [
 	"route(\"/pages/study/guides/\", studyParams)",
 	"route(\"/pages/study/participants/\", studyParams)",
 	"route(\"/pages/study/participant-consent/\", studyParams)",
+	"route(\"/pages/study/note-takers-observers/\", studyParams)",
 	"route(\"/pages/study/session/\", legacySessionParams)",
 	"route(\"/pages/study/synthesis/\", studyParams)",
+	"loadStudySupportSetup(studyId)",
+	"renderSupportSetupStatus(readinessContext.supportSetup)",
 	"if (selector === \"#link-session\") el.hidden = true",
 	"el.hidden = false",
 	"study:desc:save"

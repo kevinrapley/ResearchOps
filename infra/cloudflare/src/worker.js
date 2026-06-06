@@ -3,6 +3,7 @@ import { resolveAuthenticatedContext } from "./core/auth/access-scoped.js";
 import { handlePasswordlessAuthRoute } from "./core/auth/passwordless.js";
 import { handleRegistrationRequestsRoute } from "./core/auth/registration-requests.js";
 import { handleRoleAssignmentsRoute } from "./core/auth/role-assignments-scoped.js";
+import { assertRoutePermission } from "./core/auth/route-permissions.js";
 import { handleTeamAccessRequestsRoute } from "./core/auth/team-access-requests.js";
 import { handleRequest } from "./core/router.js";
 import { ResearchOpsService } from "./service/index.js";
@@ -105,6 +106,13 @@ function serviceFor(env) {
 
 async function authContextFor(request, env) {
 	return resolveAuthenticatedContext(request, env);
+}
+
+function requestForRoutePermission(request, routePattern) {
+	const url = new URL(request.url);
+	url.pathname = routePattern;
+	url.search = "";
+	return new Request(url.toString(), { method: request.method, headers: request.headers });
 }
 
 function workerBuild(env) {
@@ -272,6 +280,23 @@ async function handleParticipantConsent(request, env, apiPath) {
 	return new Response(JSON.stringify({ error: "Not found", path: apiPath }), { status: 404, headers: { "content-type": "application/json; charset=utf-8" } });
 }
 
+async function handleStudySupport(request, env, apiPath) {
+	const url = new URL(request.url);
+	const origin = request.headers.get("Origin") || "";
+	const service = serviceFor(env);
+	const authContext = await authContextFor(request, env);
+	const routePermissionRequest = apiPath.match(/^\/api\/study-support\/people\/([^/]+)$/)
+		? requestForRoutePermission(request, "/api/study-support/people/:id")
+		: request;
+	await assertRoutePermission(routePermissionRequest, env, authContext);
+	if (apiPath === "/api/study-support" && request.method === "GET") return service.readStudySupport(origin, url);
+	if (apiPath === "/api/study-support/setup" && request.method === "PUT") return service.saveStudySupportSetup(request, origin);
+	if (apiPath === "/api/study-support/people" && request.method === "POST") return service.createStudySupportPerson(request, origin);
+	const match = apiPath.match(/^\/api\/study-support\/people\/([^/]+)$/);
+	if (match && request.method === "DELETE") return service.deleteStudySupportPerson(origin, decodeURIComponent(match[1]));
+	return new Response(JSON.stringify({ error: "Not found", path: apiPath }), { status: 404, headers: { "content-type": "application/json; charset=utf-8" } });
+}
+
 export default {
 	async fetch(request, env, ctx) {
 		const { method, url } = request;
@@ -294,6 +319,7 @@ export default {
 			else if (apiPath === "/api/synthesis" || apiPath.startsWith("/api/synthesis/")) result = await handleSynthesis(request, env, apiPath);
 			else if (apiPath === "/api/consent-forms" || apiPath.startsWith("/api/consent-forms/")) result = await handleConsentForms(request, env, apiPath);
 			else if (apiPath === "/api/participant-consent" || apiPath.startsWith("/api/participant-consent/")) result = await handleParticipantConsent(request, env, apiPath);
+			else if (apiPath === "/api/study-support" || apiPath.startsWith("/api/study-support/")) result = await handleStudySupport(request, env, apiPath);
 			else result = await handleRequest(request, env, ctx);
 			return withCORS(env, request, coerceResponse(result));
 		} catch (e) {

@@ -181,19 +181,36 @@ async function loadStudyCollection(path, studyId, key) {
 }
 
 async function loadReadinessContext(studyId) {
-	const [participants, guides, consentForms, participantConsentRecords] = await Promise.all([
+	const [participants, guides, consentForms, participantConsentRecords, supportSetup] = await Promise.all([
 		loadStudyCollection("/api/participants", studyId, "participants"),
 		loadStudyCollection("/api/guides", studyId, "guides"),
 		loadStudyCollection("/api/consent-forms", studyId, "consentForms"),
-		loadStudyCollection("/api/participant-consent", studyId, "participantConsentRecords")
+		loadStudyCollection("/api/participant-consent", studyId, "participantConsentRecords"),
+		loadStudySupportSetup(studyId)
 	]);
 
 	return {
 		participants,
 		guides,
 		consentForms,
-		participantConsentRecords
+		participantConsentRecords,
+		supportSetup
 	};
+}
+
+async function loadStudySupportSetup(studyId) {
+	try {
+		const url = new URL(apiUrl("/api/study-support"), window.location.origin);
+		url.searchParams.set("study", studyId);
+		const body = await jsonFetch(url.toString());
+		return {
+			setup: body?.setup || { decision: "", saved: false },
+			people: Array.isArray(body?.people) ? body.people : []
+		};
+	} catch (error) {
+		console.warn("[study-page] study support lookup failed", error);
+		return { setup: { decision: "", saved: false }, people: [] };
+	}
 }
 
 function enableLink(selector, href) {
@@ -387,6 +404,28 @@ function renderReadiness(study, context, sessionHref) {
 	renderSessionGate(readiness, sessionHref);
 }
 
+function renderSupportSetupStatus(supportSetup = {}) {
+	const status = $("#study-setup-support-status");
+	const hint = $("#study-setup-support-hint");
+	if (!status || !hint) return;
+
+	const setup = supportSetup.setup || {};
+	const people = Array.isArray(supportSetup.people) ? supportSetup.people : [];
+	const ready = setup.saved === true && (setup.decision === "no" || (setup.decision === "yes" && people.length > 0));
+	status.textContent = ready ? "Ready" : "Action needed";
+	status.className = `govuk-tag ${ready ? "govuk-tag--green" : "govuk-tag--yellow"}`;
+
+	if (!setup.saved) {
+		hint.textContent = "Confirm who, if anyone, will join sessions beyond the lead researcher.";
+	} else if (setup.decision === "no") {
+		hint.textContent = "No additional note takers or observers will join sessions.";
+	} else if (people.length === 0) {
+		hint.textContent = "Add at least one support person, or change the setup decision.";
+	} else {
+		hint.textContent = `${people.length} support ${people.length === 1 ? "person is" : "people are"} linked to this study.`;
+	}
+}
+
 function renderRoutes(projectId, studyId) {
 	const legacySessionParams = { pid: projectId, sid: studyId };
 	const studyParams = { id: studyId, project: projectId };
@@ -395,6 +434,7 @@ function renderRoutes(projectId, studyId) {
 	enableLink("#link-participant-consent", route("/pages/study/participant-consent/", studyParams));
 	enableLink("#link-guides", route("/pages/study/guides/", studyParams));
 	enableLink("#link-participants", route("/pages/study/participants/", studyParams));
+	enableLink("#link-note-takers-observers", route("/pages/study/note-takers-observers/", studyParams));
 	enableLink("#link-synthesis", route("/pages/study/synthesis/", studyParams));
 
 	const editStudy = $("#edit-study");
@@ -420,6 +460,7 @@ function renderStudy(project, study, projectId, studyId, readinessContext) {
 
 	const routes = renderRoutes(projectId, studyId);
 	renderReadiness(study, readinessContext, routes.sessionHref);
+	renderSupportSetupStatus(readinessContext.supportSetup);
 }
 
 async function init() {

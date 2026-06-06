@@ -20,6 +20,7 @@ const studyBridge = read("public/js/study-canonical-url-bridge.js");
 const pages = {
 	consentForms: read("public/pages/study/consent-forms/index.html"),
 	guides: read("public/pages/study/guides/index.html"),
+	noteTakersObservers: read("public/pages/study/note-takers-observers/index.html"),
 	participantConsent: read("public/pages/study/participant-consent/index.html"),
 	participants: read("public/pages/study/participants/index.html"),
 	synthesis: read("public/pages/study/synthesis/index.html"),
@@ -28,6 +29,7 @@ const pages = {
 const loaders = {
 	consentForms: read("public/js/consent-forms-route-loader.js"),
 	guides: read("public/js/guides-route-loader.js"),
+	noteTakersObservers: read("public/js/note-takers-observers-route-loader.js"),
 	participantConsent: read("public/js/participant-consent-route-loader.js"),
 	participants: read("public/js/participants-route-loader.js"),
 	synthesis: read("public/js/synthesis-route-loader.js"),
@@ -38,6 +40,7 @@ includes(studyPageController, "route(\"/pages/study/consent-forms/\", studyParam
 includes(studyPageController, "route(\"/pages/study/participant-consent/\", studyParams)", "study page controller");
 includes(studyPageController, "route(\"/pages/study/guides/\", studyParams)", "study page controller");
 includes(studyPageController, "route(\"/pages/study/participants/\", studyParams)", "study page controller");
+includes(studyPageController, "route(\"/pages/study/note-takers-observers/\", studyParams)", "study page controller");
 includes(studyPageController, "route(\"/pages/study/synthesis/\", studyParams)", "study page controller");
 excludes(studyPageController, "route(\"/pages/synthesize/\", studyParams)", "study page controller");
 
@@ -68,6 +71,8 @@ for (const [label, source] of Object.entries(pages)) {
 for (const [label, source] of Object.entries(pages)) {
 	if (label === "guides") {
 		includes(source, "?v=study-guides-delete-confirmation-20260605", label);
+	} else if (label === "noteTakersObservers") {
+		includes(source, "?v=study-note-takers-observers-20260606", label);
 	} else {
 		includes(source, "?v=study-record-id-routing-20260518", label);
 	}
@@ -78,6 +83,7 @@ excludes(pages.consentForms, "/js/consent-forms-page.js?v=study-record-id-routin
 includes(pages.guides, "/js/guides-route-loader.js?v=study-guides-delete-confirmation-20260605", "guides page");
 excludes(pages.guides, "/js/study-guides-context.js?v=study-record-id-routing-20260518", "guides page");
 excludes(pages.guides, "/components/guides/guides-page.js?v=study-record-id-routing-20260518", "guides page");
+includes(pages.noteTakersObservers, "/js/note-takers-observers-route-loader.js?v=study-note-takers-observers-20260606", "note takers and observers page");
 includes(pages.participantConsent, "/js/participant-consent-route-loader.js?v=study-record-id-routing-20260518", "participant consent page");
 excludes(pages.participantConsent, "/js/participant-consent-page.js?v=study-record-id-routing-20260518", "participant consent page");
 includes(pages.participants, "/js/participants-route-loader.js?v=study-record-id-routing-20260518", "participants page");
@@ -87,6 +93,8 @@ excludes(pages.synthesis, "/js/synthesize-page.js?v=study-record-id-routing-2026
 for (const [label, source] of Object.entries(loaders)) {
 	if (label === "guides") {
 		includes(source, "await import('/js/study-canonical-url-bridge.js?v=study-guides-delete-confirmation-20260605')", label);
+	} else if (label === "noteTakersObservers") {
+		includes(source, "await import(`/js/study-canonical-url-bridge.js?v=${version}`)", label);
 	} else {
 		includes(source, "await import('/js/study-canonical-url-bridge.js?v=study-record-id-routing-20260518')", label);
 	}
@@ -98,6 +106,7 @@ includes(loaders.guides, "Study route bridge unavailable", "guides loader");
 includes(loaders.guides, "Study guides context unavailable", "guides loader");
 includes(loaders.guides, "await import('/js/study-guides-context.js?v=study-guides-delete-confirmation-20260605')", "guides loader");
 includes(loaders.guides, "await import('/components/guides/guides-page.js?v=study-guides-delete-confirmation-20260605')", "guides loader");
+includes(loaders.noteTakersObservers, "await import(`/js/note-takers-observers-page.js?v=${version}`)", "note takers and observers loader");
 includes(loaders.participantConsent, "await import('/js/participant-consent-page.js?v=study-record-id-routing-20260518')", "participant consent loader");
 includes(loaders.participants, "await import('/components/participants/participants-page.js?v=study-record-id-routing-20260518')", "participants loader");
 includes(loaders.participants, "await import('/pages/study/participants/scheduler.js?v=study-record-id-routing-20260518')", "participants loader");
