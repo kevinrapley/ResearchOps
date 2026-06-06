@@ -13,173 +13,84 @@
  * @requires /lib/mustache.min.js
  * @requires /lib/marked.min.js
  * @requires /lib/purify.min.js
- * @requires /components/guides/context.js
+ * @requires /components/guides/api.js
+ * @requires /components/guides/front-matter.js
  * @requires /components/guides/guide-editor.js
+ * @requires /components/guides/pattern-controller.js
  * @requires /components/guides/patterns.js
  * @requires /components/guides/variable-manager.js
- * @requires /components/guides/variable-utils.js (validateTemplate/formatValidationReport/suggestVariables only)
  */
 
-import Mustache from "/lib/mustache.min.js";
-import { marked } from "/lib/marked.min.js";
-import DOMPurify from "/lib/purify.min.js";
+import { marked } from '/lib/marked.min.js';
+import DOMPurify from '/lib/purify.min.js';
 
-import { buildContext } from "/components/guides/context.js";
-import { renderGuide, buildPartials, DEFAULT_SOURCE } from "/components/guides/guide-editor.js?v=study-guides-delete-confirmation-20260605";
-import { searchPatterns, listStarterPatterns } from "/components/guides/patterns.js?v=study-guides-delete-confirmation-20260605";
-
-// Variable manager + validators (keep your existing utils for validation)
-import { VariableManager } from "/components/guides/variable-manager.js?v=study-guides-delete-confirmation-20260605";
+import { fetchJSON, loadStudies } from '/components/guides/api.js';
 import {
-	validateTemplate,
-	formatValidationReport,
-	suggestVariables
-} from "/components/guides/variable-utils.js";
-
-/* ============================================================================
- * Local helpers for JSON-only mode (YAML stripping + legacy import)
- * ============================================================================ */
-
-/** Strip a leading YAML front-matter block if present. Returns body only. */
-function stripFrontMatter(src) {
-	const fmRe = /^---\s*\n([\s\S]*?)\n---\s*\n?/;
-	return String(src || "").replace(fmRe, "");
-}
-
-/** Extract + strip front-matter (for one-time migration). */
-function extractAndStripFrontMatter(src) {
-	const fmRe = /^---\s*\n([\s\S]*?)\n---\s*\n?/;
-	const m = String(src || "").match(fmRe);
-	if (!m) return { stripped: String(src || ""), yaml: null };
-	return { stripped: String(src || "").replace(fmRe, ""), yaml: m[1] || "" };
-}
-
-/** Minimal defensive YAML-like parser for migration only (scalars + top-level arrays). */
-function parseSimpleYaml(yaml) {
-	const out = {};
-	if (!yaml || !yaml.trim()) return out;
-	const lines = yaml.split(/\r?\n/);
-	let currentKey = null;
-
-	for (let raw of lines) {
-		const line = raw.replace(/\t/g, "  ");
-		if (!line.trim()) continue;
-
-		// Array item under currentKey
-		if (/^\s*-\s+/.test(line) && currentKey) {
-			out[currentKey] = out[currentKey] || [];
-			out[currentKey].push(coerceScalar(line.replace(/^\s*-\s+/, "")));
-			continue;
-		}
-
-		// key: value
-		const kv = line.match(/^\s*([A-Za-z0-9_\-\.]+)\s*:\s*(.*)$/);
-		if (kv) {
-			const [, k, v] = kv;
-			if (v === "" || v == null) {
-				currentKey = k;
-				out[k] = out[k] || [];
-			} else {
-				currentKey = k;
-				out[k] = coerceScalar(v);
-			}
-		}
-	}
-
-	return out;
-
-	function coerceScalar(v) {
-		const s = String(v || "").trim();
-		if (/^(true|false)$/i.test(s)) return /^true$/i.test(s);
-		if (/^-?\d+(\.\d+)?$/.test(s)) return Number(s);
-		if ((s.startsWith('"') && s.endsWith('"')) || (s.startsWith("'") && s.endsWith("'"))) {
-			return s.slice(1, -1);
-		}
-		return s;
-	}
-}
+	extractAndStripFrontMatter,
+	parseSimpleYaml,
+	stripFrontMatter,
+} from '/components/guides/front-matter.js';
+import {
+	renderGuide,
+	buildPartials,
+	DEFAULT_SOURCE,
+} from '/components/guides/guide-editor.js?v=study-guides-delete-confirmation-20260605';
+import { listStarterPatterns } from '/components/guides/patterns.js?v=study-guides-delete-confirmation-20260605';
+import { createPatternController } from '/components/guides/pattern-controller.js';
+import { VariableManager } from '/components/guides/variable-manager.js?v=study-guides-delete-confirmation-20260605';
 
 /* ============================================================================
  * qS helpers / small utilities
  * ============================================================================ */
 
 const $ = (s, r = document) => r.querySelector(s);
-const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
 
 let varManager = null; // VariableManager instance (JSON-only)
 let __openGuideId = null; // currently open guide id
 let __guideCtx = { project: {}, study: {} }; // page context
 
-// Service health + in-memory cache for search/fallback
-let __patternServiceAvailable = false;
-let __patternCache = [];
 let __lintErrors = [];
-
-// Helper to show service/fallback status in the Patterns drawer
-/**
- * Show or update a muted status line inside the Patterns drawer.
- * Handles cases where the API returns HTML instead of JSON (SPA fallback).
- */
-function setPatternStatus(msg) {
-	const drawer = document.getElementById("drawer-patterns");
-	const list = document.getElementById("pattern-list");
-	if (!drawer || !list) {
-		console.warn("[patterns] status:", msg);
-		return;
-	}
-
-	// Create or reuse the message element
-	let p = document.getElementById("pattern-status");
-	if (!p) {
-		p = document.createElement("p");
-		p.id = "pattern-status";
-		p.className = "govuk-warning-text pattern-status";
-		// Insert above the list for clear visibility
-		list.parentNode.insertBefore(p, list);
-	}
-
-	p.innerHTML = msg
-		? `<span class="govuk-warning-text__icon" aria-hidden="true">!</span><strong class="govuk-warning-text__text"><span class="govuk-visually-hidden">Warning</span>${escapeHtml(msg)}</strong>`
-		: "";
-}
 
 /* -------------------- boot -------------------- */
 async function bootGuidesPage() {
 	try {
-		console.log("[guides] Boot starting...");
+		console.log('[guides] Boot starting...');
 
 		installLoadingKiller();
 		wireGlobalActions();
 		wireEditor();
 
 		const url = new URL(location.href);
-		const pid = url.searchParams.get("pid");
-		const sid = url.searchParams.get("sid");
-		const gid = url.searchParams.get("gid"); // optional direct-open
+		const pid = url.searchParams.get('pid');
+		const sid = url.searchParams.get('sid');
+		const gid = url.searchParams.get('gid'); // optional direct-open
 
-		console.log("[guides] URL params - pid:", pid, "sid:", sid, "gid:", gid);
+		console.log('[guides] URL params - pid:', pid, 'sid:', sid, 'gid:', gid);
 
 		if (!pid || !sid) {
-			console.error("[guides] Missing required URL parameters");
-			announce("Missing project or study ID in URL");
-			const tbody = document.querySelector("#guides-tbody");
+			console.error('[guides] Missing required URL parameters');
+			announce('Missing project or study ID in URL');
+			const tbody = document.querySelector('#guides-tbody');
 			if (tbody) {
-				tbody.innerHTML = "";
+				tbody.innerHTML = '';
 			}
-			setGuidesListState("unavailable", "The page needs a project and study ID before it can load saved guides. You can still review the editor layout below.");
+			setGuidesListState(
+				'unavailable',
+				'The page needs a project and study ID before it can load saved guides. You can still review the editor layout below.'
+			);
 			return;
 		}
 
 		// Hydrate breadcrumbs/context first so __guideCtx.study.id is available
 		await hydrateCrumbs({ pid, sid });
-		console.log("[guides] Context hydrated:", __guideCtx);
+		console.log('[guides] Context hydrated:', __guideCtx);
 
 		// Patterns don't block guides table; failure shouldn't stall the UI
 		try {
 			await refreshPatternList();
-			console.log("[guides] Patterns loaded");
+			console.log('[guides] Patterns loaded');
 		} catch (e) {
-			console.warn("[guides] Pattern load failed:", e);
+			console.warn('[guides] Pattern load failed:', e);
 		}
 
 		// If gid provided, try to open it first (does not block loadGuides)
@@ -187,130 +98,82 @@ async function bootGuidesPage() {
 			try {
 				await openGuide(gid);
 				window.__hasAutoOpened = true;
-				console.log("[guides] Opened guide from URL:", gid);
+				console.log('[guides] Opened guide from URL:', gid);
 			} catch (err) {
-				console.warn("[guides] Boot open gid failed:", err);
+				console.warn('[guides] Boot open gid failed:', err);
 			}
 		}
 
 		// Always render the table; it manages its own loading/fallback UI
-		console.log("[guides] Loading guides for study:", sid);
+		console.log('[guides] Loading guides for study:', sid);
 		await loadGuides(sid, { autoOpen: !window.__hasAutoOpened });
 	} catch (err) {
-		console.error("[guides] Boot fatal:", err);
-		announce("Failed to initialise the page.");
+		console.error('[guides] Boot fatal:', err);
+		announce('Failed to initialise the page.');
 		// As a last resort, unstick any "Loading…" spinners we know about
 		const stuck = document.querySelector("#guides-loading, [data-role='guides-loading']");
 		if (stuck) stuck.hidden = true;
 		const tbody =
-			document.querySelector("#guides-tbody") ||
-			document.querySelector("#guides-table tbody") ||
-			document.querySelector("[data-guides-tbody]");
+			document.querySelector('#guides-tbody') ||
+			document.querySelector('#guides-table tbody') ||
+			document.querySelector('[data-guides-tbody]');
 		if (tbody) {
-			tbody.innerHTML = `<tr class="govuk-table__row"><td colspan="6" class="govuk-table__cell muted guides-table-status">Failed to initialise guides: ${escapeHtml(err.message || "Unknown error")}</td></tr>`;
+			tbody.innerHTML = `<tr class="govuk-table__row"><td colspan="6" class="govuk-table__cell muted guides-table-status">Failed to initialise guides: ${escapeHtml(err.message || 'Unknown error')}</td></tr>`;
 		}
 	}
 }
 
-if (document.readyState === "loading") {
-	window.addEventListener("DOMContentLoaded", bootGuidesPage, { once: true });
+const patternController = createPatternController({
+	$,
+	announce,
+	closeTagDialog,
+	closeVariablesDrawer,
+	escapeHtml,
+	fetchJSON,
+	insertAtCursor,
+	listStarterPatterns,
+	preview,
+	revealDrawer,
+	syncHighlighting,
+});
+
+const {
+	bindPatternDocumentActions,
+	bindPatternTrayActions,
+	closePatternDrawer,
+	openPatternDrawer,
+	onPatternSearch,
+	refreshPatternList,
+} = patternController;
+
+if (document.readyState === 'loading') {
+	window.addEventListener('DOMContentLoaded', bootGuidesPage, { once: true });
 } else {
 	bootGuidesPage();
 }
 
-async function safeJson(res, opts = {}) {
-	const {
-		allowHeuristics = true, // try parse if body looks like JSON even w/o header
-			emptyAs = null // what to return for empty bodies
-	} = opts;
-
-	const ct = res.headers.get("content-type") || "";
-	const isJsonCT = /(\/|\+)json\b/i.test(ct); // matches application/json and application/*+json
-	const text = await res.text(); // body can be read only once
-
-	// Empty/No-Content cases
-	if (res.status === 204 || res.status === 205 || res.status === 304 || text.trim() === "") {
-		return emptyAs; // e.g., null
-	}
-
-	// Proper JSON content-type
-	if (isJsonCT) {
-		try { return JSON.parse(text); } catch (e) {
-			const snippet = text.slice(0, 200);
-			throw new SyntaxError(`Invalid JSON (${res.status}) from ${res.url || "<unknown>"}; snippet: ${snippet}`);
-		}
-	}
-
-	// Heuristic: looks like JSON (server forgot the header)
-	if (allowHeuristics && /^[\s\uFEFF\u200B]*[{\[]/.test(text)) {
-		try { return JSON.parse(text); } catch (e) {
-			const snippet = text.slice(0, 200);
-			throw new SyntaxError(`Looks like JSON but failed to parse (${res.status}) from ${res.url || "<unknown>"}; snippet: ${snippet}`);
-		}
-	}
-
-	// Not JSON
-	const snippet = text.slice(0, 200).replace(/\s+/g, " ").trim();
-	throw new TypeError(`Non-JSON response (${res.status}) from ${res.url || "<unknown>"}; snippet: ${snippet}`);
-}
-
-async function fetchJSON(url, options = {}, safeOpts = {}) {
-	const res = await fetch(url, {
-		cache: "no-store",
-		headers: { Accept: "application/json", ...(options.headers || {}) },
-		...options
-	});
-	const data = await safeJson(res, safeOpts); // consumes the body safely
-	if (!res.ok) {
-		const err = new Error(`HTTP ${res.status} for ${url}`);
-		err.status = res.status;
-		err.data = data;
-		throw err;
-	}
-	return data;
-}
-
 /* -------------------- breadcrumbs / context -------------------- */
-
-async function loadStudies(projectId) {
-	const url = `/api/studies?project=${encodeURIComponent(projectId)}`;
-	const js = await fetchJSON(url).catch(() => ({}));
-	if (js == null || js.ok !== true || !Array.isArray(js.studies)) {
-		throw new Error((js && js.error) || "Studies fetch failed");
-	}
-	return js.studies;
-}
-
-function pickTitle(s) {
-	s = s || {};
-	var t = (s.title || s.Title || "").trim();
-	if (t) return t;
-	var method = (s.method || "Study").trim();
-	var d = s.createdAt ? new Date(s.createdAt) : new Date();
-	var yyyy = d.getUTCFullYear();
-	var mm = String(d.getUTCMonth() + 1).padStart(2, "0");
-	var dd = String(d.getUTCDate()).padStart(2, "0");
-	return method + " — " + yyyy + "-" + mm + "-" + dd;
-}
 
 async function hydrateCrumbs({ pid, sid }) {
 	try {
 		const [projects, studies] = await Promise.all([
-			fetchJSON(`/api/projects`).then(d => d.projects || []).catch(() => []),
-			loadStudies(pid)
+			fetchJSON(`/api/projects`)
+				.then((d) => d.projects || [])
+				.catch(() => []),
+			loadStudies(pid),
 		]);
 
-		const project = projects.find(p => p.id === pid) || { name: "(Unnamed project)" };
-		const studyRaw = Array.isArray(studies) ? (studies.find(s => s.id === sid) || {}) : {};
+		const project = projects.find((p) => p.id === pid) || { name: '(Unnamed project)' };
+		const studyRaw = Array.isArray(studies) ? studies.find((s) => s.id === sid) || {} : {};
 		const study = ensureStudyTitle(studyRaw);
 
-		const bcProj = document.getElementById("breadcrumb-project");
+		const bcProj = document.getElementById('breadcrumb-project');
 		if (bcProj) {
 			bcProj.href = `/pages/project-dashboard/?id=${encodeURIComponent(pid)}`;
-			bcProj.textContent = project.name || "Project";
+			bcProj.textContent = project.name || 'Project';
 		}
 
-		const bcStudy = document.getElementById("breadcrumb-study");
+		const bcStudy = document.getElementById('breadcrumb-study');
 		if (bcStudy) {
 			bcStudy.href = `/pages/study/?pid=${encodeURIComponent(pid)}&sid=${encodeURIComponent(sid)}`;
 			bcStudy.textContent = study.title;
@@ -319,18 +182,19 @@ async function hydrateCrumbs({ pid, sid }) {
 		const sub = document.querySelector('[data-bind="study.title"]');
 		if (sub) sub.textContent = study.title;
 
-		const back = document.getElementById("back-to-study");
-		if (back) back.href = `/pages/study/?pid=${encodeURIComponent(pid)}&sid=${encodeURIComponent(sid)}`;
+		const back = document.getElementById('back-to-study');
+		if (back)
+			back.href = `/pages/study/?pid=${encodeURIComponent(pid)}&sid=${encodeURIComponent(sid)}`;
 
 		document.title = `Discussion Guides — ${study.title}`;
 
 		__guideCtx = {
-			project: { id: project.id, name: project.name || "(Unnamed project)" },
-			study
+			project: { id: project.id, name: project.name || '(Unnamed project)' },
+			study,
 		};
 	} catch (err) {
-		console.warn("Crumb hydrate failed", err);
-		__guideCtx = { project: { name: "(Unnamed project)" }, study: {} };
+		console.warn('Crumb hydrate failed', err);
+		__guideCtx = { project: { name: '(Unnamed project)' }, study: {} };
 	}
 }
 
@@ -344,33 +208,33 @@ async function hydrateCrumbs({ pid, sid }) {
  */
 function nukeGuidesLoadingUI() {
 	const KNOWN = [
-		"#guides-loading",
+		'#guides-loading',
 		"[data-role='guides-loading']",
-		"[data-guides-loading]",
-		"#guides-spinner",
-		".js-guides-loading",
+		'[data-guides-loading]',
+		'#guides-spinner',
+		'.js-guides-loading',
 		"[aria-busy='true']",
 	];
 	// Hide known elements
 	for (const sel of KNOWN) {
-		document.querySelectorAll(sel).forEach(el => {
+		document.querySelectorAll(sel).forEach((el) => {
 			el.hidden = true;
-			el.setAttribute("aria-hidden", "true");
+			el.setAttribute('aria-hidden', 'true');
 		});
 	}
 
 	// Remove nodes whose *only* visible text is "Loading…/Loading..."
 	const LOADING_RE = /^(loading…?|loading\.\.\.)$/i;
-	const candidates = Array.from(document.querySelectorAll("div, span, p, td, li, h2, h3, h4"));
+	const candidates = Array.from(document.querySelectorAll('div, span, p, td, li, h2, h3, h4'));
 	for (const el of candidates) {
-		const text = (el.textContent || "").replace(/\s+/g, " ").trim();
+		const text = (el.textContent || '').replace(/\s+/g, ' ').trim();
 		if (LOADING_RE.test(text)) {
 			// If this looks like a naked loader stub, remove it outright
-			if (!el.querySelector("button,table,tbody,thead,tr,td")) {
+			if (!el.querySelector('button,table,tbody,thead,tr,td')) {
 				el.remove();
 			} else {
 				el.hidden = true;
-				el.setAttribute("aria-hidden", "true");
+				el.setAttribute('aria-hidden', 'true');
 			}
 		}
 	}
@@ -386,7 +250,9 @@ function installLoadingKiller() {
 		obs.observe(document.documentElement, { childList: true, subtree: true });
 		// One immediate pass too
 		nukeGuidesLoadingUI();
-	} catch { /* no-op */ }
+	} catch {
+		/* no-op */
+	}
 }
 
 /**
@@ -397,25 +263,25 @@ function installLoadingKiller() {
 function ensureGuidesTableSkeleton() {
 	// Try to find an existing tbody first
 	let tbody =
-		document.querySelector("#guides-tbody") ||
-		document.querySelector("#guides-table tbody") ||
-		document.querySelector("[data-guides-tbody]");
+		document.querySelector('#guides-tbody') ||
+		document.querySelector('#guides-table tbody') ||
+		document.querySelector('[data-guides-tbody]');
 
 	if (tbody) return tbody;
 
 	// Try to find a sensible container to mount into
 	let host =
-		document.querySelector("#guides-list-section") ||
-		document.querySelector("#guides-section") ||
-		document.querySelector("[data-guides-section]") ||
-		document.querySelector("#editor-section") ||
-		document.querySelector("main") ||
+		document.querySelector('#guides-list-section') ||
+		document.querySelector('#guides-section') ||
+		document.querySelector('[data-guides-section]') ||
+		document.querySelector('#editor-section') ||
+		document.querySelector('main') ||
 		document.body;
 
 	// Create a minimal table structure
-	const wrapper = document.createElement("div");
-	wrapper.id = "guides-fallback-wrapper";
-	wrapper.className = "table-wrap";
+	const wrapper = document.createElement('div');
+	wrapper.id = 'guides-fallback-wrapper';
+	wrapper.className = 'table-wrap';
 	wrapper.innerHTML = `
     <table class="govuk-table" id="guides-table">
       <thead class="govuk-table__head">
@@ -432,44 +298,26 @@ function ensureGuidesTableSkeleton() {
     </table>
   `;
 	host.appendChild(wrapper);
-	return wrapper.querySelector("#guides-tbody");
-}
-
-/** Hide any visible "Loading…" elements we know about (be aggressive). */
-function hideGuidesLoadingUI() {
-	const candidates = [
-		"#guides-loading",
-		"[data-role='guides-loading']",
-		"[data-guides-loading]",
-		"#guides-spinner",
-		".js-guides-loading"
-	];
-	for (const sel of candidates) {
-		document.querySelectorAll(sel).forEach(el => { el.hidden = true; });
-	}
-	// Also hide blatant text-only loaders that were left in the DOM
-	document.querySelectorAll("div, span, p, td").forEach(el => {
-		const txt = (el.textContent || "").trim().toLowerCase();
-		if (txt === "loading…" || txt === "loading..." || txt === "loading") {
-			el.hidden = true;
-		}
-	});
+	return wrapper.querySelector('#guides-tbody');
 }
 
 function setGuidesListState(state, message) {
-	const tableWrap = $("#guides-table-wrap") || $("#guides-table")?.closest(".table-wrap");
-	const emptyState = $("#guides-empty");
-	const heading = emptyState?.querySelector(".govuk-heading-s");
-	const body = emptyState?.querySelector(".govuk-body");
+	const tableWrap = $('#guides-table-wrap') || $('#guides-table')?.closest('.table-wrap');
+	const emptyState = $('#guides-empty');
+	const heading = emptyState?.querySelector('.govuk-heading-s');
+	const body = emptyState?.querySelector('.govuk-body');
 
-	if (state === "empty" || state === "unavailable") {
+	if (state === 'empty' || state === 'unavailable') {
 		if (tableWrap) tableWrap.hidden = true;
 		if (emptyState) {
 			emptyState.hidden = false;
-			if (heading) heading.textContent = state === "unavailable" ? "Guides cannot be loaded yet" : "No guides yet";
+			if (heading)
+				heading.textContent =
+					state === 'unavailable' ? 'Guides cannot be loaded yet' : 'No guides yet';
 			if (body) {
-				body.textContent = message ||
-					"Draft a discussion guide in the editor, save it as a draft, then publish it when it is ready to use for fieldwork.";
+				body.textContent =
+					message ||
+					'Draft a discussion guide in the editor, save it as a draft, then publish it when it is ready to use for fieldwork.';
 			}
 		}
 		return;
@@ -480,32 +328,36 @@ function setGuidesListState(state, message) {
 }
 
 async function loadGuides(studyId, opts = {}) {
-	console.log("[guides] loadGuides called with studyId:", studyId);
+	console.log('[guides] loadGuides called with studyId:', studyId);
 
 	// Always prepare a tbody to paint into
 	const tbody = ensureGuidesTableSkeleton();
-	console.log("[guides] tbody element:", tbody);
+	console.log('[guides] tbody element:', tbody);
 
 	// Small helpers
 	const paint = (html) => {
 		if (tbody) {
 			tbody.innerHTML = html;
-			console.log("[guides] painted:", html.substring(0, 100));
+			console.log('[guides] painted:', html.substring(0, 100));
 		} else {
-			console.error("[guides] tbody is null, cannot paint");
+			console.error('[guides] tbody is null, cannot paint');
 		}
 	};
-	const row = (msg) => `<tr class="govuk-table__row"><td colspan="6" class="govuk-table__cell muted guides-table-status">${escapeHtml(msg)}</td></tr>`;
+	const row = (msg) =>
+		`<tr class="govuk-table__row"><td colspan="6" class="govuk-table__cell muted guides-table-status">${escapeHtml(msg)}</td></tr>`;
 
 	// Show loading row, then *immediately* kill any external loaders
-	paint(row("Loading…"));
+	paint(row('Loading…'));
 	nukeGuidesLoadingUI();
 
 	// If no study id, finish now
 	if (!studyId) {
-		console.warn("[guides] loadGuides: no studyId");
-		paint("");
-		setGuidesListState("unavailable", "Select a study before reviewing or drafting discussion guides.");
+		console.warn('[guides] loadGuides: no studyId');
+		paint('');
+		setGuidesListState(
+			'unavailable',
+			'Select a study before reviewing or drafting discussion guides.'
+		);
 		nukeGuidesLoadingUI();
 		return;
 	}
@@ -513,53 +365,58 @@ async function loadGuides(studyId, opts = {}) {
 	// Safety timeout: if the network hangs, we still unstick the UI
 	const ac = new AbortController();
 	const timer = setTimeout(() => {
-		console.warn("[guides] Request timed out after 8s");
-		try { ac.abort(); } catch {}
+		console.warn('[guides] Request timed out after 8s');
+		try {
+			ac.abort();
+		} catch {}
 	}, 8000);
 
 	try {
-		console.log("[guides] Fetching from:", `/api/guides?study=${encodeURIComponent(studyId)}`);
+		console.log('[guides] Fetching from:', `/api/guides?study=${encodeURIComponent(studyId)}`);
 
 		// Fetch with heuristics so HTML-with-JSON-body won't break us
 		const data = await fetchJSON(
-			`/api/guides?study=${encodeURIComponent(studyId)}`, { headers: { Accept: "application/json" }, signal: ac.signal }, { allowHeuristics: true, emptyAs: { ok: false, guides: [] } }
+			`/api/guides?study=${encodeURIComponent(studyId)}`,
+			{ headers: { Accept: 'application/json' }, signal: ac.signal },
+			{ allowHeuristics: true, emptyAs: { ok: false, guides: [] } }
 		);
 
-		console.log("[guides] Received data:", data);
+		console.log('[guides] Received data:', data);
 
 		// Defensive shape checks
-		if (!data || typeof data !== "object") {
-			console.warn("[guides] unexpected payload:", data);
-			paint(row("Failed to load guides."));
+		if (!data || typeof data !== 'object') {
+			console.warn('[guides] unexpected payload:', data);
+			paint(row('Failed to load guides.'));
 			nukeGuidesLoadingUI();
 			return;
 		}
 
 		const guides = Array.isArray(data.guides) ? data.guides : [];
-		console.log("[guides] Parsed guides array:", guides.length, "items");
+		console.log('[guides] Parsed guides array:', guides.length, 'items');
 
-		guides.sort((a, b) =>
-			(Date.parse(b.updatedAt || b.createdAt || 0) || 0) -
-			(Date.parse(a.updatedAt || a.createdAt || 0) || 0)
+		guides.sort(
+			(a, b) =>
+				(Date.parse(b.updatedAt || b.createdAt || 0) || 0) -
+				(Date.parse(a.updatedAt || a.createdAt || 0) || 0)
 		);
 
 		if (!guides.length) {
-			paint("");
-			setGuidesListState("empty");
+			paint('');
+			setGuidesListState('empty');
 			nukeGuidesLoadingUI();
 			return;
 		}
 
-		setGuidesListState("table");
+		setGuidesListState('table');
 
 		// Render rows
 		const fr = document.createDocumentFragment();
 		for (const g of guides) {
-			const tr = document.createElement("tr");
-			tr.className = "govuk-table__row";
+			const tr = document.createElement('tr');
+			tr.className = 'govuk-table__row';
 
 			// Format the updated date
-			let dateStr = "—";
+			let dateStr = '—';
 			try {
 				const date = new Date(g.updatedAt || g.createdAt || 0);
 				if (!isNaN(date.getTime())) {
@@ -568,31 +425,31 @@ async function loadGuides(studyId, opts = {}) {
 						month: 'short',
 						day: 'numeric',
 						hour: '2-digit',
-						minute: '2-digit'
+						minute: '2-digit',
 					});
 				}
 			} catch (e) {
-				console.warn("[guides] Date parsing error:", e);
+				console.warn('[guides] Date parsing error:', e);
 			}
 
 			tr.innerHTML = `
-        <td class="govuk-table__cell">${escapeHtml(g.title || "Untitled")}</td>
-        <td class="govuk-table__cell">${escapeHtml(g.status || "draft")}</td>
-        <td class="govuk-table__cell">v${Number.isFinite(g.version) ? g.version : (parseInt(g.version,10) || 0)}</td>
+        <td class="govuk-table__cell">${escapeHtml(g.title || 'Untitled')}</td>
+        <td class="govuk-table__cell">${escapeHtml(g.status || 'draft')}</td>
+        <td class="govuk-table__cell">v${Number.isFinite(g.version) ? g.version : parseInt(g.version, 10) || 0}</td>
         <td class="govuk-table__cell">${dateStr}</td>
-        <td class="govuk-table__cell">${escapeHtml(g.createdBy?.name || "—")}</td>
+        <td class="govuk-table__cell">${escapeHtml(g.createdBy?.name || '—')}</td>
         <td class="govuk-table__cell"><button class="link-like" data-open="${g.id}">Open</button></td>`;
 			fr.appendChild(tr);
 		}
 
 		// Clear and append
-		paint("");
+		paint('');
 		tbody.appendChild(fr);
-		console.log("[guides] Table populated with", guides.length, "rows");
+		console.log('[guides] Table populated with', guides.length, 'rows');
 
 		// Wire open buttons
-		tbody.querySelectorAll('button[data-open]').forEach(btn => {
-			btn.addEventListener("click", () => {
+		tbody.querySelectorAll('button[data-open]').forEach((btn) => {
+			btn.addEventListener('click', () => {
 				window.__hasAutoOpened = true;
 				openGuide(btn.dataset.open);
 			});
@@ -601,19 +458,27 @@ async function loadGuides(studyId, opts = {}) {
 		// Auto-open newest if requested
 		if (opts.autoOpen && !window.__hasAutoOpened && !__openGuideId && guides[0]?.id) {
 			window.__hasAutoOpened = true;
-			console.log("[guides] Auto-opening first guide:", guides[0].id);
-			try { await openGuide(guides[0].id); } catch (e) { console.warn("autoOpen failed:", e); }
+			console.log('[guides] Auto-opening first guide:', guides[0].id);
+			try {
+				await openGuide(guides[0].id);
+			} catch (e) {
+				console.warn('autoOpen failed:', e);
+			}
 		}
 
 		// Success: nuke any external "Loading…" remnants
 		nukeGuidesLoadingUI();
-		console.log("[guides] Load complete, UI updated");
-
+		console.log('[guides] Load complete, UI updated');
 	} catch (err) {
-		const aborted = err && (err.name === "AbortError");
-		console.error("[guides] loadGuides error:", err);
-		paint("");
-		setGuidesListState("unavailable", aborted ? "The guide list is taking longer than expected. Try again shortly." : "The guide list could not be loaded. You can still draft a guide and save it when the service is available.");
+		const aborted = err && err.name === 'AbortError';
+		console.error('[guides] loadGuides error:', err);
+		paint('');
+		setGuidesListState(
+			'unavailable',
+			aborted
+				? 'The guide list is taking longer than expected. Try again shortly.'
+				: 'The guide list could not be loaded. You can still draft a guide and save it when the service is available.'
+		);
 		nukeGuidesLoadingUI();
 	} finally {
 		clearTimeout(timer);
@@ -623,76 +488,12 @@ async function loadGuides(studyId, opts = {}) {
 	}
 }
 
-/* -------------------- patterns -------------------- */
-
-async function refreshPatternList() {
-	// Try API endpoints first
-	const urls = ["/api/partials", "/api/patterns"];
-
-	for (const url of urls) {
-		try {
-			const data = await fetchJSON(
-				url, { headers: { Accept: "application/json" } }, { allowHeuristics: false } // don't try to parse HTML SPA fallback
-			);
-
-			const partials = Array.isArray(data?.partials) ? data.partials :
-				Array.isArray(data) ? data : [];
-
-			if (partials.length) {
-				__patternServiceAvailable = true;
-				setCreatePatternVisibility(true);
-				populatePatternList(partials);
-				setPatternStatus(""); // clear any prior warning
-				return;
-			}
-
-			// If we got JSON but it's empty, just go to fallback below
-			console.warn(`refreshPatternList: ${url} returned empty JSON array`);
-		} catch (e) {
-			console.warn(`refreshPatternList: ${url} failed`, e.message);
-			// Continue to next url
-		}
-	}
-
-	// If we reach here, both endpoints failed or returned empty — fall back to local starters
-	try {
-		let starters = [];
-		const maybe = (typeof listStarterPatterns === "function") ? listStarterPatterns() : [];
-		starters = (maybe && typeof maybe.then === "function") ? await maybe : maybe;
-
-		if (Array.isArray(starters) && starters.length) {
-			__patternServiceAvailable = false;
-			setCreatePatternVisibility(false);
-			populatePatternList(starters);
-			setPatternStatus("Pattern service unavailable — showing local starter patterns.");
-			return;
-		}
-	} catch (e) {
-		console.warn("refreshPatternList: starter fallback failed", e);
-	}
-
-	// Nothing available at all
-	__patternServiceAvailable = false;
-	setCreatePatternVisibility(false);
-	populatePatternList([]);
-	setPatternStatus("No patterns available (API returned HTML).");
-}
-
-function setCreatePatternVisibility(isVisible) {
-	const button = $("#btn-new-pattern");
-	if (!button) return;
-	button.hidden = !isVisible;
-}
-
 /* -------------------- syntax highlighting (unchanged) -------------------- */
 
 function highlightMustache(source) {
 	if (!source) return '';
 
-	let highlighted = source
-		.replace(/&/g, '&amp;')
-		.replace(/</g, '&lt;')
-		.replace(/>/g, '&gt;');
+	let highlighted = source.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
 	const mustacheTags = [];
 	const tagPattern = /\{\{[^}]*\}\}/g;
@@ -701,16 +502,24 @@ function highlightMustache(source) {
 		mustacheTags.push({ start: match.index, end: match.index + match[0].length });
 	}
 
-	function isInsideMustache(pos) {
-		return mustacheTags.some(tag => pos >= tag.start && pos < tag.end);
-	}
-
 	highlighted = highlighted
 		.replace(/(\{\{!)([^}]*?)(\}\})/g, '<span class="token comment">$1$2$3</span>')
-		.replace(/(\{\{&gt;)\s*([^}]+?)(\}\})/g, '<span class="token mustache"><span class="token mustache-tag">{{&gt;</span><span class="token keyword">$2</span><span class="token mustache-tag">}}</span></span>')
-		.replace(/(\{\{)(#[^}]+?)(\}\})/g, '<span class="token mustache"><span class="token mustache-tag">$1$2$3</span></span>')
-		.replace(/(\{\{)(\/[^}]+?)(\}\})/g, '<span class="token mustache"><span class="token mustache-tag">$1$2$3</span></span>')
-		.replace(/(\{\{)([^}#\/!&gt;]+?)(\}\})/g, '<span class="token mustache"><span class="token mustache-tag">$1</span><span class="token mustache-variable">$2</span><span class="token mustache-tag">$3</span></span>');
+		.replace(
+			/(\{\{&gt;)\s*([^}]+?)(\}\})/g,
+			'<span class="token mustache"><span class="token mustache-tag">{{&gt;</span><span class="token keyword">$2</span><span class="token mustache-tag">}}</span></span>'
+		)
+		.replace(
+			/(\{\{)(#[^}]+?)(\}\})/g,
+			'<span class="token mustache"><span class="token mustache-tag">$1$2$3</span></span>'
+		)
+		.replace(
+			/(\{\{)(\/[^}]+?)(\}\})/g,
+			'<span class="token mustache"><span class="token mustache-tag">$1$2$3</span></span>'
+		)
+		.replace(
+			/(\{\{)([^}#\/!&gt;]+?)(\}\})/g,
+			'<span class="token mustache"><span class="token mustache-tag">$1</span><span class="token mustache-variable">$2</span><span class="token mustache-tag">$3</span></span>'
+		);
 
 	highlighted = highlighted
 		.replace(/^(#{1,6})\s+(.+)$/gm, '<span class="token title">$1 $2</span>')
@@ -738,69 +547,80 @@ function syncHighlighting() {
 /* -------------------- editor wiring -------------------- */
 
 function wireEditor() {
-	const saveVarsBtn = document.getElementById("btn-save-vars");
-	if (saveVarsBtn) saveVarsBtn.addEventListener("click", onSaveVariablesOnly);
+	const saveVarsBtn = document.getElementById('btn-save-vars');
+	if (saveVarsBtn) saveVarsBtn.addEventListener('click', onSaveVariablesOnly);
 
-	const resetVarsBtn = document.getElementById("btn-reset-vars");
-	if (resetVarsBtn) resetVarsBtn.addEventListener("click", onResetVariables);
+	const resetVarsBtn = document.getElementById('btn-reset-vars');
+	if (resetVarsBtn) resetVarsBtn.addEventListener('click', onResetVariables);
 
 	// Pattern drawer
-	const insertPat = $("#btn-insert-pattern");
-	if (insertPat) insertPat.addEventListener("click", openPatternDrawer);
-	const patClose = $("#drawer-patterns-close");
-	if (patClose) patClose.addEventListener("click", closePatternDrawer);
-	const patSearch = $("#pattern-search");
-	if (patSearch) patSearch.addEventListener("input", onPatternSearch);
+	const insertPat = $('#btn-insert-pattern');
+	if (insertPat) insertPat.addEventListener('click', openPatternDrawer);
+	const patClose = $('#drawer-patterns-close');
+	if (patClose) patClose.addEventListener('click', closePatternDrawer);
+	const patSearch = $('#pattern-search');
+	if (patSearch) patSearch.addEventListener('input', onPatternSearch);
 	bindPatternTrayActions();
 	bindPatternDocumentActions();
 
 	// Variables drawer
-	const varsBtn = $("#btn-variables");
-	if (varsBtn) varsBtn.addEventListener("click", openVariablesDrawer);
-	const varsClose = $("#drawer-variables-close");
-	if (varsClose) varsClose.addEventListener("click", closeVariablesDrawer);
+	const varsBtn = $('#btn-variables');
+	if (varsBtn) varsBtn.addEventListener('click', openVariablesDrawer);
+	const varsClose = $('#drawer-variables-close');
+	if (varsClose) varsClose.addEventListener('click', closeVariablesDrawer);
 
 	// Tag dialog (mutual exclusivity with drawers)
-	const tagBtn = $("#btn-insert-tag");
-	if (tagBtn) tagBtn.addEventListener("click", openTagDialog);
+	const tagBtn = $('#btn-insert-tag');
+	if (tagBtn) tagBtn.addEventListener('click', openTagDialog);
 
 	// Source editor
-	const src = $("#guide-source");
+	const src = $('#guide-source');
 	if (src) {
-		src.addEventListener("input", debounce(function() {
-			syncHighlighting();
-			preview();
-			validateGuide();
-		}, 150));
+		src.addEventListener(
+			'input',
+			debounce(function () {
+				syncHighlighting();
+				preview();
+				validateGuide();
+			}, 150)
+		);
 
-		src.addEventListener("scroll", function() {
-			const highlight = $("#guide-source-highlight");
-			if (highlight) {
-				highlight.scrollTop = src.scrollTop;
-				highlight.scrollLeft = src.scrollLeft;
-			}
-		}, { passive: true });
+		src.addEventListener(
+			'scroll',
+			function () {
+				const highlight = $('#guide-source-highlight');
+				if (highlight) {
+					highlight.scrollTop = src.scrollTop;
+					highlight.scrollLeft = src.scrollLeft;
+				}
+			},
+			{ passive: true }
+		);
 
 		setTimeout(syncHighlighting, 100);
 	}
 
 	// Title
-	const title = $("#guide-title");
-	if (title) title.addEventListener("input", debounce(function() {
-		announce("Title updated");
-		validateGuide();
-	}, 400));
+	const title = $('#guide-title');
+	if (title)
+		title.addEventListener(
+			'input',
+			debounce(function () {
+				announce('Title updated');
+				validateGuide();
+			}, 400)
+		);
 
 	// Save/Publish
-	const saveBtn = $("#btn-save");
-	if (saveBtn) saveBtn.addEventListener("click", onSave);
-	const pubBtn = $("#btn-publish");
-	if (pubBtn) pubBtn.addEventListener("click", onPublish);
+	const saveBtn = $('#btn-save');
+	if (saveBtn) saveBtn.addEventListener('click', onSave);
+	const pubBtn = $('#btn-publish');
+	if (pubBtn) pubBtn.addEventListener('click', onPublish);
 
 	// Cmd/Ctrl+S
-	document.addEventListener("keydown", function(e) {
-		var k = e && e.key ? e.key.toLowerCase() : "";
-		if ((e.metaKey || e.ctrlKey) && k === "s") {
+	document.addEventListener('keydown', function (e) {
+		var k = e && e.key ? e.key.toLowerCase() : '';
+		if ((e.metaKey || e.ctrlKey) && k === 's') {
 			e.preventDefault();
 			onSave();
 		}
@@ -811,29 +631,34 @@ function wireEditor() {
 
 async function startNewGuide() {
 	try {
-		$("#editor-section")?.classList.remove("is-hidden");
+		$('#editor-section')?.classList.remove('is-hidden');
 
 		__openGuideId = null;
 
-		const titleEl = $("#guide-title");
-		if (titleEl) titleEl.value = "Untitled guide";
+		const titleEl = $('#guide-title');
+		if (titleEl) titleEl.value = 'Untitled guide';
 
-		const statusEl = $("#guide-status");
-		if (statusEl) statusEl.textContent = "draft";
+		const statusEl = $('#guide-status');
+		if (statusEl) statusEl.textContent = 'draft';
 
-		const defaultSrc = (typeof DEFAULT_SOURCE === "string" && DEFAULT_SOURCE.trim()) ?
-			DEFAULT_SOURCE.trim() :
-			"# New guide\n\nWelcome. Start writing…";
+		const defaultSrc =
+			typeof DEFAULT_SOURCE === 'string' && DEFAULT_SOURCE.trim()
+				? DEFAULT_SOURCE.trim()
+				: '# New guide\n\nWelcome. Start writing…';
 
-		const srcEl = $("#guide-source");
+		const srcEl = $('#guide-source');
 		if (srcEl) {
 			// Force seed if empty
-			srcEl.value = (srcEl.value && srcEl.value.trim()) ? srcEl.value : defaultSrc;
+			srcEl.value = srcEl.value && srcEl.value.trim() ? srcEl.value : defaultSrc;
 		}
 
 		syncHighlighting();
 
-		try { await refreshPatternList(); } catch (err) { console.warn("Pattern list failed:", err); }
+		try {
+			await refreshPatternList();
+		} catch (err) {
+			console.warn('Pattern list failed:', err);
+		}
 
 		// JSON-only: clear variables drawer
 		populateVariablesFormEnhanced({});
@@ -842,10 +667,10 @@ async function startNewGuide() {
 		validateGuide();
 
 		titleEl && titleEl.focus();
-		announce("Started a new guide");
+		announce('Started a new guide');
 	} catch (err) {
-		console.error("startNewGuide fatal:", err);
-		announce("Could not start a new guide");
+		console.error('startNewGuide fatal:', err);
+		announce('Could not start a new guide');
 	}
 }
 
@@ -855,51 +680,56 @@ async function startNewGuide() {
  */
 async function openGuide(id) {
 	try {
-		if (!id) throw new Error("No guide id provided to openGuide().");
+		if (!id) throw new Error('No guide id provided to openGuide().');
 
 		let guide = null;
 
 		// 1) Preferred path: load by Airtable record id
 		try {
 			const js = await fetchJSON(`/api/guides/${encodeURIComponent(id)}`).catch((e) => {
-				console.warn("openGuide: fetch by id failed", e);
+				console.warn('openGuide: fetch by id failed', e);
 				return null;
 			});
 			if (js && (js.guide || js.id || js.title)) {
 				guide = js.guide || js; // tolerate both API response shapes
 			}
 		} catch (err) {
-			console.warn("openGuide: fetch by id threw", err);
+			console.warn('openGuide: fetch by id threw', err);
 		}
 
 		// 2) Optional fallback: list-by-study → find guide in list
 		if (!guide) {
-			const sid = __guideCtx?.study?.id || "";
+			const sid = __guideCtx?.study?.id || '';
 			if (sid) {
 				try {
-					const list = await fetchJSON(`/api/guides?study=${encodeURIComponent(sid)}`, {}, { emptyAs: { guides: [] } });
+					const list = await fetchJSON(
+						`/api/guides?study=${encodeURIComponent(sid)}`,
+						{},
+						{ emptyAs: { guides: [] } }
+					);
 					const arr = Array.isArray(list?.guides) ? list.guides : [];
-					guide = arr.find(g => g.id === id) || null;
+					guide = arr.find((g) => g.id === id) || null;
 				} catch (err) {
-					console.warn("openGuide: list fallback failed", err);
+					console.warn('openGuide: list fallback failed', err);
 				}
 			} else {
 				// No study context yet → don't hard-fail; just announce and bail cleanly
-				announce("Could not open guide (no study context available for fallback).");
+				announce('Could not open guide (no study context available for fallback).');
 				return;
 			}
 		}
 
-		if (!guide) throw new Error("Guide not found");
+		if (!guide) throw new Error('Guide not found');
 
 		__openGuideId = guide.id;
-		$("#editor-section")?.classList.remove("is-hidden");
-		if ($("#guide-title")) $("#guide-title").value = guide.title || "Untitled";
-		if ($("#guide-status")) $("#guide-status").textContent = guide.status || "draft";
+		$('#editor-section')?.classList.remove('is-hidden');
+		if ($('#guide-title')) $('#guide-title').value = guide.title || 'Untitled';
+		if ($('#guide-status')) $('#guide-status').textContent = guide.status || 'draft';
 
 		// JSON-only migration rules
-		let source = String(guide.sourceMarkdown || "");
-		let jsonVars = (guide && typeof guide.variables === "object" && guide.variables) ? guide.variables : {};
+		let source = String(guide.sourceMarkdown || '');
+		let jsonVars =
+			guide && typeof guide.variables === 'object' && guide.variables ? guide.variables : {};
 
 		if (!jsonVars || Object.keys(jsonVars).length === 0) {
 			// One-time import from YAML if present
@@ -919,7 +749,7 @@ async function openGuide(id) {
 			source = stripFrontMatter(source);
 		}
 
-		if ($("#guide-source")) $("#guide-source").value = source;
+		if ($('#guide-source')) $('#guide-source').value = source;
 		syncHighlighting();
 
 		await refreshPatternList();
@@ -929,11 +759,10 @@ async function openGuide(id) {
 
 		await preview();
 		validateGuide();
-		announce(`Opened guide "${guide.title || "Untitled"}"`);
-
+		announce(`Opened guide "${guide.title || 'Untitled'}"`);
 	} catch (e) {
 		console.warn(e);
-		announce(`Failed to open guide: ${e && e.message ? e.message : "Unknown error"}`);
+		announce(`Failed to open guide: ${e && e.message ? e.message : 'Unknown error'}`);
 	}
 }
 
@@ -941,12 +770,12 @@ async function openGuide(id) {
  * Preview uses JSON variables
  */
 async function preview() {
-	const srcEl = document.getElementById("guide-source");
-	const prev = document.getElementById("guide-preview");
+	const srcEl = document.getElementById('guide-source');
+	const prev = document.getElementById('guide-preview');
 	if (!srcEl || !prev) return;
 
 	// Always read the current body (front-matter is stripped only for rendering)
-	const sourceRaw = srcEl.value || "";
+	const sourceRaw = srcEl.value || '';
 	const source = stripFrontMatter(sourceRaw);
 
 	// If the editor is somehow empty, show a helpful placeholder in the preview
@@ -960,8 +789,8 @@ async function preview() {
 	const study = ensureStudyTitle(ctx.study || {});
 
 	// Variables from manager
-	const vars = (varManager && typeof varManager.getVariables === "function") ?
-		varManager.getVariables() : {};
+	const vars =
+		varManager && typeof varManager.getVariables === 'function' ? varManager.getVariables() : {};
 
 	// Expose variables at root *and* under meta
 	const context = {
@@ -970,7 +799,7 @@ async function preview() {
 		session: {},
 		participant: {},
 		...vars,
-		meta: vars
+		meta: vars,
 	};
 
 	// Try building any referenced partials, but don't fail preview if they 404
@@ -979,18 +808,18 @@ async function preview() {
 	try {
 		partials = await buildPartials(names);
 	} catch (e) {
-		console.warn("buildPartials failed; rendering without partials", e);
+		console.warn('buildPartials failed; rendering without partials', e);
 		partials = {};
 	}
 
 	// Render. If for any reason html comes back falsy, fall back to raw markdown.
-	let html = "";
+	let html = '';
 	try {
 		const out = await renderGuide({ source, context, partials });
-		html = (out && typeof out.html === "string") ? out.html : "";
+		html = out && typeof out.html === 'string' ? out.html : '';
 	} catch (e) {
-		console.warn("renderGuide failed; falling back to raw markdown", e);
-		html = ""; // will be replaced by fallback below
+		console.warn('renderGuide failed; falling back to raw markdown', e);
+		html = ''; // will be replaced by fallback below
 	}
 
 	if (!html.trim()) {
@@ -1014,139 +843,146 @@ async function preview() {
 async function onSave() {
 	const validationErrors = validateGuide();
 	if (validationErrors.length) {
-		$("#guide-error-summary")?.focus();
-		announce("Guide editor has validation errors.");
+		$('#guide-error-summary')?.focus();
+		announce('Guide editor has validation errors.');
 		return;
 	}
 
-	const title = ($("#guide-title")?.value || "").trim();
-	const source = stripFrontMatter($("#guide-source")?.value || "");
-	const variables = (varManager && typeof varManager.getVariables === "function") ?
-		varManager.getVariables() : {};
+	const title = ($('#guide-title')?.value || '').trim();
+	const source = stripFrontMatter($('#guide-source')?.value || '');
+	const variables =
+		varManager && typeof varManager.getVariables === 'function' ? varManager.getVariables() : {};
 
-	const studyId = __guideCtx?.study?.id || "";
+	const studyId = __guideCtx?.study?.id || '';
 	const id = __openGuideId;
 
-	const body = id ? { title, sourceMarkdown: source, variables } : { study_airtable_id: studyId, title, sourceMarkdown: source, variables };
+	const body = id
+		? { title, sourceMarkdown: source, variables }
+		: { study_airtable_id: studyId, title, sourceMarkdown: source, variables };
 
 	const url = id ? `/api/guides/${encodeURIComponent(id)}` : `/api/guides`;
-	const method = id ? "PATCH" : "POST";
+	const method = id ? 'PATCH' : 'POST';
 
 	try {
 		const js = await fetchJSON(
-			url, { method, headers: { "content-type": "application/json" }, body: JSON.stringify(body) }, { emptyAs: {} }
+			url,
+			{ method, headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) },
+			{ emptyAs: {} }
 		);
 
 		if (!id && js && js.id) {
 			__openGuideId = js.id;
 		}
-		announce("Guide saved");
+		announce('Guide saved');
 		if (studyId) loadGuides(studyId);
 	} catch (err) {
-		announce(`Save failed: ${err.status || "?"} ${JSON.stringify(err.data || {})}`);
+		announce(`Save failed: ${err.status || '?'} ${JSON.stringify(err.data || {})}`);
 	}
 }
 
 async function onPublish() {
 	const validationErrors = validateGuide();
 	if (validationErrors.length) {
-		$("#guide-error-summary")?.focus();
-		announce("Guide editor has validation errors.");
+		$('#guide-error-summary')?.focus();
+		announce('Guide editor has validation errors.');
 		return;
 	}
 
 	const id = __openGuideId;
 	const sid = __guideCtx?.study?.id;
-	const title = ($("#guide-title")?.value || "").trim();
-	if (!id || !sid) { announce("Save the guide before publishing."); return; }
+	const title = ($('#guide-title')?.value || '').trim();
+	if (!id || !sid) {
+		announce('Save the guide before publishing.');
+		return;
+	}
 
 	const url = `/api/guides/${encodeURIComponent(id)}/publish`;
-	const res = await fetch(url, { method: "POST" });
+	const res = await fetch(url, { method: 'POST' });
 
 	if (res.ok) {
-		$("#guide-status").textContent = "published";
-		announce(`Published "${title || "Untitled"}"`);
+		$('#guide-status').textContent = 'published';
+		announce(`Published "${title || 'Untitled'}"`);
 		loadGuides(sid);
 	} else {
-		const msg = await res.text().catch(() => "");
-		announce(`Publish failed: ${res.status} ${msg || ""}`.trim());
+		const msg = await res.text().catch(() => '');
+		announce(`Publish failed: ${res.status} ${msg || ''}`.trim());
 	}
 }
 
 async function onSaveVariablesOnly() {
 	try {
 		const id = window.__openGuideId;
-		const statusEl = document.getElementById("variables-status");
+		const statusEl = document.getElementById('variables-status');
 
 		// If the guide hasn't been created yet, create it first via your normal save path
 		if (!id) {
-			statusEl && (statusEl.textContent = "Creating guide and saving variables…");
+			statusEl && (statusEl.textContent = 'Creating guide and saving variables…');
 			await onSave(); // creates draft + sets __openGuideId
 		}
 
 		const guideId = window.__openGuideId;
 		if (!guideId) {
-			throw new Error("No guide id available to save variables");
+			throw new Error('No guide id available to save variables');
 		}
 
 		const variables = window.guidesPage?.varManager?.().getVariables?.() || {};
-		statusEl && (statusEl.textContent = "Saving variables…");
+		statusEl && (statusEl.textContent = 'Saving variables…');
 
 		const res = await fetch(`/api/guides/${encodeURIComponent(guideId)}`, {
-			method: "PATCH",
-			headers: { "Content-Type": "application/json" },
-			body: JSON.stringify({ variables })
+			method: 'PATCH',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify({ variables }),
 		});
 
 		if (!res.ok) {
-			const txt = await res.text().catch(() => "");
+			const txt = await res.text().catch(() => '');
 			throw new Error(`Save failed (${res.status}): ${txt}`);
 		}
 
-		statusEl && (statusEl.textContent = "Variables saved to Airtable.");
-		announce("Variables saved");
+		statusEl && (statusEl.textContent = 'Variables saved to Airtable.');
+		announce('Variables saved');
 	} catch (err) {
-		console.error("[guides] save variables:", err);
-		const statusEl = document.getElementById("variables-status");
-		statusEl && (statusEl.textContent = `Error: ${err.message || "Failed to save variables"}`);
-		announce("Failed to save variables");
+		console.error('[guides] save variables:', err);
+		const statusEl = document.getElementById('variables-status');
+		statusEl && (statusEl.textContent = `Error: ${err.message || 'Failed to save variables'}`);
+		announce('Failed to save variables');
 	}
 }
 
 async function onResetVariables() {
 	try {
 		const id = window.__openGuideId;
-		const statusEl = document.getElementById("variables-status");
+		const statusEl = document.getElementById('variables-status');
 		if (!id) {
 			// No guide yet → just clear editor state
 			window.guidesPage?.varManager?.().setVariables?.({});
-			statusEl && (statusEl.textContent = "Variables cleared.");
+			statusEl && (statusEl.textContent = 'Variables cleared.');
 			preview();
 			return;
 		}
-		statusEl && (statusEl.textContent = "Reverting to last saved variables…");
+		statusEl && (statusEl.textContent = 'Reverting to last saved variables…');
 		await openGuide(id); // re-fetches and repopulates from API/Airtable
-		statusEl && (statusEl.textContent = "Variables reverted to last saved.");
-		announce("Variables reverted");
+		statusEl && (statusEl.textContent = 'Variables reverted to last saved.');
+		announce('Variables reverted');
 	} catch (err) {
-		console.error("[guides] reset variables:", err);
-		const statusEl = document.getElementById("variables-status");
-		statusEl && (statusEl.textContent = `Error: ${err.message || "Failed to reset variables"}`);
+		console.error('[guides] reset variables:', err);
+		const statusEl = document.getElementById('variables-status');
+		statusEl && (statusEl.textContent = `Error: ${err.message || 'Failed to reset variables'}`);
 	}
 }
 
 /* -------------------- import (unchanged, but preview strips YAML) -------------------- */
 
 function importMarkdownFlow() {
-	const inp = document.createElement("input");
-	inp.type = "file";
-	inp.accept = ".md,text/markdown";
-	inp.addEventListener("change", async function() {
+	const inp = document.createElement('input');
+	inp.type = 'file';
+	inp.accept = '.md,text/markdown';
+	inp.addEventListener('change', async function () {
 		const file = inp.files && inp.files[0];
 		if (!file) return;
 		const text = await file.text();
 		await startNewGuide();
-		const srcEl = $("#guide-source");
+		const srcEl = $('#guide-source');
 		if (srcEl) srcEl.value = text;
 		syncHighlighting();
 		await preview(); // will render with stripFrontMatter()
@@ -1159,588 +995,20 @@ function importMarkdownFlow() {
 function getDrawerFocusTarget(drawer, preferred) {
 	return (
 		preferred ||
-		drawer.querySelector("button, [href], input, select, textarea, [tabindex]:not([tabindex='-1'])") ||
+		drawer.querySelector(
+			"button, [href], input, select, textarea, [tabindex]:not([tabindex='-1'])"
+		) ||
 		drawer
 	);
 }
 
 function revealDrawer(drawer, preferredFocusTarget) {
 	if (!drawer) return;
-	drawer.removeAttribute("hidden");
-	drawer.scrollIntoView({ behavior: "smooth", block: "start" });
+	drawer.removeAttribute('hidden');
+	drawer.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
 	window.requestAnimationFrame(() => {
 		getDrawerFocusTarget(drawer, preferredFocusTarget)?.focus({ preventScroll: true });
-	});
-}
-
-function openPatternDrawer() {
-	// Mutual exclusivity
-	closeVariablesDrawer();
-	closeTagDialog();
-
-	const drawer = $("#drawer-patterns");
-	if (drawer) {
-		revealDrawer(drawer, $("#pattern-search"));
-	}
-
-	// NEW: if list is empty or only has “No patterns found.”, (re)load now
-	const ul = $("#pattern-list");
-	const needsLoad = !ul || ul.children.length === 0 || (ul.children.length === 1 && ul.firstElementChild?.classList.contains("muted"));
-	if (needsLoad) {
-		refreshPatternList();
-	}
-
-	announce("Pattern drawer opened");
-}
-
-function closePatternDrawer() {
-	$("#drawer-patterns")?.setAttribute("hidden", "true");
-	$("#btn-insert-pattern")?.focus();
-	announce("Pattern drawer closed");
-}
-
-function populatePatternList(items) {
-	const ul = $("#pattern-list");
-	if (!ul) return;
-	ul.innerHTML = "";
-
-	const arr = Array.isArray(items) ? items : [];
-	__patternCache = arr.slice(); // NEW: keep a copy for client-side search
-
-	if (!arr.length) {
-		const li = document.createElement("li");
-		li.className = "govuk-body muted";
-		li.textContent = "No patterns found.";
-		ul.appendChild(li);
-
-		ul.removeEventListener("click", handlePatternClick);
-		ul.addEventListener("click", handlePatternClick);
-		bindPatternListActions(ul);
-		return;
-	}
-
-	// Group by category
-	const grouped = {};
-	for (const p of arr) {
-		const cat = formatPatternCategory(p.category);
-		if (!grouped[cat]) grouped[cat] = [];
-		grouped[cat].push(p);
-	}
-
-	for (const [cat, patterns] of Object.entries(grouped)) {
-		const header = document.createElement("li");
-		header.className = "pattern-category-header";
-		header.innerHTML = `<h3 class="govuk-heading-s pattern-category-header__heading">${escapeHtml(cat)}</h3>`;
-		ul.appendChild(header);
-
-		for (const p of patterns) {
-			const li = document.createElement("li");
-			li.className = "pattern-item";
-
-			const insertName = patternPartialName(p);
-
-			li.innerHTML = `
-        <div class="pattern-item__content">
-          <div class="pattern-item__title">
-            <h4 class="govuk-heading-s">${escapeHtml(p.title)}</h4>
-            <p class="govuk-body-s muted">Partial <code>${escapeHtml(insertName)}</code></p>
-          </div>
-          <button class="govuk-button govuk-button--secondary" type="button" data-insert="${escapeHtml(insertName)}" onclick="window.__researchOpsHandlePatternClick(event)">
-            Add to guide
-          </button>
-        </div>
-        <div class="govuk-button-group pattern-item__actions">
-          <button class="govuk-button govuk-button--secondary pattern-action-button" type="button" data-view="${escapeHtml(p.name)}">View</button>
-          <button class="govuk-button govuk-button--secondary pattern-action-button" type="button" data-edit="${escapeHtml(p.name)}">Edit</button>
-          <button class="govuk-button govuk-button--warning pattern-action-button" type="button" data-delete="${escapeHtml(p.name)}">Delete</button>
-        </div>
-      `;
-			ul.appendChild(li);
-		}
-	}
-
-	ul.removeEventListener("click", handlePatternClick);
-	ul.addEventListener("click", handlePatternClick);
-	bindPatternListActions(ul);
-}
-
-function formatPatternCategory(category) {
-	const raw = String(category || "Uncategorised").trim() || "Uncategorised";
-	const spaced = raw.replace(/[-_]+/g, " ");
-	const capitalised = spaced.charAt(0).toUpperCase() + spaced.slice(1);
-	return /\bpatterns$/i.test(capitalised) ? capitalised : `${capitalised} patterns`;
-}
-
-function patternPartialName(pattern) {
-	const name = String(pattern?.name || "").trim();
-	const version = String(pattern?.version || "").trim();
-	if (!name || !version || new RegExp(`_v${version}$`, "i").test(name)) {
-		return name;
-	}
-	return `${name}_v${version}`;
-}
-
-function bindPatternListActions(ul) {
-	ul.querySelectorAll("button").forEach(button => {
-		button.addEventListener("click", handlePatternClick);
-	});
-}
-
-function bindPatternDocumentActions() {
-	if (document.documentElement.dataset.patternActionsBound === "true") return;
-	document.documentElement.dataset.patternActionsBound = "true";
-	document.addEventListener("click", (event) => {
-		const button = event.target.closest("#drawer-patterns button");
-		if (!button) return;
-
-		const saveName = button.getAttribute("data-save-local-pattern");
-		if (saveName) {
-			event.preventDefault();
-			const pattern = findPattern(saveName);
-			if (pattern) {
-				pattern.source = button.closest(".govuk-details__text")?.querySelector("textarea")?.value || "";
-				if (window.__patternRegistry) window.__patternRegistry[pattern.name] = pattern.source;
-			}
-			populatePatternList(__patternCache);
-			announce("Pattern saved");
-			return;
-		}
-
-		const deleteName = button.getAttribute("data-confirm-delete-local-pattern");
-		if (deleteName) {
-			event.preventDefault();
-			__patternCache = (__patternCache || []).filter(pattern => pattern.name !== deleteName);
-			if (window.__patternRegistry) delete window.__patternRegistry[deleteName];
-			populatePatternList(__patternCache);
-			announce("Pattern deleted");
-			return;
-		}
-
-		if (
-			button.dataset.insert ||
-			button.dataset.view ||
-			button.dataset.edit ||
-			button.dataset.delete ||
-			button.id === "btn-new-pattern"
-		) {
-			handlePatternClick(event);
-		}
-	});
-}
-
-async function handlePatternClick(e) {
-	e.preventDefault();
-	e.stopPropagation();
-	const t = e.target.closest("button");
-	if (!t) return;
-
-	if (t.dataset.insert) {
-		const name = t.dataset.insert;
-		insertAtCursor($("#guide-source"), `\n{{> ${name}}}\n`);
-		syncHighlighting();
-		await preview();
-		closePatternDrawer();
-		announce(`Pattern ${name} inserted`);
-		return;
-	}
-
-	if (t.dataset.view) {
-		const pattern = findPattern(t.dataset.view);
-		if (pattern?.isLocal) { viewLocalPattern(pattern, t); return; }
-		await viewPartial(t.dataset.view);
-		return;
-	}
-	if (t.dataset.edit) {
-		const pattern = findPattern(t.dataset.edit);
-		if (pattern?.isLocal) { editLocalPattern(pattern, t); return; }
-		await editPartial(t.dataset.edit);
-		return;
-	}
-	if (t.dataset.delete) {
-		const pattern = findPattern(t.dataset.delete);
-		if (pattern?.isLocal) { deleteLocalPattern(pattern, t); return; }
-		await deletePartial(t.dataset.delete);
-		return;
-	}
-
-	if (t.id === "btn-new-pattern") {
-		if (!__patternServiceAvailable) return;
-		await createNewPartial();
-		return;
-	}
-}
-
-window.__researchOpsHandlePatternClick = handlePatternClick;
-
-function findPattern(idOrName) {
-	return (__patternCache || []).find(pattern => (
-		String(pattern.id || "") === String(idOrName) ||
-		String(pattern.name || "") === String(idOrName)
-	));
-}
-
-function getPatternTray() {
-	let tray = $("#pattern-tray");
-	if (!tray) {
-		tray = document.createElement("div");
-		tray.id = "pattern-tray";
-		tray.className = "pattern-tray";
-		tray.hidden = true;
-		$("#drawer-patterns")?.appendChild(tray);
-	}
-	return tray;
-}
-
-function renderPatternTray(html, origin) {
-	const tray = getPatternTray();
-	tray.innerHTML = html;
-	tray.hidden = false;
-	const patternItem = origin?.closest?.(".pattern-item");
-	if (patternItem) {
-		patternItem.appendChild(tray);
-	}
-	tray.scrollIntoView({ behavior: "smooth", block: "nearest" });
-	tray.querySelector("button, input, textarea, [href]")?.focus({ preventScroll: true });
-}
-
-function closePatternTray() {
-	const tray = getPatternTray();
-	if (!tray) return;
-	tray.hidden = true;
-	tray.innerHTML = "";
-}
-
-function viewLocalPattern(pattern, origin) {
-	renderPatternTray(`
-		<h3 class="govuk-heading-s">${escapeHtml(pattern.title)}</h3>
-		<dl class="govuk-summary-list">
-			<div class="govuk-summary-list__row">
-				<dt class="govuk-summary-list__key">Partial</dt>
-				<dd class="govuk-summary-list__value"><code>${escapeHtml(patternPartialName(pattern))}</code></dd>
-			</div>
-			<div class="govuk-summary-list__row">
-				<dt class="govuk-summary-list__key">Category</dt>
-				<dd class="govuk-summary-list__value">${escapeHtml(pattern.category || "Uncategorised")}</dd>
-			</div>
-		</dl>
-		<h4 class="govuk-heading-s">Pattern source</h4>
-		<pre class="govuk-body pattern-tray__source"><code>${escapeHtml(pattern.source || "")}</code></pre>
-		<div class="govuk-button-group">
-			<button class="govuk-button govuk-button--secondary" type="button" data-pattern-tray-close>Close pattern</button>
-		</div>
-	`, origin);
-}
-
-function editLocalPattern(pattern, origin) {
-	renderPatternTray(`
-		<h3 class="govuk-heading-s">Edit ${escapeHtml(pattern.title)}</h3>
-		<div class="govuk-form-group">
-			<label class="govuk-label govuk-label--s" for="local-pattern-source">Pattern source</label>
-			<textarea class="govuk-textarea" id="local-pattern-source" rows="8">${escapeHtml(pattern.source || "")}</textarea>
-		</div>
-		<div class="govuk-button-group">
-			<button class="govuk-button" type="button" data-save-local-pattern="${escapeHtml(pattern.name)}">Save pattern</button>
-			<button class="govuk-button govuk-button--secondary" type="button" data-pattern-tray-close>Cancel</button>
-		</div>
-	`, origin);
-}
-
-function deleteLocalPattern(pattern, origin) {
-	const confirmationId = `delete-pattern-confirmation-${escapeHtml(pattern.name)}`;
-	renderPatternTray(`
-		<h3 class="govuk-heading-s">Delete ${escapeHtml(pattern.title)}</h3>
-		<p class="govuk-body">This removes the local starter pattern from this editor session.</p>
-		<div class="govuk-form-group">
-			<label class="govuk-label govuk-label--s" for="${confirmationId}">Confirm deletion</label>
-			<div id="${confirmationId}-hint" class="govuk-hint">Type <strong>delete pattern</strong> to confirm you want to delete this pattern.</div>
-			<input class="govuk-input govuk-input--width-20" id="${confirmationId}" name="${confirmationId}" type="text" spellcheck="false" autocomplete="off" aria-describedby="${confirmationId}-hint" data-delete-pattern-confirmation="${escapeHtml(pattern.name)}">
-		</div>
-		<div class="govuk-button-group">
-			<button class="govuk-button govuk-button--warning" type="button" data-confirm-delete-local-pattern="${escapeHtml(pattern.name)}" disabled>Delete pattern</button>
-			<button class="govuk-button govuk-button--secondary" type="button" data-pattern-tray-close>Cancel</button>
-		</div>
-	`, origin);
-}
-
-function bindPatternTrayActions() {
-	const tray = $("#pattern-tray");
-	if (!tray) return;
-	tray.addEventListener("input", (e) => {
-		const input = e.target.closest("[data-delete-pattern-confirmation]");
-		if (!input) return;
-		const patternName = input.getAttribute("data-delete-pattern-confirmation");
-		const button = tray.querySelector(`[data-confirm-delete-local-pattern="${cssEscape(patternName)}"]`);
-		if (button) {
-			button.disabled = input.value.trim() !== "delete pattern";
-		}
-	});
-	tray.addEventListener("click", (e) => {
-		const button = e.target.closest("button");
-		if (!button) return;
-
-		if (button.hasAttribute("data-pattern-tray-close")) {
-			closePatternTray();
-			$("#pattern-search")?.focus();
-			return;
-		}
-
-		const saveName = button.getAttribute("data-save-local-pattern");
-		if (saveName) {
-			const pattern = findPattern(saveName);
-			if (pattern) {
-				pattern.source = $("#local-pattern-source")?.value || "";
-				if (window.__patternRegistry) window.__patternRegistry[pattern.name] = pattern.source;
-			}
-			closePatternTray();
-			populatePatternList(__patternCache);
-			announce("Pattern saved");
-			return;
-		}
-
-		const deleteName = button.getAttribute("data-confirm-delete-local-pattern");
-		if (deleteName) {
-			const input = tray.querySelector(`[data-delete-pattern-confirmation="${cssEscape(deleteName)}"]`);
-			if (input?.value.trim() !== "delete pattern") {
-				announce('Type "delete pattern" before deleting this pattern');
-				input?.focus();
-				return;
-			}
-			__patternCache = (__patternCache || []).filter(pattern => pattern.name !== deleteName);
-			if (window.__patternRegistry) delete window.__patternRegistry[deleteName];
-			closePatternTray();
-			populatePatternList(__patternCache);
-			announce("Pattern deleted");
-		}
-	});
-}
-
-function cssEscape(value) {
-	if (window.CSS?.escape) return window.CSS.escape(String(value || ""));
-	return String(value || "").replace(/["\\]/g, "\\$&");
-}
-
-/* -------------------- partials view/edit/create/delete (unchanged) -------------------- */
-
-async function viewPartial(id) {
-	try {
-		const data = await fetchJSON(`/api/partials/${encodeURIComponent(id)}`).catch(() => null);
-		if (!data?.ok || !data?.partial) { announce("Failed to load partial: Invalid response"); return; }
-		const { partial } = data;
-
-		const modal = document.createElement("dialog");
-		modal.className = "modal";
-		modal.innerHTML = `
-      <h2 class="govuk-heading-m">${escapeHtml(partial.title)}</h2>
-      <dl class="govuk-summary-list">
-        <div class="govuk-summary-list__row"><dt class="govuk-summary-list__key">Name:</dt><dd class="govuk-summary-list__value"><code>${escapeHtml(partial.name)}_v${partial.version}</code></dd></div>
-        <div class="govuk-summary-list__row"><dt class="govuk-summary-list__key">Category:</dt><dd class="govuk-summary-list__value">${escapeHtml(partial.category)}</dd></div>
-        <div class="govuk-summary-list__row"><dt class="govuk-summary-list__key">Status:</dt><dd class="govuk-summary-list__value">${escapeHtml(partial.status)}</dd></div>
-      </dl>
-      <h3 class="govuk-heading-s">Source</h3>
-      <pre class="code code--readonly">${escapeHtml(partial.source)}</pre>
-      ${partial.description ? `<h3 class="govuk-heading-s">Description</h3><p>${escapeHtml(partial.description)}</p>` : ""}
-      <div class="modal-actions">
-        <button class="btn btn--secondary" data-close>Close</button>
-        <button class="btn" data-edit="${escapeHtml(id)}">Edit</button>
-      </div>
-    `;
-		document.body.appendChild(modal);
-		modal.showModal();
-
-		modal.addEventListener("click", async (e) => {
-			if (e.target.dataset.close || e.target === modal) {
-				modal.close();
-				modal.remove();
-			}
-			if (e.target.dataset.edit) {
-				modal.close();
-				modal.remove();
-				await editPartial(e.target.dataset.edit);
-			}
-		});
-	} catch (err) {
-		console.error("Error in viewPartial:", err);
-		announce("Failed to load partial: " + err.message);
-	}
-}
-
-async function editPartial(id) {
-	try {
-		const data = await fetchJSON(`/api/partials/${encodeURIComponent(id)}`).catch(() => null);
-		if (!data?.ok || !data?.partial) { announce("Failed to load partial: Invalid response"); return; }
-
-		const { partial } = data;
-
-		const modal = document.createElement("dialog");
-		modal.className = "modal";
-		modal.innerHTML = `
-      <h2 class="govuk-heading-m">Edit: ${escapeHtml(partial.title)}</h2>
-      <form id="partial-edit-form">
-        <div class="govuk-form-group">
-          <label class="govuk-label" for="partial-title">Title</label>
-          <input class="govuk-input" id="partial-title" value="${escapeHtml(partial.title)}" required />
-        </div>
-        <div class="govuk-form-group">
-          <label class="govuk-label" for="partial-category">Category</label>
-          <input class="govuk-input" id="partial-category" value="${escapeHtml(partial.category)}" />
-        </div>
-        <div class="govuk-form-group">
-          <label class="govuk-label" for="partial-source">Source (Mustache)</label>
-          <textarea class="code" id="partial-source" rows="15" required>${escapeHtml(partial.source)}</textarea>
-        </div>
-        <div class="govuk-form-group">
-          <label class="govuk-label" for="partial-description">Description</label>
-          <textarea class="govuk-textarea" id="partial-description" rows="3">${escapeHtml(partial.description || '')}</textarea>
-        </div>
-        <div class="modal-actions">
-          <button type="button" class="btn btn--secondary" data-cancel>Cancel</button>
-          <button type="submit" class="btn">Save changes</button>
-        </div>
-      </form>
-    `;
-		document.body.appendChild(modal);
-		modal.showModal();
-
-		const form = modal.querySelector("#partial-edit-form");
-		form.addEventListener("submit", async (e) => {
-			e.preventDefault();
-
-			const update = {
-				title: document.getElementById("partial-title").value,
-				category: document.getElementById("partial-category").value,
-				source: document.getElementById("partial-source").value,
-				description: document.getElementById("partial-description").value
-			};
-
-			const updateRes = await fetch(`/api/partials/${encodeURIComponent(id)}`, {
-				method: "PATCH",
-				headers: { "Content-Type": "application/json", "Accept": "application/json" },
-				body: JSON.stringify(update)
-			});
-
-			if (updateRes.ok) {
-				announce("Partial updated");
-				modal.close();
-				modal.remove();
-				await refreshPatternList();
-			} else {
-				const errorText = await updateRes.text();
-				console.error("Update failed:", errorText);
-				announce(`Update failed: ${updateRes.status}`);
-			}
-		});
-
-		modal.querySelector("[data-cancel]").addEventListener("click", () => {
-			modal.close();
-			modal.remove();
-		});
-		modal.addEventListener("click", (e) => {
-			if (e.target === modal) {
-				modal.close();
-				modal.remove();
-			}
-		});
-
-	} catch (err) {
-		console.error("Error in editPartial:", err);
-		announce("Failed to load partial: " + err.message);
-	}
-}
-
-async function deletePartial(id) {
-	if (!confirm("Are you sure you want to delete this pattern? This action cannot be undone.")) return;
-	const res = await fetch(`/api/partials/${encodeURIComponent(id)}`, { method: "DELETE" });
-	if (res.ok) {
-		announce("Pattern deleted");
-		await refreshPatternList();
-	} else { announce("Delete failed"); }
-}
-
-async function createNewPartial() {
-	const modal = document.createElement("dialog");
-	modal.className = "modal";
-	modal.innerHTML = `
-		<h2 class="govuk-heading-m">Create new pattern</h2>
-		<form id="partial-create-form">
-			<div class="govuk-form-group">
-				<label class="govuk-label" for="new-partial-name">Name (no spaces)</label>
-				<input class="govuk-input" id="new-partial-name" placeholder="task_consent" required />
-			</div>
-			<div class="govuk-form-group">
-				<label class="govuk-label" for="new-partial-title">Title</label>
-				<input class="govuk-input" id="new-partial-title" placeholder="Consent task introduction" required />
-			</div>
-			<div class="govuk-form-group">
-				<label class="govuk-label" for="new-partial-category">Category</label>
-				<select class="govuk-select" id="new-partial-category">
-					<option>Consent</option>
-					<option>Tasks</option>
-					<option>Questions</option>
-					<option>Debrief</option>
-					<option>Notes</option>
-					<option>Other</option>
-				</select>
-			</div>
-			<div class="govuk-form-group">
-				<label class="govuk-label" for="new-partial-source">Source (Mustache)</label>
-				<textarea class="code" id="new-partial-source" rows="15" required>## {{title}}
-
-Write your template here...</textarea>
-			</div>
-			<div class="govuk-form-group">
-				<label class="govuk-label" for="new-partial-description">Description</label>
-				<textarea class="govuk-textarea" id="new-partial-description" rows="3"></textarea>
-			</div>
-			<div class="modal-actions">
-				<button type="button" class="btn btn--secondary" data-cancel>Cancel</button>
-				<button type="submit" class="btn">Create pattern</button>
-			</div>
-		</form>
-	`;
-	document.body.appendChild(modal);
-	modal.showModal();
-
-	const form = modal.querySelector("#partial-create-form");
-	form.addEventListener("submit", async (e) => {
-		e.preventDefault();
-
-		const newPartial = {
-			name: document.getElementById("new-partial-name").value.replace(/\s+/g, "_").toLowerCase(),
-			title: document.getElementById("new-partial-title").value,
-			category: document.getElementById("new-partial-category").value,
-			source: document.getElementById("new-partial-source").value,
-			description: document.getElementById("new-partial-description").value,
-			version: 1,
-			status: "draft"
-		};
-
-		const res = await fetch("/api/partials", {
-			method: "POST",
-			headers: { "content-type": "application/json" },
-			body: JSON.stringify(newPartial)
-		});
-
-		if (res.ok) {
-			announce("Pattern created");
-			modal.close();
-			modal.remove();
-			await refreshPatternList();
-		} else {
-			const err = await res.json().catch(() => ({}));
-			announce(`Create failed: ${err.error || "Unknown error"}`);
-		}
-	});
-
-	modal.querySelector("[data-cancel]").addEventListener("click", () => {
-		modal.close();
-		modal.remove();
-	});
-	modal.addEventListener("click", (e) => {
-		if (e.target === modal) {
-			modal.close();
-			modal.remove();
-		}
 	});
 }
 
@@ -1751,24 +1019,24 @@ function openVariablesDrawer() {
 	closePatternDrawer();
 	closeTagDialog();
 
-	const d = $("#drawer-variables");
+	const d = $('#drawer-variables');
 	// Ensure actions exist if someone navigates here very early
-	if (!document.getElementById("btn-save-vars")) {
+	if (!document.getElementById('btn-save-vars')) {
 		populateVariablesFormEnhanced(varManager?.getVariables?.() || {});
 	}
 	if (d) {
-		revealDrawer(d, $("#drawer-variables-close"));
+		revealDrawer(d, $('#drawer-variables-close'));
 	}
-	announce("Variables drawer opened");
+	announce('Variables drawer opened');
 }
 
 /** Close Variables drawer. */
 function closeVariablesDrawer() {
-	const d = $("#drawer-variables");
+	const d = $('#drawer-variables');
 	if (d) d.hidden = true;
-	const b = $("#btn-variables");
+	const b = $('#btn-variables');
 	if (b) b.focus();
-	announce("Variables drawer closed");
+	announce('Variables drawer closed');
 }
 
 /**
@@ -1794,7 +1062,7 @@ function closeTagDialog() {
  * @param {Record<string, any>} jsonVars
  */
 function populateVariablesFormEnhanced(jsonVars) {
-	const form = document.getElementById("variables-form");
+	const form = document.getElementById('variables-form');
 	if (!form) return;
 
 	// Build the form content fresh (container + actions + status)
@@ -1815,77 +1083,88 @@ function populateVariablesFormEnhanced(jsonVars) {
 	const src = jsonVars || {};
 	for (const k in src) {
 		if (!Object.prototype.hasOwnProperty.call(src, k)) continue;
-		initial[k] = typeof src[k] === "string" ? src[k] : JSON.stringify(src[k]);
+		initial[k] = typeof src[k] === 'string' ? src[k] : JSON.stringify(src[k]);
 	}
 
 	// (Re)create manager
 	varManager = new VariableManager({
-		containerId: "variable-manager-container",
+		containerId: 'variable-manager-container',
 		initialVariables: initial,
 		onChange: () => {
 			preview();
 			validateGuide();
 		},
 		onError: (msg) => {
-			console.error("[guides] Variable error:", msg);
-			const s = document.getElementById("variables-status");
+			console.error('[guides] Variable error:', msg);
+			const s = document.getElementById('variables-status');
 			if (s) s.textContent = `Error: ${msg}`;
-		}
+		},
 	});
 
 	// Bind buttons NOW (since we just injected them)
-	document.getElementById("btn-save-vars")?.addEventListener("click", onSaveVariablesOnly);
-	document.getElementById("btn-reset-vars")?.addEventListener("click", onResetVariables);
-	document.getElementById("drawer-variables-close")?.addEventListener("click", closeVariablesDrawer);
+	document.getElementById('btn-save-vars')?.addEventListener('click', onSaveVariablesOnly);
+	document.getElementById('btn-reset-vars')?.addEventListener('click', onResetVariables);
+	document
+		.getElementById('drawer-variables-close')
+		?.addEventListener('click', closeVariablesDrawer);
 }
 
 /* -------------------- export / helpers / lints (mostly unchanged) -------------------- */
 
 async function doExport(kind) {
-	const srcEl = $("#guide-source");
-	const source = srcEl?.value || "";
-	const title = $("#guide-title")?.value || "guide";
+	const srcEl = $('#guide-source');
+	const source = srcEl?.value || '';
+	const title = $('#guide-title')?.value || 'guide';
 	const sanitized = title.replace(/[^a-z0-9]/gi, '-').toLowerCase();
 
 	try {
 		switch (kind) {
-			case "md":
+			case 'md':
 				// Export the visible body
-				downloadText(stripFrontMatter(source), `${sanitized}.md`, "text/markdown");
+				downloadText(stripFrontMatter(source), `${sanitized}.md`, 'text/markdown');
 				announce(`Exported ${title}.md`);
 				break;
 
-			case "html":
-				const previewEl = $("#guide-preview");
-				if (!previewEl) { announce("Preview not available"); return; }
+			case 'html':
+				const previewEl = $('#guide-preview');
+				if (!previewEl) {
+					announce('Preview not available');
+					return;
+				}
 				const html = buildStandaloneHtml(previewEl.innerHTML, title);
-				downloadText(html, `${sanitized}.html`, "text/html");
+				downloadText(html, `${sanitized}.html`, 'text/html');
 				announce(`Exported ${title}.html`);
 				break;
 
-			case "pdf":
-				if (typeof window.jspdf === "undefined") { announce("PDF export not available (library missing)"); return; }
+			case 'pdf':
+				if (typeof window.jspdf === 'undefined') {
+					announce('PDF export not available (library missing)');
+					return;
+				}
 				await exportPdf(title);
 				break;
 
-			case "docx":
-				if (typeof window.docx === "undefined") { announce("DOCX export not available (library missing)"); return; }
+			case 'docx':
+				if (typeof window.docx === 'undefined') {
+					announce('DOCX export not available (library missing)');
+					return;
+				}
 				await exportDocx(source, title);
 				break;
 
 			default:
-				announce("Unknown export format");
+				announce('Unknown export format');
 		}
 	} catch (err) {
-		console.error("Export error:", err);
-		announce(`Export failed: ${err.message || "Unknown error"}`);
+		console.error('Export error:', err);
+		announce(`Export failed: ${err.message || 'Unknown error'}`);
 	}
 }
 
 function downloadText(content, filename, mimeType) {
 	const blob = new Blob([content], { type: mimeType });
 	const url = URL.createObjectURL(blob);
-	const a = document.createElement("a");
+	const a = document.createElement('a');
 	a.href = url;
 	a.download = filename;
 	document.body.appendChild(a);
@@ -1922,30 +1201,30 @@ async function exportPdf(title) {
 	const { jsPDF } = window.jspdf;
 	const doc = new jsPDF();
 
-	const preview = $("#guide-preview");
-	if (!preview) throw new Error("Preview not available");
+	const preview = $('#guide-preview');
+	if (!preview) throw new Error('Preview not available');
 
-	const text = preview.textContent || "";
+	const text = preview.textContent || '';
 	doc.text(text, 10, 10);
 	doc.save(`${title.replace(/[^a-z0-9]/gi, '-').toLowerCase()}.pdf`);
 	announce(`Exported ${title}.pdf`);
 }
 
-async function exportDocx(markdown, title) {
-	announce("DOCX export coming soon");
+async function exportDocx() {
+	announce('DOCX export coming soon');
 }
 
 /* -------------------- misc helpers & lints -------------------- */
 
 function ensureStudyTitle(s) {
 	s = s || {};
-	var explicit = (s.title || s.Title || "").toString().trim();
+	var explicit = (s.title || s.Title || '').toString().trim();
 	var out = { ...s };
-	var method = (s.method || "Study").trim();
+	var method = (s.method || 'Study').trim();
 	var d = s.createdAt ? new Date(s.createdAt) : new Date();
 	var yyyy = d.getUTCFullYear();
-	var mm = String(d.getUTCMonth() + 1).padStart(2, "0");
-	var dd = String(d.getUTCDate()).padStart(2, "0");
+	var mm = String(d.getUTCMonth() + 1).padStart(2, '0');
+	var dd = String(d.getUTCDate()).padStart(2, '0');
 	out.date = out.date || out.studyDate || `${yyyy}-${mm}-${dd}`;
 	out.title = explicit || method;
 	out.fileName = out.fileName || `${out.title}_${out.date}`;
@@ -1953,9 +1232,9 @@ function ensureStudyTitle(s) {
 }
 
 function ensureProjectName(p) {
-	if (!p || typeof p !== "object") return { name: "(Unnamed project)" };
-	const name = (p.name || p.Name || "").toString().trim();
-	return { ...p, name: name || "(Unnamed project)" };
+	if (!p || typeof p !== 'object') return { name: '(Unnamed project)' };
+	const name = (p.name || p.Name || '').toString().trim();
+	return { ...p, name: name || '(Unnamed project)' };
 }
 
 function collectPartialNames(src) {
@@ -1972,12 +1251,13 @@ function collectPartialNames(src) {
 
 function insertAtCursor(textarea, snippet) {
 	if (!textarea) return;
-	var s = typeof textarea.selectionStart === "number" ? textarea.selectionStart : textarea.value.length;
-	var e = typeof textarea.selectionEnd === "number" ? textarea.selectionEnd : textarea.value.length;
+	var s =
+		typeof textarea.selectionStart === 'number' ? textarea.selectionStart : textarea.value.length;
+	var e = typeof textarea.selectionEnd === 'number' ? textarea.selectionEnd : textarea.value.length;
 	var v = textarea.value;
 	textarea.value = v.slice(0, s) + snippet + v.slice(e);
 	textarea.selectionStart = textarea.selectionEnd = s + snippet.length;
-	textarea.dispatchEvent(new Event("input", { bubbles: true }));
+	textarea.dispatchEvent(new Event('input', { bubbles: true }));
 }
 
 function onInsertTag() {
@@ -1986,36 +1266,44 @@ function onInsertTag() {
 	closePatternDrawer();
 
 	var tags = [
-		"{{study.title}}", "{{project.name}}", "{{participant.id}}",
-		"{{#tasks}}…{{/tasks}}", "{{#study.remote}}…{{/study.remote}}"
+		'{{study.title}}',
+		'{{project.name}}',
+		'{{participant.id}}',
+		'{{#tasks}}…{{/tasks}}',
+		'{{#study.remote}}…{{/study.remote}}',
 	];
-	var pick = prompt("Insert tag (example):\n" + tags.join("\n"));
+	var pick = prompt('Insert tag (example):\n' + tags.join('\n'));
 	if (pick) {
-		insertAtCursor($("#guide-source"), pick);
+		insertAtCursor($('#guide-source'), pick);
 		syncHighlighting();
 		preview();
 	}
 }
 
 function debounce(fn, ms) {
-	ms = (typeof ms === "number") ? ms : 200;
+	ms = typeof ms === 'number' ? ms : 200;
 	var t;
-	return function() {
+	return function () {
 		var args = arguments;
 		clearTimeout(t);
-		t = setTimeout(function() { fn.apply(null, args); }, ms);
+		t = setTimeout(function () {
+			fn.apply(null, args);
+		}, ms);
 	};
 }
 
 function escapeHtml(s) {
-	var str = (s == null ? "" : String(s));
+	var str = s == null ? '' : String(s);
 	return str
-		.replace(/&/g, "&amp;").replace(/</g, "&lt;")
-		.replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+		.replace(/&/g, '&amp;')
+		.replace(/</g, '&lt;')
+		.replace(/>/g, '&gt;')
+		.replace(/"/g, '&quot;')
+		.replace(/'/g, '&#39;');
 }
 
 function announce(msg) {
-	var sr = $("#sr-live");
+	var sr = $('#sr-live');
 	if (sr) sr.textContent = msg;
 }
 
@@ -2027,13 +1315,13 @@ function runLints(args) {
 	var source = args.source,
 		context = args.context,
 		partials = args.partials;
-	var out = $("#lint-output");
+	var out = $('#lint-output');
 	var warnings = [];
 
 	var parts = collectPartialNames(source);
 	for (var i = 0; i < parts.length; i++) {
 		var p = parts[i];
-		if (!(p in partials)) warnings.push("Unknown partial: {{> " + p + "}}");
+		if (!(p in partials)) warnings.push('Unknown partial: {{> ' + p + '}}');
 	}
 
 	var tagRegex = /{{\s*([a-z0-9_.]+)\s*}}/gi;
@@ -2041,17 +1329,17 @@ function runLints(args) {
 	for (;;) {
 		m = tagRegex.exec(source);
 		if (!m) break;
-		var path = m[1].split(".");
+		var path = m[1].split('.');
 		var v = getPath(context, path);
-		if (v === undefined || v === null) warnings.push("Missing value for {{" + m[1] + "}}");
+		if (v === undefined || v === null) warnings.push('Missing value for {{' + m[1] + '}}');
 	}
 
-	__lintErrors = warnings.map(message => ({ fieldId: "guide-source", message }));
+	__lintErrors = warnings.map((message) => ({ fieldId: 'guide-source', message }));
 
 	if (out) {
-		out.textContent = warnings.length ?
-			`${warnings.length} guide ${warnings.length === 1 ? "check needs" : "checks need"} attention.` :
-			"No issues";
+		out.textContent = warnings.length
+			? `${warnings.length} guide ${warnings.length === 1 ? 'check needs' : 'checks need'} attention.`
+			: 'No issues';
 	}
 
 	validateGuide();
@@ -2062,7 +1350,7 @@ function getPath(obj, pathArr) {
 	for (var i = 0; i < pathArr.length; i++) {
 		var k = pathArr[i];
 		if (acc == null) return undefined;
-		if (typeof acc !== "object") return undefined;
+		if (typeof acc !== 'object') return undefined;
 		if (!(k in acc)) return undefined;
 		acc = acc[k];
 	}
@@ -2079,79 +1367,84 @@ function setFieldError(fieldId, message) {
 	const field = $(`#${fieldId}`);
 	if (!field) return;
 
-	const group = field.closest(".govuk-form-group");
-	const isTextarea = field.tagName.toLowerCase() === "textarea";
-	const errorClass = isTextarea ? "govuk-textarea--error" : "govuk-input--error";
+	const group = field.closest('.govuk-form-group');
+	const isTextarea = field.tagName.toLowerCase() === 'textarea';
+	const errorClass = isTextarea ? 'govuk-textarea--error' : 'govuk-input--error';
 	const errorId = `${fieldId}-error`;
 
 	if (field.dataset.originalDescribedBy == null) {
-		field.dataset.originalDescribedBy = field.getAttribute("aria-describedby") || "";
+		field.dataset.originalDescribedBy = field.getAttribute('aria-describedby') || '';
 	}
 
 	let error = $(`#${errorId}`);
 	if (message) {
 		if (!error) {
-			error = document.createElement("p");
+			error = document.createElement('p');
 			error.id = errorId;
-			error.className = "govuk-error-message";
+			error.className = 'govuk-error-message';
 			field.parentNode?.insertBefore(error, field);
 		}
 		error.innerHTML = `<span class="govuk-visually-hidden">Error:</span> ${escapeHtml(message)}`;
-		group?.classList.add("govuk-form-group--error");
+		group?.classList.add('govuk-form-group--error');
 		field.classList.add(errorClass);
 
-		const describedBy = new Set((field.dataset.originalDescribedBy || "").split(/\s+/).filter(Boolean));
+		const describedBy = new Set(
+			(field.dataset.originalDescribedBy || '').split(/\s+/).filter(Boolean)
+		);
 		describedBy.add(errorId);
-		field.setAttribute("aria-describedby", Array.from(describedBy).join(" "));
+		field.setAttribute('aria-describedby', Array.from(describedBy).join(' '));
 		return;
 	}
 
 	error?.remove();
-	group?.classList.remove("govuk-form-group--error");
+	group?.classList.remove('govuk-form-group--error');
 	field.classList.remove(errorClass);
 
-	const originalDescribedBy = field.dataset.originalDescribedBy || "";
+	const originalDescribedBy = field.dataset.originalDescribedBy || '';
 	if (originalDescribedBy) {
-		field.setAttribute("aria-describedby", originalDescribedBy);
+		field.setAttribute('aria-describedby', originalDescribedBy);
 	} else {
-		field.removeAttribute("aria-describedby");
+		field.removeAttribute('aria-describedby');
 	}
 }
 
 function renderGuideErrorSummary(errors) {
-	const summary = $("#guide-error-summary");
+	const summary = $('#guide-error-summary');
 	if (!summary) return;
 
-	const body = summary.querySelector(".govuk-error-summary__body") || summary;
-	let list = summary.querySelector(".govuk-error-summary__list");
+	const body = summary.querySelector('.govuk-error-summary__body') || summary;
+	let list = summary.querySelector('.govuk-error-summary__list');
 	if (!list) {
-		list = document.createElement("ul");
-		list.className = "govuk-list govuk-error-summary__list";
+		list = document.createElement('ul');
+		list.className = 'govuk-list govuk-error-summary__list';
 		body.appendChild(list);
 	}
 
 	if (!errors.length) {
 		summary.hidden = true;
-		if (list) list.innerHTML = "";
+		if (list) list.innerHTML = '';
 		return;
 	}
 
 	if (list) {
 		list.innerHTML = errors
-			.map(error => `<li><a href="#${escapeHtml(error.fieldId)}">${escapeHtml(error.message)}</a></li>`)
-			.join("");
+			.map(
+				(error) =>
+					`<li><a href="#${escapeHtml(error.fieldId)}">${escapeHtml(error.message)}</a></li>`
+			)
+			.join('');
 	}
 	summary.hidden = false;
 }
 
 function getRequiredGuideErrors() {
 	const errors = [];
-	const title = ($("#guide-title")?.value || "").trim();
-	const bodyEl = $("#guide-source");
-	const body = (bodyEl?.value || "").trim();
+	const title = ($('#guide-title')?.value || '').trim();
+	const bodyEl = $('#guide-source');
+	const body = (bodyEl?.value || '').trim();
 
-	if (!title) errors.push({ fieldId: "guide-title", message: "Enter a guide title" });
-	if (!body) errors.push({ fieldId: "guide-source", message: "Enter guide source" });
+	if (!title) errors.push({ fieldId: 'guide-title', message: 'Enter a guide title' });
+	if (!body) errors.push({ fieldId: 'guide-source', message: 'Enter guide source' });
 	return errors;
 }
 
@@ -2159,17 +1452,20 @@ function validateGuide() {
 	const requiredErrors = getRequiredGuideErrors();
 	const errors = [...requiredErrors, ...__lintErrors];
 
-	setFieldError("guide-title", requiredErrors.find(error => error.fieldId === "guide-title")?.message || "");
 	setFieldError(
-		"guide-source",
-		requiredErrors.find(error => error.fieldId === "guide-source")?.message ||
-			(__lintErrors.length ? "Resolve guide source issues" : "")
+		'guide-title',
+		requiredErrors.find((error) => error.fieldId === 'guide-title')?.message || ''
+	);
+	setFieldError(
+		'guide-source',
+		requiredErrors.find((error) => error.fieldId === 'guide-source')?.message ||
+			(__lintErrors.length ? 'Resolve guide source issues' : '')
 	);
 	renderGuideErrorSummary(errors);
 
-	const el = $("#lint-output");
-	if (el && !errors.length && (!el.textContent || el.textContent === "No issues")) {
-		el.textContent = "No issues";
+	const el = $('#lint-output');
+	if (el && !errors.length && (!el.textContent || el.textContent === 'No issues')) {
+		el.textContent = 'No issues';
 	}
 	return errors;
 }
@@ -2184,83 +1480,59 @@ async function onNewClick(e) {
 	try {
 		await startNewGuide();
 		// Scroll editor into view
-		const editor = document.getElementById("editor-section");
+		const editor = document.getElementById('editor-section');
 		if (editor) {
-			editor.scrollIntoView({ behavior: "smooth", block: "start" });
+			editor.scrollIntoView({ behavior: 'smooth', block: 'start' });
 		}
 	} catch (err) {
-		console.error("[guides] Failed to start new guide:", err);
-		announce("Failed to create new guide");
+		console.error('[guides] Failed to start new guide:', err);
+		announce('Failed to create new guide');
 	}
 }
 
 function wireGlobalActions() {
-	var newBtn = $("#btn-new");
-	if (newBtn) newBtn.addEventListener("click", onNewClick);
+	var newBtn = $('#btn-new');
+	if (newBtn) newBtn.addEventListener('click', onNewClick);
 
-	var importBtn = $("#btn-import");
-	if (importBtn) importBtn.addEventListener("click", importMarkdownFlow);
+	var importBtn = $('#btn-import');
+	if (importBtn) importBtn.addEventListener('click', importMarkdownFlow);
 
-	document.addEventListener("click", function(e) {
+	document.addEventListener('click', function (e) {
 		var t = e.target;
-		var hasClosest = t && typeof t.closest === "function";
-		var newBtn2 = hasClosest ? t.closest("#btn-new") : null;
+		var hasClosest = t && typeof t.closest === 'function';
+		var newBtn2 = hasClosest ? t.closest('#btn-new') : null;
 		if (newBtn2) {
 			e.preventDefault();
 			onNewClick(e);
 			return;
 		}
 
-		var exportMenu = $("#export-menu");
-		var menu = exportMenu ? exportMenu.closest(".menu") : null;
+		var exportMenu = $('#export-menu');
+		var menu = exportMenu ? exportMenu.closest('.menu') : null;
 		if (menu && (!hasClosest || !menu.contains(t))) {
-			menu.removeAttribute("aria-expanded");
+			menu.removeAttribute('aria-expanded');
 		}
 	});
 
-	var exportBtn = $("#btn-export");
+	var exportBtn = $('#btn-export');
 	if (exportBtn) {
-		exportBtn.addEventListener("click", function() {
-			var exportMenu = $("#export-menu");
-			var menu = exportMenu ? exportMenu.closest(".menu") : null;
+		exportBtn.addEventListener('click', function () {
+			var exportMenu = $('#export-menu');
+			var menu = exportMenu ? exportMenu.closest('.menu') : null;
 			if (!menu) return;
-			var expanded = menu.getAttribute("aria-expanded") === "true";
-			menu.setAttribute("aria-expanded", expanded ? "false" : "true");
+			var expanded = menu.getAttribute('aria-expanded') === 'true';
+			menu.setAttribute('aria-expanded', expanded ? 'false' : 'true');
 		});
 	}
 
-	var exportMenuEl = $("#export-menu");
+	var exportMenuEl = $('#export-menu');
 	if (exportMenuEl) {
-		exportMenuEl.addEventListener("click", function(e) {
+		exportMenuEl.addEventListener('click', function (e) {
 			var t = e.target;
-			var hasClosest = t && typeof t.closest === "function";
-			var target = hasClosest ? t.closest("[data-export]") : null;
-			if (target) doExport(target.getAttribute("data-export"));
+			var hasClosest = t && typeof t.closest === 'function';
+			var target = hasClosest ? t.closest('[data-export]') : null;
+			if (target) doExport(target.getAttribute('data-export'));
 		});
-	}
-}
-
-/* -------------------- search in patterns (unchanged) -------------------- */
-
-async function onPatternSearch(e) {
-	const q = (e?.target?.value || "").trim().toLowerCase();
-	if (!q) {
-		// Re-render from cache when query is cleared
-		populatePatternList(__patternCache);
-		return;
-	}
-
-	// If the service is up, we could re-query the API; however the cache provides a snappier UX.
-	// Filter the in-memory cache (works for both API and fallback starters).
-	try {
-		const filtered = (__patternCache || []).filter(p => {
-			const s = `${p?.name ?? ""} ${p?.title ?? ""} ${p?.category ?? ""}`.toLowerCase();
-			return s.includes(q);
-		});
-		populatePatternList(filtered);
-	} catch (err) {
-		console.error("Pattern search error:", err);
-		populatePatternList([]);
 	}
 }
 
@@ -2268,5 +1540,5 @@ async function onPatternSearch(e) {
 window.guidesPage = {
 	varManager: () => varManager,
 	openVariablesDrawer,
-	closeVariablesDrawer
+	closeVariablesDrawer,
 };

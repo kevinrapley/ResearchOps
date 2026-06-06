@@ -66,7 +66,11 @@ excludes(
 );
 
 for (const snippet of ['public/**', '!public/', '!public/index.html', '!public/pages/']) {
-	includes(gitignore, snippet, 'gitignore rendered GOV.UK HTML policy');
+	excludes(gitignore, snippet, 'gitignore rendered GOV.UK HTML policy');
+}
+
+for (const snippet of ['dist/', 'build/', 'coverage/', 'playwright-report/', 'test-results/']) {
+	includes(gitignore, snippet, 'gitignore build-output policy');
 }
 
 assert.equal(

@@ -1,0 +1,97 @@
+{
+  "date": "2026-06-06",
+  "branch": "chore/reduce-repository-debt",
+  "task": "Narrow repository ignore rules, explicitly exclude charts from Prettier and ESLint, and split the monolithic guides page component by responsibility.",
+  "traceRequired": true,
+  "operatingModelFilesLoaded": [
+    "AGENTS.md",
+    ".agent-operating-model/orchestration.xml",
+    ".agent-operating-model/bundle-registry.json",
+    ".agent-operating-model/task-signal-catalog.json",
+    ".agent-operating-model/selection-rules.json",
+    ".agent-operating-model/precedence-policy.md",
+    ".agent-operating-model/trace-policy.md"
+  ],
+  "selectedBundles": [
+    ".agent-operating-model/bundles/github/",
+    ".agent-operating-model/bundles/researchops-developer-control/",
+    ".agent-operating-model/bundles/multi-functional-team/",
+    ".agent-operating-model/bundles/govuk-design-system/",
+    ".agent-operating-model/bundles/cloudflare/"
+  ],
+  "skippedBundles": [
+    ".agent-operating-model/bundles/openai/",
+    ".agent-operating-model/bundles/mcp-agent-tooling/",
+    ".agent-operating-model/bundles/airtable-public-api/",
+    ".agent-operating-model/bundles/mural-public-api/"
+  ],
+  "filesRead": [
+    "AGENTS.md",
+    ".agent-operating-model/orchestration.xml",
+    ".agent-operating-model/bundle-registry.json",
+    ".agent-operating-model/task-signal-catalog.json",
+    ".agent-operating-model/selection-rules.json",
+    ".agent-operating-model/precedence-policy.md",
+    ".agent-operating-model/trace-policy.md",
+    ".gitignore",
+    ".prettierignore",
+    "eslint.config.js",
+    "public/components/guides/guides-page.js",
+    "public/components/guides/guide-editor.js",
+    "public/components/guides/patterns.js",
+    "tests/study-guides-route-state.test.js"
+  ],
+  "filesModified": [
+    ".gitignore",
+    ".prettierignore",
+    "eslint.config.js",
+    "public/components/guides/api.js",
+    "public/components/guides/front-matter.js",
+    "public/components/guides/guides-page.js",
+    "public/components/guides/pattern-controller.js",
+    "tests/govuk-pages-render-workflow-state.test.js",
+    "tests/study-guides-route-state.test.js",
+    "docs/agent-audit/reasoning/2026/06/06/reduce-repository-debt.md",
+    "docs/agent-audit/reasoning/2026/06/06/reduce-repository-debt.json"
+  ],
+  "decisions": [
+    "Replaced broad Git ignores for source-controlled areas with narrower build, cache, test-output, and runtime artefact ignores.",
+    "Kept Prettier scope explicit for generated/vendor-heavy areas that are source-controlled but not currently Prettier-owned.",
+    "Added charts/** to both Prettier and ESLint ignores.",
+    "Extracted guides API access, front matter parsing, and pattern drawer/controller behaviour from guides-page.js.",
+    "Updated route-state assertions to cover extracted modules without relying on formatter-specific import line breaks."
+  ],
+  "validation": [
+    {
+      "command": "node --check public/components/guides/guides-page.js && node --check public/components/guides/pattern-controller.js && node --check public/components/guides/api.js && node --check public/components/guides/front-matter.js",
+      "status": "passed"
+    },
+    {
+      "command": "node tests/study-guides-route-state.test.js",
+      "status": "passed"
+    },
+    {
+      "command": "npm run format:check",
+      "status": "passed"
+    },
+    {
+      "command": "npm run build:generated-css && npx eslint .",
+      "status": "passed_with_existing_warnings"
+    },
+    {
+      "command": "npm run trace:coverage",
+      "status": "passed"
+    },
+    {
+      "command": "node tests/govuk-pages-render-workflow-state.test.js",
+      "status": "passed"
+    },
+    {
+      "command": "npm test",
+      "status": "passed_178_tests"
+    }
+  ],
+  "residualRisks": [
+    "ESLint still reports existing repository warnings, mainly console usage and unused symbols outside this change."
+  ]
+}

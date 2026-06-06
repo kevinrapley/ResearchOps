@@ -1,5 +1,6 @@
 # Dependencies / build artefacts
 node_modules/
+charts/**
 dist/
 coverage/
 .tmp/
@@ -11,13 +12,14 @@ package-lock.json
 npm-shrinkwrap.json
 
 # Generated / vendor libs (don’t reformat with stock Prettier)
-public/index.html
-public/pages/**/*.html
-public/lib/**
-public/css/**/*.min.css
-public/**/*.min.js
-public/**/*.min.css
-public/**/*.min.html
+public/**
+!public/
+!public/components/
+!public/components/guides/
+!public/components/guides/api.js
+!public/components/guides/front-matter.js
+!public/components/guides/guides-page.js
+!public/components/guides/pattern-controller.js
 
 # Generated ResearchOps CSS is compiled from SCSS and checked by scripts/styles/format-generated-css.mjs.
 public/assets/researchops/researchops-home.css
@@ -48,10 +50,17 @@ assets/researchops/researchops-home.css
 # Generated trace reports are validated by the agent trace process.
 docs/agent-audit/reasoning/**
 
-# Optional: skip infra & templates if you prefer to keep their whitespace
-# (uncomment if you want CI green first, then re-enable gradually)
-# .github/**
-# docs/**
+# Source-controlled areas with their own generators or formatting contracts.
+.github/**
+config/**
+docs/**
+functions/**
+infra/**
+scripts/**
+src/jobs/**
+src/sdk/**
+.pa11yci.json
+README.md
 package.json
 eslint.config.js
 
