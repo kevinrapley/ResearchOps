@@ -1,0 +1,170 @@
+# Reduce repository debt
+
+## Task summary
+
+Narrow repository ignore rules, explicitly exclude charts from Prettier and ESLint, and split the large study guides page component by responsibility.
+
+## Run metadata
+
+- Date: 2026-06-06
+- Branch: chore/reduce-repository-debt
+- Trace required: yes, because `chore/` branches require an auditable trace.
+
+## Operating model loaded
+
+- AGENTS.md
+- .agent-operating-model/orchestration.xml
+- .agent-operating-model/bundle-registry.json
+- .agent-operating-model/task-signal-catalog.json
+- .agent-operating-model/selection-rules.json
+- .agent-operating-model/precedence-policy.md
+- .agent-operating-model/trace-policy.md
+
+## Bundles applied
+
+- .agent-operating-model/bundles/github/
+- .agent-operating-model/bundles/researchops-developer-control/
+- .agent-operating-model/bundles/multi-functional-team/
+- .agent-operating-model/bundles/govuk-design-system/
+- .agent-operating-model/bundles/cloudflare/
+
+## Bundles not selected
+
+- .agent-operating-model/bundles/openai/
+- .agent-operating-model/bundles/mcp-agent-tooling/
+- .agent-operating-model/bundles/airtable-public-api/
+- .agent-operating-model/bundles/mural-public-api/
+
+## Files read
+
+- AGENTS.md
+- .agent-operating-model/orchestration.xml
+- .agent-operating-model/bundle-registry.json
+- .agent-operating-model/task-signal-catalog.json
+- .agent-operating-model/selection-rules.json
+- .agent-operating-model/precedence-policy.md
+- .agent-operating-model/trace-policy.md
+- .gitignore
+- .prettierignore
+- eslint.config.js
+- public/components/guides/guides-page.js
+- public/components/guides/guide-editor.js
+- public/components/guides/patterns.js
+- public/components/layout.js
+- public/components/mural-integration.js
+- public/partials/html-head.html
+- tests/study-guides-route-state.test.js
+
+## Files created or modified
+
+- .gitignore
+- .prettierignore
+- docs/product/26/05/07/researchops-design-critique-backlog-2026-05-07.md
+- docs/product/26/05/07/researchops-design-critique-implementation-authority-2026-05-07.md
+- docs/product/26/05/07/researchops-design-critique-product-change-register-2026-05-07.md
+- docs/product/26/05/08/authentication-role-selection-cloudflare-operations-2026-05-08.md
+- eslint.config.js
+- lychee.toml
+- infra/cloudflare/src/service/internals/mural-board-registry.js
+- infra/cloudflare/src/service/internals/mural-journal-sticky.js
+- infra/cloudflare/src/service/internals/mural-tokens.js
+- infra/cloudflare/src/service/internals/mural-viewer.js
+- infra/cloudflare/src/service/internals/mural-workspace.js
+- infra/cloudflare/src/service/internals/mural.js
+- infra/cloudflare/src/core/ai-rewrite.js
+- infra/cloudflare/src/core/ai-rewrite/config.js
+- infra/cloudflare/src/core/ai-rewrite/guardrails.js
+- infra/cloudflare/src/core/ai-rewrite/http.js
+- infra/cloudflare/src/core/ai-rewrite/prompts.js
+- infra/cloudflare/src/core/ai-rewrite/testing.js
+- infra/cloudflare/src/core/ai-rewrite/text.js
+- infra/cloudflare/src/service/projects.js
+- infra/cloudflare/src/service/projects/airtable.js
+- infra/cloudflare/src/service/projects/auth.js
+- infra/cloudflare/src/service/projects/csv.js
+- infra/cloudflare/src/service/projects/github-csv.js
+- infra/cloudflare/src/service/projects/normalisation.js
+- infra/cloudflare/src/service/mural-journal-sync.js
+- infra/cloudflare/src/service/mural-journal-sync/auth.js
+- infra/cloudflare/src/service/mural-journal-sync/constants.js
+- infra/cloudflare/src/service/mural-journal-sync/context.js
+- infra/cloudflare/src/service/mural-journal-sync/mural-api.js
+- infra/cloudflare/src/service/mural-journal-sync/request.js
+- infra/cloudflare/src/service/mural-journal-sync/sticky-payloads.js
+- infra/cloudflare/src/service/mural-journal-sync/sync-entry.js
+- infra/cloudflare/src/service/mural-journal-sync/text.js
+- infra/cloudflare/src/service/mural-journal-sync/widgets.js
+- public/components/guides/api.js
+- public/components/guides/front-matter.js
+- public/components/guides/guide-editor.js
+- public/components/guides/guides-page.js
+- public/components/guides/pattern-controller.js
+- public/components/layout.js
+- public/components/mural-integration.js
+- public/js/browser-logger.js
+- public/partials/project-tabs.html
+- tests/browser-logger-route-state.test.js
+- tests/govuk-pages-render-workflow-state.test.js
+- tests/ai-rewrite-split-route-state.test.js
+- tests/mural-service-split-route-state.test.js
+- tests/mural-journal-sync-route-state.test.js
+- tests/projects-service-split-route-state.test.js
+- tests/study-guides-route-state.test.js
+- docs/agent-audit/reasoning/2026/06/06/reduce-repository-debt.md
+- docs/agent-audit/reasoning/2026/06/06/reduce-repository-debt.json
+
+## Decisions
+
+- Replaced broad Git ignores for source-controlled areas with narrower build, cache, test-output, and runtime artefact ignores so docs, scripts, infra, and public artefacts are no longer hidden from Git by default.
+- Kept Prettier scope explicit where previously hidden files became visible to Git, because many source-controlled generated/vendor-heavy areas are not currently Prettier-owned.
+- Added `charts/**` to both Prettier and ESLint ignores.
+- Split guides-page responsibilities into API access, front matter parsing, and pattern drawer/controller modules while keeping the existing page bootstrapping and editor orchestration in `guides-page.js`.
+- Updated route-state assertions to cover the extracted modules without depending on formatter-specific single-line imports.
+- Follow-up Lychee remediation corrected stale documentation links exposed by the narrower Git ignore rules, fixed the project notes tab route, and added narrow Lychee exclusions for placeholder-heavy Mural example transcripts and the Mustache HTML head partial.
+- Follow-up Mural service split kept `MuralServicePart` as the public route surface while moving board registry resolution, direct journal sticky writing, token refresh, viewer URL probing, and workspace/room setup into responsibility-specific modules.
+- Follow-up AI rewrite split kept `ai-rewrite.js` as the public route and Worker entry surface while moving defaults, HTTP helpers, text sanitisation, guardrails, prompt content, and testing helpers into responsibility-specific modules under `infra/cloudflare/src/core/ai-rewrite/`.
+- Follow-up projects service split kept `projects.js` as the public route operation layer while moving CSV parsing, GitHub CSV fallback, field normalisation/mapping, auth visibility checks, and Airtable access helpers into responsibility-specific modules under `infra/cloudflare/src/service/projects/`.
+- Follow-up Mural journal sync split kept `mural-journal-sync.js` as the public route handler while moving constants, text/tag parsing, widget/template matching, sticky payload shaping, Mural API calls, auth/token handling, request parsing, context building, and per-entry sync into responsibility-specific modules under `infra/cloudflare/src/service/mural-journal-sync/`.
+- Follow-up browser logging cleanup introduced a shared debug-gated browser logger, loaded it through the shared layout module, replaced routine guide and Mural UI `console.log` progress logs with scoped debug logging, and added a regression test that blocks direct `console.log` from first-party shipped browser scripts outside the explicit debug console.
+
+## Validation attempted
+
+- `node --check public/components/guides/guides-page.js && node --check public/components/guides/pattern-controller.js && node --check public/components/guides/api.js && node --check public/components/guides/front-matter.js` — passed.
+- `node tests/study-guides-route-state.test.js` — passed.
+- `npm run format:check` — passed after generated CSS output was regenerated and confirmed unchanged.
+- `npm run build:generated-css && npx eslint .` — passed with existing warnings only.
+- `npm run trace:coverage` — passed.
+- `node tests/govuk-pages-render-workflow-state.test.js` — passed.
+- `npm test` — passed, 178 tests.
+- Follow-up after Lychee failure: `npm run format:check` — passed.
+- Follow-up after Lychee failure: `npm test` — passed, 178 tests.
+- Follow-up Mural split: `node --check infra/cloudflare/src/service/internals/mural.js && node --check infra/cloudflare/src/service/internals/mural-board-registry.js && node --check infra/cloudflare/src/service/internals/mural-journal-sticky.js && node --check infra/cloudflare/src/service/internals/mural-tokens.js && node --check infra/cloudflare/src/service/internals/mural-viewer.js && node --check infra/cloudflare/src/service/internals/mural-workspace.js` — passed.
+- Follow-up Mural split: `node tests/mural-service-split-route-state.test.js && node tests/mural-airtable-board-registry.test.js && node tests/mural-journal-sync-route-state.test.js && node tests/mural-ui-route-state.test.js` — passed.
+- Follow-up Mural split: `npm test` — passed, 179 tests.
+- Follow-up Mural split: `npm run lint` — passed with existing warnings only.
+- Follow-up Mural split: `npm run format:check` — passed.
+- Follow-up AI rewrite split: `node --check infra/cloudflare/src/core/ai-rewrite.js && node --check infra/cloudflare/src/core/ai-rewrite/config.js && node --check infra/cloudflare/src/core/ai-rewrite/guardrails.js && node --check infra/cloudflare/src/core/ai-rewrite/http.js && node --check infra/cloudflare/src/core/ai-rewrite/prompts.js && node --check infra/cloudflare/src/core/ai-rewrite/testing.js && node --check infra/cloudflare/src/core/ai-rewrite/text.js` — passed.
+- Follow-up AI rewrite split: `node --test tests/ai-rewrite-split-route-state.test.js` — passed.
+- Follow-up AI rewrite split: dynamic import of `infra/cloudflare/src/core/ai-rewrite.js` confirmed existing public exports remain available — passed.
+- Follow-up AI rewrite split: `npm test` — passed, 180 tests.
+- Follow-up AI rewrite split: `npm run lint` — passed with existing warnings only.
+- Follow-up AI rewrite split: `npm run format:check` — passed after generated CSS was regenerated by lint.
+- Follow-up AI rewrite split: `npm run trace:coverage` — passed.
+- Follow-up projects service split: `node --check infra/cloudflare/src/service/projects.js && node --check infra/cloudflare/src/service/projects/airtable.js && node --check infra/cloudflare/src/service/projects/auth.js && node --check infra/cloudflare/src/service/projects/csv.js && node --check infra/cloudflare/src/service/projects/github-csv.js && node --check infra/cloudflare/src/service/projects/normalisation.js` — passed.
+- Follow-up projects service split: `node --test tests/projects-service-split-route-state.test.js tests/projects-parse-csv.test.js` — passed.
+- Follow-up projects service split: dynamic import of `infra/cloudflare/src/service/projects.js` confirmed existing public exports remain available — passed.
+- Follow-up projects service split: `npm test` — passed, 181 tests.
+- Follow-up projects service split: `npm run lint` — passed with existing warnings only.
+- Follow-up projects service split: `npm run format:check` — passed.
+- Follow-up projects service split: `npm run trace:coverage` — passed.
+- Follow-up Mural journal sync split: `node --check infra/cloudflare/src/service/mural-journal-sync.js && for f in infra/cloudflare/src/service/mural-journal-sync/*.js; do node --check "$f"; done` — passed.
+- Follow-up Mural journal sync split: `node --test tests/mural-journal-sync-route-state.test.js` — passed.
+- Follow-up Mural journal sync split: dynamic import of `infra/cloudflare/src/service/mural-journal-sync.js` confirmed the public export remains available — passed.
+- Follow-up Mural journal sync split: `npm test` — passed, 181 tests.
+- Follow-up Mural journal sync split: `npm run lint` — passed with existing warnings only.
+- Follow-up Mural journal sync split: `npm run format:check` — passed after generated CSS was regenerated by lint.
+- Follow-up Mural journal sync split: `npm run trace:coverage` — passed.
+
+## Residual risk
+
+- ESLint still reports existing repository warnings, mainly console usage and unused symbols outside this change. This task did not attempt a repository-wide lint cleanup.

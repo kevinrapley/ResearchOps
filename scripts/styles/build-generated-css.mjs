@@ -38,7 +38,13 @@ export function buildGeneratedCss({ requestedOutputs = [] } = {}) {
 		fs.mkdirSync(path.dirname(target.output), { recursive: true });
 		execFileSync(
 			sassExecutable,
-			['--load-path=node_modules', '--no-source-map', target.source, target.output],
+			[
+				'--load-path=node_modules',
+				'--silence-deprecation=import',
+				'--no-source-map',
+				target.source,
+				target.output,
+			],
 			{ stdio: 'inherit' }
 		);
 	}

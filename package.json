@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "build": "npm run build:govuk && npm run build:generated-css && npm run build:govuk-pages",
-    "build:govuk": "sass --load-path=node_modules --no-source-map --style=compressed src/styles/govuk.scss public/assets/govuk/govuk-frontend.css && node scripts/govuk/copy-govuk-assets.mjs",
+    "build:govuk": "sass --load-path=node_modules --silence-deprecation=import --no-source-map --style=compressed src/styles/govuk.scss public/assets/govuk/govuk-frontend.css && node scripts/govuk/copy-govuk-assets.mjs",
     "build:generated-css": "node scripts/styles/build-generated-css.mjs",
     "build:researchops": "node scripts/styles/build-generated-css.mjs public/assets/researchops/researchops-home.css",
     "build:projects": "node scripts/styles/build-generated-css.mjs public/css/projects.css",

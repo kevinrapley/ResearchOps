@@ -17,6 +17,8 @@ import Mustache from '/lib/mustache.min.js';
 import { marked } from '/lib/marked.min.js';
 import DOMPurify from '/lib/purify.min.js';
 
+const logger = globalThis.ResearchOpsLogger?.create("guide-editor") || { debug() {} };
+
 /**
  * Split a source string into `{ meta, body }`.
  * FM format supported:
@@ -190,7 +192,7 @@ export async function buildPartials(names) {
 				// Store with the exact name used in template
 				map[name] = full.source || "";
 
-				console.log(`✓ Loaded partial: ${name}`);
+				logger.debug(`Loaded partial: ${name}`);
 			} catch (err) {
 				console.error(`Error fetching partial ${name}:`, err);
 			}

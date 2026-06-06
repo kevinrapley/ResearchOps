@@ -1,72 +1,29 @@
-# === Build + deps ===
+# Dependencies
 node_modules/
-dist/
-coverage/
-.tmp/
-.logs/
-*.log
-.agent-traces/
 
-# === Lockfiles & caches ===
-package-lock.json
-npm-shrinkwrap.json
-
-# === CI / metadata / prose ===
-.github/**
-docs/**
-README.md
-
-# === Config blobs & schemas we don't want Prettier to fight ===
-.pa11yci.json
-config/**
-
-# === Serverless/worker infra & functions (format later, optional) ===
-infra/** 
-functions/**
-
-# === Public site (mix of vendor, HTML, CSS; format later if desired) ===
-public/**
-!public/
-!public/index.html
-!public/pages/
-!public/pages/*.html
-!public/pages/*/
-!public/pages/*/*.html
-!public/pages/*/*/
-!public/pages/*/*/*.html
-!public/pages/*/*/*/
-!public/pages/*/*/*/*.html
-!public/pages/*/*/*/*/
-!public/pages/*/*/*/*/*.html
-
-# Governed generated CSS artifacts are committed by .github/workflows/format-pr.yml.
-!assets/
-!assets/researchops/
-!assets/researchops/researchops-home.css
-!public/assets/
-!public/assets/researchops/
-!public/assets/researchops/researchops-home.css
-!public/css/
-!public/css/projects.css
-!public/css/project-dashboard.css
-!public/css/outcomes.css
-
-# === Scripts & misc (optional) ===
-scripts/**
-
-# === SDK and jobs (optional – re-enable when ready) ===
-src/sdk/**
-src/jobs/**
-
-# Playwright artifacts
-playwright-report/
-test-results/
-
-# CI-generated release and security audit artifacts
-artifacts/
-
-# === Common outputs
+# Build and coverage outputs
 dist/
 build/
 coverage/
 .lighthouseci/
+.tmp/
+.logs/
+*.log
+
+# Local raw traces and caches
+.agent-traces/
+.npm-cache/
+
+# Playwright and Cucumber runtime artefacts
+playwright-report/
+test-results/
+reports/
+
+# CI-generated release and security artefacts
+artifacts/
+
+# Cloudflare build output
+.build/
+
+# OS/editor noise
+.DS_Store

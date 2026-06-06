@@ -37,6 +37,9 @@ exclude_path = [
   "screenshots/",
   ".git/",
   ".github/",
+  "docs/devops/mural/create-sticky-note_mine.txt",
+  "docs/devops/mural/read-widgets_mine.txt",
+  "public/partials/html-head.html",
 ]
 
 # Don’t flag emails

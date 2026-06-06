@@ -13,6 +13,7 @@
  */
 
 (() => {
+	const logger = globalThis.ResearchOpsLogger?.create("mural-ui") || { debug() {} };
 	const API_ORIGIN =
 		document.documentElement?.dataset?.apiOrigin ||
 		window.API_ORIGIN ||
@@ -35,7 +36,7 @@
 	}
 
 	function debugLog(...args) {
-		console.log("[mural-ui]", ...args);
+		logger.debug(...args);
 	}
 
 	async function jsonFetch(url, init) {

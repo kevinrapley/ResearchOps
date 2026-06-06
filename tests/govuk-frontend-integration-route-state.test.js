@@ -41,7 +41,7 @@ assert.equal(
 );
 assert.equal(
 	packageJson.scripts['build:govuk'],
-	'sass --load-path=node_modules --no-source-map --style=compressed src/styles/govuk.scss public/assets/govuk/govuk-frontend.css && node scripts/govuk/copy-govuk-assets.mjs'
+	'sass --load-path=node_modules --silence-deprecation=import --no-source-map --style=compressed src/styles/govuk.scss public/assets/govuk/govuk-frontend.css && node scripts/govuk/copy-govuk-assets.mjs'
 );
 assert.equal(packageJson.scripts['build:generated-css'], 'node scripts/styles/build-generated-css.mjs');
 assert.equal(
@@ -68,9 +68,9 @@ assert.match(generatedCssTargets, /source: 'src\/styles\/guides\.scss'/);
 assert.match(generatedCssTargets, /output: 'public\/css\/guides\.css'/);
 assert.match(buildGeneratedCss, /formatGeneratedCssTargets\(\{ write: true, targets \}\)/);
 
-assert.match(sassEntry, /\$govuk-page-width: 1020px;/);
-assert.match(sassEntry, /\$govuk-assets-path: '\/assets\/govuk\/assets\/';/);
-assert.match(sassEntry, /@import ['"]govuk-frontend\/dist\/govuk['"];/);
+assert.match(sassEntry, /\$govuk-page-width: 1020px,/);
+assert.match(sassEntry, /\$govuk-assets-path: '\/assets\/govuk\/assets\/'/);
+assert.match(sassEntry, /@use ['"]govuk-frontend\/dist\/govuk['"] with \(/);
 assert.match(generatedCss, /\.govuk-width-container\{max-width:1020px/);
 assert.match(generatedCss, /\.govuk-button/);
 assert.match(generatedCss, /font-family:"GDS Transport"/);

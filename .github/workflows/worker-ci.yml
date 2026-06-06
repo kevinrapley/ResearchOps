@@ -16,6 +16,7 @@ on:
       - "docs/deployment/wrangler-toolchain.md"
       - ".github/workflows/worker-ci.yml"
       - ".github/workflows/deploy-worker.yml"
+      - ".github/workflows/deploy-passwordless-preview-worker.yml"
       - ".github/workflows/deploy-agent-gateway.yml"
   workflow_dispatch: {}
 

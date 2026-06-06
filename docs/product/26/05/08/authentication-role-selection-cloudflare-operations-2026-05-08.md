@@ -3,8 +3,8 @@
 **Date:** 2026-05-08  
 **Status:** operational implementation note  
 **Related decision record:** [`authentication-role-selection-decisions-2026-05-08.md`](authentication-role-selection-decisions-2026-05-08.md)  
-**Related migration:** [`../../../infra/cloudflare/migrations/0001_auth_foundation.sql`](../../../../infra/cloudflare/migrations/0001_auth_foundation.sql)  
-**Related workflow:** [`../../../../.github/workflows/apply-d1-auth-foundation.yml`](../../../../.github/workflows/apply-d1-auth-foundation.yml)
+**Related migration:** [`infra/cloudflare/migrations/0001_auth_foundation.sql`](../../../../../infra/cloudflare/migrations/0001_auth_foundation.sql)  
+**Related workflow:** [`.github/workflows/apply-d1-auth-foundation.yml`](../../../../../.github/workflows/apply-d1-auth-foundation.yml)
 
 ## Purpose
 
