@@ -2,7 +2,16 @@ name: Deploy ResearchOps Worker
 
 on:
   push:
-    branches: [ main, "feature/**", "fix/**" ]
+    # Keep push.branches aligned with approved work-branch prefixes because
+    # non-main pushes deploy the shared preview Worker used by Pages previews.
+    branches:
+      - main
+      - "feature/**"
+      - "chore/**"
+      - "test/**"
+      - "fix/**"
+      - "perf/**"
+      - "hotfix/**"
     paths:
       - "infra/cloudflare/**"
       - "!infra/cloudflare/agent-gateway/**"

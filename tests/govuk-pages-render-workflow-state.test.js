@@ -5,6 +5,7 @@ const workflow = fs.readFileSync('.github/workflows/render-govuk-pages.yml', 'ut
 const gitignore = fs.readFileSync('.gitignore', 'utf8');
 const packageJson = JSON.parse(fs.readFileSync('package.json', 'utf8'));
 const renderer = fs.readFileSync('scripts/govuk/render-govuk-pages.mjs', 'utf8');
+const generatedHtmlPolicy = fs.readFileSync('docs/deployment/generated-html-policy.md', 'utf8');
 
 function includes(source, text, label) {
 	assert.equal(source.includes(text), true, `Expected ${label} to include: ${text}`);
@@ -81,3 +82,13 @@ assert.equal(
 
 includes(renderer, "output: 'public/pages/projects/journals/index.html'", 'GOV.UK pages renderer');
 includes(renderer, "template: 'pages/projects-journals.njk'", 'GOV.UK pages renderer');
+
+for (const snippet of [
+	'Cloudflare Pages currently publishes the committed `public/` directory',
+	'Do not hand-edit generated GOV.UK HTML',
+	'route-state tests remain the guardrail',
+	'When deployment can run `npm run build` before publishing',
+	'build artefact',
+]) {
+	includes(generatedHtmlPolicy, snippet, 'generated GOV.UK HTML policy');
+}

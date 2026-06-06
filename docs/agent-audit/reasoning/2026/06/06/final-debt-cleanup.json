@@ -1,0 +1,25 @@
+{
+  "date": "2026-06-06",
+  "branch": "chore/reduce-repository-debt",
+  "traceRequired": true,
+  "task": "Standardise preview Worker branch filters, document D1 migration ordering, and document generated GOV.UK HTML deployment policy.",
+  "bundles": [
+    ".agent-operating-model/bundles/github/",
+    ".agent-operating-model/bundles/researchops-developer-control/",
+    ".agent-operating-model/bundles/multi-functional-team/",
+    ".agent-operating-model/bundles/govuk-design-system/",
+    ".agent-operating-model/bundles/cloudflare/"
+  ],
+  "decisions": [
+    "Aligned preview-dependent Worker branch filters to the approved work-branch prefixes.",
+    "Documented existing duplicate D1 migration prefixes as historical and required future main migrations to use a new monotonically increasing prefix.",
+    "Kept generated GOV.UK HTML committed under the current Pages deployment contract and documented the build-artifact path for a future deployment change."
+  ],
+  "validation": [
+    "node --test tests/auth-registration-requests-route-state.test.js tests/d1-migration-ordering-route-state.test.js tests/govuk-pages-render-workflow-state.test.js",
+    "npm run format:check",
+    "npm run lint",
+    "npm test",
+    "npm run trace:coverage"
+  ]
+}

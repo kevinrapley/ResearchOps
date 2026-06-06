@@ -3,6 +3,7 @@ import fs from 'node:fs';
 
 const workerSource = fs.readFileSync('infra/cloudflare/src/worker.js', 'utf8');
 const deployWorkerSource = fs.readFileSync('.github/workflows/deploy-worker.yml', 'utf8');
+const passwordlessPreviewWorkerSource = fs.readFileSync('.github/workflows/deploy-passwordless-preview-worker.yml', 'utf8');
 const migrationSource = fs.readFileSync('infra/cloudflare/migrations/0005_auth_registration_requests.sql', 'utf8');
 const routeSource = fs.readFileSync('infra/cloudflare/src/core/auth/registration-requests.js', 'utf8');
 const registrationPageSource = fs.readFileSync('public/pages/account/register/index.html', 'utf8');
@@ -33,6 +34,12 @@ function workflowSection(source, startMarker, endMarker) {
 	return end === -1 ? rest : rest.slice(0, end);
 }
 
+function assertPreviewWorkerBranchFilters(source, label) {
+	for (const branchPattern of ['main', '"feature/**"', '"chore/**"', '"test/**"', '"fix/**"', '"perf/**"', '"hotfix/**"']) {
+		assert.ok(source.includes(`      - ${branchPattern}`), `Expected ${label} to include branch filter ${branchPattern}`);
+	}
+}
+
 function assertWorkerRoutesRegistrationRequests() {
 	assert.match(workerSource, /import \{ handleRegistrationRequestsRoute \} from ['"]\.\/core\/auth\/registration-requests\.js['"];/);
 	assert.match(workerSource, /apiPath === ['"]\/api\/auth\/registration-requests['"]/);
@@ -49,7 +56,8 @@ function assertDeployWorkflowAppliesRegistrationMigrationToPreviewAndProduction(
 	const productionJob = workflowSection(deployWorkerSource, '  deploy-production:', '  deploy-preview:');
 	const previewJob = workflowSection(deployWorkerSource, '  deploy-preview:', null);
 
-	assert.match(deployWorkerSource, /branches: \[ main, "feature\/\*\*", "fix\/\*\*" \]/);
+	assertPreviewWorkerBranchFilters(deployWorkerSource, 'Deploy ResearchOps Worker workflow');
+	assertPreviewWorkerBranchFilters(passwordlessPreviewWorkerSource, 'Deploy Passwordless Preview Worker workflow');
 	assert.match(deployWorkerSource, /REGISTRATION_REQUESTS_MIGRATION: "infra\/cloudflare\/migrations\/0005_auth_registration_requests\.sql"/);
 	assert.doesNotMatch(deployWorkerSource, /AUTH_DATA_CORRECTION_MIGRATION/);
 	assert.doesNotMatch(deployWorkerSource, /PREVIEW_RESEARCH_OPERATIONS_DAAS_CORRECTION/);
