@@ -73,7 +73,8 @@ The GOV.UK and Cloudflare bundles were applied manually because the failing beha
 - Kept the route permission check in place after seeding so the endpoint remains permission-gated.
 - Added page-level friendly error mapping so internal API codes such as `route_permission_missing` are not surfaced in the GOV.UK error summary.
 - Extended route-state tests to assert both the runtime auth declarations and the friendly error copy.
-- Updated the product document to record the original team discussion decisions, prototype steering decisions, access expectations, permission resilience and plain-language error handling.
+- Updated the product document to preserve the decision history: initial team position, critical challenge, prototype steering decisions, and live authenticated journey learning.
+- Removed documentation wording assertions from the route-state test so product documentation can remain a human decision record rather than a brittle test contract.
 
 ## Validation
 
@@ -83,6 +84,8 @@ The GOV.UK and Cloudflare bundles were applied manually because the failing beha
 - `node tests/study-page-route-state.test.js` passed.
 - `npm test -- tests/study-note-takers-observers-route-state.test.js tests/auth-route-permissions.test.js tests/study-child-route-state.test.js tests/study-page-route-state.test.js` passed.
 - `npx prettier -c infra/cloudflare/src/worker.js public/js/note-takers-observers-page.js tests/study-note-takers-observers-route-state.test.js` passed.
+- `npx prettier -c docs/product/26/06/06/study-note-takers-observers.md tests/study-note-takers-observers-route-state.test.js docs/agent-audit/reasoning/2026/06/06/study-support-auth-error.md docs/agent-audit/reasoning/2026/06/06/study-support-auth-error.json` passed.
+- `npm run trace:coverage` passed.
 
 ## Residual risk
 

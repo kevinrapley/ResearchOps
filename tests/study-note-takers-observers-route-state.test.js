@@ -25,7 +25,6 @@ const worker = read("infra/cloudflare/src/worker.js");
 const serviceIndex = read("infra/cloudflare/src/service/index.js");
 const service = read("infra/cloudflare/src/service/study-support.js");
 const migration = read("infra/cloudflare/migrations/0013_study_support_people.sql");
-const productDoc = read("docs/product/26/06/06/study-note-takers-observers.md");
 const studyPage = read("public/pages/study/index.html");
 const studyController = read("public/js/study-page.js");
 
@@ -215,21 +214,4 @@ for (const text of [
 	"'DELETE', '/api/study-support/people/:id', '[\"study.support.manage\"]'"
 ]) {
 	includes(migration, text, "study support route permissions");
-}
-
-for (const text of [
-	"# Study note takers and observers",
-	"## Team discussion summary",
-	"## User needs",
-	"## Acceptance criteria",
-	"## Gherkin criteria",
-	"## Data model",
-	"D1 is the primary store",
-	"Airtable is a fallback read source",
-	"Authenticated researchers, research leads and team admins can save the setup decision",
-	"User-facing error summaries must not expose internal machine codes",
-	"Runtime permission bootstrapping may be used",
-	"I do not see an error containing \"route_permission_missing\""
-]) {
-	includes(productDoc, text, "product document");
 }

@@ -10,6 +10,97 @@ The page lets a researcher confirm whether anyone beyond the lead researcher wil
 
 It exists because note takers, observers, facilitators and accessibility support can affect planning, participant consent and the session experience. The page keeps that setup visible as a study task without making researchers record unnecessary personal data.
 
+## Decision history
+
+This page started from a study setup task that already existed on `/pages/study/` as “Add note takers and observers”, but the task was marked “Not available yet”. The initial product direction was to turn that task into a real study-scoped route where researchers could record who would support sessions, what role each person had, and whether observer access had been considered before fieldwork.
+
+The important learning is that the page is not just an address book. It is a setup decision point. The design changed as the team challenged the initial assumptions, reviewed the prototype, and then tested the live authenticated journey.
+
+### Initial team position
+
+Product initially framed the user need as: “As a researcher, I need to set up who is supporting or observing a study session, so the session can be run safely, roles are clear, and observers do not accidentally compromise consent, inclusion or note quality.”
+
+ResearchOps agreed the page must distinguish note takers from observers. Note takers actively help capture evidence. Observers attend but should normally not interrupt or influence the session. The page also needed to account for people who join only some sessions.
+
+User research said the page should help researchers answer four practical questions before fieldwork:
+
+- who is joining
+- why they are joining
+- what they are allowed to do
+- whether participants have been told observers may attend
+
+Interaction design initially treated the page as another study setup route, reached from the study task list with breadcrumbs only and no “Back to study” button.
+
+Content design supported “Add note takers and observers” as a task label, with “Note takers and observers” as the page title and plainer body copy about people who help run, observe or take notes during sessions.
+
+Accessibility and privacy set the early guardrails: use GOV.UK form components, use error summaries and field-level errors, collect only what is needed, and avoid broad “contact details” or unnecessary personal data.
+
+Delivery initially proposed a study-scoped setup page with local route state and tests, using a minimal D1-backed model if no suitable storage already existed.
+
+### Initial product requirements
+
+The first pass expected the page to let researchers:
+
+- see who is already assigned as a note taker or observer
+- add a person to the study support team
+- choose a role: note taker, observer, facilitator, accessibility support, or other
+- capture whether the person may attend all sessions or selected sessions only
+- record whether the person is internal or external
+- record role-specific notes needed to run sessions safely
+- remove or edit a support person before fieldwork
+- understand that observer attendance depends on participant consent and study readiness
+
+This was directionally right, but it over-weighted “adding people” and under-weighted the equally valid case where the lead researcher is the only person joining sessions.
+
+### Critical evaluation
+
+The first major challenge was readiness. The early shape risked making “at least one note taker or observer exists” equivalent to “Ready”. The team rejected that because solo research can be valid and should not require a false support person record just to clear a task.
+
+The product decision changed from “add people to become ready” to “save a clear support setup decision”. Readiness now means one of two things:
+
+- the researcher has confirmed no additional people will join sessions
+- the researcher has confirmed additional people will join and has added at least one support person
+
+Interaction design then changed the page flow. The page should first ask: “Will anyone else join sessions for this study?” The add-person form should only appear after the researcher saves “Yes”. This avoids making an empty support people list look like a failure when solo research is a valid decision.
+
+Content design also tightened the data collection. “Name” is enough unless the system genuinely needs a legal or full name. “Email address” remains optional and only for coordination. “Other” roles must be explained, otherwise the support record is not meaningful.
+
+Accessibility added explicit criteria: one H1, logical heading order, grouped controls in fieldsets, error summary links that focus the relevant field, and no custom controls where GOV.UK radios, inputs, textareas or buttons already exist.
+
+Developer input clarified the route and status behaviour. The route should be `/pages/study/note-takers-observers/?id=<StudyID>&project=<ProjectID>`, with transition support for `sid` and `pid`. The study page task should stop saying “Not available yet” and derive its status from saved route state.
+
+### Prototype steering
+
+The self-contained prototype confirmed the overall shape but produced three implementation steering decisions.
+
+First, selecting “Yes” must not reveal the support people section immediately. In the prototype, doing so made “Save setup decision” feel pointless. The production page must wait until the setup decision is saved before showing the support people section.
+
+Second, choosing role “Other” must reveal a required text input. Without that, the saved role is too vague to be operationally useful.
+
+Third, removing a support person must require confirmation. Removal affects readiness and could accidentally erase the evidence that the study setup had been reviewed.
+
+Those comments were deliberately carried forward as production requirements rather than being patched into the disposable prototype.
+
+### Live environment learning
+
+After PR #360 was merged, the authenticated live journey exposed an operational gap. A signed-in user could traverse to the page, choose “Yes, add note takers or observers”, and select “Save setup decision”, but the page showed a GOV.UK error summary containing the internal code `route_permission_missing`.
+
+That changed the product requirements again:
+
+- an authenticated researcher, research lead or team admin should be able to save the setup decision
+- missing route-permission declarations are an implementation problem, not a user problem
+- user-facing GOV.UK error summaries must never expose internal route, permission or system codes
+- the route still needs permission checks, but this feature’s own D1 route-permission declarations must be safely present or bootstrapped
+- if saving fails, the page must keep the setup decision unsaved and show plain-language recovery copy
+
+The live test did not invalidate the product shape. It added a service resilience requirement: the page must behave like a normal researcher workflow when the user is authenticated, and failures must be expressed in user language.
+
+### Current product position
+
+The final direction is therefore not a cleansed “add people” page. It is a study readiness task where the researcher records a decision about session support, then adds support people only when the decision requires it.
+
+The page remains grounded in GOV.UK Frontend and ResearchOps route conventions, with D1 as the primary store and Airtable as a future fallback read source when account limits allow it.
+
 ## Team discussion summary
 
 Product: The user need is not simply to “add people”. Researchers need to make a fieldwork decision: either the lead researcher is the only person joining, or other named support people must be recorded before the setup task is ready.

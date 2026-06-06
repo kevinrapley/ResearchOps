@@ -38,6 +38,10 @@
     "tests/auth-route-permissions.test.js",
     "docs/product/26/06/06/study-note-takers-observers.md"
   ],
+  "documentationUpdate": {
+    "summary": "Expanded the product document from a cleansed decision summary into a decision history covering the initial team position, critical challenge, prototype steering, and live authenticated journey learning.",
+    "testPolicy": "Documentation wording is not asserted in route-state tests; tests remain focused on implementation behaviour."
+  },
   "filesModified": [
     "infra/cloudflare/src/worker.js",
     "public/js/note-takers-observers-page.js",
@@ -69,6 +73,14 @@
     },
     {
       "command": "npx prettier -c infra/cloudflare/src/worker.js public/js/note-takers-observers-page.js tests/study-note-takers-observers-route-state.test.js",
+      "status": "passed"
+    },
+    {
+      "command": "npx prettier -c docs/product/26/06/06/study-note-takers-observers.md tests/study-note-takers-observers-route-state.test.js docs/agent-audit/reasoning/2026/06/06/study-support-auth-error.md docs/agent-audit/reasoning/2026/06/06/study-support-auth-error.json",
+      "status": "passed"
+    },
+    {
+      "command": "npm run trace:coverage",
       "status": "passed"
     }
   ],
