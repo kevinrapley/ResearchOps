@@ -20,7 +20,9 @@ includes(
 );
 includes(packageJson.scripts.test, '--test', 'package test script');
 
-includes(helperSource, "import { cacheBustOutcomesPageScripts, govukPages } from '../../scripts/govuk/render-govuk-pages.mjs';", 'generated GOV.UK page test helper');
+includes(helperSource, 'cacheBustOutcomesPageScripts,', 'generated GOV.UK page test helper');
+includes(helperSource, 'govukPages,', 'generated GOV.UK page test helper');
+includes(helperSource, "from '../../scripts/govuk/render-govuk-pages.mjs';", 'generated GOV.UK page test helper');
 includes(helperSource, 'const originalReadFileSync = fs.readFileSync.bind(fs);', 'generated GOV.UK page test helper');
 includes(helperSource, 'const renderedPageOutputs = new Map(', 'generated GOV.UK page test helper');
 includes(helperSource, 'govukPages.map((page) => [normalize(resolve(root, page.output)), page])', 'generated GOV.UK page test helper');
