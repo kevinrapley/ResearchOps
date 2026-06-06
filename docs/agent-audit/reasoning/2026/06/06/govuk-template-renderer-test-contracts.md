@@ -55,10 +55,14 @@ Update the test contract so route-state tests that inspect renderer-managed GOV.
 - `scripts/govuk/render-govuk-pages.mjs`
 - `src/govuk/templates/layouts/researchops.njk`
 - `src/govuk/templates/pages/projects.njk`
+- `src/govuk/templates/pages/study-synthesis.njk`
+- `src/govuk/templates/pages/projects-outcomes.njk`
 - `tests/project-dashboard-route-state.test.js`
 - `tests/projects-page-route-state.test.js`
 - `tests/study-page-route-state.test.js`
 - `tests/govuk-pages-render-workflow-state.test.js`
+- `tests/govuk-forms-application-route-state.test.js`
+- `tests/govuk-tables-summary-lists-application-route-state.test.js`
 - `docs/deployment/generated-html-policy.md`
 
 ## Files created or modified
@@ -66,6 +70,8 @@ Update the test contract so route-state tests that inspect renderer-managed GOV.
 - `package.json`
 - `tests/helpers/generated-govuk-page-source.mjs`
 - `tests/govuk-generated-html-test-source-route-state.test.js`
+- `tests/govuk-forms-application-route-state.test.js`
+- `tests/govuk-tables-summary-lists-application-route-state.test.js`
 - `docs/deployment/generated-html-policy.md`
 - `docs/agent-audit/reasoning/2026/06/06/govuk-template-renderer-test-contracts.md`
 - `docs/agent-audit/reasoning/2026/06/06/govuk-template-renderer-test-contracts.json`
@@ -78,12 +84,17 @@ Update the test contract so route-state tests that inspect renderer-managed GOV.
 - Legacy static page tests continue to read their committed `public/` files because they are not renderer-managed GOV.UK pages.
 - Updated the generated HTML policy to say tests that inspect renderer-managed pages should load from templates and the renderer registry rather than committed generated HTML.
 - Added a route-state test that pins the preloader, package test script and renderer exports.
+- After CI failed, applied the Prettier formatting patch for the helper.
+- After unit tests failed, changed brittle exact generated-output assertions for the Synthesis form labels and Outcomes table attributes into template-aware and output-format-tolerant checks.
 
 ## Validation attempted
 
 - Repository-local commands were not run in this environment.
 - Added `tests/govuk-generated-html-test-source-route-state.test.js` for CI to validate the helper and package test script.
-- The implementation is intended to be validated by the existing `npm test` CI path.
+- Initial CI showed format, lint and unit-test failures.
+- Release-gate evidence showed Prettier rejected `tests/helpers/generated-govuk-page-source.mjs`.
+- Release-gate evidence showed two brittle route-state assertions failed after tests read unformatted in-memory Nunjucks output.
+- Patched those failures and left validation to the refreshed PR checks.
 
 ## Residual risks
 
