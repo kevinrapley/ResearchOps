@@ -33,7 +33,7 @@ const legacyCloneAssets = [
 ];
 
 assert.equal(packageJson.dependencies['govuk-frontend'], '^6.0.0');
-assert.equal(packageJson.devDependencies.sass, '^1.94.2');
+assert.equal(packageJson.devDependencies.sass, '^1.100.0');
 assert.equal(packageJson.devDependencies.nunjucks, '^3.2.4');
 assert.equal(
 	packageJson.scripts.build,
