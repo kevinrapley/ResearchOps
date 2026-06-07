@@ -1,0 +1,192 @@
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/checkboxes/macro.njk" import govukCheckboxes %}
+{% from "govuk/components/details/macro.njk" import govukDetails %}
+{% from "govuk/components/input/macro.njk" import govukInput %}
+{% from "govuk/components/summary-list/macro.njk" import govukSummaryList %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
+
+{% macro repositoryHero(params) %}
+<section class="repository-hero" aria-labelledby="repository-title">
+	<div class="govuk-width-container">
+		<div class="govuk-grid-row">
+			<div class="govuk-grid-column-two-thirds">
+				<p class="govuk-caption-l">{{ params.caption }}</p>
+				<h1 class="govuk-heading-xl repository-hero__title" id="repository-title">{{ params.title }}</h1>
+				<p class="govuk-body-l">{{ params.lead }}</p>
+				<p class="govuk-body">{{ params.body }}</p>
+			</div>
+			<div class="govuk-grid-column-one-third">
+				{{ repositoryQualitySummary(params.assurance) }}
+			</div>
+		</div>
+	</div>
+</section>
+{% endmacro %}
+
+{% macro repositoryQualitySummary(params) %}
+<aside class="repository-quality-summary" aria-labelledby="repository-quality-title">
+	<h2 class="govuk-heading-m" id="repository-quality-title">{{ params.title }}</h2>
+	{{ govukSummaryList({
+		classes: 'govuk-summary-list--no-border repository-quality-summary__list',
+		rows: params.items | map(attribute='summaryRow') | list
+	}) }}
+</aside>
+{% endmacro %}
+
+{% macro repositorySearch(params) %}
+<section class="repository-search-panel" aria-labelledby="repository-search-title">
+	<h2 class="govuk-heading-l" id="repository-search-title">{{ params.title }}</h2>
+	<p class="govuk-body">{{ params.body }}</p>
+	<form class="repository-search-panel__form" action="{{ params.action }}" method="get" role="search">
+		{{ govukInput({
+			id: 'repository-search',
+			name: 'q',
+			label: {
+				text: params.label,
+				classes: 'govuk-label--m'
+			},
+			hint: {
+				text: params.hint
+			},
+			classes: 'govuk-input--width-30'
+		}) }}
+		{{ govukButton({
+			text: params.buttonText,
+			classes: 'repository-search-panel__button'
+		}) }}
+	</form>
+</section>
+{% endmacro %}
+
+{% macro repositoryMetrics(items) %}
+<section class="repository-metrics" aria-labelledby="repository-metrics-title">
+	<h2 class="govuk-heading-l" id="repository-metrics-title">Repository at a glance</h2>
+	<div class="repository-metrics__grid">
+		{% for item in items %}
+		<div class="repository-metric">
+			<p class="repository-metric__value">{{ item.value }}</p>
+			<p class="repository-metric__label">{{ item.label }}</p>
+			<p class="govuk-body-s">{{ item.description }}</p>
+		</div>
+		{% endfor %}
+	</div>
+</section>
+{% endmacro %}
+
+{% macro repositoryBrowseCards(items) %}
+<section aria-labelledby="repository-browse-title">
+	<h2 class="govuk-heading-l" id="repository-browse-title">Browse reusable research</h2>
+	<div class="repository-card-grid">
+		{% for item in items %}
+		<article class="repository-browse-card">
+			<h3 class="govuk-heading-m"><a class="govuk-link" href="{{ item.href }}">{{ item.title }}</a></h3>
+			<p class="govuk-body">{{ item.text }}</p>
+			<p class="govuk-body-s repository-browse-card__meta">{{ item.count }}</p>
+		</article>
+		{% endfor %}
+	</div>
+</section>
+{% endmacro %}
+
+{% macro repositoryArtefactList(items) %}
+<section aria-labelledby="repository-artefacts-title">
+	<h2 class="govuk-heading-l" id="repository-artefacts-title">Published artefacts</h2>
+	<p class="govuk-body">Only reviewed artefacts appear in the repository. Each artefact shows provenance, confidence, reuse guidance and review state.</p>
+	<div class="repository-artefact-list">
+		{% for item in items %}
+		<article class="govuk-summary-card repository-artefact-card">
+			<div class="govuk-summary-card__title-wrapper">
+				<h3 class="govuk-summary-card__title"><a class="govuk-link" href="{{ item.href }}">{{ item.title }}</a></h3>
+				<ul class="govuk-summary-card__actions">
+					<li class="govuk-summary-card__action">{{ govukTag({ text: item.status, classes: item.statusClass }) }}</li>
+				</ul>
+			</div>
+			<div class="govuk-summary-card__content">
+				<p class="govuk-body">{{ item.summary }}</p>
+				{{ govukSummaryList({
+					classes: 'govuk-summary-list--no-border repository-artefact-card__summary',
+					rows: item.rows
+				}) }}
+			</div>
+		</article>
+		{% endfor %}
+	</div>
+</section>
+{% endmacro %}
+
+{% macro repositoryFilterPanel(params) %}
+<aside class="repository-filter-panel" aria-labelledby="repository-filter-title">
+	<h2 class="govuk-heading-m" id="repository-filter-title">Filter published evidence</h2>
+	<form action="{{ params.action }}" method="get">
+		{% for group in params.groups %}
+		{{ govukCheckboxes({
+			name: group.name,
+			fieldset: {
+				legend: {
+					text: group.legend,
+					classes: 'govuk-fieldset__legend--s'
+				}
+			},
+			items: group.items
+		}) }}
+		{% endfor %}
+		{{ govukButton({ text: 'Apply filters', classes: 'govuk-button--secondary' }) }}
+	</form>
+</aside>
+{% endmacro %}
+
+{% macro repositoryPublicationPanel(params) %}
+<section class="repository-publication-panel" aria-labelledby="repository-publication-title">
+	<h2 class="govuk-heading-l" id="repository-publication-title">Publication gates</h2>
+	<p class="govuk-body">{{ params.body }}</p>
+	<ol class="repository-gate-list">
+		{% for gate in params.gates %}
+		<li class="repository-gate-list__item">
+			<h3 class="govuk-heading-s">{{ gate.title }}</h3>
+			<p class="govuk-body-s">{{ gate.text }}</p>
+		</li>
+		{% endfor %}
+	</ol>
+	{{ govukButton({ text: params.actionText, href: params.actionHref }) }}
+</section>
+{% endmacro %}
+
+{% macro repositoryQueueTable(params) %}
+<section aria-labelledby="repository-queue-title">
+	<h2 class="govuk-heading-l" id="repository-queue-title">Curator workbench</h2>
+	<p class="govuk-body">{{ params.body }}</p>
+	<table class="govuk-table repository-queue-table">
+		<caption class="govuk-table__caption govuk-table__caption--m">{{ params.caption }}</caption>
+		<thead class="govuk-table__head">
+			<tr class="govuk-table__row">
+				<th scope="col" class="govuk-table__header">Queue</th>
+				<th scope="col" class="govuk-table__header">Count</th>
+				<th scope="col" class="govuk-table__header">Next action</th>
+			</tr>
+		</thead>
+		<tbody class="govuk-table__body">
+			{% for row in params.rows %}
+			<tr class="govuk-table__row">
+				<th scope="row" class="govuk-table__header"><a class="govuk-link" href="{{ row.href }}">{{ row.queue }}</a></th>
+				<td class="govuk-table__cell">{{ row.count }}</td>
+				<td class="govuk-table__cell">{{ row.action }}</td>
+			</tr>
+			{% endfor %}
+		</tbody>
+	</table>
+</section>
+{% endmacro %}
+
+{% macro repositoryDecisionCards(items) %}
+<section aria-labelledby="repository-team-decisions-title">
+	<h2 class="govuk-heading-l" id="repository-team-decisions-title">Team decisions for this route</h2>
+	<div class="repository-decision-grid">
+		{% for item in items %}
+		<article class="repository-decision-card">
+			<h3 class="govuk-heading-s">{{ item.role }}</h3>
+			<p class="govuk-body-s">{{ item.decision }}</p>
+		</article>
+		{% endfor %}
+	</div>
+</section>
+{% endmacro %}
