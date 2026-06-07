@@ -96,6 +96,8 @@ Investigate the reported lag on the ResearchOps repository preview, try the depl
 - Change the repository landing page and deeper browse pages to request paged API data for the current UI state instead of hydrating the entire catalogue up front.
 - Keep seeded-tag filtering and current browse/history behaviour intact while changing the data-loading strategy.
 - After reproducing the remaining lag on the live preview, collapse the repository list route back to one published-row query plus one tag query, then derive filters, metrics, pagination and filtered results in memory to remove repeated D1 round-trip cost.
+- Trim the list-route payload so repository pages do not receive full artefact limits and provenance identifiers on every card when only the detail page needs them.
+- Restore linked recommendation metrics by counting recommendation tag rows from D1-backed tag data rather than inferring from visible tag labels.
 
 ## Assumptions
 
@@ -133,9 +135,12 @@ Investigate the reported lag on the ResearchOps repository preview, try the depl
 - The repository page replaced placeholders with live data about `4.5s` after `domcontentloaded`.
 - Same-origin authenticated `/api/repository` responses were about `3.3s`.
 - After the page was warm, an applied method filter updated visible results in about `500ms`.
+- After the first optimisation deploy, the page shell improved to about `117ms`, the page hydrate dropped to about `3.5s`, but same-origin `/api/repository` still remained about `3.34s`.
+- Warm filter updates after the first optimisation deploy were about `251ms`.
 
 ## Residual risks
 
 - The live preview could still show some first-request cold-start cost from Cloudflare runtime startup, which this repository change does not remove.
 - Filter interactions now depend on fast paged API responses rather than an already-hydrated client catalogue, so any future D1 query regressions will be more visible.
 - Airtable fallback still materialises its published set in memory; that remains acceptable because the reported lag path was the D1-backed preview.
+- The live preview still needs one more measurement pass after the payload-trimming commit is deployed because the acceptable-speed threshold has not yet been reached.

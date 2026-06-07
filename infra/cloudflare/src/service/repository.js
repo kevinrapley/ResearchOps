@@ -304,9 +304,10 @@ function repositoryTag(tag, row) {
 	return { text: tag.tag_label, classes: tagClassFor(tag.tag_type, tag.tag_slug) };
 }
 
-function rowToArtefact(row, tags = []) {
+function rowToArtefact(row, tags = [], options = {}) {
+	const { includeLimits = false, includeProvenanceIds = false } = options;
 	const repositoryTags = tags.map((tag) => repositoryTag(tag, row)).filter(Boolean);
-	return {
+	const artefact = {
 		id: row.id,
 		title: row.title,
 		summary: row.summary,
@@ -321,15 +322,8 @@ function rowToArtefact(row, tags = []) {
 		publishedAt: row.published_at || "",
 		reviewDueAt: row.review_due_at || "",
 		provenance: {
-			projectId: row.source_project_id || "",
-			studyId: row.source_study_id || "",
 			method: row.source_method || row.method || "",
 			sample: row.sample_summary || ""
-		},
-		limits: {
-			limitations: row.limitations || "",
-			reuseGuidance: row.reuse_guidance || "",
-			doNotUseFor: row.do_not_use_for || ""
 		},
 		tags: [
 			{ text: `${row.confidence} confidence`, classes: tagClassFor("confidence", row.confidence) },
@@ -337,6 +331,18 @@ function rowToArtefact(row, tags = []) {
 			...repositoryTags
 		]
 	};
+	if (includeProvenanceIds) {
+		artefact.provenance.projectId = row.source_project_id || "";
+		artefact.provenance.studyId = row.source_study_id || "";
+	}
+	if (includeLimits) {
+		artefact.limits = {
+			limitations: row.limitations || "",
+			reuseGuidance: row.reuse_guidance || "",
+			doNotUseFor: row.do_not_use_for || ""
+		};
+	}
+	return artefact;
 }
 
 function airtableRecordToArtefact(record = {}) {
@@ -524,6 +530,16 @@ function metricsFromArtefacts(artefacts) {
 	];
 }
 
+function metricsFromRepository(rows, tagsById = new Map()) {
+	const dueReview = rows.filter((row) => row.review_due_at && Date.parse(row.review_due_at) <= Date.now() + 30 * 24 * 60 * 60 * 1000).length;
+	const linkedRecommendations = rows.reduce((count, row) => count + (tagsById.get(row.id) || []).filter((tag) => tag.tag_type === "recommendation").length, 0);
+	return [
+		{ value: String(rows.length), label: "published artefacts" },
+		{ value: String(linkedRecommendations), label: "linked recommendations" },
+		{ value: String(dueReview), label: "due review in 30 days" }
+	];
+}
+
 async function facetFromRepository(svc, name, label, column) {
 	const rows = await d1All(svc.env, `
 		SELECT ${column} AS value, COUNT(*) AS count
@@ -667,7 +683,7 @@ export async function listRepository(svc, origin, url, authContext = {}) {
 			facetFromArtefacts(allArtefacts, "user_group", "User group", "userGroup"),
 			facetFromArtefacts(allArtefacts, "risk_area", "Risk or constraint", "riskArea")
 		];
-		const metrics = metricsFromArtefacts(allArtefacts);
+		const metrics = metricsFromRepository(rows, tags);
 		const queues = await repositoryQueues(svc);
 		const showQueues = canCurate(authContext);
 		return svc.json({
@@ -726,7 +742,12 @@ export async function readRepositoryArtefact(svc, origin, artefactId) {
 		`, [artefactId]);
 		if (!row) return svc.json({ ok: false, error: "repository_artefact_not_found" }, 404, svc.corsHeaders(origin));
 		const tags = await tagsByArtefactId(svc, [artefactId]);
-		return svc.json({ ok: true, source: "d1", artefact: rowToArtefact(row, tags.get(artefactId) || []), payload: parseJson(row.payload_json, {}) }, 200, svc.corsHeaders(origin));
+		return svc.json({
+			ok: true,
+			source: "d1",
+			artefact: rowToArtefact(row, tags.get(artefactId) || [], { includeLimits: true, includeProvenanceIds: true }),
+			payload: parseJson(row.payload_json, {})
+		}, 200, svc.corsHeaders(origin));
 	} catch (error) {
 		errors.push({ source: "d1", message: String(error?.message || error) });
 	}
