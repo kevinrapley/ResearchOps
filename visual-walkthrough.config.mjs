@@ -181,6 +181,7 @@ export const visualWalkthroughConfig = {
 		registeredPage('repository-candidates', 'Candidate artefacts', 'Repository', '/pages/repository/review/candidates/index.html', 'Repository curator candidate queue route.'),
 		registeredPage('repository-due-review', 'Due review', 'Repository', '/pages/repository/review/stale/index.html', 'Repository curator due-review queue route.'),
 		registeredPage('repository-withdrawn', 'Withdrawn artefacts', 'Repository', '/pages/repository/review/withdrawn/index.html', 'Repository curator withdrawn artefact queue route.'),
+		registeredPage('repository-artefact-detail', 'Repository artefact', 'Repository', '/pages/repository/artefacts/index.html', 'Generic repository artefact detail route loaded from the artefact API.'),
 		registeredPage('repository-artefact-staff-evidence-boundaries', 'Staff need clearer evidence boundaries before accepting recommendations', 'Repository', '/pages/repository/artefacts/staff-evidence-boundaries/index.html', 'Repository artefact detail route.'),
 		registeredPage('repository-artefact-check-answers-review-anxiety', 'Check answers pages reduce review anxiety when change links are explicit', 'Repository', '/pages/repository/artefacts/check-answers-review-anxiety/index.html', 'Repository artefact detail route.'),
 		registeredPage('repository-artefact-consent-state-workarounds', 'Operational teams rely on local workarounds when consent states are unclear', 'Repository', '/pages/repository/artefacts/consent-state-workarounds/index.html', 'Repository artefact detail route.'),

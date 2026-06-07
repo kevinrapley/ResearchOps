@@ -7,6 +7,7 @@ const files = {
 	macros: fs.readFileSync('src/govuk/templates/macros/repository.njk', 'utf8'),
 	pageData: fs.readFileSync('src/govuk/data/repository-page.mjs', 'utf8'),
 	pageScript: fs.readFileSync('public/js/repository-page.js', 'utf8'),
+	artefactScript: fs.readFileSync('public/js/repository-artefact-page.js', 'utf8'),
 	stylesheet: fs.readFileSync('src/styles/repository.scss', 'utf8'),
 	renderer: fs.readFileSync('scripts/govuk/render-govuk-pages.mjs', 'utf8'),
 	cssTargets: fs.readFileSync('scripts/styles/generated-css-targets.mjs', 'utf8'),
@@ -51,6 +52,17 @@ has(files.template, 'Due review in 30 days', 'template');
 has(files.template, 'id="repository-filter-form"', 'template');
 has(files.template, 'name: \'method\'', 'template');
 has(files.template, 'name: \'maturity\'', 'template');
+has(files.template, "value: 'contextual-inquiry'", 'template');
+has(files.template, "value: 'survey-analysis'", 'template');
+has(files.template, "value: 'content-testing'", 'template');
+has(files.template, "value: 'service-review'", 'template');
+has(files.template, "value: 'validated-learning'", 'template');
+has(files.template, "value: 'reviewed-evidence'", 'template');
+has(files.template, "value: 'early-signal'", 'template');
+lacks(files.template, "value: 'validated-insight'", 'template');
+lacks(files.template, "value: 'evidence-pack'", 'template');
+lacks(files.template, "value: 'pattern-evidence'", 'template');
+lacks(files.template, "value: 'method-learning'", 'template');
 has(files.template, 'href="/pages/repository/service-areas/"', 'template');
 has(files.template, 'href="/pages/repository/user-groups/"', 'template');
 has(files.template, 'href="/pages/repository/methods/"', 'template');
@@ -74,8 +86,12 @@ lacks(files.macros, 'macro repositoryAssurancePanel', 'macros');
 
 has(files.staticTemplate, 'govuk-back-link', 'static repository template');
 has(files.staticTemplate, 'Open the API response for this route', 'static repository template');
+has(files.staticTemplate, 'repository-artefact-detail', 'static repository template');
+has(files.staticTemplate, 'repository-artefact-page.js', 'static repository template');
 has(files.pageData, 'export const repositoryStaticPages', 'page data');
 has(files.pageData, "slug: 'service-areas'", 'page data');
+has(files.pageData, "slug: 'artefacts'", 'page data');
+has(files.pageData, 'detailRoute: true', 'page data');
 has(files.pageData, "slug: 'review/candidates/new'", 'page data');
 has(files.pageData, "slug: 'artefacts/staff-evidence-boundaries'", 'page data');
 
@@ -87,7 +103,11 @@ has(files.pageScript, 'apiUrl(`/api/repository', 'page script');
 has(files.pageScript, 'updateFilterCounts', 'page script');
 has(files.pageScript, 'setQueueCounts', 'page script');
 has(files.pageScript, 'data-repository-metric', 'page script');
+has(files.pageScript, '/pages/repository/artefacts/?id=', 'page script');
 lacks(files.pageScript, 'Technical detail', 'page script');
+has(files.artefactScript, 'repository-artefact-detail', 'artefact script');
+has(files.artefactScript, 'fetch(apiUrl(`/api/repository/artefacts/${encodeURIComponent(id)}`)', 'artefact script');
+has(files.artefactScript, 'credentials: "include"', 'artefact script');
 
 has(files.service, 'const ARTEFACTS_TABLE = "rops_repository_artefacts"', 'service');
 has(files.service, 'function airtableRecords', 'service');
@@ -100,11 +120,17 @@ has(files.service, 'function facetRows', 'service');
 has(files.service, 'function repositoryQueues', 'service');
 has(files.service, 'function repositoryDerivation', 'service');
 has(files.service, 'derivation: repositoryDerivation(showQueues)', 'service');
+has(files.service, 'href: `/pages/repository/artefacts/?id=${encodeURIComponent(row.id)}`', 'service');
 lacks(files.service, 'String(error?.message || error) }, 503', 'service');
 
 has(files.api, 'resolveAuthenticatedContext', 'API');
 has(files.api, 'assertRoutePermission', 'API');
 has(files.api, 'service.listRepository', 'API');
+has(files.api, 'function resolveAllowedOrigin', 'API');
+has(files.api, 'origin === requestOrigin', 'API');
+has(files.api, "error: 'origin_not_allowed'", 'API');
+has(files.api, "'Access-Control-Allow-Credentials'] = 'true'", 'API');
+lacks(files.api, "'Access-Control-Allow-Origin': origin || '*'", 'API');
 has(files.api, 'repository_api_unavailable', 'API');
 has(files.api, 'Repository data could not be loaded. Try again or contact the ResearchOps team if the problem continues.', 'API');
 has(files.worker, 'async function ensureRepositoryAuthDeclarations', 'worker');
@@ -140,6 +166,7 @@ lacks(files.stylesheet, 'repository-assurance', 'stylesheet');
 
 has(files.visualWalkthrough, "registeredPage('repository'", 'visual walkthrough registry');
 has(files.visualWalkthrough, "registeredPage('repository-service-areas'", 'visual walkthrough registry');
+has(files.visualWalkthrough, "registeredPage('repository-artefact-detail'", 'visual walkthrough registry');
 has(files.visualWalkthrough, "registeredPage('repository-artefact-staff-evidence-boundaries'", 'visual walkthrough registry');
 has(files.gitignore, 'public/css/repository.css', 'gitignore');
 has(files.gitignore, 'public/pages/repository/', 'gitignore');

@@ -114,6 +114,25 @@ export const repositoryStaticPages = [
 		],
 	},
 	{
+		slug: 'artefacts',
+		title: 'Repository artefact',
+		lead: 'View a published repository artefact with provenance, confidence, limitations and reuse guidance.',
+		body: 'This route loads the selected published artefact from the repository API using the artefact ID in the page URL.',
+		apiPath: '/api/repository/artefacts',
+		backHref: '/pages/repository/',
+		backText: 'Back to published artefacts',
+		detailRoute: true,
+		sections: [
+			{
+				heading: 'Publication boundary',
+				items: [
+					'Only published, active, PII-cleared and consent-confirmed artefacts can be loaded on this route.',
+					'Participant records, consent records, contact details, recordings and transcripts stay outside the repository publication layer.',
+				],
+			},
+		],
+	},
+	{
 		slug: 'artefacts/staff-evidence-boundaries',
 		title: 'Staff need clearer evidence boundaries before accepting recommendations',
 		lead: 'Published artefact detail pages show provenance, confidence, limitations and reuse guidance for a single repository artefact.',

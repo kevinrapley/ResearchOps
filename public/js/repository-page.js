@@ -135,7 +135,7 @@ function renderArtefacts(artefacts = []) {
 		const tags = node.querySelector("[data-repository-artefact='tags']");
 		if (link) {
 			link.textContent = text(artefact.title);
-			link.setAttribute("href", text(artefact.href || `/pages/repository/artefacts/${encodeURIComponent(artefact.id || "")}/`));
+			link.setAttribute("href", text(artefact.href || `/pages/repository/artefacts/?id=${encodeURIComponent(artefact.id || "")}`));
 		}
 		if (summary) summary.textContent = text(artefact.summary);
 		if (tags) {

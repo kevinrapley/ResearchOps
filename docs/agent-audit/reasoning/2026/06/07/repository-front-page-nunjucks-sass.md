@@ -87,6 +87,7 @@ Follow-up scope added realistic D1 seed data so product reviewers can experience
 - `infra/cloudflare/migrations/0015_seed_research_repository.sql`
 - `.github/workflows/qa-links.yml`
 - `lychee.toml`
+- `public/js/repository-artefact-page.js`
 
 ## Files created or modified
 
@@ -112,6 +113,7 @@ Follow-up scope added realistic D1 seed data so product reviewers can experience
 - `.gitignore`
 - `.github/workflows/qa-links.yml`
 - `lychee.toml`
+- `public/js/repository-artefact-page.js`
 - `docs/deployment/d1-migration-ordering.md`
 - `docs/implementation/repository-front-page-integration.md`
 - `docs/agent-audit/reasoning/2026/06/07/repository-front-page-nunjucks-sass.md`
@@ -140,6 +142,9 @@ Follow-up scope added realistic D1 seed data so product reviewers can experience
 - Add a D1 seed migration with realistic curated repository data: 100 published artefacts, 20 candidate records, 10 withdrawn records, facet coverage and linked recommendation tags.
 - Keep generated repository HTML and CSS ignored so local builds do not reintroduce committed generated outputs.
 - Update the Lychee workflow to build generated pages and assets before checking links, and exclude only runtime repository API URLs from static link validation.
+- Restrict credentialed CORS on the repository Pages Function to same-origin or configured `ALLOWED_ORIGINS`.
+- Point dynamic result links at the generated generic artefact detail route and load the selected artefact by ID from the API.
+- Align method and maturity filters with stored D1 facet values.
 
 ## Validation attempted
 
@@ -154,6 +159,7 @@ Follow-up scope added realistic D1 seed data so product reviewers can experience
 - `package.json` has no `typecheck` script, so no typecheck command was available to run.
 - Follow-up focused tests after adding seed data passed.
 - Follow-up Lychee fix validation passed: `npm run build`, focused repository route-state tests and `npm run format:check`.
+- Follow-up Codex review fix validation passed: focused repository route-state tests and `npm run format:check`.
 
 ## Residual risks
 

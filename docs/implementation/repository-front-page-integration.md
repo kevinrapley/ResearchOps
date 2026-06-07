@@ -40,6 +40,7 @@ The renderer also maps `repositoryStaticPages` to source-owned deeper pages for:
 - `/pages/repository/user-groups/`
 - `/pages/repository/methods/`
 - `/pages/repository/risks/`
+- `/pages/repository/artefacts/?id=:id`
 - `/pages/repository/artefacts/:id/`
 - `/pages/repository/review/candidates/new/`
 - `/pages/repository/review/candidates/`
@@ -85,6 +86,10 @@ The repository API is available through both Cloudflare Worker routing and the P
 - `GET /api/repository/artefacts/:id`
 
 D1 is the primary store. The service reads only published, active, PII-cleared, consent-confirmed artefacts from `rops_repository_artefacts` and related tags from `rops_repository_artefact_tags`.
+
+Repository result links point to the generated generic artefact page at `/pages/repository/artefacts/?id=:id`. That route loads the selected artefact from `/api/repository/artefacts/:id`, so seeded or Airtable-backed artefacts do not need one generated HTML file per artefact ID.
+
+The Pages Function route restricts credentialed CORS to same-origin Pages requests or configured `ALLOWED_ORIGINS`. Arbitrary external origins receive `origin_not_allowed` without a credentialed allow-origin response.
 
 The D1 seed migration adds realistic curated repository data for product review:
 

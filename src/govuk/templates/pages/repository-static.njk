@@ -2,6 +2,9 @@
 
 {% block head %}
 	<link rel="stylesheet" href="/css/repository.css?v=repository-api-20260607" media="screen">
+	{% if detailRoute %}
+	<link rel="modulepreload" href="/js/repository-artefact-page.js?v=repository-api-20260607">
+	{% endif %}
 {% endblock %}
 
 {% block beforeContent %}
@@ -27,6 +30,15 @@
 		<p class="govuk-body"><a class="govuk-link" href="{{ apiPath }}">Open the API response for this route</a></p>
 	</section>
 
+	{% if detailRoute %}
+	<section class="repository-section" aria-labelledby="repository-artefact-detail-title">
+		<h2 class="govuk-heading-l" id="repository-artefact-detail-title">Selected artefact</h2>
+		<div id="repository-artefact-detail" aria-live="polite" aria-busy="true">
+			<p class="govuk-body">Select an artefact from published repository results to view its detail.</p>
+		</div>
+	</section>
+	{% endif %}
+
 	{% for section in sections %}
 	<section class="repository-section" aria-labelledby="repository-static-section-{{ loop.index }}">
 		<h2 class="govuk-heading-l" id="repository-static-section-{{ loop.index }}">{{ section.heading }}</h2>
@@ -38,4 +50,10 @@
 	</section>
 	{% endfor %}
 </div>
+{% endblock %}
+
+{% block scripts %}
+	{% if detailRoute %}
+	<script type="module" src="/js/repository-artefact-page.js?v=repository-api-20260607"></script>
+	{% endif %}
 {% endblock %}
