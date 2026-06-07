@@ -21,6 +21,8 @@ const files = {
 	gitignore: fs.readFileSync('.gitignore', 'utf8'),
 	lychee: fs.readFileSync('lychee.toml', 'utf8'),
 	qaLinks: fs.readFileSync('.github/workflows/qa-links.yml', 'utf8'),
+	deployWorker: fs.readFileSync('.github/workflows/deploy-worker.yml', 'utf8'),
+	passwordlessPreviewWorker: fs.readFileSync('.github/workflows/deploy-passwordless-preview-worker.yml', 'utf8'),
 };
 
 function has(source, text, label) {
@@ -29,6 +31,14 @@ function has(source, text, label) {
 
 function lacks(source, text, label) {
 	assert.equal(source.includes(text), false, `${label} should not include ${text}`);
+}
+
+function workflowSection(source, startMarker, endMarker) {
+	const start = source.indexOf(startMarker);
+	assert.notEqual(start, -1, `Expected workflow section ${startMarker}`);
+	const rest = source.slice(start);
+	const end = endMarker ? rest.indexOf(endMarker) : -1;
+	return end === -1 ? rest : rest.slice(0, end);
 }
 
 has(files.renderer, "template: 'pages/repository.njk'", 'renderer');
@@ -173,3 +183,18 @@ has(files.gitignore, 'public/pages/repository/', 'gitignore');
 has(files.lychee, '^/api/repository(?:/.*)?(?:\\\\?.*)?$', 'Lychee config');
 has(files.qaLinks, 'Build generated pages and assets', 'Lychee workflow');
 has(files.qaLinks, 'npm run build', 'Lychee workflow');
+
+const deployWorkerPreview = workflowSection(files.deployWorker, '  deploy-preview:', null);
+const deployWorkerProduction = workflowSection(files.deployWorker, '  deploy-production:', '  deploy-preview:');
+has(files.deployWorker, 'REPOSITORY_SCHEMA_MIGRATION: "infra/cloudflare/migrations/0014_research_repository.sql"', 'Deploy Worker workflow');
+has(files.deployWorker, 'REPOSITORY_SEED_MIGRATION: "infra/cloudflare/migrations/0015_seed_research_repository.sql"', 'Deploy Worker workflow');
+has(deployWorkerPreview, 'Apply repository seed migrations to preview D1', 'Deploy Worker preview job');
+has(deployWorkerPreview, 'd1 execute "${D1_PREVIEW_DATABASE_NAME}"', 'Deploy Worker preview job');
+has(deployWorkerPreview, '--file "${REPOSITORY_SCHEMA_MIGRATION}"', 'Deploy Worker preview job');
+has(deployWorkerPreview, '--file "${REPOSITORY_SEED_MIGRATION}"', 'Deploy Worker preview job');
+lacks(deployWorkerProduction, '--file "${REPOSITORY_SEED_MIGRATION}"', 'Deploy Worker production job');
+has(files.passwordlessPreviewWorker, 'REPOSITORY_SCHEMA_MIGRATION: "infra/cloudflare/migrations/0014_research_repository.sql"', 'Passwordless preview Worker workflow');
+has(files.passwordlessPreviewWorker, 'REPOSITORY_SEED_MIGRATION: "infra/cloudflare/migrations/0015_seed_research_repository.sql"', 'Passwordless preview Worker workflow');
+has(files.passwordlessPreviewWorker, 'Apply repository seed migrations to remote D1', 'Passwordless preview Worker workflow');
+has(files.passwordlessPreviewWorker, '--file "${REPOSITORY_SCHEMA_MIGRATION}"', 'Passwordless preview Worker workflow');
+has(files.passwordlessPreviewWorker, '--file "${REPOSITORY_SEED_MIGRATION}"', 'Passwordless preview Worker workflow');

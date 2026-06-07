@@ -54,7 +54,9 @@
 		"infra/cloudflare/migrations/0015_seed_research_repository.sql",
 		".github/workflows/qa-links.yml",
 		"lychee.toml",
-		"public/js/repository-artefact-page.js"
+		"public/js/repository-artefact-page.js",
+		".github/workflows/deploy-passwordless-preview-worker.yml",
+		".github/workflows/deploy-worker.yml"
 	],
 	"filesCreatedOrModified": [
 		"src/govuk/data/repository-page.mjs",
@@ -78,6 +80,8 @@
 		"visual-walkthrough.config.mjs",
 		".gitignore",
 		".github/workflows/qa-links.yml",
+		".github/workflows/deploy-passwordless-preview-worker.yml",
+		".github/workflows/deploy-worker.yml",
 		"lychee.toml",
 		"public/js/repository-artefact-page.js",
 		"docs/deployment/d1-migration-ordering.md",
@@ -108,7 +112,9 @@
 		"Update the Lychee workflow to build generated pages and assets before checking links, and exclude runtime repository API URLs from static link validation.",
 		"Restrict credentialed CORS on the repository Pages Function to same-origin or configured ALLOWED_ORIGINS.",
 		"Point dynamic result links at the generated generic artefact detail route and load the selected artefact by ID from the API.",
-		"Align method and maturity filters with stored D1 facet values."
+		"Align method and maturity filters with stored D1 facet values.",
+		"Apply repository schema and seed migrations in preview deployment workflows so branch previews populate D1 instead of serving empty, on-demand-created repository tables.",
+		"Keep synthetic repository seed application scoped to preview deployment paths; production deployment is not auto-seeded with demo records."
 	],
 	"codexReviewThreadDisposition": [
 		"3369448387: legitimate P1 CORS finding on functions/api/repository/[[path]].js; fixed in 2db93d1c, replied with evidence, added a thumbs-up reaction to the original Codex comment and resolved the thread after it was outdated by the fix.",
@@ -140,9 +146,12 @@
 		"Follow-up operating-model correction passed: review-thread state inspection, thumbs-up reactions and thread resolution completed for all three Codex comments.",
 		"Remote PR checks passed for PR #366 after 2db93d1c, including Lychee, Node 20, Node 22, release gate, repository contract, Cloudflare Worker validation, accessibility and BDD smoke checks.",
 		"PR readiness gate checked 27 changed files; the changed-file list is plausible for repository API, D1 seed data, deeper source pages, link-check workflow, tests, docs and trace updates.",
+		"Follow-up live preview defect found: the seed migration existed in the repository, but preview deployment workflows did not apply 0014_research_repository.sql or 0015_seed_research_repository.sql; authenticated preview pages could therefore show zero repository records.",
+		"Follow-up preview seed deployment fix validation passed: focused repository route-state test and npm run validate.",
 		"package.json has no typecheck script, so no typecheck command was available to run."
 	],
 	"residualRisks": [
-		"The D1 migration must be applied before relying on the repository API in preview or production."
+		"The preview link will show seeded data after the updated preview deployment workflow finishes applying the repository migrations to the remote preview D1 database.",
+		"Production D1 still requires an explicit human-owned migration/seeding decision before synthetic data is introduced there."
 	]
 }
