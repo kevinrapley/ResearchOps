@@ -9,12 +9,21 @@ function text(value) {
 	return String(value || "");
 }
 
+const repositoryLabelOverrides = new Map([
+	["frontline-staff", "Frontline staff"],
+	["assisted-digital-users", "Assisted digital users"],
+	["public-users", "Public users"],
+	["researchers", "Researchers"],
+	["research-operations-team", "Research operations staff"],
+	["research-operations-staff", "Research operations staff"],
+]);
+
 function titleFromSlug(value) {
-	return text(value)
-		.split("-")
-		.filter(Boolean)
-		.map((part) => `${part.slice(0, 1).toUpperCase()}${part.slice(1)}`)
-		.join(" ");
+	const raw = text(value).trim();
+	const key = raw.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+	if (repositoryLabelOverrides.has(key)) return repositoryLabelOverrides.get(key);
+	const words = raw.includes("-") ? raw.replace(/-/g, " ") : raw;
+	return words ? `${words.slice(0, 1).toUpperCase()}${words.slice(1).toLowerCase()}` : "";
 }
 
 async function repositoryJson(path, options = {}) {
