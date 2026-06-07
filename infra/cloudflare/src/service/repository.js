@@ -5,6 +5,7 @@ const TAGS_TABLE = "rops_repository_artefact_tags";
 const AUDIT_TABLE = "rops_repository_audit";
 const AIRTABLE_PAGE_SIZE = 100;
 const MAX_AIRTABLE_PAGES = 10;
+const HYDRATE_FULL_MODE = "full";
 
 function hasD1(svc) {
 	return Boolean(svc?.env?.RESEARCHOPS_D1?.prepare);
@@ -16,6 +17,10 @@ function cleanText(value) {
 
 function cleanSlug(value) {
 	return cleanText(value).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 80);
+}
+
+function searchValues(url, key) {
+	return [...new Set(url.searchParams.getAll(key).map(cleanSlug).filter(Boolean))];
 }
 
 function clampLimit(value) {
@@ -250,40 +255,6 @@ function publicWhere() {
 	];
 }
 
-function appendSearchFilters(where, params, url) {
-	const q = cleanText(url.searchParams.get("q"));
-	const method = cleanSlug(url.searchParams.get("method"));
-	const maturity = cleanSlug(url.searchParams.get("maturity"));
-	const serviceArea = cleanSlug(url.searchParams.get("service_area"));
-	const userGroup = cleanSlug(url.searchParams.get("user_group"));
-	const riskArea = cleanSlug(url.searchParams.get("risk_area"));
-
-	if (q) {
-		where.push(`LOWER(COALESCE(title, '') || ' ' || COALESCE(summary, '') || ' ' || COALESCE(service_area, '') || ' ' || COALESCE(user_group, '') || ' ' || COALESCE(method, '') || ' ' || COALESCE(risk_area, '')) LIKE ?`);
-		params.push(`%${q.toLowerCase()}%`);
-	}
-	if (method) {
-		where.push("method = ?");
-		params.push(method);
-	}
-	if (maturity) {
-		where.push("evidence_maturity = ?");
-		params.push(maturity);
-	}
-	if (serviceArea) {
-		where.push("service_area = ?");
-		params.push(serviceArea);
-	}
-	if (userGroup) {
-		where.push("user_group = ?");
-		params.push(userGroup);
-	}
-	if (riskArea) {
-		where.push("risk_area = ?");
-		params.push(riskArea);
-	}
-}
-
 function selectedFacet(url) {
 	const candidates = [
 		["service_area", "Service area"],
@@ -297,16 +268,6 @@ function selectedFacet(url) {
 		if (value) return { type, typeLabel, value, label: labelFromSlug(value) };
 	}
 	return null;
-}
-
-function orderByClause(sort) {
-	if (sort === "confidence_desc") {
-		return "CASE confidence WHEN 'high' THEN 3 WHEN 'medium' THEN 2 WHEN 'low' THEN 1 ELSE 0 END DESC, datetime(updated_at) DESC, title ASC";
-	}
-	if (sort === "relevance") {
-		return "title ASC, datetime(updated_at) DESC";
-	}
-	return "datetime(COALESCE(updated_at, published_at, created_at)) DESC, title ASC";
 }
 
 function tagClassFor(type, value) {
@@ -419,29 +380,29 @@ function airtableRecordIsPublished(record = {}) {
 
 function matchesSearch(artefact, url) {
 	const q = cleanText(url.searchParams.get("q")).toLowerCase();
-	const method = cleanSlug(url.searchParams.get("method"));
-	const maturity = cleanSlug(url.searchParams.get("maturity"));
-	const serviceArea = cleanSlug(url.searchParams.get("service_area"));
-	const userGroup = cleanSlug(url.searchParams.get("user_group"));
-	const riskArea = cleanSlug(url.searchParams.get("risk_area"));
+	const method = searchValues(url, "method");
+	const maturity = searchValues(url, "maturity");
+	const serviceArea = searchValues(url, "service_area");
+	const userGroup = searchValues(url, "user_group");
+	const riskArea = searchValues(url, "risk_area");
 	if (q) {
 		const haystack = [artefact.title, artefact.summary, artefact.serviceArea, artefact.userGroup, artefact.method, artefact.riskArea].join(" ").toLowerCase();
 		if (!haystack.includes(q)) return false;
 	}
-	if (method && artefact.method !== method) return false;
-	if (maturity && artefact.evidenceMaturity !== maturity) return false;
-	if (serviceArea && artefact.serviceArea !== serviceArea) return false;
-	if (userGroup && cleanSlug(artefact.userGroup) !== userGroup) return false;
-	if (riskArea && artefact.riskArea !== riskArea) return false;
+	if (method.length && !method.includes(cleanSlug(artefact.method))) return false;
+	if (maturity.length && !maturity.includes(cleanSlug(artefact.evidenceMaturity))) return false;
+	if (serviceArea.length && !serviceArea.includes(cleanSlug(artefact.serviceArea))) return false;
+	if (userGroup.length && !userGroup.includes(cleanSlug(artefact.userGroup))) return false;
+	if (riskArea.length && !riskArea.includes(cleanSlug(artefact.riskArea))) return false;
 	return true;
 }
 
 function sortArtefacts(artefacts, sort) {
 	const confidenceRank = { high: 3, medium: 2, low: 1 };
 	return [...artefacts].sort((a, b) => {
-		if (sort === "confidence_desc") return (confidenceRank[b.confidence] || 0) - (confidenceRank[a.confidence] || 0) || text(a.title).localeCompare(text(b.title));
-		if (sort === "relevance") return text(a.title).localeCompare(text(b.title));
-		return Date.parse(b.publishedAt || b.reviewDueAt || 0) - Date.parse(a.publishedAt || a.reviewDueAt || 0) || text(a.title).localeCompare(text(b.title));
+		if (sort === "confidence_desc") return (confidenceRank[b.confidence] || 0) - (confidenceRank[a.confidence] || 0) || cleanText(a.title).localeCompare(cleanText(b.title));
+		if (sort === "relevance") return cleanText(a.title).localeCompare(cleanText(b.title));
+		return Date.parse(b.publishedAt || b.reviewDueAt || 0) - Date.parse(a.publishedAt || a.reviewDueAt || 0) || cleanText(a.title).localeCompare(cleanText(b.title));
 	});
 }
 
@@ -460,41 +421,6 @@ async function tagsByArtefactId(svc, artefactIds) {
 		byId.get(row.artefact_id).push(row);
 	}
 	return byId;
-}
-
-async function facetRows(svc, column, label) {
-	const rows = await d1All(svc.env, `
-		SELECT ${column} AS value, COUNT(*) AS count
-		FROM ${ARTEFACTS_TABLE}
-		WHERE ${publicWhere().join(" AND ")} AND ${column} IS NOT NULL AND ${column} != ''
-		GROUP BY ${column}
-		ORDER BY count DESC, value ASC
-		LIMIT 20
-	`);
-	return {
-		name: column,
-		label,
-		items: rows.map((row) => ({ value: row.value, label: labelFromSlug(row.value), count: row.count }))
-	};
-}
-
-async function repositoryMetrics(svc) {
-	const published = await d1Get(svc.env, `SELECT COUNT(*) AS count FROM ${ARTEFACTS_TABLE} WHERE ${publicWhere().join(" AND ")}`);
-	const dueReview = await d1Get(svc.env, `
-		SELECT COUNT(*) AS count
-		FROM ${ARTEFACTS_TABLE}
-		WHERE ${publicWhere().join(" AND ")} AND review_due_at IS NOT NULL AND date(review_due_at) <= date('now', '+30 days')
-	`);
-	const linkedRecommendations = await d1Get(svc.env, `
-		SELECT COUNT(*) AS count
-		FROM ${TAGS_TABLE}
-		WHERE tag_type = 'recommendation'
-	`);
-	return [
-		{ value: String(published?.count || 0), label: "published artefacts" },
-		{ value: String(linkedRecommendations?.count || 0), label: "linked recommendations" },
-		{ value: String(dueReview?.count || 0), label: "due review in 30 days" }
-	];
 }
 
 async function repositoryQueues(svc) {
@@ -600,46 +526,40 @@ export async function listRepository(svc, origin, url, authContext = {}) {
 	const errors = [];
 	try {
 		await ensureTables(svc);
-		const where = publicWhere();
-		const params = [];
-		appendSearchFilters(where, params, url);
 		const pager = pagination(url, 0);
 		const sort = url.searchParams.get("sort") || "reviewed_desc";
-		const totalRow = await d1Get(svc.env, `
-			SELECT COUNT(*) AS total
-			FROM ${ARTEFACTS_TABLE}
-			WHERE ${where.join(" AND ")}
-		`, params);
-		const total = Number(totalRow?.total || 0);
 		const rows = await d1All(svc.env, `
 			SELECT *
 			FROM ${ARTEFACTS_TABLE}
-			WHERE ${where.join(" AND ")}
-			ORDER BY ${orderByClause(sort)}
-			LIMIT ? OFFSET ?
-		`, [...params, pager.limit, pager.offset]);
+			WHERE ${publicWhere().join(" AND ")}
+			ORDER BY datetime(COALESCE(updated_at, published_at, created_at)) DESC, title ASC
+		`);
 		const tags = await tagsByArtefactId(svc, rows.map((row) => row.id));
-		const artefacts = rows.map((row) => rowToArtefact(row, tags.get(row.id) || []));
-		const [metrics, methodFacet, maturityFacet, serviceAreaFacet, userGroupFacet, riskFacet, queues] = await Promise.all([
-			repositoryMetrics(svc),
-			facetRows(svc, "method", "Method"),
-			facetRows(svc, "evidence_maturity", "Evidence maturity"),
-			facetRows(svc, "service_area", "Service area"),
-			facetRows(svc, "user_group", "User group"),
-			facetRows(svc, "risk_area", "Risk or constraint"),
-			repositoryQueues(svc)
-		]);
+		const allArtefacts = rows.map((row) => rowToArtefact(row, tags.get(row.id) || []));
+		const filtered = sortArtefacts(allArtefacts.filter((artefact) => matchesSearch(artefact, url)), sort);
+		const artefacts = filtered.slice(pager.offset, pager.offset + pager.limit);
+		const filters = [
+			facetFromArtefacts(allArtefacts, "method", "Method", "method"),
+			facetFromArtefacts(allArtefacts, "evidence_maturity", "Evidence maturity", "evidenceMaturity"),
+			facetFromArtefacts(allArtefacts, "service_area", "Service area", "serviceArea"),
+			facetFromArtefacts(allArtefacts, "user_group", "User group", "userGroup"),
+			facetFromArtefacts(allArtefacts, "risk_area", "Risk or constraint", "riskArea")
+		];
+		const metrics = metricsFromArtefacts(allArtefacts);
+		const queues = await repositoryQueues(svc);
 		const showQueues = canCurate(authContext);
+		const hydrate = cleanSlug(url.searchParams.get("hydrate"));
 		return svc.json({
 			ok: true,
 			source: "d1",
 			artefacts,
-			pagination: { page: pager.page, limit: pager.limit, total },
+			pagination: { page: pager.page, limit: pager.limit, total: filtered.length },
 			selected: selectedFacet(url),
 			metrics,
-			filters: [methodFacet, maturityFacet, serviceAreaFacet, userGroupFacet, riskFacet],
+			filters,
 			queues: showQueues ? queues : [],
 			canCurate: showQueues,
+			catalogue: hydrate === HYDRATE_FULL_MODE ? { artefacts: allArtefacts } : undefined,
 			derivation: repositoryDerivation(showQueues)
 		}, 200, svc.corsHeaders(origin));
 	} catch (error) {

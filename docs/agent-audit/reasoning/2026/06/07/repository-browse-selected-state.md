@@ -39,7 +39,9 @@ Implement the team-reviewed selected-state model for ResearchOps repository brow
 ## Files read
 
 - `src/govuk/data/repository-page.mjs`
+- `src/govuk/templates/pages/repository.njk`
 - `src/govuk/templates/pages/repository-static.njk`
+- `public/js/repository-page.js`
 - `public/js/repository-static-page.js`
 - `infra/cloudflare/src/service/repository.js`
 - `src/styles/repository.scss`
@@ -76,9 +78,19 @@ Implement the team-reviewed selected-state model for ResearchOps repository brow
 ## Validation attempted
 
 - GitHub compare was used to inspect changed files.
-- Repository-local commands were not run in this environment.
+- `node --check public/js/repository-page.js`
+- `node --check public/js/repository-static-page.js`
+- `node --check infra/cloudflare/src/service/repository.js`
+- `node --test tests/repository-front-page-route-state.test.js tests/repository-seed-taxonomy-labels.test.js tests/repository-artefact-detail-seed-tag-guard.test.js`
+- `npm run lint -- public/js/repository-page.js public/js/repository-static-page.js infra/cloudflare/src/service/repository.js tests/repository-front-page-route-state.test.js` completed with repository-wide pre-existing warnings and no errors.
 
 ## Residual risks
 
-- Local build and test commands still need to be run.
 - This branch depends on `fix/repository-seed-meaningful-tags` for corrected seed taxonomy and sentence-case browse labels.
+- Repository browse filtering is now instant after the initial hydrate, but the first hydrate still depends on repository payload size.
+
+## Follow-up changes
+
+- Added hydrated catalogue responses to `/api/repository` so browse and landing-page filters can reuse one repository payload instead of repeated D1 round-trips.
+- Moved repository browse interactions to client-side selected-state rendering backed by the hydrated catalogue and URL history updates.
+- Restored the landing-page interview filter to the seeded `interviews` slug and corrected Airtable fallback sorting to use `cleanText(...)`.

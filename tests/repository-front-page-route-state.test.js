@@ -41,6 +41,7 @@ has(files.template, 'Published artefacts', 'repository template');
 has(files.template, 'repository-page.js?v=repository-api-20260607b', 'repository template');
 has(files.template, 'class="govuk-heading-xl govuk-!-margin-bottom-1 repository-metric__number"', 'repository template');
 has(files.template, 'class="govuk-body repository-metric__label"', 'repository template');
+has(files.template, "{ value: 'interviews', text: 'Moderated interviews' }", 'repository template');
 lacks(files.template, 'Technical detail', 'repository template');
 lacks(files.template, 'Repository status', 'repository template');
 
@@ -58,12 +59,18 @@ lacks(files.pageData, 'artefacts: [', 'page data');
 
 has(files.pageScript, 'function displayTags', 'repository page script');
 has(files.pageScript, '!/seeded/i.test(text(tag.text))', 'repository page script');
+has(files.pageScript, 'fetchWithTimeout(apiUrl("/api/repository?hydrate=full"))', 'repository page script');
+has(files.pageScript, 'window.history.pushState', 'repository page script');
+has(files.pageScript, 'params.append(input.name, input.value)', 'repository page script');
 has(files.staticScript, 'selectedValueFor(type)', 'static page script');
 has(files.staticScript, 'renderSelectedState(selected)', 'static page script');
 has(files.staticScript, 'renderPagination(type, value', 'static page script');
 has(files.staticScript, 'repository-result-meta', 'static page script');
 has(files.staticScript, 'Showing artefacts tagged to:', 'static page script');
 has(files.staticScript, 'limit: String(PAGE_SIZE)', 'static page script');
+has(files.staticScript, 'repositoryJson("/api/repository?hydrate=full")', 'static page script');
+has(files.staticScript, 'window.history.pushState', 'static page script');
+has(files.staticScript, 'window.addEventListener("popstate"', 'static page script');
 has(files.staticScript, '["frontline-staff", "Frontline staff"]', 'static page script');
 has(files.staticScript, '["assisted-digital-users", "Assisted digital users"]', 'static page script');
 has(files.staticScript, '["research-operations-staff", "Research operations staff"]', 'static page script');
@@ -74,9 +81,11 @@ lacks(files.artefactScript, '!/confidence$/i.test(text(tag.text))', 'artefact pa
 has(files.service, 'const ARTEFACTS_TABLE = "rops_repository_artefacts"', 'repository service');
 has(files.service, 'function selectedFacet', 'repository service');
 has(files.service, 'function pagination', 'repository service');
-has(files.service, 'pagination: { page: pager.page, limit: pager.limit, total }', 'repository service');
+has(files.service, 'pagination: { page: pager.page, limit: pager.limit, total: filtered.length }', 'repository service');
 has(files.service, 'selected: selectedFacet(url)', 'repository service');
-has(files.service, 'facetRows(svc, "user_group", "User group")', 'repository service');
+has(files.service, 'catalogue: hydrate === HYDRATE_FULL_MODE ? { artefacts: allArtefacts } : undefined', 'repository service');
+has(files.service, 'const HYDRATE_FULL_MODE = "full"', 'repository service');
+has(files.service, 'const method = searchValues(url, "method")', 'repository service');
 lacks(files.service, 'String(error?.message || error) }, 503', 'repository service');
 
 has(files.schemaMigration, 'CREATE TABLE IF NOT EXISTS rops_repository_artefacts', 'schema migration');

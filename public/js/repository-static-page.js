@@ -1,4 +1,11 @@
 const PAGE_SIZE = 10;
+const BROWSE_FIELD_MAP = Object.freeze({
+	service_area: "serviceArea",
+	user_group: "userGroup",
+	method: "method",
+	risk_area: "riskArea",
+	maturity: "evidenceMaturity",
+});
 const repositoryLabelOverrides = new Map([
 	["frontline-staff", "Frontline staff"],
 	["assisted-digital-users", "Assisted digital users"],
@@ -42,6 +49,17 @@ function selectedPage() {
 function selectedSort() {
 	const sort = new URLSearchParams(window.location.search).get("sort") || "reviewed_desc";
 	return ["reviewed_desc", "confidence_desc", "relevance"].includes(sort) ? sort : "reviewed_desc";
+}
+
+function sortArtefacts(artefacts, sort) {
+	const confidenceRank = { high: 3, medium: 2, low: 1 };
+	return [...artefacts].sort((a, b) => {
+		if (sort === "confidence_desc") {
+			return (confidenceRank[slug(b.confidence)] || 0) - (confidenceRank[slug(a.confidence)] || 0) || text(a.title).localeCompare(text(b.title));
+		}
+		if (sort === "relevance") return text(a.title).localeCompare(text(b.title));
+		return Date.parse(b.publishedAt || b.reviewDueAt || 0) - Date.parse(a.publishedAt || a.reviewDueAt || 0) || text(a.title).localeCompare(text(b.title));
+	});
 }
 
 async function repositoryJson(path, options = {}) {
@@ -199,16 +217,31 @@ function renderBrowseResults(artefacts = [], selected = {}, pagination = {}) {
 	target.appendChild(list);
 }
 
-async function loadBrowseResults(type, value, label, page = selectedPage(), sort = selectedSort()) {
-	const query = new URLSearchParams({ [type]: value, page: String(page), limit: String(PAGE_SIZE), sort });
-	const { response, data } = await repositoryJson(`/api/repository?${query.toString()}`);
-	if (response.status === 401) {
-		window.location.assign(signInUrl());
-		return;
-	}
-	const selected = data?.selected || { type, value, label };
-	renderBrowseResults(data?.ok ? data.artefacts || [] : [], selected, data?.pagination || { page, limit: PAGE_SIZE, total: 0 });
-	renderPagination(type, value, data?.pagination || {}, sort);
+function browseArtefacts(catalogue, type, value, sort = selectedSort(), page = selectedPage()) {
+	const field = BROWSE_FIELD_MAP[type];
+	if (!field || !value) return { artefacts: [], pagination: { page, limit: PAGE_SIZE, total: 0 } };
+	const filtered = sortArtefacts(
+		(catalogue || []).filter((artefact) => slug(artefact[field]) === slug(value)),
+		sort
+	);
+	const pagination = {
+		page,
+		limit: PAGE_SIZE,
+		total: filtered.length,
+	};
+	const offset = (page - 1) * PAGE_SIZE;
+	return {
+		artefacts: filtered.slice(offset, offset + PAGE_SIZE),
+		pagination,
+	};
+}
+
+function browseUrl(type, value, page = 1, sort = selectedSort()) {
+	return `${window.location.pathname}?${new URLSearchParams({ [type]: value, page: String(page), limit: String(PAGE_SIZE), sort })}`;
+}
+
+function updateBrowseHistory(type, value, page = 1, sort = selectedSort()) {
+	window.history.pushState({}, "", browseUrl(type, value, page, sort));
 }
 
 function renderBrowseOptions(page, filters = []) {
@@ -234,7 +267,7 @@ function renderBrowseOptions(page, filters = []) {
 		const li = document.createElement("li");
 		const link = document.createElement("a");
 		link.className = `govuk-link repository-browse-list__button${itemValue === selected ? " repository-browse-list__button--selected" : ""}`;
-		link.href = `${window.location.pathname}?${new URLSearchParams({ [type]: item.value, page: "1", limit: String(PAGE_SIZE), sort: selectedSort() })}`;
+		link.href = browseUrl(type, item.value, 1, selectedSort());
 		link.textContent = `${itemLabel}, ${item.count} published artefact${Number(item.count) === 1 ? "" : "s"}`;
 		if (itemValue === selected) link.setAttribute("aria-current", "true");
 		li.appendChild(link);
@@ -247,29 +280,88 @@ function renderBrowseOptions(page, filters = []) {
 function initialiseSortForm(type, value) {
 	const form = document.getElementById("repository-sort-form");
 	const select = document.getElementById("repository-sort");
-	if (!form || !select || !value) return;
+	if (!form || !select) return;
 	select.value = selectedSort();
-	form.hidden = false;
+	form.hidden = !value;
+}
+
+function renderBrowsePageState(page, catalogue = []) {
+	const type = page.dataset.browseType;
+	const value = selectedValueFor(type);
+	const sort = selectedSort();
+	const currentPage = selectedPage();
+	initialiseSortForm(type, value);
+	if (!value) {
+		renderBrowseResults([], {}, { page: 1, limit: PAGE_SIZE, total: 0 });
+		renderPagination(type, "", {}, sort);
+		return;
+	}
+	const selected = { type, value, label: titleFromSlug(value) };
+	const { artefacts, pagination } = browseArtefacts(catalogue, type, value, sort, currentPage);
+	renderBrowseResults(artefacts, selected, pagination);
+	renderPagination(type, value, pagination, sort);
+}
+
+function bindBrowseInteractions(page, filters = [], catalogue = []) {
+	const type = page.dataset.browseType;
+	const options = document.getElementById("repository-browse-options");
+	const pagination = document.getElementById("repository-pagination");
+	const form = document.getElementById("repository-sort-form");
+	const select = document.getElementById("repository-sort");
+	if (options) {
+		options.addEventListener("click", (event) => {
+			const link = event.target.closest("a");
+			if (!(link instanceof HTMLAnchorElement)) return;
+			event.preventDefault();
+			const value = new URL(link.href, window.location.origin).searchParams.get(type);
+			if (!value) return;
+			updateBrowseHistory(type, value, 1, selectedSort());
+			renderBrowseOptions(page, filters);
+			renderBrowsePageState(page, catalogue);
+		});
+	}
+	if (pagination) {
+		pagination.addEventListener("click", (event) => {
+			const link = event.target.closest("a");
+			if (!(link instanceof HTMLAnchorElement)) return;
+			event.preventDefault();
+			const params = new URL(link.href, window.location.origin).searchParams;
+			const value = params.get(type);
+			const targetPage = Number.parseInt(params.get("page") || "1", 10);
+			if (!value) return;
+			updateBrowseHistory(type, value, targetPage, params.get("sort") || selectedSort());
+			renderBrowseOptions(page, filters);
+			renderBrowsePageState(page, catalogue);
+		});
+	}
+	if (!form || !select) return;
 	form.addEventListener("submit", (event) => {
 		event.preventDefault();
-		const params = new URLSearchParams({ [type]: value, page: "1", limit: String(PAGE_SIZE), sort: select.value });
-		window.location.assign(`${window.location.pathname}?${params.toString()}`);
+		const currentValue = selectedValueFor(type);
+		if (!currentValue) return;
+		updateBrowseHistory(type, currentValue, 1, select.value);
+		renderBrowseOptions(page, filters);
+		renderBrowsePageState(page, catalogue);
 	});
 }
 
 async function initialiseBrowsePage() {
 	const page = document.querySelector("[data-repository-browse-page]");
 	if (!page) return;
-	const type = page.dataset.browseType;
-	const selected = selectedValueFor(type);
-	const { response, data } = await repositoryJson("/api/repository?limit=1");
+	const { response, data } = await repositoryJson("/api/repository?hydrate=full");
 	if (response.status === 401) {
 		window.location.assign(signInUrl());
 		return;
 	}
-	renderBrowseOptions(page, data?.filters || []);
-	initialiseSortForm(type, selected);
-	if (selected) await loadBrowseResults(type, selected, titleFromSlug(selected));
+	const filters = data?.filters || [];
+	const catalogue = data?.catalogue?.artefacts || [];
+	renderBrowseOptions(page, filters);
+	bindBrowseInteractions(page, filters, catalogue);
+	renderBrowsePageState(page, catalogue);
+	window.addEventListener("popstate", () => {
+		renderBrowseOptions(page, filters);
+		renderBrowsePageState(page, catalogue);
+	});
 }
 
 function populateSelect(select, filters, filterName) {
