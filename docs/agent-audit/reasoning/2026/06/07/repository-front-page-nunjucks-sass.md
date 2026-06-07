@@ -22,6 +22,11 @@ Follow-up scope added realistic D1 seed data so product reviewers can experience
 - `.agent-operating-model/bundle-registry.json`
 - `.agent-operating-model/task-signal-catalog.json`
 - `.agent-operating-model/selection-rules.json`
+- `.agent-operating-model/bootstrap-checklist.md`
+- `.agent-operating-model/precedence-policy.md`
+- `.agent-operating-model/trace-policy.md`
+- `.agent-operating-model/trace-layers.md`
+- `.agent-operating-model/behavioural-evals.json`
 - `.agent-operating-model/github-mutation-policy.md`
 - `.agent-operating-model/bundles/github/`
 - `.agent-operating-model/bundles/researchops-developer-control/`
@@ -146,6 +151,13 @@ Follow-up scope added realistic D1 seed data so product reviewers can experience
 - Point dynamic result links at the generated generic artefact detail route and load the selected artefact by ID from the API.
 - Align method and maturity filters with stored D1 facet values.
 
+## Codex review-thread disposition
+
+- `3369448387`: legitimate P1 CORS finding on `functions/api/repository/[[path]].js`; fixed in `2db93d1c`, replied with evidence, added a thumbs-up reaction to the original Codex comment and resolved the thread after it was outdated by the fix.
+- `3369448388`: legitimate P2 generated artefact link finding on `infra/cloudflare/src/service/repository.js`; fixed in `2db93d1c`, replied with evidence, added a thumbs-up reaction to the original Codex comment and resolved the thread after it was outdated by the fix.
+- `3369448391`: legitimate P2 maturity filter finding on `src/govuk/templates/pages/repository.njk`; fixed in `2db93d1c`, replied with evidence, added a thumbs-up reaction to the original Codex comment and resolved the thread after it was outdated by the fix.
+- Review-thread state gate checked PR #366 at head `2db93d1caa2bdba9e5307a6c221ce5d9ca63be31`; all three Codex review threads were resolved and outdated after the fix.
+
 ## Validation attempted
 
 - `npm run build` passed.
@@ -160,8 +172,10 @@ Follow-up scope added realistic D1 seed data so product reviewers can experience
 - Follow-up focused tests after adding seed data passed.
 - Follow-up Lychee fix validation passed: `npm run build`, focused repository route-state tests and `npm run format:check`.
 - Follow-up Codex review fix validation passed: focused repository route-state tests and `npm run format:check`.
+- Follow-up operating-model correction passed: review-thread state inspection, thumbs-up reactions and thread resolution completed for all three Codex comments.
+- Remote PR checks passed for PR #366 after `2db93d1c`, including Lychee, Node 20, Node 22, release gate, repository contract, Cloudflare Worker validation, accessibility and BDD smoke checks.
+- PR readiness gate checked 27 changed files; the changed-file list is plausible for repository API, D1 seed data, deeper source pages, link-check workflow, tests, docs and trace updates.
 
 ## Residual risks
 
-- Full remote CI has not been run in this session.
 - The D1 migration must be applied before relying on the repository API in preview or production.
