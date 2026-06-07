@@ -2,6 +2,8 @@ const PROVIDER = 'researchops_email';
 const COOKIE_NAME = 'rops_session';
 const CODE_TTL_SECONDS = 600;
 const SESSION_TTL_SECONDS = 43200;
+const SESSION_CONTEXT_CACHE_TTL_MS = 60 * 1000;
+const sessionContextCache = new Map();
 const JSON_HEADERS = {
 	'content-type': 'application/json; charset=utf-8',
 	'cache-control': 'no-store',
@@ -289,7 +291,7 @@ async function verify(request, env) {
 	return json({ ok: true, authenticated: true }, 200, { 'set-cookie': sessionCookie(request, token) });
 }
 
-async function sessionUser(db, env, token) {
+async function sessionUserByHash(db, sessionTokenHash) {
 	return db
 		.prepare(`
 		SELECT s.id AS session_id, u.id, u.email, u.display_name, u.account_status
@@ -297,7 +299,7 @@ async function sessionUser(db, env, token) {
 		WHERE s.session_token_hash = ? AND s.session_status = 'active' AND s.expires_at > strftime('%Y-%m-%dT%H:%M:%fZ', 'now')
 		LIMIT 1
 	`)
-		.bind(await hash(env, 'session', token))
+		.bind(sessionTokenHash)
 		.first();
 }
 
@@ -364,36 +366,63 @@ async function permissions(db, userId, teamId) {
 export async function resolvePasswordlessSessionContext(request, env) {
 	const token = cookieValue(request);
 	if (!token) return null;
-	const db = dbFor(env);
-	const user = await sessionUser(db, env, token);
-	if (!user) return null;
-	const userTeams = await teams(db, user.id);
-	const activeTeam = selectActiveTeam(request, userTeams);
-	const userRoles = await roles(db, user.id, activeTeam?.id);
-	const userPermissions = await permissions(db, user.id, activeTeam?.id);
-	return {
-		authenticated: true,
-		provider: PROVIDER,
-		user: { id: user.id, email: user.email, displayName: user.display_name, accountStatus: user.account_status },
-		activeTeam,
-		teams: userTeams,
-		roles: userRoles.map((role) => ({
-			key: role.role_key,
-			label: role.label,
-			description: role.description,
-			sensitive: role.is_sensitive === 1,
-			scopeType: role.scope_type,
-			scopeId: role.scope_id,
-			expiresAt: role.expires_at,
-		})),
-		permissions: userPermissions.map((permission) => ({
-			code: permission.code,
-			label: permission.label,
-			description: permission.description,
-			sensitive: permission.is_sensitive === 1,
-			reserved: permission.is_reserved === 1,
-		})),
-	};
+	const requestedTeamId = request.headers.get('X-ResearchOps-Team-Id') || '';
+	const sessionTokenHash = await hash(env, 'session', token);
+	const cacheKey = `${sessionTokenHash}:${requestedTeamId}`;
+	const cacheEntry = sessionContextCache.get(cacheKey);
+	if (cacheEntry && cacheEntry.expiresAt > Date.now()) return cacheEntry.context;
+	if (cacheEntry?.promise) return cacheEntry.promise;
+
+	const pending = (async () => {
+		const db = dbFor(env);
+		const user = await sessionUserByHash(db, sessionTokenHash);
+		if (!user) return null;
+		const userTeams = await teams(db, user.id);
+		const activeTeam = selectActiveTeam(request, userTeams);
+		const userRoles = await roles(db, user.id, activeTeam?.id);
+		const userPermissions = await permissions(db, user.id, activeTeam?.id);
+		return {
+			authenticated: true,
+			provider: PROVIDER,
+			user: { id: user.id, email: user.email, displayName: user.display_name, accountStatus: user.account_status },
+			activeTeam,
+			teams: userTeams,
+			roles: userRoles.map((role) => ({
+				key: role.role_key,
+				label: role.label,
+				description: role.description,
+				sensitive: role.is_sensitive === 1,
+				scopeType: role.scope_type,
+				scopeId: role.scope_id,
+				expiresAt: role.expires_at,
+			})),
+			permissions: userPermissions.map((permission) => ({
+				code: permission.code,
+				label: permission.label,
+				description: permission.description,
+				sensitive: permission.is_sensitive === 1,
+				reserved: permission.is_reserved === 1,
+			})),
+		};
+	})();
+
+	sessionContextCache.set(cacheKey, { promise: pending, expiresAt: 0 });
+	return pending
+		.then((context) => {
+			if (!context) {
+				sessionContextCache.delete(cacheKey);
+				return null;
+			}
+			sessionContextCache.set(cacheKey, {
+				context,
+				expiresAt: Date.now() + SESSION_CONTEXT_CACHE_TTL_MS,
+			});
+			return context;
+		})
+		.catch((error) => {
+			sessionContextCache.delete(cacheKey);
+			throw error;
+		});
 }
 
 async function logout(request, env) {

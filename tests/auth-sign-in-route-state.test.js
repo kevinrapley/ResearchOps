@@ -118,6 +118,9 @@ function assertPasswordlessServerFlowExists() {
 	assert.match(passwordless, /set-cookie/);
 	assert.match(passwordless, /resolvePasswordlessSessionContext/);
 	assert.match(passwordless, /provider: PROVIDER/);
+	assert.match(passwordless, /const SESSION_CONTEXT_CACHE_TTL_MS = 60 \* 1000;/);
+	assert.match(passwordless, /const sessionContextCache = new Map\(\);/);
+	assert.equal(passwordless.includes('const cacheKey = `${sessionTokenHash}:${requestedTeamId}`;'), true);
 }
 
 function assertPasswordlessCodeAttemptLimitExists() {
