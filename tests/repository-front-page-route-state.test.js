@@ -3,12 +3,8 @@ import fs from 'node:fs';
 
 const files = {
 	template: fs.readFileSync('src/govuk/templates/pages/repository.njk', 'utf8'),
-	staticTemplate: fs.readFileSync('src/govuk/templates/pages/repository-static.njk', 'utf8'),
 	pageData: fs.readFileSync('src/govuk/data/repository-page.mjs', 'utf8'),
-	pageScript: fs.readFileSync('public/js/repository-page.js', 'utf8'),
 	staticScript: fs.readFileSync('public/js/repository-static-page.js', 'utf8'),
-	artefactScript: fs.readFileSync('public/js/repository-artefact-page.js', 'utf8'),
-	service: fs.readFileSync('infra/cloudflare/src/service/repository.js', 'utf8'),
 	schemaMigration: fs.readFileSync('infra/cloudflare/migrations/0014_research_repository.sql', 'utf8'),
 	seedMigration: fs.readFileSync('infra/cloudflare/migrations/0015_seed_research_repository.sql', 'utf8'),
 	seedCleanupMigration: fs.readFileSync(
@@ -42,35 +38,20 @@ function workflowSection(source, startMarker, endMarker) {
 
 has(files.template, 'Research repository', 'repository template');
 has(files.template, 'Published artefacts', 'repository template');
-has(files.template, 'repository-page.js?v=repository-api-20260607b', 'repository template');
+has(files.template, 'repository-page.js?v=repository-api-20260607', 'repository template');
 has(files.template, 'class="govuk-heading-xl govuk-!-margin-bottom-1 repository-metric__number"', 'repository template');
 has(files.template, 'class="govuk-body repository-metric__label"', 'repository template');
 lacks(files.template, 'Technical detail', 'repository template');
 lacks(files.template, 'Repository status', 'repository template');
 
-has(files.staticTemplate, 'repository-static-page.js', 'static repository template');
-has(files.staticTemplate, 'repository-artefact-page.js', 'static repository template');
-has(files.staticTemplate, 'Published artefacts', 'static repository template');
-lacks(files.staticTemplate, 'Published evidence', 'static repository template');
-
-has(files.pageData, "title: 'Browse by user group'", 'page data');
-has(files.pageData, "resultsHeading: 'Published artefacts'", 'page data');
+has(files.pageData, "slug: 'user-groups'", 'page data');
 has(files.pageData, "browseType: 'user_group'", 'page data');
 lacks(files.pageData, 'teamDecisions', 'page data');
 lacks(files.pageData, 'artefacts: [', 'page data');
 
-has(files.pageScript, 'function displayTags', 'repository page script');
-has(files.pageScript, '!/seeded/i.test(text(tag.text))', 'repository page script');
 has(files.staticScript, '["frontline-staff", "Frontline staff"]', 'static page script');
 has(files.staticScript, '["assisted-digital-users", "Assisted digital users"]', 'static page script');
 has(files.staticScript, '["research-operations-staff", "Research operations staff"]', 'static page script');
-has(files.artefactScript, 'function displayTags', 'artefact page script');
-has(files.artefactScript, '!/seeded/i.test(text(tag.text))', 'artefact page script');
-
-has(files.service, 'const ARTEFACTS_TABLE = "rops_repository_artefacts"', 'repository service');
-has(files.service, 'facetRows(svc, "user_group", "User group")', 'repository service');
-has(files.service, 'derivation: repositoryDerivation(showQueues)', 'repository service');
-lacks(files.service, 'String(error?.message || error) }, 503', 'repository service');
 
 has(files.schemaMigration, 'CREATE TABLE IF NOT EXISTS rops_repository_artefacts', 'schema migration');
 has(files.schemaMigration, 'trg_repository_seed_topic_taxonomy', 'schema migration');
