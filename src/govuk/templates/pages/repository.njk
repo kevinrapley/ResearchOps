@@ -1,5 +1,6 @@
 {% extends "layouts/researchops.njk" %}
 
+{% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
 {% from "govuk/components/button/macro.njk" import govukButton %}
 {% from "govuk/components/checkboxes/macro.njk" import govukCheckboxes %}
 {% from "macros/repository.njk" import repositoryHero %}
@@ -10,6 +11,28 @@
 {% endblock %}
 
 {% block content %}
+<div class="govuk-width-container">
+	{{ govukBreadcrumbs({
+		attributes: {
+			id: "repository-breadcrumbs",
+			typeof: "schema:BreadcrumbList"
+		},
+		items: [
+			{
+				text: "Home",
+				href: "/",
+				attributes: {
+					property: "schema:item",
+					typeof: "schema:Thing"
+				}
+			},
+			{
+				text: "Research repository"
+			}
+		]
+	}) }}
+</div>
+
 {{ repositoryHero(hero) }}
 
 <div class="govuk-width-container repository-page" data-repository-page>

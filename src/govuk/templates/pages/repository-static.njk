@@ -1,4 +1,5 @@
 {% extends "layouts/researchops.njk" %}
+{% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
 
 {% block head %}
 	<link rel="stylesheet" href="/css/repository.css?v=repository-api-20260607" media="screen">
@@ -10,14 +11,36 @@
 	{% endif %}
 {% endblock %}
 
-{% block beforeContent %}
-	<div class="govuk-width-container">
-		<a class="govuk-back-link" href="{{ backHref }}">{{ backText }}</a>
-	</div>
-{% endblock %}
-
 {% block content %}
 <div class="govuk-width-container repository-page">
+		{{ govukBreadcrumbs({
+			attributes: {
+				id: "repository-breadcrumbs",
+				typeof: "schema:BreadcrumbList"
+			},
+			items: [
+				{
+					text: "Home",
+					href: "/",
+					attributes: {
+						property: "schema:item",
+						typeof: "schema:Thing"
+					}
+				},
+				{
+					text: "Research repository",
+					href: "/pages/repository/",
+					attributes: {
+						property: "schema:item",
+						typeof: "schema:Thing"
+					}
+				},
+				{
+					text: title
+				}
+			]
+		}) }}
+
 	<div class="govuk-grid-row">
 		<div class="govuk-grid-column-two-thirds">
 			<span class="govuk-caption-xl">Research repository</span>
@@ -136,17 +159,11 @@
 			</section>
 		</form>
 	</section>
-	{% else %}
-	<section class="repository-section" aria-labelledby="repository-page-api-title">
-		<h2 class="govuk-heading-l" id="repository-page-api-title">Repository data</h2>
-		<p class="govuk-body">This page uses the repository API for dynamic data and keeps stable service guidance in the page template.</p>
-		<p class="govuk-body"><a class="govuk-link" href="{{ apiPath }}">Open the API response for this route</a></p>
-	</section>
 	{% endif %}
 
 	{% if detailRoute %}
 	<section class="repository-section" aria-labelledby="repository-artefact-detail-title">
-		<h2 class="govuk-heading-l" id="repository-artefact-detail-title">Selected artefact</h2>
+		<h2 class="govuk-heading-l" id="repository-artefact-detail-title">{{ detailHeading or title }}</h2>
 		<div id="repository-artefact-detail" aria-live="polite" aria-busy="true">
 			<p class="govuk-body">Select an artefact from published repository results to view its detail.</p>
 		</div>
