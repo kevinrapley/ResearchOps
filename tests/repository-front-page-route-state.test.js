@@ -91,7 +91,7 @@ has(files.service, 'function selectedFacet', 'repository service');
 has(files.service, 'function pagination', 'repository service');
 has(files.service, 'const schemaReadyByDatabase = new WeakMap()', 'repository service');
 has(files.service, 'const filtered = sortArtefacts(allArtefacts.filter((artefact) => matchesSearch(artefact, url)), sort);', 'repository service');
-has(files.service, 'const queues = await repositoryQueues(svc);', 'repository service');
+has(files.service, 'const queues = showQueues ? await repositoryQueues(svc) : [];', 'repository service');
 has(files.service, 'pagination: { page: pager.page, limit: pager.limit, total: pager.total }', 'repository service');
 has(files.service, 'selected: selectedFacet(url)', 'repository service');
 has(files.service, 'catalogue: hydrate === HYDRATE_FULL_MODE ? { artefacts: allArtefacts } : undefined', 'repository service');

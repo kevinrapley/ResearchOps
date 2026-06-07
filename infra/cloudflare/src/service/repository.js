@@ -662,9 +662,9 @@ function repositoryDerivation(showQueues) {
 export async function listRepository(svc, origin, url, authContext = {}) {
 	const errors = [];
 	try {
-		await ensureTables(svc);
 		const sort = url.searchParams.get("sort") || "reviewed_desc";
 		const hydrate = cleanSlug(url.searchParams.get("hydrate"));
+		const showQueues = canCurate(authContext);
 		const rows = await d1All(svc.env, `
 			SELECT *
 			FROM ${ARTEFACTS_TABLE}
@@ -684,8 +684,7 @@ export async function listRepository(svc, origin, url, authContext = {}) {
 			facetFromArtefacts(allArtefacts, "risk_area", "Risk or constraint", "riskArea")
 		];
 		const metrics = metricsFromRepository(rows, tags);
-		const queues = await repositoryQueues(svc);
-		const showQueues = canCurate(authContext);
+		const queues = showQueues ? await repositoryQueues(svc) : [];
 		return svc.json({
 			ok: true,
 			source: "d1",
@@ -733,7 +732,6 @@ export async function listRepository(svc, origin, url, authContext = {}) {
 export async function readRepositoryArtefact(svc, origin, artefactId) {
 	const errors = [];
 	try {
-		await ensureTables(svc);
 		const row = await d1Get(svc.env, `
 			SELECT *
 			FROM ${ARTEFACTS_TABLE}
