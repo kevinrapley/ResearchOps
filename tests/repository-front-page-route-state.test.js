@@ -16,6 +16,10 @@ const files = {
 		'utf8'
 	),
 	deployWorker: fs.readFileSync('.github/workflows/deploy-worker.yml', 'utf8'),
+	passwordlessPreviewWorker: fs.readFileSync(
+		'.github/workflows/deploy-passwordless-preview-worker.yml',
+		'utf8'
+	),
 	gitignore: fs.readFileSync('.gitignore', 'utf8'),
 	lychee: fs.readFileSync('lychee.toml', 'utf8'),
 };
@@ -107,6 +111,16 @@ has(files.deployWorker, 'REPOSITORY_SEED_MIGRATION: "infra/cloudflare/migrations
 has(files.deployWorker, 'REPOSITORY_SEED_CLEANUP_MIGRATION: "infra/cloudflare/migrations/0016_update_repository_seed_tag_taxonomy.sql"', 'deploy workflow');
 has(deployWorkerPreview, '--file "${REPOSITORY_SEED_CLEANUP_MIGRATION}"', 'deploy preview workflow');
 lacks(deployWorkerProduction, '--file "${REPOSITORY_SEED_MIGRATION}"', 'deploy production workflow');
+has(
+	files.passwordlessPreviewWorker,
+	'REPOSITORY_SEED_CLEANUP_MIGRATION: "infra/cloudflare/migrations/0016_update_repository_seed_tag_taxonomy.sql"',
+	'passwordless preview workflow'
+);
+has(
+	files.passwordlessPreviewWorker,
+	'--file "${REPOSITORY_SEED_CLEANUP_MIGRATION}"',
+	'passwordless preview workflow'
+);
 
 has(files.gitignore, 'public/css/repository.css', 'gitignore');
 has(files.gitignore, 'public/pages/repository/', 'gitignore');

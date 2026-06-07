@@ -47,6 +47,8 @@ Implement the team-reviewed selected-state model for ResearchOps repository brow
 - `src/styles/repository.scss`
 - `tests/repository-front-page-route-state.test.js`
 - `docs/product/26/06/07/research-repository-product-direction.md`
+- `.github/workflows/deploy-worker.yml`
+- `.github/workflows/deploy-passwordless-preview-worker.yml`
 - `infra/cloudflare/migrations/0014_research_repository.sql`
 - `infra/cloudflare/migrations/0015_seed_research_repository.sql`
 - `infra/cloudflare/migrations/0016_update_repository_seed_tag_taxonomy.sql`
@@ -57,6 +59,8 @@ Implement the team-reviewed selected-state model for ResearchOps repository brow
 - `src/govuk/templates/pages/repository-static.njk`
 - `public/js/repository-static-page.js`
 - `infra/cloudflare/src/service/repository.js`
+- `.github/workflows/deploy-passwordless-preview-worker.yml`
+- `infra/cloudflare/migrations/0015_seed_research_repository.sql`
 - `src/styles/repository.scss`
 - `tests/repository-front-page-route-state.test.js`
 - `docs/product/26/06/07/repository-browse-selected-state-implementation.md`
@@ -74,6 +78,8 @@ Implement the team-reviewed selected-state model for ResearchOps repository brow
 - Limit selected-state results to 10 per page by default.
 - Add sort support for `reviewed_desc`, `confidence_desc` and `relevance`.
 - Render artefact metadata as structured definition content instead of relying on a flat tag list.
+- Make repository seed tag generation idempotent so repeated preview D1 migration runs do not fail on existing seeded published artefacts.
+- Apply the repository seed cleanup migration in the passwordless preview Worker workflow so both preview deploy paths converge on the same repository taxonomy state.
 
 ## Validation attempted
 
@@ -83,14 +89,18 @@ Implement the team-reviewed selected-state model for ResearchOps repository brow
 - `node --check infra/cloudflare/src/service/repository.js`
 - `node --test tests/repository-front-page-route-state.test.js tests/repository-seed-taxonomy-labels.test.js tests/repository-artefact-detail-seed-tag-guard.test.js`
 - `npm run lint -- public/js/repository-page.js public/js/repository-static-page.js infra/cloudflare/src/service/repository.js tests/repository-front-page-route-state.test.js` completed with repository-wide pre-existing warnings and no errors.
+- `npm test`
+- `gh pr checks 369`
 
 ## Residual risks
 
 - This branch depends on `fix/repository-seed-meaningful-tags` for corrected seed taxonomy and sentence-case browse labels.
 - Repository browse filtering is now instant after the initial hydrate, but the first hydrate still depends on repository payload size.
+- Preview worker deploy health still depends on GitHub rerunning the previously failed jobs against the new commit.
 
 ## Follow-up changes
 
 - Added hydrated catalogue responses to `/api/repository` so browse and landing-page filters can reuse one repository payload instead of repeated D1 round-trips.
 - Moved repository browse interactions to client-side selected-state rendering backed by the hydrated catalogue and URL history updates.
 - Restored the landing-page interview filter to the seeded `interviews` slug and corrected Airtable fallback sorting to use `cleanText(...)`.
+- Fixed the preview deploy failure caused by rerunning repository seed migrations against existing D1 tag rows.
