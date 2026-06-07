@@ -32,12 +32,12 @@ async function fetchWithTimeout(url) {
 			credentials: "include",
 			cache: CONFIG.CACHE,
 		});
-		const text = await response.text();
+		const responseText = await response.text();
 		let data;
 		try {
-			data = JSON.parse(text);
+			data = JSON.parse(responseText);
 		} catch {
-			data = { ok: false, parseError: true, raw: text };
+			data = { ok: false, parseError: true, raw: responseText };
 		}
 		return { ok: response.ok, status: response.status, data };
 	} finally {
@@ -65,15 +65,34 @@ function setBusy(element, busy) {
 	element.setAttribute("aria-busy", busy ? "true" : "false");
 }
 
+function paragraph(message, classes = "govuk-body") {
+	const p = document.createElement("p");
+	p.className = classes;
+	p.textContent = message;
+	return p;
+}
+
+function renderUnavailable(id, message, classes = "govuk-body") {
+	const target = document.getElementById(id);
+	if (!target) return;
+	clear(target);
+	target.appendChild(paragraph(message, classes));
+	setBusy(target, false);
+}
+
 function renderError(detail) {
 	const target = document.getElementById("repository-results");
-	if (!target) return;
-	const node = templateContent("repository-error-template");
-	const detailNode = node.querySelector("[data-repository-error='detail']");
-	if (detailNode) detailNode.textContent = text(detail || "repository_api_error");
-	clear(target);
-	target.appendChild(node);
-	setBusy(target, false);
+	if (target) {
+		const node = templateContent("repository-error-template");
+		const detailNode = node.querySelector("[data-repository-error='detail']");
+		if (detailNode) detailNode.textContent = text(detail || "repository_api_error");
+		clear(target);
+		target.appendChild(node);
+		setBusy(target, false);
+	}
+	renderUnavailable("repository-metrics", "Repository summary could not be derived from D1.");
+	renderUnavailable("repository-filters", "Filters could not be derived from D1 facet counts.", "govuk-body-s");
+	renderUnavailable("repository-queues", "Curator queues could not be derived from D1 workflow counts.");
 }
 
 function renderMetrics(metrics = []) {
@@ -81,7 +100,7 @@ function renderMetrics(metrics = []) {
 	if (!target) return;
 	clear(target);
 	if (!metrics.length) {
-		target.appendChild(document.createTextNode("Repository summary is not available."));
+		target.appendChild(paragraph("No repository summary is available from D1 yet."));
 		setBusy(target, false);
 		return;
 	}
@@ -140,7 +159,7 @@ function renderFilters(filters = []) {
 	if (!target) return;
 	clear(target);
 	if (!filters.length) {
-		target.innerHTML = '<p class="govuk-body-s">No filters are available yet.</p>';
+		target.appendChild(paragraph("No filters are available from D1 facet counts yet.", "govuk-body-s"));
 		setBusy(target, false);
 		return;
 	}
@@ -194,7 +213,12 @@ function renderQueues(queues = [], canCurate = false) {
 	if (!target) return;
 	clear(target);
 	if (!canCurate) {
-		target.innerHTML = '<p class="govuk-body">Curator queues are shown to users with repository curation permission.</p>';
+		target.appendChild(paragraph("Curator queues are shown to users with repository curation permission."));
+		setBusy(target, false);
+		return;
+	}
+	if (!queues.length) {
+		target.appendChild(paragraph("No curator queue counts are available from D1 yet."));
 		setBusy(target, false);
 		return;
 	}
