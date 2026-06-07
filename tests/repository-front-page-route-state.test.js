@@ -42,7 +42,7 @@ function workflowSection(source, startMarker, endMarker) {
 
 has(files.template, 'Research repository', 'repository template');
 has(files.template, 'Published artefacts', 'repository template');
-has(files.template, 'repository-page.js?v=repository-api-20260607b', 'repository template');
+has(files.template, 'repository-page.js?v=repository-api-20260607c', 'repository template');
 has(files.template, 'class="govuk-heading-xl govuk-!-margin-bottom-1 repository-metric__number"', 'repository template');
 has(files.template, 'class="govuk-body repository-metric__label"', 'repository template');
 has(files.template, "{ value: 'interviews', text: 'Moderated interviews' }", 'repository template');
