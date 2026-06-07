@@ -33,12 +33,14 @@ includes(schemaMigration, 'Workflow friction', 'schema migration');
 includes(schemaMigration, 'State evidence limits before reuse', 'schema migration');
 
 includes(taxonomyMigration, "user_group = 'research-operations-staff'", 'taxonomy migration');
-includes(taxonomyMigration, 'Confidence and comprehension', 'taxonomy migration');
-includes(taxonomyMigration, 'Workflow friction', 'taxonomy migration');
-includes(taxonomyMigration, 'Clarify handoff owner and next action', 'taxonomy migration');
-includes(taxonomyMigration, 'State evidence limits before reuse', 'taxonomy migration');
+includes(taxonomyMigration, "tag_type = 'topic'", 'taxonomy migration');
+includes(taxonomyMigration, "tag_type = 'recommendation'", 'taxonomy migration');
+includes(taxonomyMigration, 'remove_repository_seed_tags', 'taxonomy migration');
 excludes(taxonomyMigration, 'Seeded topic', 'taxonomy migration');
 excludes(taxonomyMigration, 'Seeded recommendation', 'taxonomy migration');
+excludes(taxonomyMigration, 'Confidence and comprehension', 'taxonomy migration');
+excludes(taxonomyMigration, 'Workflow friction', 'taxonomy migration');
+excludes(taxonomyMigration, 'State evidence limits before reuse', 'taxonomy migration');
 
 includes(staticPageScript, '["frontline-staff", "Frontline staff"]', 'static page script');
 includes(
