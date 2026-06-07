@@ -18,6 +18,8 @@ const files = {
 	seedMigration: fs.readFileSync('infra/cloudflare/migrations/0015_seed_research_repository.sql', 'utf8'),
 	visualWalkthrough: fs.readFileSync('visual-walkthrough.config.mjs', 'utf8'),
 	gitignore: fs.readFileSync('.gitignore', 'utf8'),
+	lychee: fs.readFileSync('lychee.toml', 'utf8'),
+	qaLinks: fs.readFileSync('.github/workflows/qa-links.yml', 'utf8'),
 };
 
 function has(source, text, label) {
@@ -141,3 +143,6 @@ has(files.visualWalkthrough, "registeredPage('repository-service-areas'", 'visua
 has(files.visualWalkthrough, "registeredPage('repository-artefact-staff-evidence-boundaries'", 'visual walkthrough registry');
 has(files.gitignore, 'public/css/repository.css', 'gitignore');
 has(files.gitignore, 'public/pages/repository/', 'gitignore');
+has(files.lychee, '^/api/repository(?:/.*)?(?:\\\\?.*)?$', 'Lychee config');
+has(files.qaLinks, 'Build generated pages and assets', 'Lychee workflow');
+has(files.qaLinks, 'npm run build', 'Lychee workflow');

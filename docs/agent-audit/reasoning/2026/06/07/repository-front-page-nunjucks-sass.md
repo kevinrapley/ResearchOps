@@ -9,7 +9,7 @@ Follow-up scope added realistic D1 seed data so product reviewers can experience
 ## Run metadata
 
 - Date: 2026-06-07
-- Branch: `feature/repository-front-page-nunjucks-sass`
+- Branch: `feature/research-repository-api-pages-seed-data`
 - Trace required: yes, because `feature/` branches require an auditable trace.
 - Repository: `kevinrapley/ResearchOps`
 
@@ -85,6 +85,8 @@ Follow-up scope added realistic D1 seed data so product reviewers can experience
 - `infra/cloudflare/src/worker.js`
 - `visual-walkthrough.config.mjs`
 - `infra/cloudflare/migrations/0015_seed_research_repository.sql`
+- `.github/workflows/qa-links.yml`
+- `lychee.toml`
 
 ## Files created or modified
 
@@ -108,6 +110,8 @@ Follow-up scope added realistic D1 seed data so product reviewers can experience
 - `tests/d1-migration-ordering-route-state.test.js`
 - `visual-walkthrough.config.mjs`
 - `.gitignore`
+- `.github/workflows/qa-links.yml`
+- `lychee.toml`
 - `docs/deployment/d1-migration-ordering.md`
 - `docs/implementation/repository-front-page-integration.md`
 - `docs/agent-audit/reasoning/2026/06/07/repository-front-page-nunjucks-sass.md`
@@ -135,6 +139,7 @@ Follow-up scope added realistic D1 seed data so product reviewers can experience
 - Add source-owned deeper repository pages for service-area, user-group, method, risk, artefact detail and curator queue destinations.
 - Add a D1 seed migration with realistic curated repository data: 100 published artefacts, 20 candidate records, 10 withdrawn records, facet coverage and linked recommendation tags.
 - Keep generated repository HTML and CSS ignored so local builds do not reintroduce committed generated outputs.
+- Update the Lychee workflow to build generated pages and assets before checking links, and exclude only runtime repository API URLs from static link validation.
 
 ## Validation attempted
 
@@ -148,6 +153,7 @@ Follow-up scope added realistic D1 seed data so product reviewers can experience
 - `npm run agent:bundles:validate` passed.
 - `package.json` has no `typecheck` script, so no typecheck command was available to run.
 - Follow-up focused tests after adding seed data passed.
+- Follow-up Lychee fix validation passed: `npm run build`, focused repository route-state tests and `npm run format:check`.
 
 ## Residual risks
 

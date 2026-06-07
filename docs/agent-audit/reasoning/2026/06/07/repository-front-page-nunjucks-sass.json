@@ -1,6 +1,6 @@
 {
 	"date": "2026-06-07",
-	"branch": "feature/repository-front-page-nunjucks-sass",
+	"branch": "feature/research-repository-api-pages-seed-data",
 	"traceRequired": true,
 	"repository": "kevinrapley/ResearchOps",
 	"task": "Build the ResearchOps research repository front page on a new branch using Nunjucks and Sass, with macros for components and design patterns. Follow-up scope added realistic D1 seed data for a populated curated repository review experience.",
@@ -46,7 +46,9 @@
 		"functions/api/repository/[[path]].js",
 		"infra/cloudflare/src/worker.js",
 		"visual-walkthrough.config.mjs",
-		"infra/cloudflare/migrations/0015_seed_research_repository.sql"
+		"infra/cloudflare/migrations/0015_seed_research_repository.sql",
+		".github/workflows/qa-links.yml",
+		"lychee.toml"
 	],
 	"filesCreatedOrModified": [
 		"src/govuk/data/repository-page.mjs",
@@ -69,6 +71,8 @@
 		"tests/d1-migration-ordering-route-state.test.js",
 		"visual-walkthrough.config.mjs",
 		".gitignore",
+		".github/workflows/qa-links.yml",
+		"lychee.toml",
 		"docs/deployment/d1-migration-ordering.md",
 		"docs/implementation/repository-front-page-integration.md",
 		"docs/agent-audit/reasoning/2026/06/07/repository-front-page-nunjucks-sass.md",
@@ -93,7 +97,8 @@
 		"Route /api/repository, /api/repository/artefacts and /api/repository/artefacts/:id through the Worker as well as the Pages function.",
 		"Add source-owned deeper repository pages for service-area, user-group, method, risk, artefact detail and curator queue destinations.",
 		"Add realistic D1 seed data: 100 published artefacts, 20 candidate records, 10 withdrawn records, facet coverage and linked recommendation tags.",
-		"Keep generated repository HTML and CSS ignored so local builds do not reintroduce committed generated outputs."
+		"Keep generated repository HTML and CSS ignored so local builds do not reintroduce committed generated outputs.",
+		"Update the Lychee workflow to build generated pages and assets before checking links, and exclude runtime repository API URLs from static link validation."
 	],
 	"teamConsultation": [
 		"Product management confirmed the repository is a top-level authenticated evidence library, not a dashboard or raw archive.",
@@ -114,6 +119,7 @@
 		"npm run trace:coverage passed.",
 		"npm run agent:bundles:validate passed.",
 		"Follow-up focused tests after adding seed data passed.",
+		"Follow-up Lychee fix validation passed: npm run build, focused repository route-state tests and npm run format:check.",
 		"package.json has no typecheck script, so no typecheck command was available to run."
 	],
 	"residualRisks": [
