@@ -1,0 +1,74 @@
+{
+	"date": "2026-06-07",
+	"branch": "feature/repository-front-page-nunjucks-sass",
+	"traceRequired": true,
+	"repository": "kevinrapley/ResearchOps",
+	"task": "Build the ResearchOps research repository front page on a new branch using Nunjucks and Sass, with macros for components and design patterns.",
+	"operatingModelFilesLoaded": [
+		"README.md",
+		"AGENTS.md",
+		"RECENT_LEARNINGS.md",
+		".agent-operating-model/orchestration.xml",
+		".agent-operating-model/bundle-registry.json",
+		".agent-operating-model/task-signal-catalog.json",
+		".agent-operating-model/selection-rules.json",
+		".agent-operating-model/github-mutation-policy.md"
+	],
+	"selectedBundles": [
+		".agent-operating-model/bundles/github/",
+		".agent-operating-model/bundles/researchops-developer-control/",
+		".agent-operating-model/bundles/multi-functional-team/",
+		".agent-operating-model/bundles/govuk-design-system/"
+	],
+	"skippedBundles": [
+		".agent-operating-model/bundles/cloudflare/",
+		".agent-operating-model/bundles/openai/",
+		".agent-operating-model/bundles/mcp-agent-tooling/",
+		".agent-operating-model/bundles/airtable-public-api/",
+		".agent-operating-model/bundles/mural-public-api/"
+	],
+	"filesRead": [
+		"README.md",
+		"AGENTS.md",
+		"RECENT_LEARNINGS.md",
+		"scripts/govuk/render-govuk-pages.mjs",
+		"scripts/styles/generated-css-targets.mjs",
+		"src/govuk/templates/layouts/researchops.njk",
+		"src/govuk/templates/pages/home.njk",
+		"src/govuk/templates/pages/projects.njk",
+		"public/partials/header.html",
+		"tests/govuk-frontend-integration-route-state.test.js",
+		"tests/govuk-page-chrome-navigation-route-state.test.js"
+	],
+	"filesCreatedOrModified": [
+		"src/govuk/data/repository-page.mjs",
+		"src/govuk/templates/macros/repository.njk",
+		"src/govuk/templates/pages/repository.njk",
+		"src/styles/repository.scss",
+		"public/css/repository.css",
+		"scripts/govuk/render-govuk-pages.mjs",
+		"scripts/styles/generated-css-targets.mjs",
+		"public/partials/header.html",
+		"tests/repository-front-page-route-state.test.js",
+		"docs/implementation/repository-front-page-integration.md",
+		"docs/agent-audit/reasoning/2026/06/07/repository-front-page-nunjucks-sass.md",
+		"docs/agent-audit/reasoning/2026/06/07/repository-front-page-nunjucks-sass.json"
+	],
+	"decisions": [
+		"Use /pages/repository/ as the canonical page route.",
+		"Add Research repository to shared service navigation.",
+		"Keep repository page content in a data module so the template remains structural.",
+		"Use page-specific Nunjucks macros for repository design patterns.",
+		"Register the Sass source in the generated CSS manifest.",
+		"Add route-state coverage for template, macro, renderer, CSS and navigation contracts."
+	],
+	"validationAttempted": [
+		"GitHub branch creation succeeded after retrying from the current main head.",
+		"GitHub compare confirmed the branch is ahead of main and the changed-file list is focused on the repository front page.",
+		"Repository-local commands were not run in this environment."
+	],
+	"residualRisks": [
+		"Full repository CI has not been run locally in this session.",
+		"Live preview deployment should be checked after CI completes."
+	]
+}
