@@ -70,6 +70,7 @@ Investigate the reported lag on the ResearchOps repository preview, try the depl
 ## Files changed
 
 - `infra/cloudflare/src/service/repository.js`
+- `src/govuk/templates/pages/repository.njk`
 - `public/js/repository-page.js`
 - `public/js/repository-static-page.js`
 - `tests/repository-front-page-route-state.test.js`
@@ -82,6 +83,8 @@ Investigate the reported lag on the ResearchOps repository preview, try the depl
 - The repository list route still loaded and materialised the full published set before filtering even when the page only needed one page of results.
 - The repository front page and browse pages both requested `/api/repository?hydrate=full` on initial load.
 - After the first optimisation pass, the repository list route still fanned out into many D1 queries per request: count, page rows, tags, five facet queries, metrics queries and queue counts.
+- Chrome traces from the authenticated preview showed the biggest delay was still in `/api/repository` and `/api/repository?hydrate=full`, each taking about two to three seconds while first paint stayed below 100ms.
+- The repository landing page was still issuing two initial API requests in parallel because the inline prefetch hit `/api/repository` while the page module requested `/api/repository?hydrate=full`.
 
 ## Tool limitations
 
@@ -99,6 +102,9 @@ Investigate the reported lag on the ResearchOps repository preview, try the depl
 - Trim the list-route payload so repository pages do not receive full artefact limits and provenance identifiers on every card when only the detail page needs them.
 - Restore linked recommendation metrics by counting recommendation tag rows from D1-backed tag data rather than inferring from visible tag labels.
 - Start the initial repository request from inline page script and let the page modules consume that prefetched response so the worker request can overlap with page script loading.
+- Cache the published D1 repository snapshot in Worker memory for a short TTL so repeated filter requests and detail reads reuse one prepared dataset instead of rebuilding the same published set on every request.
+- Invalidate the published snapshot cache after candidate creation so governed write paths do not leave repository reads stale.
+- Align the inline Nunjucks prefetch with the hydrated request path so the page no longer pays for both `/api/repository` and `/api/repository?hydrate=full` on first load.
 
 ## Assumptions
 
@@ -117,11 +123,17 @@ Investigate the reported lag on the ResearchOps repository preview, try the depl
 - `node --import ./tests/helpers/generated-govuk-page-source.mjs --test tests/repository-front-page-route-state.test.js tests/repository-seed-taxonomy-labels.test.js tests/repository-artefact-detail-seed-tag-guard.test.js`
 - `npm test`
 - `npm run lint`
+- Trace inspection of `/Users/kevin.rapley/Downloads/Trace-20260608T001110.json.gz.devtools`
+- Trace inspection of `/Users/kevin.rapley/Downloads/Trace-20260608T001245.json.gz.devtools`
+- Trace inspection of `/Users/kevin.rapley/Downloads/Trace-20260608T001348.json.gz.devtools`
+- Trace inspection of `/Users/kevin.rapley/Downloads/Trace-20260608T001413.json.gz.devtools`
+- `node --import ./tests/helpers/generated-govuk-page-source.mjs --test tests/repository-front-page-route-state.test.js tests/repository-seed-taxonomy-labels.test.js tests/repository-artefact-detail-seed-tag-guard.test.js tests/auth-sign-in-route-state.test.js`
 
 ## Validation not run and why
 
 - Live post-change preview timing was not run because the updated code has not yet been deployed from this branch.
 - Authenticated browser validation against the preview content was not possible because Cloudflare Access intercepted the session and no authenticated tab was available.
+- The full repository test suite still has an unrelated failure in `tests/deploy-asset-paths.test.js`, which asserts a generated GOV.UK CSS formatting contract outside the repository Worker path changed here.
 
 ## Issues and pivots
 
@@ -139,6 +151,7 @@ Investigate the reported lag on the ResearchOps repository preview, try the depl
 - After the first optimisation deploy, the page shell improved to about `117ms`, the page hydrate dropped to about `3.5s`, but same-origin `/api/repository` still remained about `3.34s`.
 - Warm filter updates after the first optimisation deploy were about `251ms`.
 - After the payload-trimming deploy, linked recommendations returned to `12`, but the front-page hydrate was still about `4.3s`, so first-load latency was still not acceptable.
+- Chrome trace samples on 2026-06-08 showed first contentful paint and largest contentful paint around `69ms` to `81ms`, while `/api/repository` and `/api/repository?hydrate=full` still consumed about `2.1s` to `2.7s`.
 
 ## Residual risks
 
@@ -146,3 +159,4 @@ Investigate the reported lag on the ResearchOps repository preview, try the depl
 - Filter interactions now depend on fast paged API responses rather than an already-hydrated client catalogue, so any future D1 query regressions will be more visible.
 - Airtable fallback still materialises its published set in memory; that remains acceptable because the reported lag path was the D1-backed preview.
 - The live preview still needs one more measurement pass after the payload-trimming commit is deployed because the acceptable-speed threshold has not yet been reached.
+- Queue counts for curator users still run as a separate D1 query on list responses, so curator-mode pages may keep a small residual gap versus the non-curator path.

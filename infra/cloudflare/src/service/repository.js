@@ -6,7 +6,9 @@ const AUDIT_TABLE = "rops_repository_audit";
 const AIRTABLE_PAGE_SIZE = 100;
 const MAX_AIRTABLE_PAGES = 10;
 const HYDRATE_FULL_MODE = "full";
+const PUBLISHED_SNAPSHOT_TTL_MS = 30_000;
 const schemaReadyByDatabase = new WeakMap();
+const publishedSnapshotByDatabase = new WeakMap();
 
 function hasD1(svc) {
 	return Boolean(svc?.env?.RESEARCHOPS_D1?.prepare);
@@ -253,6 +255,11 @@ async function ensureTables(svc) {
 		ready.catch(() => schemaReadyByDatabase.delete(database));
 	}
 	await schemaReadyByDatabase.get(database);
+}
+
+function invalidateRepositorySnapshotCache(svc) {
+	const database = svc?.env?.RESEARCHOPS_D1;
+	if (database) publishedSnapshotByDatabase.delete(database);
 }
 
 function publicWhere() {
@@ -588,14 +595,49 @@ async function repositoryMetrics(svc) {
 }
 
 async function fullRepositoryCatalogue(svc) {
-	const rows = await d1All(svc.env, `
-		SELECT *
-		FROM ${ARTEFACTS_TABLE}
-		WHERE ${publicWhereSql()}
-		ORDER BY datetime(COALESCE(updated_at, published_at, created_at)) DESC, title ASC
-	`);
-	const tags = await tagsByArtefactId(svc, rows.map((row) => row.id));
-	return rows.map((row) => rowToArtefact(row, tags.get(row.id) || []));
+	return (await publishedRepositorySnapshot(svc)).allArtefacts;
+}
+
+async function publishedRepositorySnapshot(svc) {
+	if (!hasD1(svc)) throw new Error("RESEARCHOPS_D1 binding not available");
+	await ensureTables(svc);
+	const database = svc.env.RESEARCHOPS_D1;
+	const cached = publishedSnapshotByDatabase.get(database);
+	const now = Date.now();
+	if (cached && cached.expiresAt > now) return cached.promise;
+
+	const snapshotPromise = (async () => {
+		const rows = await d1All(svc.env, `
+			SELECT *
+			FROM ${ARTEFACTS_TABLE}
+			WHERE ${publicWhereSql()}
+			ORDER BY datetime(COALESCE(updated_at, published_at, created_at)) DESC, title ASC
+		`);
+		const tags = await tagsByArtefactId(svc, rows.map((row) => row.id));
+		const allArtefacts = rows.map((row) => rowToArtefact(row, tags.get(row.id) || []));
+		return {
+			rows,
+			tags,
+			allArtefacts,
+			metrics: metricsFromRepository(rows, tags),
+			filters: [
+				facetFromArtefacts(allArtefacts, "method", "Method", "method"),
+				facetFromArtefacts(allArtefacts, "evidence_maturity", "Evidence maturity", "evidenceMaturity"),
+				facetFromArtefacts(allArtefacts, "service_area", "Service area", "serviceArea"),
+				facetFromArtefacts(allArtefacts, "user_group", "User group", "userGroup"),
+				facetFromArtefacts(allArtefacts, "risk_area", "Risk or constraint", "riskArea")
+			]
+		};
+	})();
+
+	const entry = { expiresAt: now + PUBLISHED_SNAPSHOT_TTL_MS, promise: snapshotPromise };
+	publishedSnapshotByDatabase.set(database, entry);
+	snapshotPromise.catch(() => {
+		if (publishedSnapshotByDatabase.get(database) === entry) {
+			publishedSnapshotByDatabase.delete(database);
+		}
+	});
+	return snapshotPromise;
 }
 
 function pagination(url, total) {
@@ -665,25 +707,11 @@ export async function listRepository(svc, origin, url, authContext = {}) {
 		const sort = url.searchParams.get("sort") || "reviewed_desc";
 		const hydrate = cleanSlug(url.searchParams.get("hydrate"));
 		const showQueues = canCurate(authContext);
-		const rows = await d1All(svc.env, `
-			SELECT *
-			FROM ${ARTEFACTS_TABLE}
-			WHERE ${publicWhereSql()}
-			ORDER BY datetime(COALESCE(updated_at, published_at, created_at)) DESC, title ASC
-		`);
-		const tags = await tagsByArtefactId(svc, rows.map((row) => row.id));
-		const allArtefacts = rows.map((row) => rowToArtefact(row, tags.get(row.id) || []));
+		const snapshot = await publishedRepositorySnapshot(svc);
+		const { allArtefacts, metrics, filters } = snapshot;
 		const filtered = sortArtefacts(allArtefacts.filter((artefact) => matchesSearch(artefact, url)), sort);
 		const pager = pagination(url, filtered.length);
 		const artefacts = filtered.slice(pager.offset, pager.offset + pager.limit);
-		const filters = [
-			facetFromArtefacts(allArtefacts, "method", "Method", "method"),
-			facetFromArtefacts(allArtefacts, "evidence_maturity", "Evidence maturity", "evidenceMaturity"),
-			facetFromArtefacts(allArtefacts, "service_area", "Service area", "serviceArea"),
-			facetFromArtefacts(allArtefacts, "user_group", "User group", "userGroup"),
-			facetFromArtefacts(allArtefacts, "risk_area", "Risk or constraint", "riskArea")
-		];
-		const metrics = metricsFromRepository(rows, tags);
 		const queues = showQueues ? await repositoryQueues(svc) : [];
 		return svc.json({
 			ok: true,
@@ -732,18 +760,13 @@ export async function listRepository(svc, origin, url, authContext = {}) {
 export async function readRepositoryArtefact(svc, origin, artefactId) {
 	const errors = [];
 	try {
-		const row = await d1Get(svc.env, `
-			SELECT *
-			FROM ${ARTEFACTS_TABLE}
-			WHERE id = ? AND ${publicWhere().join(" AND ")}
-			LIMIT 1
-		`, [artefactId]);
+		const snapshot = await publishedRepositorySnapshot(svc);
+		const row = snapshot.rows.find((entry) => entry.id === artefactId);
 		if (!row) return svc.json({ ok: false, error: "repository_artefact_not_found" }, 404, svc.corsHeaders(origin));
-		const tags = await tagsByArtefactId(svc, [artefactId]);
 		return svc.json({
 			ok: true,
 			source: "d1",
-			artefact: rowToArtefact(row, tags.get(artefactId) || [], { includeLimits: true, includeProvenanceIds: true }),
+			artefact: rowToArtefact(row, snapshot.tags.get(artefactId) || [], { includeLimits: true, includeProvenanceIds: true }),
 			payload: parseJson(row.payload_json, {})
 		}, 200, svc.corsHeaders(origin));
 	} catch (error) {
@@ -847,6 +870,8 @@ export async function createRepositoryCandidate(svc, request, origin, authContex
 		INSERT INTO ${AUDIT_TABLE} (id, artefact_id, action, actor_user_id, created_at, payload_json)
 		VALUES (?, ?, 'candidate.submitted', ?, ?, ?)
 	`, [`audit-${id}`, id, actor, now, payloadJson]);
+
+	invalidateRepositorySnapshotCache(svc);
 
 	return svc.json({
 		ok: true,

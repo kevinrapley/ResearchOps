@@ -43,6 +43,7 @@ function workflowSection(source, startMarker, endMarker) {
 has(files.template, 'Research repository', 'repository template');
 has(files.template, 'Published artefacts', 'repository template');
 has(files.template, 'repository-page.js?v=repository-api-20260607c', 'repository template');
+has(files.template, "params.set('hydrate', 'full')", 'repository template');
 has(files.template, 'class="govuk-heading-xl govuk-!-margin-bottom-1 repository-metric__number"', 'repository template');
 has(files.template, 'class="govuk-body repository-metric__label"', 'repository template');
 has(files.template, "{ value: 'interviews', text: 'Moderated interviews' }", 'repository template');
@@ -94,12 +95,16 @@ has(files.service, 'const ARTEFACTS_TABLE = "rops_repository_artefacts"', 'repos
 has(files.service, 'function selectedFacet', 'repository service');
 has(files.service, 'function pagination', 'repository service');
 has(files.service, 'const schemaReadyByDatabase = new WeakMap()', 'repository service');
+has(files.service, 'const publishedSnapshotByDatabase = new WeakMap()', 'repository service');
+has(files.service, 'const PUBLISHED_SNAPSHOT_TTL_MS = 30_000', 'repository service');
 has(files.service, 'const filtered = sortArtefacts(allArtefacts.filter((artefact) => matchesSearch(artefact, url)), sort);', 'repository service');
 has(files.service, 'const queues = showQueues ? await repositoryQueues(svc) : [];', 'repository service');
 has(files.service, 'pagination: { page: pager.page, limit: pager.limit, total: pager.total }', 'repository service');
 has(files.service, 'selected: selectedFacet(url)', 'repository service');
 has(files.service, 'catalogue: hydrate === HYDRATE_FULL_MODE ? { artefacts: allArtefacts } : undefined', 'repository service');
 has(files.service, 'const HYDRATE_FULL_MODE = "full"', 'repository service');
+has(files.service, 'const snapshot = await publishedRepositorySnapshot(svc);', 'repository service');
+has(files.service, 'invalidateRepositorySnapshotCache(svc);', 'repository service');
 has(files.service, 'const method = searchValues(url, "method")', 'repository service');
 lacks(files.service, 'String(error?.message || error) }, 503', 'repository service');
 

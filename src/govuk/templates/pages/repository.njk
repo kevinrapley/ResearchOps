@@ -8,7 +8,10 @@
 {% block head %}
 	<script>
 		(function prefetchRepository() {
-			const requestPath = '/api/repository' + (window.location.search || '');
+			const params = new URLSearchParams(window.location.search || '');
+			params.set('hydrate', 'full');
+			const query = params.toString();
+			const requestPath = '/api/repository' + (query ? `?${query}` : '');
 			window.__repositoryPrefetch = {
 				requestPath,
 				promise: fetch(requestPath, {
