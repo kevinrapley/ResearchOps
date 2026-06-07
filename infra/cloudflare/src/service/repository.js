@@ -6,6 +6,7 @@ const AUDIT_TABLE = "rops_repository_audit";
 const AIRTABLE_PAGE_SIZE = 100;
 const MAX_AIRTABLE_PAGES = 10;
 const HYDRATE_FULL_MODE = "full";
+const schemaReadyByDatabase = new WeakMap();
 
 function hasD1(svc) {
 	return Boolean(svc?.env?.RESEARCHOPS_D1?.prepare);
@@ -189,61 +190,69 @@ async function airtableRecords(svc, tableName, searchParams = new URLSearchParam
 
 async function ensureTables(svc) {
 	if (!hasD1(svc)) throw new Error("RESEARCHOPS_D1 binding not available");
-	await d1Run(svc.env, `
-		CREATE TABLE IF NOT EXISTS ${ARTEFACTS_TABLE} (
-			id TEXT PRIMARY KEY,
-			title TEXT NOT NULL,
-			summary TEXT NOT NULL,
-			artefact_type TEXT NOT NULL,
-			status TEXT NOT NULL,
-			confidence TEXT NOT NULL,
-			evidence_maturity TEXT NOT NULL,
-			service_area TEXT,
-			user_group TEXT,
-			method TEXT,
-			risk_area TEXT,
-			source_project_id TEXT,
-			source_study_id TEXT,
-			source_method TEXT,
-			sample_summary TEXT,
-			limitations TEXT,
-			reuse_guidance TEXT,
-			do_not_use_for TEXT,
-			owner_user_id TEXT,
-			reviewed_by_user_id TEXT,
-			pii_cleared INTEGER NOT NULL DEFAULT 0,
-			consent_scope_confirmed INTEGER NOT NULL DEFAULT 0,
-			active INTEGER NOT NULL DEFAULT 1,
-			created_at TEXT NOT NULL,
-			updated_at TEXT NOT NULL,
-			published_at TEXT,
-			review_due_at TEXT,
-			payload_json TEXT
-		)
-	`);
-	await d1Run(svc.env, `
-		CREATE TABLE IF NOT EXISTS ${TAGS_TABLE} (
-			artefact_id TEXT NOT NULL,
-			tag_slug TEXT NOT NULL,
-			tag_label TEXT NOT NULL,
-			tag_type TEXT NOT NULL DEFAULT 'tag',
-			PRIMARY KEY (artefact_id, tag_slug)
-		)
-	`);
-	await d1Run(svc.env, `
-		CREATE TABLE IF NOT EXISTS ${AUDIT_TABLE} (
-			id TEXT PRIMARY KEY,
-			artefact_id TEXT,
-			action TEXT NOT NULL,
-			actor_user_id TEXT,
-			created_at TEXT NOT NULL,
-			payload_json TEXT
-		)
-	`);
-	await d1Run(svc.env, `CREATE INDEX IF NOT EXISTS idx_repository_artefacts_status ON ${ARTEFACTS_TABLE} (status, active, published_at)`);
-	await d1Run(svc.env, `CREATE INDEX IF NOT EXISTS idx_repository_artefacts_review ON ${ARTEFACTS_TABLE} (status, review_due_at)`);
-	await d1Run(svc.env, `CREATE INDEX IF NOT EXISTS idx_repository_artefacts_facets ON ${ARTEFACTS_TABLE} (method, evidence_maturity, service_area, user_group, risk_area)`);
-	await d1Run(svc.env, `CREATE INDEX IF NOT EXISTS idx_repository_tags_type ON ${TAGS_TABLE} (tag_type, tag_slug)`);
+	const database = svc.env.RESEARCHOPS_D1;
+	if (!schemaReadyByDatabase.has(database)) {
+		const ready = (async () => {
+			await d1Run(svc.env, `
+				CREATE TABLE IF NOT EXISTS ${ARTEFACTS_TABLE} (
+					id TEXT PRIMARY KEY,
+					title TEXT NOT NULL,
+					summary TEXT NOT NULL,
+					artefact_type TEXT NOT NULL,
+					status TEXT NOT NULL,
+					confidence TEXT NOT NULL,
+					evidence_maturity TEXT NOT NULL,
+					service_area TEXT,
+					user_group TEXT,
+					method TEXT,
+					risk_area TEXT,
+					source_project_id TEXT,
+					source_study_id TEXT,
+					source_method TEXT,
+					sample_summary TEXT,
+					limitations TEXT,
+					reuse_guidance TEXT,
+					do_not_use_for TEXT,
+					owner_user_id TEXT,
+					reviewed_by_user_id TEXT,
+					pii_cleared INTEGER NOT NULL DEFAULT 0,
+					consent_scope_confirmed INTEGER NOT NULL DEFAULT 0,
+					active INTEGER NOT NULL DEFAULT 1,
+					created_at TEXT NOT NULL,
+					updated_at TEXT NOT NULL,
+					published_at TEXT,
+					review_due_at TEXT,
+					payload_json TEXT
+				)
+			`);
+			await d1Run(svc.env, `
+				CREATE TABLE IF NOT EXISTS ${TAGS_TABLE} (
+					artefact_id TEXT NOT NULL,
+					tag_slug TEXT NOT NULL,
+					tag_label TEXT NOT NULL,
+					tag_type TEXT NOT NULL DEFAULT 'tag',
+					PRIMARY KEY (artefact_id, tag_slug)
+				)
+			`);
+			await d1Run(svc.env, `
+				CREATE TABLE IF NOT EXISTS ${AUDIT_TABLE} (
+					id TEXT PRIMARY KEY,
+					artefact_id TEXT,
+					action TEXT NOT NULL,
+					actor_user_id TEXT,
+					created_at TEXT NOT NULL,
+					payload_json TEXT
+				)
+			`);
+			await d1Run(svc.env, `CREATE INDEX IF NOT EXISTS idx_repository_artefacts_status ON ${ARTEFACTS_TABLE} (status, active, published_at)`);
+			await d1Run(svc.env, `CREATE INDEX IF NOT EXISTS idx_repository_artefacts_review ON ${ARTEFACTS_TABLE} (status, review_due_at)`);
+			await d1Run(svc.env, `CREATE INDEX IF NOT EXISTS idx_repository_artefacts_facets ON ${ARTEFACTS_TABLE} (method, evidence_maturity, service_area, user_group, risk_area)`);
+			await d1Run(svc.env, `CREATE INDEX IF NOT EXISTS idx_repository_tags_type ON ${TAGS_TABLE} (tag_type, tag_slug)`);
+		})();
+		schemaReadyByDatabase.set(database, ready);
+		ready.catch(() => schemaReadyByDatabase.delete(database));
+	}
+	await schemaReadyByDatabase.get(database);
 }
 
 function publicWhere() {
@@ -253,6 +262,10 @@ function publicWhere() {
 		"pii_cleared = 1",
 		"consent_scope_confirmed = 1"
 	];
+}
+
+function publicWhereSql() {
+	return publicWhere().join(" AND ");
 }
 
 function selectedFacet(url) {
@@ -406,6 +419,52 @@ function sortArtefacts(artefacts, sort) {
 	});
 }
 
+function repositorySortSql(sort) {
+	if (sort === "confidence_desc") {
+		return "CASE confidence WHEN 'high' THEN 3 WHEN 'medium' THEN 2 WHEN 'low' THEN 1 ELSE 0 END DESC, title ASC";
+	}
+	if (sort === "relevance") return "title ASC";
+	return "datetime(COALESCE(updated_at, published_at, created_at)) DESC, title ASC";
+}
+
+function repositorySearchQuery(url) {
+	const clauses = [...publicWhere()];
+	const params = [];
+	const q = cleanText(url.searchParams.get("q"));
+	const method = searchValues(url, "method");
+	const maturity = searchValues(url, "maturity");
+	const serviceArea = searchValues(url, "service_area");
+	const userGroup = searchValues(url, "user_group");
+	const riskArea = searchValues(url, "risk_area");
+	if (q) {
+		const like = `%${q.toLowerCase()}%`;
+		clauses.push(`(
+			lower(title) LIKE ?
+			OR lower(summary) LIKE ?
+			OR lower(COALESCE(service_area, '')) LIKE ?
+			OR lower(COALESCE(user_group, '')) LIKE ?
+			OR lower(COALESCE(method, '')) LIKE ?
+			OR lower(COALESCE(risk_area, '')) LIKE ?
+		)`);
+		params.push(like, like, like, like, like, like);
+	}
+	for (const [column, values] of [
+		["method", method],
+		["evidence_maturity", maturity],
+		["service_area", serviceArea],
+		["user_group", userGroup],
+		["risk_area", riskArea],
+	]) {
+		if (!values.length) continue;
+		clauses.push(`${column} IN (${values.map(() => "?").join(", ")})`);
+		params.push(...values);
+	}
+	return {
+		whereSql: clauses.length ? `WHERE ${clauses.join(" AND ")}` : "",
+		params,
+	};
+}
+
 async function tagsByArtefactId(svc, artefactIds) {
 	if (!artefactIds.length) return new Map();
 	const placeholders = artefactIds.map(() => "?").join(", ");
@@ -424,13 +483,17 @@ async function tagsByArtefactId(svc, artefactIds) {
 }
 
 async function repositoryQueues(svc) {
-	const candidate = await d1Get(svc.env, `SELECT COUNT(*) AS count FROM ${ARTEFACTS_TABLE} WHERE status = 'candidate' AND active = 1`);
-	const dueReview = await d1Get(svc.env, `SELECT COUNT(*) AS count FROM ${ARTEFACTS_TABLE} WHERE status = 'published' AND active = 1 AND review_due_at IS NOT NULL AND date(review_due_at) <= date('now', '+30 days')`);
-	const withdrawn = await d1Get(svc.env, `SELECT COUNT(*) AS count FROM ${ARTEFACTS_TABLE} WHERE status = 'withdrawn' AND active = 1`);
+	const counts = await d1Get(svc.env, `
+		SELECT
+			SUM(CASE WHEN status = 'candidate' AND active = 1 THEN 1 ELSE 0 END) AS candidate_count,
+			SUM(CASE WHEN status = 'published' AND active = 1 AND review_due_at IS NOT NULL AND date(review_due_at) <= date('now', '+30 days') THEN 1 ELSE 0 END) AS due_review_count,
+			SUM(CASE WHEN status = 'withdrawn' AND active = 1 THEN 1 ELSE 0 END) AS withdrawn_count
+		FROM ${ARTEFACTS_TABLE}
+	`);
 	return [
-		{ queue: "Candidate artefacts", count: String(candidate?.count || 0), href: "/pages/repository/review/candidates/", action: "Review" },
-		{ queue: "Due review", count: String(dueReview?.count || 0), href: "/pages/repository/review/stale/", action: "Check" },
-		{ queue: "Withdrawn artefacts", count: String(withdrawn?.count || 0), href: "/pages/repository/review/withdrawn/", action: "Inspect" }
+		{ queue: "Candidate artefacts", count: String(counts?.candidate_count || 0), href: "/pages/repository/review/candidates/", action: "Review" },
+		{ queue: "Due review", count: String(counts?.due_review_count || 0), href: "/pages/repository/review/stale/", action: "Check" },
+		{ queue: "Withdrawn artefacts", count: String(counts?.withdrawn_count || 0), href: "/pages/repository/review/withdrawn/", action: "Inspect" }
 	];
 }
 
@@ -459,6 +522,64 @@ function metricsFromArtefacts(artefacts) {
 		{ value: String(linkedRecommendations), label: "linked recommendations" },
 		{ value: String(dueReview), label: "due review in 30 days" }
 	];
+}
+
+async function facetFromRepository(svc, name, label, column) {
+	const rows = await d1All(svc.env, `
+		SELECT ${column} AS value, COUNT(*) AS count
+		FROM ${ARTEFACTS_TABLE}
+		WHERE ${publicWhereSql()} AND ${column} IS NOT NULL AND TRIM(${column}) != ''
+		GROUP BY ${column}
+		ORDER BY count DESC, value ASC
+		LIMIT 20
+	`);
+	return {
+		name,
+		label,
+		items: rows.map((row) => ({
+			value: row.value,
+			label: labelFromSlug(row.value),
+			count: Number(row.count || 0),
+		}))
+	};
+}
+
+async function repositoryMetrics(svc) {
+	const [artefactCounts, linkedRecommendations] = await Promise.all([
+		d1Get(svc.env, `
+			SELECT
+				COUNT(*) AS published_count,
+				SUM(CASE WHEN review_due_at IS NOT NULL AND date(review_due_at) <= date('now', '+30 days') THEN 1 ELSE 0 END) AS due_review_count
+			FROM ${ARTEFACTS_TABLE}
+			WHERE ${publicWhereSql()}
+		`),
+		d1Get(svc.env, `
+			SELECT COUNT(*) AS count
+			FROM ${TAGS_TABLE}
+			WHERE tag_type = 'recommendation'
+			AND artefact_id IN (
+				SELECT id
+				FROM ${ARTEFACTS_TABLE}
+				WHERE ${publicWhereSql()}
+			)
+		`)
+	]);
+	return [
+		{ value: String(artefactCounts?.published_count || 0), label: "published artefacts" },
+		{ value: String(linkedRecommendations?.count || 0), label: "linked recommendations" },
+		{ value: String(artefactCounts?.due_review_count || 0), label: "due review in 30 days" }
+	];
+}
+
+async function fullRepositoryCatalogue(svc) {
+	const rows = await d1All(svc.env, `
+		SELECT *
+		FROM ${ARTEFACTS_TABLE}
+		WHERE ${publicWhereSql()}
+		ORDER BY datetime(COALESCE(updated_at, published_at, created_at)) DESC, title ASC
+	`);
+	const tags = await tagsByArtefactId(svc, rows.map((row) => row.id));
+	return rows.map((row) => rowToArtefact(row, tags.get(row.id) || []));
 }
 
 function pagination(url, total) {
@@ -526,40 +647,48 @@ export async function listRepository(svc, origin, url, authContext = {}) {
 	const errors = [];
 	try {
 		await ensureTables(svc);
-		const pager = pagination(url, 0);
 		const sort = url.searchParams.get("sort") || "reviewed_desc";
+		const hydrate = cleanSlug(url.searchParams.get("hydrate"));
+		const query = repositorySearchQuery(url);
+		const totalCount = await d1Get(svc.env, `
+			SELECT COUNT(*) AS count
+			FROM ${ARTEFACTS_TABLE}
+			${query.whereSql}
+		`, query.params);
+		const pager = pagination(url, Number(totalCount?.count || 0));
 		const rows = await d1All(svc.env, `
 			SELECT *
 			FROM ${ARTEFACTS_TABLE}
-			WHERE ${publicWhere().join(" AND ")}
-			ORDER BY datetime(COALESCE(updated_at, published_at, created_at)) DESC, title ASC
-		`);
+			${query.whereSql}
+			ORDER BY ${repositorySortSql(sort)}
+			LIMIT ? OFFSET ?
+		`, [...query.params, pager.limit, pager.offset]);
 		const tags = await tagsByArtefactId(svc, rows.map((row) => row.id));
-		const allArtefacts = rows.map((row) => rowToArtefact(row, tags.get(row.id) || []));
-		const filtered = sortArtefacts(allArtefacts.filter((artefact) => matchesSearch(artefact, url)), sort);
-		const artefacts = filtered.slice(pager.offset, pager.offset + pager.limit);
-		const filters = [
-			facetFromArtefacts(allArtefacts, "method", "Method", "method"),
-			facetFromArtefacts(allArtefacts, "evidence_maturity", "Evidence maturity", "evidenceMaturity"),
-			facetFromArtefacts(allArtefacts, "service_area", "Service area", "serviceArea"),
-			facetFromArtefacts(allArtefacts, "user_group", "User group", "userGroup"),
-			facetFromArtefacts(allArtefacts, "risk_area", "Risk or constraint", "riskArea")
-		];
-		const metrics = metricsFromArtefacts(allArtefacts);
-		const queues = await repositoryQueues(svc);
+		const artefacts = rows.map((row) => rowToArtefact(row, tags.get(row.id) || []));
+		const [filters, metrics, queues, catalogue] = await Promise.all([
+			Promise.all([
+				facetFromRepository(svc, "method", "Method", "method"),
+				facetFromRepository(svc, "evidence_maturity", "Evidence maturity", "evidence_maturity"),
+				facetFromRepository(svc, "service_area", "Service area", "service_area"),
+				facetFromRepository(svc, "user_group", "User group", "user_group"),
+				facetFromRepository(svc, "risk_area", "Risk or constraint", "risk_area")
+			]),
+			repositoryMetrics(svc),
+			repositoryQueues(svc),
+			hydrate === HYDRATE_FULL_MODE ? fullRepositoryCatalogue(svc) : Promise.resolve(undefined)
+		]);
 		const showQueues = canCurate(authContext);
-		const hydrate = cleanSlug(url.searchParams.get("hydrate"));
 		return svc.json({
 			ok: true,
 			source: "d1",
 			artefacts,
-			pagination: { page: pager.page, limit: pager.limit, total: filtered.length },
+			pagination: { page: pager.page, limit: pager.limit, total: pager.total },
 			selected: selectedFacet(url),
 			metrics,
 			filters,
 			queues: showQueues ? queues : [],
 			canCurate: showQueues,
-			catalogue: hydrate === HYDRATE_FULL_MODE ? { artefacts: allArtefacts } : undefined,
+			catalogue: catalogue ? { artefacts: catalogue } : undefined,
 			derivation: repositoryDerivation(showQueues)
 		}, 200, svc.corsHeaders(origin));
 	} catch (error) {

@@ -1,0 +1,93 @@
+{
+	"date": "2026-06-07",
+	"branch": "fix/repository-preview-latency",
+	"base": "pr-369",
+	"traceRequired": true,
+	"repository": "kevinrapley/ResearchOps",
+	"task": "Investigate the reported lag on the ResearchOps repository preview, try the deployed preview directly, and reduce the repository page latency without regressing seeded data behaviour.",
+	"selectedBundles": [
+		".agent-operating-model/bundles/github/",
+		".agent-operating-model/bundles/researchops-developer-control/",
+		".agent-operating-model/bundles/multi-functional-team/",
+		".agent-operating-model/bundles/govuk-design-system/",
+		".agent-operating-model/bundles/cloudflare/"
+	],
+	"skippedBundles": [
+		".agent-operating-model/bundles/openai/",
+		".agent-operating-model/bundles/mcp-agent-tooling/",
+		".agent-operating-model/bundles/airtable-public-api/",
+		".agent-operating-model/bundles/mural-public-api/"
+	],
+	"filesRead": [
+		"AGENTS.md",
+		".agent-operating-model/orchestration.xml",
+		".agent-operating-model/bundle-registry.json",
+		".agent-operating-model/task-signal-catalog.json",
+		".agent-operating-model/selection-rules.json",
+		".agent-operating-model/precedence-policy.md",
+		".agent-operating-model/github-mutation-policy.md",
+		".agent-operating-model/trace-policy.md",
+		".agent-operating-model/trace-layers.md",
+		"infra/cloudflare/src/service/repository.js",
+		"public/js/repository-page.js",
+		"public/js/repository-static-page.js",
+		"tests/repository-front-page-route-state.test.js",
+		"docs/implementation/repository-front-page-integration.md"
+	],
+	"filesChanged": [
+		"infra/cloudflare/src/service/repository.js",
+		"public/js/repository-page.js",
+		"public/js/repository-static-page.js",
+		"tests/repository-front-page-route-state.test.js",
+		"docs/agent-audit/reasoning/2026/06/07/repository-preview-latency.md",
+		"docs/agent-audit/reasoning/2026/06/07/repository-preview-latency.json"
+	],
+	"precedenceDecisions": [
+		"Repository operating-model and branch-trace rules overrode the previous ad hoc pr-369 working branch, so the change was continued on an approved fix/ branch.",
+		"Production latency took precedence over the earlier client-only optimisation that depended on hydrate=full.",
+		"Real runtime evidence took precedence over assumption: the preview URL was attempted directly before changing code."
+	],
+	"evidence": [
+		"The repository service was running ensureTables(...) on the hot read path for list and detail requests.",
+		"The repository list route still loaded and materialised the full published set before filtering even when the page only needed one page of results.",
+		"The repository front page and browse pages both requested /api/repository?hydrate=full on initial load."
+	],
+	"toolLimitations": [
+		"The in-app browser could not observe the same preview state as the user because the preview URL redirected this session to Cloudflare Access sign-in.",
+		"No authenticated user tab was available to reuse inside the shared browser session."
+	],
+	"implementationDecisions": [
+		"Cache repository schema assurance per D1 binding instance so live read requests do not repeat CREATE TABLE IF NOT EXISTS and index checks.",
+		"Move the D1-backed list route to query only the requested page plus current page tags on the hot path.",
+		"Keep hydrate=full support only as an explicit opt-in response shape instead of the default page-loading contract.",
+		"Change the repository landing page and deeper browse pages to request paged API data for the current UI state instead of hydrating the entire catalogue up front.",
+		"Keep seeded-tag filtering and current browse/history behaviour intact while changing the data-loading strategy."
+	],
+	"assumptions": [
+		"The user-facing lag is dominated by avoidable repository read work rather than by unusually slow client rendering of the current page shell.",
+		"Preview D1 and Pages runtime performance will materially improve once repeated schema checks and full-catalogue hydration are removed from the default path."
+	],
+	"validationAttempted": [
+		"In-app browser navigation to https://feature-research-repository.researchops.pages.dev/",
+		"Browser inspection of open authenticated tabs",
+		"node --check public/js/repository-page.js",
+		"node --check public/js/repository-static-page.js",
+		"node --check infra/cloudflare/src/service/repository.js",
+		"node --import ./tests/helpers/generated-govuk-page-source.mjs --test tests/repository-front-page-route-state.test.js tests/repository-seed-taxonomy-labels.test.js tests/repository-artefact-detail-seed-tag-guard.test.js",
+		"npm test",
+		"npm run lint"
+	],
+	"validationNotRun": [
+		"Live post-change preview timing was not run because the updated code has not yet been deployed from this branch.",
+		"Authenticated browser validation against the preview content was not possible because Cloudflare Access intercepted the session and no authenticated tab was available."
+	],
+	"issuesAndPivots": [
+		"The initial browser attempt proved the preview URL was not directly observable in this environment, so the investigation pivoted to repository runtime code and test-backed optimisation.",
+		"Creating an approved branch initially failed because .git write access was not available; the permission was then requested and granted for this turn."
+	],
+	"residualRisks": [
+		"The live preview could still show some first-request cold-start cost from Cloudflare runtime startup, which this repository change does not remove.",
+		"Filter interactions now depend on fast paged API responses rather than an already-hydrated client catalogue, so any future D1 query regressions will be more visible.",
+		"Airtable fallback still materialises its published set in memory; that remains acceptable because the reported lag path was the D1-backed preview."
+	]
+}

@@ -4,13 +4,6 @@ function resolveApiBase() {
 }
 
 const PAGE_SIZE = 20;
-const FILTER_FIELDS = Object.freeze([
-	["method", "method"],
-	["maturity", "evidenceMaturity"],
-	["service_area", "serviceArea"],
-	["user_group", "userGroup"],
-	["risk_area", "riskArea"],
-]);
 
 const CONFIG = Object.freeze({
 	API_BASE: resolveApiBase(),
@@ -18,7 +11,7 @@ const CONFIG = Object.freeze({
 	CACHE: "no-store",
 });
 
-let repositoryCatalogue = [];
+let latestRepositoryRequest = 0;
 
 function apiUrl(path) {
 	const cleanPath = path.startsWith("/") ? path : `/${path}`;
@@ -58,10 +51,6 @@ async function fetchWithTimeout(url) {
 
 function text(value) {
 	return String(value || "");
-}
-
-function slug(value) {
-	return text(value).trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
 }
 
 function clear(element) {
@@ -127,33 +116,6 @@ function displayTags(artefact) {
 	return (artefact.tags || []).filter((tag) => !/seeded/i.test(text(tag.text)));
 }
 
-function searchValues(params, key) {
-	return [...new Set(params.getAll(key).map(slug).filter(Boolean))];
-}
-
-function matchesFilters(artefact, params) {
-	const q = text(params.get("q")).trim().toLowerCase();
-	if (q) {
-		const haystack = [
-			artefact.title,
-			artefact.summary,
-			artefact.serviceArea,
-			artefact.userGroup,
-			artefact.method,
-			artefact.riskArea,
-		]
-			.join(" ")
-			.toLowerCase();
-		if (!haystack.includes(q)) return false;
-	}
-	for (const [queryKey, artefactKey] of FILTER_FIELDS) {
-		const selected = searchValues(params, queryKey);
-		if (!selected.length) continue;
-		if (!selected.includes(slug(artefact[artefactKey]))) return false;
-	}
-	return true;
-}
-
 function tagFor(tag) {
 	const strong = document.createElement("strong");
 	strong.className = `govuk-tag ${tag.classes || "govuk-tag--grey"}`;
@@ -161,17 +123,20 @@ function tagFor(tag) {
 	return strong;
 }
 
-function renderArtefacts(artefacts = []) {
+function renderArtefacts(artefacts = [], pagination = {}) {
 	const target = document.getElementById("repository-results");
 	const count = document.getElementById("repository-result-count");
 	if (!target) return;
 	clear(target);
 	if (count) {
-		if (artefacts.length > PAGE_SIZE) {
-			count.textContent = `Showing 1 to ${PAGE_SIZE} of ${artefacts.length} published artefacts`;
-		} else {
-			count.textContent = `${artefacts.length} published artefact${artefacts.length === 1 ? "" : "s"}`;
-		}
+		const total = Number(pagination.total || artefacts.length || 0);
+		const page = Number(pagination.page || 1);
+		const limit = Number(pagination.limit || PAGE_SIZE);
+		const start = total ? (page - 1) * limit + 1 : 0;
+		const end = total ? Math.min(start + artefacts.length - 1, total) : 0;
+		count.textContent = total > artefacts.length ?
+			`Showing ${start} to ${end} of ${total} published artefacts` :
+			`${total} published artefact${total === 1 ? "" : "s"}`;
 	}
 	if (!artefacts.length) {
 		target.appendChild(templateContent("repository-empty-template"));
@@ -180,7 +145,7 @@ function renderArtefacts(artefacts = []) {
 	}
 	const list = document.createElement("div");
 	list.className = "repository-artefact-list";
-	for (const artefact of artefacts.slice(0, PAGE_SIZE)) {
+	for (const artefact of artefacts) {
 		const node = templateContent("repository-artefact-template");
 		const link = node.querySelector("[data-repository-artefact='title']");
 		const summary = node.querySelector("[data-repository-artefact='summary']");
@@ -266,10 +231,9 @@ function repositoryQueryFromForms() {
 	return params;
 }
 
-function applyRepositoryState() {
-	const params = new URLSearchParams(window.location.search);
-	renderArtefacts(repositoryCatalogue.filter((artefact) => matchesFilters(artefact, params)));
-	syncSearchAndFiltersFromUrl();
+function repositoryRequestUrl(params = new URLSearchParams(window.location.search)) {
+	const query = params.toString();
+	return apiUrl(`/api/repository${query ? `?${query}` : ""}`);
 }
 
 function updateRepositoryHistory(params) {
@@ -277,21 +241,13 @@ function updateRepositoryHistory(params) {
 	window.history.pushState({}, "", query ? `${window.location.pathname}?${query}` : window.location.pathname);
 }
 
-function bindRepositoryInteractions() {
-	const searchForm = document.getElementById("repository-search");
-	const filterForm = document.getElementById("repository-filter-form");
-	const apply = (event) => {
-		event.preventDefault();
-		updateRepositoryHistory(repositoryQueryFromForms());
-		applyRepositoryState();
-	};
-	searchForm?.addEventListener("submit", apply);
-	filterForm?.addEventListener("submit", apply);
-	window.addEventListener("popstate", () => applyRepositoryState());
-}
-
-async function initialiseRepositoryPage() {
-	const { ok, status, data } = await fetchWithTimeout(apiUrl("/api/repository?hydrate=full"));
+async function loadRepositoryState(params = new URLSearchParams(window.location.search)) {
+	const requestId = ++latestRepositoryRequest;
+	syncSearchAndFiltersFromUrl();
+	setBusy(document.getElementById("repository-results"), true);
+	setBusy(document.getElementById("repository-filter-form"), true);
+	const { ok, status, data } = await fetchWithTimeout(repositoryRequestUrl(params));
+	if (requestId !== latestRepositoryRequest) return;
 	if (status === 401) {
 		redirectToSignIn();
 		return;
@@ -300,12 +256,31 @@ async function initialiseRepositoryPage() {
 		renderError();
 		return;
 	}
-	repositoryCatalogue = data?.catalogue?.artefacts || [];
 	renderMetrics(data.metrics || []);
 	updateFilterCounts(data.filters || []);
 	setQueueCounts(data.queues || [], Boolean(data.canCurate));
+	renderArtefacts(data.artefacts || [], data.pagination || {});
+}
+
+function bindRepositoryInteractions() {
+	const searchForm = document.getElementById("repository-search");
+	const filterForm = document.getElementById("repository-filter-form");
+	const apply = async (event) => {
+		event.preventDefault();
+		const params = repositoryQueryFromForms();
+		updateRepositoryHistory(params);
+		await loadRepositoryState(params);
+	};
+	searchForm?.addEventListener("submit", apply);
+	filterForm?.addEventListener("submit", apply);
+	window.addEventListener("popstate", () => {
+		loadRepositoryState(new URLSearchParams(window.location.search)).catch(() => renderError());
+	});
+}
+
+async function initialiseRepositoryPage() {
 	bindRepositoryInteractions();
-	applyRepositoryState();
+	await loadRepositoryState(new URLSearchParams(window.location.search));
 }
 
 initialiseRepositoryPage().catch(() => renderError());

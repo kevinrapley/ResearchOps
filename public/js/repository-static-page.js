@@ -1,11 +1,4 @@
 const PAGE_SIZE = 10;
-const BROWSE_FIELD_MAP = Object.freeze({
-	service_area: "serviceArea",
-	user_group: "userGroup",
-	method: "method",
-	risk_area: "riskArea",
-	maturity: "evidenceMaturity",
-});
 const repositoryLabelOverrides = new Map([
 	["frontline-staff", "Frontline staff"],
 	["assisted-digital-users", "Assisted digital users"],
@@ -14,6 +7,7 @@ const repositoryLabelOverrides = new Map([
 	["research-operations-team", "Research operations staff"],
 	["research-operations-staff", "Research operations staff"],
 ]);
+let latestBrowseRequest = 0;
 
 function text(value) {
 	return String(value || "");
@@ -49,17 +43,6 @@ function selectedPage() {
 function selectedSort() {
 	const sort = new URLSearchParams(window.location.search).get("sort") || "reviewed_desc";
 	return ["reviewed_desc", "confidence_desc", "relevance"].includes(sort) ? sort : "reviewed_desc";
-}
-
-function sortArtefacts(artefacts, sort) {
-	const confidenceRank = { high: 3, medium: 2, low: 1 };
-	return [...artefacts].sort((a, b) => {
-		if (sort === "confidence_desc") {
-			return (confidenceRank[slug(b.confidence)] || 0) - (confidenceRank[slug(a.confidence)] || 0) || text(a.title).localeCompare(text(b.title));
-		}
-		if (sort === "relevance") return text(a.title).localeCompare(text(b.title));
-		return Date.parse(b.publishedAt || b.reviewDueAt || 0) - Date.parse(a.publishedAt || a.reviewDueAt || 0) || text(a.title).localeCompare(text(b.title));
-	});
 }
 
 async function repositoryJson(path, options = {}) {
@@ -217,25 +200,6 @@ function renderBrowseResults(artefacts = [], selected = {}, pagination = {}) {
 	target.appendChild(list);
 }
 
-function browseArtefacts(catalogue, type, value, sort = selectedSort(), page = selectedPage()) {
-	const field = BROWSE_FIELD_MAP[type];
-	if (!field || !value) return { artefacts: [], pagination: { page, limit: PAGE_SIZE, total: 0 } };
-	const filtered = sortArtefacts(
-		(catalogue || []).filter((artefact) => slug(artefact[field]) === slug(value)),
-		sort
-	);
-	const pagination = {
-		page,
-		limit: PAGE_SIZE,
-		total: filtered.length,
-	};
-	const offset = (page - 1) * PAGE_SIZE;
-	return {
-		artefacts: filtered.slice(offset, offset + PAGE_SIZE),
-		pagination,
-	};
-}
-
 function browseUrl(type, value, page = 1, sort = selectedSort()) {
 	return `${window.location.pathname}?${new URLSearchParams({ [type]: value, page: String(page), limit: String(PAGE_SIZE), sort })}`;
 }
@@ -285,24 +249,48 @@ function initialiseSortForm(type, value) {
 	form.hidden = !value;
 }
 
-function renderBrowsePageState(page, catalogue = []) {
+function browseRequestPath(page) {
+	const type = page.dataset.browseType;
+	const value = selectedValueFor(type);
+	if (!value) {
+		return "/api/repository";
+	}
+	const params = new URLSearchParams(window.location.search);
+	params.set(type, value);
+	params.set("page", String(selectedPage()));
+	params.set("limit", String(PAGE_SIZE));
+	params.set("sort", selectedSort());
+	return `/api/repository?${params.toString()}`;
+}
+
+async function loadBrowseState(page) {
+	const requestId = ++latestBrowseRequest;
 	const type = page.dataset.browseType;
 	const value = selectedValueFor(type);
 	const sort = selectedSort();
-	const currentPage = selectedPage();
 	initialiseSortForm(type, value);
-	if (!value) {
-		renderBrowseResults([], {}, { page: 1, limit: PAGE_SIZE, total: 0 });
-		renderPagination(type, "", {}, sort);
+	document.getElementById("repository-browse-options")?.setAttribute("aria-busy", "true");
+	document.getElementById("repository-browse-results")?.setAttribute("aria-busy", "true");
+	const { response, data } = await repositoryJson(browseRequestPath(page));
+	if (requestId !== latestBrowseRequest) return;
+	if (response.status === 401) {
+		window.location.assign(signInUrl());
 		return;
 	}
-	const selected = { type, value, label: titleFromSlug(value) };
-	const { artefacts, pagination } = browseArtefacts(catalogue, type, value, sort, currentPage);
-	renderBrowseResults(artefacts, selected, pagination);
-	renderPagination(type, value, pagination, sort);
+	const filters = data?.filters || [];
+	renderBrowseOptions(page, filters);
+	if (!value || !data?.selected?.value) {
+		renderBrowseResults([], {}, { page: 1, limit: PAGE_SIZE, total: 0 });
+		renderPagination(type, "", {}, sort);
+		document.getElementById("repository-browse-results")?.setAttribute("aria-busy", "false");
+		return;
+	}
+	renderBrowseResults(data.artefacts || [], data.selected, data.pagination || {});
+	renderPagination(type, value, data.pagination || {}, sort);
+	document.getElementById("repository-browse-results")?.setAttribute("aria-busy", "false");
 }
 
-function bindBrowseInteractions(page, filters = [], catalogue = []) {
+function bindBrowseInteractions(page) {
 	const type = page.dataset.browseType;
 	const options = document.getElementById("repository-browse-options");
 	const pagination = document.getElementById("repository-pagination");
@@ -316,8 +304,7 @@ function bindBrowseInteractions(page, filters = [], catalogue = []) {
 			const value = new URL(link.href, window.location.origin).searchParams.get(type);
 			if (!value) return;
 			updateBrowseHistory(type, value, 1, selectedSort());
-			renderBrowseOptions(page, filters);
-			renderBrowsePageState(page, catalogue);
+			loadBrowseState(page).catch(() => renderBrowseResults([], {}, { page: 1, limit: PAGE_SIZE, total: 0 }));
 		});
 	}
 	if (pagination) {
@@ -330,8 +317,7 @@ function bindBrowseInteractions(page, filters = [], catalogue = []) {
 			const targetPage = Number.parseInt(params.get("page") || "1", 10);
 			if (!value) return;
 			updateBrowseHistory(type, value, targetPage, params.get("sort") || selectedSort());
-			renderBrowseOptions(page, filters);
-			renderBrowsePageState(page, catalogue);
+			loadBrowseState(page).catch(() => renderBrowseResults([], {}, { page: 1, limit: PAGE_SIZE, total: 0 }));
 		});
 	}
 	if (!form || !select) return;
@@ -340,27 +326,17 @@ function bindBrowseInteractions(page, filters = [], catalogue = []) {
 		const currentValue = selectedValueFor(type);
 		if (!currentValue) return;
 		updateBrowseHistory(type, currentValue, 1, select.value);
-		renderBrowseOptions(page, filters);
-		renderBrowsePageState(page, catalogue);
+		loadBrowseState(page).catch(() => renderBrowseResults([], {}, { page: 1, limit: PAGE_SIZE, total: 0 }));
 	});
 }
 
 async function initialiseBrowsePage() {
 	const page = document.querySelector("[data-repository-browse-page]");
 	if (!page) return;
-	const { response, data } = await repositoryJson("/api/repository?hydrate=full");
-	if (response.status === 401) {
-		window.location.assign(signInUrl());
-		return;
-	}
-	const filters = data?.filters || [];
-	const catalogue = data?.catalogue?.artefacts || [];
-	renderBrowseOptions(page, filters);
-	bindBrowseInteractions(page, filters, catalogue);
-	renderBrowsePageState(page, catalogue);
+	bindBrowseInteractions(page);
+	await loadBrowseState(page);
 	window.addEventListener("popstate", () => {
-		renderBrowseOptions(page, filters);
-		renderBrowsePageState(page, catalogue);
+		loadBrowseState(page).catch(() => renderBrowseResults([], {}, { page: 1, limit: PAGE_SIZE, total: 0 }));
 	});
 }
 
