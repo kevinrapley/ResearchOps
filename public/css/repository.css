@@ -4,7 +4,7 @@
    ResearchOps UI • Research repository front page stylesheet source
    Service:    Home Office Biometrics — ResearchOps
    Route:      /pages/repository/
-   Build:      GOV.UK Frontend components with repository-specific support
+   Build:      GOV.UK Frontend components with route-specific support
    Repo:       /src/styles/repository.scss
    License:    All rights reserved
    ========================================================================== */
@@ -48,8 +48,22 @@
 	background: #ffffff;
 	}
 
-.repository-search-panel .govuk-form-group {
-	margin-bottom: 16px;
+.repository-search-panel__row {
+	display: flex;
+	flex-direction: column;
+	gap: 15px;
+	}
+
+.repository-search-panel__field {
+	flex: 1 1 auto;
+	}
+
+.repository-search-panel__field .govuk-form-group {
+	margin-bottom: 0;
+	}
+
+.repository-search-panel__action {
+	flex: 0 0 auto;
 	}
 
 .repository-search-panel__input {
@@ -66,10 +80,14 @@
 	color: #505a5f;
 	}
 
+.repository-page {
+	padding-top: 32px;
+	}
+
 .repository-metrics {
 	display: grid;
 	gap: 16px;
-	margin: 32px 0 40px;
+	margin: 0 0 40px;
 	}
 
 .repository-metric {
@@ -86,11 +104,6 @@
 	line-height: 1;
 	}
 
-.repository-card-grid {
-	display: grid;
-	gap: 20px;
-	}
-
 .repository-card {
 	padding: 20px;
 	border: 1px solid #b1b4b6;
@@ -104,10 +117,6 @@
 .repository-card--governance {
 	margin-top: 24px;
 	border-left: 5px solid #1d70b8;
-	}
-
-.repository-card--quiet {
-	background: #f8f8f8;
 	}
 
 .repository-section {
@@ -127,6 +136,7 @@
 	}
 
 .repository-artefact-list__item {
+	display: block;
 	padding: 20px 0;
 	border-top: 1px solid #b1b4b6;
 	}
@@ -156,17 +166,18 @@
 	}
 
 @media (min-width: 641px) {
+	.repository-search-panel__row {
+		flex-direction: row;
+		align-items: flex-end;
+		}
+
+	.repository-search-panel__action {
+		padding-bottom: 2px;
+		}
+
 	.repository-metrics {
 		grid-template-columns: repeat(3, 1fr);
-	}
-
-	.repository-card-grid {
-		grid-template-columns: repeat(2, minmax(0, 1fr));
-	}
-
-	.repository-card-grid--three {
-		grid-template-columns: repeat(3, minmax(0, 1fr));
-	}
+		}
 	}
 
 /* transparency begins in the cascade */
