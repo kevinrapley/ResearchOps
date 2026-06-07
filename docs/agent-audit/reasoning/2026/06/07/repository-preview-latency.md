@@ -70,6 +70,8 @@ Investigate the reported lag on the ResearchOps repository preview, try the depl
 ## Files changed
 
 - `infra/cloudflare/src/service/repository.js`
+- `infra/cloudflare/src/core/auth/access.js`
+- `infra/cloudflare/src/worker.js`
 - `src/govuk/templates/pages/repository.njk`
 - `public/js/repository-page.js`
 - `public/js/repository-static-page.js`
@@ -85,6 +87,7 @@ Investigate the reported lag on the ResearchOps repository preview, try the depl
 - After the first optimisation pass, the repository list route still fanned out into many D1 queries per request: count, page rows, tags, five facet queries, metrics queries and queue counts.
 - Chrome traces from the authenticated preview showed the biggest delay was still in `/api/repository` and `/api/repository?hydrate=full`, each taking about two to three seconds while first paint stayed below 100ms.
 - The repository landing page was still issuing two initial API requests in parallel because the inline prefetch hit `/api/repository` while the page module requested `/api/repository?hydrate=full`.
+- The repository Worker was re-running repository auth declaration inserts on every request and still resolving a fresh Access-backed auth context for each API call.
 
 ## Tool limitations
 
@@ -105,6 +108,8 @@ Investigate the reported lag on the ResearchOps repository preview, try the depl
 - Cache the published D1 repository snapshot in Worker memory for a short TTL so repeated filter requests and detail reads reuse one prepared dataset instead of rebuilding the same published set on every request.
 - Invalidate the published snapshot cache after candidate creation so governed write paths do not leave repository reads stale.
 - Align the inline Nunjucks prefetch with the hydrated request path so the page no longer pays for both `/api/repository` and `/api/repository?hydrate=full` on first load.
+- Cache Access-backed authenticated context briefly per sign-in token and requested team so repository API reads can reuse the same resolved team, role and permission state.
+- Cache repository auth declaration setup per D1 binding so repository reads no longer pay repeated `INSERT OR IGNORE` declaration work.
 
 ## Assumptions
 
@@ -128,6 +133,7 @@ Investigate the reported lag on the ResearchOps repository preview, try the depl
 - Trace inspection of `/Users/kevin.rapley/Downloads/Trace-20260608T001348.json.gz.devtools`
 - Trace inspection of `/Users/kevin.rapley/Downloads/Trace-20260608T001413.json.gz.devtools`
 - `node --import ./tests/helpers/generated-govuk-page-source.mjs --test tests/repository-front-page-route-state.test.js tests/repository-seed-taxonomy-labels.test.js tests/repository-artefact-detail-seed-tag-guard.test.js tests/auth-sign-in-route-state.test.js`
+- live browser measurement on `https://fix-repository-preview-laten.researchops.pages.dev/pages/repository/?method=usability-testing&method=service-review`
 
 ## Validation not run and why
 
@@ -152,6 +158,7 @@ Investigate the reported lag on the ResearchOps repository preview, try the depl
 - Warm filter updates after the first optimisation deploy were about `251ms`.
 - After the payload-trimming deploy, linked recommendations returned to `12`, but the front-page hydrate was still about `4.3s`, so first-load latency was still not acceptable.
 - Chrome trace samples on 2026-06-08 showed first contentful paint and largest contentful paint around `69ms` to `81ms`, while `/api/repository` and `/api/repository?hydrate=full` still consumed about `2.1s` to `2.7s`.
+- After the first live post-deploy check, the repository page route itself loaded in about `125ms`, but direct browser navigation to the hydrated repository API still took roughly `1.9s` to `2.4s`, pointing to authenticated Worker overhead beyond repository shaping.
 
 ## Residual risks
 
@@ -160,3 +167,4 @@ Investigate the reported lag on the ResearchOps repository preview, try the depl
 - Airtable fallback still materialises its published set in memory; that remains acceptable because the reported lag path was the D1-backed preview.
 - The live preview still needs one more measurement pass after the payload-trimming commit is deployed because the acceptable-speed threshold has not yet been reached.
 - Queue counts for curator users still run as a separate D1 query on list responses, so curator-mode pages may keep a small residual gap versus the non-curator path.
+- A fully cold Cloudflare Access token-validation path may still add startup cost outside the repository data path, so one more live measurement is still required after the auth-path caching deploy.
