@@ -24,6 +24,12 @@ function clampLimit(value) {
 	return Math.max(1, Math.min(parsed, 50));
 }
 
+function pageNumber(value) {
+	const parsed = Number.parseInt(String(value || ""), 10);
+	if (!Number.isFinite(parsed)) return 1;
+	return Math.max(1, parsed);
+}
+
 function newCandidateId() {
 	const suffix = typeof crypto !== "undefined" && typeof crypto.randomUUID === "function" ?
 		crypto.randomUUID() :
@@ -51,6 +57,49 @@ function parseJson(value, fallback) {
 
 function payloadText(payload = {}, key, fallback = "") {
 	return cleanText(payload[key] ?? fallback);
+}
+
+function labelFromSlug(value) {
+	const key = cleanSlug(value);
+	const overrides = new Map([
+		["frontline-staff", "Frontline staff"],
+		["assisted-digital-users", "Assisted digital users"],
+		["public-users", "Public users"],
+		["researchers", "Researchers"],
+		["research-operations-team", "Research operations staff"],
+		["research-operations-staff", "Research operations staff"],
+		["service-area", "Service area"],
+		["user-group", "User group"],
+		["risk-area", "Risk or constraint"],
+		["evidence-maturity", "Evidence maturity"],
+	]);
+	if (overrides.has(key)) return overrides.get(key);
+	const words = cleanText(value).replace(/-/g, " ");
+	return words ? `${words.slice(0, 1).toUpperCase()}${words.slice(1).toLowerCase()}` : "";
+}
+
+function topicLabelForRisk(riskArea) {
+	const labels = new Map([
+		["confidence-and-comprehension", "Confidence and comprehension"],
+		["workflow-friction", "Workflow friction"],
+		["governance-and-consent", "Governance and consent"],
+		["handoff-risk", "Handoff risk"],
+		["transaction-failure", "Transaction failure"],
+		["evidence-misuse", "Evidence misuse"],
+	]);
+	return labels.get(cleanSlug(riskArea)) || "Repository evidence theme";
+}
+
+function recommendationLabelForRisk(riskArea) {
+	const labels = new Map([
+		["confidence-and-comprehension", "Explain confidence and next steps"],
+		["workflow-friction", "Reduce avoidable workflow friction"],
+		["governance-and-consent", "Confirm consent and governance boundaries"],
+		["handoff-risk", "Clarify handoff owner and next action"],
+		["transaction-failure", "Make recovery routes explicit"],
+		["evidence-misuse", "State evidence limits before reuse"],
+	]);
+	return labels.get(cleanSlug(riskArea)) || "Check source context before reuse";
 }
 
 function airtableTableName(svc) {
@@ -235,6 +284,31 @@ function appendSearchFilters(where, params, url) {
 	}
 }
 
+function selectedFacet(url) {
+	const candidates = [
+		["service_area", "Service area"],
+		["user_group", "User group"],
+		["method", "Research method"],
+		["risk_area", "Risk or constraint"],
+		["maturity", "Evidence maturity"]
+	];
+	for (const [type, typeLabel] of candidates) {
+		const value = cleanSlug(url.searchParams.get(type));
+		if (value) return { type, typeLabel, value, label: labelFromSlug(value) };
+	}
+	return null;
+}
+
+function orderByClause(sort) {
+	if (sort === "confidence_desc") {
+		return "CASE confidence WHEN 'high' THEN 3 WHEN 'medium' THEN 2 WHEN 'low' THEN 1 ELSE 0 END DESC, datetime(updated_at) DESC, title ASC";
+	}
+	if (sort === "relevance") {
+		return "title ASC, datetime(updated_at) DESC";
+	}
+	return "datetime(COALESCE(updated_at, published_at, created_at)) DESC, title ASC";
+}
+
 function tagClassFor(type, value) {
 	if (type === "confidence" && value === "high") return "govuk-tag--green";
 	if (type === "confidence" && value === "medium") return "govuk-tag--yellow";
@@ -243,7 +317,21 @@ function tagClassFor(type, value) {
 	return "govuk-tag--grey";
 }
 
+function repositoryTag(tag, row) {
+	if (tag.tag_type === "topic" && cleanSlug(tag.tag_slug).startsWith("seeded-topic")) {
+		return { text: topicLabelForRisk(row.risk_area), classes: tagClassFor(tag.tag_type, row.risk_area) };
+	}
+	if (tag.tag_type === "recommendation" && cleanSlug(tag.tag_slug).startsWith("rec-seeded")) {
+		return { text: recommendationLabelForRisk(row.risk_area), classes: tagClassFor(tag.tag_type, row.risk_area) };
+	}
+	if (/seeded/i.test(cleanText(tag.tag_label))) {
+		return null;
+	}
+	return { text: tag.tag_label, classes: tagClassFor(tag.tag_type, tag.tag_slug) };
+}
+
 function rowToArtefact(row, tags = []) {
+	const repositoryTags = tags.map((tag) => repositoryTag(tag, row)).filter(Boolean);
 	return {
 		id: row.id,
 		title: row.title,
@@ -271,8 +359,8 @@ function rowToArtefact(row, tags = []) {
 		},
 		tags: [
 			{ text: `${row.confidence} confidence`, classes: tagClassFor("confidence", row.confidence) },
-			{ text: row.evidence_maturity, classes: tagClassFor("maturity", row.evidence_maturity) },
-			...tags.map((tag) => ({ text: tag.tag_label, classes: tagClassFor(tag.tag_type, tag.tag_slug) }))
+			{ text: labelFromSlug(row.evidence_maturity), classes: tagClassFor("maturity", row.evidence_maturity) },
+			...repositoryTags
 		]
 	};
 }
@@ -313,7 +401,7 @@ function airtableRecordToArtefact(record = {}) {
 		},
 		tags: [
 			{ text: `${confidence} confidence`, classes: tagClassFor("confidence", confidence) },
-			{ text: maturity, classes: tagClassFor("maturity", maturity) },
+			{ text: labelFromSlug(maturity), classes: tagClassFor("maturity", maturity) },
 			...tagLabels.map((tag) => ({ text: tag, classes: "govuk-tag--grey" }))
 		]
 	};
@@ -348,6 +436,15 @@ function matchesSearch(artefact, url) {
 	return true;
 }
 
+function sortArtefacts(artefacts, sort) {
+	const confidenceRank = { high: 3, medium: 2, low: 1 };
+	return [...artefacts].sort((a, b) => {
+		if (sort === "confidence_desc") return (confidenceRank[b.confidence] || 0) - (confidenceRank[a.confidence] || 0) || text(a.title).localeCompare(text(b.title));
+		if (sort === "relevance") return text(a.title).localeCompare(text(b.title));
+		return Date.parse(b.publishedAt || b.reviewDueAt || 0) - Date.parse(a.publishedAt || a.reviewDueAt || 0) || text(a.title).localeCompare(text(b.title));
+	});
+}
+
 async function tagsByArtefactId(svc, artefactIds) {
 	if (!artefactIds.length) return new Map();
 	const placeholders = artefactIds.map(() => "?").join(", ");
@@ -377,7 +474,7 @@ async function facetRows(svc, column, label) {
 	return {
 		name: column,
 		label,
-		items: rows.map((row) => ({ value: row.value, label: row.value, count: row.count }))
+		items: rows.map((row) => ({ value: row.value, label: labelFromSlug(row.value), count: row.count }))
 	};
 }
 
@@ -424,7 +521,7 @@ function facetFromArtefacts(artefacts, name, label, key) {
 		items: [...counts.entries()]
 			.sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
 			.slice(0, 20)
-			.map(([value, count]) => ({ value, label: value, count }))
+			.map(([value, count]) => ({ value, label: labelFromSlug(value), count }))
 	};
 }
 
@@ -438,20 +535,30 @@ function metricsFromArtefacts(artefacts) {
 	];
 }
 
+function pagination(url, total) {
+	const limit = clampLimit(url.searchParams.get("limit"));
+	const page = pageNumber(url.searchParams.get("page"));
+	return { page, limit, total, offset: (page - 1) * limit };
+}
+
 async function listRepositoryFromAirtable(svc, url) {
 	const records = await airtableRecords(svc, airtableTableName(svc));
 	const allArtefacts = records.filter(airtableRecordIsPublished).map(airtableRecordToArtefact);
-	const artefacts = allArtefacts.filter((artefact) => matchesSearch(artefact, url)).slice(0, clampLimit(url.searchParams.get("limit")));
+	const filtered = sortArtefacts(allArtefacts.filter((artefact) => matchesSearch(artefact, url)), url.searchParams.get("sort") || "reviewed_desc");
+	const pager = pagination(url, filtered.length);
+	const artefacts = filtered.slice(pager.offset, pager.offset + pager.limit);
 	return {
 		source: "airtable",
 		artefacts,
+		pagination: { page: pager.page, limit: pager.limit, total: pager.total },
+		selected: selectedFacet(url),
 		metrics: metricsFromArtefacts(allArtefacts),
 		filters: [
 			facetFromArtefacts(allArtefacts, "method", "Method", "method"),
-				facetFromArtefacts(allArtefacts, "evidence_maturity", "Evidence maturity", "evidenceMaturity"),
-				facetFromArtefacts(allArtefacts, "service_area", "Service area", "serviceArea"),
-				facetFromArtefacts(allArtefacts, "user_group", "User group", "userGroup"),
-				facetFromArtefacts(allArtefacts, "risk_area", "Risk or constraint", "riskArea")
+			facetFromArtefacts(allArtefacts, "evidence_maturity", "Evidence maturity", "evidenceMaturity"),
+			facetFromArtefacts(allArtefacts, "service_area", "Service area", "serviceArea"),
+			facetFromArtefacts(allArtefacts, "user_group", "User group", "userGroup"),
+			facetFromArtefacts(allArtefacts, "risk_area", "Risk or constraint", "riskArea")
 		],
 		queues: []
 	};
@@ -474,10 +581,10 @@ function repositoryDerivation(showQueues) {
 		],
 		filters: [
 			{ id: "method", source: `${ARTEFACTS_TABLE}.method`, rule: "Facet counts over published, active, PII-cleared, consent-confirmed artefacts" },
-				{ id: "evidence_maturity", source: `${ARTEFACTS_TABLE}.evidence_maturity`, rule: "Facet counts over published, active, PII-cleared, consent-confirmed artefacts" },
-				{ id: "service_area", source: `${ARTEFACTS_TABLE}.service_area`, rule: "Facet counts over published, active, PII-cleared, consent-confirmed artefacts" },
-				{ id: "user_group", source: `${ARTEFACTS_TABLE}.user_group`, rule: "Facet counts over published, active, PII-cleared, consent-confirmed artefacts" },
-				{ id: "risk_area", source: `${ARTEFACTS_TABLE}.risk_area`, rule: "Facet counts over published, active, PII-cleared, consent-confirmed artefacts" }
+			{ id: "evidence_maturity", source: `${ARTEFACTS_TABLE}.evidence_maturity`, rule: "Facet counts over published, active, PII-cleared, consent-confirmed artefacts" },
+			{ id: "service_area", source: `${ARTEFACTS_TABLE}.service_area`, rule: "Facet counts over published, active, PII-cleared, consent-confirmed artefacts" },
+			{ id: "user_group", source: `${ARTEFACTS_TABLE}.user_group`, rule: "Facet counts over published, active, PII-cleared, consent-confirmed artefacts" },
+			{ id: "risk_area", source: `${ARTEFACTS_TABLE}.risk_area`, rule: "Facet counts over published, active, PII-cleared, consent-confirmed artefacts" }
 		],
 		queues: showQueues
 			? [
@@ -496,15 +603,21 @@ export async function listRepository(svc, origin, url, authContext = {}) {
 		const where = publicWhere();
 		const params = [];
 		appendSearchFilters(where, params, url);
-		const limit = clampLimit(url.searchParams.get("limit"));
-		params.push(limit);
+		const pager = pagination(url, 0);
+		const sort = url.searchParams.get("sort") || "reviewed_desc";
+		const totalRow = await d1Get(svc.env, `
+			SELECT COUNT(*) AS total
+			FROM ${ARTEFACTS_TABLE}
+			WHERE ${where.join(" AND ")}
+		`, params);
+		const total = Number(totalRow?.total || 0);
 		const rows = await d1All(svc.env, `
 			SELECT *
 			FROM ${ARTEFACTS_TABLE}
 			WHERE ${where.join(" AND ")}
-			ORDER BY datetime(published_at) DESC, title ASC
-			LIMIT ?
-		`, params);
+			ORDER BY ${orderByClause(sort)}
+			LIMIT ? OFFSET ?
+		`, [...params, pager.limit, pager.offset]);
 		const tags = await tagsByArtefactId(svc, rows.map((row) => row.id));
 		const artefacts = rows.map((row) => rowToArtefact(row, tags.get(row.id) || []));
 		const [metrics, methodFacet, maturityFacet, serviceAreaFacet, userGroupFacet, riskFacet, queues] = await Promise.all([
@@ -521,6 +634,8 @@ export async function listRepository(svc, origin, url, authContext = {}) {
 			ok: true,
 			source: "d1",
 			artefacts,
+			pagination: { page: pager.page, limit: pager.limit, total },
+			selected: selectedFacet(url),
 			metrics,
 			filters: [methodFacet, maturityFacet, serviceAreaFacet, userGroupFacet, riskFacet],
 			queues: showQueues ? queues : [],
@@ -538,6 +653,8 @@ export async function listRepository(svc, origin, url, authContext = {}) {
 			ok: true,
 			source: fallback.source,
 			artefacts: fallback.artefacts,
+			pagination: fallback.pagination,
+			selected: fallback.selected,
 			metrics: fallback.metrics,
 			filters: fallback.filters,
 			queues: showQueues ? fallback.queues : [],

@@ -132,6 +132,21 @@
 	gap: 8px;
 }
 
+.repository-result-meta {
+	display: grid;
+	gap: 8px;
+	margin: 0 0 16px;
+}
+
+.repository-result-meta__row {
+	display: grid;
+	gap: 2px;
+}
+
+.repository-result-meta__value {
+	margin: 0;
+}
+
 .repository-filter-panel {
 	padding: 20px;
 	border-top: 5px solid #1d70b8;
@@ -160,6 +175,10 @@
 	font: inherit;
 }
 
+.repository-browse-list__button--selected {
+	text-decoration-thickness: 3px;
+}
+
 .repository-browse-list__button:focus {
 	outline: 3px solid transparent;
 	color: #0b0c0c;
@@ -168,6 +187,18 @@
 		0 -2px #ffdd00,
 		0 4px #0b0c0c;
 	text-decoration: none;
+}
+
+.repository-selected-state {
+	margin-top: 24px;
+}
+
+.repository-sort-form {
+	margin: 24px 0;
+}
+
+.repository-pagination {
+	margin-top: 32px;
 }
 
 .repository-candidate-form {
@@ -194,6 +225,10 @@
 
 	.repository-card-grid {
 		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+
+	.repository-result-meta__row {
+		grid-template-columns: 150px 1fr;
 	}
 }
 

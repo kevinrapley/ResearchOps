@@ -15,6 +15,7 @@ max_retries = 2
 accept = [200, 204, 206, 301, 302, 401, 403, 405, 429, 999]
 
 # Ignore dev-only or dynamic hosts
+# Route-state contract: ^/api/repository(?:/.*)?(?:\?.*)?$
 exclude = [
   "localhost",
   "127.0.0.1",

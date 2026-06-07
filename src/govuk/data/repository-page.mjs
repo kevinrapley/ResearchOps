@@ -29,6 +29,8 @@ export const repositoryStaticPages = [
 		browseLabel: 'Service area',
 		browseHint:
 			'Choose the operational context that best matches the service decision you are making.',
+		resultsHeading: 'Published artefacts',
+		resultsIntro: 'Choose a service area to see published artefacts tagged to that area.',
 		sections: [
 			{
 				heading: 'How to use this route',
@@ -47,21 +49,25 @@ export const repositoryStaticPages = [
 	},
 	{
 		slug: 'user-groups',
-		title: 'Browse evidence by user group',
-		lead: 'Find reusable evidence about citizens, staff, researchers, decision-makers and operational partners.',
+		title: 'Browse by user group',
+		lead: 'Find published artefacts about citizens, staff, researchers, decision-makers and operational partners.',
 		body: 'Use this route when the user group is the strongest starting point for comparison across services.',
 		apiPath: '/api/repository?user_group=',
 		backHref: '/pages/repository/',
 		backText: 'Back to research repository',
 		browseType: 'user_group',
 		browseLabel: 'User group',
-		browseHint: 'Choose the group whose needs, constraints or behaviours you need to understand.',
+		browseHint: 'Choose a user group to see published artefacts tagged to that group.',
+		resultsHeading: 'Published artefacts',
+		resultsIntro:
+			'Before reusing an artefact, check the source study, service context, confidence level and limitations.',
 		sections: [
 			{
 				heading: 'How to use this route',
 				items: [
 					'Compare evidence across projects before starting new recruitment.',
 					'Check whether the user group definition matches the service context.',
+					'Review confidence and limitations before reusing an artefact.',
 				],
 			},
 			{
@@ -83,6 +89,9 @@ export const repositoryStaticPages = [
 		browseType: 'method',
 		browseLabel: 'Research method',
 		browseHint: 'Choose the method used to produce the evidence.',
+		resultsHeading: 'Published artefacts',
+		resultsIntro:
+			'Choose a method to see published artefacts produced through that research approach.',
 		sections: [
 			{
 				heading: 'How to use this route',
@@ -110,6 +119,8 @@ export const repositoryStaticPages = [
 		browseType: 'risk_area',
 		browseLabel: 'Risk or constraint',
 		browseHint: 'Choose the constraint or risk theme that could affect reuse.',
+		resultsHeading: 'Published artefacts',
+		resultsIntro: 'Choose a risk or constraint to see published artefacts tagged to that theme.',
 		sections: [
 			{
 				heading: 'How to use this route',

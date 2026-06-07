@@ -108,6 +108,10 @@ function renderMetrics(metrics = []) {
 	setBusy(target, false);
 }
 
+function displayTags(artefact) {
+	return (artefact.tags || []).filter((tag) => !/seeded/i.test(text(tag.text)));
+}
+
 function tagFor(tag) {
 	const strong = document.createElement("strong");
 	strong.className = `govuk-tag ${tag.classes || "govuk-tag--grey"}`;
@@ -139,7 +143,7 @@ function renderArtefacts(artefacts = []) {
 		}
 		if (summary) summary.textContent = text(artefact.summary);
 		if (tags) {
-			for (const tag of artefact.tags || []) tags.appendChild(tagFor(tag));
+			for (const tag of displayTags(artefact)) tags.appendChild(tagFor(tag));
 		}
 		list.appendChild(node);
 	}

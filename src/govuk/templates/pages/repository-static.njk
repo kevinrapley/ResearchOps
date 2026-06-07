@@ -1,45 +1,47 @@
 {% extends "layouts/researchops.njk" %}
 {% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
+{% from "govuk/components/select/macro.njk" import govukSelect %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
 
 {% block head %}
 	<link rel="stylesheet" href="/css/repository.css?v=repository-api-20260607" media="screen">
 	{% if detailRoute %}
-	<link rel="modulepreload" href="/js/repository-artefact-page.js?v=repository-api-20260607">
+	<link rel="modulepreload" href="/js/repository-artefact-page.js?v=repository-api-20260607b">
 	{% endif %}
 	{% if browseType or candidateRoute %}
-	<link rel="modulepreload" href="/js/repository-static-page.js?v=repository-api-20260607">
+	<link rel="modulepreload" href="/js/repository-static-page.js?v=repository-api-20260607b">
 	{% endif %}
 {% endblock %}
 
 {% block content %}
 <div class="govuk-width-container repository-page">
-		{{ govukBreadcrumbs({
-			attributes: {
-				id: "repository-breadcrumbs",
-				typeof: "schema:BreadcrumbList"
-			},
-			items: [
-				{
-					text: "Home",
-					href: "/",
-					attributes: {
-						property: "schema:item",
-						typeof: "schema:Thing"
-					}
-				},
-				{
-					text: "Research repository",
-					href: "/pages/repository/",
-					attributes: {
-						property: "schema:item",
-						typeof: "schema:Thing"
-					}
-				},
-				{
-					text: title
+	{{ govukBreadcrumbs({
+		attributes: {
+			id: "repository-breadcrumbs",
+			typeof: "schema:BreadcrumbList"
+		},
+		items: [
+			{
+				text: "Home",
+				href: "/",
+				attributes: {
+					property: "schema:item",
+					typeof: "schema:Thing"
 				}
-			]
-		}) }}
+			},
+			{
+				text: "Research repository",
+				href: "/pages/repository/",
+				attributes: {
+					property: "schema:item",
+					typeof: "schema:Thing"
+				}
+			},
+			{
+				text: title
+			}
+		]
+	}) }}
 
 	<div class="govuk-grid-row">
 		<div class="govuk-grid-column-two-thirds">
@@ -54,18 +56,41 @@
 	<section class="repository-section" aria-labelledby="repository-browse-options-title" data-repository-browse-page data-browse-type="{{ browseType }}" data-browse-label="{{ browseLabel }}">
 		<h2 class="govuk-heading-l" id="repository-browse-options-title">Choose {{ browseLabel | lower }}</h2>
 		<p class="govuk-body">{{ browseHint }}</p>
-		<div id="repository-browse-options" class="repository-browse-options" aria-live="polite" aria-busy="true">
-			<p class="govuk-body">Loading {{ browseLabel | lower }} options.</p>
-		</div>
+		<div id="repository-browse-options" class="repository-browse-options" aria-live="polite" aria-busy="true"></div>
 	</section>
 
 	<section class="repository-section" aria-labelledby="repository-browse-results-title">
-		<h2 class="govuk-heading-l" id="repository-browse-results-title">Published evidence</h2>
-		<p class="govuk-body">Select an option above to see published artefacts that match this route.</p>
+		<h2 class="govuk-heading-l" id="repository-browse-results-title">{{ resultsHeading or 'Published artefacts' }}</h2>
+		<p class="govuk-body">{{ resultsIntro or 'Choose an option above to see published artefacts that match this route.' }}</p>
+		<div class="govuk-inset-text repository-selected-state" id="repository-selected-state" hidden>
+			<p class="govuk-body govuk-!-margin-bottom-1" id="repository-selected-summary"></p>
+			<p class="govuk-body govuk-!-margin-bottom-0"><a class="govuk-link" href="/pages/repository/{{ slug }}/">Change {{ browseLabel | lower }}</a></p>
+		</div>
+		<form class="repository-sort-form" id="repository-sort-form" method="get" hidden>
+			{{ govukSelect({
+				id: 'repository-sort',
+				name: 'sort',
+				label: {
+					text: 'Sort by',
+					classes: 'govuk-label--s'
+				},
+				items: [
+					{ value: 'reviewed_desc', text: 'Most recently reviewed' },
+					{ value: 'confidence_desc', text: 'Highest confidence' },
+					{ value: 'relevance', text: 'Most relevant' }
+				]
+			}) }}
+			{{ govukButton({
+				text: 'Apply sort',
+				type: 'submit',
+				classes: 'govuk-button--secondary'
+			}) }}
+		</form>
 		<p class="repository-result-count" id="repository-browse-result-count" aria-live="polite"></p>
 		<div id="repository-browse-results" class="repository-results" aria-live="polite" aria-busy="false">
-			<div class="govuk-inset-text">Choose {{ browseLabel | lower }} to filter the repository.</div>
+			<div class="govuk-inset-text">Choose {{ browseLabel | lower }} to see published artefacts tagged to that {{ browseLabel | lower }}.</div>
 		</div>
+		<nav class="govuk-pagination repository-pagination" id="repository-pagination" aria-label="Repository result pages" hidden></nav>
 	</section>
 	{% elif candidateRoute %}
 	<section class="repository-section" aria-labelledby="repository-candidate-title" data-repository-candidate-page>
@@ -185,9 +210,9 @@
 
 {% block scripts %}
 	{% if detailRoute %}
-	<script type="module" src="/js/repository-artefact-page.js?v=repository-api-20260607"></script>
+	<script type="module" src="/js/repository-artefact-page.js?v=repository-api-20260607b"></script>
 	{% endif %}
 	{% if browseType or candidateRoute %}
-	<script type="module" src="/js/repository-static-page.js?v=repository-api-20260607"></script>
+	<script type="module" src="/js/repository-static-page.js?v=repository-api-20260607b"></script>
 	{% endif %}
 {% endblock %}
