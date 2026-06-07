@@ -3,6 +3,7 @@ const JSON_HEADERS = {
   "cache-control": "no-store",
   "x-content-type-options": "nosniff"
 };
+const routePermissionDeclarationCache = new WeakMap();
 
 class RoutePermissionError extends Error {
   constructor(status, code, message, details = {}) {
@@ -50,6 +51,13 @@ function parsePermissions(value) {
 }
 
 async function readDeclaration(db, method, pathname) {
+  let byMethod = routePermissionDeclarationCache.get(db);
+  if (!byMethod) {
+    byMethod = new Map();
+    routePermissionDeclarationCache.set(db, byMethod);
+  }
+  const cacheKey = `${method}:${pathname}`;
+  if (byMethod.has(cacheKey)) return byMethod.get(cacheKey);
   return db
     .prepare(`
       SELECT method, route_pattern, required_permissions_json, auth_required, implementation_status
@@ -58,7 +66,11 @@ async function readDeclaration(db, method, pathname) {
       LIMIT 1
     `)
     .bind(method, pathname)
-    .first();
+    .first()
+    .then((declaration) => {
+      byMethod.set(cacheKey, declaration || null);
+      return declaration;
+    });
 }
 
 function permissionCodesFor(context = {}) {

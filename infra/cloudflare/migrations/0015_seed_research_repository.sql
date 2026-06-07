@@ -750,6 +750,11 @@ INSERT OR IGNORE INTO rops_repository_artefact_tags (artefact_id, tag_slug, tag_
 	('candidate-taxonomy-gaps', 'taxonomy', 'Taxonomy', 'topic'),
 	('withdrawn-outdated-channel-insight', 'withdrawn-record', 'Withdrawn record', 'topic');
 
+DELETE FROM rops_repository_artefact_tags
+WHERE
+	artefact_id LIKE 'seeded-published-%'
+	AND tag_type IN ('topic', 'recommendation');
+
 INSERT OR IGNORE INTO rops_repository_artefact_tags (artefact_id, tag_slug, tag_label, tag_type)
 WITH RECURSIVE n(value) AS (
 	SELECT 1

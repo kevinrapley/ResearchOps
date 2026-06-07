@@ -9,6 +9,16 @@ function text(value) {
 	return String(value || "");
 }
 
+function slug(value) {
+	return text(value).trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+}
+
+function titleFromSlug(value) {
+	const raw = text(value).trim();
+	const words = raw.includes("-") ? raw.replace(/-/g, " ") : raw;
+	return words ? `${words.slice(0, 1).toUpperCase()}${words.slice(1).toLowerCase()}` : "";
+}
+
 function setBusy(element, busy) {
 	if (!element) return;
 	element.setAttribute("aria-busy", busy ? "true" : "false");
@@ -26,6 +36,12 @@ async function fetchArtefact(id) {
 	});
 	const data = await response.json().catch(() => ({ ok: false }));
 	return { response, data };
+}
+
+function displayTags(artefact) {
+	return (artefact.tags || [])
+		.filter((tag) => !/seeded/i.test(text(tag.text)))
+		.slice(0, 6);
 }
 
 function tagNode(tag) {
@@ -73,21 +89,23 @@ function renderArtefact(target, artefact) {
 	const tags = document.createElement("div");
 	tags.className = "repository-artefact-list__meta";
 	tags.setAttribute("aria-label", "Artefact metadata");
-	for (const tag of artefact.tags || []) tags.appendChild(tagNode(tag));
+	for (const tag of displayTags(artefact)) tags.appendChild(tagNode(tag));
 	const list = document.createElement("dl");
 	list.className = "govuk-summary-list";
 	list.append(
 		summaryRow("Artefact type", artefact.artefactType),
-		summaryRow("Service area", artefact.serviceArea),
-		summaryRow("User group", artefact.userGroup),
-		summaryRow("Method", artefact.provenance?.method || artefact.method),
+		summaryRow("Service area", titleFromSlug(artefact.serviceArea)),
+		summaryRow("User group", titleFromSlug(artefact.userGroup)),
+		summaryRow("Method", artefact.provenance?.method || titleFromSlug(artefact.method)),
 		summaryRow("Evidence basis", artefact.provenance?.sample),
 		summaryRow("Limitations", artefact.limits?.limitations),
 		summaryRow("Reuse guidance", artefact.limits?.reuseGuidance),
 		summaryRow("Do not use for", artefact.limits?.doNotUseFor),
 		summaryRow("Review due", artefact.reviewDueAt)
 	);
-	target.append(summary, tags, list);
+	target.append(summary);
+	if (tags.children.length) target.appendChild(tags);
+	target.appendChild(list);
 	setBusy(target, false);
 }
 

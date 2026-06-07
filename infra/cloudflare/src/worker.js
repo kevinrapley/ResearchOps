@@ -1,3 +1,4 @@
+import { resolveAuthenticatedContext as resolveBaseAuthenticatedContext } from "./core/auth/access.js";
 import { handleMeRoute } from "./core/auth/access-scoped.js";
 import { resolveAuthenticatedContext } from "./core/auth/access-scoped.js";
 import { handlePasswordlessAuthRoute } from "./core/auth/passwordless.js";
@@ -155,6 +156,7 @@ const REPOSITORY_ROUTE_PERMISSIONS = [
 	["route_api_repository_artefacts_post", "POST", "/api/repository/artefacts", "[\"repository.view\"]"],
 	["route_api_repository_artefact_get", "GET", "/api/repository/artefacts/:id", "[\"repository.view\"]"]
 ];
+const repositoryAuthDeclarationsReadyByDatabase = new WeakMap();
 
 async function ensureStudySupportAuthDeclarations(env) {
 	const db = env.RESEARCHOPS_D1;
@@ -186,28 +188,37 @@ async function ensureStudySupportAuthDeclarations(env) {
 async function ensureRepositoryAuthDeclarations(env) {
 	const db = env.RESEARCHOPS_D1;
 	if (!db?.prepare) return;
-
-	for (const [code, label, description] of REPOSITORY_AUTH_PERMISSIONS) {
-		await db.prepare(`
-			INSERT OR IGNORE INTO auth_permissions (code, label, description, is_sensitive, is_reserved)
-			VALUES (?, ?, ?, 1, 0)
-		`).bind(code, label, description).run();
+	if (repositoryAuthDeclarationsReadyByDatabase.has(db)) {
+		return repositoryAuthDeclarationsReadyByDatabase.get(db);
 	}
 
-	for (const [roleId, permissionCode] of REPOSITORY_ROLE_PERMISSIONS) {
-		await db.prepare(`
-			INSERT OR IGNORE INTO auth_role_permissions (role_id, permission_code)
-			VALUES (?, ?)
-		`).bind(roleId, permissionCode).run();
-	}
+	const pending = (async () => {
+		for (const [code, label, description] of REPOSITORY_AUTH_PERMISSIONS) {
+			await db.prepare(`
+				INSERT OR IGNORE INTO auth_permissions (code, label, description, is_sensitive, is_reserved)
+				VALUES (?, ?, ?, 1, 0)
+			`).bind(code, label, description).run();
+		}
 
-	for (const [id, method, routePattern, requiredPermissionsJson] of REPOSITORY_ROUTE_PERMISSIONS) {
-		await db.prepare(`
-			INSERT OR IGNORE INTO auth_route_permissions
-				(id, method, route_pattern, required_permissions_json, auth_required, implementation_status)
-			VALUES (?, ?, ?, ?, 1, 'implemented')
-		`).bind(id, method, routePattern, requiredPermissionsJson).run();
-	}
+		for (const [roleId, permissionCode] of REPOSITORY_ROLE_PERMISSIONS) {
+			await db.prepare(`
+				INSERT OR IGNORE INTO auth_role_permissions (role_id, permission_code)
+				VALUES (?, ?)
+			`).bind(roleId, permissionCode).run();
+		}
+
+		for (const [id, method, routePattern, requiredPermissionsJson] of REPOSITORY_ROUTE_PERMISSIONS) {
+			await db.prepare(`
+				INSERT OR IGNORE INTO auth_route_permissions
+					(id, method, route_pattern, required_permissions_json, auth_required, implementation_status)
+				VALUES (?, ?, ?, ?, 1, 'implemented')
+			`).bind(id, method, routePattern, requiredPermissionsJson).run();
+		}
+	})();
+
+	repositoryAuthDeclarationsReadyByDatabase.set(db, pending);
+	pending.catch(() => repositoryAuthDeclarationsReadyByDatabase.delete(db));
+	return pending;
 }
 
 function workerBuild(env) {
@@ -398,7 +409,7 @@ async function handleRepository(request, env, apiPath) {
 	const origin = request.headers.get("Origin") || "";
 	const service = serviceFor(env);
 	await ensureRepositoryAuthDeclarations(env);
-	const authContext = await authContextFor(request, env);
+	const authContext = await resolveBaseAuthenticatedContext(request, env);
 	const routePermissionRequest = apiPath.match(/^\/api\/repository\/artefacts\/([^/]+)$/)
 		? requestForRoutePermission(request, "/api/repository/artefacts/:id")
 		: request;

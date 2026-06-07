@@ -103,9 +103,11 @@ function assertSignInScriptRedirectsAuthenticatedUsersToAccountDashboard() {
 
 function assertWorkerRoutesPasswordlessEndpoints() {
 	assert.match(worker, /handlePasswordlessAuthRoute/);
+	assert.match(worker, /resolveAuthenticatedContext as resolveBaseAuthenticatedContext/);
 	assert.match(worker, /\.\/core\/auth\/passwordless\.js/);
 	assert.match(worker, /apiPath\.startsWith\("\/api\/auth\/email\/"\)/);
 	assert.match(worker, /apiPath === "\/api\/auth\/logout"/);
+	assert.match(worker, /const authContext = await resolveBaseAuthenticatedContext\(request, env\);/);
 }
 
 function assertPasswordlessServerFlowExists() {
@@ -118,6 +120,9 @@ function assertPasswordlessServerFlowExists() {
 	assert.match(passwordless, /set-cookie/);
 	assert.match(passwordless, /resolvePasswordlessSessionContext/);
 	assert.match(passwordless, /provider: PROVIDER/);
+	assert.match(passwordless, /const SESSION_CONTEXT_CACHE_TTL_MS = 60 \* 1000;/);
+	assert.match(passwordless, /const sessionContextCache = new Map\(\);/);
+	assert.equal(passwordless.includes('const cacheKey = `${sessionTokenHash}:${requestedTeamId}`;'), true);
 }
 
 function assertPasswordlessCodeAttemptLimitExists() {
@@ -144,6 +149,11 @@ function assertAuthResolverPrefersResearchOpsSession() {
 	assert.match(access, /const passwordlessContext = await resolvePasswordlessSessionContext\(request, env\);/);
 	assert.match(access, /if \(passwordlessContext\) return passwordlessContext;/);
 	assert.match(access, /const accessPayload = await validateAccessToken\(request, env\);/);
+	assert.match(access, /const ACCESS_CERT_CACHE_TTL_MS = 10 \* 60 \* 1000;/);
+	assert.match(access, /const accessCertCache = new Map\(\);/);
+	assert.match(access, /const accessCryptoKeyCache = new Map\(\);/);
+	assert.match(access, /const body = await readAccessCerts\(certsUrl\);/);
+	assert.match(access, /const cryptoKey = await importAccessCryptoKey\(certsUrl, key\);/);
 }
 
 function assertPasswordlessMigrationExists() {

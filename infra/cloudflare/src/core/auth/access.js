@@ -11,6 +11,13 @@ const JSON_HEADERS = {
 	'cache-control': 'no-store',
 	'x-content-type-options': 'nosniff',
 };
+const ACCESS_CERT_CACHE_TTL_MS = 10 * 60 * 1000;
+const ACCESS_CONTEXT_CACHE_TTL_MS = 60 * 1000;
+const ACCESS_LAST_SEEN_UPDATE_TTL_MS = 10 * 60 * 1000;
+const accessCertCache = new Map();
+const accessCryptoKeyCache = new Map();
+const accessContextCache = new Map();
+const accessLastSeenUpdateCache = new Map();
 
 class AuthError extends Error {
 	constructor(status, code, message) {
@@ -77,16 +84,7 @@ async function verifyJwtSignature(token, header, env) {
 		);
 	}
 
-	const response = await fetch(certsUrl, { headers: { accept: 'application/json' } });
-	if (!response.ok) {
-		throw new AuthError(
-			503,
-			'access_certs_unavailable',
-			'Cloudflare Access certificates could not be loaded.',
-		);
-	}
-
-	const body = await response.json();
+	const body = await readAccessCerts(certsUrl);
 	const key = (body.keys || []).find((candidate) => candidate.kid === header.kid);
 	if (!key) {
 		throw new AuthError(
@@ -97,13 +95,7 @@ async function verifyJwtSignature(token, header, env) {
 	}
 
 	const [encodedHeader, encodedPayload, encodedSignature] = token.split('.');
-	const cryptoKey = await crypto.subtle.importKey(
-		'jwk',
-		key,
-		{ name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' },
-		false,
-		['verify'],
-	);
+	const cryptoKey = await importAccessCryptoKey(certsUrl, key);
 	const ok = await crypto.subtle.verify(
 		'RSASSA-PKCS1-v1_5',
 		cryptoKey,
@@ -118,6 +110,50 @@ async function verifyJwtSignature(token, header, env) {
 			'The sign-in token signature is invalid.',
 		);
 	}
+}
+
+async function readAccessCerts(certsUrl) {
+	const cacheEntry = accessCertCache.get(certsUrl);
+	if (cacheEntry && cacheEntry.expiresAt > Date.now()) return cacheEntry.body;
+	if (cacheEntry?.promise) return cacheEntry.promise;
+
+	const pending = fetch(certsUrl, { headers: { accept: 'application/json' } })
+		.then(async (response) => {
+			if (!response.ok) {
+				throw new AuthError(
+					503,
+					'access_certs_unavailable',
+					'Cloudflare Access certificates could not be loaded.',
+				);
+			}
+			const body = await response.json();
+			accessCertCache.set(certsUrl, {
+				body,
+				expiresAt: Date.now() + ACCESS_CERT_CACHE_TTL_MS,
+			});
+			return body;
+		})
+		.catch((error) => {
+			accessCertCache.delete(certsUrl);
+			throw error;
+		});
+
+	accessCertCache.set(certsUrl, { promise: pending, expiresAt: 0 });
+	return pending;
+}
+
+async function importAccessCryptoKey(certsUrl, key) {
+	const cacheKey = `${certsUrl}:${key.kid}`;
+	if (accessCryptoKeyCache.has(cacheKey)) return accessCryptoKeyCache.get(cacheKey);
+	const cryptoKey = await crypto.subtle.importKey(
+		'jwk',
+		key,
+		{ name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' },
+		false,
+		['verify'],
+	);
+	accessCryptoKeyCache.set(cacheKey, cryptoKey);
+	return cryptoKey;
 }
 
 async function validateAccessToken(request, env) {
@@ -252,6 +288,8 @@ async function ensureUserForAccessPayload(db, payload) {
 }
 
 async function updateLastSeen(db, subject) {
+	const cacheEntry = accessLastSeenUpdateCache.get(subject);
+	if (cacheEntry && cacheEntry > Date.now()) return;
 	await db
 		.prepare(`
 			UPDATE auth_identities
@@ -260,6 +298,7 @@ async function updateLastSeen(db, subject) {
 		`)
 		.bind(PROVIDER, subject)
 		.run();
+	accessLastSeenUpdateCache.set(subject, Date.now() + ACCESS_LAST_SEEN_UPDATE_TTL_MS);
 }
 
 async function listTeams(db, userId) {
@@ -344,44 +383,67 @@ export async function resolveAuthenticatedContext(request, env) {
 	const passwordlessContext = await resolvePasswordlessSessionContext(request, env);
 	if (passwordlessContext) return passwordlessContext;
 
-	const accessPayload = await validateAccessToken(request, env);
-	const db = dbFor(env);
-	const user = await ensureUserForAccessPayload(db, accessPayload);
-	await updateLastSeen(db, accessPayload.sub);
+	const token = getAccessJwt(request);
+	const requestedTeamId = request.headers.get('X-ResearchOps-Team-Id') || '';
+	const cacheKey = `${token}:${requestedTeamId}`;
+	const cacheEntry = accessContextCache.get(cacheKey);
+	if (cacheEntry && cacheEntry.expiresAt > Date.now()) return cacheEntry.context;
+	if (cacheEntry?.promise) return cacheEntry.promise;
 
-	const teams = await listTeams(db, user.id);
-	const activeTeam = selectActiveTeam(request, teams);
-	const roles = await listRoles(db, user.id, activeTeam?.id);
-	const permissions = await listPermissions(db, user.id, activeTeam?.id);
+	const pending = (async () => {
+		const accessPayload = await validateAccessToken(request, env);
+		const db = dbFor(env);
+		const user = await ensureUserForAccessPayload(db, accessPayload);
+		await updateLastSeen(db, accessPayload.sub);
 
-	return {
-		authenticated: true,
-		provider: PROVIDER,
-		user: {
-			id: user.id,
-			email: user.email,
-			displayName: user.display_name,
-			accountStatus: user.account_status,
-		},
-		activeTeam,
-		teams,
-		roles: roles.map((role) => ({
-			key: role.role_key,
-			label: role.label,
-			description: role.description,
-			sensitive: role.is_sensitive === 1,
-			scopeType: role.scope_type,
-			scopeId: role.scope_id,
-			expiresAt: role.expires_at,
-		})),
-		permissions: permissions.map((permission) => ({
-			code: permission.code,
-			label: permission.label,
-			description: permission.description,
-			sensitive: permission.is_sensitive === 1,
-			reserved: permission.is_reserved === 1,
-		})),
-	};
+		const teams = await listTeams(db, user.id);
+		const activeTeam = selectActiveTeam(request, teams);
+		const roles = await listRoles(db, user.id, activeTeam?.id);
+		const permissions = await listPermissions(db, user.id, activeTeam?.id);
+
+		return {
+			authenticated: true,
+			provider: PROVIDER,
+			user: {
+				id: user.id,
+				email: user.email,
+				displayName: user.display_name,
+				accountStatus: user.account_status,
+			},
+			activeTeam,
+			teams,
+			roles: roles.map((role) => ({
+				key: role.role_key,
+				label: role.label,
+				description: role.description,
+				sensitive: role.is_sensitive === 1,
+				scopeType: role.scope_type,
+				scopeId: role.scope_id,
+				expiresAt: role.expires_at,
+			})),
+			permissions: permissions.map((permission) => ({
+				code: permission.code,
+				label: permission.label,
+				description: permission.description,
+				sensitive: permission.is_sensitive === 1,
+				reserved: permission.is_reserved === 1,
+			})),
+		};
+	})();
+
+	accessContextCache.set(cacheKey, { promise: pending, expiresAt: 0 });
+	return pending
+		.then((context) => {
+			accessContextCache.set(cacheKey, {
+				context,
+				expiresAt: Date.now() + ACCESS_CONTEXT_CACHE_TTL_MS,
+			});
+			return context;
+		})
+		.catch((error) => {
+			accessContextCache.delete(cacheKey);
+			throw error;
+		});
 }
 
 export async function handleMeRoute(request, env, apiPath) {

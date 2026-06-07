@@ -6,7 +6,35 @@
 {% from "macros/repository.njk" import repositoryHero %}
 
 {% block head %}
-	<link rel="modulepreload" href="/js/repository-page.js?v=repository-api-20260607">
+	<script>
+		(function prefetchRepository() {
+			const params = new URLSearchParams(window.location.search || '');
+			params.set('hydrate', 'full');
+			const query = params.toString();
+			const requestPath = '/api/repository' + (query ? `?${query}` : '');
+			window.__repositoryPrefetch = {
+				requestPath,
+				promise: fetch(requestPath, {
+					credentials: 'include',
+					cache: 'no-store'
+				}).then(async (response) => {
+					const responseText = await response.text();
+					let data;
+					try {
+						data = JSON.parse(responseText);
+					} catch {
+						data = { ok: false, parseError: true, raw: responseText };
+					}
+					return { ok: response.ok, status: response.status, data };
+				}).catch((error) => ({
+					ok: false,
+					status: 0,
+					data: { ok: false, error: String(error) }
+				}))
+			};
+		})();
+	</script>
+	<link rel="modulepreload" href="/js/repository-page.js?v=repository-api-20260607c">
 	<link rel="stylesheet" href="/css/repository.css?v=repository-api-20260607" media="screen">
 {% endblock %}
 
@@ -32,7 +60,6 @@
 		]
 	}) }}
 </div>
-
 {{ repositoryHero(hero) }}
 
 <div class="govuk-width-container repository-page" data-repository-page>
@@ -40,13 +67,7 @@
 		<h2 class="govuk-heading-l" id="repository-summary-title">Repository summary</h2>
 		<p class="govuk-body">The repository shows curated research artefacts that have been reviewed, cleared for reuse and linked back to their evidence source.</p>
 		<p class="govuk-body">Summary figures are calculated from published repository records. They help teams understand the scale of reusable evidence and where review work is needed.</p>
-		<div
-			class="repository-metrics"
-			id="repository-metrics"
-			aria-live="polite"
-			aria-busy="true"
-			data-repository-source="api:/api/repository metrics from D1 rops_repository_artefacts and rops_repository_artefact_tags"
-		>
+		<div class="repository-metrics" id="repository-metrics" aria-live="polite" aria-busy="true" data-repository-source="api:/api/repository metrics from D1 rops_repository_artefacts and rops_repository_artefact_tags">
 			<div class="repository-metric">
 				<span class="govuk-heading-xl govuk-!-margin-bottom-1 repository-metric__number" data-repository-metric="published artefacts">—</span>
 				<span class="govuk-body repository-metric__label">Published artefacts</span>
@@ -63,23 +84,23 @@
 	</section>
 
 	<section class="repository-section" aria-labelledby="repository-browse-title">
-		<h2 class="govuk-heading-l" id="repository-browse-title">Browse reusable evidence</h2>
-		<p class="govuk-body">Use these routes when you know the strongest starting point for the evidence you need.</p>
+		<h2 class="govuk-heading-l" id="repository-browse-title">Browse published artefacts</h2>
+		<p class="govuk-body">Start with the strongest route into the evidence, then check provenance, confidence and limitations before reuse.</p>
 		<div class="repository-card-grid">
 			<article class="repository-card">
-				<h3 class="govuk-heading-m"><a class="govuk-link govuk-link--no-visited-state" href="/pages/repository/service-areas/">Browse evidence by service area</a></h3>
-				<p class="govuk-body">Find evidence connected to a directorate, product family, operational area or cross-agency service.</p>
+				<h3 class="govuk-heading-m"><a class="govuk-link" href="/pages/repository/service-areas/">Browse by service area</a></h3>
+				<p class="govuk-body">Find artefacts connected to a directorate, product family, operational area or cross-agency service.</p>
 			</article>
 			<article class="repository-card">
-				<h3 class="govuk-heading-m"><a class="govuk-link govuk-link--no-visited-state" href="/pages/repository/user-groups/">Browse by user group</a></h3>
+				<h3 class="govuk-heading-m"><a class="govuk-link" href="/pages/repository/user-groups/">Browse by user group</a></h3>
 				<p class="govuk-body">Find reusable evidence about citizens, staff, researchers, decision-makers and operational partners.</p>
 			</article>
 			<article class="repository-card">
-				<h3 class="govuk-heading-m"><a class="govuk-link govuk-link--no-visited-state" href="/pages/repository/methods/">Browse by research method</a></h3>
+				<h3 class="govuk-heading-m"><a class="govuk-link" href="/pages/repository/methods/">Browse by method</a></h3>
 				<p class="govuk-body">Compare evidence from interviews, usability testing, contextual research, surveys and desk research.</p>
 			</article>
 			<article class="repository-card">
-				<h3 class="govuk-heading-m"><a class="govuk-link govuk-link--no-visited-state" href="/pages/repository/risks/">Browse by risk or constraint</a></h3>
+				<h3 class="govuk-heading-m"><a class="govuk-link" href="/pages/repository/risks/">Browse by risk or constraint</a></h3>
 				<p class="govuk-body">Find evidence about inclusion, accessibility, safeguarding, policy, operational risk and confidence gaps.</p>
 			</article>
 		</div>
@@ -91,13 +112,7 @@
 				<h2 class="govuk-heading-l" id="repository-results-title">Published artefacts</h2>
 				<p class="govuk-body">Only reviewed artefacts that have passed PII and consent-scope checks appear in repository search.</p>
 				<p class="repository-result-count" id="repository-result-count" aria-live="polite"></p>
-				<div
-					id="repository-results"
-					class="repository-results"
-					aria-live="polite"
-					aria-busy="true"
-					data-repository-source="api:/api/repository artefacts from D1 rops_repository_artefacts"
-				></div>
+				<div id="repository-results" class="repository-results" aria-live="polite" aria-busy="true" data-repository-source="api:/api/repository artefacts from D1 rops_repository_artefacts"></div>
 			</section>
 		</div>
 
@@ -115,7 +130,7 @@
 							}
 						},
 						items: [
-							{ value: 'interviews', text: 'Interviews' },
+							{ value: 'interviews', text: 'Moderated interviews' },
 							{ value: 'usability-testing', text: 'Usability testing' },
 							{ value: 'contextual-inquiry', text: 'Contextual inquiry' },
 							{ value: 'survey-analysis', text: 'Survey analysis' },
@@ -240,5 +255,5 @@
 {% endblock %}
 
 {% block scripts %}
-	<script type="module" src="/js/repository-page.js?v=repository-api-20260607"></script>
+	<script type="module" src="/js/repository-page.js?v=repository-api-20260607c"></script>
 {% endblock %}

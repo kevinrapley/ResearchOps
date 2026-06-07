@@ -1,0 +1,78 @@
+{
+	"date": "2026-06-07",
+	"branch": "fix/repository-seed-meaningful-tags",
+	"traceRequired": true,
+	"repository": "kevinrapley/ResearchOps",
+	"task": "Replace generated repository seed tags such as Seeded topic 00 and Seeded recommendation 072 with production-like, meaningful topic and recommendation examples.",
+	"operatingModelFilesLoaded": [
+		"README.md",
+		"AGENTS.md",
+		"RECENT_LEARNINGS.md",
+		".agent-operating-model/orchestration.xml",
+		".agent-operating-model/bundle-registry.json",
+		".agent-operating-model/task-signal-catalog.json",
+		".agent-operating-model/selection-rules.json",
+		".agent-operating-model/github-mutation-policy.md"
+	],
+	"selectedBundles": [
+		".agent-operating-model/bundles/github/",
+		".agent-operating-model/bundles/researchops-developer-control/",
+		".agent-operating-model/bundles/multi-functional-team/",
+		".agent-operating-model/bundles/govuk-design-system/",
+		".agent-operating-model/bundles/cloudflare/"
+	],
+	"skippedBundles": [
+		".agent-operating-model/bundles/openai/",
+		".agent-operating-model/bundles/mcp-agent-tooling/",
+		".agent-operating-model/bundles/airtable-public-api/",
+		".agent-operating-model/bundles/mural-public-api/"
+	],
+	"filesRead": [
+		"infra/cloudflare/migrations/0014_research_repository.sql",
+		"infra/cloudflare/migrations/0015_seed_research_repository.sql",
+		"tests/repository-front-page-route-state.test.js",
+		".github/workflows/deploy-worker.yml",
+		".github/workflows/deploy-passwordless-preview-worker.yml",
+		"public/js/repository-static-page.js",
+		"infra/cloudflare/src/service/repository.js"
+	],
+	"filesChanged": [
+		"infra/cloudflare/migrations/0014_research_repository.sql",
+		"infra/cloudflare/migrations/0016_update_repository_seed_tag_taxonomy.sql",
+		"tests/repository-front-page-route-state.test.js",
+		"docs/agent-audit/reasoning/2026/06/07/repository-seed-meaningful-tags.md",
+		"docs/agent-audit/reasoning/2026/06/07/repository-seed-meaningful-tags.json"
+	],
+	"decisions": [
+		"Add an explicit 0016 migration that replaces generated seed topic and recommendation labels with meaningful taxonomy labels.",
+		"Also add idempotent guards to 0014 because preview deployment currently applies 0014 and 0015 directly.",
+		"Keep the original 0015 seed data structure intact because it generates the broader review dataset.",
+		"Update route-state coverage to assert meaningful seed tag labels and the schema guard."
+	],
+	"replacementTaxonomy": {
+		"topics": [
+			"Confidence and comprehension",
+			"Workflow friction",
+			"Governance and consent",
+			"Handoff risk",
+			"Transaction failure",
+			"Evidence misuse"
+		],
+		"recommendations": [
+			"Explain confidence and next steps",
+			"Reduce avoidable workflow friction",
+			"Confirm consent and governance boundaries",
+			"Clarify handoff owner and next action",
+			"Make recovery routes explicit",
+			"State evidence limits before reuse"
+		]
+	},
+	"validationAttempted": [
+		"GitHub compare confirmed the branch is ahead of main and the changed-file list is limited to D1 seed taxonomy, route-state tests and trace files.",
+		"Repository-local commands were not run in this environment."
+	],
+	"residualRisks": [
+		"The D1 preview deployment must run to update the existing preview database.",
+		"Full repository CI has not been run locally in this session."
+	]
+}
