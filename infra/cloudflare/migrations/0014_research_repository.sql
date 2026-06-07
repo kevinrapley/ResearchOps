@@ -71,6 +71,27 @@ CREATE INDEX IF NOT EXISTS idx_repository_artefacts_facets
 CREATE INDEX IF NOT EXISTS idx_repository_tags_type
 	ON rops_repository_artefact_tags (tag_type, tag_slug);
 
+CREATE TRIGGER IF NOT EXISTS trg_repository_seed_user_group_taxonomy
+AFTER INSERT ON rops_repository_artefacts
+WHEN NEW.user_group = 'research-operations-team'
+BEGIN
+	UPDATE rops_repository_artefacts
+	SET
+		user_group = 'research-operations-staff',
+		title = REPLACE(title, 'ResearchOps reviewers', 'research operations staff'),
+		summary = REPLACE(summary, 'ResearchOps reviewers', 'research operations staff'),
+		reuse_guidance = REPLACE(reuse_guidance, 'ResearchOps reviewers', 'research operations staff')
+	WHERE id = NEW.id;
+END;
+
+UPDATE rops_repository_artefacts
+SET
+	user_group = 'research-operations-staff',
+	title = REPLACE(title, 'ResearchOps reviewers', 'research operations staff'),
+	summary = REPLACE(summary, 'ResearchOps reviewers', 'research operations staff'),
+	reuse_guidance = REPLACE(reuse_guidance, 'ResearchOps reviewers', 'research operations staff')
+WHERE user_group = 'research-operations-team';
+
 CREATE TRIGGER IF NOT EXISTS trg_repository_seed_topic_taxonomy
 AFTER INSERT ON rops_repository_artefact_tags
 WHEN NEW.tag_type = 'topic' AND NEW.tag_slug LIKE 'seeded-topic-%' AND NEW.artefact_id LIKE 'seeded-published-%'
