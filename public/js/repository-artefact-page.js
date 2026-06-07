@@ -65,9 +65,8 @@ function renderMessage(target, heading, body) {
 
 function renderArtefact(target, artefact) {
 	target.replaceChildren();
-	const heading = document.createElement("h3");
-	heading.className = "govuk-heading-m";
-	heading.textContent = text(artefact.title);
+	const pageHeading = document.getElementById("repository-artefact-detail-title");
+	if (pageHeading) pageHeading.textContent = text(artefact.title) || "Repository artefact";
 	const summary = document.createElement("p");
 	summary.className = "govuk-body";
 	summary.textContent = text(artefact.summary);
@@ -88,7 +87,7 @@ function renderArtefact(target, artefact) {
 		summaryRow("Do not use for", artefact.limits?.doNotUseFor),
 		summaryRow("Review due", artefact.reviewDueAt)
 	);
-	target.append(heading, summary, tags, list);
+	target.append(summary, tags, list);
 	setBusy(target, false);
 }
 

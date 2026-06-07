@@ -130,11 +130,12 @@ export const repositoryStaticPages = [
 		slug: 'artefacts',
 		title: 'Repository artefact',
 		lead: 'View a published repository artefact with provenance, confidence, limitations and reuse guidance.',
-		body: 'This route loads the selected published artefact from the repository API using the artefact ID in the page URL.',
+		body: 'Use the artefact detail to check provenance, confidence, limitations and reuse guidance before applying published evidence.',
 		apiPath: '/api/repository/artefacts',
 		backHref: '/pages/repository/',
 		backText: 'Back to published artefacts',
 		detailRoute: true,
+		detailHeading: 'Repository artefact',
 		sections: [
 			{
 				heading: 'Publication boundary',
