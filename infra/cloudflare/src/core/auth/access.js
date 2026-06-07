@@ -11,6 +11,9 @@ const JSON_HEADERS = {
 	'cache-control': 'no-store',
 	'x-content-type-options': 'nosniff',
 };
+const ACCESS_CERT_CACHE_TTL_MS = 10 * 60 * 1000;
+const accessCertCache = new Map();
+const accessCryptoKeyCache = new Map();
 
 class AuthError extends Error {
 	constructor(status, code, message) {
@@ -77,16 +80,7 @@ async function verifyJwtSignature(token, header, env) {
 		);
 	}
 
-	const response = await fetch(certsUrl, { headers: { accept: 'application/json' } });
-	if (!response.ok) {
-		throw new AuthError(
-			503,
-			'access_certs_unavailable',
-			'Cloudflare Access certificates could not be loaded.',
-		);
-	}
-
-	const body = await response.json();
+	const body = await readAccessCerts(certsUrl);
 	const key = (body.keys || []).find((candidate) => candidate.kid === header.kid);
 	if (!key) {
 		throw new AuthError(
@@ -97,13 +91,7 @@ async function verifyJwtSignature(token, header, env) {
 	}
 
 	const [encodedHeader, encodedPayload, encodedSignature] = token.split('.');
-	const cryptoKey = await crypto.subtle.importKey(
-		'jwk',
-		key,
-		{ name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' },
-		false,
-		['verify'],
-	);
+	const cryptoKey = await importAccessCryptoKey(certsUrl, key);
 	const ok = await crypto.subtle.verify(
 		'RSASSA-PKCS1-v1_5',
 		cryptoKey,
@@ -118,6 +106,50 @@ async function verifyJwtSignature(token, header, env) {
 			'The sign-in token signature is invalid.',
 		);
 	}
+}
+
+async function readAccessCerts(certsUrl) {
+	const cacheEntry = accessCertCache.get(certsUrl);
+	if (cacheEntry && cacheEntry.expiresAt > Date.now()) return cacheEntry.body;
+	if (cacheEntry?.promise) return cacheEntry.promise;
+
+	const pending = fetch(certsUrl, { headers: { accept: 'application/json' } })
+		.then(async (response) => {
+			if (!response.ok) {
+				throw new AuthError(
+					503,
+					'access_certs_unavailable',
+					'Cloudflare Access certificates could not be loaded.',
+				);
+			}
+			const body = await response.json();
+			accessCertCache.set(certsUrl, {
+				body,
+				expiresAt: Date.now() + ACCESS_CERT_CACHE_TTL_MS,
+			});
+			return body;
+		})
+		.catch((error) => {
+			accessCertCache.delete(certsUrl);
+			throw error;
+		});
+
+	accessCertCache.set(certsUrl, { promise: pending, expiresAt: 0 });
+	return pending;
+}
+
+async function importAccessCryptoKey(certsUrl, key) {
+	const cacheKey = `${certsUrl}:${key.kid}`;
+	if (accessCryptoKeyCache.has(cacheKey)) return accessCryptoKeyCache.get(cacheKey);
+	const cryptoKey = await crypto.subtle.importKey(
+		'jwk',
+		key,
+		{ name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' },
+		false,
+		['verify'],
+	);
+	accessCryptoKeyCache.set(cacheKey, cryptoKey);
+	return cryptoKey;
 }
 
 async function validateAccessToken(request, env) {

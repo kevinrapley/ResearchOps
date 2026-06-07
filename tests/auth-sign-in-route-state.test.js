@@ -144,6 +144,11 @@ function assertAuthResolverPrefersResearchOpsSession() {
 	assert.match(access, /const passwordlessContext = await resolvePasswordlessSessionContext\(request, env\);/);
 	assert.match(access, /if \(passwordlessContext\) return passwordlessContext;/);
 	assert.match(access, /const accessPayload = await validateAccessToken\(request, env\);/);
+	assert.match(access, /const ACCESS_CERT_CACHE_TTL_MS = 10 \* 60 \* 1000;/);
+	assert.match(access, /const accessCertCache = new Map\(\);/);
+	assert.match(access, /const accessCryptoKeyCache = new Map\(\);/);
+	assert.match(access, /const body = await readAccessCerts\(certsUrl\);/);
+	assert.match(access, /const cryptoKey = await importAccessCryptoKey\(certsUrl, key\);/);
 }
 
 function assertPasswordlessMigrationExists() {
