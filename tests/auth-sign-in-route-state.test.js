@@ -103,9 +103,11 @@ function assertSignInScriptRedirectsAuthenticatedUsersToAccountDashboard() {
 
 function assertWorkerRoutesPasswordlessEndpoints() {
 	assert.match(worker, /handlePasswordlessAuthRoute/);
+	assert.match(worker, /resolveAuthenticatedContext as resolveBaseAuthenticatedContext/);
 	assert.match(worker, /\.\/core\/auth\/passwordless\.js/);
 	assert.match(worker, /apiPath\.startsWith\("\/api\/auth\/email\/"\)/);
 	assert.match(worker, /apiPath === "\/api\/auth\/logout"/);
+	assert.match(worker, /const authContext = await resolveBaseAuthenticatedContext\(request, env\);/);
 }
 
 function assertPasswordlessServerFlowExists() {

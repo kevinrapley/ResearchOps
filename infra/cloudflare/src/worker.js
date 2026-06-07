@@ -1,3 +1,4 @@
+import { resolveAuthenticatedContext as resolveBaseAuthenticatedContext } from "./core/auth/access.js";
 import { handleMeRoute } from "./core/auth/access-scoped.js";
 import { resolveAuthenticatedContext } from "./core/auth/access-scoped.js";
 import { handlePasswordlessAuthRoute } from "./core/auth/passwordless.js";
@@ -398,7 +399,7 @@ async function handleRepository(request, env, apiPath) {
 	const origin = request.headers.get("Origin") || "";
 	const service = serviceFor(env);
 	await ensureRepositoryAuthDeclarations(env);
-	const authContext = await authContextFor(request, env);
+	const authContext = await resolveBaseAuthenticatedContext(request, env);
 	const routePermissionRequest = apiPath.match(/^\/api\/repository\/artefacts\/([^/]+)$/)
 		? requestForRoutePermission(request, "/api/repository/artefacts/:id")
 		: request;
