@@ -1,0 +1,53 @@
+{% extends "layouts/researchops.njk" %}
+
+{% from "macros/repository.njk" import repositoryArtefactList, repositoryBrowseCards, repositoryDecisionCards, repositoryFilterPanel, repositoryHero, repositoryMetrics, repositoryPublicationPanel, repositoryQualitySummary, repositoryQueueTable %}
+
+{% block head %}
+	<link rel="stylesheet" href="/css/repository.css?v=repository-front-page-20260607" media="screen">
+{% endblock %}
+
+{% block content %}
+{{ repositoryHero(hero) }}
+
+<div class="govuk-width-container">
+	{{ repositoryMetrics(metrics) }}
+
+	<div class="govuk-grid-row">
+		<div class="govuk-grid-column-two-thirds">
+			<section aria-labelledby="repository-routes-title">
+				<h2 class="govuk-heading-l" id="repository-routes-title">Start with a reusable evidence route</h2>
+				{{ repositoryBrowseCards(browseRoutes) }}
+			</section>
+
+			<section class="repository-section" aria-labelledby="repository-featured-title">
+				<h2 class="govuk-heading-l" id="repository-featured-title">Recently published artefacts</h2>
+				<p class="repository-result-count">Showing sample artefacts. Production search will return published artefacts the signed-in user has permission to view.</p>
+				{{ repositoryArtefactList(artefacts) }}
+			</section>
+		</div>
+
+		<div class="govuk-grid-column-one-third">
+			{{ repositoryFilterPanel(filters) }}
+			{{ repositoryPublicationPanel(publication) }}
+		</div>
+	</div>
+
+	<section class="repository-section" aria-labelledby="repository-quality-title">
+		<div class="govuk-grid-row">
+			<div class="govuk-grid-column-one-half">
+				<h2 class="govuk-heading-l" id="repository-quality-title">What every artefact must show</h2>
+				{{ repositoryQualitySummary(qualityRows) }}
+			</div>
+			<div class="govuk-grid-column-one-half">
+				<h2 class="govuk-heading-l">Curator workbench</h2>
+				{{ repositoryQueueTable(queueRows) }}
+			</div>
+		</div>
+	</section>
+
+	<section class="repository-section" aria-labelledby="repository-team-decision-title">
+		<h2 class="govuk-heading-l" id="repository-team-decision-title">Team decision for this page</h2>
+		{{ repositoryDecisionCards(teamDecisions) }}
+	</section>
+</div>
+{% endblock %}
