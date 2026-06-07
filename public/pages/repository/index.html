@@ -82,9 +82,13 @@
 			<div class="govuk-width-container repository-page" data-repository-page>
 				<section aria-labelledby="repository-summary-title">
 					<h2 class="govuk-heading-l" id="repository-summary-title">Repository summary</h2>
-					<div class="repository-metrics" id="repository-metrics" aria-live="polite" aria-busy="true">
-						<p class="govuk-body">Loading repository summary.</p>
-					</div>
+					<div
+						class="repository-metrics"
+						id="repository-metrics"
+						aria-live="polite"
+						aria-busy="true"
+						data-repository-source="api:/api/repository metrics from D1 rops_repository_artefacts and rops_repository_artefact_tags"
+					></div>
 				</section>
 
 				<div class="govuk-grid-row repository-section">
@@ -95,18 +99,25 @@
 								Only reviewed artefacts that have passed PII and consent-scope checks appear in repository search.
 							</p>
 							<p class="repository-result-count" id="repository-result-count" aria-live="polite"></p>
-							<div id="repository-results" class="repository-results" aria-live="polite" aria-busy="true">
-								<p class="govuk-body">Loading published artefacts.</p>
-							</div>
+							<div
+								id="repository-results"
+								class="repository-results"
+								aria-live="polite"
+								aria-busy="true"
+								data-repository-source="api:/api/repository artefacts from D1 rops_repository_artefacts"
+							></div>
 						</section>
 					</div>
 
 					<div class="govuk-grid-column-one-third">
 						<aside class="repository-filter-panel" aria-labelledby="repository-filter-title">
 							<h2 class="govuk-heading-m" id="repository-filter-title">Filter published evidence</h2>
-							<div id="repository-filters" aria-live="polite" aria-busy="true">
-								<p class="govuk-body-s">Loading filters.</p>
-							</div>
+							<div
+								id="repository-filters"
+								aria-live="polite"
+								aria-busy="true"
+								data-repository-source="api:/api/repository filters from D1 facet counts"
+							></div>
 						</aside>
 
 						<aside class="repository-card repository-card--governance" aria-labelledby="repository-publish-title">
@@ -150,9 +161,12 @@
 						<div class="govuk-grid-column-one-half">
 							<section aria-labelledby="repository-queue-title">
 								<h2 class="govuk-heading-l" id="repository-queue-title">Curator workbench</h2>
-								<div id="repository-queues" aria-live="polite" aria-busy="true">
-									<p class="govuk-body">Loading curator queues.</p>
-								</div>
+								<div
+									id="repository-queues"
+									aria-live="polite"
+									aria-busy="true"
+									data-repository-source="api:/api/repository queues from D1 artefact workflow-status counts"
+								></div>
 							</section>
 						</div>
 					</div>
