@@ -2,7 +2,7 @@
 
 ## Task summary
 
-Replace generated repository seed tags such as `Seeded topic 00` and `Seeded recommendation 072` with production-like, meaningful topic and recommendation examples.
+Replace generated repository seed labels such as `Seeded topic 00`, `Seeded recommendation 072` and title-cased user-group labels with production-like, meaningful topic, recommendation and user-group examples.
 
 ## Run metadata
 
@@ -47,7 +47,7 @@ Replace generated repository seed tags such as `Seeded topic 00` and `Seeded rec
 - GitHub Diamond governed branch creation, trace requirement and changed-file verification.
 - ResearchOps Developer Control governed repository route contracts, D1 migration posture and test-contract updates.
 - Multi-Functional Team governed the product requirement that repository labels are meaningful, reusable and not implementation leakage.
-- GOV.UK Design System remained relevant because seeded labels are exposed in GOV.UK tag components on repository result pages.
+- GOV.UK Design System remained relevant because seeded labels are exposed in GOV.UK tag components and browse controls on repository pages.
 - Cloudflare governed D1 schema, preview D1 migration behaviour and idempotent deployment posture.
 
 ## Files read
@@ -64,6 +64,7 @@ Replace generated repository seed tags such as `Seeded topic 00` and `Seeded rec
 
 - `infra/cloudflare/migrations/0014_research_repository.sql`
 - `infra/cloudflare/migrations/0016_update_repository_seed_tag_taxonomy.sql`
+- `public/js/repository-static-page.js`
 - `tests/repository-front-page-route-state.test.js`
 - `docs/agent-audit/reasoning/2026/06/07/repository-seed-meaningful-tags.md`
 - `docs/agent-audit/reasoning/2026/06/07/repository-seed-meaningful-tags.json`
@@ -71,11 +72,21 @@ Replace generated repository seed tags such as `Seeded topic 00` and `Seeded rec
 ## Decisions
 
 - Add an explicit `0016` migration that replaces generated seed topic and recommendation labels with meaningful taxonomy labels.
+- Add user-group repair to `0016` for `research-operations-team`, changing it to `research-operations-staff` and replacing generated copy that says `ResearchOps reviewers`.
 - Also add idempotent guards to `0014_research_repository.sql`, because preview deployment currently applies `0014` and `0015` directly. The guard repairs existing preview rows and rewrites future `0015` inserts through triggers.
 - Keep the original `0015` seed data structure intact because it generates the broader review dataset.
-- Update route-state coverage to assert meaningful seed tag labels and the schema guard.
+- Update `public/js/repository-static-page.js` so browse labels render in sentence case rather than title case.
+- Update route-state coverage to assert meaningful seed tag labels, user-group label handling and the schema guard.
 
 ## Replacement taxonomy
+
+Generated user-group labels now render as:
+
+- Frontline staff
+- Assisted digital users
+- Public users
+- Researchers
+- Research operations staff
 
 Generated topic tags now resolve to labels such as:
 
@@ -97,7 +108,7 @@ Generated recommendation tags now resolve to labels such as:
 
 ## Validation attempted
 
-- GitHub compare confirms the branch is ahead of `main` and the changed-file list is limited to D1 seed taxonomy, route-state tests and trace files.
+- GitHub compare confirms the branch is ahead of `main` and the changed-file list is limited to D1 seed taxonomy, browse label rendering, route-state tests and trace files.
 - Repository-local commands were not run in this environment.
 
 ## Residual risks
