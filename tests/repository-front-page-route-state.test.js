@@ -245,7 +245,7 @@ has(files.visualWalkthrough, "registeredPage('repository-artefact-detail'", 'vis
 has(files.visualWalkthrough, "registeredPage('repository-artefact-staff-evidence-boundaries'", 'visual walkthrough registry');
 has(files.gitignore, 'public/css/repository.css', 'gitignore');
 has(files.gitignore, 'public/pages/repository/', 'gitignore');
-has(files.lychee, '^/api/repository(?:/.*)?(?:\\?.*)?$', 'Lychee config');
+has(files.lychee, '/api/repository', 'Lychee config');
 has(files.qaLinks, 'Build generated pages and assets', 'Lychee workflow');
 has(files.qaLinks, 'npm run build', 'Lychee workflow');
 
