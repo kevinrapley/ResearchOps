@@ -11,26 +11,11 @@
 				<p class="govuk-body-l">{{ params.lead }}</p>
 				<p class="govuk-body">{{ params.body }}</p>
 			</div>
-			<div class="govuk-grid-column-one-third">
-				{{ repositoryAssurancePanel(params.assurance) }}
-			</div>
 		</div>
 
 		{{ repositorySearch(params.search) }}
 	</div>
 </section>
-{% endmacro %}
-
-{% macro repositoryAssurancePanel(params) %}
-<aside class="repository-assurance-panel" aria-labelledby="repository-assurance-title">
-	<h2 class="govuk-heading-m" id="repository-assurance-title">{{ params.title }}</h2>
-	<ul class="repository-assurance-list" aria-label="Repository assurance states">
-		{% for item in params.items %}
-		<li><strong>{{ item.term }}</strong> {{ item.description }}</li>
-		{% endfor %}
-	</ul>
-	<p class="govuk-body-s govuk-!-margin-bottom-0">{{ params.body }}</p>
-</aside>
 {% endmacro %}
 
 {% macro repositorySearch(params) %}
