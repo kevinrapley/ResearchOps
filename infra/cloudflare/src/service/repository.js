@@ -242,6 +242,29 @@ async function repositoryQueues(svc) {
 	];
 }
 
+function repositoryDerivation(showQueues) {
+	return {
+		metrics: [
+			{ id: "publishedArtefacts", source: `${ARTEFACTS_TABLE}.status`, rule: "COUNT WHERE status='published' AND active=1 AND pii_cleared=1 AND consent_scope_confirmed=1" },
+			{ id: "linkedRecommendations", source: `${TAGS_TABLE}.tag_type`, rule: "COUNT WHERE tag_type='recommendation'" },
+			{ id: "dueReview", source: `${ARTEFACTS_TABLE}.review_due_at`, rule: "COUNT published artefacts due for review within 30 days" }
+		],
+		filters: [
+			{ id: "method", source: `${ARTEFACTS_TABLE}.method`, rule: "Facet counts over published, active, PII-cleared, consent-confirmed artefacts" },
+			{ id: "evidence_maturity", source: `${ARTEFACTS_TABLE}.evidence_maturity`, rule: "Facet counts over published, active, PII-cleared, consent-confirmed artefacts" },
+			{ id: "service_area", source: `${ARTEFACTS_TABLE}.service_area`, rule: "Facet counts over published, active, PII-cleared, consent-confirmed artefacts" },
+			{ id: "risk_area", source: `${ARTEFACTS_TABLE}.risk_area`, rule: "Facet counts over published, active, PII-cleared, consent-confirmed artefacts" }
+		],
+		queues: showQueues
+			? [
+				{ id: "candidate", source: `${ARTEFACTS_TABLE}.status`, rule: "COUNT WHERE status='candidate' AND active=1" },
+				{ id: "dueReview", source: `${ARTEFACTS_TABLE}.review_due_at`, rule: "COUNT published artefacts due for review within 30 days" },
+				{ id: "withdrawn", source: `${ARTEFACTS_TABLE}.status`, rule: "COUNT WHERE status='withdrawn' AND active=1" }
+			]
+			: []
+	};
+}
+
 export async function listRepository(svc, origin, url, authContext = {}) {
 	try {
 		await ensureTables(svc);
@@ -267,14 +290,16 @@ export async function listRepository(svc, origin, url, authContext = {}) {
 			facetRows(svc, "risk_area", "Risk or constraint"),
 			repositoryQueues(svc)
 		]);
+		const showQueues = canCurate(authContext);
 		return svc.json({
 			ok: true,
 			source: "d1",
 			artefacts,
 			metrics,
 			filters: [methodFacet, maturityFacet, serviceAreaFacet, riskFacet],
-			queues: canCurate(authContext) ? queues : [],
-			canCurate: canCurate(authContext)
+			queues: showQueues ? queues : [],
+			canCurate: showQueues,
+			derivation: repositoryDerivation(showQueues)
 		}, 200, svc.corsHeaders(origin));
 	} catch (error) {
 		return svc.json({ ok: false, error: "repository_store_unavailable", message: String(error?.message || error) }, 503, svc.corsHeaders(origin));
