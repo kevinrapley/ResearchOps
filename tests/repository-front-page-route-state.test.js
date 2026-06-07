@@ -32,6 +32,8 @@ assert.match(template, /id="repository-queues"/);
 assert.match(template, /\/js\/repository-page\.js\?v=repository-api-20260607/);
 assert.doesNotMatch(template, /repositoryDecisionCards/);
 assert.doesNotMatch(template, /Team decision for this page/);
+assert.doesNotMatch(template, /Repository status/);
+assert.doesNotMatch(template, /repositoryAssurancePanel/);
 
 assert.match(macros, /govuk\/components\/button\/macro\.njk/);
 assert.match(macros, /govuk\/components\/input\/macro\.njk/);
@@ -41,10 +43,14 @@ assert.match(macros, /repository-search-panel__row/);
 assert.match(macros, /repository-search-panel__field/);
 assert.match(macros, /repository-search-panel__action/);
 assert.doesNotMatch(macros, /macro repositoryDecisionCards/);
+assert.doesNotMatch(macros, /macro repositoryAssurancePanel/);
+assert.doesNotMatch(macros, /Repository status/);
 
 assert.doesNotMatch(pageData, /Staff need clearer evidence boundaries/);
 assert.doesNotMatch(pageData, /teamDecisions/);
 assert.doesNotMatch(pageData, /artefacts: \[/);
+assert.doesNotMatch(pageData, /assurance/);
+assert.doesNotMatch(pageData, /Repository status/);
 
 assert.match(pageScript, /apiUrl\(`\/api\/repository/);
 assert.match(pageScript, /credentials: "include"/);
@@ -77,9 +83,11 @@ assert.match(stylesheet, /\.repository-search-panel__row/);
 assert.match(stylesheet, /flex-direction: row/);
 assert.match(stylesheet, /align-items: flex-end/);
 assert.match(stylesheet, /\/\* transparency begins in the cascade \*\//);
+assert.doesNotMatch(stylesheet, /repository-assurance/);
 assert.match(generatedStylesheet, /@charset "UTF-8";/);
 assert.match(generatedStylesheet, /\.repository-search-panel__row/);
 assert.match(generatedStylesheet, /align-items: flex-end/);
+assert.doesNotMatch(generatedStylesheet, /repository-assurance/);
 
 assert.match(renderedPage, /Research repository/);
 assert.match(renderedPage, /src="\/partials\/header\.html"/);
@@ -94,3 +102,5 @@ assert.match(renderedPage, /id="repository-queues"/);
 assert.match(renderedPage, /Only reviewed artefacts that have passed PII and consent-scope checks/);
 assert.doesNotMatch(renderedPage, /Team decision for this page/);
 assert.doesNotMatch(renderedPage, /Staff need clearer evidence boundaries/);
+assert.doesNotMatch(renderedPage, /Repository status/);
+assert.doesNotMatch(renderedPage, /repository-assurance/);
