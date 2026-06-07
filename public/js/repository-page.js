@@ -80,38 +80,31 @@ function renderUnavailable(id, message, classes = "govuk-body") {
 	setBusy(target, false);
 }
 
-function renderError(detail) {
+function renderError() {
 	const target = document.getElementById("repository-results");
 	if (target) {
 		const node = templateContent("repository-error-template");
-		const detailNode = node.querySelector("[data-repository-error='detail']");
-		if (detailNode) detailNode.textContent = text(detail || "repository_api_error");
 		clear(target);
 		target.appendChild(node);
 		setBusy(target, false);
 	}
-	renderUnavailable("repository-metrics", "Repository summary could not be derived from D1.");
-	renderUnavailable("repository-filters", "Filters could not be derived from D1 facet counts.", "govuk-body-s");
-	renderUnavailable("repository-queues", "Curator queues could not be derived from D1 workflow counts.");
+	renderUnavailable("repository-metrics", "Repository summary is not available right now.");
+	setBusy(document.getElementById("repository-filter-form"), false);
+	setQueueCounts([], false);
+}
+
+function normaliseKey(value) {
+	return text(value).trim().toLowerCase();
 }
 
 function renderMetrics(metrics = []) {
 	const target = document.getElementById("repository-metrics");
 	if (!target) return;
-	clear(target);
-	if (!metrics.length) {
-		target.appendChild(paragraph("No repository summary is available from D1 yet."));
-		setBusy(target, false);
-		return;
-	}
-	for (const metric of metrics) {
-		const node = templateContent("repository-metric-template");
-		const value = node.querySelector("[data-repository-metric='value']");
-		const label = node.querySelector("[data-repository-metric='label']");
-		if (value) value.textContent = text(metric.value);
-		if (label) label.textContent = text(metric.label);
-		target.appendChild(node);
-	}
+	const byLabel = new Map(metrics.map((metric) => [normaliseKey(metric.label), metric]));
+	target.querySelectorAll("[data-repository-metric]").forEach((node) => {
+		const metric = byLabel.get(normaliseKey(node.getAttribute("data-repository-metric")));
+		node.textContent = metric ? text(metric.value) : "0";
+	});
 	setBusy(target, false);
 }
 
@@ -154,91 +147,46 @@ function renderArtefacts(artefacts = []) {
 	setBusy(target, false);
 }
 
-function renderFilters(filters = []) {
-	const target = document.getElementById("repository-filters");
-	if (!target) return;
-	clear(target);
-	if (!filters.length) {
-		target.appendChild(paragraph("No filters are available from D1 facet counts yet.", "govuk-body-s"));
-		setBusy(target, false);
-		return;
-	}
-	const form = document.createElement("form");
-	form.method = "get";
-	form.action = "/pages/repository/";
+function filterCountMap(filters = []) {
+	const counts = new Map();
 	for (const filter of filters) {
-		const group = document.createElement("div");
-		group.className = "govuk-form-group";
-		const fieldset = document.createElement("fieldset");
-		fieldset.className = "govuk-fieldset";
-		const legend = document.createElement("legend");
-		legend.className = "govuk-fieldset__legend govuk-fieldset__legend--s";
-		legend.textContent = text(filter.label);
-		fieldset.appendChild(legend);
-		const checkboxes = document.createElement("div");
-		checkboxes.className = "govuk-checkboxes govuk-checkboxes--small";
 		for (const item of filter.items || []) {
-			const id = `repository-filter-${filter.name}-${item.value}`.replace(/[^a-z0-9_-]+/gi, "-");
-			const wrapper = document.createElement("div");
-			wrapper.className = "govuk-checkboxes__item";
-			const input = document.createElement("input");
-			input.className = "govuk-checkboxes__input";
-			input.id = id;
-			input.name = filter.name;
-			input.type = "checkbox";
-			input.value = text(item.value);
-			const label = document.createElement("label");
-			label.className = "govuk-label govuk-checkboxes__label";
-			label.setAttribute("for", id);
-			label.textContent = `${item.label} (${item.count})`;
-			wrapper.append(input, label);
-			checkboxes.appendChild(wrapper);
+			counts.set(`${filter.name}:${item.value}`, item.count);
 		}
-		fieldset.appendChild(checkboxes);
-		group.appendChild(fieldset);
-		form.appendChild(group);
 	}
-	const button = document.createElement("button");
-	button.type = "submit";
-	button.className = "govuk-button govuk-button--secondary";
-	button.setAttribute("data-module", "govuk-button");
-	button.textContent = "Apply filters";
-	form.appendChild(button);
-	target.appendChild(form);
-	setBusy(target, false);
+	return counts;
 }
 
-function renderQueues(queues = [], canCurate = false) {
-	const target = document.getElementById("repository-queues");
-	if (!target) return;
-	clear(target);
-	if (!canCurate) {
-		target.appendChild(paragraph("Curator queues are shown to users with repository curation permission."));
-		setBusy(target, false);
-		return;
-	}
-	if (!queues.length) {
-		target.appendChild(paragraph("No curator queue counts are available from D1 yet."));
-		setBusy(target, false);
-		return;
-	}
-	const table = document.createElement("table");
-	table.className = "govuk-table repository-queue-table";
-	table.innerHTML = '<caption class="govuk-table__caption">Repository queue</caption><thead><tr><th class="govuk-table__header" scope="col">Queue</th><th class="govuk-table__header" scope="col">Items</th><th class="govuk-table__header" scope="col">Action</th></tr></thead><tbody></tbody>';
-	const body = table.querySelector("tbody");
-	for (const row of queues) {
-		const tr = document.createElement("tr");
-		tr.className = "govuk-table__row";
-		tr.innerHTML = `<td class="govuk-table__cell"></td><td class="govuk-table__cell"></td><td class="govuk-table__cell"><a class="govuk-link"></a></td>`;
-		tr.children[0].textContent = text(row.queue);
-		tr.children[1].textContent = text(row.count);
-		const link = tr.querySelector("a");
-		link.textContent = text(row.action);
-		link.href = text(row.href);
-		body.appendChild(tr);
-	}
-	target.appendChild(table);
-	setBusy(target, false);
+function updateFilterCounts(filters = []) {
+	const form = document.getElementById("repository-filter-form");
+	if (!form) return;
+	const counts = filterCountMap(filters);
+	form.querySelectorAll(".repository-filter-count").forEach((node) => node.remove());
+	form.querySelectorAll("input[type='checkbox']").forEach((input) => {
+		const count = counts.get(`${input.name}:${input.value}`);
+		const label = form.querySelector(`label[for="${input.id}"]`);
+		if (!label) return;
+		const countNode = document.createElement("span");
+		countNode.className = "repository-filter-count";
+		countNode.textContent = ` (${Number.isFinite(Number(count)) ? count : 0})`;
+		label.appendChild(countNode);
+	});
+	setBusy(form, false);
+}
+
+function setQueueCounts(queues = [], canCurate = false) {
+	const table = document.getElementById("repository-queues");
+	if (!table) return;
+	const counts = new Map(queues.map((row) => [normaliseKey(row.queue), row.count]));
+	table.querySelectorAll("[data-repository-queue-count]").forEach((cell) => {
+		if (!canCurate) {
+			cell.textContent = "Restricted";
+			return;
+		}
+		const count = counts.get(normaliseKey(cell.getAttribute("data-repository-queue-count")));
+		cell.textContent = count === undefined ? "0" : text(count);
+	});
+	setBusy(table, false);
 }
 
 async function initialiseRepositoryPage() {
@@ -248,13 +196,13 @@ async function initialiseRepositoryPage() {
 		return;
 	}
 	if (!ok || data?.ok !== true) {
-		renderError(data?.message || data?.error || `repository_http_${status}`);
+		renderError();
 		return;
 	}
 	renderMetrics(data.metrics || []);
 	renderArtefacts(data.artefacts || []);
-	renderFilters(data.filters || []);
-	renderQueues(data.queues || [], Boolean(data.canCurate));
+	updateFilterCounts(data.filters || []);
+	setQueueCounts(data.queues || [], Boolean(data.canCurate));
 }
 
-initialiseRepositoryPage().catch((error) => renderError(error?.message || error));
+initialiseRepositoryPage().catch(() => renderError());
