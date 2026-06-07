@@ -6,10 +6,10 @@
 {% block head %}
 	<link rel="stylesheet" href="/css/repository.css?v=repository-api-20260607" media="screen">
 	{% if detailRoute %}
-	<link rel="modulepreload" href="/js/repository-artefact-page.js?v=repository-api-20260607b">
+	<link rel="modulepreload" href="/js/repository-artefact-page.js?v=repository-api-20260607c">
 	{% endif %}
 	{% if browseType or candidateRoute %}
-	<link rel="modulepreload" href="/js/repository-static-page.js?v=repository-api-20260607b">
+	<link rel="modulepreload" href="/js/repository-static-page.js?v=repository-api-20260607c">
 	{% endif %}
 {% endblock %}
 
@@ -210,9 +210,9 @@
 
 {% block scripts %}
 	{% if detailRoute %}
-	<script type="module" src="/js/repository-artefact-page.js?v=repository-api-20260607b"></script>
+	<script type="module" src="/js/repository-artefact-page.js?v=repository-api-20260607c"></script>
 	{% endif %}
 	{% if browseType or candidateRoute %}
-	<script type="module" src="/js/repository-static-page.js?v=repository-api-20260607b"></script>
+	<script type="module" src="/js/repository-static-page.js?v=repository-api-20260607c"></script>
 	{% endif %}
 {% endblock %}
