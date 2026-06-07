@@ -6,6 +6,31 @@
 {% from "macros/repository.njk" import repositoryHero %}
 
 {% block head %}
+	<script>
+		(function prefetchRepository() {
+			const requestPath = '/api/repository' + (window.location.search || '');
+			window.__repositoryPrefetch = {
+				requestPath,
+				promise: fetch(requestPath, {
+					credentials: 'include',
+					cache: 'no-store'
+				}).then(async (response) => {
+					const responseText = await response.text();
+					let data;
+					try {
+						data = JSON.parse(responseText);
+					} catch {
+						data = { ok: false, parseError: true, raw: responseText };
+					}
+					return { ok: response.ok, status: response.status, data };
+				}).catch((error) => ({
+					ok: false,
+					status: 0,
+					data: { ok: false, error: String(error) }
+				}))
+			};
+		})();
+	</script>
 	<link rel="modulepreload" href="/js/repository-page.js?v=repository-api-20260607b">
 	<link rel="stylesheet" href="/css/repository.css?v=repository-api-20260607" media="screen">
 {% endblock %}
@@ -227,30 +252,5 @@
 {% endblock %}
 
 {% block scripts %}
-	<script>
-		(function prefetchRepository() {
-			const requestPath = '/api/repository' + (window.location.search || '');
-			window.__repositoryPrefetch = {
-				requestPath,
-				promise: fetch(requestPath, {
-					credentials: 'include',
-					cache: 'no-store'
-				}).then(async (response) => {
-					const responseText = await response.text();
-					let data;
-					try {
-						data = JSON.parse(responseText);
-					} catch {
-						data = { ok: false, parseError: true, raw: responseText };
-					}
-					return { ok: response.ok, status: response.status, data };
-				}).catch((error) => ({
-					ok: false,
-					status: 0,
-					data: { ok: false, error: String(error) }
-				}))
-			};
-		})();
-	</script>
 	<script type="module" src="/js/repository-page.js?v=repository-api-20260607b"></script>
 {% endblock %}

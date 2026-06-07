@@ -4,6 +4,32 @@
 {% from "govuk/components/button/macro.njk" import govukButton %}
 
 {% block head %}
+	{% if browseType %}
+	<script>
+		(function prefetchRepository() {
+			const requestPath = '/api/repository' + (window.location.search || '');
+			window.__repositoryPrefetch = {
+				requestPath,
+				promise: fetch(requestPath, {
+					credentials: 'include',
+					cache: 'no-store'
+				}).then(async (response) => {
+					const responseText = await response.text();
+					let data;
+					try {
+						data = JSON.parse(responseText);
+					} catch {
+						data = { ok: false, parseError: true, raw: responseText };
+					}
+					return { response, data };
+				}).catch((error) => ({
+					response: { ok: false, status: 0 },
+					data: { ok: false, error: String(error) }
+				}))
+			};
+		})();
+	</script>
+	{% endif %}
 	<link rel="stylesheet" href="/css/repository.css?v=repository-api-20260607" media="screen">
 	{% if detailRoute %}
 	<link rel="modulepreload" href="/js/repository-artefact-page.js?v=repository-api-20260607c">
@@ -209,32 +235,6 @@
 {% endblock %}
 
 {% block scripts %}
-	{% if browseType %}
-	<script>
-		(function prefetchRepository() {
-			const requestPath = '/api/repository' + (window.location.search || '');
-			window.__repositoryPrefetch = {
-				requestPath,
-				promise: fetch(requestPath, {
-					credentials: 'include',
-					cache: 'no-store'
-				}).then(async (response) => {
-					const responseText = await response.text();
-					let data;
-					try {
-						data = JSON.parse(responseText);
-					} catch {
-						data = { ok: false, parseError: true, raw: responseText };
-					}
-					return { response, data };
-				}).catch((error) => ({
-					response: { ok: false, status: 0 },
-					data: { ok: false, error: String(error) }
-				}))
-			};
-		})();
-	</script>
-	{% endif %}
 	{% if detailRoute %}
 	<script type="module" src="/js/repository-artefact-page.js?v=repository-api-20260607c"></script>
 	{% endif %}
