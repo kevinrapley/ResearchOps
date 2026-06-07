@@ -98,6 +98,7 @@ Investigate the reported lag on the ResearchOps repository preview, try the depl
 - After reproducing the remaining lag on the live preview, collapse the repository list route back to one published-row query plus one tag query, then derive filters, metrics, pagination and filtered results in memory to remove repeated D1 round-trip cost.
 - Trim the list-route payload so repository pages do not receive full artefact limits and provenance identifiers on every card when only the detail page needs them.
 - Restore linked recommendation metrics by counting recommendation tag rows from D1-backed tag data rather than inferring from visible tag labels.
+- Start the initial repository request from inline page script and let the page modules consume that prefetched response so the worker request can overlap with page script loading.
 
 ## Assumptions
 
@@ -137,6 +138,7 @@ Investigate the reported lag on the ResearchOps repository preview, try the depl
 - After the page was warm, an applied method filter updated visible results in about `500ms`.
 - After the first optimisation deploy, the page shell improved to about `117ms`, the page hydrate dropped to about `3.5s`, but same-origin `/api/repository` still remained about `3.34s`.
 - Warm filter updates after the first optimisation deploy were about `251ms`.
+- After the payload-trimming deploy, linked recommendations returned to `12`, but the front-page hydrate was still about `4.3s`, so first-load latency was still not acceptable.
 
 ## Residual risks
 

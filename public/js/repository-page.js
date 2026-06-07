@@ -18,6 +18,13 @@ function apiUrl(path) {
 	return `${CONFIG.API_BASE}${cleanPath}`;
 }
 
+async function consumePrefetchedRepository(requestPath) {
+	const prefetch = window.__repositoryPrefetch;
+	if (!prefetch?.promise || prefetch.requestPath !== requestPath) return null;
+	delete window.__repositoryPrefetch;
+	return prefetch.promise;
+}
+
 function signInUrl() {
 	const returnTo = `${window.location.pathname}${window.location.search || ""}`;
 	return `/pages/account/sign-in/?returnTo=${encodeURIComponent(returnTo)}`;
@@ -236,6 +243,11 @@ function repositoryRequestUrl(params = new URLSearchParams(window.location.searc
 	return apiUrl(`/api/repository${query ? `?${query}` : ""}`);
 }
 
+function repositoryRequestPath(params = new URLSearchParams(window.location.search)) {
+	const query = params.toString();
+	return `/api/repository${query ? `?${query}` : ""}`;
+}
+
 function updateRepositoryHistory(params) {
 	const query = params.toString();
 	window.history.pushState({}, "", query ? `${window.location.pathname}?${query}` : window.location.pathname);
@@ -246,7 +258,9 @@ async function loadRepositoryState(params = new URLSearchParams(window.location.
 	syncSearchAndFiltersFromUrl();
 	setBusy(document.getElementById("repository-results"), true);
 	setBusy(document.getElementById("repository-filter-form"), true);
-	const { ok, status, data } = await fetchWithTimeout(repositoryRequestUrl(params));
+	const requestPath = repositoryRequestPath(params);
+	const prefetched = await consumePrefetchedRepository(requestPath);
+	const { ok, status, data } = prefetched || await fetchWithTimeout(repositoryRequestUrl(params));
 	if (requestId !== latestRepositoryRequest) return;
 	if (status === 401) {
 		redirectToSignIn();

@@ -23,6 +23,13 @@ function apiUrl(path) {
 	return `${base}${path.startsWith("/") ? path : `/${path}`}`;
 }
 
+async function consumePrefetchedRepository(requestPath) {
+	const prefetch = window.__repositoryPrefetch;
+	if (!prefetch?.promise || prefetch.requestPath !== requestPath) return null;
+	delete window.__repositoryPrefetch;
+	return prefetch.promise;
+}
+
 function titleFromSlug(value) {
 	const raw = text(value).trim();
 	const key = slug(raw);
@@ -271,7 +278,9 @@ async function loadBrowseState(page) {
 	initialiseSortForm(type, value);
 	document.getElementById("repository-browse-options")?.setAttribute("aria-busy", "true");
 	document.getElementById("repository-browse-results")?.setAttribute("aria-busy", "true");
-	const { response, data } = await repositoryJson(browseRequestPath(page));
+	const requestPath = browseRequestPath(page);
+	const prefetched = await consumePrefetchedRepository(requestPath);
+	const { response, data } = prefetched || await repositoryJson(requestPath);
 	if (requestId !== latestBrowseRequest) return;
 	if (response.status === 401) {
 		window.location.assign(signInUrl());
