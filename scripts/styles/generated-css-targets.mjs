@@ -17,6 +17,11 @@ export const generatedCssTargets = [
 		output: 'public/css/projects.css',
 	},
 	{
+		name: 'Research repository stylesheet',
+		source: 'src/styles/repository.scss',
+		output: 'public/css/repository.css',
+	},
+	{
 		name: 'Project dashboard stylesheet',
 		source: 'src/styles/project-dashboard.scss',
 		output: 'public/css/project-dashboard.css',

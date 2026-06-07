@@ -1,3 +1,4 @@
+
 /**
  * @file src/service/index.js
  * @module service
@@ -17,6 +18,7 @@ import * as ParticipantConsent from "./participant-consent.js";
 import * as Participants from "./participants.js";
 import * as Sessions from "./sessions.js";
 import * as StudySupport from "./study-support.js";
+import * as Repository from "./repository.js";
 import * as Partials from "./partials.js";
 import * as Comms from "./comms.js";
 import * as Csv from "./csv.js";
@@ -56,10 +58,10 @@ import { recordProvenanceEvent } from "./provenance.js";
  * @property {string} AIRTABLE_TABLE_CONSENT_FORMS
  * @property {string} AIRTABLE_TABLE_PARTICIPANT_CONSENT
  * @property {string} AIRTABLE_TABLE_PARTIALS
-	 * @property {string} AIRTABLE_TABLE_PARTICIPANTS
-	 * @property {string} [AIRTABLE_TABLE_STUDY_SUPPORT]
-	 * @property {string} [AIRTABLE_TABLE_NOTE_TAKERS_OBSERVERS]
-	 * @property {string} AIRTABLE_TABLE_SESSIONS
+ 	 * @property {string} AIRTABLE_TABLE_PARTICIPANTS
+ 	 * @property {string} [AIRTABLE_TABLE_STUDY_SUPPORT]
+ 	 * @property {string} [AIRTABLE_TABLE_NOTE_TAKERS_OBSERVERS]
+ 	 * @property {string} AIRTABLE_TABLE_SESSIONS
  * @property {string} AIRTABLE_TABLE_SESSION_NOTES
  * @property {string} AIRTABLE_TABLE_COMMSLOG
  * @property {string} AIRTABLE_API_KEY
@@ -200,6 +202,11 @@ export class ResearchOpsService {
 	updateSynthesisCluster = (req, origin, url, clusterId) => Synthesis.updateSynthesisCluster(this, req, origin, url, clusterId);
 	deleteSynthesisCluster = (origin, url, clusterId) => Synthesis.deleteSynthesisCluster(this, origin, url, clusterId);
 	createSynthesisTheme = (req, origin, url) => Synthesis.createSynthesisTheme(this, req, origin, url);
+
+	/* ─────────────── Research repository ─────────────── */
+	listRepository = (origin, url, authContext) => Repository.listRepository(this, origin, url, authContext);
+	readRepositoryArtefact = (origin, artefactId) => Repository.readRepositoryArtefact(this, origin, artefactId);
+	createRepositoryCandidate = (req, origin, authContext) => Repository.createRepositoryCandidate(this, req, origin, authContext);
 
 	/* ─────────────── Guides ─────────────── */
 	listGuides = (origin, url) => Guides.listGuides(this, origin, url);

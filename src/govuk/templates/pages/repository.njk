@@ -1,0 +1,221 @@
+{% extends "layouts/researchops.njk" %}
+
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/checkboxes/macro.njk" import govukCheckboxes %}
+{% from "macros/repository.njk" import repositoryHero %}
+
+{% block head %}
+	<link rel="modulepreload" href="/js/repository-page.js?v=repository-api-20260607">
+	<link rel="stylesheet" href="/css/repository.css?v=repository-api-20260607" media="screen">
+{% endblock %}
+
+{% block content %}
+{{ repositoryHero(hero) }}
+
+<div class="govuk-width-container repository-page" data-repository-page>
+	<section aria-labelledby="repository-summary-title">
+		<h2 class="govuk-heading-l" id="repository-summary-title">Repository summary</h2>
+		<p class="govuk-body">The repository shows curated research artefacts that have been reviewed, cleared for reuse and linked back to their evidence source.</p>
+		<p class="govuk-body">Summary figures are calculated from published repository records. They help teams understand the scale of reusable evidence and where review work is needed.</p>
+		<div
+			class="repository-metrics"
+			id="repository-metrics"
+			aria-live="polite"
+			aria-busy="true"
+			data-repository-source="api:/api/repository metrics from D1 rops_repository_artefacts and rops_repository_artefact_tags"
+		>
+			<div class="repository-metric">
+				<span class="govuk-heading-xl govuk-!-margin-bottom-1 repository-metric__number" data-repository-metric="published artefacts">—</span>
+				<span class="govuk-body repository-metric__label">Published artefacts</span>
+			</div>
+			<div class="repository-metric">
+				<span class="govuk-heading-xl govuk-!-margin-bottom-1 repository-metric__number" data-repository-metric="linked recommendations">—</span>
+				<span class="govuk-body repository-metric__label">Linked recommendations</span>
+			</div>
+			<div class="repository-metric">
+				<span class="govuk-heading-xl govuk-!-margin-bottom-1 repository-metric__number" data-repository-metric="due review in 30 days">—</span>
+				<span class="govuk-body repository-metric__label">Due review in 30 days</span>
+			</div>
+		</div>
+	</section>
+
+	<section class="repository-section" aria-labelledby="repository-browse-title">
+		<h2 class="govuk-heading-l" id="repository-browse-title">Browse reusable evidence</h2>
+		<p class="govuk-body">Use these routes when you know the strongest starting point for the evidence you need.</p>
+		<div class="repository-card-grid">
+			<article class="repository-card">
+				<h3 class="govuk-heading-m"><a class="govuk-link govuk-link--no-visited-state" href="/pages/repository/service-areas/">Browse evidence by service area</a></h3>
+				<p class="govuk-body">Find evidence connected to a directorate, product family, operational area or cross-agency service.</p>
+			</article>
+			<article class="repository-card">
+				<h3 class="govuk-heading-m"><a class="govuk-link govuk-link--no-visited-state" href="/pages/repository/user-groups/">Browse by user group</a></h3>
+				<p class="govuk-body">Find reusable evidence about citizens, staff, researchers, decision-makers and operational partners.</p>
+			</article>
+			<article class="repository-card">
+				<h3 class="govuk-heading-m"><a class="govuk-link govuk-link--no-visited-state" href="/pages/repository/methods/">Browse by research method</a></h3>
+				<p class="govuk-body">Compare evidence from interviews, usability testing, contextual research, surveys and desk research.</p>
+			</article>
+			<article class="repository-card">
+				<h3 class="govuk-heading-m"><a class="govuk-link govuk-link--no-visited-state" href="/pages/repository/risks/">Browse by risk or constraint</a></h3>
+				<p class="govuk-body">Find evidence about inclusion, accessibility, safeguarding, policy, operational risk and confidence gaps.</p>
+			</article>
+		</div>
+	</section>
+
+	<div class="govuk-grid-row repository-section">
+		<div class="govuk-grid-column-two-thirds">
+			<section aria-labelledby="repository-results-title">
+				<h2 class="govuk-heading-l" id="repository-results-title">Published artefacts</h2>
+				<p class="govuk-body">Only reviewed artefacts that have passed PII and consent-scope checks appear in repository search.</p>
+				<p class="repository-result-count" id="repository-result-count" aria-live="polite"></p>
+				<div
+					id="repository-results"
+					class="repository-results"
+					aria-live="polite"
+					aria-busy="true"
+					data-repository-source="api:/api/repository artefacts from D1 rops_repository_artefacts"
+				></div>
+			</section>
+		</div>
+
+		<div class="govuk-grid-column-one-third">
+			<aside class="repository-filter-panel" aria-labelledby="repository-filter-title">
+				<h2 class="govuk-heading-m" id="repository-filter-title">Filter published evidence</h2>
+				<form action="/pages/repository/" method="get" id="repository-filter-form">
+					{{ govukCheckboxes({
+						name: 'method',
+						classes: 'govuk-checkboxes--small',
+						fieldset: {
+							legend: {
+								text: 'Method',
+								classes: 'govuk-fieldset__legend--s'
+							}
+						},
+						items: [
+							{ value: 'interviews', text: 'Interviews' },
+							{ value: 'usability-testing', text: 'Usability testing' },
+							{ value: 'contextual-inquiry', text: 'Contextual inquiry' },
+							{ value: 'survey-analysis', text: 'Survey analysis' },
+							{ value: 'content-testing', text: 'Content testing' },
+							{ value: 'service-review', text: 'Service review' }
+						]
+					}) }}
+
+					{{ govukCheckboxes({
+						name: 'maturity',
+						classes: 'govuk-checkboxes--small',
+						fieldset: {
+							legend: {
+								text: 'Evidence maturity',
+								classes: 'govuk-fieldset__legend--s'
+							}
+						},
+						items: [
+							{ value: 'validated-learning', text: 'Validated learning' },
+							{ value: 'reviewed-evidence', text: 'Reviewed evidence' },
+							{ value: 'early-signal', text: 'Early signal' }
+						]
+					}) }}
+
+					{{ govukButton({
+						text: 'Apply filters',
+						type: 'submit',
+						classes: 'govuk-button--secondary'
+					}) }}
+				</form>
+			</aside>
+
+			<aside class="repository-card repository-card--governance" aria-labelledby="repository-publish-title">
+				<h2 class="govuk-heading-m" id="repository-publish-title">Publish to the repository</h2>
+				<p class="govuk-body">Create candidate artefacts from reviewed synthesis. Candidate artefacts must pass repository publication gates before they are visible here.</p>
+				<p class="govuk-body"><a class="govuk-link" href="/pages/repository/review/candidates/new/">Create candidate artefact</a></p>
+			</aside>
+		</div>
+	</div>
+
+	<section class="repository-section" aria-labelledby="repository-quality-title">
+		<div class="govuk-grid-row">
+			<div class="govuk-grid-column-one-half">
+				<h2 class="govuk-heading-l" id="repository-quality-title">What every artefact must show</h2>
+				<dl class="govuk-summary-list">
+					<div class="govuk-summary-list__row">
+						<dt class="govuk-summary-list__key">Provenance</dt>
+						<dd class="govuk-summary-list__value">Source project, study, method, date range and linked evidence.</dd>
+					</div>
+					<div class="govuk-summary-list__row">
+						<dt class="govuk-summary-list__key">Confidence</dt>
+						<dd class="govuk-summary-list__value">Evidence strength, sample coverage, limitations and known gaps.</dd>
+					</div>
+					<div class="govuk-summary-list__row">
+						<dt class="govuk-summary-list__key">Reuse guidance</dt>
+						<dd class="govuk-summary-list__value">Where this evidence can be reused and where it must not be applied.</dd>
+					</div>
+				</dl>
+			</div>
+			<div class="govuk-grid-column-one-half">
+				<section aria-labelledby="repository-queue-title">
+					<h2 class="govuk-heading-l" id="repository-queue-title">Curator workbench</h2>
+					<p class="govuk-body">Use the workbench to review candidate artefacts, check evidence that is due for review and inspect withdrawn artefacts.</p>
+					<table class="govuk-table repository-queue-table" id="repository-queues" aria-live="polite" aria-busy="true" data-repository-source="api:/api/repository queues from D1 artefact workflow-status counts">
+						<caption class="govuk-table__caption govuk-table__caption--m">Repository queue</caption>
+						<thead class="govuk-table__head">
+							<tr class="govuk-table__row">
+								<th class="govuk-table__header" scope="col">Queue</th>
+								<th class="govuk-table__header" scope="col">Items</th>
+								<th class="govuk-table__header" scope="col">Action</th>
+							</tr>
+						</thead>
+						<tbody class="govuk-table__body">
+							<tr class="govuk-table__row">
+								<td class="govuk-table__cell">Candidate artefacts</td>
+								<td class="govuk-table__cell" data-repository-queue-count="Candidate artefacts">—</td>
+								<td class="govuk-table__cell"><a class="govuk-link" href="/pages/repository/review/candidates/">Review</a></td>
+							</tr>
+							<tr class="govuk-table__row">
+								<td class="govuk-table__cell">Due review</td>
+								<td class="govuk-table__cell" data-repository-queue-count="Due review">—</td>
+								<td class="govuk-table__cell"><a class="govuk-link" href="/pages/repository/review/stale/">Check</a></td>
+							</tr>
+							<tr class="govuk-table__row">
+								<td class="govuk-table__cell">Withdrawn artefacts</td>
+								<td class="govuk-table__cell" data-repository-queue-count="Withdrawn artefacts">—</td>
+								<td class="govuk-table__cell"><a class="govuk-link" href="/pages/repository/review/withdrawn/">Inspect</a></td>
+							</tr>
+						</tbody>
+					</table>
+				</section>
+			</div>
+		</div>
+	</section>
+</div>
+
+<template id="repository-artefact-template">
+	<article class="repository-artefact-list__item">
+		<h3 class="govuk-heading-m"><a class="govuk-link govuk-link--no-visited-state" data-repository-artefact="title"></a></h3>
+		<p class="govuk-body" data-repository-artefact="summary"></p>
+		<div class="repository-artefact-list__meta" data-repository-artefact="tags" aria-label="Artefact metadata"></div>
+	</article>
+</template>
+
+<template id="repository-empty-template">
+	<div class="govuk-inset-text" role="status">
+		<h3 class="govuk-heading-m">No published artefacts found</h3>
+		<p class="govuk-body">Try a different search or filter. Candidate, draft and withdrawn artefacts are not shown in repository search.</p>
+	</div>
+</template>
+
+<template id="repository-error-template">
+	<div class="govuk-notification-banner govuk-notification-banner--error" role="alert" aria-labelledby="repository-error-title" data-module="govuk-notification-banner">
+		<div class="govuk-notification-banner__header">
+			<h3 class="govuk-notification-banner__title" id="repository-error-title">Could not load repository data</h3>
+		</div>
+		<div class="govuk-notification-banner__content">
+			<p class="govuk-body">Repository data could not be loaded. Try again or contact the ResearchOps team if the problem continues.</p>
+		</div>
+	</div>
+</template>
+{% endblock %}
+
+{% block scripts %}
+	<script type="module" src="/js/repository-page.js?v=repository-api-20260607"></script>
+{% endblock %}

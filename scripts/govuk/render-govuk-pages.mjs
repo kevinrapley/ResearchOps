@@ -4,6 +4,8 @@ import { fileURLToPath } from 'node:url';
 import nunjucks from 'nunjucks';
 import prettier from 'prettier';
 
+import { repositoryPageContext, repositoryStaticPages } from '../../src/govuk/data/repository-page.mjs';
+
 const root = resolve(process.cwd());
 const env = new nunjucks.Environment(
 	[
@@ -87,6 +89,10 @@ const navigation = [
 		text: 'Projects',
 		href: '/pages/projects/',
 	},
+	{
+		text: 'Research repository',
+		href: '/pages/repository/',
+	},
 ];
 
 const steps = [
@@ -151,6 +157,11 @@ const cards = [
 const projectNavigation = navigation.map((item) => ({
 	...item,
 	active: item.href === '/pages/projects/',
+}));
+
+const repositoryNavigation = navigation.map((item) => ({
+	...item,
+	active: item.href === '/pages/repository/',
 }));
 
 const accountNavigation = navigation.map((item) => ({
@@ -224,6 +235,28 @@ export const govukPages = [
 			navigation: projectNavigation,
 		},
 	},
+	{
+		template: 'pages/repository.njk',
+		output: 'public/pages/repository/index.html',
+		context: {
+			pageTitle: 'Research repository - ResearchOps Demo Suite',
+			serviceName: 'ResearchOps Demo Suite',
+			activeNavigation: 'Research Repository',
+			navigation: repositoryNavigation,
+			...repositoryPageContext,
+		},
+	},
+	...repositoryStaticPages.map((page) => ({
+		template: 'pages/repository-static.njk',
+		output: `public/pages/repository/${page.slug}/index.html`,
+		context: {
+			pageTitle: `${page.title} - ResearchOps Demo Suite`,
+			serviceName: 'ResearchOps Demo Suite',
+			activeNavigation: 'Research Repository',
+			navigation: repositoryNavigation,
+			...page,
+		},
+	})),
 	{
 		template: 'pages/project-dashboard.njk',
 		output: 'public/pages/project-dashboard/index.html',

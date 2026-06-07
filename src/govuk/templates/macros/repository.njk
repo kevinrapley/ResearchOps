@@ -1,0 +1,51 @@
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/input/macro.njk" import govukInput %}
+
+{% macro repositoryHero(params) %}
+<section class="repository-hero" aria-labelledby="repository-title">
+	<div class="govuk-width-container">
+		<div class="govuk-grid-row">
+			<div class="govuk-grid-column-two-thirds">
+				<span class="govuk-caption-xl">{{ params.caption }}</span>
+				<h1 class="govuk-heading-xl" id="repository-title">{{ params.title }}</h1>
+				<p class="govuk-body-l">{{ params.lead }}</p>
+				<p class="govuk-body">{{ params.body }}</p>
+			</div>
+		</div>
+
+		{{ repositorySearch(params.search) }}
+	</div>
+</section>
+{% endmacro %}
+
+{% macro repositorySearch(params) %}
+<form class="repository-search-panel" id="repository-search" action="{{ params.action }}" method="get" role="search" aria-describedby="repository-search-scope">
+	<div class="repository-search-panel__row">
+		<div class="repository-search-panel__field">
+			{{ govukInput({
+				label: {
+					text: params.label,
+					classes: 'govuk-label--m'
+				},
+				hint: {
+					text: params.hint
+				},
+				id: params.id,
+				name: params.name,
+				type: 'search',
+				autocomplete: 'off',
+				spellcheck: false,
+				classes: 'repository-search-panel__input'
+			}) }}
+		</div>
+		<div class="repository-search-panel__action">
+			{{ govukButton({
+				text: params.buttonText,
+				type: 'submit',
+				classes: 'repository-search-panel__button'
+			}) }}
+		</div>
+	</div>
+	<p class="govuk-body-s repository-muted" id="repository-search-scope">{{ params.scope }}</p>
+</form>
+{% endmacro %}

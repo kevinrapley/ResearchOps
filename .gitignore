@@ -25,5 +25,9 @@ artifacts/
 # Cloudflare build output
 .build/
 
+# Repository page outputs generated from Nunjucks/Sass during build
+public/css/repository.css
+public/pages/repository/
+
 # OS/editor noise
 .DS_Store
