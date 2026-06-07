@@ -1,5 +1,7 @@
 {% extends "layouts/researchops.njk" %}
 
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/checkboxes/macro.njk" import govukCheckboxes %}
 {% from "macros/repository.njk" import repositoryHero %}
 
 {% block head %}
@@ -13,13 +15,28 @@
 <div class="govuk-width-container repository-page" data-repository-page>
 	<section aria-labelledby="repository-summary-title">
 		<h2 class="govuk-heading-l" id="repository-summary-title">Repository summary</h2>
+		<p class="govuk-body">The repository shows curated research artefacts that have been reviewed, cleared for reuse and linked back to their evidence source.</p>
+		<p class="govuk-body">Summary figures are calculated from published repository records. They help teams understand the scale of reusable evidence and where review work is needed.</p>
 		<div
 			class="repository-metrics"
 			id="repository-metrics"
 			aria-live="polite"
 			aria-busy="true"
 			data-repository-source="api:/api/repository metrics from D1 rops_repository_artefacts and rops_repository_artefact_tags"
-		></div>
+		>
+			<div class="repository-metric">
+				<span class="repository-metric__number" data-repository-metric="published artefacts">—</span>
+				<span>published artefacts</span>
+			</div>
+			<div class="repository-metric">
+				<span class="repository-metric__number" data-repository-metric="linked recommendations">—</span>
+				<span>linked recommendations</span>
+			</div>
+			<div class="repository-metric">
+				<span class="repository-metric__number" data-repository-metric="due review in 30 days">—</span>
+				<span>due review in 30 days</span>
+			</div>
+		</div>
 	</section>
 
 	<div class="govuk-grid-row repository-section">
@@ -41,12 +58,48 @@
 		<div class="govuk-grid-column-one-third">
 			<aside class="repository-filter-panel" aria-labelledby="repository-filter-title">
 				<h2 class="govuk-heading-m" id="repository-filter-title">Filter published evidence</h2>
-				<div
-					id="repository-filters"
-					aria-live="polite"
-					aria-busy="true"
-					data-repository-source="api:/api/repository filters from D1 facet counts"
-				></div>
+				<form action="/pages/repository/" method="get" id="repository-filter-form">
+					{{ govukCheckboxes({
+						name: 'method',
+						classes: 'govuk-checkboxes--small',
+						fieldset: {
+							legend: {
+								text: 'Method',
+								classes: 'govuk-fieldset__legend--s'
+							}
+						},
+						items: [
+							{ value: 'interviews', text: 'Interviews' },
+							{ value: 'usability-testing', text: 'Usability testing' },
+							{ value: 'contextual-research', text: 'Contextual research' },
+							{ value: 'survey', text: 'Survey' },
+							{ value: 'desk-research', text: 'Desk research' }
+						]
+					}) }}
+
+					{{ govukCheckboxes({
+						name: 'maturity',
+						classes: 'govuk-checkboxes--small',
+						fieldset: {
+							legend: {
+								text: 'Evidence maturity',
+								classes: 'govuk-fieldset__legend--s'
+							}
+						},
+						items: [
+							{ value: 'validated-insight', text: 'Validated insight' },
+							{ value: 'evidence-pack', text: 'Evidence pack' },
+							{ value: 'pattern-evidence', text: 'Pattern evidence' },
+							{ value: 'method-learning', text: 'Method learning' }
+						]
+					}) }}
+
+					{{ govukButton({
+						text: 'Apply filters',
+						type: 'submit',
+						classes: 'govuk-button--secondary'
+					}) }}
+				</form>
 			</aside>
 
 			<aside class="repository-card repository-card--governance" aria-labelledby="repository-publish-title">
@@ -79,24 +132,39 @@
 			<div class="govuk-grid-column-one-half">
 				<section aria-labelledby="repository-queue-title">
 					<h2 class="govuk-heading-l" id="repository-queue-title">Curator workbench</h2>
-					<div
-						id="repository-queues"
-						aria-live="polite"
-						aria-busy="true"
-						data-repository-source="api:/api/repository queues from D1 artefact workflow-status counts"
-					></div>
+					<p class="govuk-body">Use the workbench to review candidate artefacts, check evidence that is due for review and inspect withdrawn artefacts.</p>
+					<table class="govuk-table repository-queue-table" id="repository-queues" aria-live="polite" aria-busy="true" data-repository-source="api:/api/repository queues from D1 artefact workflow-status counts">
+						<caption class="govuk-table__caption govuk-table__caption--m">Repository queue</caption>
+						<thead class="govuk-table__head">
+							<tr class="govuk-table__row">
+								<th class="govuk-table__header" scope="col">Queue</th>
+								<th class="govuk-table__header" scope="col">Items</th>
+								<th class="govuk-table__header" scope="col">Action</th>
+							</tr>
+						</thead>
+						<tbody class="govuk-table__body">
+							<tr class="govuk-table__row">
+								<td class="govuk-table__cell">Candidate artefacts</td>
+								<td class="govuk-table__cell" data-repository-queue-count="Candidate artefacts">—</td>
+								<td class="govuk-table__cell"><a class="govuk-link" href="/pages/repository/review/candidates/">Review</a></td>
+							</tr>
+							<tr class="govuk-table__row">
+								<td class="govuk-table__cell">Due review</td>
+								<td class="govuk-table__cell" data-repository-queue-count="Due review">—</td>
+								<td class="govuk-table__cell"><a class="govuk-link" href="/pages/repository/review/stale/">Check</a></td>
+							</tr>
+							<tr class="govuk-table__row">
+								<td class="govuk-table__cell">Withdrawn artefacts</td>
+								<td class="govuk-table__cell" data-repository-queue-count="Withdrawn artefacts">—</td>
+								<td class="govuk-table__cell"><a class="govuk-link" href="/pages/repository/review/withdrawn/">Inspect</a></td>
+							</tr>
+						</tbody>
+					</table>
 				</section>
 			</div>
 		</div>
 	</section>
 </div>
-
-<template id="repository-metric-template">
-	<div class="repository-metric">
-		<span class="repository-metric__number" data-repository-metric="value"></span>
-		<span data-repository-metric="label"></span>
-	</div>
-</template>
 
 <template id="repository-artefact-template">
 	<article class="repository-artefact-list__item">
@@ -120,7 +188,6 @@
 		</div>
 		<div class="govuk-notification-banner__content">
 			<p class="govuk-body">Repository data could not be loaded. Try again or contact the ResearchOps team if the problem continues.</p>
-			<p class="govuk-body-s">Technical detail: <span data-repository-error="detail"></span></p>
 		</div>
 	</div>
 </template>
