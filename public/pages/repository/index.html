@@ -1,0 +1,219 @@
+<!doctype html>
+<html class="govuk-template" lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>Research repository - ResearchOps Demo Suite</title>
+		<link rel="stylesheet" href="/assets/govuk/govuk-frontend.css" media="screen" />
+
+		<link rel="modulepreload" href="/js/repository-page.js?v=repository-api-20260607" />
+		<link rel="stylesheet" href="/css/repository.css?v=repository-api-20260607" media="screen" />
+
+		<script type="module" src="/components/layout.js" defer></script>
+		<script type="module" src="/js/govuk-frontend-init.js" defer></script>
+	</head>
+	<body class="govuk-template__body">
+		<script>
+			document.body.className +=
+				" js-enabled" + ("noModule" in HTMLScriptElement.prototype ? " govuk-frontend-supported" : "");
+		</script>
+		<x-include src="/partials/header.html" vars='{"active":"Research Repository"}'></x-include>
+		<main class="govuk-main-wrapper" id="main-content" role="main" tabindex="-1">
+			<section class="repository-hero" aria-labelledby="repository-title">
+				<div class="govuk-width-container">
+					<div class="govuk-grid-row">
+						<div class="govuk-grid-column-two-thirds">
+							<span class="govuk-caption-xl">ResearchOps</span>
+							<h1 class="govuk-heading-xl" id="repository-title">Research repository</h1>
+							<p class="govuk-body-l">
+								Find published research evidence that has been reviewed, classified and cleared for reuse across
+								services.
+							</p>
+							<p class="govuk-body">
+								Use the repository to understand what teams already know, where the evidence is strong, and what still
+								needs testing.
+							</p>
+						</div>
+					</div>
+
+					<form
+						class="repository-search-panel"
+						id="repository-search"
+						action="/pages/repository/"
+						method="get"
+						role="search"
+						aria-describedby="repository-search-scope"
+					>
+						<div class="repository-search-panel__row">
+							<div class="repository-search-panel__field">
+								<div class="govuk-form-group">
+									<label class="govuk-label govuk-label--m" for="repository-search-query">
+										Search published research
+									</label>
+
+									<div id="repository-search-query-hint" class="govuk-hint">
+										Search by service area, user group, method, risk, journey stage, tag or recommendation.
+									</div>
+
+									<input
+										class="govuk-input repository-search-panel__input"
+										id="repository-search-query"
+										name="q"
+										type="search"
+										spellcheck="false"
+										aria-describedby="repository-search-query-hint"
+										autocomplete="off"
+									/>
+								</div>
+							</div>
+							<div class="repository-search-panel__action">
+								<button type="submit" class="govuk-button repository-search-panel__button" data-module="govuk-button">
+									Search
+								</button>
+							</div>
+						</div>
+						<p class="govuk-body-s repository-muted" id="repository-search-scope">
+							Search only covers published artefacts that you have permission to view.
+						</p>
+					</form>
+				</div>
+			</section>
+
+			<div class="govuk-width-container repository-page" data-repository-page>
+				<section aria-labelledby="repository-summary-title">
+					<h2 class="govuk-heading-l" id="repository-summary-title">Repository summary</h2>
+					<div class="repository-metrics" id="repository-metrics" aria-live="polite" aria-busy="true">
+						<p class="govuk-body">Loading repository summary.</p>
+					</div>
+				</section>
+
+				<div class="govuk-grid-row repository-section">
+					<div class="govuk-grid-column-two-thirds">
+						<section aria-labelledby="repository-results-title">
+							<h2 class="govuk-heading-l" id="repository-results-title">Published artefacts</h2>
+							<p class="govuk-body">
+								Only reviewed artefacts that have passed PII and consent-scope checks appear in repository search.
+							</p>
+							<p class="repository-result-count" id="repository-result-count" aria-live="polite"></p>
+							<div id="repository-results" class="repository-results" aria-live="polite" aria-busy="true">
+								<p class="govuk-body">Loading published artefacts.</p>
+							</div>
+						</section>
+					</div>
+
+					<div class="govuk-grid-column-one-third">
+						<aside class="repository-filter-panel" aria-labelledby="repository-filter-title">
+							<h2 class="govuk-heading-m" id="repository-filter-title">Filter published evidence</h2>
+							<div id="repository-filters" aria-live="polite" aria-busy="true">
+								<p class="govuk-body-s">Loading filters.</p>
+							</div>
+						</aside>
+
+						<aside class="repository-card repository-card--governance" aria-labelledby="repository-publish-title">
+							<h2 class="govuk-heading-m" id="repository-publish-title">Publish to the repository</h2>
+							<p class="govuk-body">
+								Create candidate artefacts from reviewed synthesis. Candidate artefacts must pass repository publication
+								gates before they are visible here.
+							</p>
+							<p class="govuk-body">
+								<a class="govuk-link" href="/pages/repository/review/candidates/new/">Create candidate artefact</a>
+							</p>
+						</aside>
+					</div>
+				</div>
+
+				<section class="repository-section" aria-labelledby="repository-quality-title">
+					<div class="govuk-grid-row">
+						<div class="govuk-grid-column-one-half">
+							<h2 class="govuk-heading-l" id="repository-quality-title">What every artefact must show</h2>
+							<dl class="govuk-summary-list">
+								<div class="govuk-summary-list__row">
+									<dt class="govuk-summary-list__key">Provenance</dt>
+									<dd class="govuk-summary-list__value">
+										Source project, study, method, date range and linked evidence.
+									</dd>
+								</div>
+								<div class="govuk-summary-list__row">
+									<dt class="govuk-summary-list__key">Confidence</dt>
+									<dd class="govuk-summary-list__value">
+										Evidence strength, sample coverage, limitations and known gaps.
+									</dd>
+								</div>
+								<div class="govuk-summary-list__row">
+									<dt class="govuk-summary-list__key">Reuse guidance</dt>
+									<dd class="govuk-summary-list__value">
+										Where this evidence can be reused and where it must not be applied.
+									</dd>
+								</div>
+							</dl>
+						</div>
+						<div class="govuk-grid-column-one-half">
+							<section aria-labelledby="repository-queue-title">
+								<h2 class="govuk-heading-l" id="repository-queue-title">Curator workbench</h2>
+								<div id="repository-queues" aria-live="polite" aria-busy="true">
+									<p class="govuk-body">Loading curator queues.</p>
+								</div>
+							</section>
+						</div>
+					</div>
+				</section>
+			</div>
+
+			<template id="repository-metric-template">
+				<div class="repository-metric">
+					<span class="repository-metric__number" data-repository-metric="value"></span>
+					<span data-repository-metric="label"></span>
+				</div>
+			</template>
+
+			<template id="repository-artefact-template">
+				<article class="repository-artefact-list__item">
+					<h3 class="govuk-heading-m">
+						<a class="govuk-link govuk-link--no-visited-state" data-repository-artefact="title"></a>
+					</h3>
+					<p class="govuk-body" data-repository-artefact="summary"></p>
+					<div
+						class="repository-artefact-list__meta"
+						data-repository-artefact="tags"
+						aria-label="Artefact metadata"
+					></div>
+				</article>
+			</template>
+
+			<template id="repository-empty-template">
+				<div class="govuk-inset-text" role="status">
+					<h3 class="govuk-heading-m">No published artefacts found</h3>
+					<p class="govuk-body">
+						Try a different search or filter. Candidate, draft and withdrawn artefacts are not shown in repository
+						search.
+					</p>
+				</div>
+			</template>
+
+			<template id="repository-error-template">
+				<div
+					class="govuk-notification-banner govuk-notification-banner--error"
+					role="alert"
+					aria-labelledby="repository-error-title"
+					data-module="govuk-notification-banner"
+				>
+					<div class="govuk-notification-banner__header">
+						<h3 class="govuk-notification-banner__title" id="repository-error-title">Could not load repository data</h3>
+					</div>
+					<div class="govuk-notification-banner__content">
+						<p class="govuk-body">
+							Repository data could not be loaded. Try again or contact the ResearchOps team if the problem continues.
+						</p>
+						<p class="govuk-body-s">
+							Technical detail:
+							<span data-repository-error="detail"></span>
+						</p>
+					</div>
+				</div>
+			</template>
+		</main>
+		<x-include src="/partials/footer.html"></x-include>
+
+		<script type="module" src="/js/repository-page.js?v=repository-api-20260607"></script>
+	</body>
+</html>
