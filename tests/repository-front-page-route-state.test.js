@@ -18,6 +18,7 @@ const files = {
 	worker: fs.readFileSync('infra/cloudflare/src/worker.js', 'utf8'),
 	migration: fs.readFileSync('infra/cloudflare/migrations/0014_research_repository.sql', 'utf8'),
 	seedMigration: fs.readFileSync('infra/cloudflare/migrations/0015_seed_research_repository.sql', 'utf8'),
+	seedTagMigration: fs.readFileSync('infra/cloudflare/migrations/0016_update_repository_seed_tag_taxonomy.sql', 'utf8'),
 	visualWalkthrough: fs.readFileSync('visual-walkthrough.config.mjs', 'utf8'),
 	gitignore: fs.readFileSync('.gitignore', 'utf8'),
 	lychee: fs.readFileSync('lychee.toml', 'utf8'),
@@ -196,6 +197,11 @@ has(files.worker, 'service.createRepositoryCandidate(request, origin, authContex
 has(files.migration, 'CREATE TABLE IF NOT EXISTS rops_repository_artefacts', 'migration');
 has(files.migration, 'repository.view', 'migration');
 has(files.migration, "'route_api_repository_artefacts_post'", 'migration');
+has(files.migration, 'trg_repository_seed_topic_taxonomy', 'migration');
+has(files.migration, 'trg_repository_seed_recommendation_taxonomy', 'migration');
+has(files.migration, 'Reduce avoidable workflow friction', 'migration');
+has(files.migration, 'Explain confidence and next steps', 'migration');
+has(files.migration, 'State evidence limits before reuse', 'migration');
 has(files.seedMigration, 'Seed curated research repository records for realistic product evaluation.', 'seed migration');
 has(files.seedMigration, "'staff-evidence-boundaries'", 'seed migration');
 has(files.seedMigration, "'check-answers-review-anxiety'", 'seed migration');
@@ -212,6 +218,15 @@ has(files.seedMigration, "printf('seeded-candidate-%03d', value)", 'seed migrati
 has(files.seedMigration, "printf('seeded-withdrawn-%03d', value)", 'seed migration');
 lacks(files.seedMigration, '@example', 'seed migration');
 lacks(files.seedMigration, 'recording_url', 'seed migration');
+has(files.seedTagMigration, 'Replace generated seed labels with production-like repository taxonomy labels.', 'seed tag migration');
+has(files.seedTagMigration, 'Confidence and comprehension', 'seed tag migration');
+has(files.seedTagMigration, 'Workflow friction', 'seed tag migration');
+has(files.seedTagMigration, 'Governance and consent', 'seed tag migration');
+has(files.seedTagMigration, 'Clarify handoff owner and next action', 'seed tag migration');
+has(files.seedTagMigration, 'Make recovery routes explicit', 'seed tag migration');
+has(files.seedTagMigration, 'State evidence limits before reuse', 'seed tag migration');
+lacks(files.seedTagMigration, 'Seeded topic', 'seed tag migration');
+lacks(files.seedTagMigration, 'Seeded recommendation', 'seed tag migration');
 
 has(files.stylesheet, '.repository-search-panel__row', 'stylesheet');
 has(files.stylesheet, 'align-items: flex-end', 'stylesheet');
@@ -230,7 +245,7 @@ has(files.visualWalkthrough, "registeredPage('repository-artefact-detail'", 'vis
 has(files.visualWalkthrough, "registeredPage('repository-artefact-staff-evidence-boundaries'", 'visual walkthrough registry');
 has(files.gitignore, 'public/css/repository.css', 'gitignore');
 has(files.gitignore, 'public/pages/repository/', 'gitignore');
-has(files.lychee, '^/api/repository(?:/.*)?(?:\\\\?.*)?$', 'Lychee config');
+has(files.lychee, '^/api/repository(?:/.*)?(?:\\?.*)?$', 'Lychee config');
 has(files.qaLinks, 'Build generated pages and assets', 'Lychee workflow');
 has(files.qaLinks, 'npm run build', 'Lychee workflow');
 
