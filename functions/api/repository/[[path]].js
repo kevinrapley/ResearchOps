@@ -1,3 +1,4 @@
+// functions/api/repository/[[path]].js
 import { resolveAuthenticatedContext } from '../../../infra/cloudflare/src/core/auth/access-scoped.js';
 import { assertRoutePermission } from '../../../infra/cloudflare/src/core/auth/route-permissions.js';
 import { ResearchOpsService } from '../../../infra/cloudflare/src/service/index.js';
