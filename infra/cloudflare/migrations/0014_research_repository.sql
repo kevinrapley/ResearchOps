@@ -92,6 +92,11 @@ SET
 	reuse_guidance = REPLACE(reuse_guidance, 'ResearchOps reviewers', 'research operations staff')
 WHERE user_group = 'research-operations-team';
 
+DELETE FROM rops_repository_artefact_tags
+WHERE
+	artefact_id LIKE 'seeded-published-%'
+	AND tag_type IN ('topic', 'recommendation');
+
 CREATE TRIGGER IF NOT EXISTS trg_repository_seed_topic_taxonomy
 AFTER INSERT ON rops_repository_artefact_tags
 WHEN NEW.tag_type = 'topic' AND NEW.tag_slug LIKE 'seeded-topic-%' AND NEW.artefact_id LIKE 'seeded-published-%'

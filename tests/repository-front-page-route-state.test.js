@@ -93,6 +93,7 @@ has(files.service, 'const method = searchValues(url, "method")', 'repository ser
 lacks(files.service, 'String(error?.message || error) }, 503', 'repository service');
 
 has(files.schemaMigration, 'CREATE TABLE IF NOT EXISTS rops_repository_artefacts', 'schema migration');
+has(files.schemaMigration, "DELETE FROM rops_repository_artefact_tags", 'schema migration');
 has(files.seedMigration, 'Seed curated research repository records for realistic product evaluation.', 'seed migration');
 has(files.seedMigration, "printf('seeded-published-%03d', rn)", 'seed migration');
 lacks(files.seedMigration, 'recording_url', 'seed migration');

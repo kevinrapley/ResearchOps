@@ -60,6 +60,7 @@ Implement the team-reviewed selected-state model for ResearchOps repository brow
 - `public/js/repository-static-page.js`
 - `infra/cloudflare/src/service/repository.js`
 - `.github/workflows/deploy-passwordless-preview-worker.yml`
+- `infra/cloudflare/migrations/0014_research_repository.sql`
 - `infra/cloudflare/migrations/0015_seed_research_repository.sql`
 - `src/styles/repository.scss`
 - `tests/repository-front-page-route-state.test.js`
