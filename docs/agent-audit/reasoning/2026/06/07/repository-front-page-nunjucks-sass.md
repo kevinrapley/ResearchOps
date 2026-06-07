@@ -4,6 +4,8 @@
 
 Build the ResearchOps research repository front page on a new branch using Nunjucks and Sass, with macros for components and design patterns.
 
+Follow-up scope added realistic D1 seed data so product reviewers can experience a populated curated repository with published artefacts, facets, linked recommendations and curator queues.
+
 ## Run metadata
 
 - Date: 2026-06-07
@@ -26,6 +28,7 @@ Build the ResearchOps research repository front page on a new branch using Nunju
 - `.agent-operating-model/bundles/multi-functional-team/`
 - `.agent-operating-model/bundles/govuk-design-system/`
 - `.agent-operating-model/bundles/cloudflare/`
+- `.agent-operating-model/bundles/airtable-public-api/`
 
 ## Bundles selected
 
@@ -34,12 +37,12 @@ Build the ResearchOps research repository front page on a new branch using Nunju
 - `.agent-operating-model/bundles/multi-functional-team/`
 - `.agent-operating-model/bundles/govuk-design-system/`
 - `.agent-operating-model/bundles/cloudflare/`
+- `.agent-operating-model/bundles/airtable-public-api/`
 
 ## Bundles skipped
 
 - `.agent-operating-model/bundles/openai/`: no OpenAI API or model behaviour changed.
 - `.agent-operating-model/bundles/mcp-agent-tooling/`: no MCP tooling changed.
-- `.agent-operating-model/bundles/airtable-public-api/`: no Airtable API behaviour changed.
 - `.agent-operating-model/bundles/mural-public-api/`: no Mural API behaviour changed.
 
 ## Precedence decisions
@@ -48,7 +51,18 @@ Build the ResearchOps research repository front page on a new branch using Nunju
 - ResearchOps Developer Control governed Nunjucks template placement, Sass source placement, generated output registration, API route shape and route-state test scope.
 - GOV.UK Design System governed use of GOV.UK Frontend macros, page structure, font asset path and route-specific Sass.
 - Cloudflare governed the D1-backed API route and the build-generated output model.
+- Airtable Public API governed the fallback path for repository artefacts when D1 is unavailable or empty.
 - Multi-Functional Team governed service framing: the repository is a curated, authenticated evidence destination, not a raw research archive.
+
+## Team consultation
+
+- Product management: confirmed the repository is a top-level authenticated evidence library, not a dashboard or raw archive.
+- Research Operations: required publication boundaries around PII, consent scope, provenance, confidence and reuse guidance.
+- Content design: removed internal status/rationale language from user-facing page copy and kept errors plain.
+- Interaction design: kept stable page structure in Nunjucks, with search, filters, browse routes, published results and curator workbench as visible interface elements.
+- Accessibility: checked GOV.UK macro use, no broken ARIA hint reference, no passive focus target and no technical error copy.
+- Technical architecture: made D1 the primary store, Airtable the fallback source, and routed `/api/repository` through both Worker and Pages-function paths.
+- QA: added route-state coverage for renderer registrations, deeper repository routes, API backing, fallback, generated-output ownership and migration ordering.
 
 ## Files read
 
@@ -66,22 +80,35 @@ Build the ResearchOps research repository front page on a new branch using Nunju
 - `infra/cloudflare/src/service/index.js`
 - `infra/cloudflare/src/service/internals/researchops-d1.js`
 - `infra/cloudflare/migrations/0013_study_support_people.sql`
+- `docs/product/26/06/07/research-repository-product-direction.md`
+- `functions/api/repository/[[path]].js`
+- `infra/cloudflare/src/worker.js`
+- `visual-walkthrough.config.mjs`
+- `infra/cloudflare/migrations/0015_seed_research_repository.sql`
 
 ## Files created or modified
 
 - `src/govuk/data/repository-page.mjs`
 - `src/govuk/templates/macros/repository.njk`
 - `src/govuk/templates/pages/repository.njk`
+- `src/govuk/templates/pages/repository-static.njk`
 - `src/styles/repository.scss`
 - `public/js/repository-page.js`
 - `functions/api/repository/[[path]].js`
 - `infra/cloudflare/src/service/repository.js`
 - `infra/cloudflare/src/service/index.js`
+- `infra/cloudflare/src/worker.js`
 - `infra/cloudflare/migrations/0014_research_repository.sql`
+- `infra/cloudflare/migrations/0015_seed_research_repository.sql`
 - `scripts/govuk/render-govuk-pages.mjs`
+- `scripts/styles/format-generated-css.mjs`
 - `scripts/styles/generated-css-targets.mjs`
 - `public/partials/header.html`
 - `tests/repository-front-page-route-state.test.js`
+- `tests/d1-migration-ordering-route-state.test.js`
+- `visual-walkthrough.config.mjs`
+- `.gitignore`
+- `docs/deployment/d1-migration-ordering.md`
 - `docs/implementation/repository-front-page-integration.md`
 - `docs/agent-audit/reasoning/2026/06/07/repository-front-page-nunjucks-sass.md`
 - `docs/agent-audit/reasoning/2026/06/07/repository-front-page-nunjucks-sass.json`
@@ -90,6 +117,7 @@ Build the ResearchOps research repository front page on a new branch using Nunju
 
 - `public/css/repository.css` is generated by Sass during the build and is not committed.
 - `public/pages/repository/index.html` is rendered by Nunjucks during the build and is not committed.
+- Deeper repository pages under `public/pages/repository/**/index.html` are rendered by Nunjucks during the build and are not committed.
 - Route-state coverage checks Nunjucks, Sass and renderer registration. It does not read committed generated HTML for this route.
 
 ## Decisions
@@ -102,14 +130,26 @@ Build the ResearchOps research repository front page on a new branch using Nunju
 - Register `pages/repository.njk` in the GOV.UK renderer.
 - Remove user-facing internal rationale panels and repository status panels.
 - Add D1-backed repository API and migration for curated, non-PII published artefacts.
+- Add Airtable fallback for published repository artefacts using page-size-limited records API pagination.
+- Route `/api/repository`, `/api/repository/artefacts` and `/api/repository/artefacts/:id` through the Worker as well as the Pages function.
+- Add source-owned deeper repository pages for service-area, user-group, method, risk, artefact detail and curator queue destinations.
+- Add a D1 seed migration with realistic curated repository data: 100 published artefacts, 20 candidate records, 10 withdrawn records, facet coverage and linked recommendation tags.
+- Keep generated repository HTML and CSS ignored so local builds do not reintroduce committed generated outputs.
 
 ## Validation attempted
 
-- GitHub branch creation succeeded after retrying from the current `main` head.
-- GitHub compare confirmed the branch is ahead of `main` and the changed-file list no longer includes generated repository CSS or generated repository HTML.
-- Repository-local commands were not run in this environment.
+- `npm run build` passed.
+- `npm test -- --test-reporter=dot` passed.
+- `npm run format:check` passed.
+- `npm run generated-css:check` passed.
+- `npm run lint` passed with existing warnings.
+- `npm run validate` passed.
+- `npm run trace:coverage` passed.
+- `npm run agent:bundles:validate` passed.
+- `package.json` has no `typecheck` script, so no typecheck command was available to run.
+- Follow-up focused tests after adding seed data passed.
 
 ## Residual risks
 
-- Full repository CI has not been run locally in this session.
+- Full remote CI has not been run in this session.
 - The D1 migration must be applied before relying on the repository API in preview or production.

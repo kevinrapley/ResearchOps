@@ -66,7 +66,7 @@ CREATE INDEX IF NOT EXISTS idx_repository_artefacts_review
 	ON rops_repository_artefacts (status, review_due_at);
 
 CREATE INDEX IF NOT EXISTS idx_repository_artefacts_facets
-	ON rops_repository_artefacts (method, evidence_maturity, service_area, risk_area);
+	ON rops_repository_artefacts (method, evidence_maturity, service_area, user_group, risk_area);
 
 CREATE INDEX IF NOT EXISTS idx_repository_tags_type
 	ON rops_repository_artefact_tags (tag_type, tag_slug);

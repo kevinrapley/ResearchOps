@@ -170,6 +170,9 @@ export function formatGeneratedCssTargets({ check = false, write = false, target
 	let failures = 0;
 
 	for (const target of targets) {
+		if (!fs.existsSync(target.output)) {
+			continue;
+		}
 		const source = fs.readFileSync(target.output, 'utf8');
 		const formatted = formatGeneratedCss(source);
 

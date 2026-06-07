@@ -1,0 +1,41 @@
+{% extends "layouts/researchops.njk" %}
+
+{% block head %}
+	<link rel="stylesheet" href="/css/repository.css?v=repository-api-20260607" media="screen">
+{% endblock %}
+
+{% block beforeContent %}
+	<div class="govuk-width-container">
+		<a class="govuk-back-link" href="{{ backHref }}">{{ backText }}</a>
+	</div>
+{% endblock %}
+
+{% block content %}
+<div class="govuk-width-container repository-page">
+	<div class="govuk-grid-row">
+		<div class="govuk-grid-column-two-thirds">
+			<span class="govuk-caption-xl">Research repository</span>
+			<h1 class="govuk-heading-xl">{{ title }}</h1>
+			<p class="govuk-body-l">{{ lead }}</p>
+			<p class="govuk-body">{{ body }}</p>
+		</div>
+	</div>
+
+	<section class="repository-section" aria-labelledby="repository-page-api-title">
+		<h2 class="govuk-heading-l" id="repository-page-api-title">Repository data</h2>
+		<p class="govuk-body">This page uses the repository API for dynamic data and keeps stable service guidance in the page template.</p>
+		<p class="govuk-body"><a class="govuk-link" href="{{ apiPath }}">Open the API response for this route</a></p>
+	</section>
+
+	{% for section in sections %}
+	<section class="repository-section" aria-labelledby="repository-static-section-{{ loop.index }}">
+		<h2 class="govuk-heading-l" id="repository-static-section-{{ loop.index }}">{{ section.heading }}</h2>
+		<ul class="govuk-list govuk-list--bullet">
+			{% for item in section.items %}
+			<li>{{ item }}</li>
+			{% endfor %}
+		</ul>
+	</section>
+	{% endfor %}
+</div>
+{% endblock %}

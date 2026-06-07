@@ -3,6 +3,7 @@ import fs from 'node:fs';
 
 const files = {
 	template: fs.readFileSync('src/govuk/templates/pages/repository.njk', 'utf8'),
+	staticTemplate: fs.readFileSync('src/govuk/templates/pages/repository-static.njk', 'utf8'),
 	macros: fs.readFileSync('src/govuk/templates/macros/repository.njk', 'utf8'),
 	pageData: fs.readFileSync('src/govuk/data/repository-page.mjs', 'utf8'),
 	pageScript: fs.readFileSync('public/js/repository-page.js', 'utf8'),
@@ -12,7 +13,11 @@ const files = {
 	header: fs.readFileSync('public/partials/header.html', 'utf8'),
 	service: fs.readFileSync('infra/cloudflare/src/service/repository.js', 'utf8'),
 	api: fs.readFileSync('functions/api/repository/[[path]].js', 'utf8'),
+	worker: fs.readFileSync('infra/cloudflare/src/worker.js', 'utf8'),
 	migration: fs.readFileSync('infra/cloudflare/migrations/0014_research_repository.sql', 'utf8'),
+	seedMigration: fs.readFileSync('infra/cloudflare/migrations/0015_seed_research_repository.sql', 'utf8'),
+	visualWalkthrough: fs.readFileSync('visual-walkthrough.config.mjs', 'utf8'),
+	gitignore: fs.readFileSync('.gitignore', 'utf8'),
 };
 
 function has(source, text, label) {
@@ -25,6 +30,9 @@ function lacks(source, text, label) {
 
 has(files.renderer, "template: 'pages/repository.njk'", 'renderer');
 has(files.renderer, "output: 'public/pages/repository/index.html'", 'renderer');
+has(files.renderer, "repositoryStaticPages.map", 'renderer');
+has(files.renderer, "template: 'pages/repository-static.njk'", 'renderer');
+has(files.renderer, 'public/pages/repository/${page.slug}/index.html', 'renderer');
 has(files.cssTargets, "source: 'src/styles/repository.scss'", 'CSS targets');
 has(files.cssTargets, "output: 'public/css/repository.css'", 'CSS targets');
 has(files.header, 'href="/pages/repository/"', 'header');
@@ -41,6 +49,10 @@ has(files.template, 'Due review in 30 days', 'template');
 has(files.template, 'id="repository-filter-form"', 'template');
 has(files.template, 'name: \'method\'', 'template');
 has(files.template, 'name: \'maturity\'', 'template');
+has(files.template, 'href="/pages/repository/service-areas/"', 'template');
+has(files.template, 'href="/pages/repository/user-groups/"', 'template');
+has(files.template, 'href="/pages/repository/methods/"', 'template');
+has(files.template, 'href="/pages/repository/risks/"', 'template');
 has(files.template, 'Curator workbench', 'template');
 has(files.template, 'data-repository-queue-count="Candidate artefacts"', 'template');
 has(files.template, 'data-repository-queue-count="Due review"', 'template');
@@ -58,6 +70,13 @@ has(files.macros, 'macro repositorySearch', 'macros');
 lacks(files.macros, 'macro repositoryDecisionCards', 'macros');
 lacks(files.macros, 'macro repositoryAssurancePanel', 'macros');
 
+has(files.staticTemplate, 'govuk-back-link', 'static repository template');
+has(files.staticTemplate, 'Open the API response for this route', 'static repository template');
+has(files.pageData, 'export const repositoryStaticPages', 'page data');
+has(files.pageData, "slug: 'service-areas'", 'page data');
+has(files.pageData, "slug: 'review/candidates/new'", 'page data');
+has(files.pageData, "slug: 'artefacts/staff-evidence-boundaries'", 'page data');
+
 lacks(files.pageData, 'teamDecisions', 'page data');
 lacks(files.pageData, 'artefacts: [', 'page data');
 lacks(files.pageData, 'assurance', 'page data');
@@ -69,18 +88,44 @@ has(files.pageScript, 'data-repository-metric', 'page script');
 lacks(files.pageScript, 'Technical detail', 'page script');
 
 has(files.service, 'const ARTEFACTS_TABLE = "rops_repository_artefacts"', 'service');
+has(files.service, 'function airtableRecords', 'service');
+has(files.service, 'function listRepositoryFromAirtable', 'service');
+has(files.service, 'source: "airtable"', 'service');
+has(files.service, 'const userGroup = cleanSlug(url.searchParams.get("user_group"))', 'service');
+has(files.service, 'facetRows(svc, "user_group", "User group")', 'service');
 has(files.service, 'function repositoryMetrics', 'service');
 has(files.service, 'function facetRows', 'service');
 has(files.service, 'function repositoryQueues', 'service');
 has(files.service, 'function repositoryDerivation', 'service');
 has(files.service, 'derivation: repositoryDerivation(showQueues)', 'service');
-lacks(files.service, 'AIRTABLE', 'service');
+lacks(files.service, 'String(error?.message || error) }, 503', 'service');
 
 has(files.api, 'resolveAuthenticatedContext', 'API');
 has(files.api, 'assertRoutePermission', 'API');
 has(files.api, 'service.listRepository', 'API');
+has(files.api, 'repository_api_unavailable', 'API');
+has(files.api, 'Repository data could not be loaded. Try again or contact the ResearchOps team if the problem continues.', 'API');
+has(files.worker, 'async function ensureRepositoryAuthDeclarations', 'worker');
+has(files.worker, 'async function handleRepository', 'worker');
+has(files.worker, 'apiPath === "/api/repository" || apiPath.startsWith("/api/repository/")', 'worker');
 has(files.migration, 'CREATE TABLE IF NOT EXISTS rops_repository_artefacts', 'migration');
 has(files.migration, 'repository.view', 'migration');
+has(files.seedMigration, 'Seed curated research repository records for realistic product evaluation.', 'seed migration');
+has(files.seedMigration, "'staff-evidence-boundaries'", 'seed migration');
+has(files.seedMigration, "'check-answers-review-anxiety'", 'seed migration');
+has(files.seedMigration, "'consent-state-workarounds'", 'seed migration');
+has(files.seedMigration, "'lightweight-capture-before-tagging'", 'seed migration');
+has(files.seedMigration, "'candidate-assisted-digital-escalation'", 'seed migration');
+has(files.seedMigration, "'withdrawn-outdated-channel-insight'", 'seed migration');
+has(files.seedMigration, "'rec-show-triage-reason-in-queue'", 'seed migration');
+has(files.seedMigration, '"publishedArtefacts":100', 'seed migration');
+has(files.seedMigration, '"candidateArtefacts":20', 'seed migration');
+has(files.seedMigration, '"withdrawnArtefacts":10', 'seed migration');
+has(files.seedMigration, "printf('seeded-published-%03d', rn)", 'seed migration');
+has(files.seedMigration, "printf('seeded-candidate-%03d', value)", 'seed migration');
+has(files.seedMigration, "printf('seeded-withdrawn-%03d', value)", 'seed migration');
+lacks(files.seedMigration, '@example', 'seed migration');
+lacks(files.seedMigration, 'recording_url', 'seed migration');
 
 has(files.stylesheet, '.repository-search-panel__row', 'stylesheet');
 has(files.stylesheet, 'align-items: flex-end', 'stylesheet');
@@ -90,5 +135,9 @@ lacks(files.stylesheet, 'font-size: 36px', 'stylesheet');
 lacks(files.stylesheet, 'font-weight: 700', 'stylesheet');
 lacks(files.stylesheet, 'line-height: 1', 'stylesheet');
 lacks(files.stylesheet, 'repository-assurance', 'stylesheet');
-assert.equal(fs.existsSync('public/css/repository.css'), false, 'Repository CSS should be generated by Sass during build, not committed.');
-assert.equal(fs.existsSync('public/pages/repository/index.html'), false, 'Repository HTML should be rendered by Nunjucks during build, not committed.');
+
+has(files.visualWalkthrough, "registeredPage('repository'", 'visual walkthrough registry');
+has(files.visualWalkthrough, "registeredPage('repository-service-areas'", 'visual walkthrough registry');
+has(files.visualWalkthrough, "registeredPage('repository-artefact-staff-evidence-boundaries'", 'visual walkthrough registry');
+has(files.gitignore, 'public/css/repository.css', 'gitignore');
+has(files.gitignore, 'public/pages/repository/', 'gitignore');

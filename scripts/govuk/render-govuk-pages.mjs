@@ -4,7 +4,7 @@ import { fileURLToPath } from 'node:url';
 import nunjucks from 'nunjucks';
 import prettier from 'prettier';
 
-import { repositoryPageContext } from '../../src/govuk/data/repository-page.mjs';
+import { repositoryPageContext, repositoryStaticPages } from '../../src/govuk/data/repository-page.mjs';
 
 const root = resolve(process.cwd());
 const env = new nunjucks.Environment(
@@ -246,6 +246,17 @@ export const govukPages = [
 			...repositoryPageContext,
 		},
 	},
+	...repositoryStaticPages.map((page) => ({
+		template: 'pages/repository-static.njk',
+		output: `public/pages/repository/${page.slug}/index.html`,
+		context: {
+			pageTitle: `${page.title} - ResearchOps Demo Suite`,
+			serviceName: 'ResearchOps Demo Suite',
+			activeNavigation: 'Research Repository',
+			navigation: repositoryNavigation,
+			...page,
+		},
+	})),
 	{
 		template: 'pages/project-dashboard.njk',
 		output: 'public/pages/project-dashboard/index.html',

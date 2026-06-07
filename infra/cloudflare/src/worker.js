@@ -136,6 +136,25 @@ const STUDY_SUPPORT_ROUTE_PERMISSIONS = [
 	["route_api_study_support_people_delete", "DELETE", "/api/study-support/people/:id", "[\"study.support.manage\"]"]
 ];
 
+const REPOSITORY_AUTH_PERMISSIONS = [
+	["repository.view", "View research repository", "Can view published, non-PII research repository artefacts."],
+	["repository.curate", "Curate research repository", "Can review candidate artefacts and manage repository publication queues."]
+];
+
+const REPOSITORY_ROLE_PERMISSIONS = [
+	["role_researcher", "repository.view"],
+	["role_research_lead", "repository.view"],
+	["role_research_lead", "repository.curate"],
+	["role_team_admin", "repository.view"],
+	["role_team_admin", "repository.curate"]
+];
+
+const REPOSITORY_ROUTE_PERMISSIONS = [
+	["route_api_repository_get", "GET", "/api/repository", "[\"repository.view\"]"],
+	["route_api_repository_artefacts_get", "GET", "/api/repository/artefacts", "[\"repository.view\"]"],
+	["route_api_repository_artefact_get", "GET", "/api/repository/artefacts/:id", "[\"repository.view\"]"]
+];
+
 async function ensureStudySupportAuthDeclarations(env) {
 	const db = env.RESEARCHOPS_D1;
 	if (!db?.prepare) return;
@@ -155,6 +174,33 @@ async function ensureStudySupportAuthDeclarations(env) {
 	}
 
 	for (const [id, method, routePattern, requiredPermissionsJson] of STUDY_SUPPORT_ROUTE_PERMISSIONS) {
+		await db.prepare(`
+			INSERT OR IGNORE INTO auth_route_permissions
+				(id, method, route_pattern, required_permissions_json, auth_required, implementation_status)
+			VALUES (?, ?, ?, ?, 1, 'implemented')
+		`).bind(id, method, routePattern, requiredPermissionsJson).run();
+	}
+}
+
+async function ensureRepositoryAuthDeclarations(env) {
+	const db = env.RESEARCHOPS_D1;
+	if (!db?.prepare) return;
+
+	for (const [code, label, description] of REPOSITORY_AUTH_PERMISSIONS) {
+		await db.prepare(`
+			INSERT OR IGNORE INTO auth_permissions (code, label, description, is_sensitive, is_reserved)
+			VALUES (?, ?, ?, 1, 0)
+		`).bind(code, label, description).run();
+	}
+
+	for (const [roleId, permissionCode] of REPOSITORY_ROLE_PERMISSIONS) {
+		await db.prepare(`
+			INSERT OR IGNORE INTO auth_role_permissions (role_id, permission_code)
+			VALUES (?, ?)
+		`).bind(roleId, permissionCode).run();
+	}
+
+	for (const [id, method, routePattern, requiredPermissionsJson] of REPOSITORY_ROUTE_PERMISSIONS) {
 		await db.prepare(`
 			INSERT OR IGNORE INTO auth_route_permissions
 				(id, method, route_pattern, required_permissions_json, auth_required, implementation_status)
@@ -346,6 +392,29 @@ async function handleStudySupport(request, env, apiPath) {
 	return new Response(JSON.stringify({ error: "Not found", path: apiPath }), { status: 404, headers: { "content-type": "application/json; charset=utf-8" } });
 }
 
+async function handleRepository(request, env, apiPath) {
+	const url = new URL(request.url);
+	const origin = request.headers.get("Origin") || "";
+	const service = serviceFor(env);
+	await ensureRepositoryAuthDeclarations(env);
+	const authContext = await authContextFor(request, env);
+	const routePermissionRequest = apiPath.match(/^\/api\/repository\/artefacts\/([^/]+)$/)
+		? requestForRoutePermission(request, "/api/repository/artefacts/:id")
+		: request;
+	await assertRoutePermission(routePermissionRequest, env, authContext);
+
+	if ((apiPath === "/api/repository" || apiPath === "/api/repository/artefacts") && request.method === "GET") {
+		return service.listRepository(origin, url, authContext);
+	}
+
+	const match = apiPath.match(/^\/api\/repository\/artefacts\/([^/]+)$/);
+	if (match && request.method === "GET") {
+		return service.readRepositoryArtefact(origin, decodeURIComponent(match[1]));
+	}
+
+	return new Response(JSON.stringify({ error: "Not found", path: apiPath }), { status: 404, headers: { "content-type": "application/json; charset=utf-8" } });
+}
+
 export default {
 	async fetch(request, env, ctx) {
 		const { method, url } = request;
@@ -369,6 +438,7 @@ export default {
 			else if (apiPath === "/api/consent-forms" || apiPath.startsWith("/api/consent-forms/")) result = await handleConsentForms(request, env, apiPath);
 			else if (apiPath === "/api/participant-consent" || apiPath.startsWith("/api/participant-consent/")) result = await handleParticipantConsent(request, env, apiPath);
 			else if (apiPath === "/api/study-support" || apiPath.startsWith("/api/study-support/")) result = await handleStudySupport(request, env, apiPath);
+			else if (apiPath === "/api/repository" || apiPath.startsWith("/api/repository/")) result = await handleRepository(request, env, apiPath);
 			else result = await handleRequest(request, env, ctx);
 			return withCORS(env, request, coerceResponse(result));
 		} catch (e) {

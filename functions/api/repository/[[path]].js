@@ -19,6 +19,18 @@ function jsonResponse(body, status = 200, origin = null) {
 	});
 }
 
+function repositoryUnavailable(origin, status = 500) {
+	return jsonResponse(
+		{
+			ok: false,
+			error: 'repository_api_unavailable',
+			message: 'Repository data could not be loaded. Try again or contact the ResearchOps team if the problem continues.',
+		},
+		status,
+		origin,
+	);
+}
+
 function routePermissionRequest(request, routePattern) {
 	const url = new URL(request.url);
 	url.pathname = routePattern;
@@ -55,11 +67,11 @@ export async function onRequest({ request, env }) {
 			return service.readRepositoryArtefact(origin, decodeURIComponent(artefactMatch[1]));
 		}
 
-		return jsonResponse({ ok: false, error: 'not_found', path: pathname }, 404, origin);
+		return jsonResponse({ ok: false, error: 'repository_route_not_found' }, 404, origin);
 	} catch (error) {
 		if (error?.status && error?.code) {
-			return jsonResponse({ ok: false, error: error.code, message: error.message }, error.status, origin);
+			return jsonResponse({ ok: false, error: error.code }, error.status, origin);
 		}
-		return jsonResponse({ ok: false, error: 'repository_api_error', message: String(error?.message || error) }, 500, origin);
+		return repositoryUnavailable(origin);
 	}
 }

@@ -3,6 +3,8 @@ import { d1All, d1Get, d1Run } from "./internals/researchops-d1.js";
 const ARTEFACTS_TABLE = "rops_repository_artefacts";
 const TAGS_TABLE = "rops_repository_artefact_tags";
 const AUDIT_TABLE = "rops_repository_audit";
+const AIRTABLE_PAGE_SIZE = 100;
+const MAX_AIRTABLE_PAGES = 10;
 
 function hasD1(svc) {
 	return Boolean(svc?.env?.RESEARCHOPS_D1?.prepare);
@@ -38,6 +40,86 @@ function parseJson(value, fallback) {
 	} catch {
 		return fallback;
 	}
+}
+
+function airtableTableName(svc) {
+	return svc?.env?.AIRTABLE_TABLE_REPOSITORY_ARTEFACTS || svc?.env?.AIRTABLE_TABLE_REPOSITORY || "Repository Artefacts";
+}
+
+function hasAirtable(svc) {
+	return Boolean(svc?.env?.AIRTABLE_BASE_ID && svc?.env?.AIRTABLE_API_KEY && airtableTableName(svc));
+}
+
+function firstField(fields = {}, names = [], fallback = "") {
+	for (const name of names) {
+		const value = fields[name];
+		if (value !== undefined && value !== null && value !== "") return value;
+	}
+	return fallback;
+}
+
+function textField(fields = {}, names = [], fallback = "") {
+	const value = firstField(fields, names, fallback);
+	if (Array.isArray(value)) return value.map((item) => cleanText(item?.name || item)).filter(Boolean).join(", ");
+	if (value && typeof value === "object") return cleanText(value.name || value.label || value.text || fallback);
+	return cleanText(value);
+}
+
+function boolField(fields = {}, names = [], fallback = false) {
+	const value = firstField(fields, names, fallback);
+	if (typeof value === "boolean") return value;
+	if (typeof value === "number") return value === 1;
+	return ["true", "yes", "y", "1", "cleared", "confirmed"].includes(cleanText(value).toLowerCase());
+}
+
+function splitTags(value) {
+	if (Array.isArray(value)) return value.flatMap(splitTags);
+	return String(value || "")
+		.split(/\r?\n|[,|]/)
+		.map(cleanText)
+		.filter(Boolean);
+}
+
+async function airtableJson(svc, url) {
+	const response = await fetch(url, {
+		headers: {
+			Authorization: `Bearer ${svc.env.AIRTABLE_API_KEY}`,
+			Accept: "application/json"
+		}
+	});
+	const text = await response.text();
+	let data = {};
+	try {
+		data = text ? JSON.parse(text) : {};
+	} catch {
+		data = {};
+	}
+	if (!response.ok) {
+		throw Object.assign(new Error(data?.error?.message || data?.error?.type || `airtable_http_${response.status}`), {
+			status: response.status
+		});
+	}
+	return data;
+}
+
+async function airtableRecords(svc, tableName, searchParams = new URLSearchParams()) {
+	if (!hasAirtable(svc)) throw Object.assign(new Error("Airtable repository source is not configured"), { source: "airtable" });
+	const table = encodeURIComponent(tableName);
+	const records = [];
+	let offset = "";
+	let page = 0;
+
+	do {
+		const params = new URLSearchParams(searchParams);
+		params.set("pageSize", String(AIRTABLE_PAGE_SIZE));
+		if (offset) params.set("offset", offset);
+		const data = await airtableJson(svc, `https://api.airtable.com/v0/${svc.env.AIRTABLE_BASE_ID}/${table}?${params.toString()}`);
+		records.push(...(Array.isArray(data.records) ? data.records : []));
+		offset = data.offset || "";
+		page += 1;
+	} while (offset && page < MAX_AIRTABLE_PAGES);
+
+	return records;
 }
 
 async function ensureTables(svc) {
@@ -95,7 +177,7 @@ async function ensureTables(svc) {
 	`);
 	await d1Run(svc.env, `CREATE INDEX IF NOT EXISTS idx_repository_artefacts_status ON ${ARTEFACTS_TABLE} (status, active, published_at)`);
 	await d1Run(svc.env, `CREATE INDEX IF NOT EXISTS idx_repository_artefacts_review ON ${ARTEFACTS_TABLE} (status, review_due_at)`);
-	await d1Run(svc.env, `CREATE INDEX IF NOT EXISTS idx_repository_artefacts_facets ON ${ARTEFACTS_TABLE} (method, evidence_maturity, service_area, risk_area)`);
+	await d1Run(svc.env, `CREATE INDEX IF NOT EXISTS idx_repository_artefacts_facets ON ${ARTEFACTS_TABLE} (method, evidence_maturity, service_area, user_group, risk_area)`);
 	await d1Run(svc.env, `CREATE INDEX IF NOT EXISTS idx_repository_tags_type ON ${TAGS_TABLE} (tag_type, tag_slug)`);
 }
 
@@ -113,6 +195,7 @@ function appendSearchFilters(where, params, url) {
 	const method = cleanSlug(url.searchParams.get("method"));
 	const maturity = cleanSlug(url.searchParams.get("maturity"));
 	const serviceArea = cleanSlug(url.searchParams.get("service_area"));
+	const userGroup = cleanSlug(url.searchParams.get("user_group"));
 	const riskArea = cleanSlug(url.searchParams.get("risk_area"));
 
 	if (q) {
@@ -130,6 +213,10 @@ function appendSearchFilters(where, params, url) {
 	if (serviceArea) {
 		where.push("service_area = ?");
 		params.push(serviceArea);
+	}
+	if (userGroup) {
+		where.push("user_group = ?");
+		params.push(userGroup);
 	}
 	if (riskArea) {
 		where.push("risk_area = ?");
@@ -177,6 +264,77 @@ function rowToArtefact(row, tags = []) {
 			...tags.map((tag) => ({ text: tag.tag_label, classes: tagClassFor(tag.tag_type, tag.tag_slug) }))
 		]
 	};
+}
+
+function airtableRecordToArtefact(record = {}) {
+	const fields = record.fields || {};
+	const confidence = cleanSlug(textField(fields, ["Confidence", "confidence"], "medium")) || "medium";
+	const maturity = cleanSlug(textField(fields, ["Evidence maturity", "Maturity", "evidence_maturity"], "reviewed-evidence")) || "reviewed-evidence";
+	const method = cleanSlug(textField(fields, ["Method", "method"], ""));
+	const serviceArea = cleanSlug(textField(fields, ["Service area", "Service Area", "service_area"], ""));
+	const riskArea = cleanSlug(textField(fields, ["Risk area", "Risk or constraint", "risk_area"], ""));
+	const id = cleanSlug(textField(fields, ["Repository ID", "Artefact ID", "Slug"], record.id)) || record.id;
+	const tagLabels = splitTags(firstField(fields, ["Tags", "Taxonomy", "Repository tags"], []));
+	return {
+		id,
+		title: textField(fields, ["Title", "Name"], "Untitled repository artefact"),
+		summary: textField(fields, ["Summary", "Description"], ""),
+		href: `/pages/repository/artefacts/${encodeURIComponent(id)}/`,
+		artefactType: textField(fields, ["Artefact type", "Type"], "Evidence artefact"),
+		confidence,
+		evidenceMaturity: maturity,
+		serviceArea,
+		userGroup: textField(fields, ["User group", "User Group"], ""),
+		method,
+		riskArea,
+		publishedAt: textField(fields, ["Published at", "Published", "Published date"], record.createdTime || ""),
+		reviewDueAt: textField(fields, ["Review due", "Review due at", "Review date"], ""),
+		provenance: {
+			projectId: textField(fields, ["Source project", "Project", "source_project_id"], ""),
+			studyId: textField(fields, ["Source study", "Study", "source_study_id"], ""),
+			method: textField(fields, ["Source method", "Method"], ""),
+			sample: textField(fields, ["Evidence basis", "Sample summary", "sample_summary"], "")
+		},
+		limits: {
+			limitations: textField(fields, ["Limitations"], ""),
+			reuseGuidance: textField(fields, ["Reuse guidance"], ""),
+			doNotUseFor: textField(fields, ["Where not to use", "Do not use for"], "")
+		},
+		tags: [
+			{ text: `${confidence} confidence`, classes: tagClassFor("confidence", confidence) },
+			{ text: maturity, classes: tagClassFor("maturity", maturity) },
+			...tagLabels.map((tag) => ({ text: tag, classes: "govuk-tag--grey" }))
+		]
+	};
+}
+
+function airtableRecordIsPublished(record = {}) {
+	const fields = record.fields || {};
+	return (
+		cleanSlug(textField(fields, ["Status", "Publication status", "status"], "")) === "published" &&
+		boolField(fields, ["Active", "active"], true) &&
+		boolField(fields, ["PII cleared", "PII clearance", "pii_cleared"], false) &&
+		boolField(fields, ["Consent scope confirmed", "Consent confirmed", "consent_scope_confirmed"], false)
+	);
+}
+
+function matchesSearch(artefact, url) {
+	const q = cleanText(url.searchParams.get("q")).toLowerCase();
+	const method = cleanSlug(url.searchParams.get("method"));
+	const maturity = cleanSlug(url.searchParams.get("maturity"));
+	const serviceArea = cleanSlug(url.searchParams.get("service_area"));
+	const userGroup = cleanSlug(url.searchParams.get("user_group"));
+	const riskArea = cleanSlug(url.searchParams.get("risk_area"));
+	if (q) {
+		const haystack = [artefact.title, artefact.summary, artefact.serviceArea, artefact.userGroup, artefact.method, artefact.riskArea].join(" ").toLowerCase();
+		if (!haystack.includes(q)) return false;
+	}
+	if (method && artefact.method !== method) return false;
+	if (maturity && artefact.evidenceMaturity !== maturity) return false;
+	if (serviceArea && artefact.serviceArea !== serviceArea) return false;
+	if (userGroup && cleanSlug(artefact.userGroup) !== userGroup) return false;
+	if (riskArea && artefact.riskArea !== riskArea) return false;
+	return true;
 }
 
 async function tagsByArtefactId(svc, artefactIds) {
@@ -242,6 +400,60 @@ async function repositoryQueues(svc) {
 	];
 }
 
+function facetFromArtefacts(artefacts, name, label, key) {
+	const counts = new Map();
+	for (const artefact of artefacts) {
+		const value = cleanText(artefact[key]);
+		if (!value) continue;
+		counts.set(value, (counts.get(value) || 0) + 1);
+	}
+	return {
+		name,
+		label,
+		items: [...counts.entries()]
+			.sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+			.slice(0, 20)
+			.map(([value, count]) => ({ value, label: value, count }))
+	};
+}
+
+function metricsFromArtefacts(artefacts) {
+	const dueReview = artefacts.filter((artefact) => artefact.reviewDueAt && Date.parse(artefact.reviewDueAt) <= Date.now() + 30 * 24 * 60 * 60 * 1000).length;
+	const linkedRecommendations = artefacts.reduce((count, artefact) => count + (artefact.tags || []).filter((tag) => cleanSlug(tag.text).includes("recommendation")).length, 0);
+	return [
+		{ value: String(artefacts.length), label: "published artefacts" },
+		{ value: String(linkedRecommendations), label: "linked recommendations" },
+		{ value: String(dueReview), label: "due review in 30 days" }
+	];
+}
+
+async function listRepositoryFromAirtable(svc, url) {
+	const records = await airtableRecords(svc, airtableTableName(svc));
+	const allArtefacts = records.filter(airtableRecordIsPublished).map(airtableRecordToArtefact);
+	const artefacts = allArtefacts.filter((artefact) => matchesSearch(artefact, url)).slice(0, clampLimit(url.searchParams.get("limit")));
+	return {
+		source: "airtable",
+		artefacts,
+		metrics: metricsFromArtefacts(allArtefacts),
+		filters: [
+			facetFromArtefacts(allArtefacts, "method", "Method", "method"),
+				facetFromArtefacts(allArtefacts, "evidence_maturity", "Evidence maturity", "evidenceMaturity"),
+				facetFromArtefacts(allArtefacts, "service_area", "Service area", "serviceArea"),
+				facetFromArtefacts(allArtefacts, "user_group", "User group", "userGroup"),
+				facetFromArtefacts(allArtefacts, "risk_area", "Risk or constraint", "riskArea")
+		],
+		queues: []
+	};
+}
+
+async function readRepositoryArtefactFromAirtable(svc, artefactId) {
+	const records = await airtableRecords(svc, airtableTableName(svc));
+	return records
+		.filter(airtableRecordIsPublished)
+		.map(airtableRecordToArtefact)
+		.find((artefact) => artefact.id === artefactId) || null;
+}
+
 function repositoryDerivation(showQueues) {
 	return {
 		metrics: [
@@ -251,9 +463,10 @@ function repositoryDerivation(showQueues) {
 		],
 		filters: [
 			{ id: "method", source: `${ARTEFACTS_TABLE}.method`, rule: "Facet counts over published, active, PII-cleared, consent-confirmed artefacts" },
-			{ id: "evidence_maturity", source: `${ARTEFACTS_TABLE}.evidence_maturity`, rule: "Facet counts over published, active, PII-cleared, consent-confirmed artefacts" },
-			{ id: "service_area", source: `${ARTEFACTS_TABLE}.service_area`, rule: "Facet counts over published, active, PII-cleared, consent-confirmed artefacts" },
-			{ id: "risk_area", source: `${ARTEFACTS_TABLE}.risk_area`, rule: "Facet counts over published, active, PII-cleared, consent-confirmed artefacts" }
+				{ id: "evidence_maturity", source: `${ARTEFACTS_TABLE}.evidence_maturity`, rule: "Facet counts over published, active, PII-cleared, consent-confirmed artefacts" },
+				{ id: "service_area", source: `${ARTEFACTS_TABLE}.service_area`, rule: "Facet counts over published, active, PII-cleared, consent-confirmed artefacts" },
+				{ id: "user_group", source: `${ARTEFACTS_TABLE}.user_group`, rule: "Facet counts over published, active, PII-cleared, consent-confirmed artefacts" },
+				{ id: "risk_area", source: `${ARTEFACTS_TABLE}.risk_area`, rule: "Facet counts over published, active, PII-cleared, consent-confirmed artefacts" }
 		],
 		queues: showQueues
 			? [
@@ -266,6 +479,7 @@ function repositoryDerivation(showQueues) {
 }
 
 export async function listRepository(svc, origin, url, authContext = {}) {
+	const errors = [];
 	try {
 		await ensureTables(svc);
 		const where = publicWhere();
@@ -282,11 +496,12 @@ export async function listRepository(svc, origin, url, authContext = {}) {
 		`, params);
 		const tags = await tagsByArtefactId(svc, rows.map((row) => row.id));
 		const artefacts = rows.map((row) => rowToArtefact(row, tags.get(row.id) || []));
-		const [metrics, methodFacet, maturityFacet, serviceAreaFacet, riskFacet, queues] = await Promise.all([
+		const [metrics, methodFacet, maturityFacet, serviceAreaFacet, userGroupFacet, riskFacet, queues] = await Promise.all([
 			repositoryMetrics(svc),
 			facetRows(svc, "method", "Method"),
 			facetRows(svc, "evidence_maturity", "Evidence maturity"),
 			facetRows(svc, "service_area", "Service area"),
+			facetRows(svc, "user_group", "User group"),
 			facetRows(svc, "risk_area", "Risk or constraint"),
 			repositoryQueues(svc)
 		]);
@@ -296,17 +511,42 @@ export async function listRepository(svc, origin, url, authContext = {}) {
 			source: "d1",
 			artefacts,
 			metrics,
-			filters: [methodFacet, maturityFacet, serviceAreaFacet, riskFacet],
+			filters: [methodFacet, maturityFacet, serviceAreaFacet, userGroupFacet, riskFacet],
 			queues: showQueues ? queues : [],
 			canCurate: showQueues,
 			derivation: repositoryDerivation(showQueues)
 		}, 200, svc.corsHeaders(origin));
 	} catch (error) {
-		return svc.json({ ok: false, error: "repository_store_unavailable", message: String(error?.message || error) }, 503, svc.corsHeaders(origin));
+		errors.push({ source: "d1", message: String(error?.message || error) });
 	}
+
+	try {
+		const fallback = await listRepositoryFromAirtable(svc, url);
+		const showQueues = canCurate(authContext);
+		return svc.json({
+			ok: true,
+			source: fallback.source,
+			artefacts: fallback.artefacts,
+			metrics: fallback.metrics,
+			filters: fallback.filters,
+			queues: showQueues ? fallback.queues : [],
+			canCurate: showQueues,
+			derivation: repositoryDerivation(showQueues)
+		}, 200, { ...svc.corsHeaders(origin), "x-rops-source": "airtable" });
+	} catch (error) {
+		errors.push({ source: "airtable", message: String(error?.message || error), status: error?.status || 0 });
+	}
+
+	return svc.json({
+		ok: false,
+		error: "repository_store_unavailable",
+		message: "Repository data could not be loaded. Try again or contact the ResearchOps team if the problem continues.",
+		sources: errors.map((entry) => ({ source: entry.source, status: entry.status || 0 }))
+	}, 503, svc.corsHeaders(origin));
 }
 
 export async function readRepositoryArtefact(svc, origin, artefactId) {
+	const errors = [];
 	try {
 		await ensureTables(svc);
 		const row = await d1Get(svc.env, `
@@ -319,6 +559,21 @@ export async function readRepositoryArtefact(svc, origin, artefactId) {
 		const tags = await tagsByArtefactId(svc, [artefactId]);
 		return svc.json({ ok: true, source: "d1", artefact: rowToArtefact(row, tags.get(artefactId) || []), payload: parseJson(row.payload_json, {}) }, 200, svc.corsHeaders(origin));
 	} catch (error) {
-		return svc.json({ ok: false, error: "repository_store_unavailable", message: String(error?.message || error) }, 503, svc.corsHeaders(origin));
+		errors.push({ source: "d1", message: String(error?.message || error) });
 	}
+
+	try {
+		const artefact = await readRepositoryArtefactFromAirtable(svc, artefactId);
+		if (!artefact) return svc.json({ ok: false, error: "repository_artefact_not_found" }, 404, svc.corsHeaders(origin));
+		return svc.json({ ok: true, source: "airtable", artefact, payload: {} }, 200, { ...svc.corsHeaders(origin), "x-rops-source": "airtable" });
+	} catch (error) {
+		errors.push({ source: "airtable", message: String(error?.message || error), status: error?.status || 0 });
+	}
+
+	return svc.json({
+		ok: false,
+		error: "repository_store_unavailable",
+		message: "Repository data could not be loaded. Try again or contact the ResearchOps team if the problem continues.",
+		sources: errors.map((entry) => ({ source: entry.source, status: entry.status || 0 }))
+	}, 503, svc.corsHeaders(origin));
 }
