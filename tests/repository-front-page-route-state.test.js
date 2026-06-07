@@ -8,6 +8,7 @@ const files = {
 	pageData: fs.readFileSync('src/govuk/data/repository-page.mjs', 'utf8'),
 	pageScript: fs.readFileSync('public/js/repository-page.js', 'utf8'),
 	artefactScript: fs.readFileSync('public/js/repository-artefact-page.js', 'utf8'),
+	staticScript: fs.readFileSync('public/js/repository-static-page.js', 'utf8'),
 	stylesheet: fs.readFileSync('src/styles/repository.scss', 'utf8'),
 	renderer: fs.readFileSync('scripts/govuk/render-govuk-pages.mjs', 'utf8'),
 	cssTargets: fs.readFileSync('scripts/styles/generated-css-targets.mjs', 'utf8'),
@@ -98,10 +99,24 @@ has(files.staticTemplate, 'govuk-back-link', 'static repository template');
 has(files.staticTemplate, 'Open the API response for this route', 'static repository template');
 has(files.staticTemplate, 'repository-artefact-detail', 'static repository template');
 has(files.staticTemplate, 'repository-artefact-page.js', 'static repository template');
+has(files.staticTemplate, 'data-repository-browse-page', 'static repository template');
+has(files.staticTemplate, 'repository-browse-options', 'static repository template');
+has(files.staticTemplate, 'repository-browse-results', 'static repository template');
+has(files.staticTemplate, 'data-repository-candidate-page', 'static repository template');
+has(files.staticTemplate, 'repository-candidate-form', 'static repository template');
+has(files.staticTemplate, 'candidate-source-project-id', 'static repository template');
+has(files.staticTemplate, 'candidate-evidence-type', 'static repository template');
+has(files.staticTemplate, 'Submit for repository review', 'static repository template');
+has(files.staticTemplate, 'repository-static-page.js', 'static repository template');
 has(files.pageData, 'export const repositoryStaticPages', 'page data');
 has(files.pageData, "slug: 'service-areas'", 'page data');
 has(files.pageData, "slug: 'artefacts'", 'page data');
 has(files.pageData, 'detailRoute: true', 'page data');
+has(files.pageData, "browseType: 'service_area'", 'page data');
+has(files.pageData, "browseType: 'user_group'", 'page data');
+has(files.pageData, "browseType: 'method'", 'page data');
+has(files.pageData, "browseType: 'risk_area'", 'page data');
+has(files.pageData, 'candidateRoute: true', 'page data');
 has(files.pageData, "slug: 'review/candidates/new'", 'page data');
 has(files.pageData, "slug: 'artefacts/staff-evidence-boundaries'", 'page data');
 
@@ -118,6 +133,15 @@ lacks(files.pageScript, 'Technical detail', 'page script');
 has(files.artefactScript, 'repository-artefact-detail', 'artefact script');
 has(files.artefactScript, 'fetch(apiUrl(`/api/repository/artefacts/${encodeURIComponent(id)}`)', 'artefact script');
 has(files.artefactScript, 'credentials: "include"', 'artefact script');
+has(files.staticScript, 'data-repository-browse-page', 'static page script');
+has(files.staticScript, 'loadBrowseResults(type, item.value', 'static page script');
+has(files.staticScript, 'repository-browse-options', 'static page script');
+has(files.staticScript, 'repository-browse-results', 'static page script');
+has(files.staticScript, 'repository-candidate-form', 'static page script');
+has(files.staticScript, '/api/projects?limit=200', 'static page script');
+has(files.staticScript, 'populateProjectSelect', 'static page script');
+has(files.staticScript, 'method: "POST"', 'static page script');
+has(files.staticScript, 'Candidate artefact', 'static page script');
 
 has(files.service, 'const ARTEFACTS_TABLE = "rops_repository_artefacts"', 'service');
 has(files.service, 'function airtableRecords', 'service');
@@ -129,6 +153,13 @@ has(files.service, 'function repositoryMetrics', 'service');
 has(files.service, 'function facetRows', 'service');
 has(files.service, 'function repositoryQueues', 'service');
 has(files.service, 'function repositoryDerivation', 'service');
+has(files.service, 'export async function createRepositoryCandidate', 'service');
+has(files.service, 'const evidenceType = cleanSlug(payloadText(payload, "evidenceType"))', 'service');
+has(files.service, "status: \"candidate\"", 'service');
+has(files.service, "publicationGate: \"pending_review\"", 'service');
+has(files.service, 'evidenceType', 'service');
+has(files.service, "piiCleared: false", 'service');
+has(files.service, "consentScopeConfirmed: false", 'service');
 has(files.service, 'derivation: repositoryDerivation(showQueues)', 'service');
 has(files.service, 'href: `/pages/repository/artefacts/?id=${encodeURIComponent(row.id)}`', 'service');
 lacks(files.service, 'String(error?.message || error) }, 503', 'service');
@@ -136,6 +167,8 @@ lacks(files.service, 'String(error?.message || error) }, 503', 'service');
 has(files.api, 'resolveAuthenticatedContext', 'API');
 has(files.api, 'assertRoutePermission', 'API');
 has(files.api, 'service.listRepository', 'API');
+has(files.api, 'service.createRepositoryCandidate', 'API');
+has(files.api, "'Access-Control-Allow-Methods': 'GET, POST, OPTIONS'", 'API');
 has(files.api, 'function resolveAllowedOrigin', 'API');
 has(files.api, 'origin === requestOrigin', 'API');
 has(files.api, "error: 'origin_not_allowed'", 'API');
@@ -146,8 +179,11 @@ has(files.api, 'Repository data could not be loaded. Try again or contact the Re
 has(files.worker, 'async function ensureRepositoryAuthDeclarations', 'worker');
 has(files.worker, 'async function handleRepository', 'worker');
 has(files.worker, 'apiPath === "/api/repository" || apiPath.startsWith("/api/repository/")', 'worker');
+has(files.worker, 'route_api_repository_artefacts_post', 'worker');
+has(files.worker, 'service.createRepositoryCandidate(request, origin, authContext)', 'worker');
 has(files.migration, 'CREATE TABLE IF NOT EXISTS rops_repository_artefacts', 'migration');
 has(files.migration, 'repository.view', 'migration');
+has(files.migration, "'route_api_repository_artefacts_post'", 'migration');
 has(files.seedMigration, 'Seed curated research repository records for realistic product evaluation.', 'seed migration');
 has(files.seedMigration, "'staff-evidence-boundaries'", 'seed migration');
 has(files.seedMigration, "'check-answers-review-anxiety'", 'seed migration');
@@ -169,6 +205,8 @@ has(files.stylesheet, '.repository-search-panel__row', 'stylesheet');
 has(files.stylesheet, 'align-items: flex-end', 'stylesheet');
 has(files.stylesheet, '.repository-metric__number,', 'stylesheet');
 has(files.stylesheet, '.repository-metric__label', 'stylesheet');
+has(files.stylesheet, '.repository-browse-list__button', 'stylesheet');
+has(files.stylesheet, '.repository-candidate-form', 'stylesheet');
 lacks(files.stylesheet, 'font-size: 36px', 'stylesheet');
 lacks(files.stylesheet, 'font-weight: 700', 'stylesheet');
 lacks(files.stylesheet, 'line-height: 1', 'stylesheet');

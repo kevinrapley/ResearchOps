@@ -20,7 +20,7 @@ function resolveAllowedOrigin(env = {}, origin = null, requestOrigin = '') {
 function corsHeaders(env = {}, origin = null, requestOrigin = '') {
 	const allowedOrigin = resolveAllowedOrigin(env, origin, requestOrigin);
 	const headers = {
-		'Access-Control-Allow-Methods': 'GET, OPTIONS',
+		'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
 		'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-ResearchOps-Team-Id',
 		Vary: 'Origin',
 	};
@@ -81,7 +81,7 @@ export async function onRequest({ request, env }) {
 			: jsonResponse({}, 204, cors);
 	}
 	if (crossOriginBlocked) return jsonResponse({ ok: false, error: 'origin_not_allowed' }, 403, cors);
-	if (request.method !== 'GET') return jsonResponse({ ok: false, error: 'method_not_allowed' }, 405, cors);
+	if (!['GET', 'POST'].includes(request.method)) return jsonResponse({ ok: false, error: 'method_not_allowed' }, 405, cors);
 
 	try {
 		const authContext = await resolveAuthenticatedContext(request, compatibleEnv);
@@ -90,7 +90,10 @@ export async function onRequest({ request, env }) {
 
 		if (pathname === '/api/repository' || pathname === '/api/repository/artefacts') {
 			await assertRoutePermission(request, compatibleEnv, authContext);
-			return service.listRepository(allowedOrigin, url, authContext);
+			if (request.method === 'GET') return service.listRepository(allowedOrigin, url, authContext);
+			if (pathname === '/api/repository/artefacts' && request.method === 'POST') {
+				return service.createRepositoryCandidate(request, allowedOrigin, authContext);
+			}
 		}
 
 		const artefactMatch = pathname.match(/^\/api\/repository\/artefacts\/([^/]+)$/);

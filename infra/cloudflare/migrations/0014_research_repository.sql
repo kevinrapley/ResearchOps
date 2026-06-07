@@ -85,4 +85,5 @@ INSERT OR IGNORE INTO auth_role_permissions (role_id, permission_code) VALUES
 INSERT OR IGNORE INTO auth_route_permissions (id, method, route_pattern, required_permissions_json, auth_required, implementation_status) VALUES
 	('route_api_repository_get', 'GET', '/api/repository', '["repository.view"]', 1, 'implemented'),
 	('route_api_repository_artefacts_get', 'GET', '/api/repository/artefacts', '["repository.view"]', 1, 'implemented'),
+	('route_api_repository_artefacts_post', 'POST', '/api/repository/artefacts', '["repository.view"]', 1, 'implemented'),
 	('route_api_repository_artefact_get', 'GET', '/api/repository/artefacts/:id', '["repository.view"]', 1, 'implemented');

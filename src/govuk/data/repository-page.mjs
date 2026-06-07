@@ -25,6 +25,10 @@ export const repositoryStaticPages = [
 		apiPath: '/api/repository?service_area=',
 		backHref: '/pages/repository/',
 		backText: 'Back to research repository',
+		browseType: 'service_area',
+		browseLabel: 'Service area',
+		browseHint:
+			'Choose the operational context that best matches the service decision you are making.',
 		sections: [
 			{
 				heading: 'How to use this route',
@@ -49,6 +53,9 @@ export const repositoryStaticPages = [
 		apiPath: '/api/repository?user_group=',
 		backHref: '/pages/repository/',
 		backText: 'Back to research repository',
+		browseType: 'user_group',
+		browseLabel: 'User group',
+		browseHint: 'Choose the group whose needs, constraints or behaviours you need to understand.',
 		sections: [
 			{
 				heading: 'How to use this route',
@@ -73,6 +80,9 @@ export const repositoryStaticPages = [
 		apiPath: '/api/repository?method=',
 		backHref: '/pages/repository/',
 		backText: 'Back to research repository',
+		browseType: 'method',
+		browseLabel: 'Research method',
+		browseHint: 'Choose the method used to produce the evidence.',
 		sections: [
 			{
 				heading: 'How to use this route',
@@ -97,6 +107,9 @@ export const repositoryStaticPages = [
 		apiPath: '/api/repository?risk_area=',
 		backHref: '/pages/repository/',
 		backText: 'Back to research repository',
+		browseType: 'risk_area',
+		browseLabel: 'Risk or constraint',
+		browseHint: 'Choose the constraint or risk theme that could affect reuse.',
 		sections: [
 			{
 				heading: 'How to use this route',
@@ -218,6 +231,7 @@ export const repositoryStaticPages = [
 		apiPath: '/api/repository/artefacts',
 		backHref: '/pages/repository/',
 		backText: 'Back to research repository',
+		candidateRoute: true,
 		sections: [
 			{
 				heading: 'Publication gates',

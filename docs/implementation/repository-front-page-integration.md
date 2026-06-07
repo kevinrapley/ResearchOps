@@ -10,6 +10,8 @@ This branch adds source and test files only. Generated HTML and generated CSS ar
 - `src/govuk/templates/pages/repository-static.njk`
 - `src/styles/repository.scss`
 - `public/js/repository-page.js`
+- `public/js/repository-artefact-page.js`
+- `public/js/repository-static-page.js`
 - `functions/api/repository/[[path]].js`
 - `infra/cloudflare/src/service/repository.js`
 - `infra/cloudflare/migrations/0014_research_repository.sql`
@@ -66,6 +68,10 @@ The page hydrates repository summary, filters, published artefacts and curator q
 
 The content model keeps repository publication separate from raw research records. Draft studies, consent records, recruitment records, session notes and recordings are not part of the repository index.
 
+Deeper browse routes are no longer broad static guidance pages. They hydrate the matching facet from `/api/repository`, let the user choose a specific service area, user group, research method or risk/constraint, and then render the matching published artefacts.
+
+The candidate creation route provides a structured submission form for title, summary, taxonomy, accessible source project, source study, evidence type, evidence basis, limitations and reuse guidance. The source-project selector is hydrated from `/api/projects` so the candidate can be anchored to project data the user can access rather than a broad static reference field. Submitting the form calls `POST /api/repository/artefacts` and creates a `candidate` record only. It is held outside published search until review, PII clearance and consent-scope confirmation are complete.
+
 ## Data derivation
 
 The static Nunjucks page does not invent repository numbers, filters or queue counts. Those panels are hydrated from the authenticated D1-backed `/api/repository` response.
@@ -83,9 +89,12 @@ The repository API is available through both Cloudflare Worker routing and the P
 
 - `GET /api/repository`
 - `GET /api/repository/artefacts`
+- `POST /api/repository/artefacts`
 - `GET /api/repository/artefacts/:id`
 
 D1 is the primary store. The service reads only published, active, PII-cleared, consent-confirmed artefacts from `rops_repository_artefacts` and related tags from `rops_repository_artefact_tags`.
+
+Candidate creation writes to the same D1 artefact table with `status = 'candidate'`, `pii_cleared = 0` and `consent_scope_confirmed = 0`. The payload records source evidence references, evidence type and a pending publication gate. Candidate rows therefore enter the review queue but cannot appear in published search.
 
 Repository result links point to the generated generic artefact page at `/pages/repository/artefacts/?id=:id`. That route loads the selected artefact from `/api/repository/artefacts/:id`, so seeded or Airtable-backed artefacts do not need one generated HTML file per artefact ID.
 

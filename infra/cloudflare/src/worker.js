@@ -152,6 +152,7 @@ const REPOSITORY_ROLE_PERMISSIONS = [
 const REPOSITORY_ROUTE_PERMISSIONS = [
 	["route_api_repository_get", "GET", "/api/repository", "[\"repository.view\"]"],
 	["route_api_repository_artefacts_get", "GET", "/api/repository/artefacts", "[\"repository.view\"]"],
+	["route_api_repository_artefacts_post", "POST", "/api/repository/artefacts", "[\"repository.view\"]"],
 	["route_api_repository_artefact_get", "GET", "/api/repository/artefacts/:id", "[\"repository.view\"]"]
 ];
 
@@ -405,6 +406,10 @@ async function handleRepository(request, env, apiPath) {
 
 	if ((apiPath === "/api/repository" || apiPath === "/api/repository/artefacts") && request.method === "GET") {
 		return service.listRepository(origin, url, authContext);
+	}
+
+	if (apiPath === "/api/repository/artefacts" && request.method === "POST") {
+		return service.createRepositoryCandidate(request, origin, authContext);
 	}
 
 	const match = apiPath.match(/^\/api\/repository\/artefacts\/([^/]+)$/);

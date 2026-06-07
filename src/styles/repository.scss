@@ -142,6 +142,38 @@
 	margin-bottom: 24px;
 }
 
+.repository-browse-list {
+	display: grid;
+	gap: 12px;
+	margin-top: 24px;
+}
+
+.repository-browse-list__button {
+	display: inline;
+	padding: 0;
+	border: 0;
+	background: transparent;
+	color: #1d70b8;
+	text-align: left;
+	text-decoration: underline;
+	cursor: pointer;
+	font: inherit;
+}
+
+.repository-browse-list__button:focus {
+	outline: 3px solid transparent;
+	color: #0b0c0c;
+	background-color: #ffdd00;
+	box-shadow:
+		0 -2px #ffdd00,
+		0 4px #0b0c0c;
+	text-decoration: none;
+}
+
+.repository-candidate-form {
+	margin-top: 24px;
+}
+
 .repository-queue-table {
 	margin-bottom: 0;
 }

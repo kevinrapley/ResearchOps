@@ -24,6 +24,13 @@ function clampLimit(value) {
 	return Math.max(1, Math.min(parsed, 50));
 }
 
+function newCandidateId() {
+	const suffix = typeof crypto !== "undefined" && typeof crypto.randomUUID === "function" ?
+		crypto.randomUUID() :
+		`${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+	return `candidate-${suffix}`;
+}
+
 function permissionCodesFor(authContext = {}) {
 	return new Set((authContext.permissions || []).map((permission) => permission.code).filter(Boolean));
 }
@@ -40,6 +47,10 @@ function parseJson(value, fallback) {
 	} catch {
 		return fallback;
 	}
+}
+
+function payloadText(payload = {}, key, fallback = "") {
+	return cleanText(payload[key] ?? fallback);
 }
 
 function airtableTableName(svc) {
@@ -576,4 +587,94 @@ export async function readRepositoryArtefact(svc, origin, artefactId) {
 		message: "Repository data could not be loaded. Try again or contact the ResearchOps team if the problem continues.",
 		sources: errors.map((entry) => ({ source: entry.source, status: entry.status || 0 }))
 	}, 503, svc.corsHeaders(origin));
+}
+
+export async function createRepositoryCandidate(svc, request, origin, authContext = {}) {
+	if (!hasD1(svc)) {
+		return svc.json({
+			ok: false,
+			error: "repository_d1_required",
+			message: "Candidate artefacts must be created in the governed repository database."
+		}, 503, svc.corsHeaders(origin));
+	}
+
+	const payload = await request.json().catch(() => ({}));
+	const title = payloadText(payload, "title");
+	const summary = payloadText(payload, "summary");
+	if (!title || !summary) {
+		return svc.json({ ok: false, error: "candidate_required_fields", required: ["title", "summary"] }, 400, svc.corsHeaders(origin));
+	}
+
+	await ensureTables(svc);
+	const now = new Date().toISOString();
+	const id = newCandidateId();
+	const actor = authContext?.user?.id || authContext?.user?.email || "authenticated-user";
+	const sourceProjectId = payloadText(payload, "sourceProjectId");
+	const sourceStudyId = payloadText(payload, "sourceStudyId");
+	const evidenceType = cleanSlug(payloadText(payload, "evidenceType"));
+	const method = cleanSlug(payloadText(payload, "method"));
+	const evidenceMaturity = cleanSlug(payloadText(payload, "evidenceMaturity", "early-signal")) || "early-signal";
+	const serviceArea = cleanSlug(payloadText(payload, "serviceArea"));
+	const userGroup = cleanSlug(payloadText(payload, "userGroup"));
+	const riskArea = cleanSlug(payloadText(payload, "riskArea"));
+	const payloadJson = JSON.stringify({
+		publicationGate: {
+			piiCleared: false,
+			consentScopeConfirmed: false,
+			reviewerAssigned: false,
+			reviewStatus: "pending_review"
+		},
+		sourceEvidence: {
+			projectId: sourceProjectId,
+			studyId: sourceStudyId,
+			evidenceType,
+			method,
+			evidenceBasis: payloadText(payload, "sampleSummary")
+		}
+	});
+
+	await d1Run(svc.env, `
+		INSERT INTO ${ARTEFACTS_TABLE} (
+			id, title, summary, artefact_type, status, confidence, evidence_maturity,
+			service_area, user_group, method, risk_area, source_project_id, source_study_id,
+			source_method, sample_summary, limitations, reuse_guidance, do_not_use_for,
+			owner_user_id, reviewed_by_user_id, pii_cleared, consent_scope_confirmed,
+			active, created_at, updated_at, published_at, review_due_at, payload_json
+		) VALUES (?, ?, ?, ?, 'candidate', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NULL, 0, 0, 1, ?, ?, NULL, ?, ?)
+	`, [
+		id,
+		title,
+		summary,
+		payloadText(payload, "artefactType", "Candidate artefact"),
+		cleanSlug(payloadText(payload, "confidence", "low")) || "low",
+		evidenceMaturity,
+		serviceArea,
+		userGroup,
+		method,
+		riskArea,
+		sourceProjectId,
+		sourceStudyId,
+		payloadText(payload, "sourceMethod", method),
+		payloadText(payload, "sampleSummary"),
+		payloadText(payload, "limitations"),
+		payloadText(payload, "reuseGuidance"),
+		payloadText(payload, "doNotUseFor"),
+		actor,
+		now,
+		now,
+		payloadText(payload, "reviewDueAt"),
+		payloadJson
+	]);
+
+	await d1Run(svc.env, `
+		INSERT INTO ${AUDIT_TABLE} (id, artefact_id, action, actor_user_id, created_at, payload_json)
+		VALUES (?, ?, 'candidate.submitted', ?, ?, ?)
+	`, [`audit-${id}`, id, actor, now, payloadJson]);
+
+	return svc.json({
+		ok: true,
+		id,
+		status: "candidate",
+		publicationGate: "pending_review"
+	}, 201, svc.corsHeaders(origin));
 }

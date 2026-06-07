@@ -56,7 +56,10 @@
 		"lychee.toml",
 		"public/js/repository-artefact-page.js",
 		".github/workflows/deploy-passwordless-preview-worker.yml",
-		".github/workflows/deploy-worker.yml"
+		".github/workflows/deploy-worker.yml",
+		"public/js/repository-static-page.js",
+		"public/js/projects-page.js",
+		"public/js/project-dashboard.js"
 	],
 	"filesCreatedOrModified": [
 		"src/govuk/data/repository-page.mjs",
@@ -84,6 +87,7 @@
 		".github/workflows/deploy-worker.yml",
 		"lychee.toml",
 		"public/js/repository-artefact-page.js",
+		"public/js/repository-static-page.js",
 		"docs/deployment/d1-migration-ordering.md",
 		"docs/implementation/repository-front-page-integration.md",
 		"docs/agent-audit/reasoning/2026/06/07/repository-front-page-nunjucks-sass.md",
@@ -114,7 +118,10 @@
 		"Point dynamic result links at the generated generic artefact detail route and load the selected artefact by ID from the API.",
 		"Align method and maturity filters with stored D1 facet values.",
 		"Apply repository schema and seed migrations in preview deployment workflows so branch previews populate D1 instead of serving empty, on-demand-created repository tables.",
-		"Keep synthetic repository seed application scoped to preview deployment paths; production deployment is not auto-seeded with demo records."
+		"Keep synthetic repository seed application scoped to preview deployment paths; production deployment is not auto-seeded with demo records.",
+		"Replace broad static browse pages with facet-driven browse interfaces for service area, user group, research method and risk/constraint.",
+		"Add a candidate artefact submission interface and API route that creates candidate records with publication gates pending, keeping them outside published repository search until review.",
+		"Hydrate candidate source project choices from /api/projects and capture the submitted evidence type so candidate records are anchored to accessible project data and not only free-text source references."
 	],
 	"codexReviewThreadDisposition": [
 		"3369448387: legitimate P1 CORS finding on functions/api/repository/[[path]].js; fixed in 2db93d1c, replied with evidence, added a thumbs-up reaction to the original Codex comment and resolved the thread after it was outdated by the fix.",
@@ -148,10 +155,15 @@
 		"PR readiness gate checked 27 changed files; the changed-file list is plausible for repository API, D1 seed data, deeper source pages, link-check workflow, tests, docs and trace updates.",
 		"Follow-up live preview defect found: the seed migration existed in the repository, but preview deployment workflows did not apply 0014_research_repository.sql or 0015_seed_research_repository.sql; authenticated preview pages could therefore show zero repository records.",
 		"Follow-up preview seed deployment fix validation passed: focused repository route-state test and npm run validate.",
+		"Follow-up deeper page correction validation passed: focused repository route-state test, JavaScript syntax checks and npm run build.",
+		"Follow-up candidate source evidence tightening passed: focused repository route-state test, JavaScript syntax checks, npm run build, browser smoke checks against local rendered pages, npm run lint, npm run validate and npm test.",
+		"npm test -- --ci could not run because the package test script passes arguments to Node's test runner and Node rejected --ci; npm test passed instead.",
 		"package.json has no typecheck script, so no typecheck command was available to run."
 	],
 	"residualRisks": [
 		"The preview link will show seeded data after the updated preview deployment workflow finishes applying the repository migrations to the remote preview D1 database.",
-		"Production D1 still requires an explicit human-owned migration/seeding decision before synthetic data is introduced there."
+		"Production D1 still requires an explicit human-owned migration/seeding decision before synthetic data is introduced there.",
+		"Candidate creation now writes governed D1 candidate records, but full curator review actions such as approve, update and withdraw remain future workflow endpoints.",
+		"The local browser smoke-test server started on 127.0.0.1:4177; sandbox restrictions prevented terminating the process with kill after the check, so no further local server was started."
 	]
 }

@@ -5,6 +5,9 @@
 	{% if detailRoute %}
 	<link rel="modulepreload" href="/js/repository-artefact-page.js?v=repository-api-20260607">
 	{% endif %}
+	{% if browseType or candidateRoute %}
+	<link rel="modulepreload" href="/js/repository-static-page.js?v=repository-api-20260607">
+	{% endif %}
 {% endblock %}
 
 {% block beforeContent %}
@@ -24,11 +27,122 @@
 		</div>
 	</div>
 
+	{% if browseType %}
+	<section class="repository-section" aria-labelledby="repository-browse-options-title" data-repository-browse-page data-browse-type="{{ browseType }}" data-browse-label="{{ browseLabel }}">
+		<h2 class="govuk-heading-l" id="repository-browse-options-title">Choose {{ browseLabel | lower }}</h2>
+		<p class="govuk-body">{{ browseHint }}</p>
+		<div id="repository-browse-options" class="repository-browse-options" aria-live="polite" aria-busy="true">
+			<p class="govuk-body">Loading {{ browseLabel | lower }} options.</p>
+		</div>
+	</section>
+
+	<section class="repository-section" aria-labelledby="repository-browse-results-title">
+		<h2 class="govuk-heading-l" id="repository-browse-results-title">Published evidence</h2>
+		<p class="govuk-body">Select an option above to see published artefacts that match this route.</p>
+		<p class="repository-result-count" id="repository-browse-result-count" aria-live="polite"></p>
+		<div id="repository-browse-results" class="repository-results" aria-live="polite" aria-busy="false">
+			<div class="govuk-inset-text">Choose {{ browseLabel | lower }} to filter the repository.</div>
+		</div>
+	</section>
+	{% elif candidateRoute %}
+	<section class="repository-section" aria-labelledby="repository-candidate-title" data-repository-candidate-page>
+		<h2 class="govuk-heading-l" id="repository-candidate-title">Candidate details</h2>
+		<p class="govuk-body">Create a candidate record from reviewed evidence. The record is held in the publication queue until a curator confirms PII clearance, consent scope, confidence and reuse boundaries.</p>
+		<form class="repository-candidate-form" id="repository-candidate-form" method="post" action="/api/repository/artefacts" novalidate>
+			<div class="govuk-grid-row">
+				<div class="govuk-grid-column-two-thirds">
+					<div class="govuk-form-group">
+						<label class="govuk-label govuk-label--s" for="candidate-title">Artefact title</label>
+						<input class="govuk-input" id="candidate-title" name="title" type="text" autocomplete="off" required>
+					</div>
+					<div class="govuk-form-group">
+						<label class="govuk-label govuk-label--s" for="candidate-summary">Reusable evidence summary</label>
+						<textarea class="govuk-textarea" id="candidate-summary" name="summary" rows="5" required></textarea>
+					</div>
+					<div class="govuk-form-group">
+						<label class="govuk-label govuk-label--s" for="candidate-limitations">Limitations</label>
+						<textarea class="govuk-textarea" id="candidate-limitations" name="limitations" rows="4"></textarea>
+					</div>
+					<div class="govuk-form-group">
+						<label class="govuk-label govuk-label--s" for="candidate-reuse-guidance">Reuse guidance</label>
+						<textarea class="govuk-textarea" id="candidate-reuse-guidance" name="reuseGuidance" rows="4"></textarea>
+					</div>
+					<div class="govuk-form-group">
+						<label class="govuk-label govuk-label--s" for="candidate-do-not-use-for">Do not use for</label>
+						<textarea class="govuk-textarea" id="candidate-do-not-use-for" name="doNotUseFor" rows="4"></textarea>
+					</div>
+				</div>
+				<div class="govuk-grid-column-one-third">
+					<div class="repository-filter-panel">
+						<div class="govuk-form-group">
+							<label class="govuk-label govuk-label--s" for="candidate-service-area">Service area</label>
+							<select class="govuk-select" id="candidate-service-area" name="serviceArea"></select>
+						</div>
+						<div class="govuk-form-group">
+							<label class="govuk-label govuk-label--s" for="candidate-user-group">User group</label>
+							<select class="govuk-select" id="candidate-user-group" name="userGroup"></select>
+						</div>
+						<div class="govuk-form-group">
+							<label class="govuk-label govuk-label--s" for="candidate-method">Research method</label>
+							<select class="govuk-select" id="candidate-method" name="method"></select>
+						</div>
+						<div class="govuk-form-group">
+							<label class="govuk-label govuk-label--s" for="candidate-risk-area">Risk or constraint</label>
+							<select class="govuk-select" id="candidate-risk-area" name="riskArea"></select>
+						</div>
+					</div>
+				</div>
+			</div>
+			<section class="repository-section" aria-labelledby="repository-candidate-source-title">
+				<h3 class="govuk-heading-m" id="repository-candidate-source-title">Source evidence</h3>
+				<div class="govuk-grid-row">
+					<div class="govuk-grid-column-one-half">
+						<div class="govuk-form-group">
+							<label class="govuk-label govuk-label--s" for="candidate-source-project-id">Source project</label>
+							<select class="govuk-select" id="candidate-source-project-id" name="sourceProjectId">
+								<option value="">Loading projects</option>
+							</select>
+						</div>
+						<div class="govuk-form-group">
+							<label class="govuk-label govuk-label--s" for="candidate-source-study-id">Source study</label>
+							<input class="govuk-input" id="candidate-source-study-id" name="sourceStudyId" type="text" autocomplete="off">
+						</div>
+					</div>
+					<div class="govuk-grid-column-one-half">
+						<div class="govuk-form-group">
+							<label class="govuk-label govuk-label--s" for="candidate-evidence-type">Evidence type</label>
+							<select class="govuk-select" id="candidate-evidence-type" name="evidenceType">
+								<option value="">Select evidence type</option>
+								<option value="reviewed-synthesis">Reviewed synthesis</option>
+								<option value="research-finding">Research finding</option>
+								<option value="service-pattern">Service pattern</option>
+								<option value="content-pattern">Content pattern</option>
+								<option value="recommendation">Recommendation</option>
+								<option value="operational-risk">Operational risk</option>
+							</select>
+						</div>
+						<div class="govuk-form-group">
+							<label class="govuk-label govuk-label--s" for="candidate-evidence-basis">Evidence basis</label>
+							<textarea class="govuk-textarea" id="candidate-evidence-basis" name="sampleSummary" rows="4"></textarea>
+						</div>
+					</div>
+				</div>
+			</section>
+			<section class="repository-section" aria-labelledby="repository-candidate-gates-title">
+				<h3 class="govuk-heading-m" id="repository-candidate-gates-title">Publication gate</h3>
+				<div class="govuk-inset-text">This submission creates a candidate only. It will not be published until PII clearance, consent-scope confirmation and curator review are complete.</div>
+				<button class="govuk-button" data-module="govuk-button" type="submit">Submit for repository review</button>
+				<div id="repository-candidate-status" aria-live="polite"></div>
+			</section>
+		</form>
+	</section>
+	{% else %}
 	<section class="repository-section" aria-labelledby="repository-page-api-title">
 		<h2 class="govuk-heading-l" id="repository-page-api-title">Repository data</h2>
 		<p class="govuk-body">This page uses the repository API for dynamic data and keeps stable service guidance in the page template.</p>
 		<p class="govuk-body"><a class="govuk-link" href="{{ apiPath }}">Open the API response for this route</a></p>
 	</section>
+	{% endif %}
 
 	{% if detailRoute %}
 	<section class="repository-section" aria-labelledby="repository-artefact-detail-title">
@@ -55,5 +169,8 @@
 {% block scripts %}
 	{% if detailRoute %}
 	<script type="module" src="/js/repository-artefact-page.js?v=repository-api-20260607"></script>
+	{% endif %}
+	{% if browseType or candidateRoute %}
+	<script type="module" src="/js/repository-static-page.js?v=repository-api-20260607"></script>
 	{% endif %}
 {% endblock %}

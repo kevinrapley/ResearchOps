@@ -206,6 +206,7 @@ export class ResearchOpsService {
 	/* ─────────────── Research repository ─────────────── */
 	listRepository = (origin, url, authContext) => Repository.listRepository(this, origin, url, authContext);
 	readRepositoryArtefact = (origin, artefactId) => Repository.readRepositoryArtefact(this, origin, artefactId);
+	createRepositoryCandidate = (req, origin, authContext) => Repository.createRepositoryCandidate(this, req, origin, authContext);
 
 	/* ─────────────── Guides ─────────────── */
 	listGuides = (origin, url) => Guides.listGuides(this, origin, url);
