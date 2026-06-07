@@ -12,6 +12,11 @@ const CONFIG = Object.freeze({
 });
 
 let latestRepositoryRequest = 0;
+let repositoryCatalogue = null;
+let repositoryMetrics = [];
+let repositoryFilters = [];
+let repositoryQueues = [];
+let repositoryCanCurate = false;
 
 function apiUrl(path) {
 	const cleanPath = path.startsWith("/") ? path : `/${path}`;
@@ -106,6 +111,14 @@ function renderError() {
 
 function normaliseKey(value) {
 	return text(value).trim().toLowerCase();
+}
+
+function cleanSlug(value) {
+	return text(value).trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+}
+
+function selectedValues(params, key) {
+	return [...new Set(params.getAll(key).map(cleanSlug).filter(Boolean))];
 }
 
 function renderMetrics(metrics = []) {
@@ -238,13 +251,19 @@ function repositoryQueryFromForms() {
 	return params;
 }
 
+function repositoryApiParams(params = new URLSearchParams(window.location.search)) {
+	const next = new URLSearchParams(params);
+	next.set("hydrate", "full");
+	return next;
+}
+
 function repositoryRequestUrl(params = new URLSearchParams(window.location.search)) {
-	const query = params.toString();
+	const query = repositoryApiParams(params).toString();
 	return apiUrl(`/api/repository${query ? `?${query}` : ""}`);
 }
 
 function repositoryRequestPath(params = new URLSearchParams(window.location.search)) {
-	const query = params.toString();
+	const query = repositoryApiParams(params).toString();
 	return `/api/repository${query ? `?${query}` : ""}`;
 }
 
@@ -253,11 +272,87 @@ function updateRepositoryHistory(params) {
 	window.history.pushState({}, "", query ? `${window.location.pathname}?${query}` : window.location.pathname);
 }
 
+function matchesCatalogueSearch(artefact, params) {
+	const q = text(params.get("q")).trim().toLowerCase();
+	const method = selectedValues(params, "method");
+	const maturity = selectedValues(params, "maturity");
+	const serviceArea = selectedValues(params, "service_area");
+	const userGroup = selectedValues(params, "user_group");
+	const riskArea = selectedValues(params, "risk_area");
+	if (q) {
+		const haystack = [
+			artefact.title,
+			artefact.summary,
+			artefact.serviceArea,
+			artefact.userGroup,
+			artefact.method,
+			artefact.riskArea,
+		].join(" ").toLowerCase();
+		if (!haystack.includes(q)) return false;
+	}
+	if (method.length && !method.includes(cleanSlug(artefact.method))) return false;
+	if (maturity.length && !maturity.includes(cleanSlug(artefact.evidenceMaturity))) return false;
+	if (serviceArea.length && !serviceArea.includes(cleanSlug(artefact.serviceArea))) return false;
+	if (userGroup.length && !userGroup.includes(cleanSlug(artefact.userGroup))) return false;
+	if (riskArea.length && !riskArea.includes(cleanSlug(artefact.riskArea))) return false;
+	return true;
+}
+
+function sortCatalogueArtefacts(artefacts, sort = "reviewed_desc") {
+	const confidenceRank = { high: 3, medium: 2, low: 1 };
+	return [...artefacts].sort((a, b) => {
+		if (sort === "confidence_desc") {
+			return (confidenceRank[b.confidence] || 0) - (confidenceRank[a.confidence] || 0) || text(a.title).localeCompare(text(b.title));
+		}
+		if (sort === "relevance") return text(a.title).localeCompare(text(b.title));
+		return Date.parse(b.publishedAt || b.reviewDueAt || 0) - Date.parse(a.publishedAt || a.reviewDueAt || 0) || text(a.title).localeCompare(text(b.title));
+	});
+}
+
+function paginateArtefacts(artefacts, params) {
+	const limit = PAGE_SIZE;
+	const page = Math.max(1, Number.parseInt(params.get("page") || "1", 10) || 1);
+	const total = artefacts.length;
+	const offset = (page - 1) * limit;
+	return {
+		artefacts: artefacts.slice(offset, offset + limit),
+		pagination: { page, limit, total },
+	};
+}
+
+function localRepositoryState(params) {
+	const filtered = sortCatalogueArtefacts(
+		repositoryCatalogue.filter((artefact) => matchesCatalogueSearch(artefact, params)),
+		params.get("sort") || "reviewed_desc",
+	);
+	const paged = paginateArtefacts(filtered, params);
+	return {
+		metrics: repositoryMetrics,
+		filters: repositoryFilters,
+		queues: repositoryQueues,
+		canCurate: repositoryCanCurate,
+		artefacts: paged.artefacts,
+		pagination: paged.pagination,
+	};
+}
+
+function renderRepositoryState(data) {
+	renderMetrics(data.metrics || []);
+	updateFilterCounts(data.filters || []);
+	setQueueCounts(data.queues || [], Boolean(data.canCurate));
+	renderArtefacts(data.artefacts || [], data.pagination || {});
+}
+
 async function loadRepositoryState(params = new URLSearchParams(window.location.search)) {
 	const requestId = ++latestRepositoryRequest;
 	syncSearchAndFiltersFromUrl();
 	setBusy(document.getElementById("repository-results"), true);
 	setBusy(document.getElementById("repository-filter-form"), true);
+	if (repositoryCatalogue) {
+		if (requestId !== latestRepositoryRequest) return;
+		renderRepositoryState(localRepositoryState(params));
+		return;
+	}
 	const requestPath = repositoryRequestPath(params);
 	const prefetched = await consumePrefetchedRepository(requestPath);
 	const { ok, status, data } = prefetched || await fetchWithTimeout(repositoryRequestUrl(params));
@@ -270,10 +365,12 @@ async function loadRepositoryState(params = new URLSearchParams(window.location.
 		renderError();
 		return;
 	}
-	renderMetrics(data.metrics || []);
-	updateFilterCounts(data.filters || []);
-	setQueueCounts(data.queues || [], Boolean(data.canCurate));
-	renderArtefacts(data.artefacts || [], data.pagination || {});
+	repositoryCatalogue = Array.isArray(data.catalogue?.artefacts) ? data.catalogue.artefacts : null;
+	repositoryMetrics = data.metrics || [];
+	repositoryFilters = data.filters || [];
+	repositoryQueues = data.queues || [];
+	repositoryCanCurate = Boolean(data.canCurate);
+	renderRepositoryState(data);
 }
 
 function bindRepositoryInteractions() {
