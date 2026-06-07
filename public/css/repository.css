@@ -22,25 +22,6 @@
 	margin-bottom: 24px;
 	}
 
-.repository-assurance-panel {
-	padding: 20px;
-	border-left: 5px solid #1d70b8;
-	background: #ffffff;
-	}
-
-.repository-assurance-list {
-	display: grid;
-	gap: 8px;
-	margin: 0 0 16px;
-	padding: 0;
-	list-style: none;
-	}
-
-.repository-assurance-list li {
-	padding-bottom: 8px;
-	border-bottom: 1px solid #b1b4b6;
-	}
-
 .repository-search-panel {
 	margin-top: 32px;
 	padding: 20px;
