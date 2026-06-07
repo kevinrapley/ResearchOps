@@ -1,6 +1,14 @@
 -- Replace generated seed labels with production-like repository taxonomy labels.
 -- Date: 2026-06-07
--- Scope: display-safe topic and recommendation labels for seeded published artefacts.
+-- Scope: display-safe topic, recommendation and user-group labels for seeded published artefacts.
+
+UPDATE rops_repository_artefacts
+SET
+	user_group = 'research-operations-staff',
+	title = REPLACE(title, 'ResearchOps reviewers', 'research operations staff'),
+	summary = REPLACE(summary, 'ResearchOps reviewers', 'research operations staff'),
+	reuse_guidance = REPLACE(reuse_guidance, 'ResearchOps reviewers', 'research operations staff')
+WHERE user_group = 'research-operations-team';
 
 UPDATE rops_repository_artefact_tags
 SET
@@ -61,4 +69,4 @@ WHERE
 	AND artefact_id LIKE 'seeded-published-%';
 
 INSERT OR IGNORE INTO rops_repository_audit (id, artefact_id, action, actor_user_id, created_at, payload_json) VALUES
-	('audit-repository-seed-tag-taxonomy-20260607', NULL, 'update_repository_seed_tag_taxonomy', 'system_migration', '2026-06-07T14:00:00Z', '{"migration":"0016_update_repository_seed_tag_taxonomy.sql","purpose":"Replace generated seed tag labels with production-like topic and recommendation taxonomy."}');
+	('audit-repository-seed-tag-taxonomy-20260607', NULL, 'update_repository_seed_tag_taxonomy', 'system_migration', '2026-06-07T14:00:00Z', '{"migration":"0016_update_repository_seed_tag_taxonomy.sql","purpose":"Replace generated seed tag labels and user-group copy with production-like taxonomy."}');
