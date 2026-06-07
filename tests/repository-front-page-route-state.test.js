@@ -88,11 +88,11 @@ has(files.service, 'const ARTEFACTS_TABLE = "rops_repository_artefacts"', 'repos
 has(files.service, 'function selectedFacet', 'repository service');
 has(files.service, 'function pagination', 'repository service');
 has(files.service, 'const schemaReadyByDatabase = new WeakMap()', 'repository service');
-has(files.service, 'const query = repositorySearchQuery(url)', 'repository service');
-has(files.service, 'LIMIT ? OFFSET ?', 'repository service');
+has(files.service, 'const filtered = sortArtefacts(allArtefacts.filter((artefact) => matchesSearch(artefact, url)), sort);', 'repository service');
+has(files.service, 'const queues = await repositoryQueues(svc);', 'repository service');
 has(files.service, 'pagination: { page: pager.page, limit: pager.limit, total: pager.total }', 'repository service');
 has(files.service, 'selected: selectedFacet(url)', 'repository service');
-has(files.service, 'catalogue: catalogue ? { artefacts: catalogue } : undefined', 'repository service');
+has(files.service, 'catalogue: hydrate === HYDRATE_FULL_MODE ? { artefacts: allArtefacts } : undefined', 'repository service');
 has(files.service, 'const HYDRATE_FULL_MODE = "full"', 'repository service');
 has(files.service, 'const method = searchValues(url, "method")', 'repository service');
 lacks(files.service, 'String(error?.message || error) }, 503', 'repository service');

@@ -81,6 +81,7 @@ Investigate the reported lag on the ResearchOps repository preview, try the depl
 - The repository service was running `ensureTables(...)` on the hot read path for list and detail requests.
 - The repository list route still loaded and materialised the full published set before filtering even when the page only needed one page of results.
 - The repository front page and browse pages both requested `/api/repository?hydrate=full` on initial load.
+- After the first optimisation pass, the repository list route still fanned out into many D1 queries per request: count, page rows, tags, five facet queries, metrics queries and queue counts.
 
 ## Tool limitations
 
@@ -94,6 +95,7 @@ Investigate the reported lag on the ResearchOps repository preview, try the depl
 - Keep `hydrate=full` support only as an explicit opt-in response shape instead of the default page-loading contract.
 - Change the repository landing page and deeper browse pages to request paged API data for the current UI state instead of hydrating the entire catalogue up front.
 - Keep seeded-tag filtering and current browse/history behaviour intact while changing the data-loading strategy.
+- After reproducing the remaining lag on the live preview, collapse the repository list route back to one published-row query plus one tag query, then derive filters, metrics, pagination and filtered results in memory to remove repeated D1 round-trip cost.
 
 ## Assumptions
 
@@ -104,6 +106,8 @@ Investigate the reported lag on the ResearchOps repository preview, try the depl
 
 - In-app browser navigation to `https://feature-research-repository.researchops.pages.dev/`
 - Browser inspection of open authenticated tabs
+- In-app browser timing of the authenticated `fix-repository-preview-laten` repository page
+- In-app browser timing of same-origin `/api/repository` requests on the authenticated preview
 - `node --check public/js/repository-page.js`
 - `node --check public/js/repository-static-page.js`
 - `node --check infra/cloudflare/src/service/repository.js`
@@ -120,6 +124,15 @@ Investigate the reported lag on the ResearchOps repository preview, try the depl
 
 - The initial browser attempt proved the preview URL was not directly observable in this environment, so the investigation pivoted to repository runtime code and test-backed optimisation.
 - Creating an approved branch initially failed because `.git` write access was not available; the permission was then requested and granted for this turn.
+- The first repository preview alias guesses were wrong; the live Pages host was `fix-repository-preview-laten.researchops.pages.dev`.
+- Cloudflare Access authentication alone was not enough; the ResearchOps app sign-in route also had to be completed before the repository page could be timed honestly.
+
+## Live measurements
+
+- Preview repository page shell reached `domcontentloaded` in about `188ms`.
+- The repository page replaced placeholders with live data about `4.5s` after `domcontentloaded`.
+- Same-origin authenticated `/api/repository` responses were about `3.3s`.
+- After the page was warm, an applied method filter updated visible results in about `500ms`.
 
 ## Residual risks
 

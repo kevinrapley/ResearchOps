@@ -649,34 +649,26 @@ export async function listRepository(svc, origin, url, authContext = {}) {
 		await ensureTables(svc);
 		const sort = url.searchParams.get("sort") || "reviewed_desc";
 		const hydrate = cleanSlug(url.searchParams.get("hydrate"));
-		const query = repositorySearchQuery(url);
-		const totalCount = await d1Get(svc.env, `
-			SELECT COUNT(*) AS count
-			FROM ${ARTEFACTS_TABLE}
-			${query.whereSql}
-		`, query.params);
-		const pager = pagination(url, Number(totalCount?.count || 0));
 		const rows = await d1All(svc.env, `
 			SELECT *
 			FROM ${ARTEFACTS_TABLE}
-			${query.whereSql}
-			ORDER BY ${repositorySortSql(sort)}
-			LIMIT ? OFFSET ?
-		`, [...query.params, pager.limit, pager.offset]);
+			WHERE ${publicWhereSql()}
+			ORDER BY datetime(COALESCE(updated_at, published_at, created_at)) DESC, title ASC
+		`);
 		const tags = await tagsByArtefactId(svc, rows.map((row) => row.id));
-		const artefacts = rows.map((row) => rowToArtefact(row, tags.get(row.id) || []));
-		const [filters, metrics, queues, catalogue] = await Promise.all([
-			Promise.all([
-				facetFromRepository(svc, "method", "Method", "method"),
-				facetFromRepository(svc, "evidence_maturity", "Evidence maturity", "evidence_maturity"),
-				facetFromRepository(svc, "service_area", "Service area", "service_area"),
-				facetFromRepository(svc, "user_group", "User group", "user_group"),
-				facetFromRepository(svc, "risk_area", "Risk or constraint", "risk_area")
-			]),
-			repositoryMetrics(svc),
-			repositoryQueues(svc),
-			hydrate === HYDRATE_FULL_MODE ? fullRepositoryCatalogue(svc) : Promise.resolve(undefined)
-		]);
+		const allArtefacts = rows.map((row) => rowToArtefact(row, tags.get(row.id) || []));
+		const filtered = sortArtefacts(allArtefacts.filter((artefact) => matchesSearch(artefact, url)), sort);
+		const pager = pagination(url, filtered.length);
+		const artefacts = filtered.slice(pager.offset, pager.offset + pager.limit);
+		const filters = [
+			facetFromArtefacts(allArtefacts, "method", "Method", "method"),
+			facetFromArtefacts(allArtefacts, "evidence_maturity", "Evidence maturity", "evidenceMaturity"),
+			facetFromArtefacts(allArtefacts, "service_area", "Service area", "serviceArea"),
+			facetFromArtefacts(allArtefacts, "user_group", "User group", "userGroup"),
+			facetFromArtefacts(allArtefacts, "risk_area", "Risk or constraint", "riskArea")
+		];
+		const metrics = metricsFromArtefacts(allArtefacts);
+		const queues = await repositoryQueues(svc);
 		const showQueues = canCurate(authContext);
 		return svc.json({
 			ok: true,
@@ -688,7 +680,7 @@ export async function listRepository(svc, origin, url, authContext = {}) {
 			filters,
 			queues: showQueues ? queues : [],
 			canCurate: showQueues,
-			catalogue: catalogue ? { artefacts: catalogue } : undefined,
+			catalogue: hydrate === HYDRATE_FULL_MODE ? { artefacts: allArtefacts } : undefined,
 			derivation: repositoryDerivation(showQueues)
 		}, 200, svc.corsHeaders(origin));
 	} catch (error) {
