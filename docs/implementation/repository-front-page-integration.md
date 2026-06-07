@@ -50,6 +50,17 @@ The page hydrates repository summary, filters, published artefacts and curator q
 
 The content model keeps repository publication separate from raw research records. Draft studies, consent records, recruitment records, session notes and recordings are not part of the repository index.
 
+## Data derivation
+
+The static Nunjucks page does not invent repository numbers, filters or queue counts. Those panels are hydrated from the authenticated D1-backed `/api/repository` response.
+
+- Repository summary is derived from aggregate D1 counts across `rops_repository_artefacts` and `rops_repository_artefact_tags`.
+- Published artefacts are derived from `rops_repository_artefacts` rows where `status = 'published'`, `active = 1`, `pii_cleared = 1` and `consent_scope_confirmed = 1`.
+- Filters are derived from D1 facet counts over `method`, `evidence_maturity`, `service_area` and `risk_area` for published, active, PII-cleared, consent-confirmed artefacts.
+- Curator queues are derived from D1 workflow-status counts for candidate, due-review and withdrawn artefacts. They are only returned to users with `repository.curate` permission.
+
+The API response includes a `derivation` object so client code and tests can identify the source and rule behind each derived panel.
+
 ## Suggested validation
 
 Run:
