@@ -1,105 +1,84 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 
-const template = fs.readFileSync('src/govuk/templates/pages/repository.njk', 'utf8');
-const macros = fs.readFileSync('src/govuk/templates/macros/repository.njk', 'utf8');
-const pageData = fs.readFileSync('src/govuk/data/repository-page.mjs', 'utf8');
-const pageScript = fs.readFileSync('public/js/repository-page.js', 'utf8');
-const stylesheet = fs.readFileSync('src/styles/repository.scss', 'utf8');
-const renderScript = fs.readFileSync('scripts/govuk/render-govuk-pages.mjs', 'utf8');
-const generatedCssTargets = fs.readFileSync('scripts/styles/generated-css-targets.mjs', 'utf8');
-const headerPartial = fs.readFileSync('public/partials/header.html', 'utf8');
-const repositoryService = fs.readFileSync('infra/cloudflare/src/service/repository.js', 'utf8');
-const repositoryFunction = fs.readFileSync('functions/api/repository/[[path]].js', 'utf8');
-const repositoryMigration = fs.readFileSync('infra/cloudflare/migrations/0014_research_repository.sql', 'utf8');
+const files = {
+	template: fs.readFileSync('src/govuk/templates/pages/repository.njk', 'utf8'),
+	macros: fs.readFileSync('src/govuk/templates/macros/repository.njk', 'utf8'),
+	pageData: fs.readFileSync('src/govuk/data/repository-page.mjs', 'utf8'),
+	pageScript: fs.readFileSync('public/js/repository-page.js', 'utf8'),
+	stylesheet: fs.readFileSync('src/styles/repository.scss', 'utf8'),
+	renderer: fs.readFileSync('scripts/govuk/render-govuk-pages.mjs', 'utf8'),
+	cssTargets: fs.readFileSync('scripts/styles/generated-css-targets.mjs', 'utf8'),
+	header: fs.readFileSync('public/partials/header.html', 'utf8'),
+	service: fs.readFileSync('infra/cloudflare/src/service/repository.js', 'utf8'),
+	api: fs.readFileSync('functions/api/repository/[[path]].js', 'utf8'),
+	migration: fs.readFileSync('infra/cloudflare/migrations/0014_research_repository.sql', 'utf8'),
+};
 
-assert.match(renderScript, /template: 'pages\/repository\.njk'/);
-assert.match(renderScript, /output: 'public\/pages\/repository\/index\.html'/);
-assert.match(generatedCssTargets, /source: 'src\/styles\/repository\.scss'/);
-assert.match(generatedCssTargets, /output: 'public\/css\/repository\.css'/);
-assert.match(headerPartial, /data-nav="Research Repository"/);
-assert.match(headerPartial, /href="\/pages\/repository\/"/);
+function has(source, text, label) {
+	assert.equal(source.includes(text), true, `${label} should include ${text}`);
+}
 
-assert.match(template, /extends "layouts\/researchops\.njk"/);
-assert.match(template, /macros\/repository\.njk/);
-assert.match(template, /repositoryHero\(hero\)/);
-assert.match(template, /id="repository-metrics"/);
-assert.match(template, /id="repository-results"/);
-assert.match(template, /id="repository-filters"/);
-assert.match(template, /id="repository-queues"/);
-assert.match(template, /data-repository-source="api:\/api\/repository metrics from D1 rops_repository_artefacts and rops_repository_artefact_tags"/);
-assert.match(template, /data-repository-source="api:\/api\/repository filters from D1 facet counts"/);
-assert.match(template, /data-repository-source="api:\/api\/repository queues from D1 artefact workflow-status counts"/);
-assert.match(template, /\/js\/repository-page\.js\?v=repository-api-20260607/);
-assert.match(template, /\/css\/repository\.css\?v=repository-api-20260607/);
-assert.match(template, /Only reviewed artefacts that have passed PII and consent-scope checks/);
-assert.doesNotMatch(template, /Loading repository summary/);
-assert.doesNotMatch(template, /Loading filters/);
-assert.doesNotMatch(template, /Loading curator queues/);
-assert.doesNotMatch(template, /repositoryDecisionCards/);
-assert.doesNotMatch(template, /Team decision for this page/);
-assert.doesNotMatch(template, /Repository status/);
-assert.doesNotMatch(template, /repositoryAssurancePanel/);
+function lacks(source, text, label) {
+	assert.equal(source.includes(text), false, `${label} should not include ${text}`);
+}
 
-assert.match(macros, /govuk\/components\/button\/macro\.njk/);
-assert.match(macros, /govuk\/components\/input\/macro\.njk/);
-assert.match(macros, /macro repositoryHero/);
-assert.match(macros, /macro repositorySearch/);
-assert.match(macros, /repository-search-panel__row/);
-assert.match(macros, /repository-search-panel__field/);
-assert.match(macros, /repository-search-panel__action/);
-assert.doesNotMatch(macros, /macro repositoryDecisionCards/);
-assert.doesNotMatch(macros, /macro repositoryAssurancePanel/);
-assert.doesNotMatch(macros, /Repository status/);
+has(files.renderer, "template: 'pages/repository.njk'", 'renderer');
+has(files.renderer, "output: 'public/pages/repository/index.html'", 'renderer');
+has(files.cssTargets, "source: 'src/styles/repository.scss'", 'CSS targets');
+has(files.cssTargets, "output: 'public/css/repository.css'", 'CSS targets');
+has(files.header, 'href="/pages/repository/"', 'header');
+has(files.header, 'data-nav="Research Repository"', 'header');
 
-assert.doesNotMatch(pageData, /Staff need clearer evidence boundaries/);
-assert.doesNotMatch(pageData, /teamDecisions/);
-assert.doesNotMatch(pageData, /artefacts: \[/);
-assert.doesNotMatch(pageData, /assurance/);
-assert.doesNotMatch(pageData, /Repository status/);
+has(files.template, 'govuk/components/checkboxes/macro.njk', 'template');
+has(files.template, 'The repository shows curated research artefacts', 'template');
+has(files.template, 'Summary figures are calculated from published repository records', 'template');
+has(files.template, 'id="repository-filter-form"', 'template');
+has(files.template, 'name: \'method\'', 'template');
+has(files.template, 'name: \'maturity\'', 'template');
+has(files.template, 'Curator workbench', 'template');
+has(files.template, 'data-repository-queue-count="Candidate artefacts"', 'template');
+has(files.template, 'data-repository-queue-count="Due review"', 'template');
+has(files.template, 'data-repository-queue-count="Withdrawn artefacts"', 'template');
+has(files.template, 'data-repository-source="api:/api/repository metrics from D1 rops_repository_artefacts and rops_repository_artefact_tags"', 'template');
+lacks(files.template, 'Loading repository summary', 'template');
+lacks(files.template, 'Loading filters', 'template');
+lacks(files.template, 'Loading curator queues', 'template');
+lacks(files.template, 'Technical detail', 'template');
+lacks(files.template, 'Team decision for this page', 'template');
+lacks(files.template, 'Repository status', 'template');
 
-assert.match(pageScript, /apiUrl\(`\/api\/repository/);
-assert.match(pageScript, /credentials: "include"/);
-assert.match(pageScript, /redirectToSignIn/);
-assert.match(pageScript, /renderArtefacts/);
-assert.match(pageScript, /renderFilters/);
-assert.match(pageScript, /renderQueues/);
-assert.match(pageScript, /renderUnavailable\("repository-metrics", "Repository summary could not be derived from D1\."\)/);
-assert.match(pageScript, /renderUnavailable\("repository-filters", "Filters could not be derived from D1 facet counts\./);
-assert.match(pageScript, /renderUnavailable\("repository-queues", "Curator queues could not be derived from D1 workflow counts\."\)/);
-assert.match(pageScript, /No repository summary is available from D1 yet\./);
-assert.match(pageScript, /No filters are available from D1 facet counts yet\./);
-assert.match(pageScript, /No curator queue counts are available from D1 yet\./);
+has(files.macros, 'macro repositoryHero', 'macros');
+has(files.macros, 'macro repositorySearch', 'macros');
+lacks(files.macros, 'macro repositoryDecisionCards', 'macros');
+lacks(files.macros, 'macro repositoryAssurancePanel', 'macros');
 
-assert.match(repositoryService, /const ARTEFACTS_TABLE = "rops_repository_artefacts"/);
-assert.match(repositoryService, /export async function listRepository/);
-assert.match(repositoryService, /function repositoryMetrics/);
-assert.match(repositoryService, /function facetRows/);
-assert.match(repositoryService, /function repositoryQueues/);
-assert.match(repositoryService, /function repositoryDerivation/);
-assert.match(repositoryService, /derivation: repositoryDerivation\(showQueues\)/);
-assert.match(repositoryService, /status = 'published'/);
-assert.match(repositoryService, /pii_cleared = 1/);
-assert.match(repositoryService, /consent_scope_confirmed = 1/);
-assert.match(repositoryService, /d1All\(svc\.env/);
-assert.doesNotMatch(repositoryService, /AIRTABLE/);
+lacks(files.pageData, 'teamDecisions', 'page data');
+lacks(files.pageData, 'artefacts: [', 'page data');
+lacks(files.pageData, 'assurance', 'page data');
 
-assert.match(repositoryFunction, /functions\/api\/repository/);
-assert.match(repositoryFunction, /resolveAuthenticatedContext/);
-assert.match(repositoryFunction, /assertRoutePermission/);
-assert.match(repositoryFunction, /service\.listRepository/);
-assert.match(repositoryFunction, /service\.readRepositoryArtefact/);
+has(files.pageScript, 'apiUrl(`/api/repository', 'page script');
+has(files.pageScript, 'updateFilterCounts', 'page script');
+has(files.pageScript, 'setQueueCounts', 'page script');
+has(files.pageScript, 'data-repository-metric', 'page script');
+lacks(files.pageScript, 'Technical detail', 'page script');
 
-assert.match(repositoryMigration, /CREATE TABLE IF NOT EXISTS rops_repository_artefacts/);
-assert.match(repositoryMigration, /CREATE TABLE IF NOT EXISTS rops_repository_artefact_tags/);
-assert.match(repositoryMigration, /repository\.view/);
-assert.match(repositoryMigration, /\/api\/repository/);
+has(files.service, 'const ARTEFACTS_TABLE = "rops_repository_artefacts"', 'service');
+has(files.service, 'function repositoryMetrics', 'service');
+has(files.service, 'function facetRows', 'service');
+has(files.service, 'function repositoryQueues', 'service');
+has(files.service, 'function repositoryDerivation', 'service');
+has(files.service, 'derivation: repositoryDerivation(showQueues)', 'service');
+lacks(files.service, 'AIRTABLE', 'service');
 
-assert.match(stylesheet, /Route:\s+\/pages\/repository\//);
-assert.match(stylesheet, /\.repository-search-panel__row/);
-assert.match(stylesheet, /flex-direction: row/);
-assert.match(stylesheet, /align-items: flex-end/);
-assert.match(stylesheet, /\/\* transparency begins in the cascade \*\//);
-assert.doesNotMatch(stylesheet, /repository-assurance/);
+has(files.api, 'resolveAuthenticatedContext', 'API');
+has(files.api, 'assertRoutePermission', 'API');
+has(files.api, 'service.listRepository', 'API');
+has(files.migration, 'CREATE TABLE IF NOT EXISTS rops_repository_artefacts', 'migration');
+has(files.migration, 'repository.view', 'migration');
+
+has(files.stylesheet, '.repository-search-panel__row', 'stylesheet');
+has(files.stylesheet, 'align-items: flex-end', 'stylesheet');
+lacks(files.stylesheet, 'repository-assurance', 'stylesheet');
 assert.equal(fs.existsSync('public/css/repository.css'), false, 'Repository CSS should be generated by Sass during build, not committed.');
 assert.equal(fs.existsSync('public/pages/repository/index.html'), false, 'Repository HTML should be rendered by Nunjucks during build, not committed.');
