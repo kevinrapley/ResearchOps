@@ -13,9 +13,11 @@ const JSON_HEADERS = {
 };
 const ACCESS_CERT_CACHE_TTL_MS = 10 * 60 * 1000;
 const ACCESS_CONTEXT_CACHE_TTL_MS = 60 * 1000;
+const ACCESS_LAST_SEEN_UPDATE_TTL_MS = 10 * 60 * 1000;
 const accessCertCache = new Map();
 const accessCryptoKeyCache = new Map();
 const accessContextCache = new Map();
+const accessLastSeenUpdateCache = new Map();
 
 class AuthError extends Error {
 	constructor(status, code, message) {
@@ -286,6 +288,8 @@ async function ensureUserForAccessPayload(db, payload) {
 }
 
 async function updateLastSeen(db, subject) {
+	const cacheEntry = accessLastSeenUpdateCache.get(subject);
+	if (cacheEntry && cacheEntry > Date.now()) return;
 	await db
 		.prepare(`
 			UPDATE auth_identities
@@ -294,6 +298,7 @@ async function updateLastSeen(db, subject) {
 		`)
 		.bind(PROVIDER, subject)
 		.run();
+	accessLastSeenUpdateCache.set(subject, Date.now() + ACCESS_LAST_SEEN_UPDATE_TTL_MS);
 }
 
 async function listTeams(db, userId) {

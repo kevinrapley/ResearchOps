@@ -71,6 +71,7 @@ Investigate the reported lag on the ResearchOps repository preview, try the depl
 
 - `infra/cloudflare/src/service/repository.js`
 - `infra/cloudflare/src/core/auth/access.js`
+- `infra/cloudflare/src/core/auth/route-permissions.js`
 - `infra/cloudflare/src/worker.js`
 - `src/govuk/templates/pages/repository.njk`
 - `public/js/repository-page.js`
@@ -88,6 +89,7 @@ Investigate the reported lag on the ResearchOps repository preview, try the depl
 - Chrome traces from the authenticated preview showed the biggest delay was still in `/api/repository` and `/api/repository?hydrate=full`, each taking about two to three seconds while first paint stayed below 100ms.
 - The repository landing page was still issuing two initial API requests in parallel because the inline prefetch hit `/api/repository` while the page module requested `/api/repository?hydrate=full`.
 - The repository Worker was re-running repository auth declaration inserts on every request and still resolving a fresh Access-backed auth context for each API call.
+- The Access resolver was also updating `auth_identities.last_seen_at` on normal authenticated reads, and route permission declarations were still being fetched from D1 per request.
 
 ## Tool limitations
 
@@ -110,6 +112,8 @@ Investigate the reported lag on the ResearchOps repository preview, try the depl
 - Align the inline Nunjucks prefetch with the hydrated request path so the page no longer pays for both `/api/repository` and `/api/repository?hydrate=full` on first load.
 - Cache Access-backed authenticated context briefly per sign-in token and requested team so repository API reads can reuse the same resolved team, role and permission state.
 - Cache repository auth declaration setup per D1 binding so repository reads no longer pay repeated `INSERT OR IGNORE` declaration work.
+- Throttle `last_seen` writes for Access-backed identities so read-heavy routes do not turn every first hit into a D1 write.
+- Cache route permission declarations per D1 binding, method and pathname so protected API reads do not repeat the same route-permission lookup query.
 
 ## Assumptions
 
@@ -159,6 +163,7 @@ Investigate the reported lag on the ResearchOps repository preview, try the depl
 - After the payload-trimming deploy, linked recommendations returned to `12`, but the front-page hydrate was still about `4.3s`, so first-load latency was still not acceptable.
 - Chrome trace samples on 2026-06-08 showed first contentful paint and largest contentful paint around `69ms` to `81ms`, while `/api/repository` and `/api/repository?hydrate=full` still consumed about `2.1s` to `2.7s`.
 - After the first live post-deploy check, the repository page route itself loaded in about `125ms`, but direct browser navigation to the hydrated repository API still took roughly `1.9s` to `2.4s`, pointing to authenticated Worker overhead beyond repository shaping.
+- After the next deployed auth-path pass, the remaining benchmark to beat is the cold authenticated API hit that had regressed to about `3.7s` while warm hits were about `439ms`.
 
 ## Residual risks
 
