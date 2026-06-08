@@ -94,12 +94,22 @@ WHERE user_group = 'research-operations-team';
 
 DELETE FROM rops_repository_artefact_tags
 WHERE
-	artefact_id LIKE 'seeded-published-%'
+	artefact_id IN (
+		SELECT id
+		FROM rops_repository_artefacts
+		WHERE source_project_id LIKE 'proj-seeded-%'
+	)
 	AND tag_type IN ('topic', 'recommendation');
+
+DROP TRIGGER IF EXISTS trg_repository_seed_topic_taxonomy;
 
 CREATE TRIGGER IF NOT EXISTS trg_repository_seed_topic_taxonomy
 AFTER INSERT ON rops_repository_artefact_tags
-WHEN NEW.tag_type = 'topic' AND NEW.tag_slug LIKE 'seeded-topic-%' AND NEW.artefact_id LIKE 'seeded-published-%'
+WHEN NEW.tag_type = 'topic' AND NEW.tag_slug LIKE 'seeded-topic-%' AND EXISTS (
+	SELECT 1
+	FROM rops_repository_artefacts artefact
+	WHERE artefact.id = NEW.artefact_id AND artefact.source_project_id LIKE 'proj-seeded-%'
+)
 BEGIN
 	UPDATE rops_repository_artefact_tags
 	SET
@@ -124,9 +134,15 @@ BEGIN
 	WHERE artefact_id = NEW.artefact_id AND tag_slug = NEW.tag_slug AND tag_type = NEW.tag_type;
 END;
 
+DROP TRIGGER IF EXISTS trg_repository_seed_recommendation_taxonomy;
+
 CREATE TRIGGER IF NOT EXISTS trg_repository_seed_recommendation_taxonomy
 AFTER INSERT ON rops_repository_artefact_tags
-WHEN NEW.tag_type = 'recommendation' AND NEW.tag_slug LIKE 'rec-seeded-%' AND NEW.artefact_id LIKE 'seeded-published-%'
+WHEN NEW.tag_type = 'recommendation' AND NEW.tag_slug LIKE 'rec-seeded-%' AND EXISTS (
+	SELECT 1
+	FROM rops_repository_artefacts artefact
+	WHERE artefact.id = NEW.artefact_id AND artefact.source_project_id LIKE 'proj-seeded-%'
+)
 BEGIN
 	UPDATE rops_repository_artefact_tags
 	SET
@@ -179,7 +195,14 @@ SET
 		FROM rops_repository_artefacts artefact
 		WHERE artefact.id = rops_repository_artefact_tags.artefact_id
 	)
-WHERE tag_type = 'topic' AND tag_slug LIKE 'seeded-topic-%' AND artefact_id LIKE 'seeded-published-%';
+WHERE
+	tag_type = 'topic'
+	AND tag_slug LIKE 'seeded-topic-%'
+	AND artefact_id IN (
+		SELECT id
+		FROM rops_repository_artefacts
+		WHERE source_project_id LIKE 'proj-seeded-%'
+	);
 
 UPDATE rops_repository_artefact_tags
 SET
@@ -209,7 +232,14 @@ SET
 		FROM rops_repository_artefacts artefact
 		WHERE artefact.id = rops_repository_artefact_tags.artefact_id
 	)
-WHERE tag_type = 'recommendation' AND tag_slug LIKE 'rec-seeded-%' AND artefact_id LIKE 'seeded-published-%';
+WHERE
+	tag_type = 'recommendation'
+	AND tag_slug LIKE 'rec-seeded-%'
+	AND artefact_id IN (
+		SELECT id
+		FROM rops_repository_artefacts
+		WHERE source_project_id LIKE 'proj-seeded-%'
+	);
 
 INSERT OR IGNORE INTO auth_permissions (code, label, description, is_sensitive, is_reserved) VALUES
 	('repository.view', 'View research repository', 'Can view published, non-PII research repository artefacts.', 1, 0),

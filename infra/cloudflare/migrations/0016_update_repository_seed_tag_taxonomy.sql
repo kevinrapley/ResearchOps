@@ -12,12 +12,20 @@ WHERE user_group = 'research-operations-team';
 
 DELETE FROM rops_repository_artefact_tags
 WHERE
-	artefact_id LIKE 'seeded-published-%'
+	artefact_id IN (
+		SELECT id
+		FROM rops_repository_artefacts
+		WHERE source_project_id LIKE 'proj-seeded-%'
+	)
 	AND tag_type = 'topic';
 
 DELETE FROM rops_repository_artefact_tags
 WHERE
-	artefact_id LIKE 'seeded-published-%'
+	artefact_id IN (
+		SELECT id
+		FROM rops_repository_artefacts
+		WHERE source_project_id LIKE 'proj-seeded-%'
+	)
 	AND tag_type = 'recommendation';
 
 INSERT OR IGNORE INTO rops_repository_audit (id, artefact_id, action, actor_user_id, created_at, payload_json) VALUES

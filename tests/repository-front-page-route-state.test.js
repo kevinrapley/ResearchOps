@@ -6,7 +6,15 @@ const files = {
 	staticTemplate: fs.readFileSync('src/govuk/templates/pages/repository-static.njk', 'utf8'),
 	pageData: fs.readFileSync('src/govuk/data/repository-page.mjs', 'utf8'),
 	pageScript: fs.readFileSync('public/js/repository-page.js', 'utf8'),
-	staticScript: fs.readFileSync('public/js/repository-static-page.js', 'utf8'),
+	staticScript: [
+		'public/js/repository-static-page.js',
+		'public/js/repository-static/shared.js',
+		'public/js/repository-static/browse.js',
+		'public/js/repository-static/candidate.js',
+		'public/js/repository-static/review.js',
+	]
+		.map((file) => fs.readFileSync(file, 'utf8'))
+		.join('\n'),
 	artefactScript: fs.readFileSync('public/js/repository-artefact-page.js', 'utf8'),
 	service: fs.readFileSync('infra/cloudflare/src/service/repository.js', 'utf8'),
 	schemaMigration: fs.readFileSync('infra/cloudflare/migrations/0014_research_repository.sql', 'utf8'),
@@ -46,6 +54,7 @@ has(files.template, 'repository-page.js?v=repository-api-20260607c', 'repository
 has(files.template, "params.set('hydrate', 'full')", 'repository template');
 has(files.template, 'class="govuk-heading-xl govuk-!-margin-bottom-1 repository-metric__number"', 'repository template');
 has(files.template, 'class="govuk-body repository-metric__label"', 'repository template');
+has(files.template, 'id="repository-curator-workbench"', 'repository template');
 has(files.template, "{ value: 'interviews', text: 'Moderated interviews' }", 'repository template');
 lacks(files.template, 'Technical detail', 'repository template');
 lacks(files.template, 'Repository status', 'repository template');
@@ -63,6 +72,8 @@ lacks(files.pageData, 'teamDecisions', 'page data');
 lacks(files.pageData, 'artefacts: [', 'page data');
 
 has(files.pageScript, 'function displayTags', 'repository page script');
+has(files.pageScript, 'const workbench = document.getElementById("repository-curator-workbench");', 'repository page script');
+has(files.pageScript, 'if (workbench) workbench.hidden = !canCurate;', 'repository page script');
 has(files.pageScript, '!/seeded/i.test(text(tag.text))', 'repository page script');
 has(files.pageScript, 'fetchWithTimeout(repositoryRequestUrl(params))', 'repository page script');
 has(files.pageScript, 'let latestRepositoryRequest = 0', 'repository page script');
@@ -110,12 +121,17 @@ lacks(files.service, 'String(error?.message || error) }, 503', 'repository servi
 
 has(files.schemaMigration, 'CREATE TABLE IF NOT EXISTS rops_repository_artefacts', 'schema migration');
 has(files.schemaMigration, "DELETE FROM rops_repository_artefact_tags", 'schema migration');
+has(files.schemaMigration, "source_project_id LIKE 'proj-seeded-%'", 'schema migration');
 has(files.seedMigration, 'Seed curated research repository records for realistic product evaluation.', 'seed migration');
-has(files.seedMigration, "printf('seeded-published-%03d', rn)", 'seed migration');
+has(files.seedMigration, "printf('%s-%s-%s-%s', service_area, user_group, method, risk_area)", 'seed migration');
+has(files.seedMigration, "id LIKE 'seeded-published-%'", 'seed migration');
+has(files.seedMigration, "source_project_id LIKE 'proj-seeded-%'", 'seed migration');
+lacks(files.seedMigration, "printf('seeded-published-%03d', rn)", 'seed migration');
 lacks(files.seedMigration, 'recording_url', 'seed migration');
 has(files.seedCleanupMigration, 'Remove generated seed tags', 'seed cleanup migration');
 has(files.seedCleanupMigration, "tag_type = 'topic'", 'seed cleanup migration');
 has(files.seedCleanupMigration, "tag_type = 'recommendation'", 'seed cleanup migration');
+has(files.seedCleanupMigration, "source_project_id LIKE 'proj-seeded-%'", 'seed cleanup migration');
 has(files.seedCleanupMigration, 'remove_repository_seed_tags', 'seed cleanup migration');
 lacks(files.seedCleanupMigration, 'Seeded topic', 'seed cleanup migration');
 lacks(files.seedCleanupMigration, 'Seeded recommendation', 'seed cleanup migration');

@@ -2,6 +2,8 @@
 {% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
 {% from "govuk/components/select/macro.njk" import govukSelect %}
 {% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/tabs/macro.njk" import govukTabs %}
+{% from "govuk/components/pagination/macro.njk" import govukPagination %}
 
 {% block head %}
 	{% if browseType %}
@@ -30,12 +32,48 @@
 		})();
 	</script>
 	{% endif %}
+	{% if reviewRoute %}
+	<script>
+		(function prefetchRepositoryReview() {
+			const requestPath = '/api/repository/review/{{ reviewQueue }}' + (window.location.search || '');
+			window.__repositoryPrefetch = {
+				requestPath,
+				promise: fetch(requestPath, {
+					credentials: 'include',
+					cache: 'no-store'
+				}).then(async (response) => {
+					const responseText = await response.text();
+					let data;
+					try {
+						data = JSON.parse(responseText);
+					} catch {
+						data = { ok: false, parseError: true, raw: responseText };
+					}
+					return { response, data };
+				}).catch((error) => ({
+					response: { ok: false, status: 0 },
+					data: { ok: false, error: String(error) }
+				}))
+			};
+		})();
+	</script>
+	{% endif %}
 	<link rel="stylesheet" href="/css/repository.css?v=repository-api-20260607" media="screen">
 	{% if detailRoute %}
 	<link rel="modulepreload" href="/js/repository-artefact-page.js?v=repository-api-20260607c">
 	{% endif %}
-	{% if browseType or candidateRoute %}
+	{% if browseType or candidateRoute or reviewRoute %}
 	<link rel="modulepreload" href="/js/repository-static-page.js?v=repository-api-20260607c">
+	<link rel="modulepreload" href="/js/repository-static/shared.js?v=repository-api-20260607c">
+	{% if browseType %}
+	<link rel="modulepreload" href="/js/repository-static/browse.js?v=repository-api-20260607c">
+	{% endif %}
+	{% if candidateRoute %}
+	<link rel="modulepreload" href="/js/repository-static/candidate.js?v=repository-api-20260607c">
+	{% endif %}
+	{% if reviewRoute %}
+	<link rel="modulepreload" href="/js/repository-static/review.js?v=repository-api-20260607c">
+	{% endif %}
 	{% endif %}
 {% endblock %}
 
@@ -72,9 +110,9 @@
 	<div class="govuk-grid-row">
 		<div class="govuk-grid-column-two-thirds">
 			<span class="govuk-caption-xl">Research repository</span>
-			<h1 class="govuk-heading-xl">{{ title }}</h1>
-			<p class="govuk-body-l">{{ lead }}</p>
-			<p class="govuk-body">{{ body }}</p>
+			<h1 class="govuk-heading-xl" data-repository-page-title>{{ title }}</h1>
+			<p class="govuk-body-l" data-repository-page-lead>{{ lead }}</p>
+			<p class="govuk-body" data-repository-page-body>{{ body }}</p>
 		</div>
 	</div>
 
@@ -210,6 +248,98 @@
 			</section>
 		</form>
 	</section>
+	{% elif reviewRoute %}
+	<section class="repository-section" aria-labelledby="repository-review-title" data-repository-review-page data-review-queue="{{ reviewQueue }}">
+		<h2 class="govuk-heading-l" id="repository-review-title">Review workbench</h2>
+		{% macro reviewWorkbench(queueKey) %}
+			<div class="repository-review-workbench" id="repository-review-workbench-{{ queueKey }}" data-review-workbench="{{ queueKey }}">
+				<div class="govuk-grid-row repository-review-layout">
+					<div class="govuk-grid-column-one-third">
+						<section aria-labelledby="repository-review-list-title-{{ queueKey }}">
+							<h3 class="govuk-heading-m" id="repository-review-list-title-{{ queueKey }}">Queue items</h3>
+							<div class="repository-review-panel">
+								<p class="repository-result-count" id="repository-review-count-{{ queueKey }}" data-review-count aria-live="polite"></p>
+								<div id="repository-review-list-{{ queueKey }}" data-review-list class="repository-review-list" aria-live="polite" aria-busy="true"></div>
+								{{ govukPagination({
+									classes: "repository-review-pagination",
+									landmarkLabel: "Queue pages",
+									previous: {
+										labelText: "Previous",
+										href: "#"
+									},
+									next: {
+										labelText: "Next",
+										href: "#"
+									},
+									items: [
+										{
+											number: 1,
+											current: true,
+											href: "#"
+										}
+									],
+									attributes: {
+										id: "repository-review-pagination-" + queueKey,
+										"data-review-pagination": "",
+										hidden: "hidden"
+									}
+								}) }}
+							</div>
+						</section>
+					</div>
+					<div class="govuk-grid-column-two-thirds">
+						<section aria-labelledby="repository-review-detail-title-{{ queueKey }}">
+							<h3 class="govuk-heading-m" id="repository-review-detail-title-{{ queueKey }}">Selected record</h3>
+							<div class="repository-review-panel">
+								<div id="repository-review-detail-{{ queueKey }}" data-review-detail class="repository-review-detail" aria-live="polite" aria-busy="true"></div>
+							</div>
+						</section>
+					</div>
+				</div>
+			</div>
+		{% endmacro %}
+		{% set reviewCandidatesPanelHtml %}
+			<div id="repository-review-host-candidates" data-review-panel-host="candidates">
+				{{ reviewWorkbench("candidates") }}
+			</div>
+		{% endset %}
+		{% set reviewStalePanelHtml %}
+			<div id="repository-review-host-stale" data-review-panel-host="stale">
+				{{ reviewWorkbench("stale") }}
+			</div>
+		{% endset %}
+		{% set reviewWithdrawnPanelHtml %}
+			<div id="repository-review-host-withdrawn" data-review-panel-host="withdrawn">
+				{{ reviewWorkbench("withdrawn") }}
+			</div>
+		{% endset %}
+		{{ govukTabs({
+			id: "repository-review-tabs",
+			items: [
+				{
+					label: "Candidate artefacts",
+					id: "review-candidates",
+					panel: {
+						html: reviewCandidatesPanelHtml
+					}
+				},
+				{
+					label: "Due review",
+					id: "review-stale",
+					panel: {
+						html: reviewStalePanelHtml
+					}
+				},
+				{
+					label: "Withdrawn artefacts",
+					id: "review-withdrawn",
+					panel: {
+						html: reviewWithdrawnPanelHtml
+					}
+				}
+			]
+		}) }}
+	</section>
 	{% endif %}
 
 	{% if detailRoute %}
@@ -238,7 +368,7 @@
 	{% if detailRoute %}
 	<script type="module" src="/js/repository-artefact-page.js?v=repository-api-20260607c"></script>
 	{% endif %}
-	{% if browseType or candidateRoute %}
+	{% if browseType or candidateRoute or reviewRoute %}
 	<script type="module" src="/js/repository-static-page.js?v=repository-api-20260607c"></script>
 	{% endif %}
 {% endblock %}

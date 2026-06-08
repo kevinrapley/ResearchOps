@@ -213,6 +213,8 @@ function updateFilterCounts(filters = []) {
 
 function setQueueCounts(queues = [], canCurate = false) {
 	const table = document.getElementById("repository-queues");
+	const workbench = document.getElementById("repository-curator-workbench");
+	if (workbench) workbench.hidden = !canCurate;
 	if (!table) return;
 	const counts = new Map(queues.map((row) => [normaliseKey(row.queue), row.count]));
 	table.querySelectorAll("[data-repository-queue-count]").forEach((cell) => {
