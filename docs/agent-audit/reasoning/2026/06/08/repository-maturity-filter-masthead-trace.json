@@ -8,7 +8,7 @@
 		"requiresTrace": true,
 		"reason": "trace-required-prefix"
 	},
-	"taskSummary": "Fix repository evidence maturity filter counts, apply a GOV.UK Design System-style masthead treatment to the repository landing page, strengthen inverse repository menu colours, remove active navigation box-shadow, set masthead borders to the brand colour, and rebuild the repository masthead SVG illustration after inspecting GOV.UK and DWP Design System examples.",
+	"taskSummary": "Fix repository evidence maturity filter counts, apply a GOV.UK Design System-style masthead treatment to the repository landing page, strengthen inverse repository menu colours, remove active navigation box-shadow, set masthead borders to the brand colour, and rebuild the repository masthead SVG illustration after inspecting GOV.UK and DWP Design System examples. Follow-up replaced the DWP-like code-editor panel with a traced online research session scene, used the detailed DWP Crown-logo element in the laptop page header and corrected the session window ratio so the trace scales uniformly.",
 	"operatingModel": {
 		"loaded": [
 			"AGENTS.md",
@@ -41,6 +41,7 @@
 			"src/govuk/templates/macros/repository.njk",
 			"src/govuk/templates/pages/repository.njk",
 			"src/styles/repository.scss",
+			"tests/govuk-frontend-integration-route-state.test.js",
 			"tests/repository-front-page-route-state.test.js"
 		],
 		"added": [
@@ -105,6 +106,34 @@
 		{
 			"command": "follow-up in-app browser replacement SVG check",
 			"result": "replacement repository illustration loaded with intrinsic size 749 by 464 and rendered in the masthead at 320 by 198"
+		},
+		{
+			"command": "node tests/govuk-frontend-integration-route-state.test.js",
+			"result": "passed after updating the shared header class assertion"
+		},
+		{
+			"command": "node tests/govuk-page-chrome-navigation-route-state.test.js",
+			"result": "passed"
+		},
+		{
+			"command": "node tests/repository-front-page-route-state.test.js",
+			"result": "passed"
+		},
+		{
+			"command": "xmllint --noout public/images/repository-masthead-illustration.svg",
+			"result": "passed after replacing the approximate session panel with a traced online research session scene"
+		},
+		{
+			"command": "npm run format:check",
+			"result": "passed after SVG trace replacement and SVG-internals test removal"
+		},
+		{
+			"command": "in-app browser masthead check after trace replacement",
+			"result": "repository masthead image loads at /images/repository-masthead-illustration.svg with intrinsic size 749 by 464 and renders in the masthead at 320 by 198"
+		},
+		{
+			"command": "in-app browser masthead check after session ratio correction",
+			"result": "repository masthead image still loads at intrinsic size 749 by 464 and renders at 320 by 198; the left research-session scene preserves the supplied PNG aspect ratio inside the resized window"
 		}
 	],
 	"residualRisks": [
