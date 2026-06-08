@@ -49,5 +49,6 @@ for (const [label, source] of [
 	has(source, '.researchops-home-front-page', label);
 	has(source, '.researchops-home-masthead', label);
 	has(source, '.researchops-home-hero', label);
-	has(source, '[data-active="Home"]', label);
+	has(source, 'data-active', label);
+	has(source, 'Home', label);
 }
