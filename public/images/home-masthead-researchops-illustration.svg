@@ -1,4 +1,195 @@
 <svg width="749" height="464" viewBox="0 0 749 464" xmlns="http://www.w3.org/2000/svg" role="img" aria-hidden="true" focusable="false">
 	<title>Research operations illustration</title>
-	<rect width="749" height="464" fill="none"/>
+	<g id="ResearchOps-home-illustration" fill="none" fill-rule="evenodd">
+		<g id="Workflow-connectors" fill="#FDF8F1" fill-rule="nonzero">
+			<g id="Connector-plan-to-session" transform="translate(243 74)">
+				<circle cx="3.5" cy="3.5" r="3.5"/>
+				<circle cx="17.5" cy="3.5" r="3.5"/>
+				<circle cx="31.5" cy="3.5" r="3.5"/>
+				<circle cx="45.5" cy="3.5" r="3.5"/>
+				<circle cx="59.5" cy="3.5" r="3.5"/>
+				<circle cx="73.5" cy="3.5" r="3.5"/>
+				<circle cx="87.5" cy="3.5" r="3.5"/>
+				<circle cx="101.5" cy="3.5" r="3.5"/>
+			</g>
+			<g id="Connector-plan-to-participants" transform="translate(149 128)">
+				<circle cx="3.5" cy="3.5" r="3.5"/>
+				<circle cx="3.5" cy="17.5" r="3.5"/>
+				<circle cx="3.5" cy="31.5" r="3.5"/>
+				<circle cx="3.5" cy="45.5" r="3.5"/>
+				<circle cx="3.5" cy="59.5" r="3.5"/>
+			</g>
+			<g id="Connector-session-to-notes" transform="translate(405 186)">
+				<circle cx="3.5" cy="3.5" r="3.5"/>
+				<circle cx="17.5" cy="3.5" r="3.5"/>
+				<circle cx="31.5" cy="3.5" r="3.5"/>
+				<circle cx="45.5" cy="3.5" r="3.5"/>
+				<circle cx="59.5" cy="3.5" r="3.5"/>
+				<circle cx="73.5" cy="3.5" r="3.5"/>
+				<circle cx="87.5" cy="3.5" r="3.5"/>
+				<circle cx="101.5" cy="3.5" r="3.5"/>
+				<circle cx="115.5" cy="3.5" r="3.5"/>
+			</g>
+			<g id="Connector-notes-to-dashboard" transform="translate(595 194)">
+				<circle cx="3.5" cy="3.5" r="3.5"/>
+				<circle cx="3.5" cy="17.5" r="3.5"/>
+				<circle cx="3.5" cy="31.5" r="3.5"/>
+				<circle cx="3.5" cy="45.5" r="3.5"/>
+				<circle cx="3.5" cy="59.5" r="3.5"/>
+				<circle cx="3.5" cy="73.5" r="3.5"/>
+			</g>
+			<g id="Connector-evidence-rail" transform="translate(105 334)">
+				<circle cx="3.5" cy="3.5" r="3.5"/>
+				<circle cx="17.5" cy="3.5" r="3.5"/>
+				<circle cx="31.5" cy="3.5" r="3.5"/>
+				<circle cx="45.5" cy="3.5" r="3.5"/>
+				<circle cx="59.5" cy="3.5" r="3.5"/>
+				<circle cx="73.5" cy="3.5" r="3.5"/>
+				<circle cx="87.5" cy="3.5" r="3.5"/>
+				<circle cx="101.5" cy="3.5" r="3.5"/>
+				<circle cx="115.5" cy="3.5" r="3.5"/>
+				<circle cx="129.5" cy="3.5" r="3.5"/>
+				<circle cx="143.5" cy="3.5" r="3.5"/>
+				<circle cx="157.5" cy="3.5" r="3.5"/>
+				<circle cx="171.5" cy="3.5" r="3.5"/>
+				<circle cx="185.5" cy="3.5" r="3.5"/>
+				<circle cx="199.5" cy="3.5" r="3.5"/>
+				<circle cx="213.5" cy="3.5" r="3.5"/>
+			</g>
+			<g id="Connector-rail-to-laptop" transform="translate(318 270)">
+				<circle cx="3.5" cy="17.5" r="3.5"/>
+				<circle cx="3.5" cy="31.5" r="3.5"/>
+				<circle cx="3.5" cy="45.5" r="3.5"/>
+				<circle cx="3.5" cy="59.5" r="3.5"/>
+			</g>
+		</g>
+
+		<g id="Study-plan-card" transform="translate(0 16)" fill-rule="nonzero">
+			<rect fill="#F3F2F1" x="0" y="0" width="248" height="126"/>
+			<rect fill="#1D70B8" x="0" y="0" width="248" height="30"/>
+			<circle fill="#FFFFFF" cx="18" cy="15" r="6"/>
+			<rect fill="#FFFFFF" x="34" y="10" width="83" height="5"/>
+			<rect fill="#FFFFFF" x="34" y="19" width="46" height="4"/>
+			<rect fill="#0B0C0C" x="18" y="48" width="62" height="8"/>
+			<rect fill="#0B0C0C" opacity="0.72" x="18" y="65" width="190" height="6"/>
+			<rect fill="#0B0C0C" opacity="0.72" x="18" y="78" width="150" height="6"/>
+			<rect fill="#D2E2F1" x="18" y="98" width="56" height="16"/>
+			<rect fill="#CCE2D8" x="82" y="98" width="58" height="16"/>
+			<rect fill="#FFDD00" x="148" y="98" width="48" height="16"/>
+			<path fill="#0B0C0C" d="M219 57h12v8h-3v-5h-6v5h-3v-8zm-4 8h20v26h-20V65zm4 5v16h12V70h-12z"/>
+		</g>
+
+		<g id="Participant-operations-card" transform="translate(28 180)" fill-rule="nonzero">
+			<rect fill="#FFFFFF" x="0" y="0" width="216" height="126"/>
+			<rect fill="#B1B4B6" x="0" y="0" width="216" height="3"/>
+			<rect fill="#0B0C0C" x="16" y="18" width="78" height="8"/>
+			<g id="Participant-row-1" transform="translate(16 42)">
+				<circle fill="#D2E2F1" cx="18" cy="18" r="18"/>
+				<path fill="#1D70B8" d="M8 33v-6c0-9 8-15 18-15s18 6 18 15v6H8z"/>
+				<circle fill="#F4CCCC" cx="26" cy="18" r="12"/>
+				<rect fill="#0B0C0C" x="55" y="3" width="72" height="6"/>
+				<rect fill="#0B0C0C" opacity="0.65" x="55" y="18" width="122" height="5"/>
+				<rect fill="#CCE2D8" x="55" y="30" width="38" height="12"/>
+				<rect fill="#D2E2F1" x="100" y="30" width="44" height="12"/>
+			</g>
+			<g id="Participant-row-2" transform="translate(16 82)">
+				<circle fill="#CCE2D8" cx="18" cy="18" r="18"/>
+				<circle fill="#B69272" cx="26" cy="17" r="11"/>
+				<path fill="#F47738" d="M9 33v-6c0-9 8-15 17-15s18 6 18 15v6H9z"/>
+				<rect fill="#0B0C0C" x="55" y="3" width="60" height="6"/>
+				<rect fill="#0B0C0C" opacity="0.65" x="55" y="18" width="106" height="5"/>
+				<rect fill="#FCD6C3" x="55" y="30" width="42" height="12"/>
+				<rect fill="#FFDD00" x="104" y="30" width="34" height="12"/>
+			</g>
+		</g>
+
+		<g id="Moderated-session-panel" transform="translate(275 42)" fill-rule="nonzero">
+			<rect fill="#0B0C0C" x="0" y="0" width="224" height="154"/>
+			<rect fill="#1D70B8" x="8" y="8" width="208" height="138"/>
+			<g transform="translate(20 20)">
+				<rect fill="#12436D" x="0" y="0" width="82" height="52"/>
+				<circle fill="#F4CCCC" cx="41" cy="25" r="15"/>
+				<path fill="#F47738" d="M22 52v-7c0-13 9-22 19-22s19 9 19 22v7H22z"/>
+			</g>
+			<g transform="translate(121 20)">
+				<rect fill="#12436D" x="0" y="0" width="82" height="52"/>
+				<circle fill="#55A789" cx="41" cy="26" r="18"/>
+				<path fill="#0B0C0C" d="M35 36V18h13c8 0 13 4 13 10s-5 9-13 9H35zm7-6h6c4 0 6-1 6-3s-2-3-6-3h-6v6z"/>
+			</g>
+			<g transform="translate(20 82)">
+				<rect fill="#12436D" x="0" y="0" width="82" height="52"/>
+				<circle fill="#B69272" cx="41" cy="24" r="16"/>
+				<path fill="#D986B8" d="M22 52v-6c0-12 9-21 19-21s19 9 19 21v6H22z"/>
+			</g>
+			<g transform="translate(121 82)">
+				<rect fill="#12436D" x="0" y="0" width="82" height="52"/>
+				<circle fill="#28E3F2" cx="41" cy="26" r="18"/>
+				<path fill="#0B0C0C" d="M34 35V17h7v7h8v-7h7v18h-7v-6h-8v6h-7z"/>
+			</g>
+			<path fill="#FFDD00" d="M196 7c16 0 28 9 28 27 0 16-13 26-28 26-6 0-12-2-17-5l-13 4c-4 1-7-3-5-6l5-12c-2-3-3-7-3-10 0-15 13-24 33-24z"/>
+			<circle fill="#12436D" cx="185" cy="33" r="4"/>
+			<circle fill="#12436D" cx="197" cy="33" r="4"/>
+			<circle fill="#12436D" cx="209" cy="33" r="4"/>
+		</g>
+
+		<g id="Live-notes-card" transform="translate(535 88)" fill-rule="nonzero">
+			<rect fill="#FFDD00" x="0" y="0" width="176" height="112"/>
+			<rect fill="#0B0C0C" x="16" y="18" width="48" height="8"/>
+			<rect fill="#0B0C0C" opacity="0.72" x="16" y="40" width="116" height="5"/>
+			<rect fill="#0B0C0C" opacity="0.72" x="16" y="53" width="136" height="5"/>
+			<rect fill="#0B0C0C" opacity="0.72" x="16" y="66" width="106" height="5"/>
+			<rect fill="#0B0C0C" x="16" y="88" width="38" height="10"/>
+			<circle fill="#0B0C0C" cx="148" cy="23" r="10"/>
+			<path fill="#FFFFFF" d="M143 23l4 4 8-11 4 3-11 15-9-8 4-3z"/>
+		</g>
+
+		<g id="ResearchOps-laptop" transform="translate(292 208)" fill-rule="nonzero">
+			<path fill="#F3F2F1" d="M0 219h410l35 34H-35z"/>
+			<path fill="#0B0C0C" d="M35 0h340c10 0 18 8 18 18v216H17V18C17 8 25 0 35 0z"/>
+			<rect fill="#293D5C" x="43" y="26" width="324" height="184"/>
+			<rect fill="#FFFFFF" x="66" y="48" width="278" height="140"/>
+			<rect fill="#1D70B8" x="66" y="48" width="278" height="28"/>
+			<circle fill="#FFFFFF" cx="82" cy="62" r="5"/>
+			<rect fill="#FFFFFF" x="96" y="58" width="72" height="6"/>
+			<rect fill="#F3F2F1" x="88" y="96" width="96" height="40"/>
+			<rect fill="#F3F2F1" x="194" y="96" width="96" height="40"/>
+			<rect fill="#F3F2F1" x="88" y="146" width="96" height="22"/>
+			<rect fill="#F3F2F1" x="194" y="146" width="96" height="22"/>
+			<rect fill="#1D70B8" x="96" y="106" width="20" height="8"/>
+			<rect fill="#0B0C0C" x="96" y="121" width="62" height="5"/>
+			<rect fill="#CCE2D8" x="202" y="106" width="22" height="8"/>
+			<rect fill="#0B0C0C" x="202" y="121" width="56" height="5"/>
+			<rect fill="#FFDD00" x="96" y="153" width="30" height="8"/>
+			<rect fill="#0B0C0C" x="132" y="155" width="38" height="4"/>
+			<rect fill="#D2E2F1" x="202" y="153" width="34" height="8"/>
+			<rect fill="#0B0C0C" x="242" y="155" width="38" height="4"/>
+			<path fill="#B1B4B6" d="M-20 253h450l-20 26H0z"/>
+			<rect fill="#FFFFFF" x="173" y="244" width="64" height="12"/>
+		</g>
+
+		<g id="Evidence-trail-cards" transform="translate(47 320)" fill-rule="nonzero">
+			<g id="Trail-card-notes">
+				<rect fill="#FFFFFF" x="0" y="0" width="92" height="76"/>
+				<rect fill="#1D70B8" x="0" y="0" width="92" height="9"/>
+				<rect fill="#0B0C0C" x="14" y="23" width="42" height="6"/>
+				<rect fill="#0B0C0C" opacity="0.65" x="14" y="38" width="62" height="4"/>
+				<rect fill="#0B0C0C" opacity="0.65" x="14" y="49" width="48" height="4"/>
+			</g>
+			<g id="Trail-card-evidence" transform="translate(112 0)">
+				<rect fill="#FFFFFF" x="0" y="0" width="92" height="76"/>
+				<rect fill="#CCE2D8" x="0" y="0" width="92" height="9"/>
+				<circle fill="#0B0C0C" cx="24" cy="34" r="12"/>
+				<rect fill="#0B0C0C" x="44" y="25" width="30" height="5"/>
+				<rect fill="#0B0C0C" opacity="0.65" x="44" y="38" width="36" height="4"/>
+				<rect fill="#0B0C0C" opacity="0.65" x="44" y="49" width="24" height="4"/>
+			</g>
+			<g id="Trail-card-insight" transform="translate(224 0)">
+				<rect fill="#FFFFFF" x="0" y="0" width="92" height="76"/>
+				<rect fill="#FFDD00" x="0" y="0" width="92" height="9"/>
+				<path fill="#0B0C0C" d="M24 54h32v8H24zm4-8h24v6H28zm4-26c0-9 7-16 16-16s16 7 16 16c0 6-3 11-8 14v8H40v-8c-5-3-8-8-8-14z"/>
+				<rect fill="#0B0C0C" opacity="0.65" x="62" y="27" width="16" height="4"/>
+				<rect fill="#0B0C0C" opacity="0.65" x="62" y="39" width="20" height="4"/>
+			</g>
+		</g>
+	</g>
 </svg>
