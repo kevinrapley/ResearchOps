@@ -4,7 +4,7 @@
 - Trace layer: operational
 - Branch: `feature/home-masthead-treatment`
 - Branch decision: trace required by `feature/` prefix
-- Task summary: apply the repository landing page masthead treatment to the ResearchOps home page, remove the home breadcrumb, and add a high-fidelity ResearchOps SVG illustration that communicates research operations through planning, recruitment, moderated sessions, notes, evidence and service dashboard artefacts.
+- Task summary: apply the repository landing page masthead treatment to the ResearchOps home page, remove the home breadcrumb, add a higher-fidelity ResearchOps SVG illustration, correct the failing unit test assertion caused by route-scoped body classes, and revisit the home SVG after quality feedback.
 
 ## Operating model evidence
 
@@ -81,8 +81,11 @@
 - Kept the home body marker `researchops-home-front-page` in the GOV.UK renderer context.
 - Kept the inverse header, service navigation and phase-banner styling route-scoped to the home page.
 - Added a decorative SVG to the home masthead, hidden from assistive technology with empty alt text and `role="presentation"`.
-- Built the SVG around recognisable research operations artefacts: study plan card, participant operations panel, moderated session panel, live notes card, evidence trail and ResearchOps service dashboard.
-- Used the same crisp flat vector approach as the repository illustration: grouped SVG structure, GOV.UK palette, connected dotted workflow paths and detailed UI artefacts rather than a low-fidelity icon.
+- Reworked the home SVG after quality feedback. The previous version had too many competing elements, weak alignment, and connectors that were visually buried.
+- Reused the repository SVG's exact `Research-session-window` group and the repository laptop frame/screen/base structure instead of approximating those visuals.
+- Reduced the number of extra home-specific artefacts to one high-contrast planning card and three clear dotted connector runs.
+- Moved the connector dots into visible open space and gave them a pale fill with dark stroke so they hold against the blue masthead background.
+- Avoided adding more GOV.UK-blue foreground blocks except where retained from the reused repository screen code.
 - Added explicit image dimensions in the Nunjucks and rendered HTML to avoid overflow in the one-third masthead column.
 - Diagnosed the failing unit tests from the release-gate artifact: `tests/govuk-frontend-integration-route-state.test.js` expected an exact `class="govuk-template__body"` body class and failed when the rendered home page correctly carried the route-scoped marker as an additional body class.
 - Updated that test to assert the GOV.UK body class as a token so route body markers are allowed.
@@ -99,4 +102,4 @@
 
 ## Residual risks
 
-- The home masthead should still be checked visually in browser at desktop and mobile widths.
+- The revised home masthead SVG still needs a browser visual check at desktop and mobile widths.
