@@ -116,6 +116,7 @@
 - While fixing that path, runtime coverage exposed a second defect: underscore-based outcome values such as `confirm_current` were normalised with slug rules and rejected by the service. The action parser was updated to preserve underscores for review outcomes.
 - The requested GOV.UK pagination macro can only be rendered as a placeholder at template-build time because queue totals are runtime data. The template now owns the pagination shell and the page controller updates it with live queue state after fetch.
 - The first tabs pass still left inactive queues as placeholder panels, which is why only one tab displayed real workbench content. The tab panels were then expanded so all three own concrete queue/list/detail containers and the page script now updates the active panel and route state together.
+- The per-tab panel version still proved too brittle in the static-template/runtime split and resulted in empty shell panels. The implementation was simplified again: GOV.UK tabs remain as the queue switcher, but all queues now render through one shared review workbench surface beneath the tabs.
 
 ## Residual risks
 

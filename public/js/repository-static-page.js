@@ -468,10 +468,10 @@ function reviewTabId(queueKey) {
 
 function reviewPanelElements(queueKey) {
 	return {
-		count: document.getElementById(`repository-review-count-${queueKey}`),
-		list: document.getElementById(`repository-review-list-${queueKey}`),
-		detail: document.getElementById(`repository-review-detail-${queueKey}`),
-		pagination: document.getElementById(`repository-review-pagination-${queueKey}`),
+		count: document.getElementById("repository-review-count"),
+		list: document.getElementById("repository-review-list"),
+		detail: document.getElementById("repository-review-detail"),
+		pagination: document.getElementById("repository-review-pagination"),
 	};
 }
 
