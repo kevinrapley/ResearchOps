@@ -51,6 +51,10 @@ function updateReviewHistory(artefactId = "", page = selectedReviewPage(), pathn
 	window.history.pushState({}, "", reviewQueryParams(artefactId, page, pathname));
 }
 
+function eventTargetElement(target) {
+	return target instanceof Element ? target : target?.parentElement || null;
+}
+
 function reviewApiPath(queueKey) {
 	const params = new URLSearchParams();
 	const page = selectedReviewPage();
@@ -447,20 +451,23 @@ async function loadReviewState(page, preferredId = selectedReviewId()) {
 	renderReviewList(data?.queue || {}, items, pagination);
 	renderReviewPagination(queueKey, pagination);
 	const selected = items.find((item) => item.id === preferredId) || items[0] || null;
-	if (selected && selected.id !== selectedReviewId()) updateReviewHistory(selected.id, pagination.page);
+	if (selected && (selected.id !== selectedReviewId() || window.location.pathname !== reviewPathnameForQueue(queueKey))) {
+		updateReviewHistory(selected.id, pagination.page, reviewPathnameForQueue(queueKey));
+	}
 	renderReviewDetail(data?.queue || {}, selected);
 }
 
 function bindReviewInteractions(page) {
 	const tabs = document.getElementById("repository-review-tabs");
 	page.addEventListener("click", (event) => {
-		const button = event.target.closest("[data-review-artefact-id]");
+		const target = eventTargetElement(event.target);
+		const button = target?.closest("[data-review-artefact-id]");
 		if (button instanceof HTMLElement) {
 			updateReviewHistory(button.dataset.reviewArtefactId || "", selectedReviewPage(), reviewPathnameForQueue(page.dataset.reviewQueue));
 			loadReviewState(page, button.dataset.reviewArtefactId || "").catch(() => {});
 			return;
 		}
-		const paginationLink = event.target.closest("[data-review-page]");
+		const paginationLink = target?.closest("[data-review-page]");
 		if (paginationLink instanceof HTMLAnchorElement) {
 			event.preventDefault();
 			const targetPage = Number.parseInt(paginationLink.dataset.reviewPage || "1", 10);
@@ -470,7 +477,8 @@ function bindReviewInteractions(page) {
 	});
 	if (tabs) {
 		tabs.addEventListener("click", (event) => {
-			const link = event.target.closest(".govuk-tabs__tab");
+			const target = eventTargetElement(event.target);
+			const link = target?.closest(".govuk-tabs__tab");
 			if (!(link instanceof HTMLAnchorElement)) return;
 			const tabId = link.getAttribute("href")?.replace(/^#/, "") || "";
 			const reviewQueue = link.dataset.reviewQueue || reviewQueueFromTabId(tabId);
@@ -529,4 +537,3 @@ export async function initialiseReviewPage() {
 	bindReviewInteractions(page);
 	await loadReviewState(page, selectedReviewId());
 }
-

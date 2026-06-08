@@ -90,7 +90,8 @@
 		"The first tabs pass left inactive queues as placeholder panels. The review template and controller were then revised so each GOV.UK tab panel owns a queue-specific workbench shell and switching tabs updates queue content in place.",
 		"Moving a single workbench node between tab panels proved brittle with the GOV.UK tabs runtime. The final implementation renders one shell per queue and scopes script updates to [data-review-workbench], avoiding both empty selected panels and duplicate IDs.",
 		"A later review found that the workbench tab changed but the page-level route context remained on the initially loaded queue. The controller now updates the H1, lead, body text, breadcrumb current item and document title as part of active-tab state.",
-		"The static repository script had grown to 946 lines while accumulating browse, candidate and review behaviours. It was split into a small entrypoint plus shared, browse, candidate and review modules before further review work was added."
+		"The static repository script had grown to 946 lines while accumulating browse, candidate and review behaviours. It was split into a small entrypoint plus shared, browse, candidate and review modules before further review work was added.",
+		"A subsequent preview check showed stale selected-record IDs could remain attached to the old queue path. The review controller now writes selected IDs using reviewPathnameForQueue(queueKey) and corrects the path even when the selected ID has not changed."
 	],
 	"residualRisks": [
 		"Static review page shells remain directly addressable as URLs even when the data and actions are blocked.",

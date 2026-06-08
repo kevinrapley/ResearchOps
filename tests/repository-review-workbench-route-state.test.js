@@ -70,6 +70,9 @@ has(files.script, 'workbench?.querySelector("[data-review-list]")', "repository 
 has(files.script, 'const fieldId = (name) => `repository-review-${name}-${queueKey}`;', "repository static page script");
 has(files.script, "page.dataset.reviewQueue = reviewQueueFromPathname(window.location.pathname);", "repository static page script");
 has(files.script, "async function loadReviewState(page, preferredId = selectedReviewId())", "repository static page script");
+has(files.script, "function eventTargetElement(target)", "repository static page script");
+has(files.script, "window.location.pathname !== reviewPathnameForQueue(queueKey)", "repository static page script");
+has(files.script, "updateReviewHistory(selected.id, pagination.page, reviewPathnameForQueue(queueKey));", "repository static page script");
 has(files.script, "data-review-action-form", "repository static page script");
 has(files.script, 'repositoryJson(`/api/repository/review/${encodeURIComponent(artefactId)}/actions`', "repository static page script");
 has(files.script, "initialiseReviewPage().catch(() => {});", "repository static page script");

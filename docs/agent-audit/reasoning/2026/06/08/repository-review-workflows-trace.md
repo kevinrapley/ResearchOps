@@ -86,6 +86,7 @@
 - Wired review tab selection to update the page title, lead paragraph, supporting body text, breadcrumb current item and document title so the whole page context follows the selected queue.
 - Refactored the 946-line `public/js/repository-static-page.js` into a small module entrypoint plus shared, browse, candidate and review modules.
 - Checked adjacent repository frontend scripts and kept `repository-page.js` and `repository-artefact-page.js` unchanged because they are smaller and not directly part of the expanding static review/browse implementation.
+- Corrected review queue URL state so selected artefact IDs are written back to the active queue route instead of the previously loaded route.
 - Removed static review-check, review-outcome and withdrawal-reason copy from the review route page data.
 - Aligned queue and selected-record panels with matching bordered containers so their top borders land on the same line.
 - Added queue and action tests at both route-state and runtime levels.
@@ -130,6 +131,7 @@
 - Moving a single workbench node between tab panels proved brittle with the GOV.UK tabs runtime. The implementation now renders one shell per queue and scopes script updates to `[data-review-workbench]`, avoiding both empty selected panels and duplicate IDs.
 - A later review found that the workbench tab changed but the page-level route context remained on the initially loaded queue. The controller now updates the route-level copy and document metadata as part of the active-tab state.
 - The static repository script had grown to 946 lines while accumulating browse, candidate and review behaviours. It was split into focused modules before further review work was added.
+- A subsequent preview check showed stale selected-record IDs could remain attached to the old queue path. The review controller now writes selected IDs using `reviewPathnameForQueue(queueKey)` and corrects the path even when the selected ID has not changed.
 
 ## Residual risks
 
