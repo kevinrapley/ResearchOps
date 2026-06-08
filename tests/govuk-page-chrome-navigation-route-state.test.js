@@ -64,7 +64,11 @@ excludes(headerServiceBrandCss, "box-shadow: 0 3px 0 #ffffff;", "header product-
 
 includes(headerPartial, "class=\"govuk-skip-link\" href=\"#main-content\"", "shared header partial");
 includes(headerPartial, "href=\"/css/govuk/govuk-header-service-brand.css\"", "shared header partial");
-includes(headerPartial, "class=\"govuk-header\" role=\"banner\" data-module=\"govuk-header\"", "shared header partial");
+includes(
+	headerPartial,
+	"class=\"govuk-template__header govuk-header\" role=\"banner\" data-module=\"govuk-header\"",
+	"shared header partial"
+);
 includes(headerPartial, "class=\"govuk-header__container govuk-width-container\"", "shared header partial");
 includes(headerPartial, "class=\"govuk-header__homepage-link researchops-header__homepage-link\"", "shared header partial");
 includes(headerPartial, "aria-label=\"GOV.UK ResearchOps Demo Suite home\"", "shared header partial");
