@@ -37,36 +37,36 @@
 		}
 	}
 
-.researchops-home-front-page .govuk-template__header .govuk-service-navigation[data-active="Home"] {
+.researchops-home-front-page .govuk-template__header .govuk-service-navigation[data-active=Home] {
 	border-top: 1px solid rgba(255, 255, 255, 0.35);
 	border-bottom: 1px solid rgba(255, 255, 255, 0.35);
 	background: var(--govuk-brand-colour, #1d70b8);
 	}
 
-.researchops-home-front-page .govuk-template__header .govuk-service-navigation[data-active="Home"] .govuk-service-navigation__toggle, .researchops-home-front-page .govuk-template__header .govuk-service-navigation[data-active="Home"] .govuk-service-navigation__link, .researchops-home-front-page .govuk-template__header .govuk-service-navigation[data-active="Home"] .govuk-service-navigation__link:visited {
+.researchops-home-front-page .govuk-template__header .govuk-service-navigation[data-active=Home] .govuk-service-navigation__toggle, .researchops-home-front-page .govuk-template__header .govuk-service-navigation[data-active=Home] .govuk-service-navigation__link, .researchops-home-front-page .govuk-template__header .govuk-service-navigation[data-active=Home] .govuk-service-navigation__link:visited {
 	color: #ffffff;
 	}
 
-.researchops-home-front-page .govuk-template__header .govuk-service-navigation[data-active="Home"] .govuk-service-navigation__toggle {
+.researchops-home-front-page .govuk-template__header .govuk-service-navigation[data-active=Home] .govuk-service-navigation__toggle {
 	border-color: #ffffff;
 	}
 
-.researchops-home-front-page .govuk-template__header .govuk-service-navigation[data-active="Home"] .govuk-service-navigation__item, .researchops-home-front-page .govuk-template__header .govuk-service-navigation[data-active="Home"] .govuk-service-navigation__service-name {
+.researchops-home-front-page .govuk-template__header .govuk-service-navigation[data-active=Home] .govuk-service-navigation__item, .researchops-home-front-page .govuk-template__header .govuk-service-navigation[data-active=Home] .govuk-service-navigation__service-name {
 	border-color: #ffffff;
 	}
 
-.researchops-home-front-page .govuk-template__header .govuk-service-navigation[data-active="Home"] .govuk-service-navigation__toggle:hover, .researchops-home-front-page .govuk-template__header .govuk-service-navigation[data-active="Home"] .govuk-service-navigation__link:hover {
+.researchops-home-front-page .govuk-template__header .govuk-service-navigation[data-active=Home] .govuk-service-navigation__toggle:hover, .researchops-home-front-page .govuk-template__header .govuk-service-navigation[data-active=Home] .govuk-service-navigation__link:hover {
 	color: #ffffff;
 	text-decoration-thickness: 3px;
 	}
 
-.researchops-home-front-page .govuk-template__header .govuk-service-navigation[data-active="Home"] .govuk-service-navigation__item--active .govuk-service-navigation__link, .researchops-home-front-page .govuk-template__header .govuk-service-navigation[data-active="Home"] .govuk-service-navigation__link[aria-current="true"], .researchops-home-front-page .govuk-template__header .govuk-service-navigation[data-active="Home"] .govuk-service-navigation__link[aria-current="page"] {
+.researchops-home-front-page .govuk-template__header .govuk-service-navigation[data-active=Home] .govuk-service-navigation__item--active .govuk-service-navigation__link, .researchops-home-front-page .govuk-template__header .govuk-service-navigation[data-active=Home] .govuk-service-navigation__link[aria-current=true], .researchops-home-front-page .govuk-template__header .govuk-service-navigation[data-active=Home] .govuk-service-navigation__link[aria-current=page] {
 	border-bottom: 0;
 	box-shadow: none;
 	color: #ffffff;
 	}
 
-.researchops-home-front-page .govuk-template__header .govuk-service-navigation[data-active="Home"] .govuk-service-navigation__link:focus {
+.researchops-home-front-page .govuk-template__header .govuk-service-navigation[data-active=Home] .govuk-service-navigation__link:focus {
 	background-color: #ffdd00;
 	color: #0b0c0c;
 	outline: 3px solid #ffdd00;
@@ -117,7 +117,7 @@
 	}
 
 .researchops-home-hero {
-	padding: 24px 0 0;
+	padding: 25px 0 0;
 	}
 
 .researchops-home-masthead .govuk-heading-xl, .researchops-home-masthead .govuk-body-l, .researchops-home-masthead .govuk-body {
@@ -125,7 +125,7 @@
 	}
 
 .researchops-home-hero .govuk-heading-xl {
-	margin-bottom: 24px;
+	margin-bottom: 25px;
 	}
 
 .researchops-highlight-panel {
