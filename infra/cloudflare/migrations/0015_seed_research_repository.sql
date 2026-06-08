@@ -427,6 +427,11 @@ INSERT OR IGNORE INTO rops_repository_artefacts (
 		'{"withdrawalReason":"Superseded by newer research and channel data."}'
 	);
 
+DELETE FROM rops_repository_artefacts
+WHERE
+	id LIKE 'seeded-published-%'
+	AND source_project_id LIKE 'proj-seeded-%';
+
 INSERT OR IGNORE INTO rops_repository_artefacts (
 	id,
 	title,
@@ -504,14 +509,14 @@ WITH
 			source_method,
 			risk_area,
 			risk_label
-		FROM service_dimension
-		CROSS JOIN group_dimension
-		CROSS JOIN method_dimension
-		CROSS JOIN risk_dimension
-		LIMIT 90
+	FROM service_dimension
+	CROSS JOIN group_dimension
+	CROSS JOIN method_dimension
+	CROSS JOIN risk_dimension
+	LIMIT 90
 	)
 SELECT
-	printf('seeded-published-%03d', rn),
+	printf('%s-%s-%s-%s', service_area, user_group, method, risk_area),
 	printf('%s evidence for %s: %s', service_label, user_group_label, risk_label),
 	printf('Curated repository summary showing what %s evidence tells teams about %s in %s. The artefact is a synthesised, non-identifying summary for reuse planning.', method_label, risk_label, lower(service_label)),
 	CASE rn % 5
@@ -752,20 +757,26 @@ INSERT OR IGNORE INTO rops_repository_artefact_tags (artefact_id, tag_slug, tag_
 
 DELETE FROM rops_repository_artefact_tags
 WHERE
-	artefact_id LIKE 'seeded-published-%'
+	artefact_id IN (
+		SELECT id
+		FROM rops_repository_artefacts
+		WHERE source_project_id LIKE 'proj-seeded-%'
+	)
 	AND tag_type IN ('topic', 'recommendation');
 
 INSERT OR IGNORE INTO rops_repository_artefact_tags (artefact_id, tag_slug, tag_label, tag_type)
-WITH RECURSIVE n(value) AS (
-	SELECT 1
-	UNION ALL
-	SELECT value + 1 FROM n WHERE value < 90
+WITH seeded AS (
+	SELECT
+		id,
+		row_number() OVER (ORDER BY source_project_id, source_study_id, id) AS rn
+	FROM rops_repository_artefacts
+	WHERE source_project_id LIKE 'proj-seeded-%'
 )
-SELECT printf('seeded-published-%03d', value), printf('seeded-topic-%02d', value % 12), printf('Seeded topic %02d', value % 12), 'topic'
-FROM n
+SELECT id, printf('seeded-topic-%02d', rn % 12), printf('Seeded topic %02d', rn % 12), 'topic'
+FROM seeded
 UNION ALL
-SELECT printf('seeded-published-%03d', value), printf('rec-seeded-%03d', value), printf('Seeded recommendation %03d', value), 'recommendation'
-FROM n;
+SELECT id, printf('rec-seeded-%03d', rn), printf('Seeded recommendation %03d', rn), 'recommendation'
+FROM seeded;
 
 INSERT OR IGNORE INTO rops_repository_artefact_tags (artefact_id, tag_slug, tag_label, tag_type)
 WITH RECURSIVE n(value) AS (

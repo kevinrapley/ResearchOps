@@ -42,6 +42,7 @@
 - Review routes existed in `src/govuk/data/repository-page.mjs` and `src/govuk/templates/pages/repository-static.njk` but behaved as placeholder pages.
 - Repository service seed and schema already contained candidate, due-review and withdrawn repository states in `infra/cloudflare/src/service/repository.js` and `infra/cloudflare/migrations/0015_seed_research_repository.sql`.
 - Existing auth permission declarations in `infra/cloudflare/src/worker.js` already used route-permission bootstrap patterns suitable for review APIs.
+- Preview testing showed due-review route state still exposed generic generated IDs such as `seeded-published-001`, unlike the named candidate and withdrawn records.
 
 ## Files read
 
@@ -57,6 +58,9 @@
 - `infra/cloudflare/src/service/repository.js`
 - `infra/cloudflare/src/service/index.js`
 - `infra/cloudflare/src/worker.js`
+- `infra/cloudflare/migrations/0014_research_repository.sql`
+- `infra/cloudflare/migrations/0015_seed_research_repository.sql`
+- `infra/cloudflare/migrations/0016_update_repository_seed_tag_taxonomy.sql`
 - `tests/auth-route-permissions.test.js`
 - `tests/repository-front-page-route-state.test.js`
 
@@ -69,8 +73,13 @@
 - `infra/cloudflare/src/service/repository.js`
 - `infra/cloudflare/src/service/index.js`
 - `infra/cloudflare/src/worker.js`
+- `infra/cloudflare/migrations/0014_research_repository.sql`
+- `infra/cloudflare/migrations/0015_seed_research_repository.sql`
+- `infra/cloudflare/migrations/0016_update_repository_seed_tag_taxonomy.sql`
 - `tests/repository-review-workbench-route-state.test.js`
 - `tests/repository-review-workbench-runtime.test.js`
+- `tests/repository-front-page-route-state.test.js`
+- `tests/repository-seed-taxonomy-labels.test.js`
 
 ## Implementation decisions
 
@@ -87,6 +96,9 @@
 - Refactored the 946-line `public/js/repository-static-page.js` into a small module entrypoint plus shared, browse, candidate and review modules.
 - Checked adjacent repository frontend scripts and kept `repository-page.js` and `repository-artefact-page.js` unchanged because they are smaller and not directly part of the expanding static review/browse implementation.
 - Corrected review queue URL state so selected artefact IDs are written back to the active queue route instead of the previously loaded route.
+- Replaced generic generated published seed IDs with deterministic route IDs made from service area, user group, method and risk area, so due-review URLs use meaningful artefact identifiers.
+- Added a seed refresh guard that deletes only the old generated `seeded-published-*` demo records before reinserting semantic generated records, leaving curated named artefacts untouched.
+- Updated generated seed tag cleanup and taxonomy guards to use `source_project_id LIKE 'proj-seeded-%'` provenance instead of user-facing ID prefixes.
 - Removed static review-check, review-outcome and withdrawal-reason copy from the review route page data.
 - Aligned queue and selected-record panels with matching bordered containers so their top borders land on the same line.
 - Added queue and action tests at both route-state and runtime levels.
@@ -107,6 +119,7 @@
 - `npm run format:check`
 - Local browser check for Candidate, Due review and Withdrawn review tab page-context switching
 - Local browser check after the static repository module split
+- Local SQLite application of `0001`, `0014`, `0015` and `0016` migrations with a due-review queue ID probe
 
 ## Validation results
 
@@ -119,6 +132,7 @@
 - Lint: passed with existing repository warnings only
 - Local browser check confirmed the H1, lead, body text, breadcrumb current item and document title update when switching from Due review to Candidate artefacts and Withdrawn artefacts.
 - Local browser check confirmed the refactored module entrypoint still loads and Candidate tab switching still updates page context and visible panel state.
+- Local SQLite migration probe passed with 100 published records, 0 `seeded-published-*` published records and first due-review ID `applications-assisted-digital-users-content-testing-confidence-and-comprehension`.
 
 ## Issues and pivots
 
@@ -132,6 +146,7 @@
 - A later review found that the workbench tab changed but the page-level route context remained on the initially loaded queue. The controller now updates the route-level copy and document metadata as part of the active-tab state.
 - The static repository script had grown to 946 lines while accumulating browse, candidate and review behaviours. It was split into focused modules before further review work was added.
 - A subsequent preview check showed stale selected-record IDs could remain attached to the old queue path. The review controller now writes selected IDs using `reviewPathnameForQueue(queueKey)` and corrects the path even when the selected ID has not changed.
+- A later preview check showed the due-review selected record still used `seeded-published-001`. The seed now refreshes old generated published records and uses semantic generated IDs for due-review route state.
 
 ## Residual risks
 

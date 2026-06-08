@@ -9,6 +9,10 @@ const taxonomyMigration = fs.readFileSync(
 	'infra/cloudflare/migrations/0016_update_repository_seed_tag_taxonomy.sql',
 	'utf8'
 );
+const seedMigration = fs.readFileSync(
+	'infra/cloudflare/migrations/0015_seed_research_repository.sql',
+	'utf8'
+);
 const staticPageScript = fs.readFileSync('public/js/repository-static/shared.js', 'utf8');
 
 function includes(source, expected, label) {
@@ -28,13 +32,24 @@ includes(
 );
 includes(schemaMigration, 'trg_repository_seed_topic_taxonomy', 'schema migration');
 includes(schemaMigration, 'trg_repository_seed_recommendation_taxonomy', 'schema migration');
+includes(schemaMigration, "source_project_id LIKE 'proj-seeded-%'", 'schema migration');
 includes(schemaMigration, 'Confidence and comprehension', 'schema migration');
 includes(schemaMigration, 'Workflow friction', 'schema migration');
 includes(schemaMigration, 'State evidence limits before reuse', 'schema migration');
 
+includes(
+	seedMigration,
+	"printf('%s-%s-%s-%s', service_area, user_group, method, risk_area)",
+	'seed migration'
+);
+includes(seedMigration, "id LIKE 'seeded-published-%'", 'seed migration');
+includes(seedMigration, "source_project_id LIKE 'proj-seeded-%'", 'seed migration');
+excludes(seedMigration, "printf('seeded-published-%03d', rn)", 'seed migration');
+
 includes(taxonomyMigration, "user_group = 'research-operations-staff'", 'taxonomy migration');
 includes(taxonomyMigration, "tag_type = 'topic'", 'taxonomy migration');
 includes(taxonomyMigration, "tag_type = 'recommendation'", 'taxonomy migration');
+includes(taxonomyMigration, "source_project_id LIKE 'proj-seeded-%'", 'taxonomy migration');
 includes(taxonomyMigration, 'remove_repository_seed_tags', 'taxonomy migration');
 excludes(taxonomyMigration, 'Seeded topic', 'taxonomy migration');
 excludes(taxonomyMigration, 'Seeded recommendation', 'taxonomy migration');

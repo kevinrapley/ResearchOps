@@ -121,12 +121,17 @@ lacks(files.service, 'String(error?.message || error) }, 503', 'repository servi
 
 has(files.schemaMigration, 'CREATE TABLE IF NOT EXISTS rops_repository_artefacts', 'schema migration');
 has(files.schemaMigration, "DELETE FROM rops_repository_artefact_tags", 'schema migration');
+has(files.schemaMigration, "source_project_id LIKE 'proj-seeded-%'", 'schema migration');
 has(files.seedMigration, 'Seed curated research repository records for realistic product evaluation.', 'seed migration');
-has(files.seedMigration, "printf('seeded-published-%03d', rn)", 'seed migration');
+has(files.seedMigration, "printf('%s-%s-%s-%s', service_area, user_group, method, risk_area)", 'seed migration');
+has(files.seedMigration, "id LIKE 'seeded-published-%'", 'seed migration');
+has(files.seedMigration, "source_project_id LIKE 'proj-seeded-%'", 'seed migration');
+lacks(files.seedMigration, "printf('seeded-published-%03d', rn)", 'seed migration');
 lacks(files.seedMigration, 'recording_url', 'seed migration');
 has(files.seedCleanupMigration, 'Remove generated seed tags', 'seed cleanup migration');
 has(files.seedCleanupMigration, "tag_type = 'topic'", 'seed cleanup migration');
 has(files.seedCleanupMigration, "tag_type = 'recommendation'", 'seed cleanup migration');
+has(files.seedCleanupMigration, "source_project_id LIKE 'proj-seeded-%'", 'seed cleanup migration');
 has(files.seedCleanupMigration, 'remove_repository_seed_tags', 'seed cleanup migration');
 lacks(files.seedCleanupMigration, 'Seeded topic', 'seed cleanup migration');
 lacks(files.seedCleanupMigration, 'Seeded recommendation', 'seed cleanup migration');

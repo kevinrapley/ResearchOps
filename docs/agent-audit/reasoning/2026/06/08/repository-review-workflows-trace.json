@@ -47,19 +47,27 @@
 			"infra/cloudflare/src/service/repository.js",
 			"infra/cloudflare/src/service/index.js",
 			"infra/cloudflare/src/worker.js",
+			"infra/cloudflare/migrations/0014_research_repository.sql",
+			"infra/cloudflare/migrations/0015_seed_research_repository.sql",
+			"infra/cloudflare/migrations/0016_update_repository_seed_tag_taxonomy.sql",
 			"tests/auth-route-permissions.test.js",
 			"tests/repository-front-page-route-state.test.js"
 		],
 		"modified": [
-		"src/govuk/data/repository-page.mjs",
-		"src/govuk/templates/pages/repository-static.njk",
-		"src/styles/repository.scss",
+			"src/govuk/data/repository-page.mjs",
+			"src/govuk/templates/pages/repository-static.njk",
+			"src/styles/repository.scss",
 			"public/js/repository-static-page.js",
 			"infra/cloudflare/src/service/repository.js",
 			"infra/cloudflare/src/service/index.js",
 			"infra/cloudflare/src/worker.js",
+			"infra/cloudflare/migrations/0014_research_repository.sql",
+			"infra/cloudflare/migrations/0015_seed_research_repository.sql",
+			"infra/cloudflare/migrations/0016_update_repository_seed_tag_taxonomy.sql",
 			"tests/repository-review-workbench-route-state.test.js",
-			"tests/repository-review-workbench-runtime.test.js"
+			"tests/repository-review-workbench-runtime.test.js",
+			"tests/repository-front-page-route-state.test.js",
+			"tests/repository-seed-taxonomy-labels.test.js"
 		]
 	},
 	"validation": [
@@ -77,6 +85,10 @@
 		{
 			"command": "local browser static repository module split check",
 			"result": "passed"
+		},
+		{
+			"command": "sqlite3 migration probe for 0001, 0014, 0015 and 0016",
+			"result": "passed with first due-review ID applications-assisted-digital-users-content-testing-confidence-and-comprehension"
 		}
 	],
 	"assumptions": [
@@ -91,7 +103,8 @@
 		"Moving a single workbench node between tab panels proved brittle with the GOV.UK tabs runtime. The final implementation renders one shell per queue and scopes script updates to [data-review-workbench], avoiding both empty selected panels and duplicate IDs.",
 		"A later review found that the workbench tab changed but the page-level route context remained on the initially loaded queue. The controller now updates the H1, lead, body text, breadcrumb current item and document title as part of active-tab state.",
 		"The static repository script had grown to 946 lines while accumulating browse, candidate and review behaviours. It was split into a small entrypoint plus shared, browse, candidate and review modules before further review work was added.",
-		"A subsequent preview check showed stale selected-record IDs could remain attached to the old queue path. The review controller now writes selected IDs using reviewPathnameForQueue(queueKey) and corrects the path even when the selected ID has not changed."
+		"A subsequent preview check showed stale selected-record IDs could remain attached to the old queue path. The review controller now writes selected IDs using reviewPathnameForQueue(queueKey) and corrects the path even when the selected ID has not changed.",
+		"A later preview check showed the due-review selected record still used seeded-published-001. The seed now refreshes old generated published demo rows and uses semantic generated IDs for due-review route state."
 	],
 	"residualRisks": [
 		"Static review page shells remain directly addressable as URLs even when the data and actions are blocked.",
