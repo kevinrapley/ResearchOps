@@ -1,140 +1,139 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 610 483" role="img" aria-hidden="true" focusable="false">
-	<style>
-		.dark{fill:#0b0c0c}.ink{fill:#2f3030}.mid{fill:#505a5f}.grey{fill:#b1b4b6}.pale{fill:#8eb8dc}.blue{fill:#1d70b8}.white{fill:#fff}.yellow{fill:#ffdd00}.green{fill:#11875a}.red{fill:#d4351c}.purple{fill:#4c2c92}.connector{fill:#0b0c0c}.stroke{fill:none;stroke:#0b0c0c;stroke-width:4;stroke-linecap:square;stroke-linejoin:miter}.thin{fill:none;stroke:#0b0c0c;stroke-width:3;stroke-linecap:square;stroke-linejoin:miter}
-	</style>
-
-	<g class="repository-illustration-ground">
-		<rect class="pale" x="35" y="421" width="540" height="24"/>
-		<rect class="dark" x="24" y="445" width="562" height="7"/>
-		<path class="grey" d="M78 452h455l-45 25H124z"/>
-		<rect class="mid" x="116" y="468" width="374" height="6"/>
-	</g>
-
-	<g class="connector connector--left-vertical">
-		<rect x="154" y="90" width="8" height="8"/>
-		<rect x="154" y="112" width="8" height="8"/>
-		<rect x="154" y="134" width="8" height="8"/>
-		<rect x="154" y="156" width="8" height="8"/>
-		<rect x="154" y="178" width="8" height="8"/>
-	</g>
-	<g class="connector connector--right-vertical">
-		<rect x="455" y="97" width="8" height="8"/>
-		<rect x="455" y="119" width="8" height="8"/>
-		<rect x="455" y="141" width="8" height="8"/>
-		<rect x="455" y="163" width="8" height="8"/>
-		<rect x="455" y="185" width="8" height="8"/>
-	</g>
-	<g class="connector connector--left-horizontal">
-		<rect x="164" y="184" width="8" height="8"/>
-		<rect x="186" y="184" width="8" height="8"/>
-		<rect x="208" y="184" width="8" height="8"/>
-		<rect x="230" y="184" width="8" height="8"/>
-	</g>
-	<g class="connector connector--right-horizontal">
-		<rect x="380" y="184" width="8" height="8"/>
-		<rect x="402" y="184" width="8" height="8"/>
-		<rect x="424" y="184" width="8" height="8"/>
-		<rect x="446" y="184" width="8" height="8"/>
-	</g>
-	<g class="connector connector--lower-left">
-		<rect x="111" y="316" width="8" height="8"/>
-		<rect x="133" y="316" width="8" height="8"/>
-		<rect x="155" y="316" width="8" height="8"/>
-		<rect x="177" y="316" width="8" height="8"/>
-		<rect x="199" y="316" width="8" height="8"/>
-		<rect x="221" y="316" width="8" height="8"/>
-	</g>
-	<g class="connector connector--lower-right">
-		<rect x="382" y="316" width="8" height="8"/>
-		<rect x="404" y="316" width="8" height="8"/>
-		<rect x="426" y="316" width="8" height="8"/>
-		<rect x="448" y="316" width="8" height="8"/>
-		<rect x="470" y="316" width="8" height="8"/>
-		<rect x="492" y="316" width="8" height="8"/>
-	</g>
-
-	<g class="repository-search-card">
-		<rect class="white" x="35" y="52" width="132" height="97"/>
-		<rect class="stroke" x="35" y="52" width="132" height="97"/>
-		<rect class="blue" x="35" y="52" width="132" height="22"/>
-		<rect class="dark" x="52" y="90" width="70" height="8"/>
-		<rect class="grey" x="52" y="110" width="92" height="7"/>
-		<rect class="grey" x="52" y="128" width="58" height="7"/>
-		<circle class="white" cx="135" cy="96" r="15"/>
-		<circle class="thin" cx="135" cy="96" r="15"/>
-		<rect class="dark" x="146" y="107" width="24" height="6" transform="rotate(45 146 107)"/>
-	</g>
-
-	<g class="repository-review-card">
-		<rect class="white" x="430" y="58" width="142" height="112"/>
-		<rect class="stroke" x="430" y="58" width="142" height="112"/>
-		<rect class="blue" x="430" y="58" width="142" height="24"/>
-		<rect class="green" x="452" y="105" width="32" height="32"/>
-		<path class="dark" d="m460 121 8 8 21-23 7 7-28 31-16-16z"/>
-		<rect class="dark" x="502" y="107" width="45" height="8"/>
-		<rect class="grey" x="502" y="128" width="39" height="7"/>
-		<rect class="yellow" x="502" y="145" width="54" height="11"/>
-	</g>
-
-	<g class="repository-source-card">
-		<rect class="white" x="54" y="266" width="104" height="113"/>
-		<rect class="stroke" x="54" y="266" width="104" height="113"/>
-		<rect class="blue" x="54" y="266" width="104" height="23"/>
-		<rect class="dark" x="72" y="309" width="54" height="8"/>
-		<rect class="grey" x="72" y="328" width="68" height="7"/>
-		<rect class="grey" x="72" y="345" width="45" height="7"/>
-		<rect class="yellow" x="72" y="362" width="28" height="15"/>
-		<rect class="green" x="108" y="362" width="32" height="15"/>
-	</g>
-
-	<g class="repository-audit-card">
-		<rect class="white" x="488" y="264" width="91" height="122"/>
-		<rect class="stroke" x="488" y="264" width="91" height="122"/>
-		<rect class="blue" x="488" y="264" width="91" height="23"/>
-		<path class="white" d="M514 313h31l14 14v38h-45z"/>
-		<path class="thin" d="M514 313h31l14 14v38h-45z"/>
-		<path class="grey" d="M546 314v15h14z"/>
-		<rect class="red" x="505" y="296" width="31" height="13"/>
-		<rect class="purple" x="543" y="296" width="20" height="13"/>
-		<rect class="grey" x="525" y="338" width="25" height="6"/>
-		<rect class="grey" x="525" y="353" width="25" height="6"/>
-	</g>
-
-	<g class="repository-screen">
-		<path class="ink" d="M207 114h198c12 0 22 10 22 22v172H185V136c0-12 10-22 22-22z"/>
-		<rect class="pale" x="199" y="130" width="214" height="163"/>
-		<rect class="white" x="213" y="151" width="186" height="122"/>
-		<rect class="blue" x="213" y="151" width="186" height="26"/>
-		<rect class="stroke" x="213" y="151" width="186" height="122"/>
-
-		<g class="repository-screen-search">
-			<rect class="white" x="232" y="195" width="90" height="24"/>
-			<rect class="thin" x="232" y="195" width="90" height="24"/>
-			<circle class="white" cx="339" cy="207" r="15"/>
-			<circle class="thin" cx="339" cy="207" r="15"/>
-			<rect class="dark" x="349" y="219" width="22" height="5" transform="rotate(45 349 219)"/>
+<svg width="749" height="464" viewBox="0 0 749 464" xmlns="http://www.w3.org/2000/svg" role="img" aria-hidden="true" focusable="false">
+	<title>Research repository illustration</title>
+	<g id="Research-repository-illustration" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+		<g id="Repository-lines" class="connector" fill="#FDF8F1" fill-rule="nonzero">
+			<g id="Line-evidence-to-repository" class="connector--left-horizontal" transform="translate(262 93)">
+				<circle cx="3.5" cy="3.5" r="3.5"/>
+				<circle cx="17.5" cy="3.5" r="3.5"/>
+				<circle cx="31.5" cy="3.5" r="3.5"/>
+				<circle cx="45.5" cy="3.5" r="3.5"/>
+				<circle cx="59.5" cy="3.5" r="3.5"/>
+				<circle cx="73.5" cy="3.5" r="3.5"/>
+				<circle cx="87.5" cy="3.5" r="3.5"/>
+				<circle cx="101.5" cy="3.5" r="3.5"/>
+				<circle cx="115.5" cy="3.5" r="3.5"/>
+				<circle cx="129.5" cy="3.5" r="3.5"/>
+			</g>
+			<g id="Line-evidence-down" class="connector--left-vertical" transform="translate(364 93)">
+				<circle cx="3.5" cy="17.5" r="3.5"/>
+				<circle cx="3.5" cy="31.5" r="3.5"/>
+				<circle cx="3.5" cy="45.5" r="3.5"/>
+				<circle cx="3.5" cy="59.5" r="3.5"/>
+				<circle cx="3.5" cy="73.5" r="3.5"/>
+				<circle cx="3.5" cy="87.5" r="3.5"/>
+				<circle cx="3.5" cy="101.5" r="3.5"/>
+			</g>
+			<g id="Line-card-down" class="connector--right-vertical" transform="translate(534 107)">
+				<circle cx="3.5" cy="17.5" r="3.5"/>
+				<circle cx="3.5" cy="31.5" r="3.5"/>
+				<circle cx="3.5" cy="45.5" r="3.5"/>
+				<circle cx="3.5" cy="59.5" r="3.5"/>
+				<circle cx="3.5" cy="73.5" r="3.5"/>
+				<circle cx="3.5" cy="87.5" r="3.5"/>
+			</g>
+			<g id="Line-code-to-laptop" class="connector--lower-left" transform="translate(187 270)">
+				<circle cx="3.5" cy="3.5" r="3.5"/>
+				<circle cx="17.5" cy="3.5" r="3.5"/>
+				<circle cx="31.5" cy="3.5" r="3.5"/>
+				<circle cx="45.5" cy="3.5" r="3.5"/>
+				<circle cx="59.5" cy="3.5" r="3.5"/>
+				<circle cx="73.5" cy="3.5" r="3.5"/>
+				<circle cx="87.5" cy="3.5" r="3.5"/>
+				<circle cx="101.5" cy="3.5" r="3.5"/>
+				<circle cx="115.5" cy="3.5" r="3.5"/>
+				<circle cx="129.5" cy="3.5" r="3.5"/>
+			</g>
 		</g>
 
-		<g class="repository-screen-results">
-			<rect class="grey" x="232" y="238" width="55" height="8"/>
-			<rect class="grey" x="232" y="257" width="82" height="7"/>
-			<rect class="grey" x="329" y="238" width="49" height="8"/>
-			<rect class="yellow" x="329" y="257" width="49" height="14"/>
+		<g id="Code-window" class="repository-source-card" transform="translate(0 56)" fill-rule="nonzero">
+			<polygon id="Code-window-frame" fill="#0B0C0C" points="0 0 274 0 274 254 0 254"/>
+			<polygon id="Code-window-background" fill="#293D5C" points="8 37 266 37 266 245 8 245"/>
+			<g id="Code-window-action-bar" transform="translate(8 7)">
+				<polygon id="Action-bar" fill="#7B8CAD" points="0 0 258 0 258 30 0 30"/>
+				<polygon id="Action-button" fill="#293D5C" points="17 8 63 8 63 23 17 23"/>
+			</g>
+			<g id="Code-line-1" transform="translate(21 58)">
+				<path fill="#B1B4B6" d="M14 7 2 0.2C1.7 0.1 1.5 0 1.2 0 0.5 0 0 0.5 0 1.2c0 0.5 0.3 0.9 0.8 1.1l9.4 5.2-9.4 5.3C0.3 13 0 13.4 0 13.9 0 14.5 0.5 15 1.2 15c0.2 0 0.5-0.1 0.7-0.2L14 8c0.3-0.2 0.4-0.5 0.2-0.8L14 7Z" transform="translate(7 7.5) scale(-1 1) translate(-7 -7.5)"/>
+				<path fill="#B1B4B6" d="M108 7 96 0.2C95.7 0.1 95.5 0 95.2 0 94.5 0 94 0.5 94 1.2c0 0.5 0.3 0.9 0.8 1.1l9.4 5.2-9.4 5.3c-0.5 0.2-0.8 0.6-0.8 1.1 0 0.6 0.5 1.1 1.2 1.1 0.2 0 0.5-0.1 0.7-0.2L108 8c0.3-0.2 0.4-0.5 0.2-0.8L108 7Z"/>
+				<polygon fill="#FF8080" points="19 3 39 3 39 13 19 13"/>
+				<polygon fill="#FFBF70" points="44 3 64 3 64 13 44 13"/>
+				<polygon fill="#BEDA78" points="69 3 89 3 89 13 69 13"/>
+			</g>
+			<g id="Code-line-2" transform="translate(21 93)">
+				<path fill="#B1B4B6" d="M14 7 2 0.2C1.7 0.1 1.5 0 1.2 0 0.5 0 0 0.5 0 1.2c0 0.5 0.3 0.9 0.8 1.1l9.4 5.2-9.4 5.3C0.3 13 0 13.4 0 13.9 0 14.5 0.5 15 1.2 15c0.2 0 0.5-0.1 0.7-0.2L14 8c0.3-0.2 0.4-0.5 0.2-0.8L14 7Z" transform="translate(7 7.5) scale(-1 1) translate(-7 -7.5)"/>
+				<path fill="#B1B4B6" d="M158 7 146 0.2C145.7 0.1 145.5 0 145.2 0 144.5 0 144 0.5 144 1.2c0 0.5 0.3 0.9 0.8 1.1l9.4 5.2-9.4 5.3c-0.5 0.2-0.8 0.6-0.8 1.1 0 0.6 0.5 1.1 1.2 1.1 0.2 0 0.5-0.1 0.7-0.2L158 8c0.3-0.2 0.4-0.5 0.2-0.8L158 7Z"/>
+				<polygon fill="#FF8080" points="19 3 29 3 29 13 19 13"/>
+				<polygon fill="#FFBF70" points="34 3 54 3 54 13 34 13"/>
+				<polygon fill="#BEDA78" points="59 3 139 3 139 13 59 13"/>
+			</g>
+			<g id="Code-line-3" transform="translate(21 123)">
+				<path fill="#B1B4B6" d="M14 7 2 0.2C1.7 0.1 1.5 0 1.2 0 0.5 0 0 0.5 0 1.2c0 0.5 0.3 0.9 0.8 1.1l9.4 5.2-9.4 5.3C0.3 13 0 13.4 0 13.9 0 14.5 0.5 15 1.2 15c0.2 0 0.5-0.1 0.7-0.2L14 8c0.3-0.2 0.4-0.5 0.2-0.8L14 7Z" transform="translate(7 7.5) scale(-1 1) translate(-7 -7.5)"/>
+				<path fill="#B1B4B6" d="M228 7 216 0.2C215.7 0.1 215.5 0 215.2 0 214.5 0 214 0.5 214 1.2c0 0.5 0.3 0.9 0.8 1.1l9.4 5.2-9.4 5.3c-0.5 0.2-0.8 0.6-0.8 1.1 0 0.6 0.5 1.1 1.2 1.1 0.2 0 0.5-0.1 0.7-0.2L228 8c0.3-0.2 0.4-0.5 0.2-0.8L228 7Z"/>
+				<polygon fill="#FF8080" points="19 3 29 3 29 13 19 13"/>
+				<polygon fill="#FFBF70" points="34 3 54 3 54 13 34 13"/>
+				<polygon fill="#BEDA78" points="59 3 100 3 100 13 59 13"/>
+				<polygon fill="#FFBF70" points="105 3 163 3 163 13 105 13"/>
+				<polygon fill="#BEDA78" points="168 3 209 3 209 13 168 13"/>
+			</g>
+			<g id="Code-line-4" transform="translate(21 153)">
+				<path fill="#B1B4B6" d="M14 7 2 0.2C1.7 0.1 1.5 0 1.2 0 0.5 0 0 0.5 0 1.2c0 0.5 0.3 0.9 0.8 1.1l9.4 5.2-9.4 5.3C0.3 13 0 13.4 0 13.9 0 14.5 0.5 15 1.2 15c0.2 0 0.5-0.1 0.7-0.2L14 8c0.3-0.2 0.4-0.5 0.2-0.8L14 7Z" transform="translate(7 7.5) scale(-1 1) translate(-7 -7.5)"/>
+				<path fill="#B1B4B6" d="M177 7 165 0.2C164.7 0.1 164.5 0 164.2 0 163.5 0 163 0.5 163 1.2c0 0.5 0.3 0.9 0.8 1.1l9.4 5.2-9.4 5.3c-0.5 0.2-0.8 0.6-0.8 1.1 0 0.6 0.5 1.1 1.2 1.1 0.2 0 0.5-0.1 0.7-0.2L177 8c0.3-0.2 0.4-0.5 0.2-0.8L177 7Z"/>
+				<polygon fill="#FF8080" points="19 3 29 3 29 13 19 13"/>
+				<polygon fill="#FFBF70" points="34 3 54 3 54 13 34 13"/>
+				<polygon fill="#BEDA78" points="59 3 158 3 158 13 59 13"/>
+			</g>
+			<polygon id="Code-line-summary" fill="#B1B4B6" points="39 183 179 183 179 193 39 193"/>
+			<g id="Code-line-5" transform="translate(21 205)">
+				<path fill="#B1B4B6" d="M14 7 2 0.2C1.7 0.1 1.5 0 1.2 0 0.5 0 0 0.5 0 1.2c0 0.5 0.3 0.9 0.8 1.1l9.4 5.2-9.4 5.3C0.3 13 0 13.4 0 13.9 0 14.5 0.5 15 1.2 15c0.2 0 0.5-0.1 0.7-0.2L14 8c0.3-0.2 0.4-0.5 0.2-0.8L14 7Z" transform="translate(7 7.5) scale(-1 1) translate(-7 -7.5)"/>
+				<path fill="#B1B4B6" d="M47 7 35 0.2C34.7 0.1 34.5 0 34.2 0 33.5 0 33 0.5 33 1.2c0 0.5 0.3 0.9 0.8 1.1l9.4 5.2-9.4 5.3c-0.5 0.2-0.8 0.6-0.8 1.1 0 0.6 0.5 1.1 1.2 1.1 0.2 0 0.5-0.1 0.7-0.2L47 8c0.3-0.2 0.4-0.5 0.2-0.8L47 7Z"/>
+				<polygon fill="#FF8080" points="19 3 29 3 29 13 19 13"/>
+			</g>
 		</g>
 
-		<g class="repository-screen-taxonomy">
-			<rect class="green" x="232" y="285" width="48" height="16"/>
-			<rect class="yellow" x="288" y="285" width="57" height="16"/>
-			<rect class="purple" x="353" y="285" width="44" height="16"/>
+		<g id="Candidate-record-card" class="repository-review-card" transform="translate(419 2)" fill-rule="nonzero">
+			<rect id="Record-card-background" fill="#F3F2F1" x="0" y="0" width="330" height="104"/>
+			<rect id="Record-card-top-rule" fill="#B1B4B6" x="0" y="3" width="330" height="2"/>
+			<rect id="Record-title-1" fill="#0B0C0C" x="15" y="17" width="30" height="10"/>
+			<rect id="Record-title-2" fill="#0B0C0C" x="50" y="17" width="20" height="10"/>
+			<rect id="Record-title-3" fill="#0B0C0C" x="15" y="32" width="45" height="8"/>
+			<rect id="Record-title-4" fill="#0B0C0C" x="64" y="32" width="45" height="8"/>
+			<rect id="Record-title-5" fill="#0B0C0C" x="114" y="32" width="45" height="8"/>
+			<rect id="Record-body" fill="#0B0C0C" opacity="0.7" x="15" y="47" width="80" height="8"/>
+			<rect id="Record-body-2" fill="#0B0C0C" x="15" y="64" width="45" height="8"/>
+			<rect id="Record-maturity" fill="#CCE2D8" x="15" y="76" width="45" height="12"/>
+			<rect id="Record-review-chip" fill="#FFDD00" x="68" y="76" width="58" height="12"/>
 		</g>
-	</g>
 
-	<g class="repository-laptop">
-		<path class="dark" d="M163 303h286l35 74H128z"/>
-		<path class="grey" d="M174 313h264l20 43H154z"/>
-		<rect class="white" x="190" y="323" width="96" height="10"/>
-		<rect class="white" x="300" y="323" width="96" height="10"/>
-		<rect class="white" x="196" y="341" width="186" height="8"/>
-		<rect class="mid" x="128" y="377" width="356" height="9"/>
+		<g id="Laptop" class="repository-laptop" transform="translate(272 192)" fill-rule="nonzero">
+			<polygon id="Laptop-spacer" fill="#FFFFFF" points="170 227 281 227 281 260 170 260"/>
+			<path id="Laptop-outline-highlight" fill="#F3F2F1" d="M405 251h-1V18c0-9.1-7.4-16.5-16.5-16.5h-318C60.4 1.5 53 8.9 53 18v233h-1V18C52.1 8.4 59.9 0.1 69.5 0h318C397.1 0.1 404.9 8.4 405 18v233z"/>
+			<path id="Laptop-frame" fill="#1E1E1E" d="M52 251V18C52 8.1 59.6 0.5 69 0.5h318C396.4 0.5 404 8.1 404 18v233"/>
+			<polygon id="Screen-background" fill="#293D5C" points="78 27 378 27 378 216 78 216"/>
+			<path id="Screen-border" fill="#0B0C0C" d="M378.5 216.5h-301v-190h301v190zm-300-1h299v-188h-299v188z"/>
+			<g id="Repository-service-page" class="repository-screen" transform="translate(102 48)">
+				<polygon fill="#FFFFFF" points="0 1 258 1 258 149 0 149"/>
+				<polygon fill="#1D70B8" points="0 0 258 0 258 25 0 25"/>
+				<g id="Crown-mark" transform="translate(11 4)" fill="#FFFFFF">
+					<circle cx="5" cy="8" r="1.2"/>
+					<circle cx="2" cy="11" r="1.2"/>
+					<circle cx="8" cy="11" r="1.2"/>
+					<rect x="2" y="15" width="16" height="2"/>
+					<path d="M10 0 8.8 5.2 10 6.5l1.2-1.3L10 0zm-8 13 3-3 3 3H2zm10 0 3-3 3 3h-6z"/>
+				</g>
+				<rect fill="#B1B4B6" x="17" y="42" width="82" height="9"/>
+				<rect fill="#B1B4B6" x="17" y="60" width="171" height="9"/>
+				<rect fill="#B1B4B6" x="17" y="78" width="171" height="9"/>
+				<rect fill="#B1B4B6" x="17" y="96" width="113" height="9"/>
+				<rect fill="#00703C" x="17" y="118" width="46" height="15"/>
+				<rect fill="#0B0C0C" x="17" y="133" width="46" height="2"/>
+				<rect fill="#FFDD00" x="74" y="118" width="64" height="15"/>
+				<rect fill="#B1B4B6" x="150" y="118" width="65" height="15"/>
+			</g>
+			<path id="Laptop-base" fill="#D2CDC7" d="M260 250h-64c-3.8 0-7-4.1-7.3-8H0v21l52 6h352l52-6v-21H267.4c-0.3 4.1-3.4 8-7.4 8z"/>
+			<polygon id="Laptop-base-shadow" fill="#5F5D5A" points="0 263 52 269 404 269 456 263"/>
+			<path id="Laptop-base-rule" stroke="#F3F2F1" d="M456 242H267.4c-0.2 4.1-3.3 8-7.4 8h-64c-3.8 0-7-4.1-7.3-8H0"/>
+			<polygon id="Laptop-keyboard" fill="#5F5D5A" points="188 242 268 242 268 255 188 255"/>
+			<polygon id="Laptop-shadow" fill="#2F3030" points="0 269 456 269 456 272 0 272"/>
+		</g>
 	</g>
 </svg>

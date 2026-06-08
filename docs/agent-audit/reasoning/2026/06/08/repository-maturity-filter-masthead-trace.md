@@ -6,6 +6,7 @@
 - Branch decision: trace required by `fix/` prefix
 - Task summary: fix evidence maturity filter counts on the repository landing page, improve filter panel button contrast, and move the repository landing page hero/search into a GOV.UK Design System-style masthead with route-specific header, menu, breadcrumb and phase-banner styling.
 - Follow-up scope: strengthen repository menu inverse-colour styling against the shared header stylesheet and improve the repository masthead SVG so it has connected square-dot paths and a higher-quality repository workflow scene.
+- Illustration quality scope: inspected the GOV.UK Design System homepage SVG and the DWP Design System homepage banner SVG source to compare composition, group structure, connector dot construction, laptop geometry and internal UI detail before rebuilding the ResearchOps Repository asset.
 
 ## Operating Model Evidence
 
@@ -55,7 +56,7 @@
 - Strengthened service-navigation inverse-colour selectors against `[data-active="Research Repository"]` so the repository menu remains white after the shared page chrome stylesheet is appended.
 - Removed active repository navigation `box-shadow` and `border-bottom` treatment; route-scoped navigation item and service-name borders are still set to white.
 - Set the repository `.app-masthead` border to `var(--govuk-brand-colour, #1d70b8)` so it matches the Design System brand-colour treatment.
-- Replaced the masthead SVG with a connected repository workflow illustration: search, review, source evidence, audit record and central repository screen are joined with square dotted connector paths, with a more complete laptop/workstation form.
+- Replaced the masthead SVG with a DWP/GOV.UK-style connected repository workflow illustration: a code/evidence input window, candidate record card and repository service page are connected by circular dotted paths into a more detailed laptop composition with stronger internal UI geometry.
 
 ## Validation
 
@@ -67,6 +68,7 @@
 - Follow-up browser verification: repository service-navigation background, active link and visited link colours remain inverse after the shared header stylesheet loads; SVG renders as a connected square-dot workflow illustration at `/images/repository-masthead-illustration.svg`.
 - Follow-up browser verification after active-state adjustment: active repository navigation link has `box-shadow: none`, no bottom border and white text; active navigation item border resolves to white.
 - Follow-up browser verification after masthead border adjustment: `.app-masthead.repository-masthead` background and bottom border both resolve to `rgb(29, 112, 184)`.
+- Follow-up SVG quality verification: `xmllint --noout public/images/repository-masthead-illustration.svg` passed; in-app browser loaded the replacement asset with intrinsic size 749 by 464 and rendered it in the masthead at 320 by 198.
 
 ## Residual Risks
 

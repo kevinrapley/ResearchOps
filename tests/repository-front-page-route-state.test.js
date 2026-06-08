@@ -77,14 +77,18 @@ has(files.repositoryMacro, 'repository-hero__image-column', 'repository macro');
 has(files.repositoryMacro, 'src="/images/repository-masthead-illustration.svg"', 'repository macro');
 has(files.repositoryMacro, 'role="presentation"', 'repository macro');
 
-has(files.mastheadIllustration, '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 610 483"', 'repository masthead illustration');
-has(files.mastheadIllustration, 'class="connector connector--left-vertical"', 'repository masthead illustration');
-has(files.mastheadIllustration, 'class="connector connector--lower-right"', 'repository masthead illustration');
+has(files.mastheadIllustration, '<svg width="749" height="464" viewBox="0 0 749 464"', 'repository masthead illustration');
+has(files.mastheadIllustration, 'id="Repository-lines"', 'repository masthead illustration');
+has(files.mastheadIllustration, 'class="connector--left-vertical"', 'repository masthead illustration');
+has(files.mastheadIllustration, 'class="connector--lower-left"', 'repository masthead illustration');
+has(files.mastheadIllustration, 'id="Code-window"', 'repository masthead illustration');
+has(files.mastheadIllustration, 'id="Candidate-record-card"', 'repository masthead illustration');
+has(files.mastheadIllustration, 'id="Laptop"', 'repository masthead illustration');
 has(files.mastheadIllustration, 'class="repository-screen"', 'repository masthead illustration');
 has(files.mastheadIllustration, 'class="repository-laptop"', 'repository masthead illustration');
 has(files.mastheadIllustration, 'class="repository-review-card"', 'repository masthead illustration');
-has(files.mastheadIllustration, 'class="green"', 'repository masthead illustration');
-has(files.mastheadIllustration, 'class="yellow"', 'repository masthead illustration');
+has(files.mastheadIllustration, 'fill="#00703C"', 'repository masthead illustration');
+has(files.mastheadIllustration, 'fill="#FFDD00"', 'repository masthead illustration');
 
 has(files.styles, '.repository-filter-panel .govuk-button--secondary', 'repository stylesheet');
 has(files.styles, 'background: #ffffff;', 'repository stylesheet');

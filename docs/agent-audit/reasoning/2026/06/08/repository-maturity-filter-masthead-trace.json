@@ -8,7 +8,7 @@
 		"requiresTrace": true,
 		"reason": "trace-required-prefix"
 	},
-	"taskSummary": "Fix repository evidence maturity filter counts, apply a GOV.UK Design System-style masthead treatment to the repository landing page, strengthen inverse repository menu colours, remove active navigation box-shadow, set masthead borders to the brand colour, and improve the repository masthead SVG illustration.",
+	"taskSummary": "Fix repository evidence maturity filter counts, apply a GOV.UK Design System-style masthead treatment to the repository landing page, strengthen inverse repository menu colours, remove active navigation box-shadow, set masthead borders to the brand colour, and rebuild the repository masthead SVG illustration after inspecting GOV.UK and DWP Design System examples.",
 	"operatingModel": {
 		"loaded": [
 			"AGENTS.md",
@@ -93,6 +93,18 @@
 		{
 			"command": "CI bdd-smoke failure log review",
 			"result": "header landmark failed because the shared header no longer matched header.govuk-header; corrected the single service header to carry both govuk-template__header and govuk-header"
+		},
+		{
+			"command": "GOV.UK and DWP Design System SVG source inspection",
+			"result": "inspected the GOV.UK homepage illustration SVG and the DWP homepage banner SVG source for group structure, dotted connectors, laptop construction and internal UI detail"
+		},
+		{
+			"command": "xmllint --noout public/images/repository-masthead-illustration.svg",
+			"result": "passed"
+		},
+		{
+			"command": "follow-up in-app browser replacement SVG check",
+			"result": "replacement repository illustration loaded with intrinsic size 749 by 464 and rendered in the masthead at 320 by 198"
 		}
 	],
 	"residualRisks": [
