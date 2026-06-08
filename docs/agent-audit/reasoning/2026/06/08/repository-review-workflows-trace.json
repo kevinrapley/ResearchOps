@@ -70,6 +70,10 @@
 		"Static /pages review routes are protected in practice by curator-only APIs and client redirect handling because the current Pages setup does not expose Worker route-permission enforcement for those asset URLs.",
 		"Curator review flows are D1-only for this implementation."
 	],
+	"issuesAndPivots": [
+		"Codex review identified that stale queue renewals could preserve an overdue reviewDueAt and leave records immediately due for review again.",
+		"Runtime regression testing exposed a second defect where underscore-based action values such as confirm_current were being slug-normalised and rejected. The action parser was updated to preserve underscores."
+	],
 	"residualRisks": [
 		"Static review page shells remain directly addressable as URLs even when the data and actions are blocked.",
 		"Repository main page still exposes curator workbench links in static markup."

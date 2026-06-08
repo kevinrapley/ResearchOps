@@ -106,6 +106,8 @@
 
 - Initial implementation only locked the review APIs. I reviewed whether page routes themselves could be server-gated in the current architecture and found the static Pages setup does not expose the same Worker route-permission hook for `/pages/...` assets.
 - Adjusted the implementation to use immediate authenticated review-API fetch with redirect on `401` and fallback away from review routes on `403`, rather than claim stronger server-side page blocking than the current deployment model provides.
+- Codex review identified that stale-queue `confirm_current` and `update_guidance` could persist an overdue `reviewDueAt`, leaving the record immediately due for review again.
+- While fixing that path, runtime coverage exposed a second defect: underscore-based outcome values such as `confirm_current` were normalised with slug rules and rejected by the service. The action parser was updated to preserve underscores for review outcomes.
 
 ## Residual risks
 

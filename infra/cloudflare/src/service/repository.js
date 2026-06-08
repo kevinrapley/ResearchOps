@@ -60,6 +60,10 @@ function cleanSlug(value) {
 	return cleanText(value).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 80);
 }
 
+function cleanActionValue(value) {
+	return cleanText(value).toLowerCase().replace(/[^a-z0-9_]+/g, "_").replace(/^_+|_+$/g, "").slice(0, 80);
+}
+
 function searchValues(url, key) {
 	return [...new Set(url.searchParams.getAll(key).map(cleanSlug).filter(Boolean))];
 }
@@ -111,6 +115,14 @@ function actorId(authContext = {}) {
 
 function reviewDueDate(days = REVIEW_DUE_RESET_DAYS) {
 	return new Date(Date.now() + days * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+}
+
+function reviewDueAtNeedsReset(value) {
+	const dueAt = cleanText(value);
+	if (!dueAt) return true;
+	const parsed = Date.parse(dueAt);
+	if (!Number.isFinite(parsed)) return true;
+	return parsed <= Date.now() + 30 * 24 * 60 * 60 * 1000;
 }
 
 function labelFromSlug(value) {
@@ -939,7 +951,7 @@ export async function applyRepositoryReviewAction(svc, request, origin, artefact
 	await ensureTables(svc);
 	const payload = await request.json().catch(() => ({}));
 	const notes = payloadText(payload, "notes");
-	const outcome = cleanSlug(payloadText(payload, "outcome"));
+	const outcome = cleanActionValue(payloadText(payload, "outcome"));
 	const actor = actorId(authContext);
 	const now = new Date().toISOString();
 	const row = await d1Get(svc.env, `
@@ -1020,6 +1032,9 @@ export async function applyRepositoryReviewAction(svc, request, origin, artefact
 	if (queueKey === "stale") {
 		if (outcome === "confirm_current" || outcome === "update_guidance") {
 			nextStatus = "published";
+			if (reviewDueAtNeedsReset(nextReviewDueAt)) {
+				nextReviewDueAt = reviewDueDate();
+			}
 		}
 		if (outcome === "withdraw") {
 			if (!withdrawalReason) {

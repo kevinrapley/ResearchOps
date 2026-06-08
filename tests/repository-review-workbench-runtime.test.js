@@ -382,6 +382,42 @@ async function assertWithdrawnRecordsCanBeReinstated() {
 	assert.equal(payload.reinstatedBy, 'user_research_lead');
 }
 
+async function assertStaleConfirmCurrentRenewsOverdueReviewDate() {
+	const d1 = createRepositoryMockD1({
+		artefacts: [
+			baseArtefact({
+				id: 'stale-002',
+				status: 'published',
+				title: 'Renew review date when keeping published',
+				pii_cleared: 1,
+				consent_scope_confirmed: 1,
+				review_due_at: '2026-06-15',
+				published_at: '2026-05-01T09:00:00Z',
+				payload_json: JSON.stringify({ queueReason: 'Review due.' }),
+			}),
+		],
+	});
+	const svc = createService(d1);
+
+	const request = new Request('https://worker.test/api/repository/review/stale-002/actions', {
+		method: 'POST',
+		headers: { 'content-type': 'application/json' },
+		body: JSON.stringify({
+			outcome: 'confirm_current',
+			notes: 'Evidence still stands. Keep published.',
+			reviewDueAt: '2026-06-15',
+		}),
+	});
+
+	const response = await applyRepositoryReviewAction(svc, request, '', 'stale-002', curatorAuth());
+	assert.equal(response.status, 200);
+	assert.equal((await responseJson(response)).status, 'published');
+
+	const artefact = d1.state.artefacts.find((row) => row.id === 'stale-002');
+	assert.notEqual(artefact.review_due_at, '2026-06-15');
+	assert.equal(Date.parse(artefact.review_due_at) > Date.now() + 30 * 24 * 60 * 60 * 1000, true);
+}
+
 async function assertWithdrawRequiresReasonAndNotes() {
 	const d1 = createRepositoryMockD1({
 		artefacts: [
@@ -445,4 +481,5 @@ async function assertWithdrawRequiresReasonAndNotes() {
 await assertCandidateQueueIsCuratorOnlyAndHydrated();
 await assertCandidatePublishWritesAuditAndReviewState();
 await assertWithdrawnRecordsCanBeReinstated();
+await assertStaleConfirmCurrentRenewsOverdueReviewDate();
 await assertWithdrawRequiresReasonAndNotes();
