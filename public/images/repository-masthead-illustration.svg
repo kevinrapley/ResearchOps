@@ -31,7 +31,12 @@
 				<circle cx="3.5" cy="73.5" r="3.5"/>
 				<circle cx="3.5" cy="87.5" r="3.5"/>
 			</g>
-			<g id="Line-session-to-laptop" class="connector--lower-left" transform="translate(187 237)">
+			<g id="Line-session-drop" class="connector--lower-left-vertical" transform="translate(190 221)">
+				<circle cx="3.5" cy="3.5" r="3.5"/>
+				<circle cx="3.5" cy="17.5" r="3.5"/>
+				<circle cx="3.5" cy="31.5" r="3.5"/>
+			</g>
+			<g id="Line-session-to-laptop" class="connector--lower-left-horizontal" transform="translate(190 249)">
 				<circle cx="3.5" cy="3.5" r="3.5"/>
 				<circle cx="17.5" cy="3.5" r="3.5"/>
 				<circle cx="31.5" cy="3.5" r="3.5"/>
@@ -41,11 +46,10 @@
 				<circle cx="87.5" cy="3.5" r="3.5"/>
 				<circle cx="101.5" cy="3.5" r="3.5"/>
 				<circle cx="115.5" cy="3.5" r="3.5"/>
-				<circle cx="129.5" cy="3.5" r="3.5"/>
 			</g>
 		</g>
 
-		<g id="Research-session-window" class="repository-research-session" transform="translate(0 56)" fill-rule="nonzero">
+		<g id="Research-session-window" class="repository-research-session" transform="translate(0 40)" fill-rule="nonzero">
 			<polygon id="Session-window-frame" fill="#0B0C0C" points="0 0 274 0 274 183 0 183"/>
 			<g id="Session-trace" transform="translate(8 5.5) scale(0.211475)">
 				<rect fill="#1D70B8" x="0" y="0" width="1220" height="813"/>
@@ -79,7 +83,7 @@
 				</g>
 				<g id="Session-team-initial">
 					<circle fill="#28E3F2" cx="606" cy="526" r="73"/>
-					<path fill="#0B0C0C" d="M585 555v-44h-18v-10h76v10h-18v44h-40z"/>
+					<path fill="#0B0C0C" d="M601 555v-45h-21v-9h52v9h-21v45h-10z"/>
 				</g>
 				<g id="Session-participant-bottom-right">
 					<circle fill="#B69272" cx="950" cy="532" r="64"/>

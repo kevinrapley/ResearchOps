@@ -8,7 +8,7 @@
 		"requiresTrace": true,
 		"reason": "trace-required-prefix"
 	},
-	"taskSummary": "Fix repository evidence maturity filter counts, apply a GOV.UK Design System-style masthead treatment to the repository landing page, strengthen inverse repository menu colours, remove active navigation box-shadow, set masthead borders to the brand colour, and rebuild the repository masthead SVG illustration after inspecting GOV.UK and DWP Design System examples. Follow-up replaced the DWP-like code-editor panel with a traced online research session scene, used the detailed DWP Crown-logo element in the laptop page header and corrected the session window ratio so the trace scales uniformly.",
+	"taskSummary": "Fix repository evidence maturity filter counts, apply a GOV.UK Design System-style masthead treatment to the repository landing page, strengthen inverse repository menu colours, remove active navigation box-shadow, set masthead borders to the brand colour, and rebuild the repository masthead SVG illustration after inspecting GOV.UK and DWP Design System examples. Follow-up replaced the DWP-like code-editor panel with a traced online research session scene, used the detailed DWP Crown-logo element in the laptop page header, corrected the session window ratio so the trace scales uniformly, refined the T glyph, moved the session window up, extended the L-shaped lower dotted connector so it meets the window under the bottom-right participant body, scoped inverse header and phase-banner chrome to the repository front page only, and fixed the service-page normaliser so it preserves body marker classes.",
 	"operatingModel": {
 		"loaded": [
 			"AGENTS.md",
@@ -42,7 +42,10 @@
 			"src/govuk/templates/pages/repository.njk",
 			"src/styles/repository.scss",
 			"tests/govuk-frontend-integration-route-state.test.js",
-			"tests/repository-front-page-route-state.test.js"
+			"tests/repository-front-page-route-state.test.js",
+			"src/govuk/templates/layouts/researchops.njk",
+			"scripts/govuk/render-govuk-pages.mjs",
+			"scripts/govuk/normalise-service-pages.mjs"
 		],
 		"added": [
 			"public/images/repository-masthead-illustration.svg",
@@ -134,6 +137,30 @@
 		{
 			"command": "in-app browser masthead check after session ratio correction",
 			"result": "repository masthead image still loads at intrinsic size 749 by 464 and renders at 320 by 198; the left research-session scene preserves the supplied PNG aspect ratio inside the resized window"
+		},
+		{
+			"command": "in-app browser masthead check after connector and glyph adjustment",
+			"result": "research-session window renders higher in the masthead, the lower dotted connector forms an L shape below the window, and the T glyph weight is visually closer to the R"
+		},
+		{
+			"command": "in-app browser masthead check after extending the lower connector",
+			"result": "vertical dotted run sits under the bottom-right participant body's left edge and the horizontal run extends toward the laptop"
+		},
+		{
+			"command": "route-state test update for deeper repository chrome",
+			"result": "repository front-page template carries the scoped body marker and the static deeper repository template does not"
+		},
+		{
+			"command": "route-state test update for service-page normaliser",
+			"result": "normaliser preserves existing body classes while ensuring govuk-template__body is present"
+		},
+		{
+			"command": "in-app browser chrome scope verification",
+			"result": "/pages/repository/ keeps the blue service navigation, white active link, blue phase banner and blue app masthead; /pages/repository/review/stale/ has no masthead, standard pale service navigation, normal dark phase-banner text and no repository front-page body marker"
+		},
+		{
+			"command": "GitHub Codex review thread handling",
+			"result": "reacted with thumbs-up, replied with the shared-header fix, and resolved review thread PRRT_kwDOP3Td2M6Hw9ty"
 		}
 	],
 	"residualRisks": [

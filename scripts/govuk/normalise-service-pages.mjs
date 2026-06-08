@@ -66,10 +66,22 @@ function normaliseHead(html) {
 }
 
 function normaliseBody(html) {
-	let next = html.replace(/<body\b[^>]*>/i, '<body class="govuk-template__body">');
+	let next = html.replace(/<body\b([^>]*)>/i, (match, rawAttributes) => {
+		let attributes = rawAttributes;
+		const classMatch = attributes.match(/\sclass=["']([^"']*)["']/i);
+
+		if (classMatch) {
+			const nextClass = mergeClassValue(classMatch[1], 'govuk-template__body');
+			attributes = attributes.replace(/\sclass=["'][^"']*["']/i, ` class="${nextClass}"`);
+		} else {
+			attributes += ' class="govuk-template__body"';
+		}
+
+		return `<body${attributes}>`;
+	});
 
 	if (!next.includes('govuk-frontend-supported')) {
-		next = next.replace(/<body class="govuk-template__body">/i, `<body class="govuk-template__body">\n\t${supportSnippet()}`);
+		next = next.replace(/<body\b[^>]*>/i, (match) => `${match}\n\t${supportSnippet()}`);
 	}
 
 	return next;

@@ -62,6 +62,10 @@
 - Replaced the approximate online research session drawing with a traced sub-scene using the supplied PNG's `1220` by `813` coordinate system scaled into the repository illustration panel.
 - Replaced the simplified laptop crown mark with the detailed `Crown-logo` element from the DWP Design System SVG source.
 - Corrected the research-session panel ratio so the traced `1220` by `813` scene scales uniformly inside a matching 1.5:1 window rather than being squeezed into the old code-window proportions.
+- Adjusted the research-session scene again so the `T` glyph matches the lighter sans-serif weight of the `R`, moved the session window up, and split the lower connector into vertical and horizontal dotted runs so it forms a visible right angle beneath the window.
+- Extended the lower connector so its vertical leg meets the bottom of the research-session window inline with the left edge of the bottom-right participant body, then runs horizontally back toward the laptop.
+- Scoped the inverse service-navigation and phase-banner styling to a repository front-page body marker set by the GOV.UK page renderer so deeper repository pages keep the standard white GOV.UK service navigation and phase banner while the landing page keeps the `app-masthead` treatment.
+- Updated the service-page normaliser so it preserves existing body classes instead of flattening every rendered page back to `govuk-template__body`.
 
 ## Validation
 
@@ -78,6 +82,12 @@
 - Follow-up research-session trace verification: `xmllint --noout public/images/repository-masthead-illustration.svg`, `node tests/repository-front-page-route-state.test.js`, `node tests/govuk-frontend-integration-route-state.test.js`, `node tests/govuk-page-chrome-navigation-route-state.test.js` and `npm run format:check` passed.
 - In-app browser verification after trace replacement: repository masthead image loads at `/images/repository-masthead-illustration.svg` with intrinsic size 749 by 464 and renders in the masthead at 320 by 198.
 - In-app browser verification after ratio correction: repository masthead image still loads at intrinsic size 749 by 464 and renders at 320 by 198; the left research-session scene preserves the supplied PNG aspect ratio inside the resized window.
+- In-app browser verification after connector/glyph adjustment: the research-session window renders higher in the masthead, the lower dotted connector forms an L shape below the window, and the `T` glyph weight is visually closer to the `R`.
+- In-app browser verification after extending the lower connector: the vertical dotted run now sits under the bottom-right participant body's left edge and the horizontal run extends toward the laptop.
+- Route-state coverage added for the repository front-page body marker and to confirm the static deeper repository template does not carry that marker.
+- Route-state coverage added for the normaliser class merge so the generated front page keeps its repository-specific body marker.
+- In-app browser verification after chrome scoping: `/pages/repository/` keeps the blue service navigation, white active link, blue phase banner and blue `app-masthead`; `/pages/repository/review/stale/` has no masthead, standard pale service navigation, normal dark phase-banner text and no repository front-page body marker.
+- GitHub Codex review comment handling: reacted with thumbs-up, replied that the nested banner landmark issue was resolved by using a single shared header element, and resolved review thread `PRRT_kwDOP3Td2M6Hw9ty`.
 
 ## Residual Risks
 
