@@ -359,22 +359,62 @@ export const govukPages = [
 			navigation: projectNavigation,
 		},
 	},
+	{
+		template: 'pages/project-dashboard-participants-import.njk',
+		output: 'public/pages/project-dashboard/participants/import/index.html',
+		context: {
+			pageTitle: 'Import participants - ResearchOps Demo Suite',
+			serviceName: 'ResearchOps Demo Suite',
+			activeNavigation: 'Projects',
+			navigation: projectNavigation,
+		},
+	},
+	{
+		template: 'pages/projects-outcomes.njk',
+		output: 'public/pages/projects/outcomes/index.html',
+		context: {
+			pageTitle: 'Research outcomes - ResearchOps Demo Suite',
+			serviceName: 'ResearchOps Demo Suite',
+			activeNavigation: 'Projects',
+			navigation: projectNavigation,
+		},
+	},
+	{
+		template: 'pages/projects-journals.njk',
+		output: 'public/pages/projects/journals/index.html',
+		context: {
+			pageTitle: 'Reflexive Journal and Analysis - ResearchOps Demo Suite',
+			serviceName: 'ResearchOps Demo Suite',
+			activeNavigation: 'Projects',
+			navigation: projectNavigation,
+		},
+	},
 ];
 
-export async function renderGovukPages() {
-	for (const page of govukPages) {
-		const html = env.render(page.template, page.context);
-		const withCacheBusting = cacheBustOutcomesPageScripts(html, page);
-		const outputPath = resolve(root, page.output);
-		await mkdir(dirname(outputPath), { recursive: true });
-		await writeFile(outputPath, await formatRenderedHtml(withCacheBusting), 'utf8');
-		console.log(`Rendered ${page.output}`);
-	}
+export async function renderGovukPage(page) {
+	const outputPath = resolve(root, page.output);
+	const rawHtml = cacheBustOutcomesPageScripts(env.render(page.template, page.context), page);
+	const html = await formatRenderedHtml(rawHtml);
+	await mkdir(dirname(outputPath), { recursive: true });
+	await writeFile(outputPath, html.endsWith('\n') ? html : `${html}\n`, 'utf8');
+	console.log('Rendered ' + page.output);
+	return page.output;
 }
 
-if (process.argv[1] === fileURLToPath(import.meta.url)) {
-	renderGovukPages().catch((error) => {
-		console.error(error);
-		process.exitCode = 1;
-	});
+export async function renderGovukPages(pagesToRender = govukPages) {
+	const outputs = [];
+	for (const page of pagesToRender) {
+		outputs.push(await renderGovukPage(page));
+	}
+	return outputs;
+}
+
+export async function renderAllGovukPages() {
+	return renderGovukPages(govukPages);
+}
+
+const invokedDirectly = process.argv[1] && fileURLToPath(import.meta.url) === resolve(process.argv[1]);
+
+if (invokedDirectly) {
+	await renderAllGovukPages();
 }
