@@ -241,6 +241,73 @@
 	{% elif reviewRoute %}
 	<section class="repository-section" aria-labelledby="repository-review-title" data-repository-review-page data-review-queue="{{ reviewQueue }}">
 		<h2 class="govuk-heading-l" id="repository-review-title">Review workbench</h2>
+		{% set reviewWorkbenchHtml %}
+			<div class="repository-review-workbench" id="repository-review-workbench">
+				<div class="govuk-grid-row repository-review-layout">
+					<div class="govuk-grid-column-one-third">
+						<section aria-labelledby="repository-review-list-title">
+							<h3 class="govuk-heading-m" id="repository-review-list-title">Queue items</h3>
+							<div class="repository-review-panel">
+								<p class="repository-result-count" id="repository-review-count" aria-live="polite"></p>
+								<div id="repository-review-list" class="repository-review-list" aria-live="polite" aria-busy="true"></div>
+								{{ govukPagination({
+									classes: "repository-review-pagination",
+									landmarkLabel: "Queue pages",
+									previous: {
+										labelText: "Previous",
+										href: "#"
+									},
+									next: {
+										labelText: "Next",
+										href: "#"
+									},
+									items: [
+										{
+											number: 1,
+											current: true,
+											href: "#"
+										}
+									],
+									attributes: {
+										id: "repository-review-pagination",
+										hidden: "hidden"
+									}
+								}) }}
+							</div>
+						</section>
+					</div>
+					<div class="govuk-grid-column-two-thirds">
+						<section aria-labelledby="repository-review-detail-title">
+							<h3 class="govuk-heading-m" id="repository-review-detail-title">Selected record</h3>
+							<div class="repository-review-panel">
+								<div id="repository-review-detail" class="repository-review-detail" aria-live="polite" aria-busy="true"></div>
+							</div>
+						</section>
+					</div>
+				</div>
+			</div>
+		{% endset %}
+		{% set reviewCandidatesPanelHtml %}
+			<div id="repository-review-host-candidates" data-review-panel-host="candidates">
+				{% if reviewQueue == "candidates" %}
+					{{ reviewWorkbenchHtml | safe }}
+				{% endif %}
+			</div>
+		{% endset %}
+		{% set reviewStalePanelHtml %}
+			<div id="repository-review-host-stale" data-review-panel-host="stale">
+				{% if reviewQueue == "stale" %}
+					{{ reviewWorkbenchHtml | safe }}
+				{% endif %}
+			</div>
+		{% endset %}
+		{% set reviewWithdrawnPanelHtml %}
+			<div id="repository-review-host-withdrawn" data-review-panel-host="withdrawn">
+				{% if reviewQueue == "withdrawn" %}
+					{{ reviewWorkbenchHtml | safe }}
+				{% endif %}
+			</div>
+		{% endset %}
 		{{ govukTabs({
 			id: "repository-review-tabs",
 			items: [
@@ -248,67 +315,25 @@
 					label: "Candidate artefacts",
 					id: "review-candidates",
 					panel: {
-						html: '<p class="govuk-visually-hidden">Candidate artefacts queue</p>'
+						html: reviewCandidatesPanelHtml
 					}
 				},
 				{
 					label: "Due review",
 					id: "review-stale",
 					panel: {
-						html: '<p class="govuk-visually-hidden">Due review queue</p>'
+						html: reviewStalePanelHtml
 					}
 				},
 				{
 					label: "Withdrawn artefacts",
 					id: "review-withdrawn",
 					panel: {
-						html: '<p class="govuk-visually-hidden">Withdrawn artefacts queue</p>'
+						html: reviewWithdrawnPanelHtml
 					}
 				}
 			]
 		}) }}
-		<div class="govuk-grid-row repository-review-layout">
-			<div class="govuk-grid-column-one-third">
-				<section aria-labelledby="repository-review-list-title">
-					<h3 class="govuk-heading-m" id="repository-review-list-title">Queue items</h3>
-					<div class="repository-review-panel">
-						<p class="repository-result-count" id="repository-review-count" aria-live="polite"></p>
-						<div id="repository-review-list" class="repository-review-list" aria-live="polite" aria-busy="true"></div>
-						{{ govukPagination({
-							classes: "repository-review-pagination",
-							landmarkLabel: "Queue pages",
-							previous: {
-								labelText: "Previous",
-								href: "#"
-							},
-							next: {
-								labelText: "Next",
-								href: "#"
-							},
-							items: [
-								{
-									number: 1,
-									current: true,
-									href: "#"
-								}
-							],
-							attributes: {
-								id: "repository-review-pagination",
-								hidden: "hidden"
-							}
-						}) }}
-					</div>
-				</section>
-			</div>
-			<div class="govuk-grid-column-two-thirds">
-				<section aria-labelledby="repository-review-detail-title">
-					<h3 class="govuk-heading-m" id="repository-review-detail-title">Selected record</h3>
-					<div class="repository-review-panel">
-						<div id="repository-review-detail" class="repository-review-detail" aria-live="polite" aria-busy="true"></div>
-					</div>
-				</section>
-			</div>
-		</div>
 	</section>
 	{% endif %}
 

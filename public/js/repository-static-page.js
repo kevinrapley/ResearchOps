@@ -466,6 +466,24 @@ function reviewTabId(queueKey) {
 	return `review-${queueKey}`;
 }
 
+function reviewQueueFromTabId(tabId = "") {
+	if (tabId === "review-withdrawn") return "withdrawn";
+	if (tabId === "review-stale") return "stale";
+	return "candidates";
+}
+
+function reviewPanelHost(queueKey) {
+	return document.querySelector(`[data-review-panel-host="${queueKey}"]`);
+}
+
+function mountReviewWorkbench(queueKey) {
+	const workbench = document.getElementById("repository-review-workbench");
+	const host = reviewPanelHost(queueKey);
+	if (workbench && host && !host.contains(workbench)) {
+		host.replaceChildren(workbench);
+	}
+}
+
 function reviewPanelElements(queueKey) {
 	return {
 		count: document.getElementById("repository-review-count"),
@@ -492,6 +510,7 @@ function setActiveReviewTab(queueKey) {
 		const current = panel.id === reviewTabId(queueKey);
 		panel.classList.toggle("govuk-tabs__panel--hidden", !current);
 	}
+	mountReviewWorkbench(queueKey);
 }
 
 function renderReviewTabs(navigation = [], currentQueue) {
@@ -793,8 +812,8 @@ function renderReviewDetail(queue, item) {
 async function loadReviewState(page, preferredId = selectedReviewId()) {
 	const requestId = ++latestReviewRequest;
 	const queueKey = page.dataset.reviewQueue;
-	const { list, detail } = reviewPanelElements(queueKey);
 	setActiveReviewTab(queueKey);
+	const { list, detail } = reviewPanelElements(queueKey);
 	list?.setAttribute("aria-busy", "true");
 	detail?.setAttribute("aria-busy", "true");
 	const requestPath = reviewApiPath(queueKey);
@@ -840,9 +859,9 @@ function bindReviewInteractions(page) {
 		tabs.addEventListener("click", (event) => {
 			const link = event.target.closest(".govuk-tabs__tab");
 			if (!(link instanceof HTMLAnchorElement)) return;
-			const reviewHref = link.dataset.reviewHref || "";
-			const reviewQueue = link.dataset.reviewQueue || "";
-			if (!reviewHref || !reviewQueue) return;
+			const tabId = link.getAttribute("href")?.replace(/^#/, "") || "";
+			const reviewQueue = link.dataset.reviewQueue || reviewQueueFromTabId(tabId);
+			const reviewHref = link.dataset.reviewHref || reviewPathnameForQueue(reviewQueue);
 			event.preventDefault();
 			if (reviewQueue === page.dataset.reviewQueue) {
 				setActiveReviewTab(reviewQueue);

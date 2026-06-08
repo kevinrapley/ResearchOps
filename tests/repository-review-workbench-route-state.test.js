@@ -32,6 +32,11 @@ has(files.template, "data-review-queue=\"{{ reviewQueue }}\"", "repository stati
 has(files.template, 'import govukTabs', "repository static template");
 has(files.template, 'import govukPagination', "repository static template");
 has(files.template, 'id: "repository-review-tabs"', "repository static template");
+has(files.template, "reviewWorkbenchHtml", "repository static template");
+has(files.template, 'data-review-panel-host="candidates"', "repository static template");
+has(files.template, 'data-review-panel-host="stale"', "repository static template");
+has(files.template, 'data-review-panel-host="withdrawn"', "repository static template");
+has(files.template, "panel: {", "repository static template");
 has(files.template, 'id="repository-review-list"', "repository static template");
 has(files.template, 'id="repository-review-detail"', "repository static template");
 has(files.template, 'id: "repository-review-pagination"', "repository static template");
@@ -39,6 +44,8 @@ has(files.template, 'id: "repository-review-pagination"', "repository static tem
 has(files.script, "let latestReviewRequest = 0", "repository static page script");
 has(files.script, "function renderReviewTabs", "repository static page script");
 has(files.script, "function renderReviewPagination", "repository static page script");
+has(files.script, "function reviewQueueFromTabId(tabId = \"\")", "repository static page script");
+has(files.script, "function mountReviewWorkbench(queueKey)", "repository static page script");
 has(files.script, "function reviewPanelElements(queueKey)", "repository static page script");
 has(files.script, "page.dataset.reviewQueue = reviewQueueFromPathname(window.location.pathname);", "repository static page script");
 has(files.script, "async function loadReviewState(page, preferredId = selectedReviewId())", "repository static page script");
