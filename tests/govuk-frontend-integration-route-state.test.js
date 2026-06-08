@@ -85,7 +85,7 @@ assert.doesNotMatch(layoutTemplate, /\/components\/govuk-layout\.js/);
 
 assert.match(sharedHead, /\/assets\/govuk\/govuk-frontend\.css/);
 assert.doesNotMatch(sharedHead, /\/css\/govuk\/govuk-frontend-v6\.css/);
-assert.match(sharedHeader, /class="govuk-header"/);
+assert.match(sharedHeader, /class="govuk-template__header govuk-header"/);
 assert.match(sharedHeader, /ResearchOps Demo Suite/);
 assert.match(sharedFooter, /class="govuk-width-container govuk-footer__container"/);
 

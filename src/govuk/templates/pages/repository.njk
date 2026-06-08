@@ -39,28 +39,30 @@
 {% endblock %}
 
 {% block content %}
-<div class="govuk-width-container">
-	{{ govukBreadcrumbs({
-		attributes: {
-			id: "repository-breadcrumbs",
-			typeof: "schema:BreadcrumbList"
-		},
-		items: [
-			{
-				text: "Home",
-				href: "/",
-				attributes: {
-					property: "schema:item",
-					typeof: "schema:Thing"
-				}
+<div class="app-masthead repository-masthead">
+	<div class="govuk-width-container">
+		{{ govukBreadcrumbs({
+			attributes: {
+				id: "repository-breadcrumbs",
+				typeof: "schema:BreadcrumbList"
 			},
-			{
-				text: "Research repository"
-			}
-		]
-	}) }}
+			items: [
+				{
+					text: "Home",
+					href: "/",
+					attributes: {
+						property: "schema:item",
+						typeof: "schema:Thing"
+					}
+				},
+				{
+					text: "Research repository"
+				}
+			]
+		}) }}
+	</div>
+	{{ repositoryHero(hero) }}
 </div>
-{{ repositoryHero(hero) }}
 
 <div class="govuk-width-container repository-page" data-repository-page>
 	<section aria-labelledby="repository-summary-title">

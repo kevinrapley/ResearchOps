@@ -1,0 +1,170 @@
+{
+	"traceId": "repository-maturity-filter-masthead-2026-06-08",
+	"traceLayer": "operational",
+	"date": "2026-06-08",
+	"branch": "fix/repository-maturity-filter-counts",
+	"branchDecision": {
+		"prefix": "fix/",
+		"requiresTrace": true,
+		"reason": "trace-required-prefix"
+	},
+	"taskSummary": "Fix repository evidence maturity filter counts, apply a GOV.UK Design System-style masthead treatment to the repository landing page, strengthen inverse repository menu colours, remove active navigation box-shadow, set masthead borders to the brand colour, and rebuild the repository masthead SVG illustration after inspecting GOV.UK and DWP Design System examples. Follow-up replaced the DWP-like code-editor panel with a traced online research session scene, used the detailed DWP Crown-logo element in the laptop page header, corrected the session window ratio so the trace scales uniformly, refined the T glyph, moved the session window up, extended the L-shaped lower dotted connector so it meets the window under the bottom-right participant body, scoped inverse header and phase-banner chrome to the repository front page only, and fixed the service-page normaliser so it preserves body marker classes.",
+	"operatingModel": {
+		"loaded": [
+			"AGENTS.md",
+			".agent-operating-model/orchestration.xml",
+			".agent-operating-model/bundle-registry.json",
+			".agent-operating-model/task-signal-catalog.json",
+			".agent-operating-model/selection-rules.json",
+			".agent-operating-model/bootstrap-checklist.md",
+			".agent-operating-model/precedence-policy.md",
+			".agent-operating-model/github-mutation-policy.md"
+		],
+		"selectedBundles": [
+			".agent-operating-model/bundles/github/",
+			".agent-operating-model/bundles/researchops-developer-control/",
+			".agent-operating-model/bundles/multi-functional-team/",
+			".agent-operating-model/bundles/govuk-design-system/",
+			".agent-operating-model/bundles/cloudflare/"
+		],
+		"skippedBundles": [
+			".agent-operating-model/bundles/openai/",
+			".agent-operating-model/bundles/mcp-agent-tooling/",
+			".agent-operating-model/bundles/airtable-public-api/",
+			".agent-operating-model/bundles/mural-public-api/"
+		]
+	},
+	"files": {
+		"modified": [
+			"infra/cloudflare/src/service/repository.js",
+			"public/partials/header.html",
+			"src/govuk/templates/macros/repository.njk",
+			"src/govuk/templates/pages/repository.njk",
+			"src/styles/repository.scss",
+			"tests/govuk-frontend-integration-route-state.test.js",
+			"tests/repository-front-page-route-state.test.js",
+			"src/govuk/templates/layouts/researchops.njk",
+			"scripts/govuk/render-govuk-pages.mjs",
+			"scripts/govuk/normalise-service-pages.mjs"
+		],
+		"added": [
+			"public/images/repository-masthead-illustration.svg",
+			"docs/agent-audit/reasoning/2026/06/08/repository-maturity-filter-masthead-trace.md",
+			"docs/agent-audit/reasoning/2026/06/08/repository-maturity-filter-masthead-trace.json"
+		]
+	},
+	"validation": [
+		{
+			"command": "node tests/repository-front-page-route-state.test.js",
+			"result": "passed"
+		},
+		{
+			"command": "npm run format:check",
+			"result": "passed"
+		},
+		{
+			"command": "npm run build:generated-css",
+			"result": "passed for local browser verification; generated output not staged"
+		},
+		{
+			"command": "npm run build:govuk-pages",
+			"result": "passed for local browser verification; generated output not staged"
+		},
+		{
+			"command": "in-app browser desktop check at 1280x900",
+			"result": "passed"
+		},
+		{
+			"command": "in-app browser mobile check at 390x844",
+			"result": "passed"
+		},
+		{
+			"command": "follow-up in-app browser desktop check after shared header stylesheet load",
+			"result": "repository service-navigation background and links remain inverse; generated output not staged"
+		},
+		{
+			"command": "follow-up SVG browser check at /images/repository-masthead-illustration.svg",
+			"result": "connected square-dot repository workflow illustration rendered"
+		},
+		{
+			"command": "follow-up in-app browser active navigation style check",
+			"result": "active repository navigation link has box-shadow none, no bottom border and white text; active navigation item border resolves to white"
+		},
+		{
+			"command": "follow-up in-app browser masthead border check",
+			"result": "app masthead background and bottom border both resolve to rgb(29, 112, 184)"
+		},
+		{
+			"command": "CI bdd-smoke failure log review",
+			"result": "header landmark failed because the shared header no longer matched header.govuk-header; corrected the single service header to carry both govuk-template__header and govuk-header"
+		},
+		{
+			"command": "GOV.UK and DWP Design System SVG source inspection",
+			"result": "inspected the GOV.UK homepage illustration SVG and the DWP homepage banner SVG source for group structure, dotted connectors, laptop construction and internal UI detail"
+		},
+		{
+			"command": "xmllint --noout public/images/repository-masthead-illustration.svg",
+			"result": "passed"
+		},
+		{
+			"command": "follow-up in-app browser replacement SVG check",
+			"result": "replacement repository illustration loaded with intrinsic size 749 by 464 and rendered in the masthead at 320 by 198"
+		},
+		{
+			"command": "node tests/govuk-frontend-integration-route-state.test.js",
+			"result": "passed after updating the shared header class assertion"
+		},
+		{
+			"command": "node tests/govuk-page-chrome-navigation-route-state.test.js",
+			"result": "passed"
+		},
+		{
+			"command": "node tests/repository-front-page-route-state.test.js",
+			"result": "passed"
+		},
+		{
+			"command": "xmllint --noout public/images/repository-masthead-illustration.svg",
+			"result": "passed after replacing the approximate session panel with a traced online research session scene"
+		},
+		{
+			"command": "npm run format:check",
+			"result": "passed after SVG trace replacement and SVG-internals test removal"
+		},
+		{
+			"command": "in-app browser masthead check after trace replacement",
+			"result": "repository masthead image loads at /images/repository-masthead-illustration.svg with intrinsic size 749 by 464 and renders in the masthead at 320 by 198"
+		},
+		{
+			"command": "in-app browser masthead check after session ratio correction",
+			"result": "repository masthead image still loads at intrinsic size 749 by 464 and renders at 320 by 198; the left research-session scene preserves the supplied PNG aspect ratio inside the resized window"
+		},
+		{
+			"command": "in-app browser masthead check after connector and glyph adjustment",
+			"result": "research-session window renders higher in the masthead, the lower dotted connector forms an L shape below the window, and the T glyph weight is visually closer to the R"
+		},
+		{
+			"command": "in-app browser masthead check after extending the lower connector",
+			"result": "vertical dotted run sits under the bottom-right participant body's left edge and the horizontal run extends toward the laptop"
+		},
+		{
+			"command": "route-state test update for deeper repository chrome",
+			"result": "repository front-page template carries the scoped body marker and the static deeper repository template does not"
+		},
+		{
+			"command": "route-state test update for service-page normaliser",
+			"result": "normaliser preserves existing body classes while ensuring govuk-template__body is present"
+		},
+		{
+			"command": "in-app browser chrome scope verification",
+			"result": "/pages/repository/ keeps the blue service navigation, white active link, blue phase banner and blue app masthead; /pages/repository/review/stale/ has no masthead, standard pale service navigation, normal dark phase-banner text and no repository front-page body marker"
+		},
+		{
+			"command": "GitHub Codex review thread handling",
+			"result": "reacted with thumbs-up, replied with the shared-header fix, and resolved review thread PRRT_kwDOP3Td2M6Hw9ty"
+		}
+	],
+	"residualRisks": [
+		"Static local browser preview cannot show real D1 filter counts without the Worker API; route-state assertions protect the API facet name and CI preview should exercise deployed Worker behaviour.",
+		"Header structural change affects shared page chrome, so full CI should run before merge."
+	]
+}

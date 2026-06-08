@@ -243,6 +243,7 @@ export const govukPages = [
 			serviceName: 'ResearchOps Demo Suite',
 			activeNavigation: 'Research Repository',
 			navigation: repositoryNavigation,
+			bodyClass: 'researchops-repository-front-page',
 			...repositoryPageContext,
 		},
 	},
