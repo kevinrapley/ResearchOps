@@ -78,6 +78,7 @@
 - Preserved reversible withdrawal handling by routing reinstated records back to `published` or `candidate` depending on publication-gate state.
 - Replaced the custom review queue navigation with GOV.UK tabs rendered in the Nunjucks template and wired client navigation to those tabs.
 - Limited review queue responses to 10 items per page and added queue pagination support through the review API and page controller.
+- Reworked the tab implementation so every review tab contains a real workbench panel and the controller swaps queue content in place instead of rendering placeholder panels for inactive queues.
 - Removed static review-check, review-outcome and withdrawal-reason copy from the review route page data.
 - Aligned queue and selected-record panels with matching bordered containers so their top borders land on the same line.
 - Added queue and action tests at both route-state and runtime levels.
@@ -114,6 +115,7 @@
 - Codex review identified that stale-queue `confirm_current` and `update_guidance` could persist an overdue `reviewDueAt`, leaving the record immediately due for review again.
 - While fixing that path, runtime coverage exposed a second defect: underscore-based outcome values such as `confirm_current` were normalised with slug rules and rejected by the service. The action parser was updated to preserve underscores for review outcomes.
 - The requested GOV.UK pagination macro can only be rendered as a placeholder at template-build time because queue totals are runtime data. The template now owns the pagination shell and the page controller updates it with live queue state after fetch.
+- The first tabs pass still left inactive queues as placeholder panels, which is why only one tab displayed real workbench content. The tab panels were then expanded so all three own concrete queue/list/detail containers and the page script now updates the active panel and route state together.
 
 ## Residual risks
 

@@ -32,13 +32,21 @@ has(files.template, "data-review-queue=\"{{ reviewQueue }}\"", "repository stati
 has(files.template, 'import govukTabs', "repository static template");
 has(files.template, 'import govukPagination', "repository static template");
 has(files.template, 'id: "repository-review-tabs"', "repository static template");
-has(files.template, "id=\"repository-review-list\"", "repository static template");
-has(files.template, "id=\"repository-review-detail\"", "repository static template");
-has(files.template, 'id: "repository-review-pagination"', "repository static template");
+has(files.template, 'id="repository-review-list-candidates"', "repository static template");
+has(files.template, 'id="repository-review-list-stale"', "repository static template");
+has(files.template, 'id="repository-review-list-withdrawn"', "repository static template");
+has(files.template, 'id="repository-review-detail-candidates"', "repository static template");
+has(files.template, 'id="repository-review-detail-stale"', "repository static template");
+has(files.template, 'id="repository-review-detail-withdrawn"', "repository static template");
+has(files.template, 'id: "repository-review-pagination-candidates"', "repository static template");
+has(files.template, 'id: "repository-review-pagination-stale"', "repository static template");
+has(files.template, 'id: "repository-review-pagination-withdrawn"', "repository static template");
 
 has(files.script, "let latestReviewRequest = 0", "repository static page script");
 has(files.script, "function renderReviewTabs", "repository static page script");
 has(files.script, "function renderReviewPagination", "repository static page script");
+has(files.script, "function reviewPanelElements(queueKey)", "repository static page script");
+has(files.script, "page.dataset.reviewQueue = reviewQueueFromPathname(window.location.pathname);", "repository static page script");
 has(files.script, "async function loadReviewState(page, preferredId = selectedReviewId())", "repository static page script");
 has(files.script, "data-review-action-form", "repository static page script");
 has(files.script, 'repositoryJson(`/api/repository/review/${encodeURIComponent(artefactId)}/actions`', "repository static page script");

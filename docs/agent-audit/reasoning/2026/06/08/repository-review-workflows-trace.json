@@ -74,7 +74,8 @@
 	"issuesAndPivots": [
 		"Codex review identified that stale queue renewals could preserve an overdue reviewDueAt and leave records immediately due for review again.",
 		"Runtime regression testing exposed a second defect where underscore-based action values such as confirm_current were being slug-normalised and rejected. The action parser was updated to preserve underscores.",
-		"GOV.UK tabs and pagination were moved into the Nunjucks template, while live counts and page numbers remain runtime-driven by the review API and client controller."
+		"GOV.UK tabs and pagination were moved into the Nunjucks template, while live counts and page numbers remain runtime-driven by the review API and client controller.",
+		"The first tabs pass left inactive queues as placeholder panels. The review template and controller were then revised so all three tabs own real workbench panels and switching tabs updates queue content in place."
 	],
 	"residualRisks": [
 		"Static review page shells remain directly addressable as URLs even when the data and actions are blocked.",
