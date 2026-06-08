@@ -1,22 +1,42 @@
 {% extends "layouts/researchops.njk" %}
 
+{% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
 {% from "govuk/components/button/macro.njk" import govukButton %}
 {% from "govuk/components/tag/macro.njk" import govukTag %}
 
 {% block head %}
-	<link rel="stylesheet" href="/assets/researchops/researchops-home.css?v=govuk-home-grid-20260524" media="screen">
+	<link rel="stylesheet" href="/assets/researchops/researchops-home.css?v=home-masthead-20260608" media="screen">
 {% endblock %}
 
 {% block content %}
-<div class="govuk-width-container">
-	<div class="govuk-grid-row">
-		<div class="govuk-grid-column-two-thirds">
-			<h1 class="govuk-heading-xl" id="home-title">ResearchOps demo suite</h1>
-			<p class="govuk-body-l">Objective orientated applied user research done well.</p>
-			<p class="govuk-body">Use ResearchOps to structure applied user research with operations, governance and accessibility baked in.</p>
-		</div>
+<div class="app-masthead researchops-home-masthead">
+	<div class="govuk-width-container">
+		{{ govukBreadcrumbs({
+			attributes: {
+				id: "home-breadcrumbs",
+				typeof: "schema:BreadcrumbList"
+			},
+			items: [
+				{
+					text: "Home"
+				}
+			]
+		}) }}
 	</div>
+	<section class="researchops-home-hero" aria-labelledby="home-title">
+		<div class="govuk-width-container">
+			<div class="govuk-grid-row">
+				<div class="govuk-grid-column-two-thirds">
+					<h1 class="govuk-heading-xl" id="home-title">ResearchOps demo suite</h1>
+					<p class="govuk-body-l">Objective orientated applied user research done well.</p>
+					<p class="govuk-body">Use ResearchOps to structure applied user research with operations, governance and accessibility baked in.</p>
+				</div>
+			</div>
+		</div>
+	</section>
+</div>
 
+<div class="govuk-width-container">
 	<section class="researchops-highlight-panel govuk-!-margin-top-7 govuk-!-margin-bottom-7" aria-labelledby="start-guidance-title">
 		<div class="govuk-grid-row">
 			<div class="govuk-grid-column-two-thirds">
