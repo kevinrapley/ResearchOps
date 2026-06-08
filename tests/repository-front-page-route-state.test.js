@@ -6,7 +6,15 @@ const files = {
 	staticTemplate: fs.readFileSync('src/govuk/templates/pages/repository-static.njk', 'utf8'),
 	pageData: fs.readFileSync('src/govuk/data/repository-page.mjs', 'utf8'),
 	pageScript: fs.readFileSync('public/js/repository-page.js', 'utf8'),
-	staticScript: fs.readFileSync('public/js/repository-static-page.js', 'utf8'),
+	staticScript: [
+		'public/js/repository-static-page.js',
+		'public/js/repository-static/shared.js',
+		'public/js/repository-static/browse.js',
+		'public/js/repository-static/candidate.js',
+		'public/js/repository-static/review.js',
+	]
+		.map((file) => fs.readFileSync(file, 'utf8'))
+		.join('\n'),
 	artefactScript: fs.readFileSync('public/js/repository-artefact-page.js', 'utf8'),
 	service: fs.readFileSync('infra/cloudflare/src/service/repository.js', 'utf8'),
 	schemaMigration: fs.readFileSync('infra/cloudflare/migrations/0014_research_repository.sql', 'utf8'),

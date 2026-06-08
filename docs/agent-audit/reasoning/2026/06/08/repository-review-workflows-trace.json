@@ -40,6 +40,10 @@
 			"src/govuk/templates/pages/repository.njk",
 			"src/styles/repository.scss",
 			"public/js/repository-static-page.js",
+			"public/js/repository-static/browse.js",
+			"public/js/repository-static/candidate.js",
+			"public/js/repository-static/review.js",
+			"public/js/repository-static/shared.js",
 			"infra/cloudflare/src/service/repository.js",
 			"infra/cloudflare/src/service/index.js",
 			"infra/cloudflare/src/worker.js",
@@ -69,6 +73,10 @@
 		{
 			"command": "local browser review tab page-context switching check",
 			"result": "passed"
+		},
+		{
+			"command": "local browser static repository module split check",
+			"result": "passed"
 		}
 	],
 	"assumptions": [
@@ -81,7 +89,8 @@
 		"GOV.UK tabs and pagination were moved into the Nunjucks template, while live counts and page numbers remain runtime-driven by the review API and client controller.",
 		"The first tabs pass left inactive queues as placeholder panels. The review template and controller were then revised so each GOV.UK tab panel owns a queue-specific workbench shell and switching tabs updates queue content in place.",
 		"Moving a single workbench node between tab panels proved brittle with the GOV.UK tabs runtime. The final implementation renders one shell per queue and scopes script updates to [data-review-workbench], avoiding both empty selected panels and duplicate IDs.",
-		"A later review found that the workbench tab changed but the page-level route context remained on the initially loaded queue. The controller now updates the H1, lead, body text, breadcrumb current item and document title as part of active-tab state."
+		"A later review found that the workbench tab changed but the page-level route context remained on the initially loaded queue. The controller now updates the H1, lead, body text, breadcrumb current item and document title as part of active-tab state.",
+		"The static repository script had grown to 946 lines while accumulating browse, candidate and review behaviours. It was split into a small entrypoint plus shared, browse, candidate and review modules before further review work was added."
 	],
 	"residualRisks": [
 		"Static review page shells remain directly addressable as URLs even when the data and actions are blocked.",

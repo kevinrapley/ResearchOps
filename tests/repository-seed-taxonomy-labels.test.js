@@ -9,7 +9,7 @@ const taxonomyMigration = fs.readFileSync(
 	'infra/cloudflare/migrations/0016_update_repository_seed_tag_taxonomy.sql',
 	'utf8'
 );
-const staticPageScript = fs.readFileSync('public/js/repository-static-page.js', 'utf8');
+const staticPageScript = fs.readFileSync('public/js/repository-static/shared.js', 'utf8');
 
 function includes(source, expected, label) {
 	assert.equal(source.includes(expected), true, `${label} should include ${expected}`);

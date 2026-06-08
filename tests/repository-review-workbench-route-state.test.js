@@ -4,7 +4,13 @@ import fs from "node:fs";
 const files = {
 	pageData: fs.readFileSync("src/govuk/data/repository-page.mjs", "utf8"),
 	template: fs.readFileSync("src/govuk/templates/pages/repository-static.njk", "utf8"),
-	script: fs.readFileSync("public/js/repository-static-page.js", "utf8"),
+	script: [
+		"public/js/repository-static-page.js",
+		"public/js/repository-static/shared.js",
+		"public/js/repository-static/review.js",
+	]
+		.map((file) => fs.readFileSync(file, "utf8"))
+		.join("\n"),
 	service: fs.readFileSync("infra/cloudflare/src/service/repository.js", "utf8"),
 	worker: fs.readFileSync("infra/cloudflare/src/worker.js", "utf8"),
 	indexService: fs.readFileSync("infra/cloudflare/src/service/index.js", "utf8"),

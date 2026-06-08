@@ -64,6 +64,16 @@
 	{% endif %}
 	{% if browseType or candidateRoute or reviewRoute %}
 	<link rel="modulepreload" href="/js/repository-static-page.js?v=repository-api-20260607c">
+	<link rel="modulepreload" href="/js/repository-static/shared.js?v=repository-api-20260607c">
+	{% if browseType %}
+	<link rel="modulepreload" href="/js/repository-static/browse.js?v=repository-api-20260607c">
+	{% endif %}
+	{% if candidateRoute %}
+	<link rel="modulepreload" href="/js/repository-static/candidate.js?v=repository-api-20260607c">
+	{% endif %}
+	{% if reviewRoute %}
+	<link rel="modulepreload" href="/js/repository-static/review.js?v=repository-api-20260607c">
+	{% endif %}
 	{% endif %}
 {% endblock %}
 
