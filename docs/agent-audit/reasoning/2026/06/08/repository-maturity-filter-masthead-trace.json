@@ -8,7 +8,7 @@
 		"requiresTrace": true,
 		"reason": "trace-required-prefix"
 	},
-	"taskSummary": "Fix repository evidence maturity filter counts and apply a GOV.UK Design System-style masthead treatment to the repository landing page.",
+	"taskSummary": "Fix repository evidence maturity filter counts, apply a GOV.UK Design System-style masthead treatment to the repository landing page, strengthen inverse repository menu colours, remove active navigation box-shadow, set masthead borders to the brand colour, and improve the repository masthead SVG illustration.",
 	"operatingModel": {
 		"loaded": [
 			"AGENTS.md",
@@ -73,6 +73,22 @@
 		{
 			"command": "in-app browser mobile check at 390x844",
 			"result": "passed"
+		},
+		{
+			"command": "follow-up in-app browser desktop check after shared header stylesheet load",
+			"result": "repository service-navigation background and links remain inverse; generated output not staged"
+		},
+		{
+			"command": "follow-up SVG browser check at /images/repository-masthead-illustration.svg",
+			"result": "connected square-dot repository workflow illustration rendered"
+		},
+		{
+			"command": "follow-up in-app browser active navigation style check",
+			"result": "active repository navigation link has box-shadow none, a 5px white bottom border and white text; active navigation item border resolves to white"
+		},
+		{
+			"command": "follow-up in-app browser masthead border check",
+			"result": "app masthead background and bottom border both resolve to rgb(29, 112, 184)"
 		}
 	],
 	"residualRisks": [

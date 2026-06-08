@@ -1,59 +1,140 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 610 483" role="img" aria-hidden="true" focusable="false">
 	<style>
-		.dark{fill:#0b0c0c}.mid{fill:#484949}.grey{fill:#cecece}.blue{fill:#1d70b8}.pale{fill:#8eb8dc}.white{fill:#fff}.yellow{fill:#ffdd00}.green{fill:#11875a}.red{fill:#ca3535}.purple{fill:#54319f}.line{fill:none;stroke:#0b0c0c;stroke-width:4;stroke-linecap:round;stroke-linejoin:round}
+		.dark{fill:#0b0c0c}.ink{fill:#2f3030}.mid{fill:#505a5f}.grey{fill:#b1b4b6}.pale{fill:#8eb8dc}.blue{fill:#1d70b8}.white{fill:#fff}.yellow{fill:#ffdd00}.green{fill:#11875a}.red{fill:#d4351c}.purple{fill:#4c2c92}.connector{fill:#0b0c0c}.stroke{fill:none;stroke:#0b0c0c;stroke-width:4;stroke-linecap:square;stroke-linejoin:miter}.thin{fill:none;stroke:#0b0c0c;stroke-width:3;stroke-linecap:square;stroke-linejoin:miter}
 	</style>
-	<path class="pale" d="M52 405h506v28H52z"/>
-	<path class="dark" d="M43 433h524v8H43z"/>
-	<path class="grey" d="M112 429h394l38 23H74z"/>
-	<path class="mid" d="M75 452h470v7H75z"/>
 
-	<path class="mid" d="M118 103h374c13 0 24 11 24 24v276H94V127c0-13 11-24 24-24z"/>
-	<path class="pale" d="M119 119h374c5 0 9 4 9 9v264H110V128c0-5 4-9 9-9z"/>
-	<path class="white" d="M136 151h356v224H136z"/>
-	<path class="blue" d="M136 151h356v34H136z"/>
-	<path class="line" d="M136 151h356v224H136z"/>
+	<g class="repository-illustration-ground">
+		<rect class="pale" x="35" y="421" width="540" height="24"/>
+		<rect class="dark" x="24" y="445" width="562" height="7"/>
+		<path class="grey" d="M78 452h455l-45 25H124z"/>
+		<rect class="mid" x="116" y="468" width="374" height="6"/>
+	</g>
 
-	<path class="white" d="M156 207h182v37H156z"/>
-	<path class="line" d="M156 207h182v37H156z"/>
-	<path class="dark" d="M172 222h104v8H172z"/>
-	<path class="blue" d="M296 216h25v18h-25z"/>
-	<path class="dark" d="M326 244l27 27-8 8-27-27z"/>
-	<circle class="white" cx="302" cy="230" r="22"/>
-	<circle class="line" cx="302" cy="230" r="22"/>
+	<g class="connector connector--left-vertical">
+		<rect x="154" y="90" width="8" height="8"/>
+		<rect x="154" y="112" width="8" height="8"/>
+		<rect x="154" y="134" width="8" height="8"/>
+		<rect x="154" y="156" width="8" height="8"/>
+		<rect x="154" y="178" width="8" height="8"/>
+	</g>
+	<g class="connector connector--right-vertical">
+		<rect x="455" y="97" width="8" height="8"/>
+		<rect x="455" y="119" width="8" height="8"/>
+		<rect x="455" y="141" width="8" height="8"/>
+		<rect x="455" y="163" width="8" height="8"/>
+		<rect x="455" y="185" width="8" height="8"/>
+	</g>
+	<g class="connector connector--left-horizontal">
+		<rect x="164" y="184" width="8" height="8"/>
+		<rect x="186" y="184" width="8" height="8"/>
+		<rect x="208" y="184" width="8" height="8"/>
+		<rect x="230" y="184" width="8" height="8"/>
+	</g>
+	<g class="connector connector--right-horizontal">
+		<rect x="380" y="184" width="8" height="8"/>
+		<rect x="402" y="184" width="8" height="8"/>
+		<rect x="424" y="184" width="8" height="8"/>
+		<rect x="446" y="184" width="8" height="8"/>
+	</g>
+	<g class="connector connector--lower-left">
+		<rect x="111" y="316" width="8" height="8"/>
+		<rect x="133" y="316" width="8" height="8"/>
+		<rect x="155" y="316" width="8" height="8"/>
+		<rect x="177" y="316" width="8" height="8"/>
+		<rect x="199" y="316" width="8" height="8"/>
+		<rect x="221" y="316" width="8" height="8"/>
+	</g>
+	<g class="connector connector--lower-right">
+		<rect x="382" y="316" width="8" height="8"/>
+		<rect x="404" y="316" width="8" height="8"/>
+		<rect x="426" y="316" width="8" height="8"/>
+		<rect x="448" y="316" width="8" height="8"/>
+		<rect x="470" y="316" width="8" height="8"/>
+		<rect x="492" y="316" width="8" height="8"/>
+	</g>
 
-	<path class="grey" d="M156 269h114v14H156zM156 294h178v14H156zM156 319h145v14H156z"/>
-	<path class="yellow" d="M156 346h95v17h-95z"/>
-	<path class="dark" d="M156 363h95v3h-95z"/>
+	<g class="repository-search-card">
+		<rect class="white" x="35" y="52" width="132" height="97"/>
+		<rect class="stroke" x="35" y="52" width="132" height="97"/>
+		<rect class="blue" x="35" y="52" width="132" height="22"/>
+		<rect class="dark" x="52" y="90" width="70" height="8"/>
+		<rect class="grey" x="52" y="110" width="92" height="7"/>
+		<rect class="grey" x="52" y="128" width="58" height="7"/>
+		<circle class="white" cx="135" cy="96" r="15"/>
+		<circle class="thin" cx="135" cy="96" r="15"/>
+		<rect class="dark" x="146" y="107" width="24" height="6" transform="rotate(45 146 107)"/>
+	</g>
 
-	<path class="white" d="M374 207h70l26 26v126h-96z"/>
-	<path class="line" d="M374 207h70l26 26v126h-96z"/>
-	<path class="grey" d="M445 208v31h29z"/>
-	<path class="green" d="M391 246h28v28h-28z"/>
-	<path class="dark" d="m398 259 7 7 18-19 5 5-23 24-12-12z"/>
-	<path class="grey" d="M391 294h50v8h-50zM391 315h50v8h-50zM391 336h34v8h-34z"/>
+	<g class="repository-review-card">
+		<rect class="white" x="430" y="58" width="142" height="112"/>
+		<rect class="stroke" x="430" y="58" width="142" height="112"/>
+		<rect class="blue" x="430" y="58" width="142" height="24"/>
+		<rect class="green" x="452" y="105" width="32" height="32"/>
+		<path class="dark" d="m460 121 8 8 21-23 7 7-28 31-16-16z"/>
+		<rect class="dark" x="502" y="107" width="45" height="8"/>
+		<rect class="grey" x="502" y="128" width="39" height="7"/>
+		<rect class="yellow" x="502" y="145" width="54" height="11"/>
+	</g>
 
-	<path class="white" d="M66 250h82v92H66z"/>
-	<path class="line" d="M66 250h82v92H66z"/>
-	<path class="blue" d="M66 250h82v21H66z"/>
-	<path class="grey" d="M80 288h58v8H80zM80 307h42v8H80z"/>
-	<path class="yellow" d="M82 325h26v16H82z"/>
-	<path class="green" d="M115 325h26v16h-26z"/>
+	<g class="repository-source-card">
+		<rect class="white" x="54" y="266" width="104" height="113"/>
+		<rect class="stroke" x="54" y="266" width="104" height="113"/>
+		<rect class="blue" x="54" y="266" width="104" height="23"/>
+		<rect class="dark" x="72" y="309" width="54" height="8"/>
+		<rect class="grey" x="72" y="328" width="68" height="7"/>
+		<rect class="grey" x="72" y="345" width="45" height="7"/>
+		<rect class="yellow" x="72" y="362" width="28" height="15"/>
+		<rect class="green" x="108" y="362" width="32" height="15"/>
+	</g>
 
-	<path class="white" d="M447 74h86v83h-86z"/>
-	<path class="line" d="M447 74h86v83h-86z"/>
-	<path class="blue" d="M447 74h86v20h-86z"/>
-	<path class="grey" d="M462 111h56v8h-56zM462 131h42v8h-42z"/>
-	<circle class="yellow" cx="534" cy="74" r="22"/>
-	<path class="dark" d="M534 58c9 0 16 7 16 16s-7 16-16 16-16-7-16-16 7-16 16-16m0-5c-12 0-21 9-21 21s9 21 21 21 21-9 21-21-9-21-21-21z"/>
-	<path class="dark" d="m526 74 6 6 13-16 4 4-17 21-11-11z"/>
+	<g class="repository-audit-card">
+		<rect class="white" x="488" y="264" width="91" height="122"/>
+		<rect class="stroke" x="488" y="264" width="91" height="122"/>
+		<rect class="blue" x="488" y="264" width="91" height="23"/>
+		<path class="white" d="M514 313h31l14 14v38h-45z"/>
+		<path class="thin" d="M514 313h31l14 14v38h-45z"/>
+		<path class="grey" d="M546 314v15h14z"/>
+		<rect class="red" x="505" y="296" width="31" height="13"/>
+		<rect class="purple" x="543" y="296" width="20" height="13"/>
+		<rect class="grey" x="525" y="338" width="25" height="6"/>
+		<rect class="grey" x="525" y="353" width="25" height="6"/>
+	</g>
 
-	<path class="white" d="M231 40h94v79h-94z"/>
-	<path class="line" d="M231 40h94v79h-94z"/>
-	<path class="blue" d="M231 40h94v20h-94z"/>
-	<path class="grey" d="M247 77h61v8h-61zM247 96h44v8h-44z"/>
-	<path class="red" d="M211 73h34v20h-34z"/>
-	<path class="purple" d="M295 105h45v20h-45z"/>
+	<g class="repository-screen">
+		<path class="ink" d="M207 114h198c12 0 22 10 22 22v172H185V136c0-12 10-22 22-22z"/>
+		<rect class="pale" x="199" y="130" width="214" height="163"/>
+		<rect class="white" x="213" y="151" width="186" height="122"/>
+		<rect class="blue" x="213" y="151" width="186" height="26"/>
+		<rect class="stroke" x="213" y="151" width="186" height="122"/>
 
-	<path class="pale" d="M37 126h45v10H37zM37 147h72v10H37zM37 168h45v10H37z"/>
-	<path class="pale" d="M548 211h45v10h-45zM548 232h72v10h-72zM548 253h45v10h-45z"/>
+		<g class="repository-screen-search">
+			<rect class="white" x="232" y="195" width="90" height="24"/>
+			<rect class="thin" x="232" y="195" width="90" height="24"/>
+			<circle class="white" cx="339" cy="207" r="15"/>
+			<circle class="thin" cx="339" cy="207" r="15"/>
+			<rect class="dark" x="349" y="219" width="22" height="5" transform="rotate(45 349 219)"/>
+		</g>
+
+		<g class="repository-screen-results">
+			<rect class="grey" x="232" y="238" width="55" height="8"/>
+			<rect class="grey" x="232" y="257" width="82" height="7"/>
+			<rect class="grey" x="329" y="238" width="49" height="8"/>
+			<rect class="yellow" x="329" y="257" width="49" height="14"/>
+		</g>
+
+		<g class="repository-screen-taxonomy">
+			<rect class="green" x="232" y="285" width="48" height="16"/>
+			<rect class="yellow" x="288" y="285" width="57" height="16"/>
+			<rect class="purple" x="353" y="285" width="44" height="16"/>
+		</g>
+	</g>
+
+	<g class="repository-laptop">
+		<path class="dark" d="M163 303h286l35 74H128z"/>
+		<path class="grey" d="M174 313h264l20 43H154z"/>
+		<rect class="white" x="190" y="323" width="96" height="10"/>
+		<rect class="white" x="300" y="323" width="96" height="10"/>
+		<rect class="white" x="196" y="341" width="186" height="8"/>
+		<rect class="mid" x="128" y="377" width="356" height="9"/>
+	</g>
 </svg>

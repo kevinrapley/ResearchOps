@@ -78,15 +78,26 @@ has(files.repositoryMacro, 'src="/images/repository-masthead-illustration.svg"',
 has(files.repositoryMacro, 'role="presentation"', 'repository macro');
 
 has(files.mastheadIllustration, '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 610 483"', 'repository masthead illustration');
+has(files.mastheadIllustration, 'class="connector connector--left-vertical"', 'repository masthead illustration');
+has(files.mastheadIllustration, 'class="connector connector--lower-right"', 'repository masthead illustration');
+has(files.mastheadIllustration, 'class="repository-screen"', 'repository masthead illustration');
+has(files.mastheadIllustration, 'class="repository-laptop"', 'repository masthead illustration');
+has(files.mastheadIllustration, 'class="repository-review-card"', 'repository masthead illustration');
 has(files.mastheadIllustration, 'class="green"', 'repository masthead illustration');
 has(files.mastheadIllustration, 'class="yellow"', 'repository masthead illustration');
 
 has(files.styles, '.repository-filter-panel .govuk-button--secondary', 'repository stylesheet');
 has(files.styles, 'background: #ffffff;', 'repository stylesheet');
 has(files.styles, '.repository-masthead', 'repository stylesheet');
+has(files.styles, 'border-bottom: 10px solid var(--govuk-brand-colour, #1d70b8);', 'repository stylesheet');
 has(files.styles, 'background: var(--govuk-brand-colour, #1d70b8);', 'repository stylesheet');
 has(files.styles, '.repository-masthead .govuk-breadcrumbs__link', 'repository stylesheet');
-has(files.styles, '.govuk-service-navigation__link', 'repository stylesheet');
+has(files.styles, ".govuk-service-navigation[data-active='Research Repository']", 'repository stylesheet');
+has(files.styles, '.govuk-service-navigation__link:visited', 'repository stylesheet');
+has(files.styles, '.govuk-service-navigation__item', 'repository stylesheet');
+has(files.styles, '.govuk-service-navigation__service-name', 'repository stylesheet');
+has(files.styles, 'border-bottom: 5px solid #ffffff;', 'repository stylesheet');
+has(files.styles, 'box-shadow: none;', 'repository stylesheet');
 has(files.styles, '.govuk-phase-banner .govuk-tag', 'repository stylesheet');
 has(files.styles, '.repository-hero__image-column', 'repository stylesheet');
 has(files.styles, '@media (min-width: 48.0625em)', 'repository stylesheet');

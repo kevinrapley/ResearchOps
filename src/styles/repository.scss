@@ -9,29 +9,75 @@
 
 /* Repository front page structure */
 
-.govuk-service-navigation {
+.govuk-template__header .govuk-service-navigation[data-active='Research Repository'] {
 	border-top: 1px solid rgba(255, 255, 255, 0.35);
 	border-bottom: 1px solid rgba(255, 255, 255, 0.35);
 	background: var(--govuk-brand-colour, #1d70b8);
 }
 
-.govuk-service-navigation__toggle,
-.govuk-service-navigation__link {
+.govuk-template__header
+	.govuk-service-navigation[data-active='Research Repository']
+	.govuk-service-navigation__toggle,
+.govuk-template__header
+	.govuk-service-navigation[data-active='Research Repository']
+	.govuk-service-navigation__link,
+.govuk-template__header
+	.govuk-service-navigation[data-active='Research Repository']
+	.govuk-service-navigation__link:visited {
 	color: #ffffff;
 }
 
-.govuk-service-navigation__toggle {
+.govuk-template__header
+	.govuk-service-navigation[data-active='Research Repository']
+	.govuk-service-navigation__toggle {
 	border-color: #ffffff;
 }
 
-.govuk-service-navigation__toggle:hover,
-.govuk-service-navigation__link:hover {
+.govuk-template__header
+	.govuk-service-navigation[data-active='Research Repository']
+	.govuk-service-navigation__item,
+.govuk-template__header
+	.govuk-service-navigation[data-active='Research Repository']
+	.govuk-service-navigation__service-name {
+	border-color: #ffffff;
+}
+
+.govuk-template__header
+	.govuk-service-navigation[data-active='Research Repository']
+	.govuk-service-navigation__toggle:hover,
+.govuk-template__header
+	.govuk-service-navigation[data-active='Research Repository']
+	.govuk-service-navigation__link:hover {
 	color: #ffffff;
 	text-decoration-thickness: 3px;
 }
 
-.govuk-service-navigation__item--active .govuk-service-navigation__link {
-	box-shadow: inset 0 -5px #ffffff;
+.govuk-template__header
+	.govuk-service-navigation[data-active='Research Repository']
+	.govuk-service-navigation__item--active
+	.govuk-service-navigation__link,
+.govuk-template__header
+	.govuk-service-navigation[data-active='Research Repository']
+	.govuk-service-navigation__link[aria-current='true'],
+.govuk-template__header
+	.govuk-service-navigation[data-active='Research Repository']
+	.govuk-service-navigation__link[aria-current='page'] {
+	border-bottom: 5px solid #ffffff;
+	box-shadow: none;
+	color: #ffffff;
+}
+
+.govuk-template__header
+	.govuk-service-navigation[data-active='Research Repository']
+	.govuk-service-navigation__link:focus {
+	background-color: #ffdd00;
+	color: #0b0c0c;
+	outline: 3px solid #ffdd00;
+	outline-offset: 0;
+	box-shadow:
+		0 -2px #ffdd00,
+		0 4px #0b0c0c;
+	text-decoration: none;
 }
 
 .govuk-phase-banner {
@@ -56,7 +102,7 @@
 	margin-top: -40px;
 	padding-top: 20px;
 	padding-bottom: 32px;
-	border-bottom: 10px solid #8eb8dc;
+	border-bottom: 10px solid var(--govuk-brand-colour, #1d70b8);
 	background: var(--govuk-brand-colour, #1d70b8);
 	color: #ffffff;
 }
