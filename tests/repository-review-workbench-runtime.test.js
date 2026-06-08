@@ -222,7 +222,13 @@ async function responseJson(response) {
 async function assertCandidateQueueIsCuratorOnlyAndHydrated() {
 	const d1 = createRepositoryMockD1({
 		artefacts: [
-			baseArtefact(),
+			...Array.from({ length: 12 }, (_, index) =>
+				baseArtefact({
+					id: `candidate-${String(index + 1).padStart(3, '0')}`,
+					title: `Candidate queue item ${String(index + 1).padStart(3, '0')}`,
+					updated_at: `2026-06-${String(20 - index).padStart(2, '0')}T09:00:00Z`,
+				})
+			),
 			baseArtefact({
 				id: 'published-001',
 				status: 'published',
@@ -259,34 +265,60 @@ async function assertCandidateQueueIsCuratorOnlyAndHydrated() {
 	});
 	const svc = createService(d1);
 
-	const denied = await listRepositoryReviewQueue(svc, '', 'candidates', {
-		permissions: [{ code: 'repository.view' }],
-	});
+	const denied = await listRepositoryReviewQueue(
+		svc,
+		'',
+		'candidates',
+		new URL('https://worker.test/api/repository/review/candidates'),
+		{
+			permissions: [{ code: 'repository.view' }],
+		}
+	);
 	assert.equal(denied.status, 403);
 	assert.equal((await responseJson(denied)).error, 'repository_curator_required');
 
-	const response = await listRepositoryReviewQueue(svc, '', 'candidates', curatorAuth());
+	const response = await listRepositoryReviewQueue(
+		svc,
+		'',
+		'candidates',
+		new URL('https://worker.test/api/repository/review/candidates?page=2'),
+		curatorAuth()
+	);
 	assert.equal(response.status, 200);
 	const payload = await responseJson(response);
 
 	assert.equal(payload.ok, true);
 	assert.equal(payload.queue.key, 'candidates');
-	assert.equal(payload.items.length, 1);
-	assert.equal(payload.items[0].id, 'candidate-001');
-	assert.equal(payload.items[0].queueReason, 'Needs curator review before publication.');
-	assert.equal(
-		payload.items[0].tags.some((tag) => tag.text === 'Plain language'),
-		true
-	);
-	assert.equal(payload.items[0].history[0].action, 'candidate.submitted');
+	assert.equal(payload.items.length, 2);
+	assert.equal(payload.pagination.page, 2);
+	assert.equal(payload.pagination.limit, 10);
+	assert.equal(payload.pagination.total, 12);
+	assert.equal(payload.items[0].id, 'candidate-011');
+	assert.equal(payload.items[1].id, 'candidate-012');
 	assert.deepEqual(
 		payload.navigation.map((entry) => [entry.key, entry.count]),
 		[
-			['candidates', 1],
+			['candidates', 12],
 			['stale', 1],
 			['withdrawn', 1],
 		]
 	);
+
+	const firstPageResponse = await listRepositoryReviewQueue(
+		svc,
+		'',
+		'candidates',
+		new URL('https://worker.test/api/repository/review/candidates'),
+		curatorAuth()
+	);
+	const firstPagePayload = await responseJson(firstPageResponse);
+	assert.equal(firstPagePayload.items[0].id, 'candidate-001');
+	assert.equal(firstPagePayload.items[0].queueReason, 'Needs curator review before publication.');
+	assert.equal(
+		firstPagePayload.items[0].tags.some((tag) => tag.text === 'Plain language'),
+		true
+	);
+	assert.equal(firstPagePayload.items[0].history[0].action, 'candidate.submitted');
 }
 
 async function assertCandidatePublishWritesAuditAndReviewState() {

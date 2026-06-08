@@ -423,7 +423,7 @@ async function handleRepository(request, env, apiPath) {
 
 	const reviewMatch = apiPath.match(/^\/api\/repository\/review\/(candidates|stale|withdrawn)$/);
 	if (reviewMatch && request.method === "GET") {
-		return service.listRepositoryReviewQueue(origin, reviewMatch[1], authContext);
+		return service.listRepositoryReviewQueue(origin, reviewMatch[1], url, authContext);
 	}
 
 	const reviewActionMatch = apiPath.match(/^\/api\/repository\/review\/([^/]+)\/actions$/);

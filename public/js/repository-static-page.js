@@ -417,50 +417,73 @@ function selectedReviewId() {
 	return text(new URLSearchParams(window.location.search).get("id")).trim();
 }
 
-function reviewQueryParams(artefactId = "") {
+function selectedReviewPage() {
+	const page = Number.parseInt(new URLSearchParams(window.location.search).get("page") || "1", 10);
+	return Number.isFinite(page) && page > 0 ? page : 1;
+}
+
+function reviewQueryParams(artefactId = "", page = selectedReviewPage()) {
 	const params = new URLSearchParams();
+	if (page > 1) params.set("page", String(page));
 	if (artefactId) params.set("id", artefactId);
 	return `${window.location.pathname}${params.toString() ? `?${params.toString()}` : ""}`;
 }
 
-function updateReviewHistory(artefactId = "") {
-	window.history.pushState({}, "", reviewQueryParams(artefactId));
+function updateReviewHistory(artefactId = "", page = selectedReviewPage()) {
+	window.history.pushState({}, "", reviewQueryParams(artefactId, page));
 }
 
 function reviewApiPath(queueKey) {
-	const query = window.location.search || "";
-	return `/api/repository/review/${queueKey}${query}`;
+	const params = new URLSearchParams();
+	const page = selectedReviewPage();
+	if (page > 1) params.set("page", String(page));
+	return `/api/repository/review/${queueKey}${params.toString() ? `?${params.toString()}` : ""}`;
 }
 
-function reviewCountText(queue, items = []) {
-	const count = items.length;
-	if (!count) return queue.emptyMessage;
-	return `${count} governed record${count === 1 ? "" : "s"} in ${queue.label.toLowerCase()}.`;
+function reviewCountText(queue, pagination = {}) {
+	const total = Number(pagination.total || 0);
+	if (!total) return queue.emptyMessage;
+	const page = Number(pagination.page || 1);
+	const limit = Number(pagination.limit || PAGE_SIZE);
+	const start = (page - 1) * limit + 1;
+	const end = Math.min(start + limit - 1, total);
+	return `Showing ${start} to ${end} of ${total} queue items.`;
 }
 
-function reviewNavLink(entry) {
-	const link = document.createElement("a");
-	link.className = `govuk-link repository-review-nav__link${entry.current ? " repository-review-nav__link--current" : ""}`;
-	link.href = entry.href;
-	link.textContent = `${entry.label} (${entry.count})`;
-	if (entry.current) link.setAttribute("aria-current", "page");
-	return link;
+function reviewTabId(queueKey) {
+	return `review-${queueKey}`;
 }
 
-function renderReviewNav(navigation = []) {
-	const nav = document.getElementById("repository-review-nav");
-	if (!nav) return;
-	nav.replaceChildren();
-	const list = document.createElement("ul");
-	list.className = "repository-review-nav__list";
-	for (const entry of navigation) {
-		const item = document.createElement("li");
-		item.className = "repository-review-nav__item";
-		item.appendChild(reviewNavLink(entry));
-		list.appendChild(item);
+function setActiveReviewTab(queueKey) {
+	const tabs = document.getElementById("repository-review-tabs");
+	if (!tabs) return;
+	for (const item of tabs.querySelectorAll(".govuk-tabs__list-item")) {
+		const link = item.querySelector(".govuk-tabs__tab");
+		const panelId = link?.getAttribute("href")?.replace(/^#/, "") || "";
+		const current = panelId === reviewTabId(queueKey);
+		item.classList.toggle("govuk-tabs__list-item--selected", current);
+		if (link) {
+			if (current) link.setAttribute("aria-current", "page");
+			else link.removeAttribute("aria-current");
+		}
 	}
-	nav.appendChild(list);
-	nav.setAttribute("aria-busy", "false");
+	for (const panel of tabs.querySelectorAll(".govuk-tabs__panel")) {
+		const current = panel.id === reviewTabId(queueKey);
+		panel.classList.toggle("govuk-tabs__panel--hidden", !current);
+	}
+}
+
+function renderReviewTabs(navigation = [], currentQueue) {
+	const tabs = document.getElementById("repository-review-tabs");
+	if (!tabs) return;
+	for (const entry of navigation) {
+		const link = tabs.querySelector(`.govuk-tabs__tab[href="#${reviewTabId(entry.key)}"]`);
+		if (!link) continue;
+		link.textContent = `${entry.label} (${entry.count})`;
+		link.dataset.reviewHref = `${entry.href}${entry.current ? `${selectedReviewPage() > 1 ? `?page=${selectedReviewPage()}` : ""}` : ""}`;
+		link.dataset.reviewQueue = entry.key;
+	}
+	setActiveReviewTab(currentQueue);
 }
 
 function reviewListButton(item, selectedId) {
@@ -478,10 +501,10 @@ function reviewListButton(item, selectedId) {
 	return button;
 }
 
-function renderReviewList(queue, items = []) {
+function renderReviewList(queue, items = [], pagination = {}) {
 	const target = document.getElementById("repository-review-list");
 	const count = document.getElementById("repository-review-count");
-	if (count) count.textContent = reviewCountText(queue, items);
+	if (count) count.textContent = reviewCountText(queue, pagination);
 	if (!target) return;
 	target.replaceChildren();
 	if (!items.length) {
@@ -498,6 +521,57 @@ function renderReviewList(queue, items = []) {
 	for (const item of items) list.appendChild(reviewListButton(item, selectedId));
 	target.appendChild(list);
 	target.setAttribute("aria-busy", "false");
+}
+
+function renderReviewPagination(queueKey, pagination = {}) {
+	const nav = document.getElementById("repository-review-pagination");
+	if (!nav) return;
+	nav.replaceChildren();
+	const total = Number(pagination.total || 0);
+	const limit = Number(pagination.limit || PAGE_SIZE);
+	const currentPage = Number(pagination.page || 1);
+	const totalPages = Math.ceil(total / limit);
+	if (totalPages <= 1) {
+		nav.hidden = true;
+		return;
+	}
+	const paramsForPage = (page) => reviewQueryParams("", page).replace(window.location.pathname, "");
+	const appendLink = (parent, page, textLabel, ariaLabel, extraClass = "") => {
+		const item = document.createElement(extraClass ? "div" : "li");
+		item.className = extraClass || "govuk-pagination__item";
+		const link = document.createElement("a");
+		link.className = extraClass ? "govuk-link govuk-pagination__link" : "govuk-link govuk-pagination__link";
+		link.href = `${window.location.pathname}${paramsForPage(page)}`;
+		link.textContent = textLabel;
+		link.setAttribute("aria-label", ariaLabel);
+		link.dataset.reviewPage = String(page);
+		if (!extraClass && page === currentPage) link.setAttribute("aria-current", "page");
+		item.appendChild(link);
+		parent.appendChild(item);
+	};
+	if (currentPage > 1) {
+		appendLink(nav, currentPage - 1, "Previous", `Go to page ${currentPage - 1}`, "govuk-pagination__prev");
+	}
+	const list = document.createElement("ul");
+	list.className = "govuk-pagination__list";
+	for (let page = 1; page <= totalPages; page += 1) {
+		const item = document.createElement("li");
+		item.className = `govuk-pagination__item${page === currentPage ? " govuk-pagination__item--current" : ""}`;
+		const link = document.createElement("a");
+		link.className = "govuk-link govuk-pagination__link";
+		link.href = `${window.location.pathname}${paramsForPage(page)}`;
+		link.textContent = String(page);
+		link.setAttribute("aria-label", `Go to page ${page}`);
+		link.dataset.reviewPage = String(page);
+		if (page === currentPage) link.setAttribute("aria-current", "page");
+		item.appendChild(link);
+		list.appendChild(item);
+	}
+	nav.appendChild(list);
+	if (currentPage < totalPages) {
+		appendLink(nav, currentPage + 1, "Next", `Go to page ${currentPage + 1}`, "govuk-pagination__next");
+	}
+	nav.hidden = false;
 }
 
 function reviewSummaryRow(term, value) {
@@ -697,7 +771,7 @@ function renderReviewDetail(queue, item) {
 async function loadReviewState(page, preferredId = selectedReviewId()) {
 	const requestId = ++latestReviewRequest;
 	const queueKey = page.dataset.reviewQueue;
-	document.getElementById("repository-review-nav")?.setAttribute("aria-busy", "true");
+	setActiveReviewTab(queueKey);
 	document.getElementById("repository-review-list")?.setAttribute("aria-busy", "true");
 	document.getElementById("repository-review-detail")?.setAttribute("aria-busy", "true");
 	const requestPath = reviewApiPath(queueKey);
@@ -712,23 +786,52 @@ async function loadReviewState(page, preferredId = selectedReviewId()) {
 		redirectToRepository();
 		return;
 	}
-	renderReviewNav(data?.navigation || []);
+	renderReviewTabs(data?.navigation || [], queueKey);
 	const items = Array.isArray(data?.items) ? data.items : [];
-	renderReviewList(data?.queue || reviewQueueDefinition, items);
+	const pagination = data?.pagination || { page: 1, limit: PAGE_SIZE, total: items.length };
+	renderReviewList(data?.queue || {}, items, pagination);
+	renderReviewPagination(queueKey, pagination);
 	const selected = items.find((item) => item.id === preferredId) || items[0] || null;
-	if (selected && selected.id !== selectedReviewId()) updateReviewHistory(selected.id);
+	if (selected && selected.id !== selectedReviewId()) updateReviewHistory(selected.id, pagination.page);
 	renderReviewDetail(data?.queue || {}, selected);
 }
 
 function bindReviewInteractions(page) {
 	const list = document.getElementById("repository-review-list");
 	const detail = document.getElementById("repository-review-detail");
+	const pagination = document.getElementById("repository-review-pagination");
+	const tabs = document.getElementById("repository-review-tabs");
 	if (list) {
 		list.addEventListener("click", (event) => {
 			const button = event.target.closest("[data-review-artefact-id]");
 			if (!(button instanceof HTMLElement)) return;
-			updateReviewHistory(button.dataset.reviewArtefactId || "");
+			updateReviewHistory(button.dataset.reviewArtefactId || "", selectedReviewPage());
 			loadReviewState(page, button.dataset.reviewArtefactId || "").catch(() => {});
+		});
+	}
+	if (pagination) {
+		pagination.addEventListener("click", (event) => {
+			const link = event.target.closest("[data-review-page]");
+			if (!(link instanceof HTMLAnchorElement)) return;
+			event.preventDefault();
+			const targetPage = Number.parseInt(link.dataset.reviewPage || "1", 10);
+			updateReviewHistory("", targetPage);
+			loadReviewState(page, "").catch(() => {});
+		});
+	}
+	if (tabs) {
+		tabs.addEventListener("click", (event) => {
+			const link = event.target.closest(".govuk-tabs__tab");
+			if (!(link instanceof HTMLAnchorElement)) return;
+			const reviewHref = link.dataset.reviewHref || "";
+			const reviewQueue = link.dataset.reviewQueue || "";
+			if (!reviewHref || !reviewQueue) return;
+			event.preventDefault();
+			if (reviewQueue === page.dataset.reviewQueue) {
+				setActiveReviewTab(reviewQueue);
+				return;
+			}
+			window.location.assign(reviewHref);
 		});
 	}
 	if (detail) {

@@ -207,7 +207,7 @@ export class ResearchOpsService {
 	listRepository = (origin, url, authContext) => Repository.listRepository(this, origin, url, authContext);
 	readRepositoryArtefact = (origin, artefactId) => Repository.readRepositoryArtefact(this, origin, artefactId);
 	createRepositoryCandidate = (req, origin, authContext) => Repository.createRepositoryCandidate(this, req, origin, authContext);
-	listRepositoryReviewQueue = (origin, queueKey, authContext) => Repository.listRepositoryReviewQueue(this, origin, queueKey, authContext);
+	listRepositoryReviewQueue = (origin, queueKey, url, authContext) => Repository.listRepositoryReviewQueue(this, origin, queueKey, url, authContext);
 	applyRepositoryReviewAction = (req, origin, artefactId, authContext) => Repository.applyRepositoryReviewAction(this, req, origin, artefactId, authContext);
 
 	/* ─────────────── Guides ─────────────── */

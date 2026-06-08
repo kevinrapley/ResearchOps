@@ -267,16 +267,6 @@ export const repositoryStaticPages = [
 		backText: 'Back to curator workbench',
 		reviewRoute: true,
 		reviewQueue: 'candidates',
-		sections: [
-			{
-				heading: 'Review checks',
-				items: [
-					'Confirm publication purpose',
-					'Check source evidence links',
-					'Record limitations and where not to reuse the evidence',
-				],
-			},
-		],
 	},
 	{
 		slug: 'review/stale',
@@ -288,16 +278,6 @@ export const repositoryStaticPages = [
 		backText: 'Back to curator workbench',
 		reviewRoute: true,
 		reviewQueue: 'stale',
-		sections: [
-			{
-				heading: 'Review outcomes',
-				items: [
-					'Keep published',
-					'Update limitations or reuse guidance',
-					'Withdraw from repository search',
-				],
-			},
-		],
 	},
 	{
 		slug: 'review/withdrawn',
@@ -309,11 +289,5 @@ export const repositoryStaticPages = [
 		backText: 'Back to curator workbench',
 		reviewRoute: true,
 		reviewQueue: 'withdrawn',
-		sections: [
-			{
-				heading: 'Withdrawal reasons',
-				items: ['Evidence is stale', 'Consent scope changed', 'Reuse guidance no longer applies'],
-			},
-		],
 	},
 ];

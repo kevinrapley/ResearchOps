@@ -47,9 +47,9 @@
 			"tests/repository-front-page-route-state.test.js"
 		],
 		"modified": [
-			"src/govuk/data/repository-page.mjs",
-			"src/govuk/templates/pages/repository-static.njk",
-			"src/styles/repository.scss",
+		"src/govuk/data/repository-page.mjs",
+		"src/govuk/templates/pages/repository-static.njk",
+		"src/styles/repository.scss",
 			"public/js/repository-static-page.js",
 			"infra/cloudflare/src/service/repository.js",
 			"infra/cloudflare/src/service/index.js",
@@ -64,6 +64,7 @@
 		{ "command": "node tests/auth-route-permissions.test.js", "result": "passed" },
 		{ "command": "node tests/repository-front-page-route-state.test.js", "result": "passed" },
 		{ "command": "npm run build:govuk-pages", "result": "passed" },
+		{ "command": "npm run format:check", "result": "passed" },
 		{ "command": "npm run lint", "result": "passed-with-existing-warnings" }
 	],
 	"assumptions": [
@@ -72,7 +73,8 @@
 	],
 	"issuesAndPivots": [
 		"Codex review identified that stale queue renewals could preserve an overdue reviewDueAt and leave records immediately due for review again.",
-		"Runtime regression testing exposed a second defect where underscore-based action values such as confirm_current were being slug-normalised and rejected. The action parser was updated to preserve underscores."
+		"Runtime regression testing exposed a second defect where underscore-based action values such as confirm_current were being slug-normalised and rejected. The action parser was updated to preserve underscores.",
+		"GOV.UK tabs and pagination were moved into the Nunjucks template, while live counts and page numbers remain runtime-driven by the review API and client controller."
 	],
 	"residualRisks": [
 		"Static review page shells remain directly addressable as URLs even when the data and actions are blocked.",

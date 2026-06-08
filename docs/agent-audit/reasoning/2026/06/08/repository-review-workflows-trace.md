@@ -76,6 +76,10 @@
 - Added curator-only action handling for publish, request changes, withdraw, confirm current, update guidance, reinstate and maintain withdrawn outcomes.
 - Required review notes for all review actions and required explicit withdrawal reasons where relevant.
 - Preserved reversible withdrawal handling by routing reinstated records back to `published` or `candidate` depending on publication-gate state.
+- Replaced the custom review queue navigation with GOV.UK tabs rendered in the Nunjucks template and wired client navigation to those tabs.
+- Limited review queue responses to 10 items per page and added queue pagination support through the review API and page controller.
+- Removed static review-check, review-outcome and withdrawal-reason copy from the review route page data.
+- Aligned queue and selected-record panels with matching bordered containers so their top borders land on the same line.
 - Added queue and action tests at both route-state and runtime levels.
 
 ## Assumptions
@@ -91,6 +95,7 @@
 - `node tests/repository-front-page-route-state.test.js`
 - `npm run build:govuk-pages`
 - `npm run lint`
+- `npm run format:check`
 
 ## Validation results
 
@@ -99,8 +104,8 @@
 - Auth route permissions test: passed
 - Repository front page route-state test: passed
 - GOV.UK page build: passed
+- Format check: passed
 - Lint: passed with existing repository warnings only
-- `npm run format:check`: repository-level generated CSS check reports unrelated pre-existing formatting drift until generated CSS is rebuilt; generated output was not retained in this branch
 
 ## Issues and pivots
 
@@ -108,6 +113,7 @@
 - Adjusted the implementation to use immediate authenticated review-API fetch with redirect on `401` and fallback away from review routes on `403`, rather than claim stronger server-side page blocking than the current deployment model provides.
 - Codex review identified that stale-queue `confirm_current` and `update_guidance` could persist an overdue `reviewDueAt`, leaving the record immediately due for review again.
 - While fixing that path, runtime coverage exposed a second defect: underscore-based outcome values such as `confirm_current` were normalised with slug rules and rejected by the service. The action parser was updated to preserve underscores for review outcomes.
+- The requested GOV.UK pagination macro can only be rendered as a placeholder at template-build time because queue totals are runtime data. The template now owns the pagination shell and the page controller updates it with live queue state after fetch.
 
 ## Residual risks
 

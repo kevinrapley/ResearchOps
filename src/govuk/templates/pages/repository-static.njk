@@ -2,6 +2,8 @@
 {% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
 {% from "govuk/components/select/macro.njk" import govukSelect %}
 {% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/tabs/macro.njk" import govukTabs %}
+{% from "govuk/components/pagination/macro.njk" import govukPagination %}
 
 {% block head %}
 	{% if browseType %}
@@ -239,23 +241,76 @@
 	{% elif reviewRoute %}
 	<section class="repository-section" aria-labelledby="repository-review-title" data-repository-review-page data-review-queue="{{ reviewQueue }}">
 		<h2 class="govuk-heading-l" id="repository-review-title">Review workbench</h2>
-		<p class="govuk-body">Only repository curators can open these queues. Each decision records an outcome, notes and the actor who made it.</p>
-		<nav class="repository-review-nav" id="repository-review-nav" aria-label="Repository review queues" aria-busy="true"></nav>
-		<div class="govuk-grid-row repository-review-layout">
-			<div class="govuk-grid-column-one-third">
-				<section aria-labelledby="repository-review-list-title">
-					<h3 class="govuk-heading-m" id="repository-review-list-title">Queue items</h3>
-					<p class="repository-result-count" id="repository-review-count" aria-live="polite"></p>
-					<div id="repository-review-list" class="repository-review-list" aria-live="polite" aria-busy="true"></div>
-				</section>
+		{% set reviewWorkbenchPanelHtml %}
+			<div class="govuk-grid-row repository-review-layout">
+				<div class="govuk-grid-column-one-third">
+					<section aria-labelledby="repository-review-list-title">
+						<h3 class="govuk-heading-m" id="repository-review-list-title">Queue items</h3>
+						<div class="repository-review-panel">
+							<p class="repository-result-count" id="repository-review-count" aria-live="polite"></p>
+							<div id="repository-review-list" class="repository-review-list" aria-live="polite" aria-busy="true"></div>
+							{{ govukPagination({
+								classes: "repository-review-pagination",
+								landmarkLabel: "Queue pages",
+								previous: {
+									labelText: "Previous",
+									href: "#"
+								},
+								next: {
+									labelText: "Next",
+									href: "#"
+								},
+								items: [
+									{
+										number: 1,
+										current: true,
+										href: "#"
+									}
+								],
+								attributes: {
+									id: "repository-review-pagination",
+									hidden: "hidden"
+								}
+							}) }}
+						</div>
+					</section>
+				</div>
+				<div class="govuk-grid-column-two-thirds">
+					<section aria-labelledby="repository-review-detail-title">
+						<h3 class="govuk-heading-m" id="repository-review-detail-title">Selected record</h3>
+						<div class="repository-review-panel">
+							<div id="repository-review-detail" class="repository-review-detail" aria-live="polite" aria-busy="true"></div>
+						</div>
+					</section>
+				</div>
 			</div>
-			<div class="govuk-grid-column-two-thirds">
-				<section aria-labelledby="repository-review-detail-title">
-					<h3 class="govuk-heading-m" id="repository-review-detail-title">Selected record</h3>
-					<div id="repository-review-detail" class="repository-review-detail" aria-live="polite" aria-busy="true"></div>
-				</section>
-			</div>
-		</div>
+		{% endset %}
+		{{ govukTabs({
+			id: "repository-review-tabs",
+			items: [
+				{
+					label: "Candidate artefacts",
+					id: "review-candidates",
+					panel: {
+						html: reviewQueue == "candidates" and reviewWorkbenchPanelHtml or '<p class="govuk-body">Open candidate artefacts review queue.</p>'
+					}
+				},
+				{
+					label: "Due review",
+					id: "review-stale",
+					panel: {
+						html: reviewQueue == "stale" and reviewWorkbenchPanelHtml or '<p class="govuk-body">Open due review queue.</p>'
+					}
+				},
+				{
+					label: "Withdrawn artefacts",
+					id: "review-withdrawn",
+					panel: {
+						html: reviewQueue == "withdrawn" and reviewWorkbenchPanelHtml or '<p class="govuk-body">Open withdrawn artefacts review queue.</p>'
+					}
+				}
+			]
+		}) }}
 	</section>
 	{% endif %}
 

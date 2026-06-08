@@ -8,6 +8,7 @@ const MAX_AIRTABLE_PAGES = 10;
 const HYDRATE_FULL_MODE = "full";
 const PUBLISHED_SNAPSHOT_TTL_MS = 30_000;
 const REVIEW_DUE_RESET_DAYS = 180;
+const REVIEW_QUEUE_PAGE_SIZE = 10;
 const schemaReadyByDatabase = new WeakMap();
 const publishedSnapshotByDatabase = new WeakMap();
 const REVIEW_QUEUE_DEFINITIONS = Object.freeze({
@@ -856,6 +857,14 @@ function pagination(url, total) {
 	return { page, limit, total, offset: (page - 1) * limit };
 }
 
+function reviewPagination(url, total) {
+	const limit = REVIEW_QUEUE_PAGE_SIZE;
+	const totalPages = Math.max(1, Math.ceil(total / limit));
+	const requestedPage = pageNumber(url.searchParams.get("page"));
+	const page = Math.min(requestedPage, totalPages);
+	return { page, limit, total, totalPages, offset: (page - 1) * limit };
+}
+
 async function listRepositoryFromAirtable(svc, url) {
 	const records = await airtableRecords(svc, airtableTableName(svc));
 	const allArtefacts = records.filter(airtableRecordIsPublished).map(airtableRecordToArtefact);
@@ -911,7 +920,7 @@ function repositoryDerivation(showQueues) {
 	};
 }
 
-export async function listRepositoryReviewQueue(svc, origin, queueKey, authContext = {}) {
+export async function listRepositoryReviewQueue(svc, origin, queueKey, url, authContext = {}) {
 	if (!canCurate(authContext)) {
 		return svc.json({ ok: false, error: "repository_curator_required" }, 403, svc.corsHeaders(origin));
 	}
@@ -930,14 +939,17 @@ export async function listRepositoryReviewQueue(svc, origin, queueKey, authConte
 		WHERE ${queueSql.whereSql}
 		ORDER BY ${queueSql.orderSql}
 	`);
-	const tags = await tagsByArtefactId(svc, rows.map((row) => row.id));
-	const audits = await auditRowsByArtefactId(svc, rows.map((row) => row.id));
+	const pager = reviewPagination(url, rows.length);
+	const pagedRows = rows.slice(pager.offset, pager.offset + pager.limit);
+	const tags = await tagsByArtefactId(svc, pagedRows.map((row) => row.id));
+	const audits = await auditRowsByArtefactId(svc, pagedRows.map((row) => row.id));
 	const queues = await repositoryQueues(svc);
 	return svc.json({
 		ok: true,
 		queue: definition,
 		navigation: reviewNavigation(queues, queueKey),
-		items: rows.map((row) => reviewItem(row, tags.get(row.id) || [], audits.get(row.id) || []))
+		pagination: { page: pager.page, limit: pager.limit, total: pager.total },
+		items: pagedRows.map((row) => reviewItem(row, tags.get(row.id) || [], audits.get(row.id) || []))
 	}, 200, svc.corsHeaders(origin));
 }
 
