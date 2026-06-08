@@ -96,7 +96,7 @@ has(files.styles, ".govuk-service-navigation[data-active='Research Repository']"
 has(files.styles, '.govuk-service-navigation__link:visited', 'repository stylesheet');
 has(files.styles, '.govuk-service-navigation__item', 'repository stylesheet');
 has(files.styles, '.govuk-service-navigation__service-name', 'repository stylesheet');
-has(files.styles, 'border-bottom: 5px solid #ffffff;', 'repository stylesheet');
+has(files.styles, 'border-bottom: 0;', 'repository stylesheet');
 has(files.styles, 'box-shadow: none;', 'repository stylesheet');
 has(files.styles, '.govuk-phase-banner .govuk-tag', 'repository stylesheet');
 has(files.styles, '.repository-hero__image-column', 'repository stylesheet');

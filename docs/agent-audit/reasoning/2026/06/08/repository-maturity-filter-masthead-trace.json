@@ -84,7 +84,7 @@
 		},
 		{
 			"command": "follow-up in-app browser active navigation style check",
-			"result": "active repository navigation link has box-shadow none, a 5px white bottom border and white text; active navigation item border resolves to white"
+			"result": "active repository navigation link has box-shadow none, no bottom border and white text; active navigation item border resolves to white"
 		},
 		{
 			"command": "follow-up in-app browser masthead border check",

@@ -52,7 +52,7 @@
 - Added a repository-specific SVG masthead illustration in the same flat GOV.UK palette and hid it below the desktop breakpoint.
 - Styled repository-page service navigation, breadcrumbs, masthead and phase banner for the brand-colour treatment from route-specific `repository.scss`.
 - Strengthened service-navigation inverse-colour selectors against `[data-active="Research Repository"]` so the repository menu remains white after the shared page chrome stylesheet is appended.
-- Removed the active repository navigation `box-shadow` treatment and used an explicit white bottom border instead; route-scoped navigation item and service-name borders are also set to white.
+- Removed active repository navigation `box-shadow` and `border-bottom` treatment; route-scoped navigation item and service-name borders are still set to white.
 - Set the repository `.app-masthead` border to `var(--govuk-brand-colour, #1d70b8)` so it matches the Design System brand-colour treatment.
 - Replaced the masthead SVG with a connected repository workflow illustration: search, review, source evidence, audit record and central repository screen are joined with square dotted connector paths, with a more complete laptop/workstation form.
 
@@ -64,7 +64,7 @@
 - In-app browser desktop verification at `http://127.0.0.1:4180/pages/repository/`: header contains service navigation, masthead is inside `main`, masthead/nav/phase banner use `rgb(29, 112, 184)`, breadcrumbs are white, search panel is white, illustration is visible at 1280px.
 - In-app browser mobile verification at 390px: illustration column is hidden, masthead/nav remain brand-blue, search panel fits the viewport.
 - Follow-up browser verification: repository service-navigation background, active link and visited link colours remain inverse after the shared header stylesheet loads; SVG renders as a connected square-dot workflow illustration at `/images/repository-masthead-illustration.svg`.
-- Follow-up browser verification after active-state adjustment: active repository navigation link has `box-shadow: none`, a 5px white bottom border and white text; active navigation item border resolves to white.
+- Follow-up browser verification after active-state adjustment: active repository navigation link has `box-shadow: none`, no bottom border and white text; active navigation item border resolves to white.
 - Follow-up browser verification after masthead border adjustment: `.app-masthead.repository-masthead` background and bottom border both resolve to `rgb(29, 112, 184)`.
 
 ## Residual Risks
