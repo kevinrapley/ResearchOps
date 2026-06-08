@@ -7,6 +7,23 @@ const repositoryLabelOverrides = new Map([
 	["research-operations-team", "Research operations staff"],
 	["research-operations-staff", "Research operations staff"],
 ]);
+const REVIEW_QUEUE_PAGE_CONTEXT = Object.freeze({
+	candidates: {
+		title: "Candidate artefacts",
+		lead: "Review candidate artefacts before they are published to the repository.",
+		body: "Assess candidate artefacts, record a review outcome and keep a clear audit trail before anything is published.",
+	},
+	stale: {
+		title: "Due review",
+		lead: "Check published artefacts that are due for scheduled review.",
+		body: "Run a scheduled review, confirm whether the evidence still stands and capture the decision for audit.",
+	},
+	withdrawn: {
+		title: "Withdrawn artefacts",
+		lead: "Inspect artefacts that have been withdrawn from repository search.",
+		body: "Inspect governed withdrawn records, understand why they were removed from reuse, and reinstate them when that decision changes.",
+	},
+});
 let latestBrowseRequest = 0;
 let latestReviewRequest = 0;
 
@@ -466,6 +483,23 @@ function reviewTabId(queueKey) {
 	return `review-${queueKey}`;
 }
 
+function reviewPageContext(queueKey) {
+	return REVIEW_QUEUE_PAGE_CONTEXT[queueKey] || REVIEW_QUEUE_PAGE_CONTEXT.candidates;
+}
+
+function setReviewPageContext(queueKey) {
+	const context = reviewPageContext(queueKey);
+	const title = document.querySelector("[data-repository-page-title]");
+	const lead = document.querySelector("[data-repository-page-lead]");
+	const body = document.querySelector("[data-repository-page-body]");
+	const breadcrumb = document.querySelector("#repository-breadcrumbs .govuk-breadcrumbs__list-item:last-child");
+	if (title) title.textContent = context.title;
+	if (lead) lead.textContent = context.lead;
+	if (body) body.textContent = context.body;
+	if (breadcrumb) breadcrumb.textContent = context.title;
+	document.title = `${context.title} - ResearchOps Demo Suite`;
+}
+
 function reviewQueueFromTabId(tabId = "") {
 	if (tabId === "review-withdrawn") return "withdrawn";
 	if (tabId === "review-stale") return "stale";
@@ -485,6 +519,7 @@ function reviewPanelElements(queueKey) {
 function setActiveReviewTab(queueKey) {
 	const tabs = document.getElementById("repository-review-tabs");
 	if (!tabs) return;
+	setReviewPageContext(queueKey);
 	for (const item of tabs.querySelectorAll(".govuk-tabs__list-item")) {
 		const link = item.querySelector(".govuk-tabs__tab");
 		const panelId = link?.getAttribute("href")?.replace(/^#/, "") || "";

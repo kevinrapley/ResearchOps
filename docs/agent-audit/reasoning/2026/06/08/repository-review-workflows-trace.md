@@ -79,6 +79,7 @@
 - Replaced the custom review queue navigation with GOV.UK tabs rendered in the Nunjucks template and wired client navigation to those tabs.
 - Limited review queue responses to 10 items per page and added queue pagination support through the review API and page controller.
 - Reworked the tab implementation so each GOV.UK tab panel contains its own queue-specific workbench shell, with unique list, detail and pagination targets.
+- Wired review tab selection to update the page title, lead paragraph, supporting body text, breadcrumb current item and document title so the whole page context follows the selected queue.
 - Removed static review-check, review-outcome and withdrawal-reason copy from the review route page data.
 - Aligned queue and selected-record panels with matching bordered containers so their top borders land on the same line.
 - Added queue and action tests at both route-state and runtime levels.
@@ -97,6 +98,7 @@
 - `npm run build:govuk-pages`
 - `npm run lint`
 - `npm run format:check`
+- Local browser check for Candidate, Due review and Withdrawn review tab page-context switching
 
 ## Validation results
 
@@ -107,6 +109,7 @@
 - GOV.UK page build: passed
 - Format check: passed
 - Lint: passed with existing repository warnings only
+- Local browser check confirmed the H1, lead, body text, breadcrumb current item and document title update when switching from Due review to Candidate artefacts and Withdrawn artefacts.
 
 ## Issues and pivots
 
@@ -117,6 +120,7 @@
 - The requested GOV.UK pagination macro can only be rendered as a placeholder at template-build time because queue totals are runtime data. The template now owns the pagination shell and the page controller updates it with live queue state after fetch.
 - The first tabs pass still left inactive queues as placeholder panels, which is why only one tab displayed real workbench content. The tab panels were then expanded to provide queue-specific workbench shells inside each GOV.UK tab panel.
 - Moving a single workbench node between tab panels proved brittle with the GOV.UK tabs runtime. The implementation now renders one shell per queue and scopes script updates to `[data-review-workbench]`, avoiding both empty selected panels and duplicate IDs.
+- A later review found that the workbench tab changed but the page-level route context remained on the initially loaded queue. The controller now updates the route-level copy and document metadata as part of the active-tab state.
 
 ## Residual risks
 

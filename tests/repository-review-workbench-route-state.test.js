@@ -28,6 +28,9 @@ lacks(files.pageData, "heading: 'Withdrawal reasons'", "repository review page d
 
 has(files.template, "prefetchRepositoryReview", "repository static template");
 has(files.template, "data-repository-review-page", "repository static template");
+has(files.template, "data-repository-page-title", "repository static template");
+has(files.template, "data-repository-page-lead", "repository static template");
+has(files.template, "data-repository-page-body", "repository static template");
 has(files.template, "data-review-queue=\"{{ reviewQueue }}\"", "repository static template");
 has(files.template, 'import govukTabs', "repository static template");
 has(files.template, 'import govukPagination', "repository static template");
@@ -49,6 +52,12 @@ has(files.script, "let latestReviewRequest = 0", "repository static page script"
 has(files.script, "function renderReviewTabs", "repository static page script");
 has(files.script, "function renderReviewPagination", "repository static page script");
 has(files.script, "function reviewQueueFromTabId(tabId = \"\")", "repository static page script");
+has(files.script, "const REVIEW_QUEUE_PAGE_CONTEXT = Object.freeze({", "repository static page script");
+has(files.script, "function setReviewPageContext(queueKey)", "repository static page script");
+has(files.script, "[data-repository-page-title]", "repository static page script");
+has(files.script, "[data-repository-page-lead]", "repository static page script");
+has(files.script, "[data-repository-page-body]", "repository static page script");
+has(files.script, "document.title = `${context.title} - ResearchOps Demo Suite`;", "repository static page script");
 has(files.script, "function reviewPanelElements(queueKey)", "repository static page script");
 has(files.script, 'document.querySelector(`[data-review-workbench="${queueKey}"]`)', "repository static page script");
 has(files.script, 'workbench?.querySelector("[data-review-list]")', "repository static page script");

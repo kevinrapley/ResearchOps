@@ -65,7 +65,11 @@
 		{ "command": "node tests/repository-front-page-route-state.test.js", "result": "passed" },
 		{ "command": "npm run build:govuk-pages", "result": "passed" },
 		{ "command": "npm run format:check", "result": "passed" },
-		{ "command": "npm run lint", "result": "passed-with-existing-warnings" }
+		{ "command": "npm run lint", "result": "passed-with-existing-warnings" },
+		{
+			"command": "local browser review tab page-context switching check",
+			"result": "passed"
+		}
 	],
 	"assumptions": [
 		"Static /pages review routes are protected in practice by curator-only APIs and client redirect handling because the current Pages setup does not expose Worker route-permission enforcement for those asset URLs.",
@@ -76,7 +80,8 @@
 		"Runtime regression testing exposed a second defect where underscore-based action values such as confirm_current were being slug-normalised and rejected. The action parser was updated to preserve underscores.",
 		"GOV.UK tabs and pagination were moved into the Nunjucks template, while live counts and page numbers remain runtime-driven by the review API and client controller.",
 		"The first tabs pass left inactive queues as placeholder panels. The review template and controller were then revised so each GOV.UK tab panel owns a queue-specific workbench shell and switching tabs updates queue content in place.",
-		"Moving a single workbench node between tab panels proved brittle with the GOV.UK tabs runtime. The final implementation renders one shell per queue and scopes script updates to [data-review-workbench], avoiding both empty selected panels and duplicate IDs."
+		"Moving a single workbench node between tab panels proved brittle with the GOV.UK tabs runtime. The final implementation renders one shell per queue and scopes script updates to [data-review-workbench], avoiding both empty selected panels and duplicate IDs.",
+		"A later review found that the workbench tab changed but the page-level route context remained on the initially loaded queue. The controller now updates the H1, lead, body text, breadcrumb current item and document title as part of active-tab state."
 	],
 	"residualRisks": [
 		"Static review page shells remain directly addressable as URLs even when the data and actions are blocked.",
