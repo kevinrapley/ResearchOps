@@ -20,7 +20,7 @@ for (const route of registeredPagePaths) {
 	const page = fs.readFileSync(filePath, 'utf8');
 
 	assert.match(page, /<html class="govuk-template" lang="en">/, `${filePath} should use GOV.UK template html class`);
-	assert.match(page, /class="govuk-template__body"/, `${filePath} should use GOV.UK template body class`);
+	assert.match(page, /<body\b[^>]*class="[^"]*\bgovuk-template__body\b/, `${filePath} should use GOV.UK template body class`);
 	assert.match(page, /govuk-frontend-supported/, `${filePath} should include GOV.UK Frontend support snippet`);
 	assert.match(page, /\/assets\/govuk\/govuk-frontend\.css/, `${filePath} should load generated GOV.UK Frontend CSS explicitly`);
 	assert.match(page, /\/components\/layout\.js/, `${filePath} should load the shared x-include loader explicitly`);
