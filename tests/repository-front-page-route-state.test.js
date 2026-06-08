@@ -2,9 +2,13 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 
 const files = {
+	headerPartial: fs.readFileSync('public/partials/header.html', 'utf8'),
 	template: fs.readFileSync('src/govuk/templates/pages/repository.njk', 'utf8'),
 	staticTemplate: fs.readFileSync('src/govuk/templates/pages/repository-static.njk', 'utf8'),
+	repositoryMacro: fs.readFileSync('src/govuk/templates/macros/repository.njk', 'utf8'),
 	pageData: fs.readFileSync('src/govuk/data/repository-page.mjs', 'utf8'),
+	styles: fs.readFileSync('src/styles/repository.scss', 'utf8'),
+	mastheadIllustration: fs.readFileSync('public/images/repository-masthead-illustration.svg', 'utf8'),
 	pageScript: fs.readFileSync('public/js/repository-page.js', 'utf8'),
 	staticScript: [
 		'public/js/repository-static-page.js',
@@ -52,12 +56,41 @@ has(files.template, 'Research repository', 'repository template');
 has(files.template, 'Published artefacts', 'repository template');
 has(files.template, 'repository-page.js?v=repository-api-20260607c', 'repository template');
 has(files.template, "params.set('hydrate', 'full')", 'repository template');
+has(files.template, '<div class="app-masthead repository-masthead">', 'repository template');
+has(files.template, '{{ repositoryHero(hero) }}', 'repository template');
 has(files.template, 'class="govuk-heading-xl govuk-!-margin-bottom-1 repository-metric__number"', 'repository template');
 has(files.template, 'class="govuk-body repository-metric__label"', 'repository template');
 has(files.template, 'id="repository-curator-workbench"', 'repository template');
 has(files.template, "{ value: 'interviews', text: 'Moderated interviews' }", 'repository template');
+has(files.template, "name: 'maturity'", 'repository template');
+has(files.template, "text: 'Evidence maturity'", 'repository template');
+has(files.template, "text: 'Apply filters'", 'repository template');
 lacks(files.template, 'Technical detail', 'repository template');
 lacks(files.template, 'Repository status', 'repository template');
+
+has(files.headerPartial, '<header class="govuk-template__header">', 'header partial');
+has(files.headerPartial, '<div class="govuk-header" role="banner" data-module="govuk-header">', 'header partial');
+has(files.headerPartial, '<section class="govuk-service-navigation"', 'header partial');
+has(files.headerPartial, '</section>\n</header>', 'header partial');
+
+has(files.repositoryMacro, 'repository-hero__image-column', 'repository macro');
+has(files.repositoryMacro, 'src="/images/repository-masthead-illustration.svg"', 'repository macro');
+has(files.repositoryMacro, 'role="presentation"', 'repository macro');
+
+has(files.mastheadIllustration, '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 610 483"', 'repository masthead illustration');
+has(files.mastheadIllustration, 'class="green"', 'repository masthead illustration');
+has(files.mastheadIllustration, 'class="yellow"', 'repository masthead illustration');
+
+has(files.styles, '.repository-filter-panel .govuk-button--secondary', 'repository stylesheet');
+has(files.styles, 'background: #ffffff;', 'repository stylesheet');
+has(files.styles, '.repository-masthead', 'repository stylesheet');
+has(files.styles, 'background: var(--govuk-brand-colour, #1d70b8);', 'repository stylesheet');
+has(files.styles, '.repository-masthead .govuk-breadcrumbs__link', 'repository stylesheet');
+has(files.styles, '.govuk-service-navigation__link', 'repository stylesheet');
+has(files.styles, '.govuk-phase-banner .govuk-tag', 'repository stylesheet');
+has(files.styles, '.repository-hero__image-column', 'repository stylesheet');
+has(files.styles, '@media (min-width: 48.0625em)', 'repository stylesheet');
+
 
 has(files.staticTemplate, 'repository-selected-state', 'static repository template');
 has(files.staticTemplate, 'repository-sort-form', 'static repository template');
@@ -117,6 +150,12 @@ has(files.service, 'const HYDRATE_FULL_MODE = "full"', 'repository service');
 has(files.service, 'const snapshot = await publishedRepositorySnapshot(svc);', 'repository service');
 has(files.service, 'invalidateRepositorySnapshotCache(svc);', 'repository service');
 has(files.service, 'const method = searchValues(url, "method")', 'repository service');
+has(
+	files.service,
+	'facetFromArtefacts(allArtefacts, "maturity", "Evidence maturity", "evidenceMaturity")',
+	'repository service'
+);
+lacks(files.service, 'facetFromArtefacts(allArtefacts, "evidence_maturity", "Evidence maturity", "evidenceMaturity")', 'repository service');
 lacks(files.service, 'String(error?.message || error) }, 503', 'repository service');
 
 has(files.schemaMigration, 'CREATE TABLE IF NOT EXISTS rops_repository_artefacts', 'schema migration');

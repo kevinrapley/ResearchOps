@@ -833,7 +833,7 @@ async function publishedRepositorySnapshot(svc) {
 			metrics: metricsFromRepository(rows, tags),
 			filters: [
 				facetFromArtefacts(allArtefacts, "method", "Method", "method"),
-				facetFromArtefacts(allArtefacts, "evidence_maturity", "Evidence maturity", "evidenceMaturity"),
+				facetFromArtefacts(allArtefacts, "maturity", "Evidence maturity", "evidenceMaturity"),
 				facetFromArtefacts(allArtefacts, "service_area", "Service area", "serviceArea"),
 				facetFromArtefacts(allArtefacts, "user_group", "User group", "userGroup"),
 				facetFromArtefacts(allArtefacts, "risk_area", "Risk or constraint", "riskArea")
@@ -879,7 +879,7 @@ async function listRepositoryFromAirtable(svc, url) {
 		metrics: metricsFromArtefacts(allArtefacts),
 		filters: [
 			facetFromArtefacts(allArtefacts, "method", "Method", "method"),
-			facetFromArtefacts(allArtefacts, "evidence_maturity", "Evidence maturity", "evidenceMaturity"),
+			facetFromArtefacts(allArtefacts, "maturity", "Evidence maturity", "evidenceMaturity"),
 			facetFromArtefacts(allArtefacts, "service_area", "Service area", "serviceArea"),
 			facetFromArtefacts(allArtefacts, "user_group", "User group", "userGroup"),
 			facetFromArtefacts(allArtefacts, "risk_area", "Risk or constraint", "riskArea")
