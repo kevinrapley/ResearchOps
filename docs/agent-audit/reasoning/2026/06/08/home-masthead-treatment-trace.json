@@ -8,7 +8,7 @@
 		"requiresTrace": true,
 		"reason": "trace-required-prefix"
 	},
-	"taskSummary": "Apply the repository landing page masthead treatment to the ResearchOps home page, remove the home breadcrumb, and add a high-fidelity ResearchOps SVG illustration that communicates research operations through planning, recruitment, moderated sessions, notes, evidence and service dashboard artefacts.",
+	"taskSummary": "Apply the repository landing page masthead treatment to the ResearchOps home page, remove the home breadcrumb, add a high-fidelity ResearchOps SVG illustration, and fix the failing unit test assertion caused by route-scoped body classes.",
 	"operatingModel": {
 		"loaded": [
 			"README.md",
@@ -49,12 +49,16 @@
 			"src/styles/researchops-home.scss",
 			"src/govuk/templates/layouts/researchops.njk",
 			"scripts/govuk/render-govuk-pages.mjs",
+			"scripts/styles/generated-css-targets.mjs",
+			"scripts/styles/build-generated-css.mjs",
+			"scripts/styles/format-generated-css.mjs",
 			"public/index.html",
 			"public/assets/researchops/researchops-home.css",
 			"assets/researchops/researchops-home.css",
 			"public/partials/header.html",
 			"tests/repository-front-page-route-state.test.js",
 			"tests/govuk-page-chrome-navigation-route-state.test.js",
+			"tests/govuk-frontend-integration-route-state.test.js",
 			"docs/design-system/govuk-compliance-audit.md",
 			"docs/agent-audit/reasoning/2026/06/07/repository-front-page-nunjucks-sass.md",
 			"GOV.UK Design System home page image evidence",
@@ -62,17 +66,17 @@
 		],
 		"modified": [
 			"src/govuk/templates/pages/home.njk",
+			"src/styles/researchops-home.scss",
 			"scripts/govuk/render-govuk-pages.mjs",
 			"public/index.html",
-			"tests/home-masthead-route-state.test.js",
+			"public/assets/researchops/researchops-home.css",
+			"assets/researchops/researchops-home.css",
+			"tests/govuk-frontend-integration-route-state.test.js",
 			"docs/agent-audit/reasoning/2026/06/08/home-masthead-treatment-trace.md",
 			"docs/agent-audit/reasoning/2026/06/08/home-masthead-treatment-trace.json"
 		],
 		"added": [
 			"public/images/home-masthead-researchops-illustration.svg"
-		],
-		"deleted": [
-			"tests/home-front-page-route-state.test.js"
 		]
 	},
 	"decisions": [
@@ -83,7 +87,8 @@
 		"Built the SVG around recognisable research operations artefacts: study plan card, participant operations panel, moderated session panel, live notes card, evidence trail and ResearchOps service dashboard.",
 		"Used grouped SVG structure, GOV.UK palette, connected dotted workflow paths and detailed UI artefacts rather than a low-fidelity icon.",
 		"Added explicit image dimensions in Nunjucks and rendered HTML to constrain the illustration in the one-third masthead column.",
-		"Replaced the stale breadcrumb test with tests/home-masthead-route-state.test.js."
+		"Removed the added home masthead route-state test after the failure investigation showed the actual failing contract was the shared GOV.UK integration test's exact body-class assertion.",
+		"Updated tests/govuk-frontend-integration-route-state.test.js to assert govuk-template__body as a class token so route-scoped body marker classes are allowed."
 	],
 	"validation": [
 		{
@@ -91,12 +96,24 @@
 			"result": "changed-file scope inspected"
 		},
 		{
-			"command": "Python XML parser for home SVG",
-			"result": "passed before commit"
+			"command": "Release gate artifact inspection",
+			"result": "identified tests/govuk-frontend-integration-route-state.test.js exact body-class assertion as the unit test failure"
 		},
 		{
-			"command": "tests/home-masthead-route-state.test.js added",
-			"result": "source/rendered route-state coverage added but not executed in this connector-only session"
+			"command": "CI",
+			"result": "passed on Node 20 and Node 22 after the assertion update"
+		},
+		{
+			"command": "Worker CI",
+			"result": "passed after the assertion update"
+		},
+		{
+			"command": "Release Gate",
+			"result": "passed after the assertion update"
+		},
+		{
+			"command": "Accessibility audit, Render GOV.UK pages, Lychee, BDD and Validate ResearchOps",
+			"result": "passed"
 		},
 		{
 			"command": "PR #376 review thread inspection",
@@ -104,12 +121,7 @@
 		}
 	],
 	"validationNotRun": [
-		"npm run build",
-		"npm test",
-		"npm run format:check",
-		"npm run generated-css:check",
-		"npm run lint",
-		"browser checks"
+		"browser visual check"
 	],
 	"residualRisks": [
 		"The home masthead should be checked visually in browser at desktop and mobile widths.",
