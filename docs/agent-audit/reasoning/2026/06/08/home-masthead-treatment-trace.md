@@ -4,7 +4,7 @@
 - Trace layer: operational
 - Branch: `feature/home-masthead-treatment`
 - Branch decision: trace required by `feature/` prefix
-- Task summary: apply the repository landing page masthead treatment to the ResearchOps home page, including a route-scoped body marker, inverse service navigation, inverse phase banner, breadcrumb trail, brand-colour masthead and source/rendered route-state coverage.
+- Task summary: apply the repository landing page masthead treatment to the ResearchOps home page, remove the home breadcrumb, and add a high-fidelity ResearchOps SVG illustration that communicates research operations through planning, recruitment, moderated sessions, notes, evidence and service dashboard artefacts.
 
 ## Operating model evidence
 
@@ -42,6 +42,7 @@
 - `src/govuk/templates/pages/repository.njk`
 - `src/govuk/templates/macros/repository.njk`
 - `src/styles/repository.scss`
+- `public/images/repository-masthead-illustration.svg`
 - `src/govuk/templates/pages/home.njk`
 - `src/styles/researchops-home.scss`
 - `src/govuk/templates/layouts/researchops.njk`
@@ -57,34 +58,39 @@
 - `tests/govuk-page-chrome-navigation-route-state.test.js`
 - `docs/design-system/govuk-compliance-audit.md`
 - `docs/agent-audit/reasoning/2026/06/07/repository-front-page-nunjucks-sass.md`
+- GOV.UK Design System home page and image URL evidence.
+- DWP Design System home page and image URL evidence.
 
 ## Files created or modified
 
 - `src/govuk/templates/pages/home.njk`
-- `src/styles/researchops-home.scss`
 - `scripts/govuk/render-govuk-pages.mjs`
 - `public/index.html`
-- `public/assets/researchops/researchops-home.css`
-- `assets/researchops/researchops-home.css`
-- `tests/home-front-page-route-state.test.js`
+- `public/images/home-masthead-researchops-illustration.svg`
+- `public/assets/researchops/researchops-home-masthead.css`
+- `assets/researchops/researchops-home-masthead.css`
+- `tests/home-masthead-route-state.test.js`
 - `docs/agent-audit/reasoning/2026/06/08/home-masthead-treatment-trace.md`
 - `docs/agent-audit/reasoning/2026/06/08/home-masthead-treatment-trace.json`
 
 ## Implementation decisions
 
-- Reused the repository page pattern rather than creating a new global masthead component.
-- Added `researchops-home-front-page` through the GOV.UK renderer context so the body marker is present at render time.
+- Reused the repository page's route-scoped masthead treatment, but removed the home breadcrumb because it is not needed on the home page.
+- Kept the home body marker `researchops-home-front-page` in the GOV.UK renderer context.
 - Kept the inverse header, service navigation and phase-banner styling route-scoped to the home page.
-- Moved only the home title, lead and introductory body text into the masthead.
-- Kept the start guidance, project sequence and next-action cards below the masthead in the normal content container.
-- Added a home breadcrumb trail inside the masthead so the home page follows the same chrome treatment as the repository landing page.
-- Updated committed generated home HTML and both generated home CSS outputs because the home route still commits these generated artefacts.
-- Added route-state coverage for source template, renderer context, Sass, committed HTML and committed generated CSS.
+- Added a decorative SVG to the home masthead, hidden from assistive technology with empty alt text and `role="presentation"`.
+- Built the SVG around recognisable research operations artefacts: study plan card, participant operations panel, moderated session panel, live notes card, evidence trail and ResearchOps service dashboard.
+- Used the same crisp flat vector approach as the repository illustration: grouped SVG structure, GOV.UK palette, connected dotted workflow paths and detailed UI artefacts rather than a low-fidelity icon.
+- Added explicit image dimensions in the Nunjucks and rendered HTML to avoid overflow in the one-third masthead column.
+- Added a small masthead illustration stylesheet for the responsive image column because the main generated home CSS source could not be safely mutated through the connector in this session.
+- Replaced the stale breadcrumb test with `tests/home-masthead-route-state.test.js`.
 
 ## Validation attempted
 
 - GitHub compare from `main` to `feature/home-masthead-treatment`: branch is ahead and changed-file scope was inspected.
-- Static route-state assertions were added in `tests/home-front-page-route-state.test.js`.
+- The SVG was parsed locally with Python `xml.etree.ElementTree` before commit.
+- Static route-state assertions were added in `tests/home-masthead-route-state.test.js`.
+- PR review threads were checked before and after the follow-up work; no review threads were present at the time of checking.
 
 ## Validation not run
 
@@ -92,5 +98,5 @@
 
 ## Residual risks
 
-- The generated CSS was manually aligned to the Sass source and the existing generated CSS formatter style. A full local `npm run build:researchops` or `npm run build` should be run before merge.
-- The home page breadcrumb is a single current-page item. This matches the requested treatment but should be checked visually in browser against the repository masthead.
+- The home masthead should still be checked visually in browser at desktop and mobile widths.
+- A future clean-up can fold `researchops-home-masthead.css` into the generated Sass pipeline if desired.
