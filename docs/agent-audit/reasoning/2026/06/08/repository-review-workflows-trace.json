@@ -1,0 +1,77 @@
+{
+	"traceId": "repository-review-workflows-2026-06-08",
+	"traceLayer": "operational",
+	"date": "2026-06-08",
+	"branch": "feature/repository-review-workflows",
+	"branchDecision": {
+		"prefix": "feature/",
+		"requiresTrace": true,
+		"reason": "trace-required-prefix"
+	},
+	"taskSummary": "Replace placeholder repository review routes with curator-only queue workbenches backed by D1 review APIs and auditable review actions.",
+	"operatingModel": {
+		"loaded": [
+			"AGENTS.md",
+			".agent-operating-model/orchestration.xml",
+			".agent-operating-model/bundle-registry.json",
+			".agent-operating-model/task-signal-catalog.json",
+			".agent-operating-model/selection-rules.json",
+			".agent-operating-model/precedence-policy.md",
+			".agent-operating-model/github-mutation-policy.md"
+		],
+		"selectedBundles": [
+			".agent-operating-model/bundles/github/",
+			".agent-operating-model/bundles/researchops-developer-control/",
+			".agent-operating-model/bundles/multi-functional-team/",
+			".agent-operating-model/bundles/govuk-design-system/",
+			".agent-operating-model/bundles/cloudflare/"
+		],
+		"skippedBundles": [
+			".agent-operating-model/bundles/openai/",
+			".agent-operating-model/bundles/mcp-agent-tooling/",
+			".agent-operating-model/bundles/airtable-public-api/",
+			".agent-operating-model/bundles/mural-public-api/"
+		]
+	},
+	"files": {
+		"read": [
+			"src/govuk/data/repository-page.mjs",
+			"src/govuk/templates/pages/repository-static.njk",
+			"src/govuk/templates/pages/repository.njk",
+			"src/styles/repository.scss",
+			"public/js/repository-static-page.js",
+			"infra/cloudflare/src/service/repository.js",
+			"infra/cloudflare/src/service/index.js",
+			"infra/cloudflare/src/worker.js",
+			"tests/auth-route-permissions.test.js",
+			"tests/repository-front-page-route-state.test.js"
+		],
+		"modified": [
+			"src/govuk/data/repository-page.mjs",
+			"src/govuk/templates/pages/repository-static.njk",
+			"src/styles/repository.scss",
+			"public/js/repository-static-page.js",
+			"infra/cloudflare/src/service/repository.js",
+			"infra/cloudflare/src/service/index.js",
+			"infra/cloudflare/src/worker.js",
+			"tests/repository-review-workbench-route-state.test.js",
+			"tests/repository-review-workbench-runtime.test.js"
+		]
+	},
+	"validation": [
+		{ "command": "node tests/repository-review-workbench-route-state.test.js", "result": "passed" },
+		{ "command": "node tests/repository-review-workbench-runtime.test.js", "result": "passed" },
+		{ "command": "node tests/auth-route-permissions.test.js", "result": "passed" },
+		{ "command": "node tests/repository-front-page-route-state.test.js", "result": "passed" },
+		{ "command": "npm run build:govuk-pages", "result": "passed" },
+		{ "command": "npm run lint", "result": "passed-with-existing-warnings" }
+	],
+	"assumptions": [
+		"Static /pages review routes are protected in practice by curator-only APIs and client redirect handling because the current Pages setup does not expose Worker route-permission enforcement for those asset URLs.",
+		"Curator review flows are D1-only for this implementation."
+	],
+	"residualRisks": [
+		"Static review page shells remain directly addressable as URLs even when the data and actions are blocked.",
+		"Repository main page still exposes curator workbench links in static markup."
+	]
+}

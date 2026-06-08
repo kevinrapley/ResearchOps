@@ -46,6 +46,7 @@ has(files.template, 'repository-page.js?v=repository-api-20260607c', 'repository
 has(files.template, "params.set('hydrate', 'full')", 'repository template');
 has(files.template, 'class="govuk-heading-xl govuk-!-margin-bottom-1 repository-metric__number"', 'repository template');
 has(files.template, 'class="govuk-body repository-metric__label"', 'repository template');
+has(files.template, 'id="repository-curator-workbench"', 'repository template');
 has(files.template, "{ value: 'interviews', text: 'Moderated interviews' }", 'repository template');
 lacks(files.template, 'Technical detail', 'repository template');
 lacks(files.template, 'Repository status', 'repository template');
@@ -63,6 +64,8 @@ lacks(files.pageData, 'teamDecisions', 'page data');
 lacks(files.pageData, 'artefacts: [', 'page data');
 
 has(files.pageScript, 'function displayTags', 'repository page script');
+has(files.pageScript, 'const workbench = document.getElementById("repository-curator-workbench");', 'repository page script');
+has(files.pageScript, 'if (workbench) workbench.hidden = !canCurate;', 'repository page script');
 has(files.pageScript, '!/seeded/i.test(text(tag.text))', 'repository page script');
 has(files.pageScript, 'fetchWithTimeout(repositoryRequestUrl(params))', 'repository page script');
 has(files.pageScript, 'let latestRepositoryRequest = 0', 'repository page script');

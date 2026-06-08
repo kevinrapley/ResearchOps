@@ -8,6 +8,7 @@ const repositoryLabelOverrides = new Map([
 	["research-operations-staff", "Research operations staff"],
 ]);
 let latestBrowseRequest = 0;
+let latestReviewRequest = 0;
 
 function text(value) {
 	return String(value || "");
@@ -66,6 +67,10 @@ async function repositoryJson(path, options = {}) {
 function signInUrl() {
 	const returnTo = `${window.location.pathname}${window.location.search || ""}`;
 	return `/pages/account/sign-in/?returnTo=${encodeURIComponent(returnTo)}`;
+}
+
+function redirectToRepository() {
+	window.location.assign("/pages/repository/");
 }
 
 function option(value, label = value) {
@@ -408,5 +413,369 @@ async function initialiseCandidatePage() {
 	});
 }
 
+function selectedReviewId() {
+	return text(new URLSearchParams(window.location.search).get("id")).trim();
+}
+
+function reviewQueryParams(artefactId = "") {
+	const params = new URLSearchParams();
+	if (artefactId) params.set("id", artefactId);
+	return `${window.location.pathname}${params.toString() ? `?${params.toString()}` : ""}`;
+}
+
+function updateReviewHistory(artefactId = "") {
+	window.history.pushState({}, "", reviewQueryParams(artefactId));
+}
+
+function reviewApiPath(queueKey) {
+	const query = window.location.search || "";
+	return `/api/repository/review/${queueKey}${query}`;
+}
+
+function reviewCountText(queue, items = []) {
+	const count = items.length;
+	if (!count) return queue.emptyMessage;
+	return `${count} governed record${count === 1 ? "" : "s"} in ${queue.label.toLowerCase()}.`;
+}
+
+function reviewNavLink(entry) {
+	const link = document.createElement("a");
+	link.className = `govuk-link repository-review-nav__link${entry.current ? " repository-review-nav__link--current" : ""}`;
+	link.href = entry.href;
+	link.textContent = `${entry.label} (${entry.count})`;
+	if (entry.current) link.setAttribute("aria-current", "page");
+	return link;
+}
+
+function renderReviewNav(navigation = []) {
+	const nav = document.getElementById("repository-review-nav");
+	if (!nav) return;
+	nav.replaceChildren();
+	const list = document.createElement("ul");
+	list.className = "repository-review-nav__list";
+	for (const entry of navigation) {
+		const item = document.createElement("li");
+		item.className = "repository-review-nav__item";
+		item.appendChild(reviewNavLink(entry));
+		list.appendChild(item);
+	}
+	nav.appendChild(list);
+	nav.setAttribute("aria-busy", "false");
+}
+
+function reviewListButton(item, selectedId) {
+	const button = document.createElement("button");
+	button.type = "button";
+	button.className = `repository-review-list__button${item.id === selectedId ? " repository-review-list__button--selected" : ""}`;
+	button.dataset.reviewArtefactId = item.id;
+	const title = document.createElement("span");
+	title.className = "repository-review-list__title";
+	title.textContent = text(item.title);
+	const meta = document.createElement("span");
+	meta.className = "repository-review-list__meta";
+	meta.textContent = item.withdrawalReason || item.queueReason || item.reviewDueAt || item.updatedAt || "No review note recorded";
+	button.append(title, meta);
+	return button;
+}
+
+function renderReviewList(queue, items = []) {
+	const target = document.getElementById("repository-review-list");
+	const count = document.getElementById("repository-review-count");
+	if (count) count.textContent = reviewCountText(queue, items);
+	if (!target) return;
+	target.replaceChildren();
+	if (!items.length) {
+		const inset = document.createElement("div");
+		inset.className = "govuk-inset-text";
+		inset.textContent = queue.emptyMessage;
+		target.appendChild(inset);
+		target.setAttribute("aria-busy", "false");
+		return;
+	}
+	const list = document.createElement("div");
+	list.className = "repository-review-list__items";
+	const selectedId = selectedReviewId() || items[0].id;
+	for (const item of items) list.appendChild(reviewListButton(item, selectedId));
+	target.appendChild(list);
+	target.setAttribute("aria-busy", "false");
+}
+
+function reviewSummaryRow(term, value) {
+	const row = document.createElement("div");
+	row.className = "govuk-summary-list__row";
+	const dt = document.createElement("dt");
+	dt.className = "govuk-summary-list__key";
+	dt.textContent = term;
+	const dd = document.createElement("dd");
+	dd.className = "govuk-summary-list__value";
+	dd.textContent = text(value) || "Not recorded";
+	row.append(dt, dd);
+	return row;
+}
+
+function reviewHistoryNode(entry) {
+	const item = document.createElement("li");
+	item.className = "repository-review-history__item";
+	const heading = document.createElement("p");
+	heading.className = "govuk-body govuk-!-font-weight-bold govuk-!-margin-bottom-1";
+	heading.textContent = `${text(entry.outcome || entry.action)} by ${text(entry.actor || "Curator")}`;
+	const meta = document.createElement("p");
+	meta.className = "govuk-body-s govuk-!-margin-bottom-1";
+	meta.textContent = text(entry.createdAt);
+	const notes = document.createElement("p");
+	notes.className = "govuk-body-s govuk-!-margin-bottom-0";
+	notes.textContent = text(entry.notes || entry.withdrawalReason || "No notes recorded.");
+	item.append(heading, meta, notes);
+	return item;
+}
+
+function renderReviewDetail(queue, item) {
+	const target = document.getElementById("repository-review-detail");
+	if (!target) return;
+	target.replaceChildren();
+	if (!item) {
+		const inset = document.createElement("div");
+		inset.className = "govuk-inset-text";
+		inset.textContent = queue.emptyMessage;
+		target.appendChild(inset);
+		target.setAttribute("aria-busy", "false");
+		return;
+	}
+
+	const heading = document.createElement("h4");
+	heading.className = "govuk-heading-m";
+	heading.textContent = text(item.title);
+
+	const summary = document.createElement("p");
+	summary.className = "govuk-body";
+	summary.textContent = text(item.summary);
+
+	const tags = document.createElement("div");
+	tags.className = "repository-artefact-list__meta govuk-!-margin-bottom-4";
+	for (const tag of displayTags(item)) tags.appendChild(tagNode(tag));
+
+	const details = document.createElement("dl");
+	details.className = "govuk-summary-list repository-review-summary";
+	details.append(
+		reviewSummaryRow("Status", titleFromSlug(item.status)),
+		reviewSummaryRow("Review due", item.reviewDueAt || "No date recorded"),
+		reviewSummaryRow("Service area", titleFromSlug(item.serviceArea)),
+		reviewSummaryRow("User group", titleFromSlug(item.userGroup)),
+		reviewSummaryRow("Method", titleFromSlug(item.method || item.sourceMethod)),
+		reviewSummaryRow("Source project", item.sourceProjectId || "Not recorded"),
+		reviewSummaryRow("Source study", item.sourceStudyId || "Not recorded")
+	);
+
+	if (item.queueReason || item.withdrawalReason) {
+		const inset = document.createElement("div");
+		inset.className = "govuk-inset-text";
+		inset.textContent = item.withdrawalReason || item.queueReason;
+		target.append(heading, summary, tags, details, inset);
+	} else {
+		target.append(heading, summary, tags, details);
+	}
+
+	const form = document.createElement("form");
+	form.className = "repository-review-form";
+	form.dataset.reviewActionForm = item.id;
+
+	const formHeading = document.createElement("h5");
+	formHeading.className = "govuk-heading-s";
+	formHeading.textContent = queue.actionLabel;
+	form.appendChild(formHeading);
+
+	const outcomeGroup = document.createElement("div");
+	outcomeGroup.className = "govuk-form-group";
+	const outcomeLabel = document.createElement("label");
+	outcomeLabel.className = "govuk-label govuk-label--s";
+	outcomeLabel.setAttribute("for", "repository-review-outcome");
+	outcomeLabel.textContent = "Outcome";
+	const outcomeSelect = document.createElement("select");
+	outcomeSelect.className = "govuk-select";
+	outcomeSelect.id = "repository-review-outcome";
+	outcomeSelect.name = "outcome";
+	for (const optionItem of queue.outcomes || []) outcomeSelect.appendChild(option(optionItem.value, optionItem.label));
+	outcomeGroup.append(outcomeLabel, outcomeSelect);
+	form.appendChild(outcomeGroup);
+
+	const dueGroup = document.createElement("div");
+	dueGroup.className = "govuk-form-group";
+	const dueLabel = document.createElement("label");
+	dueLabel.className = "govuk-label govuk-label--s";
+	dueLabel.setAttribute("for", "repository-review-due-at");
+	dueLabel.textContent = "Next review date";
+	const dueInput = document.createElement("input");
+	dueInput.className = "govuk-input govuk-input--width-20";
+	dueInput.id = "repository-review-due-at";
+	dueInput.name = "reviewDueAt";
+	dueInput.type = "date";
+	dueInput.value = text(item.reviewDueAt).slice(0, 10);
+	dueGroup.append(dueLabel, dueInput);
+	form.appendChild(dueGroup);
+
+	const reasonGroup = document.createElement("div");
+	reasonGroup.className = "govuk-form-group";
+	const reasonLabel = document.createElement("label");
+	reasonLabel.className = "govuk-label govuk-label--s";
+	reasonLabel.setAttribute("for", "repository-review-withdrawal-reason");
+	reasonLabel.textContent = "Withdrawal or reinstatement reason";
+	const reasonInput = document.createElement("textarea");
+	reasonInput.className = "govuk-textarea";
+	reasonInput.id = "repository-review-withdrawal-reason";
+	reasonInput.name = "withdrawalReason";
+	reasonInput.rows = 3;
+	reasonInput.value = text(item.withdrawalReason);
+	reasonGroup.append(reasonLabel, reasonInput);
+	form.appendChild(reasonGroup);
+
+	for (const field of [
+		["limitations", "Limitations", item.limitations],
+		["reuseGuidance", "Reuse guidance", item.reuseGuidance],
+		["doNotUseFor", "Do not use for", item.doNotUseFor]
+	]) {
+		const group = document.createElement("div");
+		group.className = "govuk-form-group";
+		const label = document.createElement("label");
+		label.className = "govuk-label govuk-label--s";
+		label.setAttribute("for", `repository-review-${field[0]}`);
+		label.textContent = field[1];
+		const input = document.createElement("textarea");
+		input.className = "govuk-textarea";
+		input.id = `repository-review-${field[0]}`;
+		input.name = field[0];
+		input.rows = 3;
+		input.value = text(field[2]);
+		group.append(label, input);
+		form.appendChild(group);
+	}
+
+	const notesGroup = document.createElement("div");
+	notesGroup.className = "govuk-form-group";
+	const notesLabel = document.createElement("label");
+	notesLabel.className = "govuk-label govuk-label--s";
+	notesLabel.setAttribute("for", "repository-review-notes");
+	notesLabel.textContent = "Audit notes";
+	const notesInput = document.createElement("textarea");
+	notesInput.className = "govuk-textarea";
+	notesInput.id = "repository-review-notes";
+	notesInput.name = "notes";
+	notesInput.rows = 5;
+	notesInput.required = true;
+	notesGroup.append(notesLabel, notesInput);
+	form.appendChild(notesGroup);
+
+	const submit = document.createElement("button");
+	submit.className = "govuk-button";
+	submit.type = "submit";
+	submit.textContent = "Record review outcome";
+	form.appendChild(submit);
+
+	const status = document.createElement("div");
+	status.id = "repository-review-action-status";
+	status.setAttribute("aria-live", "polite");
+	form.appendChild(status);
+	target.appendChild(form);
+
+	const historyHeading = document.createElement("h5");
+	historyHeading.className = "govuk-heading-s";
+	historyHeading.textContent = "Audit history";
+	target.appendChild(historyHeading);
+	if (item.history?.length) {
+		const history = document.createElement("ul");
+		history.className = "govuk-list repository-review-history";
+		for (const entry of item.history) history.appendChild(reviewHistoryNode(entry));
+		target.appendChild(history);
+	} else {
+		const emptyHistory = document.createElement("p");
+		emptyHistory.className = "govuk-body-s";
+		emptyHistory.textContent = "No review history recorded yet.";
+		target.appendChild(emptyHistory);
+	}
+	target.setAttribute("aria-busy", "false");
+}
+
+async function loadReviewState(page, preferredId = selectedReviewId()) {
+	const requestId = ++latestReviewRequest;
+	const queueKey = page.dataset.reviewQueue;
+	document.getElementById("repository-review-nav")?.setAttribute("aria-busy", "true");
+	document.getElementById("repository-review-list")?.setAttribute("aria-busy", "true");
+	document.getElementById("repository-review-detail")?.setAttribute("aria-busy", "true");
+	const requestPath = reviewApiPath(queueKey);
+	const prefetched = await consumePrefetchedRepository(requestPath);
+	const { response, data } = prefetched || await repositoryJson(requestPath);
+	if (requestId !== latestReviewRequest) return;
+	if (response.status === 401) {
+		window.location.assign(signInUrl());
+		return;
+	}
+	if (response.status === 403) {
+		redirectToRepository();
+		return;
+	}
+	renderReviewNav(data?.navigation || []);
+	const items = Array.isArray(data?.items) ? data.items : [];
+	renderReviewList(data?.queue || reviewQueueDefinition, items);
+	const selected = items.find((item) => item.id === preferredId) || items[0] || null;
+	if (selected && selected.id !== selectedReviewId()) updateReviewHistory(selected.id);
+	renderReviewDetail(data?.queue || {}, selected);
+}
+
+function bindReviewInteractions(page) {
+	const list = document.getElementById("repository-review-list");
+	const detail = document.getElementById("repository-review-detail");
+	if (list) {
+		list.addEventListener("click", (event) => {
+			const button = event.target.closest("[data-review-artefact-id]");
+			if (!(button instanceof HTMLElement)) return;
+			updateReviewHistory(button.dataset.reviewArtefactId || "");
+			loadReviewState(page, button.dataset.reviewArtefactId || "").catch(() => {});
+		});
+	}
+	if (detail) {
+		detail.addEventListener("submit", async (event) => {
+			const form = event.target.closest("[data-review-action-form]");
+			if (!(form instanceof HTMLFormElement)) return;
+			event.preventDefault();
+			const artefactId = form.dataset.reviewActionForm || "";
+			if (!artefactId) return;
+			const payload = Object.fromEntries(new FormData(form).entries());
+			const { response, data } = await repositoryJson(`/api/repository/review/${encodeURIComponent(artefactId)}/actions`, {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify(payload)
+			});
+			if (response.status === 401) {
+				window.location.assign(signInUrl());
+				return;
+			}
+			if (response.status === 403) {
+				redirectToRepository();
+				return;
+			}
+			const status = document.getElementById("repository-review-action-status");
+			if (status) {
+				status.className = response.ok && data?.ok ? "govuk-inset-text" : "govuk-error-message";
+				status.textContent = response.ok && data?.ok ?
+					"Review outcome recorded." :
+					"Review outcome could not be recorded. Check the outcome and notes, then try again.";
+			}
+			if (response.ok && data?.ok) {
+				await loadReviewState(page, artefactId);
+			}
+		});
+	}
+	window.addEventListener("popstate", () => {
+		loadReviewState(page, selectedReviewId()).catch(() => {});
+	});
+}
+
+async function initialiseReviewPage() {
+	const page = document.querySelector("[data-repository-review-page]");
+	if (!page) return;
+	bindReviewInteractions(page);
+	await loadReviewState(page, selectedReviewId());
+}
+
 initialiseBrowsePage().catch(() => renderBrowseResults([], {}, { page: 1, limit: PAGE_SIZE, total: 0 }));
 initialiseCandidatePage().catch(() => {});
+initialiseReviewPage().catch(() => {});

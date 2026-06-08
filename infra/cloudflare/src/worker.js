@@ -154,7 +154,11 @@ const REPOSITORY_ROUTE_PERMISSIONS = [
 	["route_api_repository_get", "GET", "/api/repository", "[\"repository.view\"]"],
 	["route_api_repository_artefacts_get", "GET", "/api/repository/artefacts", "[\"repository.view\"]"],
 	["route_api_repository_artefacts_post", "POST", "/api/repository/artefacts", "[\"repository.view\"]"],
-	["route_api_repository_artefact_get", "GET", "/api/repository/artefacts/:id", "[\"repository.view\"]"]
+	["route_api_repository_artefact_get", "GET", "/api/repository/artefacts/:id", "[\"repository.view\"]"],
+	["route_api_repository_review_candidates_get", "GET", "/api/repository/review/candidates", "[\"repository.curate\"]"],
+	["route_api_repository_review_stale_get", "GET", "/api/repository/review/stale", "[\"repository.curate\"]"],
+	["route_api_repository_review_withdrawn_get", "GET", "/api/repository/review/withdrawn", "[\"repository.curate\"]"],
+	["route_api_repository_review_actions_post", "POST", "/api/repository/review/:id/actions", "[\"repository.curate\"]"]
 ];
 const repositoryAuthDeclarationsReadyByDatabase = new WeakMap();
 
@@ -412,8 +416,20 @@ async function handleRepository(request, env, apiPath) {
 	const authContext = await resolveBaseAuthenticatedContext(request, env);
 	const routePermissionRequest = apiPath.match(/^\/api\/repository\/artefacts\/([^/]+)$/)
 		? requestForRoutePermission(request, "/api/repository/artefacts/:id")
-		: request;
+		: apiPath.match(/^\/api\/repository\/review\/([^/]+)\/actions$/)
+			? requestForRoutePermission(request, "/api/repository/review/:id/actions")
+			: request;
 	await assertRoutePermission(routePermissionRequest, env, authContext);
+
+	const reviewMatch = apiPath.match(/^\/api\/repository\/review\/(candidates|stale|withdrawn)$/);
+	if (reviewMatch && request.method === "GET") {
+		return service.listRepositoryReviewQueue(origin, reviewMatch[1], authContext);
+	}
+
+	const reviewActionMatch = apiPath.match(/^\/api\/repository\/review\/([^/]+)\/actions$/);
+	if (reviewActionMatch && request.method === "POST") {
+		return service.applyRepositoryReviewAction(request, origin, decodeURIComponent(reviewActionMatch[1]), authContext);
+	}
 
 	if ((apiPath === "/api/repository" || apiPath === "/api/repository/artefacts") && request.method === "GET") {
 		return service.listRepository(origin, url, authContext);

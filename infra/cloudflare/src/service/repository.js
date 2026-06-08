@@ -7,8 +7,46 @@ const AIRTABLE_PAGE_SIZE = 100;
 const MAX_AIRTABLE_PAGES = 10;
 const HYDRATE_FULL_MODE = "full";
 const PUBLISHED_SNAPSHOT_TTL_MS = 30_000;
+const REVIEW_DUE_RESET_DAYS = 180;
 const schemaReadyByDatabase = new WeakMap();
 const publishedSnapshotByDatabase = new WeakMap();
+const REVIEW_QUEUE_DEFINITIONS = Object.freeze({
+	candidates: {
+		key: "candidates",
+		label: "Candidate artefacts",
+		href: "/pages/repository/review/candidates/",
+		emptyMessage: "No candidate artefacts are waiting for review.",
+		actionLabel: "Candidate review",
+		outcomes: [
+			{ value: "publish", label: "Publish to repository" },
+			{ value: "request_changes", label: "Request changes" },
+			{ value: "withdraw", label: "Withdraw candidate" }
+		]
+	},
+	stale: {
+		key: "stale",
+		label: "Due review",
+		href: "/pages/repository/review/stale/",
+		emptyMessage: "No published artefacts are currently due for review.",
+		actionLabel: "Scheduled review",
+		outcomes: [
+			{ value: "confirm_current", label: "Keep published" },
+			{ value: "update_guidance", label: "Update guidance and renew review date" },
+			{ value: "withdraw", label: "Withdraw from repository" }
+		]
+	},
+	withdrawn: {
+		key: "withdrawn",
+		label: "Withdrawn artefacts",
+		href: "/pages/repository/review/withdrawn/",
+		emptyMessage: "No withdrawn artefacts are currently retained for curator review.",
+		actionLabel: "Withdrawal decision",
+		outcomes: [
+			{ value: "reinstate", label: "Reinstate record" },
+			{ value: "maintain_withdrawn", label: "Keep withdrawn and update notes" }
+		]
+	}
+});
 
 function hasD1(svc) {
 	return Boolean(svc?.env?.RESEARCHOPS_D1?.prepare);
@@ -67,6 +105,14 @@ function payloadText(payload = {}, key, fallback = "") {
 	return cleanText(payload[key] ?? fallback);
 }
 
+function actorId(authContext = {}) {
+	return authContext?.user?.id || authContext?.user?.email || "authenticated-user";
+}
+
+function reviewDueDate(days = REVIEW_DUE_RESET_DAYS) {
+	return new Date(Date.now() + days * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+}
+
 function labelFromSlug(value) {
 	const key = cleanSlug(value);
 	const overrides = new Map([
@@ -108,6 +154,24 @@ function recommendationLabelForRisk(riskArea) {
 		["evidence-misuse", "State evidence limits before reuse"],
 	]);
 	return labels.get(cleanSlug(riskArea)) || "Check source context before reuse";
+}
+
+function reviewQueueForStatus(row = {}) {
+	if (row.status === "candidate" && Number(row.active) === 1) return "candidates";
+	if (row.status === "withdrawn" && Number(row.active) === 1) return "withdrawn";
+	if (
+		row.status === "published" &&
+		Number(row.active) === 1 &&
+		row.review_due_at &&
+		Date.parse(row.review_due_at) <= Date.now() + 30 * 24 * 60 * 60 * 1000
+	) {
+		return "stale";
+	}
+	return null;
+}
+
+function reviewQueueDefinition(queueKey) {
+	return REVIEW_QUEUE_DEFINITIONS[queueKey] || null;
 }
 
 function airtableTableName(svc) {
@@ -495,6 +559,23 @@ async function tagsByArtefactId(svc, artefactIds) {
 	return byId;
 }
 
+async function auditRowsByArtefactId(svc, artefactIds) {
+	if (!artefactIds.length) return new Map();
+	const placeholders = artefactIds.map(() => "?").join(", ");
+	const rows = await d1All(svc.env, `
+		SELECT artefact_id, action, actor_user_id, created_at, payload_json
+		FROM ${AUDIT_TABLE}
+		WHERE artefact_id IN (${placeholders})
+		ORDER BY datetime(created_at) DESC
+	`, artefactIds);
+	const byId = new Map();
+	for (const row of rows) {
+		if (!byId.has(row.artefact_id)) byId.set(row.artefact_id, []);
+		byId.get(row.artefact_id).push(row);
+	}
+	return byId;
+}
+
 async function repositoryQueues(svc) {
 	const counts = await d1Get(svc.env, `
 		SELECT
@@ -508,6 +589,123 @@ async function repositoryQueues(svc) {
 		{ queue: "Due review", count: String(counts?.due_review_count || 0), href: "/pages/repository/review/stale/", action: "Check" },
 		{ queue: "Withdrawn artefacts", count: String(counts?.withdrawn_count || 0), href: "/pages/repository/review/withdrawn/", action: "Inspect" }
 	];
+}
+
+function reviewNavigation(queues = [], currentQueue) {
+	return queues.map((entry) => ({
+		key: reviewQueueForStatus({
+			status:
+				entry.queue === "Candidate artefacts" ? "candidate" :
+					entry.queue === "Withdrawn artefacts" ? "withdrawn" :
+						"published",
+			active: 1,
+			review_due_at: currentQueue === "stale" ? new Date().toISOString() : null
+		}) || (
+			entry.queue === "Candidate artefacts" ? "candidates" :
+				entry.queue === "Due review" ? "stale" :
+					"withdrawn"
+		),
+		label: entry.queue,
+		href: entry.href,
+		count: Number(entry.count || 0),
+		current: (
+			(currentQueue === "candidates" && entry.queue === "Candidate artefacts") ||
+			(currentQueue === "stale" && entry.queue === "Due review") ||
+			(currentQueue === "withdrawn" && entry.queue === "Withdrawn artefacts")
+		)
+	}));
+}
+
+function reviewItem(row, tags = [], auditRows = []) {
+	const payload = parseJson(row.payload_json, {});
+	const queueKey = reviewQueueForStatus(row);
+	return {
+		id: row.id,
+		queue: queueKey,
+		title: row.title,
+		summary: row.summary,
+		status: row.status,
+		artefactType: row.artefact_type,
+		confidence: row.confidence,
+		evidenceMaturity: row.evidence_maturity,
+		serviceArea: row.service_area || "",
+		userGroup: row.user_group || "",
+		method: row.method || "",
+		riskArea: row.risk_area || "",
+		sourceProjectId: row.source_project_id || "",
+		sourceStudyId: row.source_study_id || "",
+		sourceMethod: row.source_method || "",
+		sampleSummary: row.sample_summary || "",
+		limitations: row.limitations || "",
+		reuseGuidance: row.reuse_guidance || "",
+		doNotUseFor: row.do_not_use_for || "",
+		createdAt: row.created_at || "",
+		updatedAt: row.updated_at || "",
+		publishedAt: row.published_at || "",
+		reviewDueAt: row.review_due_at || "",
+		queueReason: cleanText(payload.queueReason || payload.reviewWorkflow?.queueReason || ""),
+		withdrawalReason: cleanText(payload.withdrawalReason || payload.reviewWorkflow?.withdrawalReason || ""),
+		publicationGate: payload.publicationGate || {},
+		tags: [
+			{ text: `${row.confidence} confidence`, classes: tagClassFor("confidence", row.confidence) },
+			{ text: labelFromSlug(row.evidence_maturity), classes: tagClassFor("maturity", row.evidence_maturity) },
+			...tags.map((tag) => repositoryTag(tag, row)).filter(Boolean)
+		],
+		history: auditRows.slice(0, 8).map((audit) => {
+			const auditPayload = parseJson(audit.payload_json, {});
+			return {
+				action: audit.action,
+				actor: audit.actor_user_id || "",
+				createdAt: audit.created_at || "",
+				outcome: cleanText(auditPayload.outcome || auditPayload.reviewOutcome || ""),
+				notes: cleanText(auditPayload.notes || ""),
+				withdrawalReason: cleanText(auditPayload.withdrawalReason || ""),
+				reviewDueAt: cleanText(auditPayload.reviewDueAt || "")
+			};
+		})
+	};
+}
+
+function reviewQueueSql(queueKey) {
+	if (queueKey === "candidates") {
+		return {
+			whereSql: "status = 'candidate' AND active = 1",
+			orderSql: "datetime(updated_at) DESC, title ASC"
+		};
+	}
+	if (queueKey === "withdrawn") {
+		return {
+			whereSql: "status = 'withdrawn' AND active = 1",
+			orderSql: "datetime(updated_at) DESC, title ASC"
+		};
+	}
+	if (queueKey === "stale") {
+		return {
+			whereSql: "status = 'published' AND active = 1 AND review_due_at IS NOT NULL AND date(review_due_at) <= date('now', '+30 days')",
+			orderSql: "date(review_due_at) ASC, datetime(updated_at) DESC, title ASC"
+		};
+	}
+	return null;
+}
+
+function reviewPayloadFrom(row, payload = {}, queueKey, outcome, actor, now) {
+	const current = parseJson(row.payload_json, {});
+	const next = {
+		...current,
+		reviewWorkflow: {
+			...(current.reviewWorkflow || {}),
+			lastQueue: queueKey,
+			lastOutcome: outcome,
+			lastReviewedAt: now,
+			lastReviewedBy: actor,
+			lastNotes: payloadText(payload, "notes")
+		}
+	};
+	if (payloadText(payload, "withdrawalReason")) {
+		next.withdrawalReason = payloadText(payload, "withdrawalReason");
+		next.reviewWorkflow.withdrawalReason = payloadText(payload, "withdrawalReason");
+	}
+	return next;
 }
 
 function facetFromArtefacts(artefacts, name, label, key) {
@@ -699,6 +897,213 @@ function repositoryDerivation(showQueues) {
 			]
 			: []
 	};
+}
+
+export async function listRepositoryReviewQueue(svc, origin, queueKey, authContext = {}) {
+	if (!canCurate(authContext)) {
+		return svc.json({ ok: false, error: "repository_curator_required" }, 403, svc.corsHeaders(origin));
+	}
+	const definition = reviewQueueDefinition(queueKey);
+	if (!definition) {
+		return svc.json({ ok: false, error: "repository_review_queue_not_found" }, 404, svc.corsHeaders(origin));
+	}
+	if (!hasD1(svc)) {
+		return svc.json({ ok: false, error: "repository_d1_required" }, 503, svc.corsHeaders(origin));
+	}
+	await ensureTables(svc);
+	const queueSql = reviewQueueSql(queueKey);
+	const rows = await d1All(svc.env, `
+		SELECT *
+		FROM ${ARTEFACTS_TABLE}
+		WHERE ${queueSql.whereSql}
+		ORDER BY ${queueSql.orderSql}
+	`);
+	const tags = await tagsByArtefactId(svc, rows.map((row) => row.id));
+	const audits = await auditRowsByArtefactId(svc, rows.map((row) => row.id));
+	const queues = await repositoryQueues(svc);
+	return svc.json({
+		ok: true,
+		queue: definition,
+		navigation: reviewNavigation(queues, queueKey),
+		items: rows.map((row) => reviewItem(row, tags.get(row.id) || [], audits.get(row.id) || []))
+	}, 200, svc.corsHeaders(origin));
+}
+
+export async function applyRepositoryReviewAction(svc, request, origin, artefactId, authContext = {}) {
+	if (!canCurate(authContext)) {
+		return svc.json({ ok: false, error: "repository_curator_required" }, 403, svc.corsHeaders(origin));
+	}
+	if (!hasD1(svc)) {
+		return svc.json({ ok: false, error: "repository_d1_required" }, 503, svc.corsHeaders(origin));
+	}
+	await ensureTables(svc);
+	const payload = await request.json().catch(() => ({}));
+	const notes = payloadText(payload, "notes");
+	const outcome = cleanSlug(payloadText(payload, "outcome"));
+	const actor = actorId(authContext);
+	const now = new Date().toISOString();
+	const row = await d1Get(svc.env, `
+		SELECT *
+		FROM ${ARTEFACTS_TABLE}
+		WHERE id = ?
+		LIMIT 1
+	`, [artefactId]);
+	if (!row) {
+		return svc.json({ ok: false, error: "repository_artefact_not_found" }, 404, svc.corsHeaders(origin));
+	}
+	const queueKey = reviewQueueForStatus(row);
+	const definition = reviewQueueDefinition(queueKey);
+	if (!definition) {
+		return svc.json({ ok: false, error: "repository_review_not_available_for_record" }, 409, svc.corsHeaders(origin));
+	}
+	if (!notes) {
+		return svc.json({ ok: false, error: "repository_review_notes_required" }, 400, svc.corsHeaders(origin));
+	}
+	if (!definition.outcomes.some((entry) => entry.value === outcome)) {
+		return svc.json({ ok: false, error: "repository_review_outcome_invalid" }, 400, svc.corsHeaders(origin));
+	}
+
+	let nextStatus = row.status;
+	let nextPublishedAt = row.published_at || null;
+	let nextReviewDueAt = payloadText(payload, "reviewDueAt", row.review_due_at || "");
+	let nextPiiCleared = Number(row.pii_cleared) || 0;
+	let nextConsentConfirmed = Number(row.consent_scope_confirmed) || 0;
+	let nextLimitations = row.limitations || "";
+	let nextReuseGuidance = row.reuse_guidance || "";
+	let nextDoNotUseFor = row.do_not_use_for || "";
+	const withdrawalReason = payloadText(payload, "withdrawalReason");
+
+	if (payloadText(payload, "limitations")) nextLimitations = payloadText(payload, "limitations");
+	if (payloadText(payload, "reuseGuidance")) nextReuseGuidance = payloadText(payload, "reuseGuidance");
+	if (payloadText(payload, "doNotUseFor")) nextDoNotUseFor = payloadText(payload, "doNotUseFor");
+
+	if (!nextReviewDueAt && ["publish", "confirm_current", "update_guidance", "reinstate"].includes(outcome)) {
+		nextReviewDueAt = reviewDueDate();
+	}
+
+	const nextPayload = reviewPayloadFrom(row, payload, queueKey, outcome, actor, now);
+
+	if (queueKey === "candidates") {
+		if (outcome === "publish") {
+			nextStatus = "published";
+			nextPiiCleared = 1;
+			nextConsentConfirmed = 1;
+			nextPublishedAt = nextPublishedAt || now;
+			nextPayload.publicationGate = {
+				...(nextPayload.publicationGate || {}),
+				piiCleared: true,
+				consentScopeConfirmed: true,
+				reviewerAssigned: true,
+				reviewStatus: "published"
+			};
+		}
+		if (outcome === "request_changes") {
+			nextPayload.publicationGate = {
+				...(nextPayload.publicationGate || {}),
+				reviewerAssigned: true,
+				reviewStatus: "changes_requested"
+			};
+		}
+		if (outcome === "withdraw") {
+			if (!withdrawalReason) {
+				return svc.json({ ok: false, error: "repository_withdrawal_reason_required" }, 400, svc.corsHeaders(origin));
+			}
+			nextStatus = "withdrawn";
+			nextPublishedAt = null;
+			nextPayload.publicationGate = {
+				...(nextPayload.publicationGate || {}),
+				reviewStatus: "withdrawn"
+			};
+		}
+	}
+
+	if (queueKey === "stale") {
+		if (outcome === "confirm_current" || outcome === "update_guidance") {
+			nextStatus = "published";
+		}
+		if (outcome === "withdraw") {
+			if (!withdrawalReason) {
+				return svc.json({ ok: false, error: "repository_withdrawal_reason_required" }, 400, svc.corsHeaders(origin));
+			}
+			nextStatus = "withdrawn";
+			nextPublishedAt = null;
+		}
+	}
+
+	if (queueKey === "withdrawn") {
+		if (outcome === "reinstate") {
+			const canPublish = Number(row.pii_cleared) === 1 && Number(row.consent_scope_confirmed) === 1;
+			nextStatus = canPublish ? "published" : "candidate";
+			nextPublishedAt = canPublish ? (row.published_at || now) : null;
+			nextPayload.reinstatedAt = now;
+			nextPayload.reinstatedBy = actor;
+		}
+		if (outcome === "maintain_withdrawn") {
+			nextStatus = "withdrawn";
+			if (!withdrawalReason && !cleanText(nextPayload.withdrawalReason)) {
+				return svc.json({ ok: false, error: "repository_withdrawal_reason_required" }, 400, svc.corsHeaders(origin));
+			}
+		}
+	}
+
+	const nextPayloadJson = JSON.stringify(nextPayload);
+	await d1Run(svc.env, `
+		UPDATE ${ARTEFACTS_TABLE}
+		SET
+			status = ?,
+			limitations = ?,
+			reuse_guidance = ?,
+			do_not_use_for = ?,
+			reviewed_by_user_id = ?,
+			pii_cleared = ?,
+			consent_scope_confirmed = ?,
+			updated_at = ?,
+			published_at = ?,
+			review_due_at = ?,
+			payload_json = ?
+		WHERE id = ?
+	`, [
+		nextStatus,
+		nextLimitations,
+		nextReuseGuidance,
+		nextDoNotUseFor,
+		actor,
+		nextPiiCleared,
+		nextConsentConfirmed,
+		now,
+		nextPublishedAt,
+		nextReviewDueAt || null,
+		nextPayloadJson,
+		artefactId
+	]);
+
+	await d1Run(svc.env, `
+		INSERT INTO ${AUDIT_TABLE} (id, artefact_id, action, actor_user_id, created_at, payload_json)
+		VALUES (?, ?, ?, ?, ?, ?)
+	`, [
+		`audit-${artefactId}-${Date.now()}`,
+		artefactId,
+		`repository.review.${outcome}`,
+		actor,
+		now,
+		JSON.stringify({
+			queue: queueKey,
+			outcome,
+			notes,
+			withdrawalReason,
+			reviewDueAt: nextReviewDueAt || ""
+		})
+	]);
+
+	invalidateRepositorySnapshotCache(svc);
+
+	return svc.json({
+		ok: true,
+		id: artefactId,
+		queue: queueKey,
+		status: nextStatus,
+		outcome
+	}, 200, svc.corsHeaders(origin));
 }
 
 export async function listRepository(svc, origin, url, authContext = {}) {

@@ -261,10 +261,12 @@ export const repositoryStaticPages = [
 		slug: 'review/candidates',
 		title: 'Candidate artefacts',
 		lead: 'Review candidate artefacts before they are published to the repository.',
-		body: 'This queue is for users with repository curation permission. Ordinary repository users only see published artefacts.',
+		body: 'Assess candidate artefacts, record a review outcome and keep a clear audit trail before anything is published.',
 		apiPath: '/api/repository',
 		backHref: '/pages/repository/',
 		backText: 'Back to curator workbench',
+		reviewRoute: true,
+		reviewQueue: 'candidates',
 		sections: [
 			{
 				heading: 'Review checks',
@@ -280,10 +282,12 @@ export const repositoryStaticPages = [
 		slug: 'review/stale',
 		title: 'Due review',
 		lead: 'Check published artefacts that are due for scheduled review.',
-		body: 'Review keeps repository evidence trustworthy and prevents stale findings being reused without context.',
+		body: 'Run a scheduled review, confirm whether the evidence still stands and capture the decision for audit.',
 		apiPath: '/api/repository',
 		backHref: '/pages/repository/',
 		backText: 'Back to curator workbench',
+		reviewRoute: true,
+		reviewQueue: 'stale',
 		sections: [
 			{
 				heading: 'Review outcomes',
@@ -299,10 +303,12 @@ export const repositoryStaticPages = [
 		slug: 'review/withdrawn',
 		title: 'Withdrawn artefacts',
 		lead: 'Inspect artefacts that have been withdrawn from repository search.',
-		body: 'Withdrawn artefacts remain governed records but are not shown to ordinary repository users.',
+		body: 'Inspect governed withdrawn records, understand why they were removed from reuse, and reinstate them when that decision changes.',
 		apiPath: '/api/repository',
 		backHref: '/pages/repository/',
 		backText: 'Back to curator workbench',
+		reviewRoute: true,
+		reviewQueue: 'withdrawn',
 		sections: [
 			{
 				heading: 'Withdrawal reasons',

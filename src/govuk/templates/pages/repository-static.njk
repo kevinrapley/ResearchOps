@@ -30,11 +30,37 @@
 		})();
 	</script>
 	{% endif %}
+	{% if reviewRoute %}
+	<script>
+		(function prefetchRepositoryReview() {
+			const requestPath = '/api/repository/review/{{ reviewQueue }}' + (window.location.search || '');
+			window.__repositoryPrefetch = {
+				requestPath,
+				promise: fetch(requestPath, {
+					credentials: 'include',
+					cache: 'no-store'
+				}).then(async (response) => {
+					const responseText = await response.text();
+					let data;
+					try {
+						data = JSON.parse(responseText);
+					} catch {
+						data = { ok: false, parseError: true, raw: responseText };
+					}
+					return { response, data };
+				}).catch((error) => ({
+					response: { ok: false, status: 0 },
+					data: { ok: false, error: String(error) }
+				}))
+			};
+		})();
+	</script>
+	{% endif %}
 	<link rel="stylesheet" href="/css/repository.css?v=repository-api-20260607" media="screen">
 	{% if detailRoute %}
 	<link rel="modulepreload" href="/js/repository-artefact-page.js?v=repository-api-20260607c">
 	{% endif %}
-	{% if browseType or candidateRoute %}
+	{% if browseType or candidateRoute or reviewRoute %}
 	<link rel="modulepreload" href="/js/repository-static-page.js?v=repository-api-20260607c">
 	{% endif %}
 {% endblock %}
@@ -210,6 +236,27 @@
 			</section>
 		</form>
 	</section>
+	{% elif reviewRoute %}
+	<section class="repository-section" aria-labelledby="repository-review-title" data-repository-review-page data-review-queue="{{ reviewQueue }}">
+		<h2 class="govuk-heading-l" id="repository-review-title">Review workbench</h2>
+		<p class="govuk-body">Only repository curators can open these queues. Each decision records an outcome, notes and the actor who made it.</p>
+		<nav class="repository-review-nav" id="repository-review-nav" aria-label="Repository review queues" aria-busy="true"></nav>
+		<div class="govuk-grid-row repository-review-layout">
+			<div class="govuk-grid-column-one-third">
+				<section aria-labelledby="repository-review-list-title">
+					<h3 class="govuk-heading-m" id="repository-review-list-title">Queue items</h3>
+					<p class="repository-result-count" id="repository-review-count" aria-live="polite"></p>
+					<div id="repository-review-list" class="repository-review-list" aria-live="polite" aria-busy="true"></div>
+				</section>
+			</div>
+			<div class="govuk-grid-column-two-thirds">
+				<section aria-labelledby="repository-review-detail-title">
+					<h3 class="govuk-heading-m" id="repository-review-detail-title">Selected record</h3>
+					<div id="repository-review-detail" class="repository-review-detail" aria-live="polite" aria-busy="true"></div>
+				</section>
+			</div>
+		</div>
+	</section>
 	{% endif %}
 
 	{% if detailRoute %}
@@ -238,7 +285,7 @@
 	{% if detailRoute %}
 	<script type="module" src="/js/repository-artefact-page.js?v=repository-api-20260607c"></script>
 	{% endif %}
-	{% if browseType or candidateRoute %}
+	{% if browseType or candidateRoute or reviewRoute %}
 	<script type="module" src="/js/repository-static-page.js?v=repository-api-20260607c"></script>
 	{% endif %}
 {% endblock %}
