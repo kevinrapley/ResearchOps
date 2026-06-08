@@ -78,7 +78,7 @@
 - Preserved reversible withdrawal handling by routing reinstated records back to `published` or `candidate` depending on publication-gate state.
 - Replaced the custom review queue navigation with GOV.UK tabs rendered in the Nunjucks template and wired client navigation to those tabs.
 - Limited review queue responses to 10 items per page and added queue pagination support through the review API and page controller.
-- Reworked the tab implementation so the GOV.UK tab panels each provide a route-specific workbench host and the controller mounts the single live workbench inside the active tab panel.
+- Reworked the tab implementation so each GOV.UK tab panel contains its own queue-specific workbench shell, with unique list, detail and pagination targets.
 - Removed static review-check, review-outcome and withdrawal-reason copy from the review route page data.
 - Aligned queue and selected-record panels with matching bordered containers so their top borders land on the same line.
 - Added queue and action tests at both route-state and runtime levels.
@@ -115,8 +115,8 @@
 - Codex review identified that stale-queue `confirm_current` and `update_guidance` could persist an overdue `reviewDueAt`, leaving the record immediately due for review again.
 - While fixing that path, runtime coverage exposed a second defect: underscore-based outcome values such as `confirm_current` were normalised with slug rules and rejected by the service. The action parser was updated to preserve underscores for review outcomes.
 - The requested GOV.UK pagination macro can only be rendered as a placeholder at template-build time because queue totals are runtime data. The template now owns the pagination shell and the page controller updates it with live queue state after fetch.
-- The first tabs pass still left inactive queues as placeholder panels, which is why only one tab displayed real workbench content. The tab panels were then expanded to provide queue hosts inside each GOV.UK tab panel, while keeping only one live workbench DOM to avoid duplicate IDs.
-- The shared workbench was briefly rendered beneath the tabs, which made the tab panel shell and active queue content visually separate. The template now places the live workbench inside the route's current tab host, and the controller remounts it into the clicked tab before loading queue data.
+- The first tabs pass still left inactive queues as placeholder panels, which is why only one tab displayed real workbench content. The tab panels were then expanded to provide queue-specific workbench shells inside each GOV.UK tab panel.
+- Moving a single workbench node between tab panels proved brittle with the GOV.UK tabs runtime. The implementation now renders one shell per queue and scopes script updates to `[data-review-workbench]`, avoiding both empty selected panels and duplicate IDs.
 
 ## Residual risks
 

@@ -472,24 +472,13 @@ function reviewQueueFromTabId(tabId = "") {
 	return "candidates";
 }
 
-function reviewPanelHost(queueKey) {
-	return document.querySelector(`[data-review-panel-host="${queueKey}"]`);
-}
-
-function mountReviewWorkbench(queueKey) {
-	const workbench = document.getElementById("repository-review-workbench");
-	const host = reviewPanelHost(queueKey);
-	if (workbench && host && !host.contains(workbench)) {
-		host.replaceChildren(workbench);
-	}
-}
-
 function reviewPanelElements(queueKey) {
+	const workbench = document.querySelector(`[data-review-workbench="${queueKey}"]`);
 	return {
-		count: document.getElementById("repository-review-count"),
-		list: document.getElementById("repository-review-list"),
-		detail: document.getElementById("repository-review-detail"),
-		pagination: document.getElementById("repository-review-pagination"),
+		count: workbench?.querySelector("[data-review-count]"),
+		list: workbench?.querySelector("[data-review-list]"),
+		detail: workbench?.querySelector("[data-review-detail]"),
+		pagination: workbench?.querySelector("[data-review-pagination]"),
 	};
 }
 
@@ -510,7 +499,6 @@ function setActiveReviewTab(queueKey) {
 		const current = panel.id === reviewTabId(queueKey);
 		panel.classList.toggle("govuk-tabs__panel--hidden", !current);
 	}
-	mountReviewWorkbench(queueKey);
 }
 
 function renderReviewTabs(navigation = [], currentQueue) {
@@ -693,6 +681,7 @@ function renderReviewDetail(queue, item) {
 	const form = document.createElement("form");
 	form.className = "repository-review-form";
 	form.dataset.reviewActionForm = item.id;
+	const fieldId = (name) => `repository-review-${name}-${queueKey}`;
 
 	const formHeading = document.createElement("h5");
 	formHeading.className = "govuk-heading-s";
@@ -703,11 +692,11 @@ function renderReviewDetail(queue, item) {
 	outcomeGroup.className = "govuk-form-group";
 	const outcomeLabel = document.createElement("label");
 	outcomeLabel.className = "govuk-label govuk-label--s";
-	outcomeLabel.setAttribute("for", "repository-review-outcome");
+	outcomeLabel.setAttribute("for", fieldId("outcome"));
 	outcomeLabel.textContent = "Outcome";
 	const outcomeSelect = document.createElement("select");
 	outcomeSelect.className = "govuk-select";
-	outcomeSelect.id = "repository-review-outcome";
+	outcomeSelect.id = fieldId("outcome");
 	outcomeSelect.name = "outcome";
 	for (const optionItem of queue.outcomes || []) outcomeSelect.appendChild(option(optionItem.value, optionItem.label));
 	outcomeGroup.append(outcomeLabel, outcomeSelect);
@@ -717,11 +706,11 @@ function renderReviewDetail(queue, item) {
 	dueGroup.className = "govuk-form-group";
 	const dueLabel = document.createElement("label");
 	dueLabel.className = "govuk-label govuk-label--s";
-	dueLabel.setAttribute("for", "repository-review-due-at");
+	dueLabel.setAttribute("for", fieldId("due-at"));
 	dueLabel.textContent = "Next review date";
 	const dueInput = document.createElement("input");
 	dueInput.className = "govuk-input govuk-input--width-20";
-	dueInput.id = "repository-review-due-at";
+	dueInput.id = fieldId("due-at");
 	dueInput.name = "reviewDueAt";
 	dueInput.type = "date";
 	dueInput.value = text(item.reviewDueAt).slice(0, 10);
@@ -732,11 +721,11 @@ function renderReviewDetail(queue, item) {
 	reasonGroup.className = "govuk-form-group";
 	const reasonLabel = document.createElement("label");
 	reasonLabel.className = "govuk-label govuk-label--s";
-	reasonLabel.setAttribute("for", "repository-review-withdrawal-reason");
+	reasonLabel.setAttribute("for", fieldId("withdrawal-reason"));
 	reasonLabel.textContent = "Withdrawal or reinstatement reason";
 	const reasonInput = document.createElement("textarea");
 	reasonInput.className = "govuk-textarea";
-	reasonInput.id = "repository-review-withdrawal-reason";
+	reasonInput.id = fieldId("withdrawal-reason");
 	reasonInput.name = "withdrawalReason";
 	reasonInput.rows = 3;
 	reasonInput.value = text(item.withdrawalReason);
@@ -752,11 +741,11 @@ function renderReviewDetail(queue, item) {
 		group.className = "govuk-form-group";
 		const label = document.createElement("label");
 		label.className = "govuk-label govuk-label--s";
-		label.setAttribute("for", `repository-review-${field[0]}`);
+		label.setAttribute("for", fieldId(field[0]));
 		label.textContent = field[1];
 		const input = document.createElement("textarea");
 		input.className = "govuk-textarea";
-		input.id = `repository-review-${field[0]}`;
+		input.id = fieldId(field[0]);
 		input.name = field[0];
 		input.rows = 3;
 		input.value = text(field[2]);
@@ -768,11 +757,11 @@ function renderReviewDetail(queue, item) {
 	notesGroup.className = "govuk-form-group";
 	const notesLabel = document.createElement("label");
 	notesLabel.className = "govuk-label govuk-label--s";
-	notesLabel.setAttribute("for", "repository-review-notes");
+	notesLabel.setAttribute("for", fieldId("notes"));
 	notesLabel.textContent = "Audit notes";
 	const notesInput = document.createElement("textarea");
 	notesInput.className = "govuk-textarea";
-	notesInput.id = "repository-review-notes";
+	notesInput.id = fieldId("notes");
 	notesInput.name = "notes";
 	notesInput.rows = 5;
 	notesInput.required = true;
