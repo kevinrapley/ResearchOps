@@ -49,6 +49,7 @@
 - Added a white background rule for the secondary Apply filters button inside the grey repository filter panel.
 - Wrapped the repository landing page breadcrumbs and hero/search in `<div class="app-masthead repository-masthead">` inside `main`.
 - Kept the service menu in `<header class="govuk-template__header">`, matching the GOV.UK Design System separation between header/navigation and main masthead.
+- Corrected the shared page chrome so the same service header element also carries `govuk-header`, preserving the existing `header.govuk-header` smoke-test landmark while keeping the menu inside `header.govuk-template__header`.
 - Added a repository-specific SVG masthead illustration in the same flat GOV.UK palette and hid it below the desktop breakpoint.
 - Styled repository-page service navigation, breadcrumbs, masthead and phase banner for the brand-colour treatment from route-specific `repository.scss`.
 - Strengthened service-navigation inverse-colour selectors against `[data-active="Research Repository"]` so the repository menu remains white after the shared page chrome stylesheet is appended.

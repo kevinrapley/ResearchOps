@@ -68,8 +68,8 @@ has(files.template, "text: 'Apply filters'", 'repository template');
 lacks(files.template, 'Technical detail', 'repository template');
 lacks(files.template, 'Repository status', 'repository template');
 
-has(files.headerPartial, '<header class="govuk-template__header">', 'header partial');
-has(files.headerPartial, '<div class="govuk-header" role="banner" data-module="govuk-header">', 'header partial');
+has(files.headerPartial, '<header class="govuk-template__header govuk-header" role="banner" data-module="govuk-header">', 'header partial');
+lacks(files.headerPartial, '<div class="govuk-header" role="banner" data-module="govuk-header">', 'header partial');
 has(files.headerPartial, '<section class="govuk-service-navigation"', 'header partial');
 has(files.headerPartial, '</section>\n</header>', 'header partial');
 

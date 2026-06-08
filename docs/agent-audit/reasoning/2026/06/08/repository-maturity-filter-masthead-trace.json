@@ -89,6 +89,10 @@
 		{
 			"command": "follow-up in-app browser masthead border check",
 			"result": "app masthead background and bottom border both resolve to rgb(29, 112, 184)"
+		},
+		{
+			"command": "CI bdd-smoke failure log review",
+			"result": "header landmark failed because the shared header no longer matched header.govuk-header; corrected the single service header to carry both govuk-template__header and govuk-header"
 		}
 	],
 	"residualRisks": [
