@@ -56,6 +56,7 @@
 - `public/partials/header.html`
 - `tests/repository-front-page-route-state.test.js`
 - `tests/govuk-page-chrome-navigation-route-state.test.js`
+- `tests/govuk-frontend-integration-route-state.test.js`
 - `docs/design-system/govuk-compliance-audit.md`
 - `docs/agent-audit/reasoning/2026/06/07/repository-front-page-nunjucks-sass.md`
 - GOV.UK Design System home page and image URL evidence.
@@ -64,12 +65,13 @@
 ## Files created or modified
 
 - `src/govuk/templates/pages/home.njk`
+- `src/styles/researchops-home.scss`
 - `scripts/govuk/render-govuk-pages.mjs`
 - `public/index.html`
+- `public/assets/researchops/researchops-home.css`
+- `assets/researchops/researchops-home.css`
 - `public/images/home-masthead-researchops-illustration.svg`
-- `public/assets/researchops/researchops-home-masthead.css`
-- `assets/researchops/researchops-home-masthead.css`
-- `tests/home-masthead-route-state.test.js`
+- `tests/govuk-frontend-integration-route-state.test.js`
 - `docs/agent-audit/reasoning/2026/06/08/home-masthead-treatment-trace.md`
 - `docs/agent-audit/reasoning/2026/06/08/home-masthead-treatment-trace.json`
 
@@ -82,21 +84,19 @@
 - Built the SVG around recognisable research operations artefacts: study plan card, participant operations panel, moderated session panel, live notes card, evidence trail and ResearchOps service dashboard.
 - Used the same crisp flat vector approach as the repository illustration: grouped SVG structure, GOV.UK palette, connected dotted workflow paths and detailed UI artefacts rather than a low-fidelity icon.
 - Added explicit image dimensions in the Nunjucks and rendered HTML to avoid overflow in the one-third masthead column.
-- Added a small masthead illustration stylesheet for the responsive image column because the main generated home CSS source could not be safely mutated through the connector in this session.
-- Replaced the stale breadcrumb test with `tests/home-masthead-route-state.test.js`.
+- Diagnosed the failing unit tests from the release-gate artifact: `tests/govuk-frontend-integration-route-state.test.js` expected an exact `class="govuk-template__body"` body class and failed when the rendered home page correctly carried the route-scoped marker as an additional body class.
+- Updated that test to assert the GOV.UK body class as a token so route body markers are allowed.
 
 ## Validation attempted
 
 - GitHub compare from `main` to `feature/home-masthead-treatment`: branch is ahead and changed-file scope was inspected.
-- The SVG was parsed locally with Python `xml.etree.ElementTree` before commit.
-- Static route-state assertions were added in `tests/home-masthead-route-state.test.js`.
+- Release-gate artifact inspection identified the failing assertion.
+- CI passed on Node 20 and Node 22 after the assertion was updated.
+- Worker CI passed after the assertion was updated.
+- Release Gate passed after the assertion was updated.
+- Accessibility audit, Render GOV.UK pages, Lychee, BDD and Validate ResearchOps also passed.
 - PR review threads were checked before and after the follow-up work; no review threads were present at the time of checking.
-
-## Validation not run
-
-- `npm run build`, `npm test`, `npm run format:check`, `npm run generated-css:check`, `npm run lint` and browser checks were not run in this session because the repository was edited through the GitHub connector and no local checkout with dependencies was available.
 
 ## Residual risks
 
 - The home masthead should still be checked visually in browser at desktop and mobile widths.
-- A future clean-up can fold `researchops-home-masthead.css` into the generated Sass pipeline if desired.
