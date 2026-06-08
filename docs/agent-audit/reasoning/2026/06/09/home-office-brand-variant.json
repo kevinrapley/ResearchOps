@@ -1,0 +1,39 @@
+{
+	"date": "2026-06-09",
+	"branch": "feature/ho-brand-variant",
+	"traceRequired": true,
+	"task": "Add a same-repository brand variant for ResearchOps that changes only colours and logo while keeping GOV.UK as the default.",
+	"selectedBundles": [
+		"github-diamond",
+		"researchops-developer-control",
+		"multi-functional-team",
+		"govuk-design-system"
+	],
+	"skippedBundles": [
+		"cloudflare",
+		"openai-platform",
+		"mcp-agent-tooling",
+		"airtable-public-api",
+		"mural-public-api"
+	],
+	"filesChanged": [
+		"public/partials/header.html",
+		"public/js/brand-variant.js",
+		"public/css/brands/home-office.css",
+		"tests/brand-variant-route-state.test.js",
+		"docs/design-system/brand-variants.md",
+		"docs/agent-audit/reasoning/2026/06/09/home-office-brand-variant.md",
+		"docs/agent-audit/reasoning/2026/06/09/home-office-brand-variant.json"
+	],
+	"validation": {
+		"localSyntaxChecks": [
+			"node --check public/js/brand-variant.js",
+			"node --check tests/brand-variant-route-state.test.js"
+		],
+		"repositoryTestsRun": false,
+		"repositoryTestsNotRunReason": "Repository dependencies were not available in the connector-only execution path."
+	},
+	"residualRisks": [
+		"Manual browser review is needed to confirm the rendered logo and colour treatment."
+	]
+}
