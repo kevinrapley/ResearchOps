@@ -7,6 +7,10 @@ const brandStyles = fs.readFileSync('public/css/brands/home-office.css', 'utf8')
 const brandStylesSource = fs.readFileSync('src/styles/brands/home-office.scss', 'utf8');
 const generatedCssTargets = fs.readFileSync('scripts/styles/generated-css-targets.mjs', 'utf8');
 
+function hasAny(source, values) {
+	return values.some((value) => source.includes(value));
+}
+
 assert.ok(sharedHeader.includes('researchops-home-office-brand'));
 assert.ok(sharedHeader.includes('/css/brands/home-office.css'));
 assert.ok(sharedHeader.includes('/js/brand-variant.js'));
@@ -22,12 +26,12 @@ assert.ok(brandScript.includes('researchopsBrand'));
 
 assert.ok(generatedCssTargets.includes('src/styles/brands/home-office.scss'));
 assert.ok(generatedCssTargets.includes('public/css/brands/home-office.css'));
-assert.ok(brandStylesSource.includes('$home-office-brand-colour: #732282'));
-assert.ok(brandStylesSource.includes('$home-office-page-background: #f5f5f5'));
-assert.ok(brandStylesSource.includes('$home-office-border-colour: #cbcbcb'));
-assert.ok(brandStylesSource.includes('$govuk-link-colour: #1d70b8'));
+assert.ok(hasAny(brandStylesSource, ['$home-office-brand-colour: #732282', '$ho-purple: #732282']));
+assert.ok(hasAny(brandStylesSource, ['$home-office-page-background: #f5f5f5', '$ho-background: #f5f5f5']));
+assert.ok(hasAny(brandStylesSource, ['$home-office-border-colour: #cbcbcb', '$ho-border: #cbcbcb']));
+assert.ok(hasAny(brandStylesSource, ['$govuk-link-colour: #1d70b8', '$govuk-link: #1d70b8']));
 assert.ok(brandStylesSource.includes('$govuk-tag-purple-background: #dbd5e9'));
-assert.ok(brandStylesSource.includes('$govuk-tag-purple-colour: #3d2375'));
+assert.ok(hasAny(brandStylesSource, ['$govuk-tag-purple-colour: #3d2375', '$govuk-tag-purple-text: #3d2375']));
 assert.ok(brandStylesSource.includes('.researchops-highlight-panel'));
 assert.ok(brandStylesSource.includes('.researchops-step-card__tag'));
 assert.ok(brandStylesSource.includes('.govuk-footer'));
