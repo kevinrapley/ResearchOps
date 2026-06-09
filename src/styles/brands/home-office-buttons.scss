@@ -1,0 +1,41 @@
+/* Home Office secondary button brand variant for ResearchOps */
+
+$hods-secondary-button-colour: #f8f8f8;
+$hods-secondary-button-hover-colour: #dfdfdf;
+$hods-secondary-button-shadow-colour: #0b0c0c;
+$hods-secondary-button-text-colour: #0b0c0c;
+$hods-secondary-button-border-width: 1px;
+$hods-secondary-button-shadow-size: 2px;
+
+html[data-researchops-brand='home-office'] {
+	.govuk-button--secondary {
+		background-color: $hods-secondary-button-colour;
+		border-color: $hods-secondary-button-shadow-colour;
+		border-width: $hods-secondary-button-border-width $hods-secondary-button-border-width 0 $hods-secondary-button-border-width;
+		box-shadow: 0 $hods-secondary-button-shadow-size 0 $hods-secondary-button-shadow-colour;
+		color: $hods-secondary-button-text-colour;
+		padding: 9px 11px 9px;
+	}
+
+	.govuk-button--secondary:link,
+	.govuk-button--secondary:visited,
+	.govuk-button--secondary:active,
+	.govuk-button--secondary:hover {
+		color: $hods-secondary-button-text-colour;
+	}
+
+	.govuk-button--secondary:hover {
+		background-color: $hods-secondary-button-hover-colour;
+	}
+
+	.govuk-button--secondary:hover[disabled] {
+		background-color: $hods-secondary-button-colour;
+	}
+
+	.govuk-button--secondary:focus {
+		border-width: $hods-secondary-button-shadow-size;
+		padding: 8px 10px 7px;
+	}
+}
+
+/* transparency begins in the cascade */
