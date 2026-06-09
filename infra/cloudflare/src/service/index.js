@@ -47,6 +47,48 @@ import * as Diag from "./dev/diag.js";
 import * as ImpactService from "./impact.js";
 import { recordProvenanceEvent } from "./provenance.js";
 
+/**
+ * @typedef {Object} Env
+ * @property {string} ALLOWED_ORIGINS
+ * @property {string} AUDIT
+ * @property {string} AIRTABLE_BASE_ID
+ * @property {string} AIRTABLE_TABLE_PROJECTS
+ * @property {string} AIRTABLE_TABLE_DETAILS
+ * @property {string} AIRTABLE_TABLE_STUDIES
+ * @property {string} AIRTABLE_TABLE_GUIDES
+ * @property {string} AIRTABLE_TABLE_CONSENT_FORMS
+ * @property {string} AIRTABLE_TABLE_PARTICIPANT_CONSENT
+ * @property {string} AIRTABLE_TABLE_PARTIALS
+ * @property {string} AIRTABLE_TABLE_PARTICIPANTS
+ * @property {string} [AIRTABLE_TABLE_STUDY_SUPPORT]
+ * @property {string} [AIRTABLE_TABLE_NOTE_TAKERS_OBSERVERS]
+ * @property {string} AIRTABLE_TABLE_SESSIONS
+ * @property {string} AIRTABLE_TABLE_SESSION_NOTES
+ * @property {string} AIRTABLE_TABLE_COMMSLOG
+ * @property {string} AIRTABLE_API_KEY
+ * @property {string} GH_OWNER
+ * @property {string} GH_REPO
+ * @property {string} GH_BRANCH
+ * @property {string} GH_PATH_PROJECTS
+ * @property {string} GH_PATH_DETAILS
+ * @property {string} GH_PATH_STUDIES
+ * @property {string} GH_TOKEN
+ * @property {any}    ASSETS
+ * @property {string} [MODEL]
+ * @property {string} [AIRTABLE_TABLE_AI_LOG]
+ * @property {string} [AIRTABLE_PROJECT_TEAM_NAME_FIELD]
+ * @property {string} [AIRTABLE_PROJECT_TEAM_ID_FIELD]
+ * @property {any}    AI
+ * @property {KVNamespace} SESSION_KV
+ * @property {D1Database} RESEARCHOPS_D1
+ * @property {string} [MURAL_CLIENT_ID]
+ * @property {string} [MURAL_CLIENT_SECRET]
+ * @property {string} [MURAL_REDIRECT_URI]
+ * @property {string} [MURAL_HOME_OFFICE_WORKSPACE_ID]
+ * @property {string} [MURAL_API_BASE]
+ * @property {string} [MURAL_REFLEXIVE_MURAL_ID]
+ */
+
 function corsHeaders(env, origin) {
 	const allowed = (env.ALLOWED_ORIGINS || "")
 		.split(",")
@@ -62,10 +104,18 @@ function corsHeaders(env, origin) {
 }
 
 export class ResearchOpsService {
+	/**
+	 * @param {Env} env
+	 * @param {{cfg?:Partial<typeof DEFAULTS>, logger?:BatchLogger}} [opts]
+	 */
 	constructor(env, opts = {}) {
+		/** @type {Env} */
 		this.env = env;
+		/** @type {Readonly<typeof DEFAULTS>} */
 		this.cfg = Object.freeze({ ...DEFAULTS, ...(opts.cfg || {}) });
+		/** @type {BatchLogger} */
 		this.log = opts.logger || new BatchLogger({ batchSize: this.cfg.LOG_BATCH_SIZE });
+		/** @type {boolean} */
 		this.destroyed = false;
 
 		this.corsHeaders = (origin) => corsHeaders(this.env, origin);
