@@ -1,6 +1,7 @@
 /* Home Office brand variant for ResearchOps */
 
 $ho-purple: #732282;
+$ho-light: #e0d5e5;
 $ho-background: #f5f5f5;
 $ho-border: #cbcbcb;
 $ho-text: #0b0c0c;
@@ -133,7 +134,7 @@ html[data-researchops-brand='home-office'] {
 
 	.govuk-service-navigation {
 		border-bottom: 1px solid $ho-purple;
-		background: $ho-white;
+		background: $ho-light;
 	}
 
 	li.govuk-service-navigation__item,
@@ -244,7 +245,7 @@ html[data-researchops-brand='home-office'] {
 
 	.govuk-footer {
 		border-top: 10px solid $ho-purple;
-		background: $ho-background;
+		background: $ho-light;
 		color: $ho-text;
 	}
 
