@@ -30,6 +30,7 @@ import * as Excerpts from "./excerpts.js";
 import * as Memos from "./memos.js";
 import * as CodeApplications from "./reflection/code-applications.js";
 import * as Codes from "./reflection/codes.js";
+import * as ProjectDataHydration from "./reflection/project-data-hydration.js";
 import * as Analysis from "./reflection/analysis.js";
 import * as MuralJournalSync from "./mural-journal-sync-safe-tags.js";
 
@@ -46,48 +47,6 @@ import * as Diag from "./dev/diag.js";
 import * as ImpactService from "./impact.js";
 import { recordProvenanceEvent } from "./provenance.js";
 
-/**
- * @typedef {Object} Env
- * @property {string} ALLOWED_ORIGINS
- * @property {string} AUDIT
- * @property {string} AIRTABLE_BASE_ID
- * @property {string} AIRTABLE_TABLE_PROJECTS
- * @property {string} AIRTABLE_TABLE_DETAILS
- * @property {string} AIRTABLE_TABLE_STUDIES
- * @property {string} AIRTABLE_TABLE_GUIDES
- * @property {string} AIRTABLE_TABLE_CONSENT_FORMS
- * @property {string} AIRTABLE_TABLE_PARTICIPANT_CONSENT
- * @property {string} AIRTABLE_TABLE_PARTIALS
- 	 * @property {string} AIRTABLE_TABLE_PARTICIPANTS
- 	 * @property {string} [AIRTABLE_TABLE_STUDY_SUPPORT]
- 	 * @property {string} [AIRTABLE_TABLE_NOTE_TAKERS_OBSERVERS]
- 	 * @property {string} AIRTABLE_TABLE_SESSIONS
- * @property {string} AIRTABLE_TABLE_SESSION_NOTES
- * @property {string} AIRTABLE_TABLE_COMMSLOG
- * @property {string} AIRTABLE_API_KEY
- * @property {string} GH_OWNER
- * @property {string} GH_REPO
- * @property {string} GH_BRANCH
- * @property {string} GH_PATH_PROJECTS
- * @property {string} GH_PATH_DETAILS
- * @property {string} GH_PATH_STUDIES
- * @property {string} GH_TOKEN
- * @property {any}    ASSETS
- * @property {string} [MODEL]
- * @property {string} [AIRTABLE_TABLE_AI_LOG]
- * @property {string} [AIRTABLE_PROJECT_TEAM_NAME_FIELD]
- * @property {string} [AIRTABLE_PROJECT_TEAM_ID_FIELD]
- * @property {any}    AI
- * @property {KVNamespace} SESSION_KV
- * @property {D1Database} RESEARCHOPS_D1
- * @property {string} [MURAL_CLIENT_ID]
- * @property {string} [MURAL_CLIENT_SECRET]
- * @property {string} [MURAL_REDIRECT_URI]
- * @property {string} [MURAL_HOME_OFFICE_WORKSPACE_ID]
- * @property {string} [MURAL_API_BASE]
- * @property {string} [MURAL_REFLEXIVE_MURAL_ID]
- */
-
 function corsHeaders(env, origin) {
 	const allowed = (env.ALLOWED_ORIGINS || "")
 		.split(",")
@@ -103,18 +62,10 @@ function corsHeaders(env, origin) {
 }
 
 export class ResearchOpsService {
-	/**
-	 * @param {Env} env
-	 * @param {{cfg?:Partial<typeof DEFAULTS>, logger?:BatchLogger}} [opts]
-	 */
 	constructor(env, opts = {}) {
-		/** @type {Env} */
 		this.env = env;
-		/** @type {Readonly<typeof DEFAULTS>} */
 		this.cfg = Object.freeze({ ...DEFAULTS, ...(opts.cfg || {}) });
-		/** @type {BatchLogger} */
 		this.log = opts.logger || new BatchLogger({ batchSize: this.cfg.LOG_BATCH_SIZE });
-		/** @type {boolean} */
 		this.destroyed = false;
 
 		this.corsHeaders = (origin) => corsHeaders(this.env, origin);
@@ -153,7 +104,7 @@ export class ResearchOpsService {
 	updateProjectFraming = (req, origin, projectId, authContext) => Projects.updateProjectFraming(this, req, origin, projectId, authContext);
 
 	/* ─────────────── Journal Entries ─────────────── */
-	listJournalEntries = (origin, url) => Journals.listJournalEntries(this, origin, url);
+	listJournalEntries = (origin, url) => ProjectDataHydration.listJournalEntries(this, origin, url);
 	createJournalEntry = (req, origin) => Journals.createJournalEntry(this, req, origin);
 	diagAirtableCreate = (req, origin) => Journals.diagAirtableCreate(this, req, origin);
 	getJournalEntry = (origin, entryId) => Journals.getJournalEntry(this, origin, entryId);
@@ -164,10 +115,10 @@ export class ResearchOpsService {
 	/* ─────────────── Excerpts ─────────────── */
 	listExcerpts = (origin, url) => Excerpts.listExcerpts(this, origin, url);
 	createExcerpt = (req, origin) => Excerpts.createExcerpt(this, req, origin);
-	updateExcerpt = (req, origin, excerptId) => Excerpts.updateExcerpt(this, req, origin, excerptId);
+	updateExcerpt = (req, origin, excerptId) => Excerpts.updateExcerpt(this, origin, excerptId);
 
 	/* ─────────────── Memos ─────────────── */
-	listMemos = (origin, url) => Memos.listMemos(this, origin, url);
+	listMemos = (origin, url) => ProjectDataHydration.listMemos(this, origin, url);
 	createMemo = (req, origin) => Memos.createMemo(this, req, origin);
 	updateMemo = (req, origin, memoId) => Memos.updateMemo(this, req, origin, memoId);
 
@@ -175,7 +126,7 @@ export class ResearchOpsService {
 	listCodeApplications = (origin, url) => CodeApplications.listCodeApplications(this, origin, url);
 
 	/* ─────────────── Codes ─────────────── */
-	listCodes = (origin, url) => Codes.listCodes(this, origin, url);
+	listCodes = (origin, url) => ProjectDataHydration.listCodes(this, origin, url);
 	createCode = (req, origin) => Codes.createCode(this, req, origin);
 	updateCode = (req, origin, codeId) => Codes.updateCode(this, req, origin, codeId);
 
@@ -233,7 +184,7 @@ export class ResearchOpsService {
 	listPartials = (origin) => Partials.listPartials(this, origin);
 	createPartial = (req, origin) => Partials.createPartial(this, req, origin);
 	readPartial = (origin, id) => Partials.readPartial(this, origin, id);
-	updatePartial = (req, origin, id) => Partials.updatePartial(this, req, origin, id);
+	updatePartial = (req, origin, id) => Partials.updatePartial(this, req, id);
 	deletePartial = (origin, id) => Partials.deletePartial(this, origin, id);
 
 	/* ─────────────── Participants ─────────────── */
