@@ -1,0 +1,165 @@
+{
+	"schema": "researchops.agentAuditTrace.v1",
+	"date": "2026-06-09",
+	"traceLayer": "operational",
+	"repository": "kevinrapley/ResearchOps",
+	"branch": "fix/home-office-home-masthead-brand",
+	"pullRequest": 379,
+	"branchPrefix": "fix/",
+	"traceRequired": true,
+	"taskSummary": "Fix the Home Office brand variant so the home page hero uses Home Office purple and hero breadcrumb links render white while ordinary content links keep GOV.UK link blue.",
+	"correctedBranchBehaviour": {
+		"directMainIncident": true,
+		"correctivePr": 378,
+		"implementationPr": 379,
+		"summary": "Direct-main follow-up commits were reverted through PR #378. The intended implementation was reapplied on the approved fix branch for PR #379."
+	},
+	"operatingModelFilesLoaded": [
+		"AGENTS.md",
+		".agent-operating-model/orchestration.xml",
+		".agent-operating-model/bundle-registry.json",
+		".agent-operating-model/task-signal-catalog.json",
+		".agent-operating-model/selection-rules.json",
+		".agent-operating-model/bootstrap-checklist.md",
+		".agent-operating-model/precedence-policy.md",
+		".agent-operating-model/trace-policy.md",
+		".agent-operating-model/github-mutation-policy.md",
+		".agent-operating-model/bundles/github/prompt.spec.yaml",
+		".agent-operating-model/bundles/github/prompt.body.xml",
+		".agent-operating-model/bundles/github/references/github-tooling-mutation-policy.xml",
+		".agent-operating-model/bundles/github/references/test-contract-impact-sweep.xml",
+		".agent-operating-model/bundles/researchops-developer-control/prompt.spec.yaml",
+		".agent-operating-model/bundles/researchops-developer-control/references/core-rules.xml",
+		".agent-operating-model/bundles/researchops-developer-control/references/researchops-platform-context.xml",
+		".agent-operating-model/bundles/researchops-developer-control/references/researchops-repository-conventions.xml",
+		".agent-operating-model/bundles/govuk-design-system/prompt.spec.yaml"
+	],
+	"selectedBundles": [
+		{
+			"id": "github-diamond",
+			"canonicalPath": ".agent-operating-model/bundles/github/",
+			"reason": "Repository safety, branch discipline, PR management, CI and automated review comment handling."
+		},
+		{
+			"id": "researchops-developer-control",
+			"canonicalPath": ".agent-operating-model/bundles/researchops-developer-control/",
+			"reason": "ResearchOps platform CSS, generated output and test-contract boundaries."
+		},
+		{
+			"id": "multi-functional-team",
+			"canonicalPath": ".agent-operating-model/bundles/multi-functional-team/",
+			"reason": "Government product assurance defaults."
+		},
+		{
+			"id": "govuk-design-system",
+			"canonicalPath": ".agent-operating-model/bundles/govuk-design-system/",
+			"reason": "GOV.UK component, link, colour and accessibility treatment."
+		}
+	],
+	"skippedBundles": [
+		{
+			"id": "cloudflare",
+			"reason": "No Worker, Pages routing or deployment code changed."
+		},
+		{
+			"id": "openai-platform",
+			"reason": "No OpenAI API or model integration changed."
+		},
+		{
+			"id": "mcp-agent-tooling",
+			"reason": "No MCP protocol or tool contract changed."
+		},
+		{
+			"id": "airtable-public-api",
+			"reason": "No Airtable schema or API behaviour changed."
+		},
+		{
+			"id": "mural-public-api",
+			"reason": "No Mural integration changed."
+		}
+	],
+	"precedenceDecisions": [
+		{
+			"decision": "GitHub Diamond governed repository mutation and PR readiness before convenience or visual implementation goals."
+		},
+		{
+			"decision": "ResearchOps Developer Control governed the correct implementation layer: Home Office brand Sass plus generated CSS."
+		},
+		{
+			"decision": "GOV.UK Design System governed the component and link colour boundary."
+		}
+	],
+	"filesRead": [
+		"src/styles/researchops-home.scss",
+		"src/styles/brands/home-office.scss",
+		"public/css/brands/home-office.css",
+		"tests/brand-variant-route-state.test.js",
+		"public/index.html",
+		"PR #379 metadata",
+		"PR #379 comments"
+	],
+	"filesModifiedOrCreated": [
+		"src/styles/brands/home-office.scss",
+		"public/css/brands/home-office.css",
+		"tests/brand-variant-route-state.test.js",
+		"docs/agent-audit/reasoning/2026/06/09/home-office-home-masthead-brand.md",
+		"docs/agent-audit/reasoning/2026/06/09/home-office-home-masthead-brand.json"
+	],
+	"implementationSummary": [
+		"Set --govuk-brand-colour to Home Office purple in the Home Office brand selector.",
+		"Added Home Office brand-layer treatment for the home masthead, inverse home service navigation and home phase banner.",
+		"Added white colour treatment for hero breadcrumb links inside home and repository mastheads.",
+		"Preserved GOV.UK link blue for ordinary content links.",
+		"Regenerated public/css/brands/home-office.css from the Sass source.",
+		"Updated tests/brand-variant-route-state.test.js to protect the new contract."
+	],
+	"testContractImpactSweep": {
+		"performed": true,
+		"affectedContracts": [
+			"Home Office brand Sass source",
+			"Generated Home Office CSS output",
+			"Route-state brand variant assertions",
+			"Hero breadcrumb colour treatment",
+			"Ordinary GOV.UK content link blue preservation"
+		],
+		"legacyTermsChecked": [
+			"#1d70b8",
+			"--govuk-brand-colour",
+			"researchops-home-masthead",
+			"repository-masthead",
+			"govuk-breadcrumbs__link"
+		]
+	},
+	"automatedReviewComments": {
+		"checked": true,
+		"actionableCodexThreadsPresent": false,
+		"items": [
+			{
+				"source": "cloudflare-workers-and-pages[bot]",
+				"classification": "deployment notice",
+				"actionRequired": false
+			},
+			{
+				"source": "chatgpt-codex-connector[bot]",
+				"classification": "usage-limit notice",
+				"actionRequired": false
+			}
+		]
+	},
+	"validation": {
+		"beforeTraceCommit": [
+			"CI: success",
+			"Validate ResearchOps: success",
+			"Worker CI: success",
+			"Release Gate: success",
+			"Accessibility audit (pa11y-ci): success",
+			"qa-bdd: success",
+			"QA — Broken links (Lychee): success"
+		],
+		"afterTraceCommit": "pending at trace creation"
+	},
+	"residualRisks": [
+		"Visual confirmation on the branch preview remains useful for home and repository mastheads.",
+		"Any future actionable Codex review comment must be classified, acknowledged, replied to and resolved only after the fix is present and validation is checked."
+	]
+}

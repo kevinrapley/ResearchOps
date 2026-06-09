@@ -15,6 +15,7 @@ $govuk-tag-purple-text: #3d2375;
 $govuk-tag-purple-background: #dbd5e9;
 
 html[data-researchops-brand='home-office'] {
+	--govuk-brand-colour: #{$ho-purple};
 	--researchops-home-office-brand-colour: #{$ho-purple};
 	--researchops-home-office-page-background: #{$ho-background};
 	--researchops-home-office-border-colour: #{$ho-border};
@@ -258,6 +259,11 @@ html[data-researchops-brand='home-office'] {
 		border-right-color: $ho-border;
 	}
 
+	.researchops-home-front-page
+		.govuk-template__header
+		.govuk-service-navigation[data-active='Home'],
+	.researchops-home-front-page .govuk-phase-banner,
+	.researchops-home-masthead,
 	.researchops-repository-front-page
 		.govuk-template__header
 		.govuk-service-navigation[data-active='Research Repository'],
@@ -266,12 +272,41 @@ html[data-researchops-brand='home-office'] {
 		background: $ho-purple;
 	}
 
+	.researchops-home-front-page .govuk-phase-banner,
 	.researchops-repository-front-page .govuk-phase-banner {
 		box-shadow: 0 0 0 100vmax $ho-purple;
 	}
 
+	.researchops-home-front-page .govuk-phase-banner .govuk-tag,
 	.researchops-repository-front-page .govuk-phase-banner .govuk-tag {
 		color: $ho-purple;
+	}
+
+	.researchops-home-masthead,
+	.researchops-home-masthead .govuk-heading-xl,
+	.researchops-home-masthead .govuk-body-l,
+	.researchops-home-masthead .govuk-body,
+	.researchops-home-masthead .govuk-breadcrumbs,
+	.researchops-home-masthead .govuk-breadcrumbs__link,
+	.researchops-home-masthead .govuk-breadcrumbs__link:link,
+	.researchops-home-masthead .govuk-breadcrumbs__link:visited,
+	.researchops-home-masthead .govuk-breadcrumbs__list-item,
+	.repository-masthead,
+	.repository-masthead .govuk-heading-xl,
+	.repository-masthead .govuk-body-l,
+	.repository-masthead .govuk-body,
+	.repository-masthead .govuk-breadcrumbs,
+	.repository-masthead .govuk-breadcrumbs__link,
+	.repository-masthead .govuk-breadcrumbs__link:link,
+	.repository-masthead .govuk-breadcrumbs__link:visited,
+	.repository-masthead .govuk-breadcrumbs__list-item {
+		color: $ho-white;
+	}
+
+	.researchops-home-masthead .govuk-breadcrumbs__list-item::before,
+	.repository-masthead .govuk-breadcrumbs__list-item::before {
+		border-color: $ho-white;
+		color: $ho-white;
 	}
 
 	.repository-masthead,
