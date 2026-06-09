@@ -174,7 +174,9 @@ html[data-researchops-brand='home-office'] {
 	}
 
 	.govuk-service-navigation .govuk-service-navigation__item--active .govuk-service-navigation__link,
-	.govuk-service-navigation .govuk-service-navigation__item--active .govuk-service-navigation__link:visited,
+	.govuk-service-navigation
+		.govuk-service-navigation__item--active
+		.govuk-service-navigation__link:visited,
 	.govuk-service-navigation .govuk-service-navigation__link[aria-current='true'],
 	.govuk-service-navigation .govuk-service-navigation__link[aria-current='true']:visited,
 	.govuk-service-navigation .govuk-service-navigation__link[aria-current='page'],
