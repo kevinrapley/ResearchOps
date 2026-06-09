@@ -4,19 +4,28 @@
 {% from "govuk/components/tag/macro.njk" import govukTag %}
 
 {% block head %}
-	<link rel="stylesheet" href="/assets/researchops/researchops-home.css?v=govuk-home-grid-20260524" media="screen">
+	<link rel="stylesheet" href="/assets/researchops/researchops-home.css?v=home-masthead-20260608" media="screen">
 {% endblock %}
 
 {% block content %}
-<div class="govuk-width-container">
-	<div class="govuk-grid-row">
-		<div class="govuk-grid-column-two-thirds">
-			<h1 class="govuk-heading-xl" id="home-title">ResearchOps demo suite</h1>
-			<p class="govuk-body-l">Objective orientated applied user research done well.</p>
-			<p class="govuk-body">Use ResearchOps to structure applied user research with operations, governance and accessibility baked in.</p>
+<div class="app-masthead researchops-home-masthead">
+	<section class="researchops-home-hero" aria-labelledby="home-title">
+		<div class="govuk-width-container">
+			<div class="govuk-grid-row">
+				<div class="govuk-grid-column-two-thirds">
+					<h1 class="govuk-heading-xl" id="home-title">ResearchOps demo suite</h1>
+					<p class="govuk-body-l">Objective orientated applied user research done well.</p>
+					<p class="govuk-body">Use ResearchOps to structure applied user research with operations, governance and accessibility baked in.</p>
+				</div>
+				<div class="govuk-grid-column-one-third researchops-home-hero__image-column">
+					<img class="researchops-home-hero__image" src="/images/home-masthead-researchops-illustration.svg" alt="" role="presentation" width="320" height="198">
+				</div>
+			</div>
 		</div>
-	</div>
+	</section>
+</div>
 
+<div class="govuk-width-container">
 	<section class="researchops-highlight-panel govuk-!-margin-top-7 govuk-!-margin-bottom-7" aria-labelledby="start-guidance-title">
 		<div class="govuk-grid-row">
 			<div class="govuk-grid-column-two-thirds">

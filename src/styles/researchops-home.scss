@@ -1,5 +1,134 @@
 @use 'govuk-frontend/dist/govuk/base' as *;
 
+.researchops-home-front-page {
+	.govuk-template__header .govuk-service-navigation[data-active='Home'] {
+		border-top: 1px solid rgba(255, 255, 255, 0.35);
+		border-bottom: 1px solid rgba(255, 255, 255, 0.35);
+		background: var(--govuk-brand-colour, #1d70b8);
+	}
+
+	.govuk-template__header
+		.govuk-service-navigation[data-active='Home']
+		.govuk-service-navigation__toggle,
+	.govuk-template__header
+		.govuk-service-navigation[data-active='Home']
+		.govuk-service-navigation__link,
+	.govuk-template__header
+		.govuk-service-navigation[data-active='Home']
+		.govuk-service-navigation__link:visited {
+		color: govuk-colour('white');
+	}
+
+	.govuk-template__header
+		.govuk-service-navigation[data-active='Home']
+		.govuk-service-navigation__toggle {
+		border-color: govuk-colour('white');
+	}
+
+	.govuk-template__header
+		.govuk-service-navigation[data-active='Home']
+		.govuk-service-navigation__item,
+	.govuk-template__header
+		.govuk-service-navigation[data-active='Home']
+		.govuk-service-navigation__service-name {
+		border-color: govuk-colour('white');
+	}
+
+	.govuk-template__header
+		.govuk-service-navigation[data-active='Home']
+		.govuk-service-navigation__toggle:hover,
+	.govuk-template__header
+		.govuk-service-navigation[data-active='Home']
+		.govuk-service-navigation__link:hover {
+		color: govuk-colour('white');
+		text-decoration-thickness: 3px;
+	}
+
+	.govuk-template__header
+		.govuk-service-navigation[data-active='Home']
+		.govuk-service-navigation__item--active
+		.govuk-service-navigation__link,
+	.govuk-template__header
+		.govuk-service-navigation[data-active='Home']
+		.govuk-service-navigation__link[aria-current='true'],
+	.govuk-template__header
+		.govuk-service-navigation[data-active='Home']
+		.govuk-service-navigation__link[aria-current='page'] {
+		border-bottom: 0;
+		box-shadow: none;
+		color: govuk-colour('white');
+	}
+
+	.govuk-template__header
+		.govuk-service-navigation[data-active='Home']
+		.govuk-service-navigation__link:focus {
+		background-color: govuk-colour('yellow');
+		color: govuk-colour('black');
+		outline: 3px solid govuk-colour('yellow');
+		outline-offset: 0;
+		box-shadow:
+			0 -2px govuk-colour('yellow'),
+			0 4px govuk-colour('black');
+		text-decoration: none;
+	}
+
+	.govuk-phase-banner {
+		margin-bottom: 0;
+		border-bottom-color: rgba(255, 255, 255, 0.35);
+		background: var(--govuk-brand-colour, #1d70b8);
+		box-shadow: 0 0 0 100vmax var(--govuk-brand-colour, #1d70b8);
+		clip-path: inset(0 -100vmax);
+		color: govuk-colour('white');
+	}
+
+	.govuk-phase-banner .govuk-tag {
+		background: govuk-colour('white');
+		color: var(--govuk-brand-colour, #1d70b8);
+	}
+
+	.govuk-phase-banner__text {
+		color: govuk-colour('white');
+	}
+}
+
+.researchops-home-masthead {
+	margin-top: -40px;
+	padding-top: govuk-spacing(4);
+	padding-bottom: 32px;
+	border-bottom: 10px solid var(--govuk-brand-colour, #1d70b8);
+	background: var(--govuk-brand-colour, #1d70b8);
+	color: govuk-colour('white');
+}
+
+.researchops-home-masthead .govuk-breadcrumbs {
+	margin-top: 0;
+	margin-bottom: govuk-spacing(4);
+	color: govuk-colour('white');
+}
+
+.researchops-home-masthead .govuk-breadcrumbs__link,
+.researchops-home-masthead .govuk-breadcrumbs__list-item {
+	color: govuk-colour('white');
+}
+
+.researchops-home-masthead .govuk-breadcrumbs__list-item::before {
+	border-color: govuk-colour('white');
+}
+
+.researchops-home-hero {
+	padding: govuk-spacing(5) 0 0;
+}
+
+.researchops-home-masthead .govuk-heading-xl,
+.researchops-home-masthead .govuk-body-l,
+.researchops-home-masthead .govuk-body {
+	color: govuk-colour('white');
+}
+
+.researchops-home-hero .govuk-heading-xl {
+	margin-bottom: govuk-spacing(5);
+}
+
 .researchops-highlight-panel {
 	padding: govuk-spacing(4);
 	border: 1px solid govuk-colour('black', $variant: 'tint-80');

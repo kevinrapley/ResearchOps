@@ -178,6 +178,7 @@ export const govukPages = [
 			serviceName: 'ResearchOps Demo Suite',
 			activeNavigation: 'Home',
 			navigation,
+			bodyClass: 'researchops-home-front-page',
 			steps,
 			cards,
 		},

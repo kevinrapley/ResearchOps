@@ -113,7 +113,7 @@ for (const path of representativePages) {
 	const page = fs.readFileSync(path, 'utf8');
 	assert.match(page, /\/assets\/govuk\/govuk-frontend\.css/, `${path} should load generated GOV.UK Frontend CSS`);
 	assert.match(page, /<html class="govuk-template" lang="en">/, `${path} should use the GOV.UK template class`);
-	assert.match(page, /class="govuk-template__body"/, `${path} should use GOV.UK template body class`);
+	assert.match(page, /class="[^"]*\bgovuk-template__body\b/, `${path} should use GOV.UK template body class`);
 	assert.match(page, /\/components\/layout\.js/, `${path} should load the shared x-include loader`);
 	assert.match(page, /\/js\/govuk-frontend-init\.js/, `${path} should load GOV.UK Frontend initialisation`);
 	assert.match(page, /<x-include src="\/partials\/header\.html"/, `${path} should include shared GOV.UK header chrome`);
