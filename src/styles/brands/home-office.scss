@@ -1,6 +1,7 @@
 /* Home Office brand variant for ResearchOps */
 
 $ho-purple: #732282;
+$ho-mid: #e0d5e5;
 $ho-light: #f0e9f2;
 $ho-background: #f5f5f5;
 $ho-border: #cbcbcb;
@@ -21,6 +22,7 @@ html[data-researchops-brand='home-office'] {
 
 html[data-researchops-brand='home-office'] body,
 body[data-researchops-brand='home-office'] {
+	border-top: 1px solid $ho-mid;
 	background: $ho-background;
 }
 
