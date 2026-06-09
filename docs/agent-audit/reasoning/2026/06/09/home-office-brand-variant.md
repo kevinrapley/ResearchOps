@@ -41,7 +41,7 @@ Reason: branch starts with `feature/` and the operating model requires auditable
 ## Precedence decisions
 
 - GitHub branch and trace rules governed branch naming and trace creation.
-- ResearchOps Developer Control governed the shared partial and route-state test approach.
+- ResearchOps Developer Control governed the shared partial, Sass source and route-state test approach.
 - GOV.UK Design System rules remained active because the work changes frontend page chrome.
 - Home Office UCD Manual evidence was used only for Home Office colour and logo treatment.
 
@@ -57,7 +57,9 @@ No precedence conflict was found.
 
 - `public/partials/header.html`
 - `public/js/brand-variant.js`
+- `src/styles/brands/home-office.scss`
 - `public/css/brands/home-office.css`
+- `scripts/styles/generated-css-targets.mjs`
 - `tests/brand-variant-route-state.test.js`
 - `docs/design-system/brand-variants.md`
 - `docs/agent-audit/reasoning/2026/06/09/home-office-brand-variant.md`
@@ -71,9 +73,11 @@ The Home Office variant is applied at runtime using one of three supported selec
 
 The variant swaps the visible logo and applies a small colour layer. It does not fork GOV.UK component markup, form structures, content, routing, API behaviour or route-specific layouts.
 
+The Home Office CSS asset is registered as a generated output. The source is `src/styles/brands/home-office.scss`, and the generated output is `public/css/brands/home-office.css`.
+
 ## Validation attempted
 
-Local syntax checks were run against the new JavaScript and test file before committing through GitHub tooling.
+Route-state coverage now checks that the Home Office brand CSS target is registered from Sass.
 
 Repository-level tests were not run in the execution environment because the repository was only available through the GitHub connector, not as a local clone with dependencies installed.
 
@@ -84,12 +88,14 @@ Checked known contract-bearing surfaces:
 - shared header partial
 - shared GOV.UK route-state assertions
 - generated-page route-state expectations
+- generated CSS target manifest
+- Sass source path and generated CSS output path
 - brand-specific route-state assertions
 - visible logo classes
 - stylesheet path contracts
 - brand activation selectors
 
-A new route-state test was added for the brand selector and Home Office colour/logo contract.
+The brand route-state test was extended to cover the Sass source, generated CSS target and generated output contract.
 
 ## Residual risks
 
