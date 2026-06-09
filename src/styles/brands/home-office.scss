@@ -175,6 +175,19 @@ html[data-researchops-brand='home-office'] {
 		color: $govuk-tag-purple-text;
 	}
 
+	.govuk-notification-banner {
+		border-color: $ho-purple;
+		background-color: $ho-purple;
+	}
+
+	.govuk-notification-banner__header {
+		background-color: $ho-purple;
+	}
+
+	.govuk-notification-banner__title {
+		color: $ho-white;
+	}
+
 	.researchops-step-card__tag {
 		background: $ho-purple;
 		color: $ho-white;
