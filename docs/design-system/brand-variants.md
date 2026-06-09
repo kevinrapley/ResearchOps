@@ -19,7 +19,7 @@ The GOV.UK variant remains the default.
 
 ## Source guidance
 
-The Home Office UCD Manual says internal services on a `homeoffice.gov.uk` domain should use Home Office design styles, including the Home Office page template, Roboto and Home Office colours.
+The Home Office UCD Manual says internal Home Office services should use Home Office design styles, including the Home Office page template, Roboto and Home Office colours.
 
 The Home Office colour guidance defines:
 
@@ -43,8 +43,20 @@ Use `?brand=govuk` to return to the default GOV.UK variant and clear the persist
 
 - `public/partials/header.html` keeps the default GOV.UK logo and adds the Home Office SVG logo as a hidden alternative.
 - `public/js/brand-variant.js` selects and applies the active brand.
-- `public/css/brands/home-office.css` applies the Home Office colour layer and swaps the visible logo.
-- `tests/brand-variant-route-state.test.js` protects the brand-selector contract.
+- `src/styles/brands/home-office.scss` is the Sass source for the Home Office colour layer.
+- `public/css/brands/home-office.css` is the generated CSS output.
+- `scripts/styles/generated-css-targets.mjs` registers the Sass source and CSS output with the generated CSS build.
+- `tests/brand-variant-route-state.test.js` protects the brand-selector and Sass-generation contract.
+
+## Build contract
+
+Run:
+
+```text
+npm run build:generated-css
+```
+
+That compiles `src/styles/brands/home-office.scss` into `public/css/brands/home-office.css` through the same generated-CSS pipeline used by the other ResearchOps-owned stylesheets.
 
 ## Boundaries
 
