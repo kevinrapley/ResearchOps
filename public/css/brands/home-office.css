@@ -143,6 +143,19 @@ html[data-researchops-brand=home-office] .govuk-phase-banner__content__tag, html
 	color: #3d2375;
 	}
 
+html[data-researchops-brand=home-office] .govuk-notification-banner {
+	border-color: #732282;
+	background-color: #732282;
+	}
+
+html[data-researchops-brand=home-office] .govuk-notification-banner__header {
+	background-color: #732282;
+	}
+
+html[data-researchops-brand=home-office] .govuk-notification-banner__title {
+	color: #ffffff;
+	}
+
 html[data-researchops-brand=home-office] .researchops-step-card__tag {
 	background: #732282;
 	color: #ffffff;
