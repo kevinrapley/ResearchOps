@@ -1,0 +1,66 @@
+{
+	"traceId": "home-masthead-image-replacement-2026-06-09",
+	"traceLayer": "operational",
+	"date": "2026-06-09",
+	"branch": "feature/home-masthead-treatment",
+	"branchDecision": {
+		"prefix": "feature/",
+		"requiresTrace": true,
+		"reason": "trace-required-prefix"
+	},
+	"taskSummary": "Record the current PR #376 home masthead image replacement and failing release-gate diagnosis after the image was replaced on the branch.",
+	"operatingModel": {
+		"loaded": [
+			"AGENTS.md",
+			".agent-operating-model/orchestration.xml",
+			".agent-operating-model/bundle-registry.json",
+			".agent-operating-model/task-signal-catalog.json",
+			".agent-operating-model/selection-rules.json",
+			".agent-operating-model/github-mutation-policy.md"
+		],
+		"selectedBundles": [
+			".agent-operating-model/bundles/github/",
+			".agent-operating-model/bundles/researchops-developer-control/",
+			".agent-operating-model/bundles/multi-functional-team/",
+			".agent-operating-model/bundles/govuk-design-system/"
+		],
+		"skippedBundles": [
+			".agent-operating-model/bundles/cloudflare/",
+			".agent-operating-model/bundles/openai/",
+			".agent-operating-model/bundles/mcp-agent-tooling/",
+			".agent-operating-model/bundles/airtable-public-api/",
+			".agent-operating-model/bundles/mural-public-api/"
+		]
+	},
+	"files": {
+		"inspected": [
+			"public/images/home-masthead-researchops-illustration.svg",
+			"src/govuk/templates/pages/home.njk",
+			"public/index.html",
+			"src/styles/researchops-home.scss",
+			"tests/govuk-frontend-integration-route-state.test.js",
+			"docs/agent-audit/reasoning/2026/06/08/home-masthead-treatment-trace.md",
+			"docs/agent-audit/reasoning/2026/06/08/home-masthead-treatment-trace.json",
+			"logs_73070003717.zip"
+		],
+		"changedInThisFix": [
+			"docs/agent-audit/reasoning/2026/06/09/home-masthead-image-replacement-trace.md",
+			"docs/agent-audit/reasoning/2026/06/09/home-masthead-image-replacement-trace.json"
+		]
+	},
+	"diagnosis": [
+		"Release Gate failed because npm run validate reported missing trace coverage for the current date.",
+		"The release-gate log reported that branch feature/home-masthead-treatment uses feature/ and requires an audit trace.",
+		"The release-gate log reported no trace directory found at docs/agent-audit/reasoning/2026/06/09.",
+		"CI, GOV.UK page rendering, qa-bdd, Lychee and accessibility checks were already passing on the current PR head."
+	],
+	"decisions": [
+		"Added a current-date trace directory and trace duo for the material SVG replacement work on PR #376.",
+		"Did not alter the masthead SVG, Nunjucks template, generated HTML or CSS as part of this fix.",
+		"Treated the release-gate failure as a trace-coverage issue, not an image-link or rendering issue."
+	],
+	"validationNotRun": [
+		"No local npm commands were run in this session.",
+		"Validation should be confirmed by the next PR workflow run."
+	]
+}
