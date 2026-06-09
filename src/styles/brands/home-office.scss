@@ -22,7 +22,6 @@ html[data-researchops-brand='home-office'] {
 
 html[data-researchops-brand='home-office'] body,
 body[data-researchops-brand='home-office'] {
-	border-top: 1px solid $ho-mid;
 	background: $ho-background;
 }
 
@@ -135,6 +134,7 @@ html[data-researchops-brand='home-office'] {
 	}
 
 	.govuk-service-navigation {
+		border-top: 1px solid $ho-mid;
 		border-bottom: 1px solid $ho-purple;
 		background: $ho-light;
 	}
