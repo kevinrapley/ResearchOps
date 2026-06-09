@@ -108,8 +108,9 @@ html[data-researchops-brand=home-office] .govuk-header .govuk-header__product-na
 	}
 
 html[data-researchops-brand=home-office] .govuk-service-navigation {
+	border-top: 1px solid #d2bfd8;
 	border-bottom: 1px solid #732282;
-	background: #ffffff;
+	background: #f0e9f2;
 	}
 
 html[data-researchops-brand=home-office] li.govuk-service-navigation__item, html[data-researchops-brand=home-office] .govuk-service-navigation__item {
@@ -189,9 +190,25 @@ html[data-researchops-brand=home-office] .researchops-next-action:not(:last-chil
 	border-right-color: #cbcbcb;
 	}
 
+html[data-researchops-brand=home-office] .researchops-repository-front-page .govuk-template__header .govuk-service-navigation[data-active="Research Repository"], html[data-researchops-brand=home-office] .researchops-repository-front-page .govuk-phase-banner, html[data-researchops-brand=home-office] .repository-masthead {
+	background: #732282;
+	}
+
+html[data-researchops-brand=home-office] .researchops-repository-front-page .govuk-phase-banner {
+	box-shadow: 0 0 0 100vmax #732282;
+	}
+
+html[data-researchops-brand=home-office] .researchops-repository-front-page .govuk-phase-banner .govuk-tag {
+	color: #732282;
+	}
+
+html[data-researchops-brand=home-office] .repository-masthead, html[data-researchops-brand=home-office] .repository-metric, html[data-researchops-brand=home-office] .repository-filter-panel, html[data-researchops-brand=home-office] .repository-card--governance, html[data-researchops-brand=home-office] .repository-review-list__button--selected, html[data-researchops-brand=home-office] .drawer, html[data-researchops-brand=home-office] .rops-link-panel, html[data-researchops-brand=home-office] .dashboard-action-panel, html[data-researchops-brand=home-office] .rops-participant-private-details, html[data-researchops-brand=home-office] .study-support-status, html[data-researchops-brand=home-office] .study-support-form-section, html[data-researchops-brand=home-office] .outcomes-guidance-panel, html[data-researchops-brand=home-office] .participants-section--form, html[data-researchops-brand=home-office] .study-session-gate, html[data-researchops-brand=home-office] .govuk-tabs__list-item--selected .govuk-tabs__tab {
+	border-color: #732282;
+	}
+
 html[data-researchops-brand=home-office] .govuk-footer {
 	border-top: 10px solid #732282;
-	background: #f5f5f5;
+	background: #f0e9f2;
 	color: #0b0c0c;
 	}
 
