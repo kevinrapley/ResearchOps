@@ -25,8 +25,17 @@ assert.ok(generatedCssTargets.includes('public/css/brands/home-office.css'));
 assert.ok(brandStylesSource.includes('$home-office-brand-colour: #732282'));
 assert.ok(brandStylesSource.includes('$home-office-page-background: #f5f5f5'));
 assert.ok(brandStylesSource.includes('$home-office-border-colour: #cbcbcb'));
+assert.ok(brandStylesSource.includes('.researchops-highlight-panel'));
+assert.ok(brandStylesSource.includes('.researchops-step-card__tag'));
+assert.ok(brandStylesSource.includes('.govuk-footer'));
+assert.ok(brandStylesSource.includes('--govuk-brand-colour: #{$home-office-brand-colour}'));
 
 assert.ok(brandStyles.includes('#732282'));
 assert.ok(brandStyles.includes('#f5f5f5'));
 assert.ok(brandStyles.includes('#cbcbcb'));
 assert.ok(brandStyles.includes('researchops-header__home-office-logo'));
+assert.ok(brandStyles.includes('researchops-highlight-panel'));
+assert.ok(brandStyles.includes('researchops-step-card__tag'));
+assert.ok(brandStyles.includes('govuk-footer'));
+assert.ok(brandStyles.includes('--govuk-brand-colour: #732282'));
+assert.equal(brandStyles.includes('#1d70b8'), false);
