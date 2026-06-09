@@ -17,6 +17,11 @@ export const generatedCssTargets = [
 		output: 'public/css/brands/home-office.css',
 	},
 	{
+		name: 'Home Office secondary button brand variant stylesheet',
+		source: 'src/styles/brands/home-office-buttons.scss',
+		output: 'public/css/brands/home-office-buttons.css',
+	},
+	{
 		name: 'Projects stylesheet',
 		source: 'src/styles/projects.scss',
 		output: 'public/css/projects.css',
