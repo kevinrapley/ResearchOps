@@ -245,6 +245,40 @@ html[data-researchops-brand='home-office'] {
 		border-right-color: $ho-border;
 	}
 
+	.researchops-repository-front-page
+		.govuk-template__header
+		.govuk-service-navigation[data-active='Research Repository'],
+	.researchops-repository-front-page .govuk-phase-banner,
+	.repository-masthead {
+		background: $ho-purple;
+	}
+
+	.researchops-repository-front-page .govuk-phase-banner {
+		box-shadow: 0 0 0 100vmax $ho-purple;
+	}
+
+	.researchops-repository-front-page .govuk-phase-banner .govuk-tag {
+		color: $ho-purple;
+	}
+
+	.repository-masthead,
+	.repository-metric,
+	.repository-filter-panel,
+	.repository-card--governance,
+	.repository-review-list__button--selected,
+	.drawer,
+	.rops-link-panel,
+	.dashboard-action-panel,
+	.rops-participant-private-details,
+	.study-support-status,
+	.study-support-form-section,
+	.outcomes-guidance-panel,
+	.participants-section--form,
+	.study-session-gate,
+	.govuk-tabs__list-item--selected .govuk-tabs__tab {
+		border-color: $ho-purple;
+	}
+
 	.govuk-footer {
 		border-top: 10px solid $ho-purple;
 		background: $ho-light;
