@@ -5,13 +5,20 @@ const GOVUK_BRAND = 'govuk';
 const SUPPORTED_BRANDS = new Set([GOVUK_BRAND, HOME_OFFICE_BRAND]);
 
 function normaliseBrand(value) {
-	const brand = String(value || '')
-		.trim()
-		.toLowerCase();
+	const brand = String(value || '').trim().toLowerCase();
 	return SUPPORTED_BRANDS.has(brand) ? brand : GOVUK_BRAND;
 }
 
-function safeGetLocalStorageBrand() {
+function storeBrand(brand) {
+	try {
+		if (brand === GOVUK_BRAND) window.localStorage.removeItem(BRAND_STORAGE_KEY);
+		else window.localStorage.setItem(BRAND_STORAGE_KEY, brand);
+	} catch {
+		// Storage can be unavailable in hardened browsing contexts.
+	}
+}
+
+function storedBrand() {
 	try {
 		return normaliseBrand(window.localStorage.getItem(BRAND_STORAGE_KEY));
 	} catch {
@@ -19,43 +26,29 @@ function safeGetLocalStorageBrand() {
 	}
 }
 
-function safeSetLocalStorageBrand(brand) {
-	try {
-		if (brand === GOVUK_BRAND) {
-			window.localStorage.removeItem(BRAND_STORAGE_KEY);
-			return;
-		}
-		window.localStorage.setItem(BRAND_STORAGE_KEY, brand);
-	} catch {
-		// Storage may be unavailable in hardened or private browsing contexts.
-	}
-}
-
-function getMetaBrand() {
+function metaBrand() {
 	return document.querySelector('meta[name="researchops-brand"]')?.getAttribute('content') || '';
 }
 
-function getHostnameBrand() {
+function hostnameBrand() {
 	const hostname = String(window.location?.hostname || '').toLowerCase();
-	if (hostname.includes('home-office') || hostname.includes('homeoffice')) return HOME_OFFICE_BRAND;
-	return GOVUK_BRAND;
+	return hostname.includes('home-office') || hostname.includes('homeoffice') ? HOME_OFFICE_BRAND : GOVUK_BRAND;
 }
 
 export function getConfiguredBrand() {
-	const params = new URLSearchParams(window.location.search || '');
-	const requested = params.get('brand');
+	const requested = new URLSearchParams(window.location.search || '').get('brand');
 	if (requested && SUPPORTED_BRANDS.has(requested)) {
-		safeSetLocalStorageBrand(requested);
+		storeBrand(requested);
 		return requested;
 	}
 
-	const metaBrand = getMetaBrand();
-	if (SUPPORTED_BRANDS.has(metaBrand)) return metaBrand;
+	const configuredMetaBrand = metaBrand();
+	if (SUPPORTED_BRANDS.has(configuredMetaBrand)) return configuredMetaBrand;
 
-	const storedBrand = safeGetLocalStorageBrand();
-	if (storedBrand !== GOVUK_BRAND) return storedBrand;
+	const configuredStoredBrand = storedBrand();
+	if (configuredStoredBrand !== GOVUK_BRAND) return configuredStoredBrand;
 
-	return getHostnameBrand();
+	return hostnameBrand();
 }
 
 function ensureHomeOfficeStylesheet(enabled) {
@@ -73,16 +66,28 @@ function ensureHomeOfficeStylesheet(enabled) {
 	if (enabled) document.head.append(link);
 }
 
+function setHeaderMarkVisibility(isHomeOffice) {
+	document.querySelectorAll('.researchops-header__home-office-logo svg').forEach((mark) => {
+		mark.style.width = isHomeOffice ? '' : '0';
+		mark.style.height = isHomeOffice ? '' : '0';
+		mark.style.overflow = isHomeOffice ? '' : 'hidden';
+	});
+
+	document.querySelectorAll('.researchops-header__home-office-logo .researchops-header__wordmark').forEach((wordmark) => {
+		wordmark.style.width = isHomeOffice ? '0' : '';
+		wordmark.style.height = isHomeOffice ? '0' : '';
+		wordmark.style.overflow = isHomeOffice ? 'hidden' : '';
+	});
+}
+
 function updateHeaderAccessibility(brand) {
 	const homepageLink = document.querySelector('.researchops-header__homepage-link');
 	if (!homepageLink) return;
 
-	const label =
-		brand === HOME_OFFICE_BRAND
-			? 'Home Office ResearchOps Demo Suite home'
-			: 'GOV.UK ResearchOps Demo Suite home';
-
-	homepageLink.setAttribute('aria-label', label);
+	homepageLink.setAttribute(
+		'aria-label',
+		brand === HOME_OFFICE_BRAND ? 'Home Office ResearchOps Demo Suite home' : 'GOV.UK ResearchOps Demo Suite home'
+	);
 }
 
 export function applyBrandVariant(brand = getConfiguredBrand()) {
@@ -91,12 +96,14 @@ export function applyBrandVariant(brand = getConfiguredBrand()) {
 
 	document.documentElement.dataset.researchopsBrand = selectedBrand;
 	document.documentElement.classList.toggle('researchops-brand-home-office', isHomeOffice);
+
 	if (document.body) {
 		document.body.dataset.researchopsBrand = selectedBrand;
 		document.body.classList.toggle('researchops-brand-home-office', isHomeOffice);
 	}
 
 	ensureHomeOfficeStylesheet(isHomeOffice);
+	setHeaderMarkVisibility(isHomeOffice);
 	updateHeaderAccessibility(selectedBrand);
 
 	return selectedBrand;
