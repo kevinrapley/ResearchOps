@@ -94,15 +94,26 @@ html[data-researchops-brand='home-office'] {
 	.researchops-header__home-office-logo {
 		display: inline-flex;
 		align-items: center;
-		width: 190px;
-		min-width: 190px;
-		max-width: 42vw;
+		width: 230px;
+		min-width: 230px;
+		max-width: 48vw;
 		height: auto;
 		margin-right: 0;
 		color: $home-office-text-colour;
 		flex: 0 0 auto;
 		visibility: visible;
 		opacity: 1;
+	}
+
+	.researchops-header__home-office-logo::after {
+		display: none;
+		content: 'Home Office';
+		padding-left: 12px;
+		border-left: 4px solid $home-office-brand-colour;
+		color: $home-office-text-colour;
+		font-size: 24px;
+		font-weight: 400;
+		line-height: 1.2;
 	}
 
 	.researchops-header__home-office-logo svg {
@@ -162,14 +173,15 @@ html[data-researchops-brand='home-office'] {
 		text-decoration: none;
 	}
 
-	.govuk-service-navigation__item--active .govuk-service-navigation__link,
-	.govuk-service-navigation__item--active .govuk-service-navigation__link:visited,
-	.govuk-service-navigation__link[aria-current='true'],
-	.govuk-service-navigation__link[aria-current='true']:visited,
-	.govuk-service-navigation__link[aria-current='page'],
-	.govuk-service-navigation__link[aria-current='page']:visited,
-	.govuk-service-navigation__link.active,
-	.govuk-service-navigation__link.active:visited {
+	.govuk-service-navigation .govuk-service-navigation__item--active .govuk-service-navigation__link,
+	.govuk-service-navigation .govuk-service-navigation__item--active .govuk-service-navigation__link:visited,
+	.govuk-service-navigation .govuk-service-navigation__link[aria-current='true'],
+	.govuk-service-navigation .govuk-service-navigation__link[aria-current='true']:visited,
+	.govuk-service-navigation .govuk-service-navigation__link[aria-current='page'],
+	.govuk-service-navigation .govuk-service-navigation__link[aria-current='page']:visited,
+	.govuk-service-navigation .govuk-service-navigation__link.active,
+	.govuk-service-navigation .govuk-service-navigation__link.active:visited {
+		border-bottom: 5px solid $home-office-brand-colour;
 		border-bottom-color: $home-office-brand-colour;
 		color: $home-office-text-colour;
 	}
@@ -189,6 +201,11 @@ html[data-researchops-brand='home-office'] {
 		color: $home-office-white;
 	}
 
+	.govuk-main-wrapper .govuk-button,
+	.govuk-main-wrapper .govuk-button:link,
+	.govuk-main-wrapper .govuk-button:visited,
+	.govuk-main-wrapper .govuk-button:hover,
+	.govuk-main-wrapper .govuk-button:active,
 	.govuk-button,
 	.govuk-button:link,
 	.govuk-button:visited,
@@ -197,6 +214,7 @@ html[data-researchops-brand='home-office'] {
 		color: $home-office-white;
 	}
 
+	.govuk-main-wrapper .govuk-button:focus,
 	.govuk-button:focus {
 		color: $home-office-text-colour;
 	}
@@ -226,6 +244,18 @@ html[data-researchops-brand='home-office'] {
 			0 -2px $home-office-focus-colour,
 			0 4px $home-office-text-colour;
 		text-decoration: none;
+	}
+
+	.govuk-main-wrapper .govuk-button,
+	.govuk-main-wrapper .govuk-button:link,
+	.govuk-main-wrapper .govuk-button:visited,
+	.govuk-main-wrapper .govuk-button:hover,
+	.govuk-main-wrapper .govuk-button:active {
+		color: $home-office-white;
+	}
+
+	.govuk-main-wrapper .govuk-button:focus {
+		color: $home-office-text-colour;
 	}
 
 	.researchops-highlight-panel {
@@ -301,8 +331,8 @@ html[data-researchops-brand='home-office'] {
 		}
 
 		.researchops-header__home-office-logo {
-			width: 170px;
-			min-width: 170px;
+			width: 190px;
+			min-width: 190px;
 		}
 
 		.govuk-header .govuk-header__product-name,
