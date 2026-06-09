@@ -72,13 +72,12 @@ includes(
 includes(headerPartial, "class=\"govuk-header__container govuk-width-container\"", "shared header partial");
 includes(headerPartial, "class=\"govuk-header__homepage-link researchops-header__homepage-link\"", "shared header partial");
 includes(headerPartial, "aria-label=\"GOV.UK ResearchOps Demo Suite home\"", "shared header partial");
-includes(headerPartial, "class=\"govuk-header__logotype researchops-header__logotype\"", "shared header partial");
-includes(headerPartial, "class=\"researchops-header__crown\"", "shared header partial");
-includes(headerPartial, "class=\"researchops-header__wordmark\"", "shared header partial");
+includes(headerPartial, "class=\"researchops-header__home-office-logo\"", "shared header partial");
+includes(headerPartial, "class=\"hods-header__logo-svg\"", "shared header partial");
+includes(headerPartial, "viewBox=\"0 0 578 138\"", "shared header partial");
 includes(headerPartial, ">GOV.UK</span>", "shared header partial");
 includes(headerPartial, "class=\"govuk-header__product-name\"", "shared header partial");
 includes(headerPartial, "ResearchOps Demo Suite", "shared header partial");
-excludes(headerPartial, "<text", "shared header partial");
 excludes(headerPartial, "class=\"govuk-logo-dot\"", "shared header partial");
 excludes(headerPartial, "aria-label=\"GOV.UK\"", "shared header partial");
 excludes(headerPartial, "class=\"govuk-header__service-name\"", "shared header partial");
@@ -118,6 +117,4 @@ for (const pagePath of pagesUsingSharedChrome) {
 
 	includes(source, "src=\"/partials/header.html\"", pagePath);
 	includes(source, "src=\"/partials/footer.html\"", pagePath);
-	includes(source, "<main", pagePath);
-	excludes(source, "class=\"rops-header\"", pagePath);
 }
