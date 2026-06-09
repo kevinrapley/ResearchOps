@@ -66,10 +66,11 @@ function ensureHomeOfficeStylesheet(enabled) {
 		link.rel = 'stylesheet';
 		link.href = '/css/brands/home-office.css';
 		link.media = 'screen';
-		document.head.appendChild(link);
 	}
 
-	if (link) link.disabled = !enabled;
+	if (!link) return;
+	link.disabled = !enabled;
+	if (enabled) document.head.append(link);
 }
 
 function updateHeaderAccessibility(brand) {
