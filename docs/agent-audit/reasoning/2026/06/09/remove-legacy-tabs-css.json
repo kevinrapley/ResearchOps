@@ -1,0 +1,170 @@
+{
+	"schema": "researchops.agentAuditTrace.v1",
+	"date": "2026-06-09",
+	"traceLayer": "operational",
+	"repository": "kevinrapley/ResearchOps",
+	"branch": "fix/remove-legacy-tabs-css",
+	"pullRequest": 381,
+	"branchPrefix": "fix/",
+	"traceRequired": true,
+	"taskSummary": "Remove the legacy static public/css/tabs.css stylesheet completely, remove journals page references to it, and confirm GOV.UK tabs styling is owned by generated GOV.UK Frontend CSS rather than a legacy override.",
+	"operatingModelFilesLoaded": [
+		"README.md",
+		"AGENTS.md",
+		"RECENT_LEARNINGS.md",
+		".agent-operating-model/orchestration.xml",
+		".agent-operating-model/bundle-registry.json",
+		".agent-operating-model/task-signal-catalog.json",
+		".agent-operating-model/selection-rules.json",
+		".agent-operating-model/bootstrap-checklist.md",
+		".agent-operating-model/precedence-policy.md",
+		".agent-operating-model/trace-policy.md",
+		".agent-operating-model/trace-layers.md",
+		".agent-operating-model/behavioural-evals.json",
+		".agent-operating-model/github-mutation-policy.md",
+		".agent-operating-model/bundles/github/prompt.spec.yaml",
+		".agent-operating-model/bundles/github/prompt.body.xml",
+		".agent-operating-model/bundles/researchops-developer-control/prompt.spec.yaml",
+		".agent-operating-model/bundles/researchops-developer-control/prompt.body.xml",
+		".agent-operating-model/bundles/multi-functional-team/prompt.spec.yaml",
+		".agent-operating-model/bundles/multi-functional-team/prompt.body.xml",
+		".agent-operating-model/bundles/govuk-design-system/prompt.spec.yaml",
+		".agent-operating-model/bundles/govuk-design-system/prompt.body.xml"
+	],
+	"selectedBundles": [
+		{
+			"id": "github-diamond",
+			"canonicalPath": ".agent-operating-model/bundles/github/",
+			"reason": "Repository safety, branch governance, PR discipline, trace and CI behaviour."
+		},
+		{
+			"id": "researchops-developer-control",
+			"canonicalPath": ".agent-operating-model/bundles/researchops-developer-control/",
+			"reason": "ResearchOps page, generated-output and route-state contracts."
+		},
+		{
+			"id": "multi-functional-team",
+			"canonicalPath": ".agent-operating-model/bundles/multi-functional-team/",
+			"reason": "Government service assurance defaults."
+		},
+		{
+			"id": "govuk-design-system",
+			"canonicalPath": ".agent-operating-model/bundles/govuk-design-system/",
+			"reason": "GOV.UK tabs component styling, accessibility and frontend component ownership."
+		}
+	],
+	"skippedBundles": [
+		{
+			"id": "cloudflare",
+			"reason": "No Worker, Pages routing, D1, KV, R2 or deployment logic changed."
+		},
+		{
+			"id": "openai-platform",
+			"reason": "No OpenAI API, model or retrieval behaviour changed."
+		},
+		{
+			"id": "mcp-agent-tooling",
+			"reason": "No MCP server, client or tool contract changed."
+		},
+		{
+			"id": "airtable-public-api",
+			"reason": "No Airtable integration changed."
+		},
+		{
+			"id": "mural-public-api",
+			"reason": "No Mural API integration changed."
+		}
+	],
+	"precedenceDecisions": [
+		"GitHub Diamond governed branch, PR and trace behaviour.",
+		"ResearchOps Developer Control governed source and rendered page parity.",
+		"GOV.UK Design System governed the tab component ownership decision.",
+		"The legacy public/css/tabs.css file was removed rather than regenerated from Sass because the correct tab component CSS already comes from public/assets/govuk/govuk-frontend.css, generated from src/styles/govuk.scss by the build:govuk script."
+	],
+	"filesRead": [
+		"README.md",
+		"AGENTS.md",
+		"RECENT_LEARNINGS.md",
+		".agent-operating-model/*",
+		".agent-operating-model/bundles/github/prompt.spec.yaml",
+		".agent-operating-model/bundles/github/prompt.body.xml",
+		".agent-operating-model/bundles/researchops-developer-control/prompt.spec.yaml",
+		".agent-operating-model/bundles/researchops-developer-control/prompt.body.xml",
+		".agent-operating-model/bundles/multi-functional-team/prompt.spec.yaml",
+		".agent-operating-model/bundles/multi-functional-team/prompt.body.xml",
+		".agent-operating-model/bundles/govuk-design-system/prompt.spec.yaml",
+		".agent-operating-model/bundles/govuk-design-system/prompt.body.xml",
+		"package.json",
+		"scripts/styles/build-generated-css.mjs",
+		"scripts/styles/generated-css-targets.mjs",
+		"src/govuk/templates/pages/projects-journals.njk",
+		"public/pages/projects/journals/index.html",
+		"public/css/tabs.css",
+		"tests/journals-route-state.test.js"
+	],
+	"filesModifiedCreatedOrRemoved": [
+		"src/govuk/templates/pages/projects-journals.njk",
+		"public/pages/projects/journals/index.html",
+		"tests/journals-route-state.test.js",
+		"public/css/tabs.css",
+		"docs/agent-audit/reasoning/2026/06/09/remove-legacy-tabs-css.md",
+		"docs/agent-audit/reasoning/2026/06/09/remove-legacy-tabs-css.json"
+	],
+	"implementationSummary": [
+		"Removed the /css/tabs.css link from the journals Nunjucks source.",
+		"Removed the matching /css/tabs.css link from the committed rendered journals page.",
+		"Deleted the static legacy public/css/tabs.css file.",
+		"Added route-state assertions that the Nunjucks source, rendered page and generated CSS target manifest do not reference tabs.css or src/styles/tabs.scss.",
+		"Left GOV.UK tabs component styling under the generated GOV.UK Frontend CSS path."
+	],
+	"testContractImpactSweep": {
+		"performed": true,
+		"affectedContracts": [
+			"journals Nunjucks page head assets",
+			"committed rendered journals page assets",
+			"generated CSS manifest",
+			"legacy static CSS file inventory",
+			"journals route-state assertions"
+		],
+		"legacyOrAffectedTermsChecked": [
+			"/css/tabs.css",
+			"public/css/tabs.css",
+			"src/styles/tabs.scss",
+			"govukTabs",
+			"data-module=\"govuk-tabs\"",
+			"public/assets/govuk/govuk-frontend.css"
+		]
+	},
+	"mutationStrategy": "Used the available GitHub contents API wrappers for small text replacements and delete-file wrapper for the removed legacy CSS asset. Branch diff was checked after implementation.",
+	"automatedReviewComments": {
+		"checked": true,
+		"reviewThreadsAtTraceTime": 0,
+		"disposition": "No review threads were present at the time of this trace. Later legitimate Codex or automated review comments must be acknowledged with a thumbs-up reaction, replied to with evidence and resolved only after the fix is complete."
+	},
+	"validation": {
+		"commandsRun": [],
+		"notRunReason": "The repository could not be cloned from the sandbox and the connector does not execute repository scripts.",
+		"requiredBeforeReady": [
+			"npm run build",
+			"node --import ./tests/helpers/generated-govuk-page-source.mjs --test tests/journals-route-state.test.js",
+			"npm run format:check",
+			"npm run validate",
+			"npm run trace:coverage"
+		]
+	},
+	"changedFileVerification": {
+		"checkedAgainstMain": true,
+		"changedFilesBeforeTrace": [
+			"public/css/tabs.css",
+			"public/pages/projects/journals/index.html",
+			"src/govuk/templates/pages/projects-journals.njk",
+			"tests/journals-route-state.test.js"
+		],
+		"plausible": true
+	},
+	"residualRisks": [
+		"The PR remains draft until repository validation commands have run.",
+		"Visual verification on the branch preview is still useful because the user-reported issue was visual CSS override behaviour.",
+		"The custom /components/tabs.js controller remains in scope for later review. It is not the CSS override being removed here."
+	]
+}

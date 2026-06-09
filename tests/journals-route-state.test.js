@@ -5,6 +5,7 @@ const pageSource = fs.readFileSync("public/pages/projects/journals/index.html", 
 const templateSource = fs.readFileSync("src/govuk/templates/pages/projects-journals.njk", "utf8");
 const layoutSource = fs.readFileSync("src/govuk/templates/layouts/researchops.njk", "utf8");
 const renderGovukPagesSource = fs.readFileSync("scripts/govuk/render-govuk-pages.mjs", "utf8");
+const generatedCssTargetsSource = fs.readFileSync("scripts/styles/generated-css-targets.mjs", "utf8");
 const projectContextSource = fs.readFileSync("public/js/project-context.js", "utf8");
 const caqdasSource = fs.readFileSync("public/js/caqdas-interface.js", "utf8");
 const tabsSource = fs.readFileSync("public/js/journal-tabs.js", "utf8");
@@ -43,6 +44,7 @@ excludes(templateSource, "id=\"back-to-project\"", "journals GOV.UK template");
 excludes(templateSource, "<nav class=\"govuk-breadcrumbs\"", "journals GOV.UK template");
 excludes(templateSource, "class=\"govuk-tabs\"", "journals GOV.UK template");
 excludes(templateSource, "govuk-tabs__list", "journals GOV.UK template");
+excludes(templateSource, "href=\"/css/tabs.css\"", "journals GOV.UK template");
 
 includes(pageSource, "class=\"govuk-template\"", "journals page");
 includes(pageSource, "href=\"/assets/govuk/govuk-frontend.css\"", "journals page");
@@ -63,6 +65,9 @@ includes(pageSource, "id=\"coding-panel\"", "journals page");
 excludes(pageSource, "id=\"back-to-project\"", "journals page");
 excludes(pageSource, "href=\"/css/govuk/govuk-forms.css\"", "journals page");
 excludes(pageSource, "href=\"/css/screen.css\"", "journals page");
+excludes(pageSource, "href=\"/css/tabs.css\"", "journals page");
+excludes(generatedCssTargetsSource, "public/css/tabs.css", "generated CSS target manifest");
+excludes(generatedCssTargetsSource, "src/styles/tabs.scss", "generated CSS target manifest");
 
 includes(projectContextSource, "function showJournalError", "project context module");
 includes(projectContextSource, "function showJournalNotification", "project context module");
