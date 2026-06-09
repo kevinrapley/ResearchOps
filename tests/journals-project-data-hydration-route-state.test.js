@@ -34,6 +34,9 @@ includes(hydrationSource, "FROM memos", "project data hydration service");
 includes(hydrationSource, "FROM codes", "project data hydration service");
 includes(hydrationSource, "local_project_id IN", "project data hydration service");
 includes(hydrationSource, "OR project IN", "project data hydration service");
+includes(hydrationSource, "allowUnfiltered = false", "project data hydration service");
+includes(hydrationSource, "allowUnfiltered ? list : []", "project data hydration service");
+includes(hydrationSource, "allowUnfiltered: nofilter || !candidates.length", "project data hydration service");
 includes(hydrationSource, "source: \"d1\"", "project data hydration service");
 includes(hydrationSource, "source: codes.length ? \"airtable\" : \"empty\"", "project data hydration service");
 
