@@ -19,16 +19,25 @@
 	"filesChanged": [
 		"public/partials/header.html",
 		"public/js/brand-variant.js",
+		"src/styles/brands/home-office.scss",
 		"public/css/brands/home-office.css",
+		"scripts/styles/generated-css-targets.mjs",
 		"tests/brand-variant-route-state.test.js",
 		"docs/design-system/brand-variants.md",
 		"docs/agent-audit/reasoning/2026/06/09/home-office-brand-variant.md",
 		"docs/agent-audit/reasoning/2026/06/09/home-office-brand-variant.json"
 	],
+	"generatedCssContract": {
+		"source": "src/styles/brands/home-office.scss",
+		"output": "public/css/brands/home-office.css",
+		"manifest": "scripts/styles/generated-css-targets.mjs"
+	},
 	"validation": {
-		"localSyntaxChecks": [
-			"node --check public/js/brand-variant.js",
-			"node --check tests/brand-variant-route-state.test.js"
+		"routeStateCoverage": [
+			"Home Office brand selector",
+			"Home Office Sass source path",
+			"Home Office generated CSS output path",
+			"Home Office colour tokens"
 		],
 		"repositoryTestsRun": false,
 		"repositoryTestsNotRunReason": "Repository dependencies were not available in the connector-only execution path."
