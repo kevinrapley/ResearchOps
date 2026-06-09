@@ -161,7 +161,9 @@ html[data-researchops-brand='home-office'] {
 		text-decoration: none;
 	}
 
-	.govuk-service-navigation__list .govuk-service-navigation__item.govuk-service-navigation__item--active > .govuk-service-navigation__link,
+	.govuk-service-navigation__list
+		.govuk-service-navigation__item.govuk-service-navigation__item--active
+		> .govuk-service-navigation__link,
 	.govuk-service-navigation__list
 		.govuk-service-navigation__item.govuk-service-navigation__item--active
 		> .govuk-service-navigation__link:visited,
