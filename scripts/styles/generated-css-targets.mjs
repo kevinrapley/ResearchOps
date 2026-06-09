@@ -12,6 +12,11 @@ export const generatedCssTargets = [
 		output: 'public/assets/researchops/researchops-home.css',
 	},
 	{
+		name: 'Home Office brand variant stylesheet',
+		source: 'src/styles/brands/home-office.scss',
+		output: 'public/css/brands/home-office.css',
+	},
+	{
 		name: 'Projects stylesheet',
 		source: 'src/styles/projects.scss',
 		output: 'public/css/projects.css',
