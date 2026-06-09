@@ -204,7 +204,7 @@ html[data-researchops-brand=home-office] .researchops-next-action:not(:last-chil
 	border-right-color: #cbcbcb;
 	}
 
-html[data-researchops-brand=home-office] .researchops-home-front-page .govuk-template__header .govuk-service-navigation[data-active="Home"], html[data-researchops-brand=home-office] .researchops-home-front-page .govuk-phase-banner, html[data-researchops-brand=home-office] .researchops-home-masthead, html[data-researchops-brand=home-office] .researchops-repository-front-page .govuk-template__header .govuk-service-navigation[data-active="Research Repository"], html[data-researchops-brand=home-office] .researchops-repository-front-page .govuk-phase-banner, html[data-researchops-brand=home-office] .repository-masthead {
+html[data-researchops-brand=home-office] .researchops-home-front-page .govuk-template__header .govuk-service-navigation[data-active=Home], html[data-researchops-brand=home-office] .researchops-home-front-page .govuk-phase-banner, html[data-researchops-brand=home-office] .researchops-home-masthead, html[data-researchops-brand=home-office] .researchops-repository-front-page .govuk-template__header .govuk-service-navigation[data-active="Research Repository"], html[data-researchops-brand=home-office] .researchops-repository-front-page .govuk-phase-banner, html[data-researchops-brand=home-office] .repository-masthead {
 	background: #732282;
 	}
 

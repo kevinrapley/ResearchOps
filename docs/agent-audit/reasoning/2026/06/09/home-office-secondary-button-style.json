@@ -1,0 +1,150 @@
+{
+	"schema": "researchops.agentAuditTrace.v1",
+	"date": "2026-06-09",
+	"traceLayer": "operational",
+	"repository": "kevinrapley/ResearchOps",
+	"branch": "fix/home-office-secondary-button-style",
+	"pullRequest": 380,
+	"branchPrefix": "fix/",
+	"traceRequired": true,
+	"taskSummary": "Apply the Home Office Design System adjusted secondary button style to the ResearchOps Home Office brand variant.",
+	"operatingModelFilesLoaded": [
+		"AGENTS.md",
+		".agent-operating-model/orchestration.xml",
+		".agent-operating-model/bundle-registry.json",
+		".agent-operating-model/task-signal-catalog.json",
+		".agent-operating-model/selection-rules.json",
+		".agent-operating-model/github-mutation-policy.md",
+		".agent-operating-model/trace-policy.md",
+		".agent-operating-model/precedence-policy.md",
+		".agent-operating-model/bundles/github/prompt.spec.yaml",
+		".agent-operating-model/bundles/github/prompt.body.xml",
+		".agent-operating-model/bundles/github/references/github-tooling-mutation-policy.xml",
+		".agent-operating-model/bundles/github/references/test-contract-impact-sweep.xml",
+		".agent-operating-model/bundles/researchops-developer-control/prompt.spec.yaml",
+		".agent-operating-model/bundles/researchops-developer-control/references/core-rules.xml",
+		".agent-operating-model/bundles/researchops-developer-control/references/researchops-platform-context.xml",
+		".agent-operating-model/bundles/researchops-developer-control/references/researchops-repository-conventions.xml",
+		".agent-operating-model/bundles/govuk-design-system/prompt.spec.yaml"
+	],
+	"selectedBundles": [
+		{
+			"id": "github-diamond",
+			"canonicalPath": ".agent-operating-model/bundles/github/",
+			"reason": "Repository safety, branch governance, PR discipline, CI and automated review comment handling."
+		},
+		{
+			"id": "researchops-developer-control",
+			"canonicalPath": ".agent-operating-model/bundles/researchops-developer-control/",
+			"reason": "ResearchOps platform CSS layering, generated output and route-state contracts."
+		},
+		{
+			"id": "multi-functional-team",
+			"canonicalPath": ".agent-operating-model/bundles/multi-functional-team/",
+			"reason": "Government service assurance defaults."
+		},
+		{
+			"id": "govuk-design-system",
+			"canonicalPath": ".agent-operating-model/bundles/govuk-design-system/",
+			"reason": "GOV.UK and Home Office component styling and accessibility."
+		}
+	],
+	"skippedBundles": [
+		{
+			"id": "cloudflare",
+			"reason": "No Worker, Pages routing or deployment implementation changed."
+		},
+		{
+			"id": "openai-platform",
+			"reason": "No OpenAI API or model integration changed."
+		},
+		{
+			"id": "mcp-agent-tooling",
+			"reason": "No MCP protocol or agent-tooling contract changed."
+		},
+		{
+			"id": "airtable-public-api",
+			"reason": "No Airtable integration changed."
+		},
+		{
+			"id": "mural-public-api",
+			"reason": "No Mural integration changed."
+		}
+	],
+	"precedenceDecisions": [
+		"GitHub Diamond governed branch, PR and trace behaviour.",
+		"ResearchOps Developer Control governed where the implementation should live.",
+		"GOV.UK Design System governed component semantics and accessibility.",
+		"Home Office Design System source evidence informed the adjusted secondary button styling."
+	],
+	"filesRead": [
+		"Home Office Design System button component guidance",
+		"UKHomeOffice/design-system/components/page/assets/Page.scss",
+		"public/js/brand-variant.js",
+		"scripts/styles/generated-css-targets.mjs",
+		"src/styles/brands/home-office.scss",
+		"public/css/brands/home-office.css",
+		"tests/brand-variant-route-state.test.js"
+	],
+	"filesModifiedOrCreated": [
+		"src/styles/brands/home-office-buttons.scss",
+		"public/css/brands/home-office-buttons.css",
+		"public/css/brands/home-office.css",
+		"public/js/brand-variant.js",
+		"scripts/styles/generated-css-targets.mjs",
+		"tests/brand-variant-route-state.test.js",
+		"docs/agent-audit/reasoning/2026/06/09/home-office-secondary-button-style.md",
+		"docs/agent-audit/reasoning/2026/06/09/home-office-secondary-button-style.json"
+	],
+	"implementationSummary": [
+		"Added Home Office secondary button Sass source.",
+		"Added generated CSS counterpart.",
+		"Registered the new generated CSS target.",
+		"Loaded the button brand stylesheet after the main Home Office brand stylesheet.",
+		"Extended route-state assertions for the secondary button contract.",
+		"Applied the generated Prettier patch for Sass and generated CSS formatting."
+	],
+	"testContractImpactSweep": {
+		"performed": true,
+		"affectedContracts": [
+			"Home Office brand stylesheet loading order",
+			"generated CSS manifest",
+			"Home Office secondary button Sass source",
+			"generated Home Office secondary button CSS",
+			"route-state brand variant assertions"
+		],
+		"legacyOrAffectedTermsChecked": [
+			"govuk-button--secondary",
+			"home-office-buttons.css",
+			"home-office-buttons.scss",
+			"researchops-home-office-buttons-brand",
+			"#f8f8f8",
+			"#dfdfdf",
+			"border-width: 1px 1px 0 1px",
+			"padding: 9px 11px 9px",
+			"padding: 8px 10px 7px"
+		]
+	},
+	"automatedReviewComments": {
+		"checked": true,
+		"actionableCodexThreadsPresentAtReadinessReview": false,
+		"disposition": "PR #380 contains a Cloudflare deployment notice only. Later legitimate automated review comments must be handled under Codex disposition rules."
+	},
+	"validation": {
+		"latestGreenHeadBeforeTraceUpdate": "c1ca7daf41a1fa547c64047a0bdcc1b8a0e3311d",
+		"passedBeforeTraceUpdate": [
+			"CI",
+			"Validate ResearchOps",
+			"Worker CI",
+			"Release Gate",
+			"Accessibility audit (pa11y-ci)",
+			"qa-bdd",
+			"QA — Broken links (Lychee)"
+		],
+		"afterTraceUpdate": "pending"
+	},
+	"residualRisks": [
+		"Visual verification on the Cloudflare branch preview remains useful because this is a component-style change.",
+		"The secondary button override is scoped to the Home Office brand and loaded after the main Home Office brand stylesheet."
+	]
+}
