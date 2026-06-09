@@ -115,7 +115,7 @@ export class ResearchOpsService {
 	/* ─────────────── Excerpts ─────────────── */
 	listExcerpts = (origin, url) => Excerpts.listExcerpts(this, origin, url);
 	createExcerpt = (req, origin) => Excerpts.createExcerpt(this, req, origin);
-	updateExcerpt = (req, origin, excerptId) => Excerpts.updateExcerpt(this, origin, excerptId);
+	updateExcerpt = (req, origin, excerptId) => Excerpts.updateExcerpt(this, req, origin, excerptId);
 
 	/* ─────────────── Memos ─────────────── */
 	listMemos = (origin, url) => ProjectDataHydration.listMemos(this, origin, url);
@@ -184,7 +184,7 @@ export class ResearchOpsService {
 	listPartials = (origin) => Partials.listPartials(this, origin);
 	createPartial = (req, origin) => Partials.createPartial(this, req, origin);
 	readPartial = (origin, id) => Partials.readPartial(this, origin, id);
-	updatePartial = (req, origin, id) => Partials.updatePartial(this, req, id);
+	updatePartial = (req, origin, id) => Partials.updatePartial(this, req, origin, id);
 	deletePartial = (origin, id) => Partials.deletePartial(this, origin, id);
 
 	/* ─────────────── Participants ─────────────── */
