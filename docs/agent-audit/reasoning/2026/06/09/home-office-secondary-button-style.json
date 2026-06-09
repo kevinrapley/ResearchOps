@@ -89,6 +89,7 @@
 	"filesModifiedOrCreated": [
 		"src/styles/brands/home-office-buttons.scss",
 		"public/css/brands/home-office-buttons.css",
+		"public/css/brands/home-office.css",
 		"public/js/brand-variant.js",
 		"scripts/styles/generated-css-targets.mjs",
 		"tests/brand-variant-route-state.test.js",
@@ -100,7 +101,8 @@
 		"Added generated CSS counterpart.",
 		"Registered the new generated CSS target.",
 		"Loaded the button brand stylesheet after the main Home Office brand stylesheet.",
-		"Extended route-state assertions for the secondary button contract."
+		"Extended route-state assertions for the secondary button contract.",
+		"Applied the generated Prettier patch for Sass and generated CSS formatting."
 	],
 	"testContractImpactSweep": {
 		"performed": true,
@@ -125,12 +127,12 @@
 	},
 	"automatedReviewComments": {
 		"checked": true,
-		"actionableCodexThreadsPresentAtTraceCreation": false,
-		"disposition": "No PR review threads were present at trace creation. Later legitimate automated review comments must be handled under Codex disposition rules."
+		"actionableCodexThreadsPresentAtReadinessReview": false,
+		"disposition": "PR #380 contains a Cloudflare deployment notice only. Later legitimate automated review comments must be handled under Codex disposition rules."
 	},
 	"validation": {
-		"statusAtTraceCreation": "pending",
-		"requiredBeforeReady": [
+		"latestGreenHeadBeforeTraceUpdate": "c1ca7daf41a1fa547c64047a0bdcc1b8a0e3311d",
+		"passedBeforeTraceUpdate": [
 			"CI",
 			"Validate ResearchOps",
 			"Worker CI",
@@ -138,7 +140,8 @@
 			"Accessibility audit (pa11y-ci)",
 			"qa-bdd",
 			"QA — Broken links (Lychee)"
-		]
+		],
+		"afterTraceUpdate": "pending"
 	},
 	"residualRisks": [
 		"Visual verification on the Cloudflare branch preview remains useful because this is a component-style change.",
