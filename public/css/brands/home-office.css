@@ -20,21 +20,49 @@ html[data-researchops-brand=home-office] .govuk-header {
 	color: #0b0c0c;
 	}
 
+html[data-researchops-brand=home-office] .govuk-header__container {
+	min-height: 64px;
+	padding-top: 14px;
+	padding-bottom: 14px;
+	}
+
+html[data-researchops-brand=home-office] .govuk-header__logo {
+	width: auto;
+	}
+
 html[data-researchops-brand=home-office] .govuk-header .govuk-header__homepage-link, html[data-researchops-brand=home-office] .govuk-header .govuk-header__homepage-link:visited, html[data-researchops-brand=home-office] .govuk-header .govuk-header__link, html[data-researchops-brand=home-office] .govuk-header .govuk-header__link:visited {
+	display: inline-flex;
+	align-items: center;
+	gap: 18px;
+	margin: 0;
+	border: 0;
+	background: transparent;
 	color: #0b0c0c;
+	font-size: inherit;
+	line-height: 1.2;
+	text-decoration: none;
+	box-shadow: none;
 	}
 
 html[data-researchops-brand=home-office] .govuk-header .govuk-header__homepage-link:hover, html[data-researchops-brand=home-office] .govuk-header .govuk-header__homepage-link:active {
-	border-bottom-color: #732282;
+	margin: 0;
+	border: 0;
+	background: transparent;
 	color: #0b0c0c;
+	text-decoration: underline;
+	text-decoration-thickness: 3px;
+	text-underline-offset: 0.1em;
 	}
 
 html[data-researchops-brand=home-office] .govuk-header .govuk-header__homepage-link:focus, html[data-researchops-brand=home-office] .govuk-header .govuk-header__link:focus {
+	margin: 0;
+	border: 0;
 	background-color: #ffdd00;
 	color: #0b0c0c;
 	outline: 3px solid #ffdd00;
 	outline-offset: 0;
 	box-shadow: 0 -2px #ffdd00, 0 4px #0b0c0c;
+	text-decoration: none;
 	}
 
 html[data-researchops-brand=home-office] .govuk-header .researchops-header__logotype {
@@ -44,11 +72,12 @@ html[data-researchops-brand=home-office] .govuk-header .researchops-header__logo
 html[data-researchops-brand=home-office] .researchops-header__home-office-logo {
 	display: inline-flex;
 	align-items: center;
-	width: 160px;
-	max-width: 46vw;
-	height: 38px;
-	margin-right: 4px;
+	width: 150px;
+	max-width: 42vw;
+	height: auto;
+	margin-right: 0;
 	color: #0b0c0c;
+	flex: 0 0 auto;
 	}
 
 html[data-researchops-brand=home-office] .researchops-header__home-office-logo svg {
@@ -58,7 +87,17 @@ html[data-researchops-brand=home-office] .researchops-header__home-office-logo s
 	}
 
 html[data-researchops-brand=home-office] .govuk-header .govuk-header__product-name, html[data-researchops-brand=home-office] .govuk-header .govuk-header__service-name {
+	display: inline-block;
+	margin: 0;
+	padding-left: 18px;
+	border-left: 1px solid #cbcbcb;
 	color: #0b0c0c;
+	font-size: 24px;
+	font-weight: 400;
+	line-height: 1.2;
+	letter-spacing: normal;
+	vertical-align: middle;
+	white-space: normal;
 	}
 
 html[data-researchops-brand=home-office] .govuk-service-navigation {
@@ -79,6 +118,20 @@ html[data-researchops-brand=home-office] .govuk-phase-banner {
 	html[data-researchops-brand=home-office] .researchops-header__home-office-logo {
 		color: LinkText;
 		forced-color-adjust: none;
+		}
+	}
+
+@media (max-width: 40.0525em) {
+	html[data-researchops-brand=home-office] .govuk-header .govuk-header__homepage-link, html[data-researchops-brand=home-office] .govuk-header .govuk-header__homepage-link:visited {
+		align-items: flex-start;
+		flex-direction: column;
+		gap: 8px;
+		}
+
+	html[data-researchops-brand=home-office] .govuk-header .govuk-header__product-name, html[data-researchops-brand=home-office] .govuk-header .govuk-header__service-name {
+		padding-left: 0;
+		border-left: 0;
+		font-size: 21px;
 		}
 	}
 
