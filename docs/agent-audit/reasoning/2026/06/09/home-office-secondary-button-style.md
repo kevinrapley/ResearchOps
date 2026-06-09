@@ -73,6 +73,7 @@ GitHub Diamond governed branch, PR and trace behaviour. ResearchOps Developer Co
 
 - `src/styles/brands/home-office-buttons.scss`
 - `public/css/brands/home-office-buttons.css`
+- `public/css/brands/home-office.css`
 - `public/js/brand-variant.js`
 - `scripts/styles/generated-css-targets.mjs`
 - `tests/brand-variant-route-state.test.js`
@@ -86,6 +87,7 @@ GitHub Diamond governed branch, PR and trace behaviour. ResearchOps Developer Co
 - Registered the generated CSS target.
 - Updated the brand switcher to load `/css/brands/home-office-buttons.css` after `/css/brands/home-office.css` when the Home Office brand is active.
 - Extended route-state assertions for the new Home Office secondary button contract.
+- Applied the generated Prettier patch for Sass and generated CSS formatting.
 
 ## Test-contract impact sweep
 
@@ -111,11 +113,21 @@ Legacy or affected terms checked:
 
 ## Automated review comments
 
-No PR review threads were present at trace creation. Any later legitimate Codex or automated review comment must be acknowledged with a thumbs-up reaction, replied to with evidence, and resolved only after the fix is present and validation has been checked.
+PR #380 contains a Cloudflare deployment notice only. No actionable Codex code review thread was present at readiness review. Any later legitimate Codex or automated review comment must be acknowledged with a thumbs-up reaction, replied to with evidence, and resolved only after the fix is present and validation has been checked.
 
 ## Validation attempted
 
-PR checks had not completed at trace creation. Checks must pass on the latest branch head before the PR is marked ready.
+All checks passed on latest head `c1ca7daf41a1fa547c64047a0bdcc1b8a0e3311d` before this trace update:
+
+- CI
+- Validate ResearchOps
+- Worker CI
+- Release Gate
+- Accessibility audit (pa11y-ci)
+- qa-bdd
+- QA — Broken links (Lychee)
+
+Checks must be polled again after this trace update.
 
 ## Residual risks
 
