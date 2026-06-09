@@ -11,7 +11,8 @@ html[data-researchops-brand='home-office'] {
 	.govuk-button--secondary {
 		background-color: $hods-secondary-button-colour;
 		border-color: $hods-secondary-button-shadow-colour;
-		border-width: $hods-secondary-button-border-width $hods-secondary-button-border-width 0 $hods-secondary-button-border-width;
+		border-width: $hods-secondary-button-border-width $hods-secondary-button-border-width 0
+			$hods-secondary-button-border-width;
 		box-shadow: 0 $hods-secondary-button-shadow-size 0 $hods-secondary-button-shadow-colour;
 		color: $hods-secondary-button-text-colour;
 		padding: 9px 11px 9px;
