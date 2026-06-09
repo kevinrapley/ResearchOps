@@ -29,21 +29,48 @@ html[data-researchops-brand='home-office'] {
 		color: $home-office-text-colour;
 	}
 
+	.govuk-header__container {
+		min-height: 64px;
+		padding-top: 14px;
+		padding-bottom: 14px;
+	}
+
+	.govuk-header__logo {
+		width: auto;
+	}
+
 	.govuk-header .govuk-header__homepage-link,
 	.govuk-header .govuk-header__homepage-link:visited,
 	.govuk-header .govuk-header__link,
 	.govuk-header .govuk-header__link:visited {
+		display: inline-flex;
+		align-items: center;
+		gap: 18px;
+		margin: 0;
+		border: 0;
+		background: transparent;
 		color: $home-office-text-colour;
+		font-size: inherit;
+		line-height: 1.2;
+		text-decoration: none;
+		box-shadow: none;
 	}
 
 	.govuk-header .govuk-header__homepage-link:hover,
 	.govuk-header .govuk-header__homepage-link:active {
-		border-bottom-color: $home-office-brand-colour;
+		margin: 0;
+		border: 0;
+		background: transparent;
 		color: $home-office-text-colour;
+		text-decoration: underline;
+		text-decoration-thickness: 3px;
+		text-underline-offset: 0.1em;
 	}
 
 	.govuk-header .govuk-header__homepage-link:focus,
 	.govuk-header .govuk-header__link:focus {
+		margin: 0;
+		border: 0;
 		background-color: $home-office-focus-colour;
 		color: $home-office-text-colour;
 		outline: 3px solid $home-office-focus-colour;
@@ -51,6 +78,7 @@ html[data-researchops-brand='home-office'] {
 		box-shadow:
 			0 -2px $home-office-focus-colour,
 			0 4px $home-office-text-colour;
+		text-decoration: none;
 	}
 
 	.govuk-header .researchops-header__logotype {
@@ -60,11 +88,12 @@ html[data-researchops-brand='home-office'] {
 	.researchops-header__home-office-logo {
 		display: inline-flex;
 		align-items: center;
-		width: 160px;
-		max-width: 46vw;
-		height: 38px;
-		margin-right: 4px;
+		width: 150px;
+		max-width: 42vw;
+		height: auto;
+		margin-right: 0;
 		color: $home-office-text-colour;
+		flex: 0 0 auto;
 	}
 
 	.researchops-header__home-office-logo svg {
@@ -75,7 +104,17 @@ html[data-researchops-brand='home-office'] {
 
 	.govuk-header .govuk-header__product-name,
 	.govuk-header .govuk-header__service-name {
+		display: inline-block;
+		margin: 0;
+		padding-left: 18px;
+		border-left: 1px solid $home-office-border-colour;
 		color: $home-office-text-colour;
+		font-size: 24px;
+		font-weight: 400;
+		line-height: 1.2;
+		letter-spacing: normal;
+		vertical-align: middle;
+		white-space: normal;
 	}
 
 	.govuk-service-navigation {
@@ -104,6 +143,24 @@ html[data-researchops-brand='home-office'] {
 	html[data-researchops-brand='home-office'] .researchops-header__home-office-logo {
 		color: LinkText;
 		forced-color-adjust: none;
+	}
+}
+
+@media (max-width: 40.0525em) {
+	html[data-researchops-brand='home-office'] {
+		.govuk-header .govuk-header__homepage-link,
+		.govuk-header .govuk-header__homepage-link:visited {
+			align-items: flex-start;
+			flex-direction: column;
+			gap: 8px;
+		}
+
+		.govuk-header .govuk-header__product-name,
+		.govuk-header .govuk-header__service-name {
+			padding-left: 0;
+			border-left: 0;
+			font-size: 21px;
+		}
 	}
 }
 
