@@ -48,7 +48,9 @@ html[data-researchops-brand='home-office'] {
 		color: $home-office-text-colour;
 		outline: 3px solid $home-office-focus-colour;
 		outline-offset: 0;
-		box-shadow: 0 -2px $home-office-focus-colour, 0 4px $home-office-text-colour;
+		box-shadow:
+			0 -2px $home-office-focus-colour,
+			0 4px $home-office-text-colour;
 	}
 
 	.govuk-header .researchops-header__logotype {
