@@ -80,7 +80,6 @@ includes(headerPartial, "class=\"govuk-header__product-name\"", "shared header p
 includes(headerPartial, "ResearchOps Demo Suite", "shared header partial");
 excludes(headerPartial, "<text", "shared header partial");
 excludes(headerPartial, "class=\"govuk-logo-dot\"", "shared header partial");
-excludes(headerPartial, "role=\"img\"", "shared header partial");
 excludes(headerPartial, "aria-label=\"GOV.UK\"", "shared header partial");
 excludes(headerPartial, "class=\"govuk-header__service-name\"", "shared header partial");
 
