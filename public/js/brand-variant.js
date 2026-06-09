@@ -1,5 +1,6 @@
 const BRAND_STORAGE_KEY = 'researchops-brand';
 const BRAND_STYLESHEET_ID = 'researchops-home-office-brand';
+const BRAND_BUTTON_STYLESHEET_ID = 'researchops-home-office-buttons-brand';
 const HOME_OFFICE_BRAND = 'home-office';
 const GOVUK_BRAND = 'govuk';
 const SUPPORTED_BRANDS = new Set([GOVUK_BRAND, HOME_OFFICE_BRAND]);
@@ -51,19 +52,24 @@ export function getConfiguredBrand() {
 	return hostnameBrand();
 }
 
-function ensureHomeOfficeStylesheet(enabled) {
-	let link = document.getElementById(BRAND_STYLESHEET_ID);
+function ensureStylesheet({ id, href, enabled }) {
+	let link = document.getElementById(id);
 	if (!link && enabled) {
 		link = document.createElement('link');
-		link.id = BRAND_STYLESHEET_ID;
+		link.id = id;
 		link.rel = 'stylesheet';
-		link.href = '/css/brands/home-office.css';
+		link.href = href;
 		link.media = 'screen';
 	}
 
 	if (!link) return;
 	link.disabled = !enabled;
 	if (enabled) document.head.append(link);
+}
+
+function ensureHomeOfficeStylesheets(enabled) {
+	ensureStylesheet({ id: BRAND_STYLESHEET_ID, href: '/css/brands/home-office.css', enabled });
+	ensureStylesheet({ id: BRAND_BUTTON_STYLESHEET_ID, href: '/css/brands/home-office-buttons.css', enabled });
 }
 
 function setHeaderMarkVisibility(isHomeOffice) {
@@ -102,7 +108,7 @@ export function applyBrandVariant(brand = getConfiguredBrand()) {
 		document.body.classList.toggle('researchops-brand-home-office', isHomeOffice);
 	}
 
-	ensureHomeOfficeStylesheet(isHomeOffice);
+	ensureHomeOfficeStylesheets(isHomeOffice);
 	setHeaderMarkVisibility(isHomeOffice);
 	updateHeaderAccessibility(selectedBrand);
 
