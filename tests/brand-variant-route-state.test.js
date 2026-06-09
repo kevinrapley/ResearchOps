@@ -58,6 +58,7 @@ assert.ok(buttonBrandStylesSource.includes('$hods-secondary-button-hover-colour:
 assert.ok(buttonBrandStylesSource.includes('$hods-secondary-button-shadow-colour: #0b0c0c'));
 assert.ok(buttonBrandStylesSource.includes('$hods-secondary-button-border-width: 1px'));
 assert.ok(buttonBrandStylesSource.includes('.govuk-button--secondary'));
+assert.ok(buttonBrandStylesSource.includes('.govuk-main-wrapper .govuk-button.govuk-button--secondary'));
 assert.ok(buttonBrandStylesSource.includes('border-width: $hods-secondary-button-border-width $hods-secondary-button-border-width 0'));
 assert.ok(buttonBrandStylesSource.includes('$hods-secondary-button-border-width;'));
 assert.ok(buttonBrandStylesSource.includes('padding: 9px 11px 9px'));
@@ -88,6 +89,7 @@ assert.ok(brandStyles.includes('govuk-footer'));
 assert.equal(brandStyles.includes('--govuk-link-colour'), false);
 
 assert.ok(buttonBrandStyles.includes('govuk-button--secondary'));
+assert.ok(buttonBrandStyles.includes('govuk-main-wrapper .govuk-button.govuk-button--secondary'));
 assert.ok(buttonBrandStyles.includes('background-color: #f8f8f8'));
 assert.ok(buttonBrandStyles.includes('background-color: #dfdfdf'));
 assert.ok(buttonBrandStyles.includes('border-color: #0b0c0c'));
