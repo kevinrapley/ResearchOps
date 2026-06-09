@@ -136,7 +136,10 @@ html[data-researchops-brand='home-office'] {
 		background: $ho-white;
 	}
 
-	.govuk-service-navigation__item--active,
+	.govuk-service-navigation__item--active {
+		border-color: $ho-purple;
+	}
+	
 	.govuk-service-navigation__link,
 	.govuk-service-navigation__link:link,
 	.govuk-service-navigation__link:visited {
