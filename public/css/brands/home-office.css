@@ -260,12 +260,10 @@ html[data-researchops-brand=home-office] .govuk-footer__copyright-logo {
 		flex-direction: column;
 		gap: 8px;
 		}
-
 	html[data-researchops-brand=home-office] .researchops-header__home-office-logo {
 		width: 190px;
 		min-width: 190px;
 		}
-
 	html[data-researchops-brand=home-office] .govuk-header .govuk-header__product-name, html[data-researchops-brand=home-office] .govuk-header .govuk-header__service-name {
 		padding-left: 0;
 		border-left: 0;
