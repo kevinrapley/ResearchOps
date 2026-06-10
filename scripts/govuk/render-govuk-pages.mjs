@@ -389,6 +389,16 @@ export const govukPages = [
 			navigation: projectNavigation,
 		},
 	},
+	{
+		template: 'pages/journal-entry.njk',
+		output: 'public/pages/journal/entry/index.html',
+		context: {
+			pageTitle: 'Journal entry - ResearchOps Demo Suite',
+			serviceName: 'ResearchOps Demo Suite',
+			activeNavigation: 'Projects',
+			navigation: projectNavigation,
+		},
+	},
 ];
 
 export async function renderGovukPage(page) {
