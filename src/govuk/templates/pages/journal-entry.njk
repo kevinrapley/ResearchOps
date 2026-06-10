@@ -1,0 +1,73 @@
+{% extends "layouts/researchops.njk" %}
+{% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
+{% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
+
+{% block head %}
+	<meta name="sda-auto" content="true">
+{% endblock %}
+
+{% block content %}
+<div class="govuk-width-container">
+	{{ govukBreadcrumbs({
+		items: [
+			{
+				text: 'Projects',
+				href: '/pages/projects/'
+			},
+			{
+				text: 'Project Dashboard',
+				href: '/pages/project-dashboard/',
+				attributes: {
+					id: 'breadcrumb-project'
+				}
+			},
+			{
+				text: 'Journal and analysis',
+				href: '/pages/projects/journals/',
+				attributes: {
+					id: 'breadcrumb-journals'
+				}
+			},
+			{
+				text: 'Journal entry'
+			}
+		]
+	}) }}
+
+	{{ govukErrorSummary({
+		titleText: 'There is a problem',
+		errorList: [
+			{
+				text: 'Could not load this journal entry.'
+			}
+		],
+		attributes: {
+			id: 'journal-entry-error-summary',
+			hidden: 'hidden'
+		}
+	}) }}
+
+	<a class="govuk-back-link" href="/pages/projects/journals/" id="back-to-journals">Back to Journal and analysis</a>
+
+	<header class="govuk-!-margin-top-6">
+		<p class="govuk-caption-l" id="journal-entry-category">Journal entry</p>
+		<h1 class="govuk-heading-xl" id="journal-entry-title">Journal entry</h1>
+		<p class="govuk-body" id="journal-entry-created" hidden></p>
+	</header>
+
+	<section class="govuk-!-margin-bottom-6" aria-labelledby="journal-entry-title">
+		<div id="journal-entry-loading" class="govuk-inset-text">Loading journal entry.</div>
+		<div id="journal-entry-content" class="govuk-body-l" hidden></div>
+		<p class="govuk-body-s" id="journal-entry-tags" hidden></p>
+	</section>
+
+	<p class="govuk-body">
+		<a class="govuk-link" href="/pages/projects/journals/" id="journal-entry-return-link">Return to Journal and analysis</a>
+	</p>
+</div>
+{% endblock %}
+
+{% block scripts %}
+	<script type="module" src="/js/project-context.js"></script>
+	<script type="module" src="/js/journal-entry.js"></script>
+{% endblock %}
