@@ -4,9 +4,10 @@
 	"traceLayer": "operational",
 	"repository": "kevinrapley/ResearchOps",
 	"branch": "fix/journal-entry-project-context",
+	"pullRequest": 387,
 	"branchPrefix": "fix/",
 	"traceRequired": true,
-	"taskSummary": "Preserve project context on journal entry pages.",
+	"taskSummary": "Preserve project context and project-name breadcrumb labels on journal entry pages.",
 	"selectedBundles": [
 		"github-diamond",
 		"researchops-developer-control",
@@ -16,12 +17,16 @@
 	],
 	"filesModified": [
 		"public/js/journal-entry.js",
+		"src/govuk/templates/pages/journal-entry.njk",
+		"public/pages/journal/entry/index.html",
 		"tests/journal-entry-page-route-state.test.js"
 	],
 	"implementationSummary": [
 		"Journal entry page resolves project context from query parameters, referrer, session storage and entry payload.",
-		"Back links and breadcrumbs use /pages/projects/journals/?id=<project-id> when context is available.",
-		"Route-state coverage checks project context recovery."
+		"Project breadcrumb hydrates from /api/projects/:id and displays the project name when available.",
+		"Back and return links use /pages/projects/journals/?id=<project-id> when context is available.",
+		"Duplicate Back to Journal and analysis link was removed from the template and committed HTML.",
+		"Route-state coverage checks project context recovery, project-name breadcrumb hydration and removed duplicate back link."
 	],
 	"validation": {
 		"commandsRun": [],
