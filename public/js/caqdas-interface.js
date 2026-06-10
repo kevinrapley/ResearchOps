@@ -18,65 +18,76 @@ function apiUrl(path) {
 	return `${API_ORIGIN}${p.startsWith('/') ? p : '/' + p}`;
 }
 
-function esc(s) { var d = document.createElement("div");
-	d.textContent = String(s || ""); return d.innerHTML; }
+function esc(s) {
+	var d = document.createElement('div');
+	d.textContent = String(s || '');
+	return d.innerHTML;
+}
 
-function when(iso) { return iso ? new Date(iso).toLocaleString() : "—"; }
+function when(iso) {
+	return iso ? new Date(iso).toLocaleString('en-GB', {
+		day: '2-digit',
+		month: '2-digit',
+		year: 'numeric',
+		hour: '2-digit',
+		minute: '2-digit'
+	}) : '—';
+}
 
 function flashError(message, targetId) {
-	var existing = document.getElementById("flash");
+	var existing = document.getElementById('flash');
 	if (existing) existing.remove();
 
-	var el = document.createElement("div");
-	el.id = "flash";
-	el.dataset.type = "error";
+	var el = document.createElement('div');
+	el.id = 'flash';
+	el.dataset.type = 'error';
 	if (targetId) el.dataset.target = targetId;
-	el.setAttribute("role", "alert");
-	el.setAttribute("aria-live", "assertive");
-	el.textContent = String(message || "");
+	el.setAttribute('role', 'alert');
+	el.setAttribute('aria-live', 'assertive');
+	el.textContent = String(message || '');
 	document.body.appendChild(el);
 }
 
 function flashStatus(message) {
-	var existing = document.getElementById("flash");
+	var existing = document.getElementById('flash');
 	if (existing) existing.remove();
 
-	var el = document.createElement("div");
-	el.id = "flash";
-	el.dataset.type = "status";
-	el.setAttribute("role", "status");
-	el.setAttribute("aria-live", "polite");
-	el.textContent = String(message || "");
+	var el = document.createElement('div');
+	el.id = 'flash';
+	el.dataset.type = 'status';
+	el.setAttribute('role', 'status');
+	el.setAttribute('aria-live', 'polite');
+	el.textContent = String(message || '');
 	document.body.appendChild(el);
 }
 
 function retrievalInput() {
-	return document.getElementById("retrieval-q");
+	return document.getElementById('retrieval-q');
 }
 
 function retrievalGroup() {
 	var input = retrievalInput();
-	return input ? input.closest(".govuk-form-group") : null;
+	return input ? input.closest('.govuk-form-group') : null;
 }
 
 function retrievalErrorMessage() {
-	var message = document.getElementById("retrieval-q-error");
+	var message = document.getElementById('retrieval-q-error');
 	if (message) return message;
 
 	var group = retrievalGroup();
-	var hint = document.getElementById("retrieval-q-hint");
+	var hint = document.getElementById('retrieval-q-hint');
 	if (!group) return null;
 
-	message = document.createElement("p");
-	message.id = "retrieval-q-error";
-	message.className = "govuk-error-message";
+	message = document.createElement('p');
+	message.id = 'retrieval-q-error';
+	message.className = 'govuk-error-message';
 	message.hidden = true;
-	var prefix = document.createElement("span");
-	prefix.className = "govuk-visually-hidden";
-	prefix.textContent = "Error:";
+	var prefix = document.createElement('span');
+	prefix.className = 'govuk-visually-hidden';
+	prefix.textContent = 'Error:';
 	message.appendChild(prefix);
-	message.appendChild(document.createTextNode(" "));
-	message.appendChild(document.createTextNode("Enter a term to search."));
+	message.appendChild(document.createTextNode(' '));
+	message.appendChild(document.createTextNode('Enter a term to search.'));
 
 	var input = retrievalInput();
 	group.insertBefore(message, input || hint?.nextSibling || null);
@@ -91,32 +102,32 @@ function setRetrievalError(messageText) {
 
 	message.lastChild.textContent = messageText;
 	message.hidden = false;
-	group.classList.add("govuk-form-group--error");
-	input.classList.add("govuk-input--error");
-	input.setAttribute("aria-invalid", "true");
-	input.setAttribute("aria-describedby", "retrieval-q-hint retrieval-q-error");
+	group.classList.add('govuk-form-group--error');
+	input.classList.add('govuk-input--error');
+	input.setAttribute('aria-invalid', 'true');
+	input.setAttribute('aria-describedby', 'retrieval-q-hint retrieval-q-error');
 }
 
 function clearRetrievalError() {
 	var input = retrievalInput();
 	var group = retrievalGroup();
-	var message = document.getElementById("retrieval-q-error");
+	var message = document.getElementById('retrieval-q-error');
 	if (message) message.hidden = true;
-	if (group) group.classList.remove("govuk-form-group--error");
+	if (group) group.classList.remove('govuk-form-group--error');
 	if (input) {
-		input.classList.remove("govuk-input--error");
-		input.removeAttribute("aria-invalid");
-		input.setAttribute("aria-describedby", "retrieval-q-hint");
+		input.classList.remove('govuk-input--error');
+		input.removeAttribute('aria-invalid');
+		input.setAttribute('aria-describedby', 'retrieval-q-hint');
 	}
 }
 
 function fetchJSON(url, init) {
 	return fetch(url, init).then(function(res) {
 		return res.text().then(function(txt) {
-			var ct = (res.headers.get("content-type") || "").toLowerCase();
-			var body = ct.indexOf("application/json") >= 0 ? (txt ? JSON.parse(txt) : {}) : {};
+			var ct = (res.headers.get('content-type') || '').toLowerCase();
+			var body = ct.indexOf('application/json') >= 0 ? (txt ? JSON.parse(txt) : {}) : {};
 			if (!res.ok) {
-				var err = new Error("HTTP " + res.status + (txt ? " — " + txt : ""));
+				var err = new Error('HTTP ' + res.status + (txt ? ' — ' + txt : ''));
 				err.response = body;
 				throw err;
 			}
@@ -126,15 +137,15 @@ function fetchJSON(url, init) {
 }
 
 function updateJsonPanel(data, filename) {
-	var host = document.getElementById("analysis-container") || document.body;
-	var code = document.getElementById("json-code");
+	var host = document.getElementById('analysis-container') || document.body;
+	var code = document.getElementById('json-code');
 	if (!code) {
-		var details = document.getElementById("json-viewer");
+		var details = document.getElementById('json-viewer');
 		if (!details) {
-			details = document.createElement("details");
-			details.id = "json-viewer";
-			details.className = "govuk-details govuk-!-margin-top-4";
-			details.setAttribute("data-module", "govuk-details");
+			details = document.createElement('details');
+			details.id = 'json-viewer';
+			details.className = 'govuk-details govuk-!-margin-top-4';
+			details.setAttribute('data-module', 'govuk-details');
 			details.innerHTML =
 				'<summary class="govuk-details__summary"><span class="govuk-details__summary-text">View raw JSON</span></summary>' +
 				'<div class="govuk-details__text">' +
@@ -146,38 +157,31 @@ function updateJsonPanel(data, filename) {
 				'</div>';
 			host.appendChild(details);
 		}
-		code = document.getElementById("json-code");
+		code = document.getElementById('json-code');
 
-		var btnCopy = document.getElementById("json-copy");
-		var btnDl = document.getElementById("json-download");
+		var btnCopy = document.getElementById('json-copy');
+		var btnDl = document.getElementById('json-download');
 		if (btnCopy) {
-			btnCopy.addEventListener("click", function() {
-				var raw = code ? code.textContent : "";
-				navigator.clipboard.writeText(String(raw || "")).catch(function() {});
+			btnCopy.addEventListener('click', function() {
+				var raw = code ? code.textContent : '';
+				navigator.clipboard.writeText(String(raw || '')).catch(function() {});
 			});
 		}
 		if (btnDl) {
-			btnDl.addEventListener("click", function() {
-				var raw = code ? code.textContent : "{}";
-				var blob = new Blob([raw], { type: "application/json;charset=utf-8" });
-				var a = document.createElement("a");
+			btnDl.addEventListener('click', function() {
+				var raw = code ? code.textContent : '{}';
+				var blob = new Blob([raw], { type: 'application/json;charset=utf-8' });
+				var a = document.createElement('a');
 				a.href = URL.createObjectURL(blob);
-				a.download = filename || "analysis.json";
+				a.download = filename || 'analysis.json';
 				a.click();
 				setTimeout(function() { URL.revokeObjectURL(a.href); }, 0);
 			});
 		}
 	}
 
-	var json = typeof data === "string" ? data : JSON.stringify(data, null, 2);
-	var safe = json.replace(/[&<>]/g, function(c) { return c === "&" ? "&amp;" : (c === "<" ? "&lt;" : "&gt;"); })
-		.replace(/"(\\u[a-fA-F0-9]{4}|\\[^u]|[^"\\])*"(?=\s*:)/g, function(m) { return '<span class="k">' + m + "</span>"; })
-		.replace(/"(\\u[a-fA-F0-9]{4}|\\[^u]|[^"\\])*"/g, function(m) { return '<span class="s">' + m + "</span>"; })
-		.replace(/\b-?(0x[\da-fA-F]+|\d+(\.\d+)?([eE][+-]?\d+)?)\b/g, function(m) { return '<span class="n">' + m + "</span>"; })
-		.replace(/\b(true|false|null)\b/g, function(m) { return '<span class="b">' + m + "</span>"; });
-
-	code.innerHTML = safe;
-	code.dataset.filename = filename || "analysis.json";
+	code.textContent = typeof data === 'string' ? data : JSON.stringify(data, null, 2);
+	code.dataset.filename = filename || 'analysis.json';
 }
 
 function nodeLabel(nodes, id) {
@@ -188,39 +192,56 @@ function nodeLabel(nodes, id) {
 	return String(id);
 }
 
-function runTimeline(projectId) {
-	var wrap = document.getElementById("analysis-timeline");
-	if (wrap) wrap.innerHTML = "<p>Loading timeline…</p>";
+function entryText(entry) {
+	return entry.body || entry.content || entry.description || '';
+}
 
-	var url = apiUrl("/api/analysis/timeline?project=" + encodeURIComponent(projectId || ""));
+function entryCategory(entry) {
+	return entry.category || entry.action || 'Journal entry';
+}
+
+function timelineTitle(entry) {
+	var category = entryCategory(entry);
+	return category === 'Journal entry' ? category : category + ' journal entry';
+}
+
+function timelineItemHtml(entry) {
+	var createdAt = entry.createdAt || entry.created_at || entry.createdat || '';
+	var source = entry.source ? '<p class="hods-timeline__by">by ' + esc(entry.source === 'd1' ? 'ResearchOps D1' : entry.source) + '</p>' : '';
+	return '' +
+		'<div class="hods-timeline__item">' +
+		'  <h4 class="hods-timeline__title">' + esc(timelineTitle(entry)) + '</h4>' +
+		source +
+		'  <p class="hods-timeline__date"><time class="hods-date-time" datetime="' + esc(createdAt) + '">' + esc(when(createdAt)) + '</time></p>' +
+		'  <p class="hods-timeline__description">' + esc(entryText(entry)) + '</p>' +
+		'</div>';
+}
+
+function timelineFromJournalEntries(projectId) {
+	var url = apiUrl('/api/journal-entries?project=' + encodeURIComponent(projectId || ''));
+	return fetchJSON(url).then(function(res) {
+		return Array.isArray(res && res.entries) ? res.entries : [];
+	});
+}
+
+function loadTimelineItems(projectId) {
+	var url = apiUrl('/api/analysis/timeline?project=' + encodeURIComponent(projectId || ''));
 	return fetchJSON(url).then(function(res) {
 		var items = Array.isArray(res && res.timeline) ? res.timeline : [];
-		updateJsonPanel({ timeline: items }, "timeline-" + String(projectId || "unknown") + ".json");
+		if (items.length) return items;
+		return timelineFromJournalEntries(projectId);
+	});
+}
+
+function runTimeline(projectId) {
+	var wrap = document.getElementById('analysis-timeline');
+	if (wrap) wrap.innerHTML = '<p class="govuk-body">Loading timeline…</p>';
+
+	return loadTimelineItems(projectId).then(function(items) {
+		updateJsonPanel({ timeline: items }, 'timeline-' + String(projectId || 'unknown') + '.json');
 		if (!wrap) return;
-		if (!items.length) { wrap.innerHTML = '<p class="hint">No journal entries yet.</p>'; return; }
-		var html = '' +
-			'<ul class="analysis-list">' +
-			items.map(function(en) {
-				return '' +
-					'<li class="analysis-list__item">' +
-					'  <div class="summary-card">' +
-					'    <div class="summary-card__title-row">' +
-					'      <h4 class="summary-card__title">' + when(en.createdAt) + '</h4>' +
-					(en.category ? ('<span class="tag">' + esc(en.category) + '</span>') : '') +
-					'    </div>' +
-					'    <div class="summary-card__content">' +
-					'      <dl class="summary">' +
-					'        <div class="summary__row">' +
-					'          <dt class="summary__key">Entry</dt>' +
-					'          <dd class="summary__value">' + esc(en.body || en.content || '') + '</dd>' +
-					'        </div>' +
-					'      </dl>' +
-					'    </div>' +
-					'  </div>' +
-					'</li>';
-			}).join('') +
-			'</ul>';
-		wrap.innerHTML = html;
+		if (!items.length) { wrap.innerHTML = '<p class="govuk-hint">No journal entries yet.</p>'; return; }
+		wrap.innerHTML = items.map(timelineItemHtml).join('');
 	}).catch(function(err) {
 		console.error('runTimeline', err);
 		if (wrap) wrap.innerHTML = '';
@@ -229,14 +250,14 @@ function runTimeline(projectId) {
 }
 
 function runCooccurrence(projectId) {
-	var wrap = document.getElementById("analysis-cooccurrence");
-	if (wrap) wrap.innerHTML = "<p>Loading co-occurrence…</p>";
+	var wrap = document.getElementById('analysis-cooccurrence');
+	if (wrap) wrap.innerHTML = '<p>Loading co-occurrence…</p>';
 
-	var url = apiUrl("/api/analysis/cooccurrence?project=" + encodeURIComponent(projectId || ""));
+	var url = apiUrl('/api/analysis/cooccurrence?project=' + encodeURIComponent(projectId || ''));
 	return fetchJSON(url).then(function(res) {
 		var nodes = Array.isArray(res && res.nodes) ? res.nodes : [];
 		var links = Array.isArray(res && res.links) ? res.links : [];
-		updateJsonPanel({ nodes: nodes, links: links }, "cooccurrence-" + String(projectId || "unknown") + ".json");
+		updateJsonPanel({ nodes: nodes, links: links }, 'cooccurrence-' + String(projectId || 'unknown') + '.json');
 
 		if (!wrap) return;
 		if (!links.length) { wrap.innerHTML = '<p class="hint">No co-occurrences yet.</p>'; return; }
@@ -266,38 +287,36 @@ function runCooccurrence(projectId) {
 }
 
 function runRetrieval(projectId) {
-	var form = document.getElementById("retrieval-form");
-	var results = document.getElementById("retrieval-results");
+	var form = document.getElementById('retrieval-form');
+	var results = document.getElementById('retrieval-results');
 	if (!form || !results) return;
 
 	var clone = form.cloneNode(true);
 	form.parentNode.replaceChild(clone, form);
-	form = document.getElementById("retrieval-form");
+	form = document.getElementById('retrieval-form');
 	var input = retrievalInput();
-	if (input) input.addEventListener("input", clearRetrievalError);
+	if (input) input.addEventListener('input', clearRetrievalError);
 
-	form.addEventListener("submit", function(e) {
+	form.addEventListener('submit', function(e) {
 		e.preventDefault();
-		var qEl = document.getElementById("retrieval-q");
-		var term = qEl ? String(qEl.value || "").trim() : "";
+		var qEl = document.getElementById('retrieval-q');
+		var term = qEl ? String(qEl.value || '').trim() : '';
 		if (!term) { results.innerHTML = ''; setRetrievalError('Enter a term to search.'); flashError('Enter a term to search.', 'retrieval-q'); return; }
 		clearRetrievalError();
-		results.innerHTML = "<p>Searching…</p>";
+		results.innerHTML = '<p>Searching…</p>';
 
-		var url = apiUrl("/api/analysis/retrieval?project=" + encodeURIComponent(projectId || "") + "&q=" + encodeURIComponent(term));
+		var url = apiUrl('/api/analysis/retrieval?project=' + encodeURIComponent(projectId || '') + '&q=' + encodeURIComponent(term));
 		fetchJSON(url).then(function(res) {
 			var out = Array.isArray(res && res.results) ? res.results : [];
-			updateJsonPanel({ query: term, results: out }, "retrieval-" + String(projectId || "unknown") + ".json");
+			updateJsonPanel({ query: term, results: out }, 'retrieval-' + String(projectId || 'unknown') + '.json');
 			if (!out.length) { results.innerHTML = '<p class="hint">No matches found.</p>'; return; }
 
-			var rx = new RegExp(term.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "ig");
 			var html = '' +
 				'<ul class="analysis-list analysis-list--spaced" aria-live="polite">' +
 				out.map(function(r) {
 					var codes = Array.isArray(r && r.codes) ? r.codes : [];
 					var badges = codes.map(function(c) { return '<span class="tag">' + esc(c.name) + '</span>'; }).join(' ');
-					var snip = esc(r.snippet || "").replace(rx, function(m) { return "<mark>" + m + "</mark>"; });
-					return '<li><h5 class="analysis-subheading">' + badges + '</h5><p>' + snip + '</p></li>';
+					return '<li><h5 class="analysis-subheading">' + badges + '</h5><p>' + esc(r.snippet || '') + '</p></li>';
 				}).join('') +
 				'</ul>';
 			results.innerHTML = html;
@@ -309,23 +328,23 @@ function runRetrieval(projectId) {
 }
 
 function runExport(projectId) {
-	var tUrl = apiUrl("/api/analysis/timeline?project=" + encodeURIComponent(projectId || ""));
-	var cUrl = apiUrl("/api/analysis/cooccurrence?project=" + encodeURIComponent(projectId || ""));
+	var tUrl = apiUrl('/api/analysis/timeline?project=' + encodeURIComponent(projectId || ''));
+	var cUrl = apiUrl('/api/analysis/cooccurrence?project=' + encodeURIComponent(projectId || ''));
 	return Promise.all([fetchJSON(tUrl), fetchJSON(cUrl)]).then(function(arr) {
 		var timeline = arr[0] && arr[0].timeline ? arr[0].timeline : [];
 		var nodes = arr[1] && arr[1].nodes ? arr[1].nodes : [];
 		var links = arr[1] && arr[1].links ? arr[1].links : [];
 		var payload = {
-			projectId: projectId || "",
+			projectId: projectId || '',
 			generatedAt: new Date().toISOString(),
 			timeline: timeline,
 			nodes: nodes,
 			links: links
 		};
-		updateJsonPanel(payload, "analysis-" + String(projectId || "unknown") + ".json");
-		flashStatus("Export ready in JSON panel. Use Download JSON.");
+		updateJsonPanel(payload, 'analysis-' + String(projectId || 'unknown') + '.json');
+		flashStatus('Export ready in JSON panel. Use Download JSON.');
 	}).catch(function() {
-		flashError("Failed to prepare export.");
+		flashError('Failed to prepare export.');
 	});
 }
 
