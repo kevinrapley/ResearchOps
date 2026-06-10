@@ -42,7 +42,14 @@ function linkedValues(value) {
 }
 
 function linkedProjects(fields = {}) {
-	return unique([...linkedValues(fields.Project), ...linkedValues(fields.Projects), ...linkedValues(fields["Project ID"]), ...linkedValues(fields["Project Ref"])]);
+	return unique([
+		...linkedValues(fields.Project),
+		...linkedValues(fields.Projects),
+		...linkedValues(fields["Project lookup"]),
+		...linkedValues(fields["Project Lookup"]),
+		...linkedValues(fields["Project ID"]),
+		...linkedValues(fields["Project Ref"]),
+	]);
 }
 
 function includesAny(values = [], candidates = []) {

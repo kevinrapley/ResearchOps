@@ -1,0 +1,36 @@
+{
+	"schema": "researchops.agentAuditTrace.v1",
+	"date": "2026-06-10",
+	"traceLayer": "operational",
+	"repository": "kevinrapley/ResearchOps",
+	"branch": "fix/journals-project-data-hydration",
+	"pullRequest": 383,
+	"branchPrefix": "fix/",
+	"traceRequired": true,
+	"taskSummary": "Fix Test Project 1 journal hydration by recognising Airtable Project lookup fields.",
+	"selectedBundles": [
+		"github-diamond",
+		"researchops-developer-control",
+		"multi-functional-team",
+		"govuk-design-system",
+		"cloudflare",
+		"airtable-public-api"
+	],
+	"filesModified": [
+		"infra/cloudflare/src/service/reflection/project-data-hydration.js",
+		"tests/journals-project-data-hydration-route-state.test.js"
+	],
+	"implementationSummary": [
+		"Airtable fallback now recognises Project lookup and Project Lookup linked-project fields.",
+		"Route-state coverage asserts support for those fields and confirms the CSV source exports use Project lookup."
+	],
+	"validation": {
+		"commandsRun": [],
+		"required": [
+			"CI",
+			"Validate ResearchOps",
+			"Worker CI",
+			"Release Gate"
+		]
+	}
+}
