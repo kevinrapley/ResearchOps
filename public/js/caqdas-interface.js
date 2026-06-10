@@ -13,6 +13,8 @@ const API_ORIGIN =
 		'https://rops-api.digikev-kevin-rapley.workers.dev' :
 		location.origin);
 
+let cachedUserName = null;
+
 function apiUrl(path) {
 	const p = String(path || '');
 	return `${API_ORIGIN}${p.startsWith('/') ? p : '/' + p}`;
@@ -136,6 +138,20 @@ function fetchJSON(url, init) {
 	});
 }
 
+function currentUserName() {
+	if (cachedUserName !== null) return Promise.resolve(cachedUserName);
+	return fetchJSON(apiUrl('/api/me/identity'), { credentials: 'include' })
+		.then(function(data) {
+			var user = data && data.user ? data.user : {};
+			cachedUserName = user.displayName || user.display_name || user.name || '';
+			return cachedUserName;
+		})
+		.catch(function() {
+			cachedUserName = '';
+			return cachedUserName;
+		});
+}
+
 function updateJsonPanel(data, filename) {
 	var host = document.getElementById('analysis-container') || document.body;
 	var code = document.getElementById('json-code');
@@ -200,18 +216,23 @@ function entryCategory(entry) {
 	return entry.category || entry.action || 'Journal entry';
 }
 
+function entryAuthor(entry, userName) {
+	return entry.author || entry.authorName || entry.author_name || entry.createdBy || entry.created_by || userName || '';
+}
+
 function timelineTitle(entry) {
 	var category = entryCategory(entry);
 	return category === 'Journal entry' ? category : category + ' journal entry';
 }
 
-function timelineItemHtml(entry) {
+function timelineItemHtml(entry, userName) {
 	var createdAt = entry.createdAt || entry.created_at || entry.createdat || '';
-	var source = entry.source ? '<p class="hods-timeline__by">by ' + esc(entry.source === 'd1' ? 'ResearchOps D1' : entry.source) + '</p>' : '';
+	var author = entryAuthor(entry, userName);
+	var byline = author ? '<p class="hods-timeline__by">by ' + esc(author) + '</p>' : '';
 	return '' +
 		'<div class="hods-timeline__item">' +
 		'  <h4 class="hods-timeline__title">' + esc(timelineTitle(entry)) + '</h4>' +
-		source +
+		byline +
 		'  <p class="hods-timeline__date"><time class="hods-date-time" datetime="' + esc(createdAt) + '">' + esc(when(createdAt)) + '</time></p>' +
 		'  <p class="hods-timeline__description">' + esc(entryText(entry)) + '</p>' +
 		'</div>';
@@ -237,11 +258,13 @@ function runTimeline(projectId) {
 	var wrap = document.getElementById('analysis-timeline');
 	if (wrap) wrap.innerHTML = '<p class="govuk-body">Loading timeline…</p>';
 
-	return loadTimelineItems(projectId).then(function(items) {
+	return Promise.all([loadTimelineItems(projectId), currentUserName()]).then(function(results) {
+		var items = results[0];
+		var userName = results[1];
 		updateJsonPanel({ timeline: items }, 'timeline-' + String(projectId || 'unknown') + '.json');
 		if (!wrap) return;
 		if (!items.length) { wrap.innerHTML = '<p class="govuk-hint">No journal entries yet.</p>'; return; }
-		wrap.innerHTML = items.map(timelineItemHtml).join('');
+		wrap.innerHTML = items.map(function(item) { return timelineItemHtml(item, userName); }).join('');
 	}).catch(function(err) {
 		console.error('runTimeline', err);
 		if (wrap) wrap.innerHTML = '';
