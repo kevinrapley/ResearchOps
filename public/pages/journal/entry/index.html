@@ -5,7 +5,9 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		<title>Journal entry - ResearchOps Demo Suite</title>
 		<link rel="stylesheet" href="/assets/govuk/govuk-frontend.css" media="screen" />
+
 		<meta name="sda-auto" content="true" />
+
 		<script type="module" src="/components/layout.js" defer></script>
 		<script type="module" src="/js/govuk-frontend-init.js" defer></script>
 	</head>
@@ -17,22 +19,34 @@
 		<x-include src="/partials/header.html" vars='{"active":"Projects"}'></x-include>
 		<main class="govuk-main-wrapper" id="main-content" role="main" tabindex="-1">
 			<div class="govuk-width-container">
-				<div class="govuk-breadcrumbs" data-module="govuk-breadcrumbs">
+				<nav class="govuk-breadcrumbs" aria-label="Breadcrumb">
 					<ol class="govuk-breadcrumbs__list">
 						<li class="govuk-breadcrumbs__list-item">
 							<a class="govuk-breadcrumbs__link" href="/pages/projects/">Projects</a>
 						</li>
-						<li class="govuk-breadcrumbs__list-item">
-							<a class="govuk-breadcrumbs__link" href="/pages/project-dashboard/" id="breadcrumb-project">Project Dashboard</a>
-						</li>
-						<li class="govuk-breadcrumbs__list-item">
-							<a class="govuk-breadcrumbs__link" href="/pages/projects/journals/" id="breadcrumb-journals">Journal and analysis</a>
-						</li>
-						<li class="govuk-breadcrumbs__list-item">Journal entry</li>
-					</ol>
-				</div>
 
-				<div class="govuk-error-summary" data-module="govuk-error-summary" id="journal-entry-error-summary" hidden>
+						<li class="govuk-breadcrumbs__list-item">
+							<a class="govuk-breadcrumbs__link" href="/pages/project-dashboard/" id="breadcrumb-project">
+								Project Dashboard
+							</a>
+						</li>
+
+						<li class="govuk-breadcrumbs__list-item">
+							<a class="govuk-breadcrumbs__link" href="/pages/projects/journals/" id="breadcrumb-journals">
+								Journal and analysis
+							</a>
+						</li>
+
+						<li class="govuk-breadcrumbs__list-item" aria-current="page">Journal entry</li>
+					</ol>
+				</nav>
+
+				<div
+					class="govuk-error-summary"
+					id="journal-entry-error-summary"
+					hidden="hidden"
+					data-module="govuk-error-summary"
+				>
 					<div role="alert">
 						<h2 class="govuk-error-summary__title">There is a problem</h2>
 						<div class="govuk-error-summary__body">
@@ -43,7 +57,9 @@
 					</div>
 				</div>
 
-				<a class="govuk-back-link" href="/pages/projects/journals/" id="back-to-journals">Back to Journal and analysis</a>
+				<a class="govuk-back-link" href="/pages/projects/journals/" id="back-to-journals">
+					Back to Journal and analysis
+				</a>
 
 				<header class="govuk-!-margin-top-6">
 					<p class="govuk-caption-l" id="journal-entry-category">Journal entry</p>
@@ -58,11 +74,14 @@
 				</section>
 
 				<p class="govuk-body">
-					<a class="govuk-link" href="/pages/projects/journals/" id="journal-entry-return-link">Return to Journal and analysis</a>
+					<a class="govuk-link" href="/pages/projects/journals/" id="journal-entry-return-link">
+						Return to Journal and analysis
+					</a>
 				</p>
 			</div>
 		</main>
 		<x-include src="/partials/footer.html"></x-include>
+
 		<script type="module" src="/js/project-context.js"></script>
 		<script type="module" src="/js/journal-entry.js"></script>
 	</body>
