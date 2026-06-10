@@ -7,7 +7,7 @@
 	"pullRequest": 389,
 	"branchPrefix": "fix/",
 	"traceRequired": true,
-	"taskSummary": "Fix first-load journal entry rendering and D1-backed analysis timeline hydration.",
+	"taskSummary": "Fix first-load journal entry rendering, D1-backed analysis timeline hydration and Home Office timeline rendering.",
 	"selectedBundles": [
 		"github-diamond",
 		"researchops-developer-control",
@@ -17,18 +17,22 @@
 	],
 	"filesModified": [
 		"public/components/journal-excerpts.js",
+		"public/js/caqdas-interface.js",
+		"public/css/home-office-timeline.css",
 		"infra/cloudflare/src/service/reflection/analysis.js",
+		"src/govuk/templates/macros/home-office-timeline.njk",
+		"src/govuk/templates/pages/projects-journals.njk",
 		"tests/journals-route-state.test.js",
 		"tests/journals-govuk-panel-rendering-route-state.test.js",
 		"docs/agent-audit/reasoning/2026/06/10/journal-tabs-first-load-hydration.md",
 		"docs/agent-audit/reasoning/2026/06/10/journal-tabs-first-load-hydration.json"
 	],
 	"implementationSummary": [
-		"Retired the old journal excerpts renderer that used obsolete custom entry-card markup on initial page load.",
-		"Kept journal entry rendering owned by /js/journal-tabs.js so first-load and tab-switch use the same GOV.UK summary-card renderer.",
+		"Retired the old journal excerpts renderer that used obsolete custom markup on initial page load.",
+		"Kept journal entry rendering owned by journal-tabs.js so first-load and tab-switch use the same renderer.",
 		"Updated Analysis timeline to read D1 journal_entries before falling back to Airtable.",
-		"Matched both project and local_project_id and tolerated the Test Project 1 legacy O/0 ID mismatch.",
-		"Extended route-state coverage for retired renderer and D1 timeline hydration."
+		"Added a reusable Home Office timeline macro and used it in the Analysis tab.",
+		"Updated the timeline UI to use Home Office timeline class structure."
 	],
 	"validation": {
 		"commandsRun": [],
