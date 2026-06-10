@@ -83,7 +83,7 @@ includes(tabsSource, "govuk-button govuk-button--secondary", "journal tabs modul
 includes(tabsSource, "govuk-button govuk-button--warning", "journal tabs module");
 excludes(tabsSource, "btn-quiet", "journal tabs module");
 includes(muralSyncSource, "mural", "journal mural sync module");
-includes(excerptsSource, "function renderEntries", "journal excerpts module");
-includes(excerptsSource, "function loadEntries", "journal excerpts module");
-includes(excerptsSource, "/api/journal-entries", "journal excerpts module");
-includes(excerptsSource, "journal:entry:delete", "journal excerpts module");
+includes(excerptsSource, "journal:excerpts:retired", "journal excerpts module");
+includes(excerptsSource, "Journal entry rendering is owned by /js/journal-tabs.js", "journal excerpts module");
+excludes(excerptsSource, "function renderEntries", "journal excerpts module");
+excludes(excerptsSource, "function loadEntries", "journal excerpts module");
