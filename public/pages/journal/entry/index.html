@@ -1,0 +1,69 @@
+<!doctype html>
+<html class="govuk-template" lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>Journal entry - ResearchOps Demo Suite</title>
+		<link rel="stylesheet" href="/assets/govuk/govuk-frontend.css" media="screen" />
+		<meta name="sda-auto" content="true" />
+		<script type="module" src="/components/layout.js" defer></script>
+		<script type="module" src="/js/govuk-frontend-init.js" defer></script>
+	</head>
+	<body class="govuk-template__body">
+		<script>
+			document.body.className +=
+				" js-enabled" + ("noModule" in HTMLScriptElement.prototype ? " govuk-frontend-supported" : "");
+		</script>
+		<x-include src="/partials/header.html" vars='{"active":"Projects"}'></x-include>
+		<main class="govuk-main-wrapper" id="main-content" role="main" tabindex="-1">
+			<div class="govuk-width-container">
+				<div class="govuk-breadcrumbs" data-module="govuk-breadcrumbs">
+					<ol class="govuk-breadcrumbs__list">
+						<li class="govuk-breadcrumbs__list-item">
+							<a class="govuk-breadcrumbs__link" href="/pages/projects/">Projects</a>
+						</li>
+						<li class="govuk-breadcrumbs__list-item">
+							<a class="govuk-breadcrumbs__link" href="/pages/project-dashboard/" id="breadcrumb-project">Project Dashboard</a>
+						</li>
+						<li class="govuk-breadcrumbs__list-item">
+							<a class="govuk-breadcrumbs__link" href="/pages/projects/journals/" id="breadcrumb-journals">Journal and analysis</a>
+						</li>
+						<li class="govuk-breadcrumbs__list-item">Journal entry</li>
+					</ol>
+				</div>
+
+				<div class="govuk-error-summary" data-module="govuk-error-summary" id="journal-entry-error-summary" hidden>
+					<div role="alert">
+						<h2 class="govuk-error-summary__title">There is a problem</h2>
+						<div class="govuk-error-summary__body">
+							<ul class="govuk-list govuk-error-summary__list">
+								<li>Could not load this journal entry.</li>
+							</ul>
+						</div>
+					</div>
+				</div>
+
+				<a class="govuk-back-link" href="/pages/projects/journals/" id="back-to-journals">Back to Journal and analysis</a>
+
+				<header class="govuk-!-margin-top-6">
+					<p class="govuk-caption-l" id="journal-entry-category">Journal entry</p>
+					<h1 class="govuk-heading-xl" id="journal-entry-title">Journal entry</h1>
+					<p class="govuk-body" id="journal-entry-created" hidden></p>
+				</header>
+
+				<section class="govuk-!-margin-bottom-6" aria-labelledby="journal-entry-title">
+					<div id="journal-entry-loading" class="govuk-inset-text">Loading journal entry.</div>
+					<div id="journal-entry-content" class="govuk-body-l" hidden></div>
+					<p class="govuk-body-s" id="journal-entry-tags" hidden></p>
+				</section>
+
+				<p class="govuk-body">
+					<a class="govuk-link" href="/pages/projects/journals/" id="journal-entry-return-link">Return to Journal and analysis</a>
+				</p>
+			</div>
+		</main>
+		<x-include src="/partials/footer.html"></x-include>
+		<script type="module" src="/js/project-context.js"></script>
+		<script type="module" src="/js/journal-entry.js"></script>
+	</body>
+</html>
