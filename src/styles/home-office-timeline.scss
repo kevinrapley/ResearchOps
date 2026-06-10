@@ -2,8 +2,11 @@ $hods-timeline-blue: #1d70b8;
 $hods-timeline-text: #0b0c0c;
 
 .hods-timeline {
-	border-left: 5px solid $hods-timeline-blue;
 	margin-bottom: 30px;
+	}
+
+.hods-timeline:has(.hods-timeline__item) {
+	border-left: 5px solid $hods-timeline-blue;
 	}
 
 .hods-timeline__item {

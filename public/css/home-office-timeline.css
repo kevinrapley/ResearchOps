@@ -1,6 +1,9 @@
 .hods-timeline {
-	border-left: 5px solid #1d70b8;
 	margin-bottom: 30px;
+	}
+
+.hods-timeline:has(.hods-timeline__item) {
+	border-left: 5px solid #1d70b8;
 	}
 
 .hods-timeline__item {
