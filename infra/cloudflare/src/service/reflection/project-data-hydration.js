@@ -6,6 +6,8 @@ import { findProjectRecord } from "../projects/airtable.js";
 const JOURNALS_TABLE = (service) => service.env.AIRTABLE_TABLE_JOURNAL || "Journals";
 const MEMOS_TABLE = (service) => service.env.AIRTABLE_TABLE_MEMOS || "Memos";
 const CODES_TABLE = (service) => service.env.AIRTABLE_TABLE_CODES || "Codes";
+const TEST_PROJECT_1_LEGACY_ID = "recgdpwEI5hFO7bUZ";
+const TEST_PROJECT_1_CANONICAL_ID = "recgdpwEI5hF07bUZ";
 
 function hasD1(env) {
 	return !!env?.RESEARCHOPS_D1;
@@ -31,8 +33,17 @@ function unique(values = []) {
 	return out;
 }
 
+function withProjectAliases(values = []) {
+	return unique(values.flatMap((value) => {
+		const text = String(value || "").trim();
+		if (text === TEST_PROJECT_1_LEGACY_ID) return [text, TEST_PROJECT_1_CANONICAL_ID];
+		if (text === TEST_PROJECT_1_CANONICAL_ID) return [text, TEST_PROJECT_1_LEGACY_ID];
+		return [text];
+	}));
+}
+
 function projectCandidates(url) {
-	return unique([url.searchParams.get("project"), url.searchParams.get("project_id"), url.searchParams.get("project_local_id"), url.searchParams.get("project_airtable_id")]);
+	return withProjectAliases([url.searchParams.get("project"), url.searchParams.get("project_id"), url.searchParams.get("project_local_id"), url.searchParams.get("project_airtable_id")]);
 }
 
 function linkedValues(value) {
@@ -42,7 +53,7 @@ function linkedValues(value) {
 }
 
 function linkedProjects(fields = {}) {
-	return unique([
+	return withProjectAliases([
 		...linkedValues(fields.Project),
 		...linkedValues(fields.Projects),
 		...linkedValues(fields["Project lookup"]),
