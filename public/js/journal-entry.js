@@ -15,6 +15,28 @@ function text(value) {
 	return String(value || "").trim();
 }
 
+function firstPresent(...values) {
+	for (const value of values) {
+		if (value !== undefined && value !== null && text(value)) return text(value);
+	}
+	return "";
+}
+
+function projectPayloadFrom(data = {}) {
+	return data?.project || data?.record || data;
+}
+
+function normaliseProject(project = {}) {
+	const source = projectPayloadFrom(project);
+	const publicId = firstPresent(source.id, source.airtableId, source.recordId, source.LocalId, source.localId);
+	return {
+		id: publicId,
+		localId: firstPresent(source.localId, source.LocalId, publicId),
+		airtableId: firstPresent(source.airtableId, source.recordId, publicId),
+		name: firstPresent(source.name, source.Name, source.title, source.Title)
+	};
+}
+
 function firstProjectIdFromParams(params) {
 	return text(
 		params.get("project") ||
@@ -120,6 +142,28 @@ async function readJsonResponse(response) {
 	return body || {};
 }
 
+async function loadProject(projectId) {
+	if (!projectId) return null;
+	const response = await fetch(apiUrl(`/api/projects/${encodeURIComponent(projectId)}?ts=${Date.now()}`), {
+		cache: "no-store",
+		credentials: "include"
+	});
+	return normaliseProject(await readJsonResponse(response));
+}
+
+async function hydrateProjectBreadcrumb(projectId, breadcrumbProject) {
+	if (!projectId || !breadcrumbProject) return;
+	try {
+		const project = await loadProject(projectId);
+		if (!project) return;
+		const resolvedProjectId = project.id || project.localId || project.airtableId || projectId;
+		breadcrumbProject.href = `/pages/project-dashboard/?id=${encodeURIComponent(resolvedProjectId)}`;
+		if (project.name) breadcrumbProject.textContent = project.name;
+	} catch (error) {
+		console.warn("[journal-entry] Could not hydrate project breadcrumb", error);
+	}
+}
+
 function setBackLinks(entry) {
 	const projectId = resolveProjectId(entry);
 	const href = projectId ? `/pages/projects/journals/?id=${encodeURIComponent(projectId)}` : "/pages/projects/journals/";
@@ -133,7 +177,10 @@ function setBackLinks(entry) {
 	if (backLink) backLink.href = href;
 	if (returnLink) returnLink.href = href;
 	if (breadcrumbJournals) breadcrumbJournals.href = href;
-	if (breadcrumbProject) breadcrumbProject.href = dashboardHref;
+	if (breadcrumbProject) {
+		breadcrumbProject.href = dashboardHref;
+		hydrateProjectBreadcrumb(projectId, breadcrumbProject);
+	}
 }
 
 function renderEntry(entry) {
