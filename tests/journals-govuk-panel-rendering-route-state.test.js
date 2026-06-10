@@ -3,6 +3,7 @@ import fs from "node:fs";
 
 const journalTabs = fs.readFileSync("public/js/journal-tabs.js", "utf8");
 const journalExcerpts = fs.readFileSync("public/components/journal-excerpts.js", "utf8");
+const analysisService = fs.readFileSync("infra/cloudflare/src/service/reflection/analysis.js", "utf8");
 const template = fs.readFileSync("src/govuk/templates/pages/projects-journals.njk", "utf8");
 const page = fs.readFileSync("public/pages/projects/journals/index.html", "utf8");
 
@@ -36,3 +37,10 @@ includes(journalExcerpts, "Journal entry rendering is owned by /js/journal-tabs.
 excludes(journalExcerpts, "entry-card", "journal excerpts compatibility module");
 excludes(journalExcerpts, "entry-actions", "journal excerpts compatibility module");
 excludes(journalExcerpts, "renderEntries", "journal excerpts compatibility module");
+includes(analysisService, "import { d1All } from \"../internals/researchops-d1.js\"", "analysis service");
+includes(analysisService, "async function fetchD1JournalsByProject", "analysis service");
+includes(analysisService, "FROM journal_entries", "analysis service");
+includes(analysisService, "OR local_project_id IN", "analysis service");
+includes(analysisService, "fetchD1JournalsByProject(svc, projectId)", "analysis service");
+includes(analysisService, "source: \"d1\"", "analysis service");
+excludes(analysisService, "return ok(svc, origin, { timeline: [] });\n\t}\n\n\ttry {\n\t\tconst entries = await fetchJournalsByProject", "analysis service");
