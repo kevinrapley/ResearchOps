@@ -4,6 +4,8 @@ import fs from "node:fs";
 const journalTabs = fs.readFileSync("public/js/journal-tabs.js", "utf8");
 const journalExcerpts = fs.readFileSync("public/components/journal-excerpts.js", "utf8");
 const analysisService = fs.readFileSync("infra/cloudflare/src/service/reflection/analysis.js", "utf8");
+const caqdas = fs.readFileSync("public/js/caqdas-interface.js", "utf8");
+const timelineMacro = fs.readFileSync("src/govuk/templates/macros/home-office-timeline.njk", "utf8");
 const template = fs.readFileSync("src/govuk/templates/pages/projects-journals.njk", "utf8");
 const page = fs.readFileSync("public/pages/projects/journals/index.html", "utf8");
 
@@ -16,6 +18,9 @@ function excludes(source, text, label) {
 }
 
 includes(template, "govukTabs", "journals page template");
+includes(template, "macros/home-office-timeline.njk", "journals page template");
+includes(template, "homeOfficeTimeline({", "journals page template");
+includes(template, "id: 'analysis-timeline'", "journals page template");
 includes(page, "govuk-tabs", "rendered journals page");
 includes(journalTabs, "function projectContextParam()", "journal tabs script");
 includes(journalTabs, "projectContextParam()", "journal tabs script");
@@ -43,4 +48,12 @@ includes(analysisService, "FROM journal_entries", "analysis service");
 includes(analysisService, "OR local_project_id IN", "analysis service");
 includes(analysisService, "fetchD1JournalsByProject(svc, projectId)", "analysis service");
 includes(analysisService, "source: \"d1\"", "analysis service");
-excludes(analysisService, "return ok(svc, origin, { timeline: [] });\n\t}\n\n\ttry {\n\t\tconst entries = await fetchJournalsByProject", "analysis service");
+includes(caqdas, "timelineFromJournalEntries(projectId)", "CAQDAS analysis module");
+includes(caqdas, "/api/journal-entries?project=", "CAQDAS analysis module");
+includes(caqdas, "hods-timeline__item", "CAQDAS analysis module");
+includes(caqdas, "hods-timeline__title", "CAQDAS analysis module");
+includes(caqdas, "hods-date-time", "CAQDAS analysis module");
+includes(timelineMacro, "macro homeOfficeTimeline", "Home Office timeline macro");
+includes(timelineMacro, "hods-timeline__item", "Home Office timeline macro");
+includes(timelineMacro, "hods-timeline__title", "Home Office timeline macro");
+includes(timelineMacro, "hods-date-time", "Home Office timeline macro");
