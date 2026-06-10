@@ -1,0 +1,119 @@
+name: Apply D1 Test Project 1 Journal Analysis Seed
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - "infra/cloudflare/migrations/0013_seed_test_project_1_journal_analysis.sql"
+      - ".github/workflows/apply-d1-test-project-1-journal-analysis.yml"
+  workflow_dispatch:
+    inputs:
+      confirm_database_name:
+        description: Type researchops-d1 to confirm the target D1 database
+        required: true
+        type: string
+      confirm_operation:
+        description: Type APPLY_TEST_PROJECT_1_JOURNAL_ANALYSIS to seed journal entries, codes and memos
+        required: true
+        type: string
+      run_post_apply_checks:
+        description: Run post-apply seed checks
+        required: true
+        default: true
+        type: boolean
+
+permissions:
+  contents: read
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  WRANGLER_VERSION: "4.90.0"
+  D1_DATABASE_NAME: "researchops-d1"
+  WRANGLER_CONFIG: "infra/cloudflare/wrangler.toml"
+  TEST_PROJECT_1_JOURNAL_ANALYSIS_MIGRATION: "infra/cloudflare/migrations/0013_seed_test_project_1_journal_analysis.sql"
+  TEST_PROJECT_1_RECORD_ID: "recgdpwEI5hF07bUZ"
+  TEST_PROJECT_1_LOCAL_ID: "d04ab32e-6756-408e-a649-6859dd0079f2"
+
+jobs:
+  apply:
+    name: Apply Test Project 1 journal analysis seed to remote D1
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+
+    steps:
+      - name: Confirm manual target
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          if [ "${{ inputs.confirm_database_name }}" != "${D1_DATABASE_NAME}" ]; then
+            echo "confirm_database_name must be ${D1_DATABASE_NAME}"
+            exit 1
+          fi
+
+          if [ "${{ inputs.confirm_operation }}" != "APPLY_TEST_PROJECT_1_JOURNAL_ANALYSIS" ]; then
+            echo "confirm_operation must be APPLY_TEST_PROJECT_1_JOURNAL_ANALYSIS"
+            exit 1
+          fi
+
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Use Node.js 22
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Record Wrangler toolchain version
+        run: npx --yes wrangler@${WRANGLER_VERSION} --version
+
+      - name: Check migration file exists
+        run: test -f "${TEST_PROJECT_1_JOURNAL_ANALYSIS_MIGRATION}"
+
+      - name: Apply Test Project 1 journal analysis seed to remote D1
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+        run: |
+          npx --yes wrangler@${WRANGLER_VERSION} d1 execute "${D1_DATABASE_NAME}" \
+            --remote \
+            --config "${WRANGLER_CONFIG}" \
+            --file "${TEST_PROJECT_1_JOURNAL_ANALYSIS_MIGRATION}"
+
+      - name: Check Test Project 1 journal analysis seed
+        if: ${{ github.event_name == 'push' || inputs.run_post_apply_checks }}
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+        run: |
+          npx --yes wrangler@${WRANGLER_VERSION} d1 execute "${D1_DATABASE_NAME}" \
+            --remote \
+            --config "${WRANGLER_CONFIG}" \
+            --command "SELECT COUNT(*) AS journal_entry_count FROM journal_entries WHERE project = '${TEST_PROJECT_1_RECORD_ID}' AND local_project_id = '${TEST_PROJECT_1_LOCAL_ID}';"
+
+          npx --yes wrangler@${WRANGLER_VERSION} d1 execute "${D1_DATABASE_NAME}" \
+            --remote \
+            --config "${WRANGLER_CONFIG}" \
+            --command "SELECT COUNT(*) AS code_count FROM codes WHERE project = '${TEST_PROJECT_1_RECORD_ID}' AND local_project_id = '${TEST_PROJECT_1_LOCAL_ID}';"
+
+          npx --yes wrangler@${WRANGLER_VERSION} d1 execute "${D1_DATABASE_NAME}" \
+            --remote \
+            --config "${WRANGLER_CONFIG}" \
+            --command "SELECT COUNT(*) AS memo_count FROM memos WHERE project = '${TEST_PROJECT_1_RECORD_ID}' AND local_project_id = '${TEST_PROJECT_1_LOCAL_ID}';"
+
+          npx --yes wrangler@${WRANGLER_VERSION} d1 execute "${D1_DATABASE_NAME}" \
+            --remote \
+            --config "${WRANGLER_CONFIG}" \
+            --command "SELECT record_id, category, createdat FROM journal_entries WHERE project = '${TEST_PROJECT_1_RECORD_ID}' ORDER BY createdat;"
+
+          npx --yes wrangler@${WRANGLER_VERSION} d1 execute "${D1_DATABASE_NAME}" \
+            --remote \
+            --config "${WRANGLER_CONFIG}" \
+            --command "SELECT local_code_id, name, parentcode FROM codes WHERE project = '${TEST_PROJECT_1_RECORD_ID}' ORDER BY createdat;"
+
+          npx --yes wrangler@${WRANGLER_VERSION} d1 execute "${D1_DATABASE_NAME}" \
+            --remote \
+            --config "${WRANGLER_CONFIG}" \
+            --command "SELECT local_memo_id, type, title FROM memos WHERE project = '${TEST_PROJECT_1_RECORD_ID}' ORDER BY createdat;"
