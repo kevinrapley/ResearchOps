@@ -20,6 +20,13 @@ includes(template, "id: 'breadcrumb-journals'", "journal entry template");
 includes(template, "script type=\"module\" src=\"/js/journal-entry.js\"", "journal entry template");
 
 includes(script, "new URLSearchParams(window.location.search).get(\"id\")", "journal entry script");
+includes(script, "params.get(\"project\")", "journal entry script");
+includes(script, "params.get(\"project_local_id\")", "journal entry script");
+includes(script, "document.referrer", "journal entry script");
+includes(script, "PROJECT_CONTEXT_STORAGE_KEY", "journal entry script");
+includes(script, "resolveProjectId(entry)", "journal entry script");
+includes(script, "rememberProjectId(projectId)", "journal entry script");
+includes(script, "/pages/projects/journals/?id=${encodeURIComponent(projectId)}", "journal entry script");
 includes(script, "/api/journal-entries/${encodeURIComponent(id)}", "journal entry script");
 includes(script, "renderEntry(entry)", "journal entry script");
 includes(script, "journal-entry-error-summary", "journal entry script");
