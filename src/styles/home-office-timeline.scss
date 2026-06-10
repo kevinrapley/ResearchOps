@@ -1,0 +1,57 @@
+$hods-timeline-blue: #1d70b8;
+$hods-timeline-text: #0b0c0c;
+
+.hods-timeline {
+	margin-bottom: 30px;
+	}
+
+.hods-timeline:has(.hods-timeline__item) {
+	border-left: 5px solid $hods-timeline-blue;
+	}
+
+.hods-timeline__item {
+	margin-bottom: 30px;
+	padding-left: 20px;
+	position: relative;
+	}
+
+.hods-timeline__item::before {
+	background-color: $hods-timeline-blue;
+	content: "";
+	height: 5px;
+	left: -5px;
+	position: absolute;
+	top: 0.45em;
+	width: 15px;
+	}
+
+.hods-timeline__title {
+	color: $hods-timeline-text;
+	display: inline;
+	font-size: 19px;
+	font-weight: 700;
+	line-height: 1.3157894737;
+	margin: 0;
+	}
+
+.hods-timeline__by {
+	color: #505a5f;
+	display: inline;
+	font-size: 19px;
+	line-height: 1.3157894737;
+	margin: 0 0 0 5px;
+	}
+
+.hods-timeline__date {
+	color: #505a5f;
+	font-size: 19px;
+	line-height: 1.3157894737;
+	margin: 0 0 20px;
+	}
+
+.hods-timeline__description {
+	color: $hods-timeline-text;
+	font-size: 19px;
+	line-height: 1.3157894737;
+	margin: 0;
+	}

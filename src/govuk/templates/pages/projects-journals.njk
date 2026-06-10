@@ -3,6 +3,7 @@
 {% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
 {% from "govuk/components/notification-banner/macro.njk" import govukNotificationBanner %}
 {% from "govuk/components/tabs/macro.njk" import govukTabs %}
+{% from "macros/home-office-timeline.njk" import homeOfficeTimeline %}
 
 {% set journalEntriesHtml %}
 	<div id="journal-entries-panel">
@@ -112,7 +113,13 @@
 		</div>
 
 		<div id="analysis-container" class="govuk-!-margin-top-6" data-role="analysis-container">
-			<section id="analysis-timeline" class="govuk-!-margin-bottom-6" aria-live="polite"></section>
+			{{ homeOfficeTimeline({
+				id: 'analysis-timeline',
+				classes: 'govuk-!-margin-bottom-6',
+				live: 'polite',
+				headingLevel: 'h4',
+				emptyHtml: '<p class="govuk-hint">Select Timeline view to load journal entries.</p>'
+			}) }}
 			<section id="analysis-cooccurrence" class="govuk-!-margin-bottom-6" aria-live="polite"></section>
 
 			<section id="analysis-retrieval" class="govuk-!-margin-bottom-6" aria-live="polite">
@@ -147,6 +154,7 @@
 	<meta name="project:name" content="">
 	<meta name="sda-auto" content="true">
 	<link rel="stylesheet" href="/css/coloris.min.css" media="screen">
+	<link rel="stylesheet" href="/css/home-office-timeline.css" media="screen">
 	<!--<link rel="stylesheet" href="/css/journals.css?v=1.0.1" media="screen">-->
 	<link rel="stylesheet" href="/css/journal-mural-sync.css" media="screen">
 	<link rel="modulepreload" href="/js/project-context.js">

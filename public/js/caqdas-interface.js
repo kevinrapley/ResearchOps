@@ -1,9 +1,3 @@
-/**
- * @file /js/caqdas-interface.js
- * @description CAQDAS heavy-lifting for the Analysis tab only.
- * Exposes: runTimeline(projectId), runCooccurrence(projectId), runRetrieval(projectId), runExport(projectId)
- */
-
 /* eslint-env browser */
 
 const API_ORIGIN =
@@ -13,215 +7,178 @@ const API_ORIGIN =
 		'https://rops-api.digikev-kevin-rapley.workers.dev' :
 		location.origin);
 
+let cachedUserName = null;
+
 function apiUrl(path) {
 	const p = String(path || '');
 	return `${API_ORIGIN}${p.startsWith('/') ? p : '/' + p}`;
 }
 
-function esc(s) { var d = document.createElement("div");
-	d.textContent = String(s || ""); return d.innerHTML; }
+function esc(value) {
+	const node = document.createElement('div');
+	node.textContent = String(value || '');
+	return node.innerHTML;
+}
 
-function when(iso) { return iso ? new Date(iso).toLocaleString() : "—"; }
+function fetchJSON(url, init) {
+	return fetch(url, init).then((res) => res.text().then((txt) => {
+		const body = (res.headers.get('content-type') || '').toLowerCase().includes('application/json') && txt ? JSON.parse(txt) : {};
+		if (!res.ok) throw new Error(body?.error || `HTTP ${res.status}`);
+		return body;
+	}));
+}
+
+function when(iso) {
+	if (!iso) return '—';
+	const date = new Date(iso);
+	if (Number.isNaN(date.getTime())) return String(iso || '');
+	const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+	const hours = date.getHours();
+	const suffix = hours >= 12 ? 'pm' : 'am';
+	const hour = hours % 12 || 12;
+	const minute = String(date.getMinutes()).padStart(2, '0');
+	return `${date.getDate()} ${months[date.getMonth()]} ${date.getFullYear()} at ${hour}:${minute}${suffix}`;
+}
 
 function flashError(message, targetId) {
-	var existing = document.getElementById("flash");
+	const existing = document.getElementById('flash');
 	if (existing) existing.remove();
-
-	var el = document.createElement("div");
-	el.id = "flash";
-	el.dataset.type = "error";
+	const el = document.createElement('div');
+	el.id = 'flash';
+	el.dataset.type = 'error';
 	if (targetId) el.dataset.target = targetId;
-	el.setAttribute("role", "alert");
-	el.setAttribute("aria-live", "assertive");
-	el.textContent = String(message || "");
+	el.setAttribute('role', 'alert');
+	el.setAttribute('aria-live', 'assertive');
+	el.textContent = String(message || '');
 	document.body.appendChild(el);
 }
 
 function flashStatus(message) {
-	var existing = document.getElementById("flash");
+	const existing = document.getElementById('flash');
 	if (existing) existing.remove();
-
-	var el = document.createElement("div");
-	el.id = "flash";
-	el.dataset.type = "status";
-	el.setAttribute("role", "status");
-	el.setAttribute("aria-live", "polite");
-	el.textContent = String(message || "");
+	const el = document.createElement('div');
+	el.id = 'flash';
+	el.dataset.type = 'status';
+	el.setAttribute('role', 'status');
+	el.setAttribute('aria-live', 'polite');
+	el.textContent = String(message || '');
 	document.body.appendChild(el);
 }
 
 function retrievalInput() {
-	return document.getElementById("retrieval-q");
+	return document.getElementById('retrieval-q');
 }
 
 function retrievalGroup() {
-	var input = retrievalInput();
-	return input ? input.closest(".govuk-form-group") : null;
-}
-
-function retrievalErrorMessage() {
-	var message = document.getElementById("retrieval-q-error");
-	if (message) return message;
-
-	var group = retrievalGroup();
-	var hint = document.getElementById("retrieval-q-hint");
-	if (!group) return null;
-
-	message = document.createElement("p");
-	message.id = "retrieval-q-error";
-	message.className = "govuk-error-message";
-	message.hidden = true;
-	var prefix = document.createElement("span");
-	prefix.className = "govuk-visually-hidden";
-	prefix.textContent = "Error:";
-	message.appendChild(prefix);
-	message.appendChild(document.createTextNode(" "));
-	message.appendChild(document.createTextNode("Enter a term to search."));
-
-	var input = retrievalInput();
-	group.insertBefore(message, input || hint?.nextSibling || null);
-	return message;
+	const input = retrievalInput();
+	return input ? input.closest('.govuk-form-group') : null;
 }
 
 function setRetrievalError(messageText) {
-	var input = retrievalInput();
-	var group = retrievalGroup();
-	var message = retrievalErrorMessage();
-	if (!input || !group || !message) return;
-
-	message.lastChild.textContent = messageText;
-	message.hidden = false;
-	group.classList.add("govuk-form-group--error");
-	input.classList.add("govuk-input--error");
-	input.setAttribute("aria-invalid", "true");
-	input.setAttribute("aria-describedby", "retrieval-q-hint retrieval-q-error");
+	const input = retrievalInput();
+	const group = retrievalGroup();
+	if (!input || !group) return;
+	let message = document.getElementById('retrieval-q-error');
+	if (!message) {
+		message = document.createElement('p');
+		message.id = 'retrieval-q-error';
+		message.className = 'govuk-error-message';
+		group.insertBefore(message, input);
+	}
+	message.textContent = `Error: ${messageText}`;
+	group.classList.add('govuk-form-group--error');
+	input.classList.add('govuk-input--error');
+	input.setAttribute('aria-invalid', 'true');
+	input.setAttribute('aria-describedby', 'retrieval-q-hint retrieval-q-error');
 }
 
 function clearRetrievalError() {
-	var input = retrievalInput();
-	var group = retrievalGroup();
-	var message = document.getElementById("retrieval-q-error");
-	if (message) message.hidden = true;
-	if (group) group.classList.remove("govuk-form-group--error");
+	const input = retrievalInput();
+	const group = retrievalGroup();
+	const message = document.getElementById('retrieval-q-error');
+	if (message) message.remove();
+	if (group) group.classList.remove('govuk-form-group--error');
 	if (input) {
-		input.classList.remove("govuk-input--error");
-		input.removeAttribute("aria-invalid");
-		input.setAttribute("aria-describedby", "retrieval-q-hint");
+		input.classList.remove('govuk-input--error');
+		input.removeAttribute('aria-invalid');
+		input.setAttribute('aria-describedby', 'retrieval-q-hint');
 	}
 }
 
-function fetchJSON(url, init) {
-	return fetch(url, init).then(function(res) {
-		return res.text().then(function(txt) {
-			var ct = (res.headers.get("content-type") || "").toLowerCase();
-			var body = ct.indexOf("application/json") >= 0 ? (txt ? JSON.parse(txt) : {}) : {};
-			if (!res.ok) {
-				var err = new Error("HTTP " + res.status + (txt ? " — " + txt : ""));
-				err.response = body;
-				throw err;
-			}
-			return body;
+function currentUserName() {
+	if (cachedUserName !== null) return Promise.resolve(cachedUserName);
+	return fetchJSON(apiUrl('/api/me/identity'), { credentials: 'include' })
+		.then((data) => {
+			const user = data?.user || {};
+			cachedUserName = user.displayName || user.display_name || user.name || '';
+			return cachedUserName;
+		})
+		.catch(() => {
+			cachedUserName = '';
+			return cachedUserName;
 		});
-	});
 }
 
 function updateJsonPanel(data, filename) {
-	var host = document.getElementById("analysis-container") || document.body;
-	var code = document.getElementById("json-code");
-	if (!code) {
-		var details = document.getElementById("json-viewer");
-		if (!details) {
-			details = document.createElement("details");
-			details.id = "json-viewer";
-			details.className = "govuk-details govuk-!-margin-top-4";
-			details.setAttribute("data-module", "govuk-details");
-			details.innerHTML =
-				'<summary class="govuk-details__summary"><span class="govuk-details__summary-text">View raw JSON</span></summary>' +
-				'<div class="govuk-details__text">' +
-				'  <div class="govuk-button-group">' +
-				'    <button type="button" class="govuk-button govuk-button--secondary" id="json-copy">Copy JSON</button>' +
-				'    <button type="button" class="govuk-button govuk-button--secondary" id="json-download">Download JSON</button>' +
-				'  </div>' +
-				'  <pre class="app-codeblock" tabindex="0" aria-label="Raw JSON"><code id="json-code"></code></pre>' +
-				'</div>';
-			host.appendChild(details);
-		}
-		code = document.getElementById("json-code");
-
-		var btnCopy = document.getElementById("json-copy");
-		var btnDl = document.getElementById("json-download");
-		if (btnCopy) {
-			btnCopy.addEventListener("click", function() {
-				var raw = code ? code.textContent : "";
-				navigator.clipboard.writeText(String(raw || "")).catch(function() {});
-			});
-		}
-		if (btnDl) {
-			btnDl.addEventListener("click", function() {
-				var raw = code ? code.textContent : "{}";
-				var blob = new Blob([raw], { type: "application/json;charset=utf-8" });
-				var a = document.createElement("a");
-				a.href = URL.createObjectURL(blob);
-				a.download = filename || "analysis.json";
-				a.click();
-				setTimeout(function() { URL.revokeObjectURL(a.href); }, 0);
-			});
-		}
-	}
-
-	var json = typeof data === "string" ? data : JSON.stringify(data, null, 2);
-	var safe = json.replace(/[&<>]/g, function(c) { return c === "&" ? "&amp;" : (c === "<" ? "&lt;" : "&gt;"); })
-		.replace(/"(\\u[a-fA-F0-9]{4}|\\[^u]|[^"\\])*"(?=\s*:)/g, function(m) { return '<span class="k">' + m + "</span>"; })
-		.replace(/"(\\u[a-fA-F0-9]{4}|\\[^u]|[^"\\])*"/g, function(m) { return '<span class="s">' + m + "</span>"; })
-		.replace(/\b-?(0x[\da-fA-F]+|\d+(\.\d+)?([eE][+-]?\d+)?)\b/g, function(m) { return '<span class="n">' + m + "</span>"; })
-		.replace(/\b(true|false|null)\b/g, function(m) { return '<span class="b">' + m + "</span>"; });
-
-	code.innerHTML = safe;
-	code.dataset.filename = filename || "analysis.json";
+	const code = document.getElementById('json-code');
+	if (!code) return;
+	code.textContent = typeof data === 'string' ? data : JSON.stringify(data, null, 2);
+	code.dataset.filename = filename || 'analysis.json';
 }
 
 function nodeLabel(nodes, id) {
-	for (var i = 0; i < nodes.length; i += 1) {
-		var n = nodes[i];
-		if (n && n.id === id) return n.label || n.name || String(id);
-	}
-	return String(id);
+	const found = nodes.find((node) => node?.id === id);
+	return found?.label || found?.name || String(id);
+}
+
+function entryText(entry) {
+	return entry.body || entry.content || entry.description || '';
+}
+
+function entryCategory(entry) {
+	return entry.category || entry.action || 'Journal entry';
+}
+
+function sentenceCase(value) {
+	const text = String(value || '').trim();
+	return text ? text.charAt(0).toUpperCase() + text.slice(1) : '';
+}
+
+function entryAuthor(entry, userName) {
+	return entry.author || entry.authorName || entry.author_name || entry.createdBy || entry.created_by || userName || '';
+}
+
+function timelineTitle(entry) {
+	const category = entryCategory(entry);
+	return sentenceCase(category === 'Journal entry' ? category : `${category} journal entry`);
+}
+
+function timelineItemHtml(entry, userName) {
+	const createdAt = entry.createdAt || entry.created_at || entry.createdat || '';
+	const author = entryAuthor(entry, userName);
+	const byline = author ? `<p class="hods-timeline__by">by ${esc(author)}</p>` : '';
+	return `<div class="hods-timeline__item"><h2 class="hods-timeline__title">${esc(timelineTitle(entry))}</h2>${byline}<p class="hods-timeline__date"><time class="hods-date-time" datetime="${esc(createdAt)}">${esc(when(createdAt))}</time></p><p class="hods-timeline__description">${esc(entryText(entry))}</p></div>`;
+}
+
+function timelineFromJournalEntries(projectId) {
+	return fetchJSON(apiUrl('/api/journal-entries?project=' + encodeURIComponent(projectId || ''))).then((res) => Array.isArray(res?.entries) ? res.entries : []);
+}
+
+function loadTimelineItems(projectId) {
+	return fetchJSON(apiUrl('/api/analysis/timeline?project=' + encodeURIComponent(projectId || ''))).then((res) => {
+		const items = Array.isArray(res?.timeline) ? res.timeline : [];
+		return items.length ? items : timelineFromJournalEntries(projectId);
+	});
 }
 
 function runTimeline(projectId) {
-	var wrap = document.getElementById("analysis-timeline");
-	if (wrap) wrap.innerHTML = "<p>Loading timeline…</p>";
-
-	var url = apiUrl("/api/analysis/timeline?project=" + encodeURIComponent(projectId || ""));
-	return fetchJSON(url).then(function(res) {
-		var items = Array.isArray(res && res.timeline) ? res.timeline : [];
-		updateJsonPanel({ timeline: items }, "timeline-" + String(projectId || "unknown") + ".json");
+	const wrap = document.getElementById('analysis-timeline');
+	if (wrap) wrap.innerHTML = '<p class="govuk-body">Loading timeline…</p>';
+	return Promise.all([loadTimelineItems(projectId), currentUserName()]).then(([items, userName]) => {
+		updateJsonPanel({ timeline: items }, `timeline-${String(projectId || 'unknown')}.json`);
 		if (!wrap) return;
-		if (!items.length) { wrap.innerHTML = '<p class="hint">No journal entries yet.</p>'; return; }
-		var html = '' +
-			'<ul class="analysis-list">' +
-			items.map(function(en) {
-				return '' +
-					'<li class="analysis-list__item">' +
-					'  <div class="summary-card">' +
-					'    <div class="summary-card__title-row">' +
-					'      <h4 class="summary-card__title">' + when(en.createdAt) + '</h4>' +
-					(en.category ? ('<span class="tag">' + esc(en.category) + '</span>') : '') +
-					'    </div>' +
-					'    <div class="summary-card__content">' +
-					'      <dl class="summary">' +
-					'        <div class="summary__row">' +
-					'          <dt class="summary__key">Entry</dt>' +
-					'          <dd class="summary__value">' + esc(en.body || en.content || '') + '</dd>' +
-					'        </div>' +
-					'      </dl>' +
-					'    </div>' +
-					'  </div>' +
-					'</li>';
-			}).join('') +
-			'</ul>';
-		wrap.innerHTML = html;
-	}).catch(function(err) {
+		wrap.innerHTML = items.length ? items.map((item) => timelineItemHtml(item, userName)).join('') : '<p class="govuk-hint">No journal entries yet.</p>';
+	}).catch((err) => {
 		console.error('runTimeline', err);
 		if (wrap) wrap.innerHTML = '';
 		flashError('Timeline failed to load.');
@@ -229,36 +186,19 @@ function runTimeline(projectId) {
 }
 
 function runCooccurrence(projectId) {
-	var wrap = document.getElementById("analysis-cooccurrence");
-	if (wrap) wrap.innerHTML = "<p>Loading co-occurrence…</p>";
-
-	var url = apiUrl("/api/analysis/cooccurrence?project=" + encodeURIComponent(projectId || ""));
-	return fetchJSON(url).then(function(res) {
-		var nodes = Array.isArray(res && res.nodes) ? res.nodes : [];
-		var links = Array.isArray(res && res.links) ? res.links : [];
-		updateJsonPanel({ nodes: nodes, links: links }, "cooccurrence-" + String(projectId || "unknown") + ".json");
-
+	const wrap = document.getElementById('analysis-cooccurrence');
+	if (wrap) wrap.innerHTML = '<p>Loading co-occurrence…</p>';
+	return fetchJSON(apiUrl('/api/analysis/cooccurrence?project=' + encodeURIComponent(projectId || ''))).then((res) => {
+		const nodes = Array.isArray(res?.nodes) ? res.nodes : [];
+		const links = Array.isArray(res?.links) ? res.links : [];
+		updateJsonPanel({ nodes, links }, `cooccurrence-${String(projectId || 'unknown')}.json`);
 		if (!wrap) return;
 		if (!links.length) { wrap.innerHTML = '<p class="hint">No co-occurrences yet.</p>'; return; }
-
-		links.sort(function(a, b) { return (b.weight || 0) - (a.weight || 0); });
-		var html = '' +
-			'<table class="table">' +
-			'  <caption>Code pairs by strength</caption>' +
-			'  <thead><tr><th>Source</th><th>Target</th><th>Weight</th></tr></thead>' +
-			'  <tbody>' +
-			links.map(function(l) {
-				return '' +
-					'<tr>' +
-					'  <td><span class="tag">' + esc(nodeLabel(nodes, l.source)) + '</span></td>' +
-					'  <td><span class="tag">' + esc(nodeLabel(nodes, l.target)) + '</span></td>' +
-					'  <td>' + esc(String(l.weight == null ? 1 : l.weight)) + '</td>' +
-					'</tr>';
-			}).join('') +
-			'  </tbody>' +
-			'</table>';
-		wrap.innerHTML = html;
-	}).catch(function(err) {
+		links.sort((a, b) => (b.weight || 0) - (a.weight || 0));
+		wrap.innerHTML = '<table class="table"><caption>Code pairs by strength</caption><thead><tr><th>Source</th><th>Target</th><th>Weight</th></tr></thead><tbody>' +
+			links.map((link) => `<tr><td><span class="tag">${esc(nodeLabel(nodes, link.source))}</span></td><td><span class="tag">${esc(nodeLabel(nodes, link.target))}</span></td><td>${esc(String(link.weight == null ? 1 : link.weight))}</td></tr>`).join('') +
+			'</tbody></table>';
+	}).catch((err) => {
 		console.error('runCooccurrence', err);
 		if (wrap) wrap.innerHTML = '';
 		flashError('Co-occurrence failed to load.');
@@ -266,42 +206,29 @@ function runCooccurrence(projectId) {
 }
 
 function runRetrieval(projectId) {
-	var form = document.getElementById("retrieval-form");
-	var results = document.getElementById("retrieval-results");
+	let form = document.getElementById('retrieval-form');
+	const results = document.getElementById('retrieval-results');
 	if (!form || !results) return;
-
-	var clone = form.cloneNode(true);
+	const clone = form.cloneNode(true);
 	form.parentNode.replaceChild(clone, form);
-	form = document.getElementById("retrieval-form");
-	var input = retrievalInput();
-	if (input) input.addEventListener("input", clearRetrievalError);
-
-	form.addEventListener("submit", function(e) {
-		e.preventDefault();
-		var qEl = document.getElementById("retrieval-q");
-		var term = qEl ? String(qEl.value || "").trim() : "";
+	form = document.getElementById('retrieval-form');
+	retrievalInput()?.addEventListener('input', clearRetrievalError);
+	form.addEventListener('submit', (event) => {
+		event.preventDefault();
+		const term = String(document.getElementById('retrieval-q')?.value || '').trim();
 		if (!term) { results.innerHTML = ''; setRetrievalError('Enter a term to search.'); flashError('Enter a term to search.', 'retrieval-q'); return; }
 		clearRetrievalError();
-		results.innerHTML = "<p>Searching…</p>";
-
-		var url = apiUrl("/api/analysis/retrieval?project=" + encodeURIComponent(projectId || "") + "&q=" + encodeURIComponent(term));
-		fetchJSON(url).then(function(res) {
-			var out = Array.isArray(res && res.results) ? res.results : [];
-			updateJsonPanel({ query: term, results: out }, "retrieval-" + String(projectId || "unknown") + ".json");
+		results.innerHTML = '<p>Searching…</p>';
+		fetchJSON(apiUrl('/api/analysis/retrieval?project=' + encodeURIComponent(projectId || '') + '&q=' + encodeURIComponent(term))).then((res) => {
+			const out = Array.isArray(res?.results) ? res.results : [];
+			updateJsonPanel({ query: term, results: out }, `retrieval-${String(projectId || 'unknown')}.json`);
 			if (!out.length) { results.innerHTML = '<p class="hint">No matches found.</p>'; return; }
-
-			var rx = new RegExp(term.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "ig");
-			var html = '' +
-				'<ul class="analysis-list analysis-list--spaced" aria-live="polite">' +
-				out.map(function(r) {
-					var codes = Array.isArray(r && r.codes) ? r.codes : [];
-					var badges = codes.map(function(c) { return '<span class="tag">' + esc(c.name) + '</span>'; }).join(' ');
-					var snip = esc(r.snippet || "").replace(rx, function(m) { return "<mark>" + m + "</mark>"; });
-					return '<li><h5 class="analysis-subheading">' + badges + '</h5><p>' + snip + '</p></li>';
-				}).join('') +
-				'</ul>';
-			results.innerHTML = html;
-		}).catch(function() {
+			results.innerHTML = '<ul class="analysis-list analysis-list--spaced" aria-live="polite">' + out.map((result) => {
+				const codes = Array.isArray(result?.codes) ? result.codes : [];
+				const badges = codes.map((code) => `<span class="tag">${esc(code.name)}</span>`).join(' ');
+				return `<li><h5 class="analysis-subheading">${badges}</h5><p>${esc(result.snippet || '')}</p></li>`;
+			}).join('') + '</ul>';
+		}).catch(() => {
 			results.innerHTML = '';
 			flashError('Search failed.');
 		});
@@ -309,23 +236,20 @@ function runRetrieval(projectId) {
 }
 
 function runExport(projectId) {
-	var tUrl = apiUrl("/api/analysis/timeline?project=" + encodeURIComponent(projectId || ""));
-	var cUrl = apiUrl("/api/analysis/cooccurrence?project=" + encodeURIComponent(projectId || ""));
-	return Promise.all([fetchJSON(tUrl), fetchJSON(cUrl)]).then(function(arr) {
-		var timeline = arr[0] && arr[0].timeline ? arr[0].timeline : [];
-		var nodes = arr[1] && arr[1].nodes ? arr[1].nodes : [];
-		var links = arr[1] && arr[1].links ? arr[1].links : [];
-		var payload = {
-			projectId: projectId || "",
+	const tUrl = apiUrl('/api/analysis/timeline?project=' + encodeURIComponent(projectId || ''));
+	const cUrl = apiUrl('/api/analysis/cooccurrence?project=' + encodeURIComponent(projectId || ''));
+	return Promise.all([fetchJSON(tUrl), fetchJSON(cUrl)]).then(([timelineData, cooccurrenceData]) => {
+		const payload = {
+			projectId: projectId || '',
 			generatedAt: new Date().toISOString(),
-			timeline: timeline,
-			nodes: nodes,
-			links: links
+			timeline: timelineData?.timeline || [],
+			nodes: cooccurrenceData?.nodes || [],
+			links: cooccurrenceData?.links || []
 		};
-		updateJsonPanel(payload, "analysis-" + String(projectId || "unknown") + ".json");
-		flashStatus("Export ready in JSON panel. Use Download JSON.");
-	}).catch(function() {
-		flashError("Failed to prepare export.");
+		updateJsonPanel(payload, `analysis-${String(projectId || 'unknown')}.json`);
+		flashStatus('Export ready in JSON panel. Use Download JSON.');
+	}).catch(() => {
+		flashError('Failed to prepare export.');
 	});
 }
 

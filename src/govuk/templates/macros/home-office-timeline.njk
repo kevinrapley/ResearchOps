@@ -1,0 +1,27 @@
+{% macro homeOfficeTimeline(params = {}) %}
+{% set timelineId = params.id or 'timeline' %}
+{% set timelineClasses = 'hods-timeline' + (' ' + params.classes if params.classes else '') %}
+{% set items = params.items or [] %}
+<div class="{{ timelineClasses }}" id="{{ timelineId }}"{% if params.labelledBy %} aria-labelledby="{{ params.labelledBy }}"{% endif %}{% if params.live %} aria-live="{{ params.live }}"{% endif %}>
+	{% if items | length %}
+		{% for item in items %}
+			<div class="hods-timeline__item">
+				<{{ params.headingLevel or 'h2' }} class="hods-timeline__title">{{ item.title or item.action }}</{{ params.headingLevel or 'h2' }}>
+				{% if item.by %}<p class="hods-timeline__by">by {{ item.by }}</p>{% endif %}
+				{% if item.date %}
+					<p class="hods-timeline__date">
+						<time class="hods-date-time"{% if item.datetime %} datetime="{{ item.datetime }}"{% endif %}>{{ item.date }}</time>
+					</p>
+				{% endif %}
+				{% if item.html %}
+					<div class="hods-timeline__description">{{ item.html | safe }}</div>
+				{% elif item.description %}
+					<p class="hods-timeline__description">{{ item.description }}</p>
+				{% endif %}
+			</div>
+		{% endfor %}
+	{% elif params.emptyHtml %}
+		{{ params.emptyHtml | safe }}
+	{% endif %}
+</div>
+{% endmacro %}
