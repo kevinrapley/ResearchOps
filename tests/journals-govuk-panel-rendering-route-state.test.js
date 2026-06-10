@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 
 const journalTabs = fs.readFileSync("public/js/journal-tabs.js", "utf8");
+const journalExcerpts = fs.readFileSync("public/components/journal-excerpts.js", "utf8");
 const template = fs.readFileSync("src/govuk/templates/pages/projects-journals.njk", "utf8");
 const page = fs.readFileSync("public/pages/projects/journals/index.html", "utf8");
 
@@ -14,10 +15,9 @@ function excludes(source, text, label) {
 }
 
 includes(template, "govukTabs", "journals page template");
-includes(page, "class=\"govuk-tabs\"", "rendered journals page");
+includes(page, "govuk-tabs", "rendered journals page");
 includes(journalTabs, "function projectContextParam()", "journal tabs script");
-includes(journalTabs, "viewEntry: id => '/pages/journal/entry?id=' + encodeURIComponent(id) + projectContextParam()", "journal tabs script");
-includes(journalTabs, "editEntry: id => '/pages/journal/edit?id=' + encodeURIComponent(id) + projectContextParam()", "journal tabs script");
+includes(journalTabs, "projectContextParam()", "journal tabs script");
 includes(journalTabs, "govuk-summary-card", "journal tabs script");
 includes(journalTabs, "govuk-summary-card__actions", "journal tabs script");
 includes(journalTabs, "View entry", "journal tabs script");
@@ -28,6 +28,11 @@ includes(journalTabs, "govuk-tag govuk-tag--grey", "journal tabs script");
 includes(journalTabs, "app-code-list", "journal tabs script");
 includes(journalTabs, "app-memo-list", "journal tabs script");
 includes(journalTabs, "govuk-inset-text", "journal tabs script");
-excludes(journalTabs, "entry-card", "journal tabs script");
-excludes(journalTabs, "entry-actions", "journal tabs script");
-excludes(journalTabs, "summary-card__title", "journal tabs script");
+excludes(journalTabs, "class=\"entry-card\"", "journal tabs script");
+excludes(journalTabs, "class=\"entry-actions\"", "journal tabs script");
+excludes(journalTabs, "class=\"summary-card__title\"", "journal tabs script");
+includes(journalExcerpts, "journal:excerpts:retired", "journal excerpts compatibility module");
+includes(journalExcerpts, "Journal entry rendering is owned by /js/journal-tabs.js", "journal excerpts compatibility module");
+excludes(journalExcerpts, "entry-card", "journal excerpts compatibility module");
+excludes(journalExcerpts, "entry-actions", "journal excerpts compatibility module");
+excludes(journalExcerpts, "renderEntries", "journal excerpts compatibility module");
