@@ -1,0 +1,62 @@
+{
+	"schema": "researchops.agentAuditTrace.v1",
+	"date": "2026-06-10",
+	"traceLayer": "operational",
+	"repository": "kevinrapley/ResearchOps",
+	"branch": "fix/journals-project-data-hydration",
+	"pullRequest": 383,
+	"branchPrefix": "fix/",
+	"traceRequired": true,
+	"taskSummary": "Seed D1 with realistic journal entries, codes and memos for Test Project 1.",
+	"selectedBundles": [
+		"github-diamond",
+		"researchops-developer-control",
+		"multi-functional-team",
+		"cloudflare"
+	],
+	"skippedBundles": [
+		"govuk-design-system",
+		"openai-platform",
+		"mcp-agent-tooling",
+		"mural-public-api",
+		"airtable-public-api"
+	],
+	"filesRead": [
+		"data/projects.csv",
+		"data/journal-entries.csv",
+		"data/codes.csv",
+		"data/memos.csv",
+		"infra/cloudflare/migrations/0008_seed_test_project_1_participants.sql",
+		".github/workflows/apply-d1-test-project-1-participants.yml",
+		"tests/test-project-1-participants-seed-route-state.test.js"
+	],
+	"filesCreated": [
+		"infra/cloudflare/migrations/0013_seed_test_project_1_journal_analysis.sql",
+		".github/workflows/apply-d1-test-project-1-journal-analysis.yml",
+		"tests/test-project-1-journal-analysis-seed-route-state.test.js",
+		"docs/agent-audit/reasoning/2026/06/10/test-project-1-journal-analysis-seed.md",
+		"docs/agent-audit/reasoning/2026/06/10/test-project-1-journal-analysis-seed.json"
+	],
+	"seededContent": {
+		"projectRecordId": "recgdpwEI5hF07bUZ",
+		"localProjectId": "d04ab32e-6756-408e-a649-6859dd0079f2",
+		"journalEntries": 8,
+		"codes": 10,
+		"memos": 4,
+		"realismBoundary": "Fictional research operations content with no real participant identities."
+	},
+	"validation": {
+		"commandsRun": [],
+		"required": [
+			"npm run validate",
+			"npm test",
+			"npm run trace:coverage",
+			"Worker CI",
+			"Release Gate"
+		]
+	},
+	"residualRisks": [
+		"The remote D1 database is hydrated only when the new apply workflow runs after merge to main or via manual workflow dispatch.",
+		"CI polling is required after the branch head updates."
+	]
+}
