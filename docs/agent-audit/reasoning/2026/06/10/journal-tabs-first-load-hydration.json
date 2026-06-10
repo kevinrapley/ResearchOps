@@ -3,10 +3,11 @@
 	"date": "2026-06-10",
 	"traceLayer": "operational",
 	"repository": "kevinrapley/ResearchOps",
-	"branch": "fix/journal-tabs-first-load-hydration",
+	"branch": "fix/journal-tabs-test-contract",
+	"pullRequest": 389,
 	"branchPrefix": "fix/",
 	"traceRequired": true,
-	"taskSummary": "Fix first-load journal entries rendering so it uses the same GOV.UK summary-card path as tab-switch rendering.",
+	"taskSummary": "Fix first-load journal entry rendering and D1-backed analysis timeline hydration.",
 	"selectedBundles": [
 		"github-diamond",
 		"researchops-developer-control",
@@ -16,6 +17,8 @@
 	],
 	"filesModified": [
 		"public/components/journal-excerpts.js",
+		"infra/cloudflare/src/service/reflection/analysis.js",
+		"tests/journals-route-state.test.js",
 		"tests/journals-govuk-panel-rendering-route-state.test.js",
 		"docs/agent-audit/reasoning/2026/06/10/journal-tabs-first-load-hydration.md",
 		"docs/agent-audit/reasoning/2026/06/10/journal-tabs-first-load-hydration.json"
@@ -23,7 +26,9 @@
 	"implementationSummary": [
 		"Retired the old journal excerpts renderer that used obsolete custom entry-card markup on initial page load.",
 		"Kept journal entry rendering owned by /js/journal-tabs.js so first-load and tab-switch use the same GOV.UK summary-card renderer.",
-		"Extended route-state coverage to prevent the retired renderer from reintroducing entry-card, entry-actions or renderEntries."
+		"Updated Analysis timeline to read D1 journal_entries before falling back to Airtable.",
+		"Matched both project and local_project_id and tolerated the Test Project 1 legacy O/0 ID mismatch.",
+		"Extended route-state coverage for retired renderer and D1 timeline hydration."
 	],
 	"validation": {
 		"commandsRun": [],
