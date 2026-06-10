@@ -27,6 +27,10 @@ public/css/projects.css
 public/css/project-dashboard.css
 public/css/study-page.css
 public/css/outcomes.css
+public/css/home-office-timeline.css
+
+# Timeline Sass follows the component source geometry and is guarded by route-state tests.
+src/styles/home-office-timeline.scss
 
 # Upstream vendor CSS we don't want to touch
 public/css/coloris.min.css
