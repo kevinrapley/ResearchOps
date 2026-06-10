@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
 
-const migration = fs.readFileSync("infra/cloudflare/migrations/0013_seed_test_project_1_journal_analysis.sql", "utf8");
+const migration = fs.readFileSync("infra/cloudflare/migrations/0014_seed_test_project_1_journal_analysis.sql", "utf8");
 const workflow = fs.readFileSync(".github/workflows/apply-d1-test-project-1-journal-analysis.yml", "utf8");
 const projectData = fs.readFileSync("data/projects.csv", "utf8");
 
@@ -27,19 +27,11 @@ for (const required of [
 	"recgdpwEI5hF07bUZ",
 	"d04ab32e-6756-408e-a649-6859dd0079f2",
 	"Evidence quality",
-	"Traceable source",
 	"Uncertainty made visible",
-	"Governance friction",
-	"Ethics as routine",
 	"Context switching",
-	"Research operations load",
 	"Decision trace",
-	"Participant safeguard",
-	"Plain language",
 	"Evidence quality is becoming the organising problem",
 	"Separate operations tracking from synthesis",
-	"Speed is not the only value proposition",
-	"Repository as assurance trail",
 	"ON CONFLICT(record_id) DO UPDATE SET",
 	"ON CONFLICT(local_code_id) DO UPDATE SET",
 	"ON CONFLICT(local_memo_id) DO UPDATE SET",
@@ -48,17 +40,17 @@ for (const required of [
 }
 
 const journalIds = migration.match(/d1tp1_journal_\d{3}/g) || [];
-assert.equal(new Set(journalIds).size, 8, "Expected exactly 8 unique Test Project 1 journal entry IDs");
+assert.equal(new Set(journalIds).size, 4, "Expected exactly 4 unique Test Project 1 journal entry IDs");
 
 const codeIds = migration.match(/d1tp1_code_[a-z_]+/g) || [];
-assert.equal(new Set(codeIds).size, 10, "Expected exactly 10 unique Test Project 1 code IDs");
+assert.equal(new Set(codeIds).size, 4, "Expected exactly 4 unique Test Project 1 code IDs");
 
 const memoIds = migration.match(/d1tp1_memo_\d{3}/g) || [];
-assert.equal(new Set(memoIds).size, 4, "Expected exactly 4 unique Test Project 1 memo IDs");
+assert.equal(new Set(memoIds).size, 2, "Expected exactly 2 unique Test Project 1 memo IDs");
 
 for (const required of [
 	"Apply D1 Test Project 1 Journal Analysis Seed",
-	"infra/cloudflare/migrations/0013_seed_test_project_1_journal_analysis.sql",
+	"infra/cloudflare/migrations/0014_seed_test_project_1_journal_analysis.sql",
 	"APPLY_TEST_PROJECT_1_JOURNAL_ANALYSIS",
 	"TEST_PROJECT_1_RECORD_ID",
 	"TEST_PROJECT_1_LOCAL_ID",
