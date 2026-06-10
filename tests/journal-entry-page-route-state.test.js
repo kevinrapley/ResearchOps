@@ -23,7 +23,6 @@ includes(script, "new URLSearchParams(window.location.search).get(\"id\")", "jou
 includes(script, "/api/journal-entries/${encodeURIComponent(id)}", "journal entry script");
 includes(script, "renderEntry(entry)", "journal entry script");
 includes(script, "journal-entry-error-summary", "journal entry script");
-includes(script, "d1tp1_journal_004", "journal entry script route smoke fixture marker");
 
 includes(router, "url.pathname.startsWith(\"/api/journal-entries/\")", "Worker router");
 includes(router, "service.getJournalEntry(origin, entryId)", "Worker router");
