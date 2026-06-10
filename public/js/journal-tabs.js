@@ -64,8 +64,12 @@ import { runTimeline, runCooccurrence, runRetrieval, runExport } from './caqdas-
 		return raw;
 	}
 
+	function tagHtml(value) {
+		return `<strong class="govuk-tag govuk-tag--grey govuk-!-margin-right-1 govuk-!-margin-bottom-1">${esc(value)}</strong>`;
+	}
+
 	function emptyEntriesHtml() {
-		return '<div class="empty-state" id="empty-journal"><p class="govuk-body">No entries match the current filter.</p></div>';
+		return '<div class="govuk-inset-text" id="empty-journal"><p class="govuk-body">No entries match the current filter.</p></div>';
 	}
 
 	function flash(msg, asHtml = false) {
@@ -75,7 +79,7 @@ import { runTimeline, runCooccurrence, runRetrieval, runExport } from './caqdas-
 			el.id = 'flash';
 			el.setAttribute('role', 'status');
 			el.setAttribute('aria-live', 'polite');
-			el.style.cssText = 'margin:12px 0;padding:12px;border:1px solid #d0d7de;background:#fff;';
+			el.className = 'govuk-inset-text';
 			document.querySelector('main')?.prepend(el);
 		}
 		el[asHtml ? 'innerHTML' : 'textContent'] = msg;
@@ -101,6 +105,11 @@ import { runTimeline, runCooccurrence, runRetrieval, runExport } from './caqdas-
 		return state.projectAirtableId || state.projectId;
 	}
 
+	function projectContextParam() {
+		const projectId = state.projectAirtableId || state.projectId;
+		return projectId ? '&project=' + encodeURIComponent(projectId) : '';
+	}
+
 	function projectNameForSync() {
 		return document.querySelector('main')?.dataset?.projectName ||
 			document.querySelector('h1')?.textContent?.trim() ||
@@ -123,28 +132,31 @@ import { runTimeline, runCooccurrence, runRetrieval, runExport } from './caqdas-
 
 	function ensureMuralSyncPanel() {
 		let panel = document.getElementById('mural-sync-panel');
-		if (panel) return panel;
+		if (panel && panel.childElementCount) return panel;
 
 		const host = document.getElementById('journal-entries-panel');
 		const entries = document.getElementById('entries-container');
 		if (!host || !entries) return null;
 
-		panel = document.createElement('section');
-		panel.id = 'mural-sync-panel';
-		panel.className = 'summary-card govuk-!-margin-bottom-4';
+		if (!panel) {
+			panel = document.createElement('section');
+			panel.id = 'mural-sync-panel';
+			host.insertBefore(panel, entries);
+		}
+
+		panel.hidden = false;
+		panel.removeAttribute('aria-hidden');
+		panel.className = 'govuk-inset-text govuk-!-margin-bottom-4';
 		panel.setAttribute('aria-labelledby', 'mural-sync-title');
 		panel.innerHTML = '' +
-			'<div class="summary-card__title-row">' +
-			'  <h3 class="summary-card__title" id="mural-sync-title">Mural sync</h3>' +
-			'  <p class="tag" id="mural-sync-state">Checking</p>' +
-			'</div>' +
+			'<h3 class="govuk-heading-s" id="mural-sync-title">Reflexive Journal Mural</h3>' +
 			'<p class="govuk-body" id="mural-sync-message" role="status" aria-live="polite">Checking Reflexive Journal Mural sync status.</p>' +
+			'<p class="govuk-body"><strong class="govuk-tag govuk-tag--grey" id="mural-sync-state">Checking</strong></p>' +
 			'<div class="govuk-button-group">' +
 			'  <button type="button" class="govuk-button govuk-button--secondary" id="mural-sync-pending-btn">Sync pending entries</button>' +
 			'  <button type="button" class="govuk-button govuk-button--secondary" id="mural-sync-refresh-btn">Check sync status</button>' +
 			'</div>';
 
-		host.insertBefore(panel, entries);
 		document.getElementById('mural-sync-pending-btn')?.addEventListener('click', syncPendingEntriesToMural);
 		document.getElementById('mural-sync-refresh-btn')?.addEventListener('click', loadMuralSyncStatus);
 		return panel;
@@ -273,8 +285,8 @@ import { runTimeline, runCooccurrence, runRetrieval, runExport } from './caqdas-
 
 	// ---------- ROUTES ----------
 	var ROUTES = {
-		viewEntry: id => '/pages/journal/entry?id=' + encodeURIComponent(id),
-		editEntry: id => '/pages/journal/edit?id=' + encodeURIComponent(id)
+		viewEntry: id => '/pages/journal/entry?id=' + encodeURIComponent(id) + projectContextParam(),
+		editEntry: id => '/pages/journal/edit?id=' + encodeURIComponent(id) + projectContextParam()
 	};
 
 	// ---------- JOURNAL ----------
@@ -299,7 +311,8 @@ import { runTimeline, runCooccurrence, runRetrieval, runExport } from './caqdas-
 						categoryKey: normalizeCategoryKey(rawCategory),
 						content: e.content ?? e.body ?? '',
 						tags,
-						createdAt: e.createdAt || e.created_at || ''
+						createdAt: e.createdAt || e.created_at || '',
+						projectId: e.project || e.projectId || e.localProjectId || e.local_project_id || state.projectId
 					};
 				});
 				renderEntries();
@@ -326,28 +339,52 @@ import { runTimeline, runCooccurrence, runRetrieval, runExport } from './caqdas-
 
 		if (!list.length) { wrap.innerHTML = emptyEntriesHtml(); return; }
 
-		wrap.innerHTML = list.map(en => {
-			const snippet = truncateWords(en.content || '', 200);
+		wrap.innerHTML = '<ol class="govuk-list app-journal-entry-list">' + list.map(en => {
+			const snippet = truncateWords(en.content || '', 300);
 			const wasShortened = snippet.length < String(en.content || '').trim().length;
-			const tagsHTML = (en.tags || []).map(t => `<span class="tag" aria-label="Tag: ${esc(t)}">${esc(t)}</span>`).join('');
+			const viewHref = ROUTES.viewEntry(en.id);
+			const editHref = ROUTES.editEntry(en.id);
+			const tagsHTML = (en.tags || []).length ?
+				`<p class="govuk-body-s govuk-!-margin-bottom-0">${(en.tags || []).map(tagHtml).join('')}</p>` :
+				'<p class="govuk-hint govuk-!-margin-bottom-0">No tags recorded.</p>';
 			return `
-				<article class="entry-card" data-id="${esc(en.id)}" data-category="${esc(en.categoryKey || normalizeCategoryKey(en.category))}">
-					<header class="entry-header">
-						<div class="entry-meta">
-							<a class="entry-link" href="${ROUTES.viewEntry(en.id)}">
-								<span class="entry-category-badge" data-category="${esc(en.categoryKey || normalizeCategoryKey(en.category))}">${esc(en.category)}</span>
-								<span class="entry-timestamp">${when(en.createdAt)}</span>
-							</a>
+				<li class="govuk-!-margin-bottom-6">
+					<article class="govuk-summary-card" data-id="${esc(en.id)}" data-category="${esc(en.categoryKey || normalizeCategoryKey(en.category))}">
+						<div class="govuk-summary-card__title-wrapper">
+							<h3 class="govuk-summary-card__title">
+								<a class="govuk-link" href="${viewHref}">${esc(en.category)} journal entry</a>
+							</h3>
+							<ul class="govuk-summary-card__actions">
+								<li class="govuk-summary-card__action"><a class="govuk-link" href="${viewHref}">View entry<span class="govuk-visually-hidden"> ${esc(en.category)} ${esc(when(en.createdAt))}</span></a></li>
+								<li class="govuk-summary-card__action"><a class="govuk-link" href="${editHref}">Edit entry<span class="govuk-visually-hidden"> ${esc(en.category)} ${esc(when(en.createdAt))}</span></a></li>
+							</ul>
 						</div>
-						<div class="entry-actions" role="group">
-							<a class="govuk-button govuk-button--secondary" href="${ROUTES.editEntry(en.id)}" role="button" draggable="false" data-module="govuk-button">Edit</a>
-							<button type="button" class="govuk-button govuk-button--warning" data-act="delete" data-id="${esc(en.id)}">Delete</button>
+						<div class="govuk-summary-card__content">
+							<dl class="govuk-summary-list">
+								<div class="govuk-summary-list__row">
+									<dt class="govuk-summary-list__key">Category</dt>
+									<dd class="govuk-summary-list__value">${esc(en.category)}</dd>
+								</div>
+								<div class="govuk-summary-list__row">
+									<dt class="govuk-summary-list__key">Created</dt>
+									<dd class="govuk-summary-list__value">${esc(when(en.createdAt))}</dd>
+								</div>
+								<div class="govuk-summary-list__row">
+									<dt class="govuk-summary-list__key">Entry</dt>
+									<dd class="govuk-summary-list__value"><p class="govuk-body">${esc(snippet)}${wasShortened ? ` <a class="govuk-link" href="${viewHref}">Read full entry</a>` : ''}</p></dd>
+								</div>
+								<div class="govuk-summary-list__row">
+									<dt class="govuk-summary-list__key">Tags</dt>
+									<dd class="govuk-summary-list__value">${tagsHTML}</dd>
+								</div>
+							</dl>
+							<div class="govuk-button-group govuk-!-margin-bottom-0">
+								<button type="button" class="govuk-button govuk-button--warning" data-module="govuk-button" data-act="delete" data-id="${esc(en.id)}">Delete entry</button>
+							</div>
 						</div>
-					</header>
-					<div class="entry-content">${esc(snippet)}${wasShortened ? ` <a class="read-more" href="${ROUTES.viewEntry(en.id)}">Read full entry</a>` : ''}</div>
-					<div class="entry-tags">${tagsHTML}</div>
-				</article>`;
-		}).join('');
+					</article>
+				</li>`;
+		}).join('') + '</ol>';
 
 		$all('[data-act="delete"]', wrap).forEach(btn => btn.addEventListener('click', onDeleteEntry));
 	}
@@ -433,20 +470,12 @@ import { runTimeline, runCooccurrence, runRetrieval, runExport } from './caqdas-
 		state.entryFilter = active?.dataset?.filter?.toLowerCase() || 'all';
 
 		$all('.filter-chip', container).forEach(b => {
-			b.setAttribute('role', 'button');
-			b.tabIndex = 0;
 			b.addEventListener('click', e => {
 				e.preventDefault();
 				$all('.filter-chip', container).forEach(x => x.classList.remove('filter-chip--active'));
 				b.classList.add('filter-chip--active');
 				state.entryFilter = b.dataset.filter || 'all';
 				renderEntries();
-			});
-			b.addEventListener('keydown', e => {
-				if (e.key === 'Enter' || e.key === ' ') {
-					e.preventDefault();
-					b.click();
-				}
 			});
 		});
 	}
@@ -471,32 +500,42 @@ import { runTimeline, runCooccurrence, runRetrieval, runExport } from './caqdas-
 		if (!wrap) return;
 
 		const formHtml = state.codeFormOpen ? `
-			<form id="add-code-form" class="govuk-form-group" novalidate>
-				<label class="govuk-label govuk-label--s" for="code-name">Code name</label>
-				<input class="govuk-input" id="code-name" name="name" type="text" required>
+			<form id="add-code-form" class="govuk-!-margin-bottom-6" novalidate>
+				<div class="govuk-form-group">
+					<label class="govuk-label govuk-label--s" for="code-name">Code name</label>
+					<input class="govuk-input govuk-input--width-20" id="code-name" name="name" type="text" required>
+				</div>
 
-				<label class="govuk-label govuk-label--s govuk-!-margin-top-3" for="code-description">Description</label>
-				<textarea class="govuk-textarea" id="code-description" name="description" rows="3"></textarea>
+				<div class="govuk-form-group">
+					<label class="govuk-label govuk-label--s" for="code-description">Description</label>
+					<textarea class="govuk-textarea" id="code-description" name="description" rows="3"></textarea>
+				</div>
 
-				<label class="govuk-label govuk-label--s govuk-!-margin-top-3" for="code-colour">Colour</label>
-				<input class="govuk-input" id="code-colour" name="colour" type="text" value="#1d70b8ff">
+				<div class="govuk-form-group">
+					<label class="govuk-label govuk-label--s" for="code-colour">Colour</label>
+					<input class="govuk-input govuk-input--width-10" id="code-colour" name="colour" type="text" value="#1d70b8ff">
+				</div>
 
-				<div class="govuk-button-group govuk-!-margin-top-3">
-					<button type="submit" class="govuk-button">Save code</button>
-					<button type="button" class="govuk-button govuk-button--secondary" id="cancel-code-form-btn">Cancel</button>
+				<div class="govuk-button-group">
+					<button type="submit" class="govuk-button" data-module="govuk-button">Save code</button>
+					<button type="button" class="govuk-button govuk-button--secondary" data-module="govuk-button" id="cancel-code-form-btn">Cancel</button>
 				</div>
 			</form>` : '';
 
 		const listHtml = state.codes.length ?
-			'<ul class="analysis-list">' + state.codes.map(code => `
-				<li class="analysis-list__item">
-					<article class="summary-card">
-						<h4 class="summary-card__title">${esc(code.name || code.id)}</h4>
-						<p>${esc(code.description || '')}</p>
-						${code.path ? `<p class="hint">${esc(code.path)}</p>` : ''}
+			'<ol class="govuk-list app-code-list">' + state.codes.map(code => `
+				<li class="govuk-!-margin-bottom-4">
+					<article class="govuk-summary-card">
+						<div class="govuk-summary-card__title-wrapper">
+							<h3 class="govuk-summary-card__title">${esc(code.name || code.id)}</h3>
+						</div>
+						<div class="govuk-summary-card__content">
+							<p class="govuk-body">${esc(code.description || 'No description recorded.')}</p>
+							${code.path ? `<p class="govuk-hint">${esc(code.path)}</p>` : ''}
+						</div>
 					</article>
-				</li>`).join('') + '</ul>' :
-			'<p class="hint">No codes have been added yet.</p>';
+				</li>`).join('') + '</ol>' :
+			'<div class="govuk-inset-text"><p class="govuk-body">No codes have been added yet.</p></div>';
 
 		wrap.innerHTML = formHtml + listHtml;
 
@@ -571,36 +610,52 @@ import { runTimeline, runCooccurrence, runRetrieval, runExport } from './caqdas-
 		if (!wrap) return;
 
 		const formHtml = state.memoFormOpen ? `
-			<form id="add-memo-form" class="govuk-form-group" novalidate>
-				<label class="govuk-label govuk-label--s" for="memo-type">Memo type</label>
-				<select class="govuk-select" id="memo-type" name="memo_type" required>
-					<option value="analytical">Analytical</option>
-					<option value="methodological">Methodological</option>
-					<option value="theoretical">Theoretical</option>
-					<option value="reflexive">Reflexive</option>
-				</select>
+			<form id="add-memo-form" class="govuk-!-margin-bottom-6" novalidate>
+				<div class="govuk-form-group">
+					<label class="govuk-label govuk-label--s" for="memo-type">Memo type</label>
+					<select class="govuk-select" id="memo-type" name="memo_type" required>
+						<option value="analytical">Analytical</option>
+						<option value="methodological">Methodological</option>
+						<option value="theoretical">Theoretical</option>
+						<option value="reflexive">Reflexive</option>
+					</select>
+				</div>
 
-				<label class="govuk-label govuk-label--s govuk-!-margin-top-3" for="memo-content">Memo</label>
-				<textarea class="govuk-textarea" id="memo-content" name="content" rows="6" required></textarea>
+				<div class="govuk-form-group">
+					<label class="govuk-label govuk-label--s" for="memo-content">Memo</label>
+					<textarea class="govuk-textarea" id="memo-content" name="content" rows="6" required></textarea>
+				</div>
 
-				<div class="govuk-button-group govuk-!-margin-top-3">
-					<button type="submit" class="govuk-button">Save memo</button>
-					<button type="button" class="govuk-button govuk-button--secondary" id="cancel-memo-form-btn">Cancel</button>
+				<div class="govuk-button-group">
+					<button type="submit" class="govuk-button" data-module="govuk-button">Save memo</button>
+					<button type="button" class="govuk-button govuk-button--secondary" data-module="govuk-button" id="cancel-memo-form-btn">Cancel</button>
 				</div>
 			</form>` : '';
 
 		const filter = currentMemoFilter();
 		const list = state.memos.filter(memo => filter === 'all' || String(memo.memoType || '').toLowerCase() === filter);
 		const listHtml = list.length ?
-			'<ul class="analysis-list">' + list.map(memo => `
-				<li class="analysis-list__item">
-					<article class="summary-card">
-						<h4 class="summary-card__title">${esc(memo.memoType || 'memo')} memo</h4>
-						<p class="hint">${esc(when(memo.createdAt))}</p>
-						<p>${esc(truncateWords(memo.content || '', 300))}</p>
+			'<ol class="govuk-list app-memo-list">' + list.map(memo => `
+				<li class="govuk-!-margin-bottom-4">
+					<article class="govuk-summary-card">
+						<div class="govuk-summary-card__title-wrapper">
+							<h3 class="govuk-summary-card__title">${esc(memo.memoType || 'memo')} memo</h3>
+						</div>
+						<div class="govuk-summary-card__content">
+							<dl class="govuk-summary-list">
+								<div class="govuk-summary-list__row">
+									<dt class="govuk-summary-list__key">Created</dt>
+									<dd class="govuk-summary-list__value">${esc(when(memo.createdAt))}</dd>
+								</div>
+								<div class="govuk-summary-list__row">
+									<dt class="govuk-summary-list__key">Memo</dt>
+									<dd class="govuk-summary-list__value"><p class="govuk-body">${esc(truncateWords(memo.content || '', 300))}</p></dd>
+								</div>
+							</dl>
+						</div>
 					</article>
-				</li>`).join('') + '</ul>' :
-			'<p class="hint">No memos match the current filter.</p>';
+				</li>`).join('') + '</ol>' :
+			'<div class="govuk-inset-text"><p class="govuk-body">No memos match the current filter.</p></div>';
 
 		wrap.innerHTML = formHtml + listHtml;
 
@@ -659,8 +714,6 @@ import { runTimeline, runCooccurrence, runRetrieval, runExport } from './caqdas-
 		state.memoFilter = active?.dataset?.memoFilter?.toLowerCase() || 'all';
 
 		$all('.filter-chip', container).forEach(b => {
-			b.setAttribute('role', 'button');
-			b.tabIndex = 0;
 			b.addEventListener('click', e => {
 				e.preventDefault();
 				$all('.filter-chip', container).forEach(x => x.classList.remove('filter-chip--active'));
