@@ -6,7 +6,9 @@ const journalExcerpts = fs.readFileSync("public/components/journal-excerpts.js",
 const analysisService = fs.readFileSync("infra/cloudflare/src/service/reflection/analysis.js", "utf8");
 const caqdas = fs.readFileSync("public/js/caqdas-interface.js", "utf8");
 const timelineMacro = fs.readFileSync("src/govuk/templates/macros/home-office-timeline.njk", "utf8");
+const timelineSass = fs.readFileSync("src/styles/home-office-timeline.scss", "utf8");
 const timelineCss = fs.readFileSync("public/css/home-office-timeline.css", "utf8");
+const generatedCssTargets = fs.readFileSync("scripts/styles/generated-css-targets.mjs", "utf8");
 const template = fs.readFileSync("src/govuk/templates/pages/projects-journals.njk", "utf8");
 const page = fs.readFileSync("public/pages/projects/journals/index.html", "utf8");
 
@@ -23,6 +25,8 @@ includes(template, "macros/home-office-timeline.njk", "journals page template");
 includes(template, "homeOfficeTimeline({", "journals page template");
 includes(template, "id: 'analysis-timeline'", "journals page template");
 includes(page, "govuk-tabs", "rendered journals page");
+includes(generatedCssTargets, "src/styles/home-office-timeline.scss", "generated CSS targets");
+includes(generatedCssTargets, "public/css/home-office-timeline.css", "generated CSS targets");
 includes(journalTabs, "function projectContextParam()", "journal tabs script");
 includes(journalTabs, "projectContextParam()", "journal tabs script");
 includes(journalTabs, "govuk-summary-card", "journal tabs script");
@@ -63,10 +67,13 @@ includes(timelineMacro, "macro homeOfficeTimeline", "Home Office timeline macro"
 includes(timelineMacro, "hods-timeline__item", "Home Office timeline macro");
 includes(timelineMacro, "hods-timeline__title", "Home Office timeline macro");
 includes(timelineMacro, "hods-date-time", "Home Office timeline macro");
+includes(timelineSass, "border-left: 5px solid $hods-timeline-blue;", "timeline Sass");
+includes(timelineSass, "width: 10px;", "timeline Sass");
+includes(timelineSass, "padding-left: 15px;", "timeline Sass");
 includes(timelineCss, "border-left: 5px solid #1d70b8;", "Home Office timeline CSS");
 includes(timelineCss, "height: 5px;", "Home Office timeline CSS");
-includes(timelineCss, "width: 25px;", "Home Office timeline CSS");
-includes(timelineCss, "padding: 0 0 25px 20px;", "Home Office timeline CSS");
+includes(timelineCss, "width: 10px;", "Home Office timeline CSS");
+includes(timelineCss, "padding-left: 15px;", "Home Office timeline CSS");
 includes(timelineCss, "font-size: 16px;", "Home Office timeline CSS");
 excludes(timelineCss, "border-radius", "Home Office timeline CSS");
 excludes(timelineCss, "border: 4px solid #ffffff", "Home Office timeline CSS");
