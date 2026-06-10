@@ -1,40 +1,45 @@
 .hods-timeline {
+	border-left: 5px solid #1d70b8;
 	margin-bottom: 30px;
-	position: relative;
 	}
 
 .hods-timeline__item {
-	border-left: 5px solid #1d70b8;
-	margin-left: 0;
-	padding: 0 0 25px 20px;
+	margin-bottom: 20px;
+	padding-left: 15px;
 	position: relative;
 	}
 
 .hods-timeline__item::before {
-	background: #1d70b8;
+	background-color: #1d70b8;
 	content: "";
 	height: 5px;
-	left: -5px;
+	left: 0;
 	position: absolute;
 	top: 0;
-	width: 25px;
+	width: 10px;
 	}
 
 .hods-timeline__title {
+	color: #0b0c0c;
 	font-size: 16px;
 	font-weight: 700;
 	line-height: 1.25;
 	margin: 0 0 5px;
+	padding-left: 15px;
 	}
 
 .hods-timeline__by,
 .hods-timeline__date,
 .hods-timeline__description {
+	color: #0b0c0c;
 	font-size: 16px;
 	line-height: 1.25;
-	margin: 0 0 10px;
+	margin: 0 0 5px;
+	padding-left: 15px;
 	}
 
-.hods-timeline__date {
-	color: #0b0c0c;
+.hods-timeline__description {
+	margin-bottom: 0;
 	}
+
+/* transparency begins in the cascade */
