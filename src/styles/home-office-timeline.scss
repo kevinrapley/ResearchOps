@@ -24,23 +24,31 @@ $hods-timeline-text: #0b0c0c;
 
 .hods-timeline__title {
 	color: $hods-timeline-text;
+	display: inline;
 	font-size: 19px;
 	font-weight: 700;
 	line-height: 1.3157894737;
-	margin: 0 0 5px;
-	padding-left: 15px;
+	margin: 0;
 	}
 
-.hods-timeline__by,
-.hods-timeline__date,
+.hods-timeline__by {
+	color: #505a5f;
+	display: inline;
+	font-size: 19px;
+	line-height: 1.3157894737;
+	margin: 0 0 0 5px;
+	}
+
+.hods-timeline__date {
+	color: #505a5f;
+	font-size: 19px;
+	line-height: 1.3157894737;
+	margin: 0 0 20px;
+	}
+
 .hods-timeline__description {
 	color: $hods-timeline-text;
 	font-size: 19px;
 	line-height: 1.3157894737;
-	margin: 0 0 5px;
-	padding-left: 15px;
-	}
-
-.hods-timeline__description {
-	margin-bottom: 0;
+	margin: 0;
 	}
