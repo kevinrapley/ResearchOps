@@ -1,0 +1,42 @@
+.hods-timeline {
+	margin-bottom: 30px;
+	position: relative;
+	}
+
+.hods-timeline__item {
+	border-left: 5px solid #1d70b8;
+	margin-left: 10px;
+	padding: 0 0 30px 25px;
+	position: relative;
+	}
+
+.hods-timeline__item::before {
+	background: #1d70b8;
+	border: 4px solid #ffffff;
+	border-radius: 50%;
+	content: "";
+	height: 16px;
+	left: -10.5px;
+	position: absolute;
+	top: 0;
+	width: 16px;
+	}
+
+.hods-timeline__title {
+	font-size: 19px;
+	font-weight: 700;
+	line-height: 1.3157894737;
+	margin: 0 0 5px;
+	}
+
+.hods-timeline__by,
+.hods-timeline__date,
+.hods-timeline__description {
+	font-size: 19px;
+	line-height: 1.3157894737;
+	margin: 0 0 15px;
+	}
+
+.hods-timeline__date {
+	color: #505a5f;
+	}
