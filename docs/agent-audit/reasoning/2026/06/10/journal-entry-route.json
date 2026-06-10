@@ -1,0 +1,40 @@
+{
+	"schema": "researchops.agentAuditTrace.v1",
+	"date": "2026-06-10",
+	"traceLayer": "operational",
+	"repository": "kevinrapley/ResearchOps",
+	"branch": "fix/journal-entry-route",
+	"branchPrefix": "fix/",
+	"traceRequired": true,
+	"taskSummary": "Fix missing static journal entry route for /pages/journal/entry?id=d1tp1_journal_004.",
+	"selectedBundles": [
+		"github-diamond",
+		"researchops-developer-control",
+		"multi-functional-team",
+		"govuk-design-system",
+		"cloudflare"
+	],
+	"filesCreated": [
+		"src/govuk/templates/pages/journal-entry.njk",
+		"public/pages/journal/entry/index.html",
+		"public/js/journal-entry.js",
+		"tests/journal-entry-page-route-state.test.js",
+		"docs/agent-audit/reasoning/2026/06/10/journal-entry-route.md",
+		"docs/agent-audit/reasoning/2026/06/10/journal-entry-route.json"
+	],
+	"implementationSummary": [
+		"Added a committed static journal entry page route.",
+		"Added browser script that reads the id query parameter and fetches /api/journal-entries/:id.",
+		"Added route-state coverage for the static page, script and Worker API contract."
+	],
+	"validation": {
+		"commandsRun": [],
+		"required": [
+			"CI",
+			"Validate ResearchOps",
+			"Worker CI",
+			"Release Gate",
+			"Render GOV.UK pages"
+		]
+	}
+}
