@@ -7,8 +7,8 @@ $hods-timeline-text: #0b0c0c;
 	}
 
 .hods-timeline__item {
-	margin-bottom: 20px;
-	padding-left: 15px;
+	margin-bottom: 30px;
+	padding-left: 20px;
 	position: relative;
 	}
 
@@ -16,10 +16,10 @@ $hods-timeline-text: #0b0c0c;
 	background-color: $hods-timeline-blue;
 	content: "";
 	height: 5px;
-	left: 0;
+	left: -5px;
 	position: absolute;
-	top: 0;
-	width: 10px;
+	top: 0.45em;
+	width: 15px;
 	}
 
 .hods-timeline__title {
