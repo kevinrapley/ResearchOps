@@ -1,5 +1,4 @@
 // ResearchOps-owned stylesheets generated from Sass sources.
-// Vendor, minified and legacy static CSS files stay outside this manifest.
 export const generatedCssTargets = [
 	{
 		name: 'ResearchOps home preview compatibility stylesheet',
@@ -12,14 +11,19 @@ export const generatedCssTargets = [
 		output: 'public/assets/researchops/researchops-home.css',
 	},
 	{
-		name: 'Home Office brand variant stylesheet',
+		name: 'Brand stylesheet',
 		source: 'src/styles/brands/home-office.scss',
 		output: 'public/css/brands/home-office.css',
 	},
 	{
-		name: 'Home Office secondary button brand variant stylesheet',
+		name: 'Button brand stylesheet',
 		source: 'src/styles/brands/home-office-buttons.scss',
 		output: 'public/css/brands/home-office-buttons.css',
+	},
+	{
+		name: 'Timeline stylesheet',
+		source: 'src/styles/home-office-timeline.scss',
+		output: 'public/css/home-office-timeline.css',
 	},
 	{
 		name: 'Projects stylesheet',
