@@ -1,4 +1,5 @@
 const API_ORIGIN = resolveApiBase();
+const PROJECT_CONTEXT_STORAGE_KEY = "researchops.journalEntry.projectContext";
 
 function resolveApiBase() {
 	const explicit = document.documentElement?.dataset?.apiOrigin || window.API_ORIGIN || "";
@@ -12,6 +13,63 @@ function apiUrl(path) {
 
 function text(value) {
 	return String(value || "").trim();
+}
+
+function firstProjectIdFromParams(params) {
+	return text(
+		params.get("project") ||
+		params.get("project_id") ||
+		params.get("project_local_id") ||
+		params.get("project_airtable_id") ||
+		params.get("id")
+	);
+}
+
+function projectIdFromRoute() {
+	const params = new URLSearchParams(window.location.search);
+	return text(
+		params.get("project") ||
+		params.get("project_id") ||
+		params.get("project_local_id") ||
+		params.get("project_airtable_id")
+	);
+}
+
+function projectIdFromReferrer() {
+	try {
+		if (!document.referrer) return "";
+		const referrer = new URL(document.referrer);
+		if (!referrer.pathname.includes("/pages/projects/journals")) return "";
+		return firstProjectIdFromParams(referrer.searchParams);
+	} catch {
+		return "";
+	}
+}
+
+function storedProjectId() {
+	try {
+		return text(window.sessionStorage?.getItem(PROJECT_CONTEXT_STORAGE_KEY));
+	} catch {
+		return "";
+	}
+}
+
+function rememberProjectId(projectId) {
+	const id = text(projectId);
+	if (!id) return;
+	try {
+		window.sessionStorage?.setItem(PROJECT_CONTEXT_STORAGE_KEY, id);
+	} catch {}
+}
+
+function projectIdFromEntry(entry = {}) {
+	return text(entry.project || entry.projectId || entry.localProjectId || entry.local_project_id || entry.project_id);
+}
+
+function resolveProjectId(entry = {}) {
+	const projectId = text(projectIdFromRoute() || projectIdFromReferrer() || storedProjectId() || projectIdFromEntry(entry));
+	rememberProjectId(projectId);
+	return projectId;
 }
 
 function when(iso) {
@@ -63,7 +121,7 @@ async function readJsonResponse(response) {
 }
 
 function setBackLinks(entry) {
-	const projectId = text(entry.localProjectId || entry.local_project_id || entry.project || entry.projectId);
+	const projectId = resolveProjectId(entry);
 	const href = projectId ? `/pages/projects/journals/?id=${encodeURIComponent(projectId)}` : "/pages/projects/journals/";
 	const dashboardHref = projectId ? `/pages/project-dashboard/?id=${encodeURIComponent(projectId)}` : "/pages/project-dashboard/";
 
@@ -115,6 +173,8 @@ async function loadJournalEntry() {
 		showError("Missing journal entry ID.");
 		return;
 	}
+
+	resolveProjectId();
 
 	try {
 		const data = await readJsonResponse(await fetch(apiUrl(`/api/journal-entries/${encodeURIComponent(id)}?ts=${Date.now()}`), {
