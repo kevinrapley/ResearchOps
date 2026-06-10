@@ -1,0 +1,164 @@
+{
+	"schema": "researchops.agentAuditTrace.v1",
+	"date": "2026-06-09",
+	"traceLayer": "operational",
+	"repository": "kevinrapley/ResearchOps",
+	"branch": "fix/journals-project-data-hydration",
+	"branchPrefix": "fix/",
+	"traceRequired": true,
+	"taskSummary": "Correct the Reflexive Journal and Analysis page so project-bound Reflexive Journal entries, Codes and Memos show for Test Project 1 from D1 and Airtable where available.",
+	"operatingModelFilesLoaded": [
+		"AGENTS.md",
+		"RECENT_LEARNINGS.md",
+		".agent-operating-model/orchestration.xml",
+		".agent-operating-model/bundle-registry.json",
+		".agent-operating-model/task-signal-catalog.json",
+		".agent-operating-model/selection-rules.json",
+		".agent-operating-model/bootstrap-checklist.md",
+		".agent-operating-model/precedence-policy.md",
+		".agent-operating-model/trace-policy.md",
+		".agent-operating-model/trace-layers.md",
+		".agent-operating-model/behavioural-evals.json",
+		".agent-operating-model/github-mutation-policy.md",
+		".agent-operating-model/bundles/github/prompt.spec.yaml",
+		".agent-operating-model/bundles/github/prompt.body.xml",
+		".agent-operating-model/bundles/researchops-developer-control/prompt.spec.yaml",
+		".agent-operating-model/bundles/researchops-developer-control/prompt.body.xml",
+		".agent-operating-model/bundles/multi-functional-team/prompt.spec.yaml",
+		".agent-operating-model/bundles/multi-functional-team/prompt.body.xml",
+		".agent-operating-model/bundles/govuk-design-system/prompt.spec.yaml",
+		".agent-operating-model/bundles/govuk-design-system/prompt.body.xml",
+		".agent-operating-model/bundles/cloudflare/prompt.spec.yaml",
+		".agent-operating-model/bundles/cloudflare/prompt.body.xml",
+		".agent-operating-model/bundles/airtable-public-api/prompt.spec.yaml",
+		".agent-operating-model/bundles/airtable-public-api/prompt.body.xml"
+	],
+	"selectedBundles": [
+		{
+			"id": "github-diamond",
+			"canonicalPath": ".agent-operating-model/bundles/github/",
+			"reason": "Branch, PR, mutation, trace and CI governance."
+		},
+		{
+			"id": "researchops-developer-control",
+			"canonicalPath": ".agent-operating-model/bundles/researchops-developer-control/",
+			"reason": "ResearchOps service boundary, route and data contract ownership."
+		},
+		{
+			"id": "multi-functional-team",
+			"canonicalPath": ".agent-operating-model/bundles/multi-functional-team/",
+			"reason": "Public-sector product assurance defaults."
+		},
+		{
+			"id": "govuk-design-system",
+			"canonicalPath": ".agent-operating-model/bundles/govuk-design-system/",
+			"reason": "Visible journals page and component context."
+		},
+		{
+			"id": "cloudflare",
+			"canonicalPath": ".agent-operating-model/bundles/cloudflare/",
+			"reason": "Worker service and D1-backed runtime behaviour."
+		},
+		{
+			"id": "airtable-public-api",
+			"canonicalPath": ".agent-operating-model/bundles/airtable-public-api/",
+			"reason": "Airtable record-listing and linked-record fallback behaviour."
+		}
+	],
+	"skippedBundles": [
+		{
+			"id": "openai-platform",
+			"reason": "No OpenAI API or model behaviour changed."
+		},
+		{
+			"id": "mcp-agent-tooling",
+			"reason": "No MCP protocol or agent-tooling contract changed."
+		},
+		{
+			"id": "mural-public-api",
+			"reason": "No Mural API behaviour changed; Mural sync is adjacent but not part of this display defect."
+		}
+	],
+	"precedenceDecisions": [
+		"GitHub Diamond governed branch, PR and trace behaviour.",
+		"ResearchOps Developer Control governed service-layer placement and route-state test coverage.",
+		"Cloudflare governed D1-first read behaviour.",
+		"Airtable Public API governed linked-record fallback handling.",
+		"GOV.UK Design System governed the visible page context but did not require markup changes."
+	],
+	"filesRead": [
+		"public/js/journal-tabs.js",
+		"public/js/project-context.js",
+		"infra/cloudflare/src/core/router.js",
+		"infra/cloudflare/src/service/index.js",
+		"infra/cloudflare/src/service/journals.js",
+		"infra/cloudflare/src/service/memos.js",
+		"infra/cloudflare/src/service/reflection/codes.js",
+		"infra/cloudflare/src/service/projects.js",
+		"infra/cloudflare/src/service/projects/airtable.js",
+		"infra/cloudflare/src/service/projects/normalisation.js",
+		"infra/cloudflare/src/service/project-list-d1-airtable.js",
+		"infra/cloudflare/src/service/internals/researchops-d1.js",
+		"infra/cloudflare/migrations/researchops-d1/0001_seed.sql"
+	],
+	"filesModifiedOrCreated": [
+		"infra/cloudflare/src/service/reflection/project-data-hydration.js",
+		"infra/cloudflare/src/service/index.js",
+		"tests/journals-project-data-hydration-route-state.test.js",
+		"docs/agent-audit/reasoning/2026/06/09/journals-project-data-hydration.md",
+		"docs/agent-audit/reasoning/2026/06/09/journals-project-data-hydration.json"
+	],
+	"implementationSummary": [
+		"Added a shared project data hydration service for journal entries, memos and codes.",
+		"Resolved project identities from project, project_id, project_local_id and project_airtable_id query parameters.",
+		"Read D1 first using local_project_id or project matches.",
+		"Resolved Airtable record ids through findProjectRecord when only a public/local project id is supplied.",
+		"Delegated listJournalEntries, listMemos and listCodes through the shared hydration service while preserving existing create, update and delete handlers.",
+		"Added route-state coverage for service delegation, D1 table assumptions and scoped Airtable fallback behaviour."
+	],
+	"testContractImpactSweep": {
+		"performed": true,
+		"affectedContracts": [
+			"/api/journal-entries read behaviour",
+			"/api/codes read behaviour",
+			"/api/memos read behaviour",
+			"service index delegation",
+			"D1 seed table assumptions for journal entries, memos and codes",
+			"Airtable fallback filtering by linked project record id",
+			"route-state tests for journal data hydration"
+		],
+		"legacyOrAffectedTermsChecked": [
+			"listJournalEntries",
+			"listMemos",
+			"listCodes",
+			"ProjectDataHydration",
+			"journal_entries",
+			"memos",
+			"codes",
+			"local_project_id",
+			"project_airtable_id",
+			"project_local_id",
+			"findProjectRecord"
+		]
+	},
+	"automatedReviewComments": {
+		"checked": false,
+		"reason": "No PR existed at trace creation time. Review threads must be checked after PR creation."
+	},
+	"validation": {
+		"commandsRun": [],
+		"notRunReason": "Repository commands were not available in the connector session.",
+		"requiredBeforeReady": [
+			"node --test tests/journals-project-data-hydration-route-state.test.js",
+			"npm run build",
+			"npm run format:check",
+			"npm run validate",
+			"npm run trace:coverage"
+		]
+	},
+	"residualRisks": [
+		"The new read path has not been validated against the live preview Worker yet.",
+		"The branch should stay draft until CI and preview checks complete.",
+		"Project-context hydration remains asynchronous on the client, but the service read path now resolves the project id variants the page can send."
+	]
+}

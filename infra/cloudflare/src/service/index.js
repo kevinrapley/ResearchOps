@@ -30,6 +30,7 @@ import * as Excerpts from "./excerpts.js";
 import * as Memos from "./memos.js";
 import * as CodeApplications from "./reflection/code-applications.js";
 import * as Codes from "./reflection/codes.js";
+import * as ProjectDataHydration from "./reflection/project-data-hydration.js";
 import * as Analysis from "./reflection/analysis.js";
 import * as MuralJournalSync from "./mural-journal-sync-safe-tags.js";
 
@@ -58,10 +59,10 @@ import { recordProvenanceEvent } from "./provenance.js";
  * @property {string} AIRTABLE_TABLE_CONSENT_FORMS
  * @property {string} AIRTABLE_TABLE_PARTICIPANT_CONSENT
  * @property {string} AIRTABLE_TABLE_PARTIALS
- 	 * @property {string} AIRTABLE_TABLE_PARTICIPANTS
- 	 * @property {string} [AIRTABLE_TABLE_STUDY_SUPPORT]
- 	 * @property {string} [AIRTABLE_TABLE_NOTE_TAKERS_OBSERVERS]
- 	 * @property {string} AIRTABLE_TABLE_SESSIONS
+ * @property {string} AIRTABLE_TABLE_PARTICIPANTS
+ * @property {string} [AIRTABLE_TABLE_STUDY_SUPPORT]
+ * @property {string} [AIRTABLE_TABLE_NOTE_TAKERS_OBSERVERS]
+ * @property {string} AIRTABLE_TABLE_SESSIONS
  * @property {string} AIRTABLE_TABLE_SESSION_NOTES
  * @property {string} AIRTABLE_TABLE_COMMSLOG
  * @property {string} AIRTABLE_API_KEY
@@ -153,7 +154,7 @@ export class ResearchOpsService {
 	updateProjectFraming = (req, origin, projectId, authContext) => Projects.updateProjectFraming(this, req, origin, projectId, authContext);
 
 	/* ─────────────── Journal Entries ─────────────── */
-	listJournalEntries = (origin, url) => Journals.listJournalEntries(this, origin, url);
+	listJournalEntries = (origin, url) => ProjectDataHydration.listJournalEntries(this, origin, url);
 	createJournalEntry = (req, origin) => Journals.createJournalEntry(this, req, origin);
 	diagAirtableCreate = (req, origin) => Journals.diagAirtableCreate(this, req, origin);
 	getJournalEntry = (origin, entryId) => Journals.getJournalEntry(this, origin, entryId);
@@ -167,7 +168,7 @@ export class ResearchOpsService {
 	updateExcerpt = (req, origin, excerptId) => Excerpts.updateExcerpt(this, req, origin, excerptId);
 
 	/* ─────────────── Memos ─────────────── */
-	listMemos = (origin, url) => Memos.listMemos(this, origin, url);
+	listMemos = (origin, url) => ProjectDataHydration.listMemos(this, origin, url);
 	createMemo = (req, origin) => Memos.createMemo(this, req, origin);
 	updateMemo = (req, origin, memoId) => Memos.updateMemo(this, req, origin, memoId);
 
@@ -175,7 +176,7 @@ export class ResearchOpsService {
 	listCodeApplications = (origin, url) => CodeApplications.listCodeApplications(this, origin, url);
 
 	/* ─────────────── Codes ─────────────── */
-	listCodes = (origin, url) => Codes.listCodes(this, origin, url);
+	listCodes = (origin, url) => ProjectDataHydration.listCodes(this, origin, url);
 	createCode = (req, origin) => Codes.createCode(this, req, origin);
 	updateCode = (req, origin, codeId) => Codes.updateCode(this, req, origin, codeId);
 
