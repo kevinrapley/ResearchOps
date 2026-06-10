@@ -6,6 +6,7 @@ const journalExcerpts = fs.readFileSync("public/components/journal-excerpts.js",
 const analysisService = fs.readFileSync("infra/cloudflare/src/service/reflection/analysis.js", "utf8");
 const caqdas = fs.readFileSync("public/js/caqdas-interface.js", "utf8");
 const timelineMacro = fs.readFileSync("src/govuk/templates/macros/home-office-timeline.njk", "utf8");
+const timelineCss = fs.readFileSync("public/css/home-office-timeline.css", "utf8");
 const template = fs.readFileSync("src/govuk/templates/pages/projects-journals.njk", "utf8");
 const page = fs.readFileSync("public/pages/projects/journals/index.html", "utf8");
 
@@ -57,3 +58,8 @@ includes(timelineMacro, "macro homeOfficeTimeline", "Home Office timeline macro"
 includes(timelineMacro, "hods-timeline__item", "Home Office timeline macro");
 includes(timelineMacro, "hods-timeline__title", "Home Office timeline macro");
 includes(timelineMacro, "hods-date-time", "Home Office timeline macro");
+includes(timelineCss, "border-left: 5px solid #1d70b8;", "Home Office timeline CSS");
+includes(timelineCss, "height: 5px;", "Home Office timeline CSS");
+includes(timelineCss, "width: 15px;", "Home Office timeline CSS");
+excludes(timelineCss, "border-radius", "Home Office timeline CSS");
+excludes(timelineCss, "border: 4px solid #ffffff", "Home Office timeline CSS");
