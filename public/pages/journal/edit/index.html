@@ -1,0 +1,144 @@
+<!doctype html>
+<html class="govuk-template" lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>Edit journal entry - ResearchOps Demo Suite</title>
+		<link rel="stylesheet" href="/assets/govuk/govuk-frontend.css" media="screen" />
+
+		<link rel="stylesheet" href="/css/journals.css" media="screen" />
+		<meta name="sda-auto" content="true" />
+
+		<script type="module" src="/components/layout.js" defer></script>
+		<script type="module" src="/js/govuk-frontend-init.js" defer></script>
+	</head>
+	<body class="govuk-template__body">
+		<script>
+			document.body.className +=
+				" js-enabled" + ("noModule" in HTMLScriptElement.prototype ? " govuk-frontend-supported" : "");
+		</script>
+		<x-include src="/partials/header.html" vars='{"active":"Projects"}'></x-include>
+		<main class="govuk-main-wrapper" id="main-content" role="main" tabindex="-1">
+			<div class="govuk-width-container">
+				<nav class="govuk-breadcrumbs" aria-label="Breadcrumb">
+					<ol class="govuk-breadcrumbs__list">
+						<li class="govuk-breadcrumbs__list-item">
+							<a class="govuk-breadcrumbs__link" href="/pages/projects/">Projects</a>
+						</li>
+
+						<li class="govuk-breadcrumbs__list-item">
+							<a class="govuk-breadcrumbs__link" href="/pages/project-dashboard/" id="breadcrumb-project">
+								Project Dashboard
+							</a>
+						</li>
+
+						<li class="govuk-breadcrumbs__list-item">
+							<a class="govuk-breadcrumbs__link" href="/pages/projects/journals/" id="breadcrumb-journals">
+								Journal and analysis
+							</a>
+						</li>
+
+						<li class="govuk-breadcrumbs__list-item" aria-current="page">Edit journal entry</li>
+					</ol>
+				</nav>
+
+				<div
+					class="govuk-error-summary"
+					id="journal-entry-error-summary"
+					hidden="hidden"
+					data-module="govuk-error-summary"
+				>
+					<div role="alert">
+						<h2 class="govuk-error-summary__title">There is a problem</h2>
+						<div class="govuk-error-summary__body">
+							<ul class="govuk-list govuk-error-summary__list">
+								<li>Could not load this journal entry.</li>
+							</ul>
+						</div>
+					</div>
+				</div>
+
+				<div
+					class="govuk-notification-banner govuk-notification-banner--success"
+					role="alert"
+					aria-labelledby="govuk-notification-banner-title"
+					data-module="govuk-notification-banner"
+					id="journal-entry-notification"
+					hidden="hidden"
+				>
+					<div class="govuk-notification-banner__header">
+						<h2 class="govuk-notification-banner__title" id="govuk-notification-banner-title">Success</h2>
+					</div>
+					<div class="govuk-notification-banner__content">
+						<p class="govuk-notification-banner__heading" id="journal-entry-notification-message">
+							Journal entry updated.
+						</p>
+					</div>
+				</div>
+
+				<a class="govuk-back-link" href="/pages/projects/journals/" id="back-to-journals">
+					Back to Journal and analysis
+				</a>
+
+				<header class="govuk-!-margin-top-6">
+					<p class="govuk-caption-l">Journal entry</p>
+					<h1 class="govuk-heading-xl">Edit journal entry</h1>
+					<p class="govuk-body" id="journal-entry-created" hidden></p>
+				</header>
+
+				<div id="journal-entry-loading" class="govuk-inset-text">Loading journal entry.</div>
+
+				<form id="journal-entry-edit-form" hidden novalidate>
+					<div class="govuk-form-group">
+						<label class="govuk-label govuk-label--s" for="entry-category">Category</label>
+						<select class="govuk-select" id="entry-category" name="category" required>
+							<option value="perceptions">Evolving perceptions</option>
+							<option value="procedures">Day-to-day procedures</option>
+							<option value="decisions">Methodological decision points</option>
+							<option value="introspections">Personal introspections</option>
+						</select>
+					</div>
+
+					<div class="govuk-form-group">
+						<label class="govuk-label govuk-label--s" for="entry-content">Entry</label>
+						<div id="content-hint" class="govuk-hint">Revise the entry text and save your changes.</div>
+						<textarea
+							class="govuk-textarea"
+							id="entry-content"
+							name="content"
+							rows="10"
+							required
+							aria-describedby="content-hint"
+						></textarea>
+					</div>
+
+					<div class="govuk-form-group">
+						<label class="govuk-label govuk-label--s" for="entry-tags">Tags (optional)</label>
+						<div id="tags-hint" class="govuk-hint">Comma-separated keywords for easier retrieval</div>
+						<input class="govuk-input" type="text" id="entry-tags" name="tags" aria-describedby="tags-hint" />
+					</div>
+
+					<div class="govuk-button-group">
+						<button type="submit" class="govuk-button" data-module="govuk-button">Save changes</button>
+						<button type="button" class="govuk-button govuk-button--warning" id="journal-entry-delete-btn">
+							Delete entry
+						</button>
+						<a
+							class="govuk-button govuk-button--secondary"
+							href="#"
+							id="journal-entry-cancel-link"
+							role="button"
+							draggable="false"
+						>
+							Cancel
+						</a>
+					</div>
+				</form>
+			</div>
+		</main>
+		<x-include src="/partials/footer.html"></x-include>
+
+		<script type="module" src="/js/project-context.js"></script>
+		<script type="module" src="/js/journal-entry-edit.js"></script>
+	</body>
+</html>

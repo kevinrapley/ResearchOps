@@ -261,6 +261,7 @@ export async function handleRequest(request, env) {
 			if (url.pathname === "/api/memos" && request.method === "GET") return service.listMemos(origin, url);
 			if (url.pathname === "/api/memos" && request.method === "POST") return service.createMemo(request, origin);
 			if (url.pathname.startsWith("/api/memos/") && request.method === "PATCH") return service.updateMemo(request, origin, decodeURIComponent(url.pathname.slice("/api/memos/".length)));
+			if (url.pathname.startsWith("/api/memos/") && request.method === "DELETE") return service.deleteMemo(origin, decodeURIComponent(url.pathname.slice("/api/memos/".length)));
 
 			if (url.pathname === "/api/code-applications" && request.method === "GET") return service.listCodeApplications(origin, url);
 			if (url.pathname === "/api/codes" && request.method === "GET") return service.listCodes(origin, url);
@@ -268,6 +269,10 @@ export async function handleRequest(request, env) {
 			if (url.pathname.startsWith("/api/codes/") && request.method === "PATCH") {
 				const codeId = decodeURIComponent(url.pathname.slice("/api/codes/".length));
 				return typeof service.updateCode === "function" ? service.updateCode(request, origin, codeId) : service.createCode(request, origin);
+			}
+			if (url.pathname.startsWith("/api/codes/") && request.method === "DELETE") {
+				const codeId = decodeURIComponent(url.pathname.slice("/api/codes/".length));
+				return service.deleteCode(origin, codeId);
 			}
 
 			if (url.pathname === "/api/analysis/timeline" && request.method === "GET") return service.timeline(origin, url);

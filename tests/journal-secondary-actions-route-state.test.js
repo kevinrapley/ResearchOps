@@ -24,9 +24,18 @@ includes(journalTabs, "function loadCodes()", "journal-tabs.js");
 includes(journalTabs, "function renderCodes()", "journal-tabs.js");
 includes(journalTabs, "function setupCodeAdd()", "journal-tabs.js");
 includes(journalTabs, "async function onCreateCode(e)", "journal-tabs.js");
+includes(journalTabs, "function onEditCode(e)", "journal-tabs.js");
+includes(journalTabs, "async function onSubmitCodeEdit(e)", "journal-tabs.js");
+includes(journalTabs, "function onDeleteCode(e)", "journal-tabs.js");
+includes(journalTabs, "async function onConfirmDeleteCode(e)", "journal-tabs.js");
 includes(journalTabs, "fetchJSON(apiUrl('/api/codes?project='", "journal-tabs.js");
 includes(journalTabs, "fetchJSON(apiUrl('/api/codes')", "journal-tabs.js");
+includes(journalTabs, "fetchJSON(apiUrl('/api/codes/' + encodeURIComponent(codeId))", "journal-tabs.js");
+includes(journalTabs, "data-delete-confirmation=\"code-${esc(code.id)}\"", "journal-tabs.js");
 includes(journalTabs, "state.codeFormOpen = true;", "journal-tabs.js");
+includes(journalTabs, "state.codeEditingId = id;", "journal-tabs.js");
+includes(journalTabs, "codeTags(code)", "journal-tabs.js");
+excludes(journalTabs, "journal-code-path-tag", "journal-tabs.js");
 
 includes(journalTabs, "function loadMemos()", "journal-tabs.js");
 includes(journalTabs, "function renderMemos()", "journal-tabs.js");

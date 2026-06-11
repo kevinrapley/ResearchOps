@@ -183,15 +183,77 @@
 									</form>
 								</div>
 
-								<div class="journal-filters" role="group" aria-label="Filter entries by category">
-									<h4 class="govuk-heading-s">Filter by category</h4>
-									<div class="filter-chips">
-										<button type="button" class="filter-chip filter-chip--active" data-filter="all">All entries</button>
-										<button type="button" class="filter-chip" data-filter="perceptions">Perceptions</button>
-										<button type="button" class="filter-chip" data-filter="procedures">Procedures</button>
-										<button type="button" class="filter-chip" data-filter="decisions">Decisions</button>
-										<button type="button" class="filter-chip" data-filter="introspections">Introspections</button>
-									</div>
+								<div class="journal-filters">
+									<fieldset class="govuk-fieldset" aria-describedby="journal-filter-hint">
+										<legend class="govuk-fieldset__legend govuk-fieldset__legend--s">Filter by category</legend>
+										<div id="journal-filter-hint" class="govuk-hint">
+											Choose one category to narrow the journal list.
+										</div>
+										<div class="govuk-radios govuk-radios--small journal-filter-radios" data-module="govuk-radios">
+											<div class="govuk-radios__item">
+												<input
+													class="govuk-radios__input"
+													id="journal-filter-all"
+													name="entry-filter"
+													type="radio"
+													value="all"
+													data-filter="all"
+													checked
+												/>
+												<label class="govuk-label govuk-radios__label" for="journal-filter-all">All entries</label>
+											</div>
+											<div class="govuk-radios__item">
+												<input
+													class="govuk-radios__input"
+													id="journal-filter-perceptions"
+													name="entry-filter"
+													type="radio"
+													value="perceptions"
+													data-filter="perceptions"
+												/>
+												<label class="govuk-label govuk-radios__label" for="journal-filter-perceptions">
+													Perceptions
+												</label>
+											</div>
+											<div class="govuk-radios__item">
+												<input
+													class="govuk-radios__input"
+													id="journal-filter-procedures"
+													name="entry-filter"
+													type="radio"
+													value="procedures"
+													data-filter="procedures"
+												/>
+												<label class="govuk-label govuk-radios__label" for="journal-filter-procedures">
+													Procedures
+												</label>
+											</div>
+											<div class="govuk-radios__item">
+												<input
+													class="govuk-radios__input"
+													id="journal-filter-decisions"
+													name="entry-filter"
+													type="radio"
+													value="decisions"
+													data-filter="decisions"
+												/>
+												<label class="govuk-label govuk-radios__label" for="journal-filter-decisions">Decisions</label>
+											</div>
+											<div class="govuk-radios__item">
+												<input
+													class="govuk-radios__input"
+													id="journal-filter-introspections"
+													name="entry-filter"
+													type="radio"
+													value="introspections"
+													data-filter="introspections"
+												/>
+												<label class="govuk-label govuk-radios__label" for="journal-filter-introspections">
+													Introspections
+												</label>
+											</div>
+										</div>
+									</fieldset>
 								</div>
 
 								<div id="entries-container">
@@ -220,14 +282,70 @@
 								</button>
 
 								<div class="memo-filters govuk-!-margin-top-4">
-									<h4 class="govuk-heading-s">Filter by memo type</h4>
-									<div class="filter-chips">
-										<button type="button" class="filter-chip filter-chip--active" data-memo-filter="all">All</button>
-										<button type="button" class="filter-chip" data-memo-filter="analytical">Analytical</button>
-										<button type="button" class="filter-chip" data-memo-filter="methodological">Methodological</button>
-										<button type="button" class="filter-chip" data-memo-filter="theoretical">Theoretical</button>
-										<button type="button" class="filter-chip" data-memo-filter="reflexive">Reflexive</button>
-									</div>
+									<fieldset class="govuk-fieldset" aria-describedby="memo-filter-hint">
+										<legend class="govuk-fieldset__legend govuk-fieldset__legend--s">Filter by memo type</legend>
+										<div id="memo-filter-hint" class="govuk-hint">Choose one memo type to narrow the list.</div>
+										<div class="govuk-radios govuk-radios--small journal-filter-radios" data-module="govuk-radios">
+											<div class="govuk-radios__item">
+												<input
+													class="govuk-radios__input"
+													id="memo-filter-all"
+													name="memo-filter"
+													type="radio"
+													value="all"
+													data-memo-filter="all"
+													checked
+												/>
+												<label class="govuk-label govuk-radios__label" for="memo-filter-all">All memos</label>
+											</div>
+											<div class="govuk-radios__item">
+												<input
+													class="govuk-radios__input"
+													id="memo-filter-analytical"
+													name="memo-filter"
+													type="radio"
+													value="analytical"
+													data-memo-filter="analytical"
+												/>
+												<label class="govuk-label govuk-radios__label" for="memo-filter-analytical">Analytical</label>
+											</div>
+											<div class="govuk-radios__item">
+												<input
+													class="govuk-radios__input"
+													id="memo-filter-methodological"
+													name="memo-filter"
+													type="radio"
+													value="methodological"
+													data-memo-filter="methodological"
+												/>
+												<label class="govuk-label govuk-radios__label" for="memo-filter-methodological">
+													Methodological
+												</label>
+											</div>
+											<div class="govuk-radios__item">
+												<input
+													class="govuk-radios__input"
+													id="memo-filter-theoretical"
+													name="memo-filter"
+													type="radio"
+													value="theoretical"
+													data-memo-filter="theoretical"
+												/>
+												<label class="govuk-label govuk-radios__label" for="memo-filter-theoretical">Theoretical</label>
+											</div>
+											<div class="govuk-radios__item">
+												<input
+													class="govuk-radios__input"
+													id="memo-filter-reflexive"
+													name="memo-filter"
+													type="radio"
+													value="reflexive"
+													data-memo-filter="reflexive"
+												/>
+												<label class="govuk-label govuk-radios__label" for="memo-filter-reflexive">Reflexive</label>
+											</div>
+										</div>
+									</fieldset>
 								</div>
 
 								<div id="memos-container" class="govuk-!-margin-top-6"></div>

@@ -1,0 +1,322 @@
+{
+  "date": "2026-06-11",
+  "task": "Tighten the journals page UI, routing, memo CRUD, and analysis feedback.",
+  "branch": "fix/journals-tightening",
+  "branchDecision": {
+    "traceRequiredByPolicy": true,
+    "note": "fix/* requires an auditable trace. Branch creation was initially blocked by .git ref-lock permissions, then completed after .git write permission was granted."
+  },
+  "operatingModelFilesLoaded": [
+    "AGENTS.md",
+    ".agent-operating-model/orchestration.xml",
+    ".agent-operating-model/bundle-registry.json",
+    ".agent-operating-model/task-signal-catalog.json",
+    ".agent-operating-model/selection-rules.json",
+    ".agent-operating-model/bootstrap-checklist.md",
+    ".agent-operating-model/precedence-policy.md",
+    ".agent-operating-model/trace-policy.md",
+    ".agent-operating-model/trace-layers.md",
+    ".agent-operating-model/behavioural-evals.json",
+    ".agent-operating-model/github-mutation-policy.md"
+  ],
+  "selectedBundles": [
+    ".agent-operating-model/bundles/github/",
+    ".agent-operating-model/bundles/researchops-developer-control/",
+    ".agent-operating-model/bundles/multi-functional-team/",
+    ".agent-operating-model/bundles/govuk-design-system/"
+  ],
+  "skippedBundles": [
+    ".agent-operating-model/bundles/cloudflare/",
+    ".agent-operating-model/bundles/openai/",
+    ".agent-operating-model/bundles/mcp-agent-tooling/",
+    ".agent-operating-model/bundles/airtable-public-api/",
+    ".agent-operating-model/bundles/mural-public-api/"
+  ],
+  "validations": [
+    {
+      "name": "git-diff-check",
+      "result": "passed"
+    },
+    {
+      "name": "browser-script-syntax-check",
+      "result": "passed",
+      "details": "node --check passed for caqdas-interface.js, journal-entry.js, and journal-tabs.js after conflict resolution."
+    },
+    {
+      "name": "format-check",
+      "result": "passed"
+    },
+    {
+      "name": "prettier-targeted",
+      "result": "passed"
+    },
+    {
+      "name": "eslint-targeted",
+      "result": "passed-with-warnings",
+      "details": "0 errors, warnings remained in pre-existing console/no-unused-vars sites."
+    },
+    {
+      "name": "trace-coverage",
+      "result": "passed"
+    },
+    {
+      "name": "npm-test",
+      "result": "passed",
+      "details": "199 tests passed after the Codex review follow-up. npm test -- --ci was attempted earlier and failed because --ci is passed to node --test as an unsupported Node option."
+    }
+  ],
+  "codexReviewFollowUp": {
+    "threads": [
+      {
+        "path": "infra/cloudflare/src/service/memos.js",
+        "line": 173,
+        "summary": "Return after D1-only memo updates instead of falling through to Airtable."
+      },
+      {
+        "path": "infra/cloudflare/src/service/memos.js",
+        "line": 252,
+        "summary": "Do not require Airtable after successful D1 deletes in D1-only contexts."
+      }
+    ],
+    "changes": [
+      "Added Airtable configuration and Airtable record ID guards.",
+      "Returned success after successful D1 update/delete when Airtable is unavailable or the memo ID is local.",
+      "Added D1-only runtime tests for update and delete with seeded rec-style memo IDs."
+    ]
+  },
+  "continuationUpdate": {
+    "sourceThread": "Review operating model docs",
+    "reason": "Previous chat had streaming issues.",
+    "task": "Fix journal edit routing, replace remaining custom filter pills, render codebook tags from data, add codebook edit/delete, and replace browser delete confirmations with in-UI confirmation.",
+    "filesModified": [
+      "infra/cloudflare/src/core/router.js",
+      "infra/cloudflare/src/service/index.js",
+      "infra/cloudflare/src/service/reflection/codes.js",
+      "infra/cloudflare/src/service/reflection/project-data-hydration.js",
+      "public/js/journal-entry-edit.js",
+      "public/js/journal-entry.js",
+      "public/js/journal-tabs.js",
+      "public/pages/journal/entry/index.html",
+      "public/pages/projects/journals/index.html",
+      "src/govuk/templates/pages/journal-entry.njk",
+      "src/govuk/templates/pages/projects-journals.njk",
+      "tests/journal-entry-page-route-state.test.js",
+      "tests/journal-secondary-actions-route-state.test.js",
+      "tests/journals-project-data-hydration-route-state.test.js",
+      "tests/journals-route-state.test.js"
+    ],
+    "changes": [
+      "Replaced remaining Nunjucks filter chips with GOV.UK radio controls.",
+      "Preserved project query context across journal view/edit routing.",
+      "Replaced browser confirm prompts for journal, memo and code deletes with inline GOV.UK confirmation UI.",
+      "Added codebook edit UI and DELETE /api/codes/:id support.",
+      "Mapped code tags through hydration and rendered data-backed tag values instead of literal Code/Path labels.",
+      "Restored journal entry action buttons to the Nunjucks template so generated HTML keeps edit/delete actions."
+    ],
+    "validation": [
+      {
+        "name": "script-syntax-checks",
+        "result": "passed",
+        "details": "node --check passed for journal-tabs.js, journal-entry.js, journal-entry-edit.js and reflection/codes.js."
+      },
+      {
+        "name": "build-govuk-pages",
+        "result": "passed"
+      },
+      {
+        "name": "focused-journal-tests",
+        "result": "passed",
+        "details": "6 focused route-state tests passed."
+      },
+      {
+        "name": "format-check",
+        "result": "passed"
+      },
+      {
+        "name": "npm-test",
+        "result": "passed",
+        "details": "199 tests passed."
+      },
+      {
+        "name": "npm-run-lint",
+        "result": "passed-with-warnings",
+        "details": "Exit code 0; warning-level console/no-unused-vars findings remain across the repository."
+      }
+    ],
+    "residualRisks": [
+      "No browser walkthrough was run for this continuation.",
+      "Production Airtable linked-record constraints may reject deletion of referenced codes."
+    ]
+  },
+  "limitations": [
+    "Linear project status update creation was attempted after connector installation, but the backend rejected the exposed status-update tool as unavailable.",
+    "No browser walkthrough was run."
+  ],
+  "linearDocumentation": {
+    "project": "Reflexive Journals",
+    "document": "https://linear.app/researchops/document/pr-391-journals-tightening-implementation-notes-70aceca100bd",
+    "issue": "RES-5",
+    "issueUrl": "https://linear.app/researchops/issue/RES-5/review-pr-391-journals-tightening"
+  },
+  "publicationUpdate": {
+    "task": "Commit and push the journal/codebook continuation changes to the PR branch.",
+    "branch": "fix/journals-tightening",
+    "upstream": "origin/fix/journals-tightening",
+    "selectedBundles": [
+      ".agent-operating-model/bundles/github/",
+      ".agent-operating-model/bundles/researchops-developer-control/",
+      ".agent-operating-model/bundles/multi-functional-team/",
+      ".agent-operating-model/bundles/govuk-design-system/"
+    ],
+    "validation": [
+      {
+        "name": "agent-model-selection",
+        "result": "passed",
+        "details": "Selected github-diamond, researchops-developer-control, multi-functional-team and govuk-design-system for the commit/push task."
+      },
+      {
+        "name": "changed-file-scope",
+        "result": "passed",
+        "details": "Changed files remained scoped to journal/codebook implementation, generated pages, tests and trace artefacts."
+      }
+    ]
+  },
+  "journalEntryRouteFollowUp": {
+    "task": "Fix remaining journal entry view and edit route breakage.",
+    "branch": "fix/journals-tightening",
+    "filesModified": [
+      "public/js/journal-tabs.js",
+      "public/js/journal-entry.js",
+      "public/js/journal-entry-edit.js",
+      "public/pages/journal/edit/index.html",
+      "scripts/govuk/render-govuk-pages.mjs",
+      "src/govuk/templates/pages/journal-edit.njk",
+      "tests/journal-entry-page-route-state.test.js",
+      "docs/agent-audit/reasoning/2026/06/11/journals-tightening.md",
+      "docs/agent-audit/reasoning/2026/06/11/journals-tightening.json"
+    ],
+    "changes": [
+      "Changed journal entry and edit links to slash-terminated static routes.",
+      "Preserved project context on edit cancel and post-save redirects.",
+      "Added a source Nunjucks template for the journal edit page.",
+      "Registered the journal edit page in the GOV.UK page renderer.",
+      "Updated route-state tests to require the slash-terminated route contract and reject the no-slash contract.",
+      "Updated Linear RES-5 with a whole-PR description and current active follow-up state."
+    ],
+    "validation": [
+      {
+        "name": "script-syntax-checks",
+        "result": "passed",
+        "details": "node --check passed for journal-tabs.js, journal-entry.js and journal-entry-edit.js."
+      },
+      {
+        "name": "build-govuk-pages",
+        "result": "passed",
+        "details": "Rendered public/pages/journal/edit/index.html from src/govuk/templates/pages/journal-edit.njk."
+      },
+      {
+        "name": "focused-route-tests",
+        "result": "passed",
+        "details": "journal-entry-page, journal-secondary-actions and journals route-state tests passed."
+      },
+      {
+        "name": "browser-route-check",
+        "result": "passed",
+        "details": "Local browser check loaded /pages/journal/entry/?id=test-entry&project=test-project and /pages/journal/edit/?id=test-entry&project=test-project with the expected page titles and scripts."
+      },
+      {
+        "name": "npm-test",
+        "result": "passed",
+        "details": "199 tests passed."
+      },
+      {
+        "name": "format-check",
+        "result": "passed"
+      }
+    ],
+    "residualRisks": [
+      "The browser check verified static route loading, not production API-backed save/delete operations."
+    ]
+  },
+  "journalSeedRecoveryFollowUp": {
+    "task": "Fix deployed preview journal edit loading for seeded Test Project 1 entries when D1 is missing the seed row.",
+    "reportedUrl": "https://7ed53a9a.researchops.pages.dev/pages/journal/edit/?id=d1tp1_journal_004&project=recgdpwEI5hFO7bUZ",
+    "branch": "fix/journals-tightening",
+    "selectedBundles": [
+      ".agent-operating-model/bundles/github/",
+      ".agent-operating-model/bundles/researchops-developer-control/",
+      ".agent-operating-model/bundles/multi-functional-team/",
+      ".agent-operating-model/bundles/govuk-design-system/",
+      ".agent-operating-model/bundles/cloudflare/"
+    ],
+    "filesRead": [
+      "infra/cloudflare/src/service/journals.js",
+      "infra/cloudflare/src/service/internals/researchops-d1.js",
+      "infra/cloudflare/src/service/reflection/project-data-hydration.js",
+      "infra/cloudflare/migrations/0017_seed_test_project_1_journal_analysis.sql",
+      "infra/cloudflare/migrations/0018_canonicalise_test_project_1_id.sql",
+      "public/js/journal-entry.js",
+      "public/js/journal-entry-edit.js",
+      "tests/journal-entry-page-route-state.test.js",
+      "tests/test-project-1-journal-analysis-seed-route-state.test.js",
+      "tests/test-project-1-id-canonicalisation-route-state.test.js"
+    ],
+    "filesModified": [
+      "infra/cloudflare/src/service/journals.js",
+      "infra/cloudflare/src/service/internals/researchops-d1.js",
+      "infra/cloudflare/src/service/internals/test-project-1-journal-seed.js",
+      "tests/journal-entry-d1-seed-fallback-runtime.test.js",
+      "docs/agent-audit/reasoning/2026/06/11/journals-tightening.md",
+      "docs/agent-audit/reasoning/2026/06/11/journals-tightening.json"
+    ],
+    "changes": [
+      "Added a canonical Test Project 1 journal seed module using migration 0017 ids and content.",
+      "Added a D1 journal entry upsert helper that creates journal_entries when needed and restores seed rows.",
+      "Updated direct journal entry GET to return and best-effort restore seeded Test Project 1 entries when D1 lookup misses.",
+      "Updated journal entry listing to return seeded entries for canonical, legacy and local Test Project 1 ids when D1 has no rows.",
+      "Updated journal entry PATCH to upsert the seeded row before applying edits."
+    ],
+    "validation": [
+      {
+        "name": "script-syntax-checks",
+        "result": "passed",
+        "details": "node --check passed for journals.js, researchops-d1.js and test-project-1-journal-seed.js."
+      },
+      {
+        "name": "focused-runtime-and-route-tests",
+        "result": "passed",
+        "details": "node --test passed for journal-entry-d1-seed-fallback-runtime, journal-entry-page-route-state, test-project-1-journal-analysis-seed-route-state and test-project-1-id-canonicalisation-route-state."
+      },
+      {
+        "name": "format-check",
+        "result": "passed"
+      },
+      {
+        "name": "trace-coverage",
+        "result": "passed"
+      },
+      {
+        "name": "trace-json-parse",
+        "result": "passed"
+      },
+      {
+        "name": "npm-test",
+        "result": "passed",
+        "details": "203 tests passed."
+      },
+      {
+        "name": "npm-run-lint",
+        "result": "passed-with-warnings",
+        "details": "Exit code 0; warning-level console and unused-variable findings remain across the repository."
+      },
+      {
+        "name": "git-diff-check",
+        "result": "passed"
+      }
+    ],
+    "validationNotes": [
+      "A targeted npm run format -- --write command was attempted but the generated-CSS formatter rejected arbitrary JavaScript file arguments after Prettier completed; the local Prettier binary was used directly for touched files instead.",
+      "npm run lint regenerated public/css/home-office-timeline.css; that unrelated generated CSS movement was restored before commit preparation."
+    ]
+  }
+}

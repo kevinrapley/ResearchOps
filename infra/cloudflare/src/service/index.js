@@ -171,6 +171,7 @@ export class ResearchOpsService {
 	listMemos = (origin, url) => ProjectDataHydration.listMemos(this, origin, url);
 	createMemo = (req, origin) => Memos.createMemo(this, req, origin);
 	updateMemo = (req, origin, memoId) => Memos.updateMemo(this, req, origin, memoId);
+	deleteMemo = (origin, memoId) => Memos.deleteMemo(this, origin, memoId);
 
 	/* ─────────────── Code Applications ─────────────── */
 	listCodeApplications = (origin, url) => CodeApplications.listCodeApplications(this, origin, url);
@@ -179,6 +180,7 @@ export class ResearchOpsService {
 	listCodes = (origin, url) => ProjectDataHydration.listCodes(this, origin, url);
 	createCode = (req, origin) => Codes.createCode(this, req, origin);
 	updateCode = (req, origin, codeId) => Codes.updateCode(this, req, origin, codeId);
+	deleteCode = (origin, codeId) => Codes.deleteCode(this, origin, codeId);
 
 	/* ─────────────── Analysis ─────────────── */
 	timeline = (origin, url) => Analysis.timeline(this, origin, url);

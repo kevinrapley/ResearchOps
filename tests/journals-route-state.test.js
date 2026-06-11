@@ -39,6 +39,10 @@ includes(templateSource, "{{ govukNotificationBanner({", "journals GOV.UK templa
 includes(templateSource, "id: 'journals-tabs'", "journals GOV.UK template");
 includes(templateSource, "id: 'journal-error-summary'", "journals GOV.UK template");
 includes(templateSource, "id: 'journal-notification-banner'", "journals GOV.UK template");
+includes(templateSource, "class=\"govuk-radios govuk-radios--small journal-filter-radios\"", "journals GOV.UK template");
+includes(templateSource, "data-filter=\"perceptions\"", "journals GOV.UK template");
+includes(templateSource, "data-memo-filter=\"analytical\"", "journals GOV.UK template");
+excludes(templateSource, "filter-chip", "journals GOV.UK template");
 excludes(templateSource, "href: '#content'", "journals GOV.UK template");
 excludes(templateSource, "id=\"back-to-project\"", "journals GOV.UK template");
 excludes(templateSource, "<nav class=\"govuk-breadcrumbs\"", "journals GOV.UK template");
@@ -81,6 +85,9 @@ includes(caqdasSource, "setRetrievalError('Enter a term to search.')", "CAQDAS a
 includes(tabsSource, "tab:shown", "journal tabs module");
 includes(tabsSource, "govuk-button govuk-button--secondary", "journal tabs module");
 includes(tabsSource, "govuk-button govuk-button--warning", "journal tabs module");
+includes(tabsSource, "data-delete-confirmation=\"entry-${esc(en.id)}\"", "journal tabs module");
+includes(tabsSource, "data-delete-confirmation=\"memo-${esc(memo.id)}\"", "journal tabs module");
+excludes(tabsSource, "confirm('Delete this", "journal tabs module");
 excludes(tabsSource, "btn-quiet", "journal tabs module");
 includes(muralSyncSource, "mural", "journal mural sync module");
 includes(excerptsSource, "journal:excerpts:retired", "journal excerpts module");
