@@ -315,3 +315,69 @@ Follow-up validation:
 Follow-up residual risks:
 
 - The browser route check verified the static pages and scripts load, but did not exercise live API-backed save/delete operations against production data.
+
+## Follow-up update: Test Project 1 journal seed recovery
+
+The user reported the deployed preview URL `/pages/journal/edit/?id=d1tp1_journal_004&project=recgdpwEI5hFO7bUZ` loaded the edit page but showed "Entry not found".
+
+Follow-up task summary:
+
+- fix direct journal entry view/edit loading for seeded Test Project 1 entries when a preview D1 database is missing the old seed row
+- keep the legacy Test Project 1 project id `recgdpwEI5hFO7bUZ` working alongside canonical `recgdpwEI5hF07bUZ`
+- ensure edit saves can recover by recreating the seeded D1 row before applying the update
+
+Follow-up selected bundles:
+
+- `.agent-operating-model/bundles/github/`
+- `.agent-operating-model/bundles/researchops-developer-control/`
+- `.agent-operating-model/bundles/multi-functional-team/`
+- `.agent-operating-model/bundles/govuk-design-system/`
+- `.agent-operating-model/bundles/cloudflare/`
+
+Follow-up files read:
+
+- `infra/cloudflare/src/service/journals.js`
+- `infra/cloudflare/src/service/internals/researchops-d1.js`
+- `infra/cloudflare/src/service/reflection/project-data-hydration.js`
+- `infra/cloudflare/migrations/0017_seed_test_project_1_journal_analysis.sql`
+- `infra/cloudflare/migrations/0018_canonicalise_test_project_1_id.sql`
+- `public/js/journal-entry.js`
+- `public/js/journal-entry-edit.js`
+- `tests/journal-entry-page-route-state.test.js`
+- `tests/test-project-1-journal-analysis-seed-route-state.test.js`
+- `tests/test-project-1-id-canonicalisation-route-state.test.js`
+
+Follow-up files modified:
+
+- `infra/cloudflare/src/service/journals.js`
+- `infra/cloudflare/src/service/internals/researchops-d1.js`
+- `infra/cloudflare/src/service/internals/test-project-1-journal-seed.js`
+- `tests/journal-entry-d1-seed-fallback-runtime.test.js`
+- `docs/agent-audit/reasoning/2026/06/11/journals-tightening.md`
+- `docs/agent-audit/reasoning/2026/06/11/journals-tightening.json`
+
+Follow-up implementation decisions:
+
+- Added a canonical Test Project 1 journal seed module using the same IDs and content as migration `0017`.
+- Added a D1 journal entry upsert helper that creates the `journal_entries` table when needed and inserts or refreshes the seed row.
+- Updated `getJournalEntry` to return and best-effort restore a seeded Test Project 1 entry when D1 lookup misses.
+- Updated `listJournalEntries` to serve the seeded Test Project 1 entries for canonical, legacy and local project IDs when D1 has no rows.
+- Updated `updateJournalEntry` to upsert a seeded row before applying an edit, so the edit page can save after recovering a missing preview seed row.
+
+Follow-up validation so far:
+
+- `node --check infra/cloudflare/src/service/journals.js` passed.
+- `node --check infra/cloudflare/src/service/internals/researchops-d1.js` passed.
+- `node --check infra/cloudflare/src/service/internals/test-project-1-journal-seed.js` passed.
+- Focused tests passed: `node --test tests/journal-entry-d1-seed-fallback-runtime.test.js tests/journal-entry-page-route-state.test.js tests/test-project-1-journal-analysis-seed-route-state.test.js tests/test-project-1-id-canonicalisation-route-state.test.js`.
+- `npm run format:check` passed.
+- `npm run trace:coverage` passed.
+- Trace JSON parsed successfully.
+- `npm test` passed with 203 tests.
+- `npm run lint` exited 0. It still reported warning-level `console` and unused-variable findings already present across the repository.
+- `git diff --check` passed.
+
+Follow-up validation notes:
+
+- A targeted `npm run format -- --write ...` command was attempted but the repository's generated-CSS formatter rejected arbitrary JavaScript file arguments after Prettier completed. The local Prettier binary was used directly for touched files instead.
+- `npm run lint` regenerated `public/css/home-office-timeline.css`; that unrelated generated CSS movement was restored before commit preparation.

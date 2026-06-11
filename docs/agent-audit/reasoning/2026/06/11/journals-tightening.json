@@ -237,5 +237,86 @@
     "residualRisks": [
       "The browser check verified static route loading, not production API-backed save/delete operations."
     ]
+  },
+  "journalSeedRecoveryFollowUp": {
+    "task": "Fix deployed preview journal edit loading for seeded Test Project 1 entries when D1 is missing the seed row.",
+    "reportedUrl": "https://7ed53a9a.researchops.pages.dev/pages/journal/edit/?id=d1tp1_journal_004&project=recgdpwEI5hFO7bUZ",
+    "branch": "fix/journals-tightening",
+    "selectedBundles": [
+      ".agent-operating-model/bundles/github/",
+      ".agent-operating-model/bundles/researchops-developer-control/",
+      ".agent-operating-model/bundles/multi-functional-team/",
+      ".agent-operating-model/bundles/govuk-design-system/",
+      ".agent-operating-model/bundles/cloudflare/"
+    ],
+    "filesRead": [
+      "infra/cloudflare/src/service/journals.js",
+      "infra/cloudflare/src/service/internals/researchops-d1.js",
+      "infra/cloudflare/src/service/reflection/project-data-hydration.js",
+      "infra/cloudflare/migrations/0017_seed_test_project_1_journal_analysis.sql",
+      "infra/cloudflare/migrations/0018_canonicalise_test_project_1_id.sql",
+      "public/js/journal-entry.js",
+      "public/js/journal-entry-edit.js",
+      "tests/journal-entry-page-route-state.test.js",
+      "tests/test-project-1-journal-analysis-seed-route-state.test.js",
+      "tests/test-project-1-id-canonicalisation-route-state.test.js"
+    ],
+    "filesModified": [
+      "infra/cloudflare/src/service/journals.js",
+      "infra/cloudflare/src/service/internals/researchops-d1.js",
+      "infra/cloudflare/src/service/internals/test-project-1-journal-seed.js",
+      "tests/journal-entry-d1-seed-fallback-runtime.test.js",
+      "docs/agent-audit/reasoning/2026/06/11/journals-tightening.md",
+      "docs/agent-audit/reasoning/2026/06/11/journals-tightening.json"
+    ],
+    "changes": [
+      "Added a canonical Test Project 1 journal seed module using migration 0017 ids and content.",
+      "Added a D1 journal entry upsert helper that creates journal_entries when needed and restores seed rows.",
+      "Updated direct journal entry GET to return and best-effort restore seeded Test Project 1 entries when D1 lookup misses.",
+      "Updated journal entry listing to return seeded entries for canonical, legacy and local Test Project 1 ids when D1 has no rows.",
+      "Updated journal entry PATCH to upsert the seeded row before applying edits."
+    ],
+    "validation": [
+      {
+        "name": "script-syntax-checks",
+        "result": "passed",
+        "details": "node --check passed for journals.js, researchops-d1.js and test-project-1-journal-seed.js."
+      },
+      {
+        "name": "focused-runtime-and-route-tests",
+        "result": "passed",
+        "details": "node --test passed for journal-entry-d1-seed-fallback-runtime, journal-entry-page-route-state, test-project-1-journal-analysis-seed-route-state and test-project-1-id-canonicalisation-route-state."
+      },
+      {
+        "name": "format-check",
+        "result": "passed"
+      },
+      {
+        "name": "trace-coverage",
+        "result": "passed"
+      },
+      {
+        "name": "trace-json-parse",
+        "result": "passed"
+      },
+      {
+        "name": "npm-test",
+        "result": "passed",
+        "details": "203 tests passed."
+      },
+      {
+        "name": "npm-run-lint",
+        "result": "passed-with-warnings",
+        "details": "Exit code 0; warning-level console and unused-variable findings remain across the repository."
+      },
+      {
+        "name": "git-diff-check",
+        "result": "passed"
+      }
+    ],
+    "validationNotes": [
+      "A targeted npm run format -- --write command was attempted but the generated-CSS formatter rejected arbitrary JavaScript file arguments after Prettier completed; the local Prettier binary was used directly for touched files instead.",
+      "npm run lint regenerated public/css/home-office-timeline.css; that unrelated generated CSS movement was restored before commit preparation."
+    ]
   }
 }

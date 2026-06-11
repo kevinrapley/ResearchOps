@@ -9,10 +9,16 @@ import { listAll, getRecord, createRecords, patchRecords, deleteRecord } from ".
 import {
 	d1All,
 	d1GetJournalEntryById,
+	d1UpsertJournalEntry,
 	d1UpdateJournalEntry,
 	d1DeleteJournalEntry
 } from "./internals/researchops-d1.js";
 import { createJournalEntryDualWrite } from "./internals/journals-dualwrite.js";
+import {
+	isTestProject1Id,
+	testProject1JournalEntryById,
+	TEST_PROJECT_1_JOURNAL_ENTRIES
+} from "./internals/test-project-1-journal-seed.js";
 
 /* ───────────────────────────── helpers / constants ───────────────────────────── */
 
@@ -70,8 +76,40 @@ function d1EntryFromRow(row) {
 		category: row.category || "",
 		content: row.content || "",
 		tags,
-		createdAt: row.createdat || null
+		createdAt: row.createdat || null,
+		localProjectId: row.local_project_id || null
 	};
+}
+
+function seedEntryResponse(entry, source = "seed") {
+	return {
+		id: entry.id,
+		project: entry.project,
+		category: entry.category,
+		content: entry.content,
+		tags: Array.isArray(entry.tags) ? entry.tags.map(String) : normTagsArray(entry.tags),
+		createdAt: entry.createdAt || null,
+		localProjectId: entry.localProjectId || null,
+		source
+	};
+}
+
+function seedEntriesNewestFirst() {
+	return [...TEST_PROJECT_1_JOURNAL_ENTRIES].sort((a, b) => {
+		const aTime = Date.parse(a.createdAt || "");
+		const bTime = Date.parse(b.createdAt || "");
+		return (Number.isFinite(bTime) ? bTime : 0) - (Number.isFinite(aTime) ? aTime : 0);
+	});
+}
+
+async function upsertSeedEntryBestEffort(svc, entry) {
+	if (!entry || !hasD1(svc?.env)) return;
+	try {
+		await d1UpsertJournalEntry(svc.env, entry);
+	} catch (err) {
+		const msg = safeText(err?.message || err);
+		svc?.log?.warn?.("journal.seed.d1_upsert.error", { err: msg, entryId: entry.id });
+	}
 }
 
 async function d1ListJournalEntriesForProject(env, projectParam) {
@@ -171,6 +209,18 @@ export async function listJournalEntries(svc, origin, url) {
 
 			if (entries.length) {
 				return svc.json({ ok: true, source: "d1", entries }, 200, svc.corsHeaders(origin));
+			}
+
+			if (isTestProject1Id(projectParam)) {
+				const seedEntries = seedEntriesNewestFirst();
+				for (const entry of seedEntries) {
+					await upsertSeedEntryBestEffort(svc, entry);
+				}
+				return svc.json({
+					ok: true,
+					source: "seed",
+					entries: seedEntries.map(entry => seedEntryResponse(entry))
+				}, 200, svc.corsHeaders(origin));
 			}
 
 			if (!useAirtable) {
@@ -301,27 +351,11 @@ export async function getJournalEntry(svc, origin, entryId) {
 		try {
 			const row = await d1GetJournalEntryById(env, entryId);
 			if (row) {
-				let tags = [];
-				if (typeof row.tags === "string" && row.tags.trim()) {
-					try {
-						const parsed = JSON.parse(row.tags);
-						if (Array.isArray(parsed)) {
-							tags = parsed.map(String);
-						} else {
-							tags = row.tags.split(",").map(s => s.trim()).filter(Boolean);
-						}
-					} catch {
-						tags = row.tags.split(",").map(s => s.trim()).filter(Boolean);
-					}
-				}
-
 				const entry = {
+					...d1EntryFromRow(row),
 					id: row.record_id || entryId,
 					category: row.category || "procedures",
-					content: row.content || "",
-					tags,
 					author: "",
-					createdAt: row.createdat || null,
 					source: "d1"
 				};
 
@@ -331,6 +365,15 @@ export async function getJournalEntry(svc, origin, entryId) {
 			const msg = safeText(err?.message || err);
 			svc?.log?.warn?.("journal.get.d1.error", { err: msg, entryId });
 			// fall through to Airtable if possible
+		}
+
+		const seedEntry = testProject1JournalEntryById(entryId);
+		if (seedEntry) {
+			await upsertSeedEntryBestEffort(svc, seedEntry);
+			return svc.json({
+				ok: true,
+				entry: seedEntryResponse(seedEntry, "seed")
+			}, 200, svc.corsHeaders(origin));
 		}
 	}
 
@@ -697,6 +740,8 @@ export async function updateJournalEntry(svc, request, origin, entryId) {
 	// D1 update first (if available)
 	if (useD1) {
 		try {
+			const seedEntry = testProject1JournalEntryById(entryId);
+			if (seedEntry) await d1UpsertJournalEntry(env, seedEntry);
 			await d1UpdateJournalEntry(env, entryId, d1Patch);
 		} catch (err) {
 			const msg = safeText(err?.message || err);

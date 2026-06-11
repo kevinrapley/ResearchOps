@@ -172,6 +172,93 @@ export async function d1InsertJournalEntry(env, row) {
 	};
 }
 
+async function d1EnsureJournalEntriesTable(env) {
+	await d1Run(env, `
+		CREATE TABLE IF NOT EXISTS journal_entries (
+			record_id TEXT PRIMARY KEY,
+			project TEXT,
+			category TEXT,
+			content TEXT,
+			tags TEXT,
+			createdat TEXT,
+			local_project_id TEXT
+		)
+	`);
+}
+
+/**
+ * Upsert a journal entry row into D1.
+ *
+ * Used for prototype seed recovery in preview environments where an older D1
+ * database may be missing a seed migration row.
+ *
+ * @param {any} env
+ * @param {{
+ *   id?: string | null,
+ *   recordId?: string | null,
+ *   project?: string | null,
+ *   projectRecordId?: string | null,
+ *   category: string,
+ *   content: string,
+ *   tags?: string[] | string | null,
+ *   createdAt?: string | null,
+ *   localProjectId?: string | null
+ * }} row
+ */
+export async function d1UpsertJournalEntry(env, row) {
+	const recordId = row.recordId || row.id || _pendingId();
+	const projectRecordId = row.projectRecordId || row.project || null;
+	const createdAt = row.createdAt || new Date().toISOString();
+	const localProjectId = row.localProjectId || null;
+
+	let tagsJson;
+	if (Array.isArray(row.tags)) {
+		tagsJson = JSON.stringify(row.tags);
+	} else if (typeof row.tags === "string") {
+		tagsJson = row.tags;
+	} else {
+		tagsJson = "[]";
+	}
+
+	await d1EnsureJournalEntriesTable(env);
+	await d1Run(env, `
+		INSERT INTO journal_entries (
+			record_id,
+			project,
+			category,
+			content,
+			tags,
+			createdat,
+			local_project_id
+		) VALUES (?, ?, ?, ?, ?, ?, ?)
+		ON CONFLICT(record_id) DO UPDATE SET
+			project = excluded.project,
+			category = excluded.category,
+			content = excluded.content,
+			tags = excluded.tags,
+			createdat = excluded.createdat,
+			local_project_id = excluded.local_project_id
+	`, [
+		recordId,
+		projectRecordId,
+		row.category,
+		row.content,
+		tagsJson,
+		createdAt,
+		localProjectId
+	]);
+
+	return {
+		record_id: recordId,
+		project: projectRecordId,
+		category: row.category,
+		content: row.content,
+		tags: tagsJson,
+		createdat: createdAt,
+		local_project_id: localProjectId
+	};
+}
+
 /**
  * List journal entries for a project local_id, most recent first.
  * This is used when Airtable is unavailable and we serve from D1 only.
