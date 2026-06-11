@@ -66,7 +66,13 @@
     }
   ],
   "limitations": [
-    "Linear tool discovery exposed GitHub and Airtable tools but no callable Linear namespace, so the Linear project could not be updated from this session.",
+    "Linear project status update creation was attempted after connector installation, but the backend rejected the exposed status-update tool as unavailable.",
     "No browser walkthrough was run."
-  ]
+  ],
+  "linearDocumentation": {
+    "project": "Reflexive Journals",
+    "document": "https://linear.app/researchops/document/pr-391-journals-tightening-implementation-notes-70aceca100bd",
+    "issue": "RES-5",
+    "issueUrl": "https://linear.app/researchops/issue/RES-5/review-pr-391-journals-tightening"
+  }
 }

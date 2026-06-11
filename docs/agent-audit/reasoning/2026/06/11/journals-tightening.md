@@ -137,12 +137,15 @@ Results:
 
 - Browser-based walkthrough not run.
 - Full `npm run validate` not run. The task was localised and the repository validation script is broader than the changed journals surface.
-- Linear update not completed. Explicit Linear tool discovery exposed GitHub and Airtable tools, but no callable Linear namespace or project/issue tools in this session.
+- Linear documentation completed after installing the Linear connector for the session:
+  - project document: `https://linear.app/researchops/document/pr-391-journals-tightening-implementation-notes-70aceca100bd`
+  - review issue: `RES-5` / `https://linear.app/researchops/issue/RES-5/review-pr-391-journals-tightening`
 
 ## Tool limitations and pivots
 
 - The requested work branch was blocked until `.git` write permission was granted. After permission was granted, the work was moved to `fix/journals-tightening`.
-- Linear plugin capability was requested by the user, but no callable Linear tools were exposed by `tool_search`, so external project tracking could not be updated from this session.
+- Linear plugin capability was requested by the user. Initial tool discovery exposed no callable Linear tools. The Linear connector was then installed for the session, after which project and issue tools became available.
+- Linear project-level status update creation was attempted but the backend rejected the exposed status-update tool as unavailable. Documentation was completed through a project document and a dedicated `In Review` issue instead.
 - Memo delete was first added in the reflection memo service before confirming that the active service binding comes from `src/service/memos.js`; the effective service was then updated there as well.
 
 ## Residual risks
