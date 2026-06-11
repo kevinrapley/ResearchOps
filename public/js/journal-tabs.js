@@ -313,8 +313,8 @@ import { clearJournalFeedback, showJournalError, showJournalStatus } from './jou
 
 	// ---------- ROUTES ----------
 	var ROUTES = {
-		viewEntry: id => '/pages/journal/entry?id=' + encodeURIComponent(id) + projectContextParam(),
-		editEntry: id => '/pages/journal/edit?id=' + encodeURIComponent(id) + projectContextParam()
+		viewEntry: id => '/pages/journal/entry/?id=' + encodeURIComponent(id) + projectContextParam(),
+		editEntry: id => '/pages/journal/edit/?id=' + encodeURIComponent(id) + projectContextParam()
 	};
 
 	// ---------- JOURNAL ----------

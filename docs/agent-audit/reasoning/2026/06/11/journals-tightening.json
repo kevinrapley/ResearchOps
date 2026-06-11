@@ -180,5 +180,62 @@
         "details": "Changed files remained scoped to journal/codebook implementation, generated pages, tests and trace artefacts."
       }
     ]
+  },
+  "journalEntryRouteFollowUp": {
+    "task": "Fix remaining journal entry view and edit route breakage.",
+    "branch": "fix/journals-tightening",
+    "filesModified": [
+      "public/js/journal-tabs.js",
+      "public/js/journal-entry.js",
+      "public/js/journal-entry-edit.js",
+      "public/pages/journal/edit/index.html",
+      "scripts/govuk/render-govuk-pages.mjs",
+      "src/govuk/templates/pages/journal-edit.njk",
+      "tests/journal-entry-page-route-state.test.js",
+      "docs/agent-audit/reasoning/2026/06/11/journals-tightening.md",
+      "docs/agent-audit/reasoning/2026/06/11/journals-tightening.json"
+    ],
+    "changes": [
+      "Changed journal entry and edit links to slash-terminated static routes.",
+      "Preserved project context on edit cancel and post-save redirects.",
+      "Added a source Nunjucks template for the journal edit page.",
+      "Registered the journal edit page in the GOV.UK page renderer.",
+      "Updated route-state tests to require the slash-terminated route contract and reject the no-slash contract.",
+      "Updated Linear RES-5 with a whole-PR description and current active follow-up state."
+    ],
+    "validation": [
+      {
+        "name": "script-syntax-checks",
+        "result": "passed",
+        "details": "node --check passed for journal-tabs.js, journal-entry.js and journal-entry-edit.js."
+      },
+      {
+        "name": "build-govuk-pages",
+        "result": "passed",
+        "details": "Rendered public/pages/journal/edit/index.html from src/govuk/templates/pages/journal-edit.njk."
+      },
+      {
+        "name": "focused-route-tests",
+        "result": "passed",
+        "details": "journal-entry-page, journal-secondary-actions and journals route-state tests passed."
+      },
+      {
+        "name": "browser-route-check",
+        "result": "passed",
+        "details": "Local browser check loaded /pages/journal/entry/?id=test-entry&project=test-project and /pages/journal/edit/?id=test-entry&project=test-project with the expected page titles and scripts."
+      },
+      {
+        "name": "npm-test",
+        "result": "passed",
+        "details": "199 tests passed."
+      },
+      {
+        "name": "format-check",
+        "result": "passed"
+      }
+    ],
+    "residualRisks": [
+      "The browser check verified static route loading, not production API-backed save/delete operations."
+    ]
   }
 }

@@ -168,7 +168,7 @@ function setBackLinks(entry) {
 	const projectId = resolveProjectId(entry);
 	const href = projectId ? `/pages/projects/journals/?id=${encodeURIComponent(projectId)}` : "/pages/projects/journals/";
 	const dashboardHref = projectId ? `/pages/project-dashboard/?id=${encodeURIComponent(projectId)}` : "/pages/project-dashboard/";
-	const editHref = text(entry.id) ? `/pages/journal/edit?id=${encodeURIComponent(entry.id)}${projectId ? `&project=${encodeURIComponent(projectId)}` : ""}` : href;
+	const editHref = text(entry.id) ? `/pages/journal/edit/?id=${encodeURIComponent(entry.id)}${projectId ? `&project=${encodeURIComponent(projectId)}` : ""}` : href;
 
 	const backLink = document.getElementById("back-to-journals");
 	const returnLink = document.getElementById("journal-entry-return-link");

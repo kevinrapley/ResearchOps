@@ -93,7 +93,7 @@ async function readJsonResponse(response) {
 function setBackLinks(currentProjectId, currentEntryId) {
 	const journalsHref = currentProjectId ? `/pages/projects/journals/?id=${encodeURIComponent(currentProjectId)}` : "/pages/projects/journals/";
 	const dashboardHref = currentProjectId ? `/pages/project-dashboard/?id=${encodeURIComponent(currentProjectId)}` : "/pages/project-dashboard/";
-	const viewHref = currentEntryId ? `/pages/journal/entry?id=${encodeURIComponent(currentEntryId)}` : journalsHref;
+	const viewHref = currentEntryId ? `/pages/journal/entry/?id=${encodeURIComponent(currentEntryId)}${currentProjectId ? `&project=${encodeURIComponent(currentProjectId)}` : ""}` : journalsHref;
 
 	const backLink = document.getElementById("back-to-journals");
 	const breadcrumbJournals = document.getElementById("breadcrumb-journals");
@@ -207,7 +207,7 @@ async function submitForm(event) {
 		}));
 		showStatus("Journal entry updated.");
 		queueJournalFeedback("Journal entry updated.", { success: true, title: "Success" });
-		window.location.href = `/pages/journal/entry?id=${encodeURIComponent(entryId)}${projectContextParam()}`;
+		window.location.href = `/pages/journal/entry/?id=${encodeURIComponent(entryId)}${projectContextParam()}`;
 	} catch (error) {
 		showError(error?.message || "Could not update this journal entry.");
 	}

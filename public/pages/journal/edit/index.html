@@ -5,8 +5,8 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		<title>Edit journal entry - ResearchOps Demo Suite</title>
 		<link rel="stylesheet" href="/assets/govuk/govuk-frontend.css" media="screen" />
-		<link rel="stylesheet" href="/css/journals.css" media="screen" />
 
+		<link rel="stylesheet" href="/css/journals.css" media="screen" />
 		<meta name="sda-auto" content="true" />
 
 		<script type="module" src="/components/layout.js" defer></script>
@@ -25,16 +25,19 @@
 						<li class="govuk-breadcrumbs__list-item">
 							<a class="govuk-breadcrumbs__link" href="/pages/projects/">Projects</a>
 						</li>
+
 						<li class="govuk-breadcrumbs__list-item">
 							<a class="govuk-breadcrumbs__link" href="/pages/project-dashboard/" id="breadcrumb-project">
 								Project Dashboard
 							</a>
 						</li>
+
 						<li class="govuk-breadcrumbs__list-item">
 							<a class="govuk-breadcrumbs__link" href="/pages/projects/journals/" id="breadcrumb-journals">
 								Journal and analysis
 							</a>
 						</li>
+
 						<li class="govuk-breadcrumbs__list-item" aria-current="page">Edit journal entry</li>
 					</ol>
 				</nav>
@@ -57,13 +60,14 @@
 
 				<div
 					class="govuk-notification-banner govuk-notification-banner--success"
+					role="alert"
+					aria-labelledby="govuk-notification-banner-title"
+					data-module="govuk-notification-banner"
 					id="journal-entry-notification"
-					role="region"
-					aria-labelledby="journal-entry-notification-title"
 					hidden="hidden"
 				>
 					<div class="govuk-notification-banner__header">
-						<h2 class="govuk-notification-banner__title" id="journal-entry-notification-title">Success</h2>
+						<h2 class="govuk-notification-banner__title" id="govuk-notification-banner-title">Success</h2>
 					</div>
 					<div class="govuk-notification-banner__content">
 						<p class="govuk-notification-banner__heading" id="journal-entry-notification-message">
@@ -119,7 +123,13 @@
 						<button type="button" class="govuk-button govuk-button--warning" id="journal-entry-delete-btn">
 							Delete entry
 						</button>
-						<a class="govuk-button govuk-button--secondary" href="#" id="journal-entry-cancel-link" role="button" draggable="false">
+						<a
+							class="govuk-button govuk-button--secondary"
+							href="#"
+							id="journal-entry-cancel-link"
+							role="button"
+							draggable="false"
+						>
 							Cancel
 						</a>
 					</div>

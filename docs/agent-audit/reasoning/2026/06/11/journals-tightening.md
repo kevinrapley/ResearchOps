@@ -259,3 +259,59 @@ Publication validation:
 
 - `npm run agent:model -- "commit and push journal codebook GOV.UK UI fixes to the PR branch"` selected the expected repository, ResearchOps, government assurance and GOV.UK bundles.
 - `git diff --name-only` showed the changed-file set remained limited to the expected journal/codebook files, generated pages, tests and trace artefacts.
+
+## Follow-up update: journal entry view and edit routes
+
+The user reported that journal entry view and edit were still broken after the previous pushed continuation.
+
+Follow-up task summary:
+
+- repair journal entry view and edit links so they target the committed static pages reliably
+- preserve project context on edit cancel and post-save redirects
+- add source generation for the journal edit page so it is no longer an unmanaged committed HTML file
+- update route-state tests to reject the previous no-slash route contract
+- update Linear with a whole-PR description and keep the issue in progress until this local fix is pushed
+
+Follow-up files read:
+
+- `public/js/journal-tabs.js`
+- `public/js/journal-entry.js`
+- `public/js/journal-entry-edit.js`
+- `public/pages/journal/edit/index.html`
+- `src/govuk/templates/pages/journal-entry.njk`
+- `scripts/govuk/render-govuk-pages.mjs`
+- `tests/journal-entry-page-route-state.test.js`
+
+Follow-up files modified:
+
+- `public/js/journal-tabs.js`
+- `public/js/journal-entry.js`
+- `public/js/journal-entry-edit.js`
+- `public/pages/journal/edit/index.html`
+- `scripts/govuk/render-govuk-pages.mjs`
+- `src/govuk/templates/pages/journal-edit.njk`
+- `tests/journal-entry-page-route-state.test.js`
+- `docs/agent-audit/reasoning/2026/06/11/journals-tightening.md`
+- `docs/agent-audit/reasoning/2026/06/11/journals-tightening.json`
+
+Follow-up implementation decisions:
+
+- Changed journal entry view and edit links from `/pages/journal/entry?id=...` and `/pages/journal/edit?id=...` to `/pages/journal/entry/?id=...` and `/pages/journal/edit/?id=...`, matching the committed static index-page routes.
+- Updated the journal entry edit page cancel and post-save redirect targets to use the same slash-terminated route and preserve `project` context.
+- Added `src/govuk/templates/pages/journal-edit.njk` and registered it in `scripts/govuk/render-govuk-pages.mjs`, so `npm run build:govuk-pages` regenerates the edit page.
+- Strengthened `tests/journal-entry-page-route-state.test.js` to require the slash-terminated route contract and exclude the broken no-slash contract.
+
+Follow-up validation:
+
+- `node --check public/js/journal-tabs.js` passed.
+- `node --check public/js/journal-entry.js` passed.
+- `node --check public/js/journal-entry-edit.js` passed.
+- `npm run build:govuk-pages` passed and rendered `public/pages/journal/edit/index.html` from the new template.
+- Focused tests passed: `npm test -- tests/journal-entry-page-route-state.test.js tests/journal-secondary-actions-route-state.test.js tests/journals-route-state.test.js`.
+- Browser route check passed against a local static server: `/pages/journal/entry/?id=test-entry&project=test-project` loaded the Journal entry page with `/js/journal-entry.js`; `/pages/journal/edit/?id=test-entry&project=test-project` loaded the Edit journal entry page with `/js/journal-entry-edit.js`.
+- `npm test` passed with 199 tests.
+- `npm run format:check` passed.
+
+Follow-up residual risks:
+
+- The browser route check verified the static pages and scripts load, but did not exercise live API-backed save/delete operations against production data.
