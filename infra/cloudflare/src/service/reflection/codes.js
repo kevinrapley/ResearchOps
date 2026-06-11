@@ -8,10 +8,23 @@
  * - Bypass filter via ?nofilter=1 for diagnostics.
  */
 
-import { listAll, createRecords, patchRecords } from "../internals/airtable.js";
+import { listAll, createRecords, patchRecords, deleteRecord } from "../internals/airtable.js";
+import { d1Run } from "../internals/researchops-d1.js";
 
 const DEFAULT_TABLE = "Codes";
 const TABLE = (service) => service.env.AIRTABLE_TABLE_CODES || DEFAULT_TABLE;
+
+function hasD1(env) {
+	return !!env?.RESEARCHOPS_D1;
+}
+
+function hasAirtableConfig(env) {
+	return !!((env?.AIRTABLE_BASE_ID || env?.AIRTABLE_BASE) && (env?.AIRTABLE_API_KEY || env?.AIRTABLE_PAT || env?.AIRTABLE_ACCESS_TOKEN));
+}
+
+function isAirtableRecordId(value) {
+	return /^rec[a-zA-Z0-9]{14,}$/.test(String(value || "").trim());
+}
 
 // Helper to normalise hexadecimal colour value to 8-digit alpha
 function normaliseHex8(v) {
@@ -92,7 +105,8 @@ function mapCodeRecord(r) {
 		description: f["Description"] || "",
 		colour: colourHex8,
 		parentId: parentId,
-		projectId: projectId
+		projectId: projectId,
+		tags: Array.isArray(f["Tags"]) ? f["Tags"] : String(f["Tags"] || "").split(",").map(item => item.trim()).filter(Boolean)
 	};
 }
 
@@ -473,5 +487,46 @@ export async function updateCode(service, request, origin, codeId) {
 		if (diag) out.diag = diag;
 		service.log.error("codes.update handler error", { err: String(err) });
 		return service.json(out, 500, cors);
+	}
+}
+
+/**
+ * DELETE /api/codes/:id
+ * Removes a code from D1 when available and from Airtable for Airtable record ids.
+ */
+export async function deleteCode(service, origin, codeId) {
+	try {
+		if (!codeId) {
+			return service.json({ error: "Missing code id" }, 400, service.corsHeaders(origin));
+		}
+
+		let d1Deleted = false;
+		if (hasD1(service.env)) {
+			try {
+				await d1Run(service.env, `
+					DELETE FROM codes
+					 WHERE record_id = ?
+					    OR local_code_id = ?
+				`, [codeId, codeId]);
+				d1Deleted = true;
+			} catch (err) {
+				service?.log?.warn?.("codes.delete.d1.fail", { err: String(err?.message || err || ""), codeId });
+			}
+		}
+
+		if (d1Deleted && (!hasAirtableConfig(service.env) || !isAirtableRecordId(codeId))) {
+			return service.json({ ok: true, id: codeId }, 200, service.corsHeaders(origin));
+		}
+
+		if (!hasAirtableConfig(service.env)) {
+			return service.json({ error: "Airtable is not configured" }, 502, service.corsHeaders(origin));
+		}
+
+		await deleteRecord(service.env, TABLE(service), codeId, service?.cfg?.TIMEOUT_MS);
+		return service.json({ ok: true, id: codeId }, 200, service.corsHeaders(origin));
+	} catch (fatal) {
+		const msg = String(fatal?.message || fatal || "");
+		service?.log?.error?.("codes.delete.fatal", { err: msg, codeId });
+		return service.json({ error: "Internal error", detail: msg }, 500, service.corsHeaders(origin));
 	}
 }

@@ -180,6 +180,7 @@ export class ResearchOpsService {
 	listCodes = (origin, url) => ProjectDataHydration.listCodes(this, origin, url);
 	createCode = (req, origin) => Codes.createCode(this, req, origin);
 	updateCode = (req, origin, codeId) => Codes.updateCode(this, req, origin, codeId);
+	deleteCode = (origin, codeId) => Codes.deleteCode(this, origin, codeId);
 
 	/* ─────────────── Analysis ─────────────── */
 	timeline = (origin, url) => Analysis.timeline(this, origin, url);

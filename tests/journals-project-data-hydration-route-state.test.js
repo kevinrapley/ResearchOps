@@ -19,10 +19,12 @@ function excludes(source, text, label) {
 includes(routerSource, "service.listJournalEntries(origin, url)", "Worker router");
 includes(routerSource, "service.listMemos(origin, url)", "Worker router");
 includes(routerSource, "service.listCodes(origin, url)", "Worker router");
+includes(routerSource, "service.deleteCode(origin, codeId)", "Worker router");
 
 includes(serviceIndexSource, "ProjectDataHydration.listJournalEntries(this, origin, url)", "ResearchOps service index");
 includes(serviceIndexSource, "ProjectDataHydration.listMemos(this, origin, url)", "ResearchOps service index");
 includes(serviceIndexSource, "ProjectDataHydration.listCodes(this, origin, url)", "ResearchOps service index");
+includes(serviceIndexSource, "deleteCode = (origin, codeId) => Codes.deleteCode(this, origin, codeId)", "ResearchOps service index");
 excludes(serviceIndexSource, "listJournalEntries = (origin, url) => Journals.listJournalEntries", "ResearchOps service index");
 excludes(serviceIndexSource, "listMemos = (origin, url) => Memos.listMemos", "ResearchOps service index");
 excludes(serviceIndexSource, "listCodes = (origin, url) => Codes.listCodes", "ResearchOps service index");
@@ -43,6 +45,7 @@ includes(hydrationSource, "allowUnfiltered ? list : []", "project data hydration
 includes(hydrationSource, "allowUnfiltered: nofilter || !candidates.length", "project data hydration service");
 includes(hydrationSource, "source: \"d1\"", "project data hydration service");
 includes(hydrationSource, "source: codes.length ? \"airtable\" : \"empty\"", "project data hydration service");
+includes(hydrationSource, "tags: normTagsArray(fields.Tags)", "project data hydration service");
 
 includes(journalEntriesCsv, "Project lookup", "journal entries CSV");
 includes(codesCsv, "Project lookup", "codes CSV");

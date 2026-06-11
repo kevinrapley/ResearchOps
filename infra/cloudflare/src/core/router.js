@@ -270,6 +270,10 @@ export async function handleRequest(request, env) {
 				const codeId = decodeURIComponent(url.pathname.slice("/api/codes/".length));
 				return typeof service.updateCode === "function" ? service.updateCode(request, origin, codeId) : service.createCode(request, origin);
 			}
+			if (url.pathname.startsWith("/api/codes/") && request.method === "DELETE") {
+				const codeId = decodeURIComponent(url.pathname.slice("/api/codes/".length));
+				return service.deleteCode(origin, codeId);
+			}
 
 			if (url.pathname === "/api/analysis/timeline" && request.method === "GET") return service.timeline(origin, url);
 			if (url.pathname === "/api/analysis/cooccurrence" && request.method === "GET") return service.cooccurrence(origin, url);

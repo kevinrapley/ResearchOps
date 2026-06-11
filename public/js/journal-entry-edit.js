@@ -39,6 +39,20 @@ function setHidden(element, hidden) {
 	}
 }
 
+function projectIdFromRoute() {
+	const params = new URLSearchParams(window.location.search);
+	return text(
+		params.get("project") ||
+		params.get("project_id") ||
+		params.get("project_local_id") ||
+		params.get("project_airtable_id")
+	);
+}
+
+function projectContextParam() {
+	return projectId ? `&project=${encodeURIComponent(projectId)}` : "";
+}
+
 function queueJournalFeedback(message, options = {}) {
 	try {
 		sessionStorage.setItem("journal-feedback", JSON.stringify({
@@ -92,9 +106,33 @@ function setBackLinks(currentProjectId, currentEntryId) {
 	if (cancelLink) cancelLink.href = viewHref;
 }
 
+function ensureDeleteConfirmation() {
+	let panel = document.getElementById("journal-entry-delete-confirmation");
+	if (panel) return panel;
+
+	const actions = document.querySelector("#journal-entry-edit-form .govuk-button-group");
+	panel = document.createElement("div");
+	panel.id = "journal-entry-delete-confirmation";
+	panel.className = "govuk-inset-text govuk-!-margin-top-3";
+	panel.hidden = true;
+	panel.innerHTML = `
+		<p class="govuk-body">Are you sure you want to delete this journal entry?</p>
+		<div class="govuk-button-group">
+			<button type="button" class="govuk-button govuk-button--warning" id="journal-entry-confirm-delete-btn">Yes, delete entry</button>
+			<button type="button" class="govuk-button govuk-button--secondary" id="journal-entry-cancel-delete-btn">Cancel</button>
+		</div>`;
+	actions?.after(panel);
+	document.getElementById("journal-entry-confirm-delete-btn")?.addEventListener("click", confirmDeleteEntry);
+	document.getElementById("journal-entry-cancel-delete-btn")?.addEventListener("click", () => {
+		panel.hidden = true;
+		document.getElementById("journal-entry-delete-btn")?.focus();
+	});
+	return panel;
+}
+
 function renderEntry(entry) {
 	entryId = text(entry.id);
-	projectId = text(entry.localProjectId || entry.local_project_id || entry.project || entry.projectId);
+	projectId = text(projectIdFromRoute() || entry.localProjectId || entry.local_project_id || entry.project || entry.projectId);
 	setBackLinks(projectId, entryId);
 
 	const createdElement = document.getElementById("journal-entry-created");
@@ -120,7 +158,13 @@ function renderEntry(entry) {
 }
 
 async function deleteEntry() {
-	if (!entryId || !confirm("Delete this entry?")) return;
+	const panel = ensureDeleteConfirmation();
+	panel.hidden = false;
+	document.getElementById("journal-entry-confirm-delete-btn")?.focus();
+}
+
+async function confirmDeleteEntry() {
+	if (!entryId) return;
 	try {
 		await readJsonResponse(await fetch(apiUrl(`/api/journal-entries/${encodeURIComponent(entryId)}`), {
 			method: "DELETE",
@@ -163,7 +207,7 @@ async function submitForm(event) {
 		}));
 		showStatus("Journal entry updated.");
 		queueJournalFeedback("Journal entry updated.", { success: true, title: "Success" });
-		window.location.href = `/pages/journal/entry?id=${encodeURIComponent(entryId)}`;
+		window.location.href = `/pages/journal/entry?id=${encodeURIComponent(entryId)}${projectContextParam()}`;
 	} catch (error) {
 		showError(error?.message || "Could not update this journal entry.");
 	}

@@ -84,6 +84,70 @@
       "Added D1-only runtime tests for update and delete with seeded rec-style memo IDs."
     ]
   },
+  "continuationUpdate": {
+    "sourceThread": "Review operating model docs",
+    "reason": "Previous chat had streaming issues.",
+    "task": "Fix journal edit routing, replace remaining custom filter pills, render codebook tags from data, add codebook edit/delete, and replace browser delete confirmations with in-UI confirmation.",
+    "filesModified": [
+      "infra/cloudflare/src/core/router.js",
+      "infra/cloudflare/src/service/index.js",
+      "infra/cloudflare/src/service/reflection/codes.js",
+      "infra/cloudflare/src/service/reflection/project-data-hydration.js",
+      "public/js/journal-entry-edit.js",
+      "public/js/journal-entry.js",
+      "public/js/journal-tabs.js",
+      "public/pages/journal/entry/index.html",
+      "public/pages/projects/journals/index.html",
+      "src/govuk/templates/pages/journal-entry.njk",
+      "src/govuk/templates/pages/projects-journals.njk",
+      "tests/journal-entry-page-route-state.test.js",
+      "tests/journal-secondary-actions-route-state.test.js",
+      "tests/journals-project-data-hydration-route-state.test.js",
+      "tests/journals-route-state.test.js"
+    ],
+    "changes": [
+      "Replaced remaining Nunjucks filter chips with GOV.UK radio controls.",
+      "Preserved project query context across journal view/edit routing.",
+      "Replaced browser confirm prompts for journal, memo and code deletes with inline GOV.UK confirmation UI.",
+      "Added codebook edit UI and DELETE /api/codes/:id support.",
+      "Mapped code tags through hydration and rendered data-backed tag values instead of literal Code/Path labels.",
+      "Restored journal entry action buttons to the Nunjucks template so generated HTML keeps edit/delete actions."
+    ],
+    "validation": [
+      {
+        "name": "script-syntax-checks",
+        "result": "passed",
+        "details": "node --check passed for journal-tabs.js, journal-entry.js, journal-entry-edit.js and reflection/codes.js."
+      },
+      {
+        "name": "build-govuk-pages",
+        "result": "passed"
+      },
+      {
+        "name": "focused-journal-tests",
+        "result": "passed",
+        "details": "6 focused route-state tests passed."
+      },
+      {
+        "name": "format-check",
+        "result": "passed"
+      },
+      {
+        "name": "npm-test",
+        "result": "passed",
+        "details": "199 tests passed."
+      },
+      {
+        "name": "npm-run-lint",
+        "result": "passed-with-warnings",
+        "details": "Exit code 0; warning-level console/no-unused-vars findings remain across the repository."
+      }
+    ],
+    "residualRisks": [
+      "No browser walkthrough was run for this continuation.",
+      "Production Airtable linked-record constraints may reject deletion of referenced codes."
+    ]
+  },
   "limitations": [
     "Linear project status update creation was attempted after connector installation, but the backend rejected the exposed status-update tool as unavailable.",
     "No browser walkthrough was run."
@@ -93,5 +157,28 @@
     "document": "https://linear.app/researchops/document/pr-391-journals-tightening-implementation-notes-70aceca100bd",
     "issue": "RES-5",
     "issueUrl": "https://linear.app/researchops/issue/RES-5/review-pr-391-journals-tightening"
+  },
+  "publicationUpdate": {
+    "task": "Commit and push the journal/codebook continuation changes to the PR branch.",
+    "branch": "fix/journals-tightening",
+    "upstream": "origin/fix/journals-tightening",
+    "selectedBundles": [
+      ".agent-operating-model/bundles/github/",
+      ".agent-operating-model/bundles/researchops-developer-control/",
+      ".agent-operating-model/bundles/multi-functional-team/",
+      ".agent-operating-model/bundles/govuk-design-system/"
+    ],
+    "validation": [
+      {
+        "name": "agent-model-selection",
+        "result": "passed",
+        "details": "Selected github-diamond, researchops-developer-control, multi-functional-team and govuk-design-system for the commit/push task."
+      },
+      {
+        "name": "changed-file-scope",
+        "result": "passed",
+        "details": "Changed files remained scoped to journal/codebook implementation, generated pages, tests and trace artefacts."
+      }
+    ]
   }
 }

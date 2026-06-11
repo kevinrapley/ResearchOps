@@ -167,3 +167,95 @@ Results:
 - The journals scripts still contain existing `console` logging that triggers lint warnings but was not broadly cleaned up to avoid scope creep.
 - Memo field-shape handling remains tolerant of multiple Airtable schemas; if production uses a different field naming variant than the known set, memo updates could still require field-map expansion.
 - No browser walkthrough was run, so final confirmation of tab behaviour, banner timing, and mobile layout remains unverified in a live page.
+
+## Continuation update: journal editing, codebook actions and delete confirmations
+
+This continuation was carried over from the "Review operating model docs" chat because that chat had streaming issues.
+
+Additional task summary:
+
+- journal entry edit routing still dropped project context and could route back incorrectly
+- source template filters still used custom filter chips even though the rendered page and JavaScript expected GOV.UK radios
+- codebook management cards showed literal `Code` and `Path` tag labels rather than data-backed tags
+- codebook entries needed edit and delete actions
+- delete confirmation needed to happen in the UI instead of through browser `confirm()` prompts
+
+Additional files read:
+
+- `public/js/journal-entry-edit.js`
+- `src/govuk/templates/pages/journal-entry.njk`
+- `src/govuk/templates/pages/projects-journals.njk`
+- `infra/cloudflare/src/service/reflection/codes.js`
+- `infra/cloudflare/src/service/reflection/project-data-hydration.js`
+- `tests/journal-entry-page-route-state.test.js`
+- `tests/journal-secondary-actions-route-state.test.js`
+- `tests/journals-project-data-hydration-route-state.test.js`
+- `tests/journals-route-state.test.js`
+
+Additional files modified:
+
+- `infra/cloudflare/src/core/router.js`
+- `infra/cloudflare/src/service/index.js`
+- `infra/cloudflare/src/service/reflection/codes.js`
+- `infra/cloudflare/src/service/reflection/project-data-hydration.js`
+- `public/js/journal-entry-edit.js`
+- `public/js/journal-entry.js`
+- `public/js/journal-tabs.js`
+- `public/pages/journal/entry/index.html`
+- `public/pages/projects/journals/index.html`
+- `src/govuk/templates/pages/journal-entry.njk`
+- `src/govuk/templates/pages/projects-journals.njk`
+- `tests/journal-entry-page-route-state.test.js`
+- `tests/journal-secondary-actions-route-state.test.js`
+- `tests/journals-project-data-hydration-route-state.test.js`
+- `tests/journals-route-state.test.js`
+
+Additional implementation decisions:
+
+- Replaced the remaining Nunjucks source filter chips with GOV.UK radio groups so template, rendered HTML and `journal-tabs.js` agree.
+- Preserved project context on journal view/edit routes by appending the active `project` query to generated edit/view redirects.
+- Replaced journal entry, journal edit, memo and codebook browser `confirm()` calls with inline GOV.UK inset-text confirmation blocks.
+- Added codebook edit UI backed by the existing `PATCH /api/codes/:id` route.
+- Added `DELETE /api/codes/:id` through router, service index and reflection code service, with D1-first and Airtable-record delete behavior.
+- Extended code hydration to expose `tags` when Airtable provides them and to render hierarchy/name values as data-backed tags rather than literal `Code` or `Path` labels.
+- Added the journal entry action buttons to the Nunjucks template because the renderer had been removing the static page's manually present actions.
+
+Additional validation:
+
+- `node --check public/js/journal-tabs.js` passed.
+- `node --check public/js/journal-entry.js` passed.
+- `node --check public/js/journal-entry-edit.js` passed.
+- `node --check infra/cloudflare/src/service/reflection/codes.js` passed.
+- `npm run build:govuk-pages` passed and regenerated `public/pages/projects/journals/index.html` and `public/pages/journal/entry/index.html`.
+- Focused test slice passed: `npm test -- tests/journals-route-state.test.js tests/journal-secondary-actions-route-state.test.js tests/journal-entry-page-route-state.test.js tests/journals-project-data-hydration-route-state.test.js tests/journal-tabs-filter-state-route-state.test.js tests/journal-tabs-resilience-route-state.test.js`.
+- `npm run format:check` passed.
+- `npm test` passed with 199 tests.
+- `npm run lint` exited 0. It still reported warning-level `console` and unused-variable findings already present across the repository, including existing logging in touched journal scripts.
+
+Additional residual risks:
+
+- No browser walkthrough was run in this continuation, so runtime interaction still needs visual/manual confirmation in a browser.
+- The codebook delete endpoint follows the established D1/Airtable deletion pattern, but production Airtable linked-record constraints could still reject deletion of codes that are referenced elsewhere.
+
+## Publication update: push to PR branch
+
+The user clarified that the commits must not remain local only and need to be pushed to the PR branch.
+
+Publication task summary:
+
+- verified the active branch was `fix/journals-tightening`
+- verified the branch was tracking `origin/fix/journals-tightening`
+- verified the changed-file list was scoped to journal/codebook implementation, generated GOV.UK pages, tests and this trace
+- prepared the existing continuation changes for commit and push to the PR branch
+
+Publication selected bundles:
+
+- `.agent-operating-model/bundles/github/`
+- `.agent-operating-model/bundles/researchops-developer-control/`
+- `.agent-operating-model/bundles/multi-functional-team/`
+- `.agent-operating-model/bundles/govuk-design-system/`
+
+Publication validation:
+
+- `npm run agent:model -- "commit and push journal codebook GOV.UK UI fixes to the PR branch"` selected the expected repository, ResearchOps, government assurance and GOV.UK bundles.
+- `git diff --name-only` showed the changed-file set remained limited to the expected journal/codebook files, generated pages, tests and trace artefacts.

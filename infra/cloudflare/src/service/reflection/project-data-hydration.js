@@ -154,12 +154,12 @@ function normaliseHex8(value) {
 }
 
 function mapD1Code(row = {}) {
-	return { id: row.record_id || row.local_code_id || null, name: row.name || row.record_id || row.local_code_id || "", description: row.description || "", colour: normaliseHex8(row.colour || "#505a5fff"), parentId: row.parentcode || null, projectId: row.project || row.local_project_id || null, source: "d1" };
+	return { id: row.record_id || row.local_code_id || null, name: row.name || row.record_id || row.local_code_id || "", description: row.description || "", colour: normaliseHex8(row.colour || "#505a5fff"), parentId: row.parentcode || null, projectId: row.project || row.local_project_id || null, tags: normTagsArray(row.tags), source: "d1" };
 }
 
 function mapAirtableCode(record = {}) {
 	const fields = record.fields || {};
-	return { id: record.id, name: fields.Name || fields.Code || fields["Short Name"] || "", description: fields.Description || "", colour: normaliseHex8(fields.Colour || fields.Color || "#505a5fff"), parentId: linkedValues(fields.Parent)[0] || null, projectId: linkedValues(fields.Project)[0] || null, source: "airtable" };
+	return { id: record.id, name: fields.Name || fields.Code || fields["Short Name"] || "", description: fields.Description || "", colour: normaliseHex8(fields.Colour || fields.Color || "#505a5fff"), parentId: linkedValues(fields.Parent)[0] || null, projectId: linkedValues(fields.Project)[0] || null, tags: normTagsArray(fields.Tags), source: "airtable" };
 }
 
 function addCodePaths(codes = []) {
@@ -238,10 +238,10 @@ export async function listCodes(service, origin, url) {
 	if (hasD1(service.env)) {
 		try {
 			const rows = nofilter || !candidates.length ? await d1All(service.env, `
-				SELECT record_id, project, name, description, parentcode, colour, createdat, local_project_id, local_code_id
+				SELECT record_id, project, name, description, parentcode, colour, createdat, local_project_id, local_code_id, NULL AS tags
 				  FROM codes
 				 ORDER BY datetime(createdat) DESC;
-			`) : await d1RowsForProjects(service.env, "codes", "record_id, project, name, description, parentcode, colour, createdat, local_project_id, local_code_id", candidates);
+			`) : await d1RowsForProjects(service.env, "codes", "record_id, project, name, description, parentcode, colour, createdat, local_project_id, local_code_id, NULL AS tags", candidates);
 			if (rows.length) return service.json({ ok: true, source: "d1", codes: addCodePaths(rows.map(mapD1Code)) }, 200, service.corsHeaders(origin));
 		} catch (error) {
 			service?.log?.warn?.("project_data.codes.d1.fail", { err: safeText(error?.message || error).slice(0, 200) });

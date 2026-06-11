@@ -13,9 +13,9 @@
 		<!--<link rel="stylesheet" href="/css/journals.css?v=1.0.1" media="screen">-->
 		<link rel="stylesheet" href="/css/journal-mural-sync.css" media="screen" />
 		<link rel="modulepreload" href="/js/project-context.js" />
-		<link rel="modulepreload" href="/js/journal-feedback.js" />
 		<link rel="modulepreload" href="/js/journal-tabs.js" />
 		<link rel="modulepreload" href="/js/journal-mural-sync-compact.js" />
+		<link rel="modulepreload" href="/components/journal-excerpts.js" />
 
 		<script type="module" src="/components/layout.js" defer></script>
 		<script type="module" src="/js/govuk-frontend-init.js" defer></script>
@@ -186,7 +186,9 @@
 								<div class="journal-filters">
 									<fieldset class="govuk-fieldset" aria-describedby="journal-filter-hint">
 										<legend class="govuk-fieldset__legend govuk-fieldset__legend--s">Filter by category</legend>
-										<div id="journal-filter-hint" class="govuk-hint">Choose one category to narrow the journal list.</div>
+										<div id="journal-filter-hint" class="govuk-hint">
+											Choose one category to narrow the journal list.
+										</div>
 										<div class="govuk-radios govuk-radios--small journal-filter-radios" data-module="govuk-radios">
 											<div class="govuk-radios__item">
 												<input
@@ -209,7 +211,9 @@
 													value="perceptions"
 													data-filter="perceptions"
 												/>
-												<label class="govuk-label govuk-radios__label" for="journal-filter-perceptions">Perceptions</label>
+												<label class="govuk-label govuk-radios__label" for="journal-filter-perceptions">
+													Perceptions
+												</label>
 											</div>
 											<div class="govuk-radios__item">
 												<input
@@ -220,7 +224,9 @@
 													value="procedures"
 													data-filter="procedures"
 												/>
-												<label class="govuk-label govuk-radios__label" for="journal-filter-procedures">Procedures</label>
+												<label class="govuk-label govuk-radios__label" for="journal-filter-procedures">
+													Procedures
+												</label>
 											</div>
 											<div class="govuk-radios__item">
 												<input
@@ -487,5 +493,6 @@
 		<script src="/lib/coloris.min.js"></script>
 		<script type="module" src="/js/journal-tabs.js"></script>
 		<script type="module" src="/js/journal-mural-sync-compact.js"></script>
+		<script type="module" src="/components/journal-excerpts.js" defer></script>
 	</body>
 </html>

@@ -27,6 +27,21 @@ import { clearJournalFeedback, showJournalError, showJournalStatus } from './jou
 
 	function $all(s, r) { if (!r) r = document; return Array.from(r.querySelectorAll(s)); }
 
+	function hideDeleteConfirmations(scope) {
+		$all('[data-delete-confirmation]', scope).forEach(panel => {
+			panel.hidden = true;
+		});
+	}
+
+	function showDeleteConfirmation(button, key) {
+		const card = button?.closest('.govuk-summary-card') || document;
+		hideDeleteConfirmations(document);
+		const panel = $all('[data-delete-confirmation]', card).find(item => item.getAttribute('data-delete-confirmation') === key);
+		if (!panel) return;
+		panel.hidden = false;
+		panel.querySelector('button')?.focus();
+	}
+
 	function esc(s) {
 		const d = document.createElement('div');
 		d.textContent = String(s || '');
@@ -67,6 +82,22 @@ import { clearJournalFeedback, showJournalError, showJournalStatus } from './jou
 
 	function tagHtml(value) {
 		return `<strong class="govuk-tag govuk-tag--grey govuk-!-margin-right-1 govuk-!-margin-bottom-1">${esc(value)}</strong>`;
+	}
+
+	function normaliseTags(value) {
+		if (Array.isArray(value)) return value.map(item => String(item || '').trim()).filter(Boolean);
+		return String(value || '').split(',').map(item => item.trim()).filter(Boolean);
+	}
+
+	function codeTags(code) {
+		const tags = normaliseTags(code.tags || code.Tags);
+		if (tags.length) return tags;
+		const path = String(code.path || '').trim();
+		if (path) {
+			const pathTags = path.split('/').map(part => part.trim()).filter(Boolean);
+			if (pathTags.length) return pathTags;
+		}
+		return normaliseTags(code.name);
 	}
 
 	function emptyEntriesHtml() {
@@ -274,6 +305,7 @@ import { clearJournalFeedback, showJournalError, showJournalStatus } from './jou
 		muralSync: null,
 		codes: [],
 		codeFormOpen: false,
+		codeEditingId: '',
 		memos: [],
 		memoFormOpen: false,
 		memoFilter: 'all'
@@ -377,17 +409,32 @@ import { clearJournalFeedback, showJournalError, showJournalStatus } from './jou
 							<div class="govuk-button-group govuk-!-margin-bottom-0">
 								<button type="button" class="govuk-button govuk-button--warning" data-module="govuk-button" data-act="delete" data-id="${esc(en.id)}">Delete entry</button>
 							</div>
+							<div class="govuk-inset-text govuk-!-margin-top-3" data-delete-confirmation="entry-${esc(en.id)}" hidden>
+								<p class="govuk-body">Are you sure you want to delete this journal entry?</p>
+								<div class="govuk-button-group">
+									<button type="button" class="govuk-button govuk-button--warning" data-module="govuk-button" data-act="confirm-delete" data-id="${esc(en.id)}">Yes, delete entry</button>
+									<button type="button" class="govuk-button govuk-button--secondary" data-module="govuk-button" data-act="cancel-delete">Cancel</button>
+								</div>
+							</div>
 						</div>
 					</article>
 				</li>`;
 		}).join('') + '</ol>';
 
 		$all('[data-act="delete"]', wrap).forEach(btn => btn.addEventListener('click', onDeleteEntry));
+		$all('[data-act="confirm-delete"]', wrap).forEach(btn => btn.addEventListener('click', onConfirmDeleteEntry));
+		$all('[data-act="cancel-delete"]', wrap).forEach(btn => btn.addEventListener('click', () => hideDeleteConfirmations(wrap)));
 	}
 
 	function onDeleteEntry(e) {
 		const id = e.currentTarget?.getAttribute('data-id');
-		if (!id || !confirm('Delete this entry?')) return;
+		if (!id) return;
+		showDeleteConfirmation(e.currentTarget, `entry-${id}`);
+	}
+
+	function onConfirmDeleteEntry(e) {
+		const id = e.currentTarget?.getAttribute('data-id');
+		if (!id) return;
 		clearJournalFeedback();
 		fetchJSON(apiUrl('/api/journal-entries/' + encodeURIComponent(id)), { method: 'DELETE' })
 			.then(() => {
@@ -517,18 +564,76 @@ import { clearJournalFeedback, showJournalError, showJournalStatus } from './jou
 			</form>` : '';
 
 		const listHtml = state.codes.length ?
-			'<ol class="govuk-list app-code-list">' + state.codes.map(code => `
+			'<ol class="govuk-list app-code-list">' + state.codes.map(code => {
+				if (state.codeEditingId === code.id) {
+					return `
 				<li class="govuk-!-margin-bottom-4">
-					<article class="govuk-summary-card">
+					<article class="govuk-summary-card" data-code-id="${esc(code.id)}">
 						<div class="govuk-summary-card__title-wrapper">
-							<h3 class="govuk-summary-card__title">${esc(code.name || code.id)} <strong class="govuk-tag journal-code-tag">Code</strong></h3>
+							<h3 class="govuk-summary-card__title">Edit ${esc(code.name || code.id)}</h3>
 						</div>
 						<div class="govuk-summary-card__content">
-							<p class="govuk-body">${esc(code.description || 'No description recorded.')}</p>
-							${code.path ? `<p class="govuk-hint"><strong class="govuk-tag govuk-tag--grey journal-code-path-tag">Path</strong> ${esc(code.path)}</p>` : ''}
+							<form class="code-edit-form" data-code-edit-id="${esc(code.id)}" novalidate>
+								<div class="govuk-form-group">
+									<label class="govuk-label govuk-label--s" for="code-name-${esc(code.id)}">Code name</label>
+									<input class="govuk-input govuk-input--width-20" id="code-name-${esc(code.id)}" name="name" type="text" value="${esc(code.name || '')}" required>
+								</div>
+
+								<div class="govuk-form-group">
+									<label class="govuk-label govuk-label--s" for="code-description-${esc(code.id)}">Description</label>
+									<textarea class="govuk-textarea" id="code-description-${esc(code.id)}" name="description" rows="3">${esc(code.description || '')}</textarea>
+								</div>
+
+								<div class="govuk-form-group">
+									<label class="govuk-label govuk-label--s" for="code-colour-${esc(code.id)}">Colour</label>
+									<input class="govuk-input govuk-input--width-10" id="code-colour-${esc(code.id)}" name="colour" type="text" value="${esc(code.colour || '#1d70b8ff')}">
+								</div>
+
+								<div class="govuk-button-group">
+									<button type="submit" class="govuk-button" data-module="govuk-button">Save changes</button>
+									<button type="button" class="govuk-button govuk-button--secondary" data-module="govuk-button" data-act="cancel-code-edit">Cancel</button>
+								</div>
+							</form>
 						</div>
 					</article>
-				</li>`).join('') + '</ol>' :
+				</li>`;
+				}
+				const tags = codeTags(code);
+				const tagsHTML = tags.length ?
+					`<p class="govuk-body-s govuk-!-margin-bottom-0">${tags.map(tagHtml).join('')}</p>` :
+					'<p class="govuk-hint govuk-!-margin-bottom-0">No tags recorded.</p>';
+				return `
+				<li class="govuk-!-margin-bottom-4">
+					<article class="govuk-summary-card" data-code-id="${esc(code.id)}">
+						<div class="govuk-summary-card__title-wrapper">
+							<h3 class="govuk-summary-card__title">${esc(code.name || code.id)}</h3>
+							<ul class="govuk-summary-card__actions">
+								<li class="govuk-summary-card__action"><button type="button" class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0" data-module="govuk-button" data-act="edit-code" data-id="${esc(code.id)}">Edit<span class="govuk-visually-hidden"> ${esc(code.name || code.id)}</span></button></li>
+								<li class="govuk-summary-card__action"><button type="button" class="govuk-button govuk-button--warning govuk-!-margin-bottom-0" data-module="govuk-button" data-act="delete-code" data-id="${esc(code.id)}">Delete<span class="govuk-visually-hidden"> ${esc(code.name || code.id)}</span></button></li>
+							</ul>
+						</div>
+						<div class="govuk-summary-card__content">
+							<dl class="govuk-summary-list">
+								<div class="govuk-summary-list__row">
+									<dt class="govuk-summary-list__key">Description</dt>
+									<dd class="govuk-summary-list__value">${esc(code.description || 'No description recorded.')}</dd>
+								</div>
+								<div class="govuk-summary-list__row">
+									<dt class="govuk-summary-list__key">Tags</dt>
+									<dd class="govuk-summary-list__value">${tagsHTML}</dd>
+								</div>
+							</dl>
+							<div class="govuk-inset-text govuk-!-margin-top-3" data-delete-confirmation="code-${esc(code.id)}" hidden>
+								<p class="govuk-body">Are you sure you want to delete this codebook entry?</p>
+								<div class="govuk-button-group">
+									<button type="button" class="govuk-button govuk-button--warning" data-module="govuk-button" data-act="confirm-delete-code" data-id="${esc(code.id)}">Yes, delete code</button>
+									<button type="button" class="govuk-button govuk-button--secondary" data-module="govuk-button" data-act="cancel-delete">Cancel</button>
+								</div>
+							</div>
+						</div>
+					</article>
+				</li>`;
+			}).join('') + '</ol>' :
 			'<div class="govuk-inset-text"><p class="govuk-body">No codes have been added yet.</p></div>';
 
 		wrap.innerHTML = formHtml + listHtml;
@@ -541,6 +646,15 @@ import { clearJournalFeedback, showJournalError, showJournalStatus } from './jou
 
 		const form = document.getElementById('add-code-form');
 		form?.addEventListener('submit', onCreateCode);
+		$all('[data-act="edit-code"]', wrap).forEach(btn => btn.addEventListener('click', onEditCode));
+		$all('[data-act="delete-code"]', wrap).forEach(btn => btn.addEventListener('click', onDeleteCode));
+		$all('[data-act="confirm-delete-code"]', wrap).forEach(btn => btn.addEventListener('click', onConfirmDeleteCode));
+		$all('[data-act="cancel-delete"]', wrap).forEach(btn => btn.addEventListener('click', () => hideDeleteConfirmations(wrap)));
+		$all('[data-act="cancel-code-edit"]', wrap).forEach(btn => btn.addEventListener('click', () => {
+			state.codeEditingId = '';
+			renderCodes();
+		}));
+		$all('.code-edit-form', wrap).forEach(codeForm => codeForm.addEventListener('submit', onSubmitCodeEdit));
 	}
 
 	async function onCreateCode(e) {
@@ -572,11 +686,71 @@ import { clearJournalFeedback, showJournalError, showJournalStatus } from './jou
 		}
 	}
 
+	function onEditCode(e) {
+		const id = e.currentTarget?.getAttribute('data-id');
+		if (!id) return;
+		state.codeEditingId = id;
+		state.codeFormOpen = false;
+		renderCodes();
+		document.getElementById(`code-name-${id}`)?.focus();
+	}
+
+	async function onSubmitCodeEdit(e) {
+		e.preventDefault();
+		const form = e.currentTarget;
+		const codeId = form.getAttribute('data-code-edit-id');
+		const fd = new FormData(form);
+		const name = String(fd.get('name') || '').trim();
+		if (!codeId || !name) {
+			flash('Code name is required.', { error: true });
+			return;
+		}
+
+		try {
+			await fetchJSON(apiUrl('/api/codes/' + encodeURIComponent(codeId)), {
+				method: 'PATCH',
+				headers: { 'content-type': 'application/json' },
+				body: JSON.stringify({
+					name,
+					description: String(fd.get('description') || '').trim(),
+					colour: String(fd.get('colour') || '#1d70b8ff').trim()
+				})
+			});
+			state.codeEditingId = '';
+			flash('Code updated.', { success: true, title: 'Success' });
+			await loadCodes();
+		} catch (err) {
+			console.error('updateCode', err);
+			flash('Could not update code.', { error: true });
+		}
+	}
+
+	function onDeleteCode(e) {
+		const codeId = e.currentTarget?.getAttribute('data-id');
+		if (!codeId) return;
+		showDeleteConfirmation(e.currentTarget, `code-${codeId}`);
+	}
+
+	async function onConfirmDeleteCode(e) {
+		const codeId = e.currentTarget?.getAttribute('data-id');
+		if (!codeId) return;
+
+		try {
+			await fetchJSON(apiUrl('/api/codes/' + encodeURIComponent(codeId)), { method: 'DELETE' });
+			flash('Code deleted.', { success: true, title: 'Success' });
+			await loadCodes();
+		} catch (err) {
+			console.error('deleteCode', err);
+			flash('Could not delete code.', { error: true });
+		}
+	}
+
 	function setupCodeAdd() {
 		const btn = document.getElementById('new-code-btn');
 		btn?.addEventListener('click', e => {
 			e.preventDefault();
 			state.codeFormOpen = true;
+			state.codeEditingId = '';
 			renderCodes();
 			document.getElementById('code-name')?.focus();
 		});
@@ -659,6 +833,13 @@ import { clearJournalFeedback, showJournalError, showJournalStatus } from './jou
 									<dd class="govuk-summary-list__value"><p class="govuk-body">${esc(truncateWords(memo.content || '', 300))}</p></dd>
 								</div>
 							</dl>
+							<div class="govuk-inset-text govuk-!-margin-top-3" data-delete-confirmation="memo-${esc(memo.id)}" hidden>
+								<p class="govuk-body">Are you sure you want to delete this memo?</p>
+								<div class="govuk-button-group">
+									<button type="button" class="govuk-button govuk-button--warning" data-module="govuk-button" data-act="confirm-delete-memo" data-id="${esc(memo.id)}">Yes, delete memo</button>
+									<button type="button" class="govuk-button govuk-button--secondary" data-module="govuk-button" data-act="cancel-delete">Cancel</button>
+								</div>
+							</div>
 						</div>
 					</article>
 				</li>`).join('') + '</ol>' :
@@ -676,6 +857,8 @@ import { clearJournalFeedback, showJournalError, showJournalStatus } from './jou
 		form?.addEventListener('submit', onCreateMemo);
 		$all('[data-act="edit-memo"]', wrap).forEach(btn => btn.addEventListener('click', onEditMemo));
 		$all('[data-act="delete-memo"]', wrap).forEach(btn => btn.addEventListener('click', onDeleteMemo));
+		$all('[data-act="confirm-delete-memo"]', wrap).forEach(btn => btn.addEventListener('click', onConfirmDeleteMemo));
+		$all('[data-act="cancel-delete"]', wrap).forEach(btn => btn.addEventListener('click', () => hideDeleteConfirmations(wrap)));
 	}
 
 	async function onCreateMemo(e) {
@@ -767,7 +950,13 @@ import { clearJournalFeedback, showJournalError, showJournalStatus } from './jou
 
 	async function onDeleteMemo(e) {
 		const memoId = e.currentTarget?.getAttribute('data-id');
-		if (!memoId || !confirm('Delete this memo?')) return;
+		if (!memoId) return;
+		showDeleteConfirmation(e.currentTarget, `memo-${memoId}`);
+	}
+
+	async function onConfirmDeleteMemo(e) {
+		const memoId = e.currentTarget?.getAttribute('data-id');
+		if (!memoId) return;
 		try {
 			await fetchJSON(apiUrl('/api/memos/' + encodeURIComponent(memoId)), { method: 'DELETE' });
 			flash('Memo deleted.', { success: true, title: 'Success' });
