@@ -5,6 +5,9 @@ on:
     branches: [ main ]
     paths:
       - "infra/cloudflare/migrations/0017_seed_test_project_1_journal_analysis.sql"
+      - "infra/cloudflare/migrations/0019_expand_test_project_1_journal_analysis_seed.sql"
+      - "infra/cloudflare/src/service/internals/test-project-1-journal-seed.js"
+      - "scripts/d1/write-test-project-1-journal-analysis-sql.mjs"
       - ".github/workflows/apply-d1-test-project-1-journal-analysis.yml"
   workflow_dispatch:
     inputs:
@@ -30,7 +33,7 @@ env:
   WRANGLER_VERSION: "4.90.0"
   D1_DATABASE_NAME: "researchops-d1"
   WRANGLER_CONFIG: "infra/cloudflare/wrangler.toml"
-  TEST_PROJECT_1_JOURNAL_ANALYSIS_MIGRATION: "infra/cloudflare/migrations/0017_seed_test_project_1_journal_analysis.sql"
+  TEST_PROJECT_1_JOURNAL_ANALYSIS_MIGRATION: "infra/cloudflare/migrations/0019_expand_test_project_1_journal_analysis_seed.sql"
   TEST_PROJECT_1_RECORD_ID: "recgdpwEI5hF07bUZ"
   TEST_PROJECT_1_LOCAL_ID: "d04ab32e-6756-408e-a649-6859dd0079f2"
 
@@ -71,6 +74,11 @@ jobs:
 
       - name: Check migration file exists
         run: test -f "${TEST_PROJECT_1_JOURNAL_ANALYSIS_MIGRATION}"
+
+      - name: Check generated seed SQL is current
+        run: |
+          node scripts/d1/write-test-project-1-journal-analysis-sql.mjs > /tmp/test-project-1-journal-analysis.sql
+          cmp /tmp/test-project-1-journal-analysis.sql "${TEST_PROJECT_1_JOURNAL_ANALYSIS_MIGRATION}"
 
       - name: Apply Test Project 1 journal analysis seed to remote D1
         env:
@@ -127,3 +135,8 @@ jobs:
             --remote \
             --config "${WRANGLER_CONFIG}" \
             --command "SELECT entry, COUNT(*) AS applied_code_count FROM code_applications WHERE project = '${TEST_PROJECT_1_RECORD_ID}' GROUP BY entry ORDER BY entry;"
+
+          npx --yes wrangler@${WRANGLER_VERSION} d1 execute "${D1_DATABASE_NAME}" \
+            --remote \
+            --config "${WRANGLER_CONFIG}" \
+            --command "SELECT COUNT(*) AS cooccurring_pair_count FROM (SELECT a.code AS source, b.code AS target, COUNT(*) AS weight FROM code_applications a JOIN code_applications b ON a.entry = b.entry AND a.code < b.code WHERE a.project = '${TEST_PROJECT_1_RECORD_ID}' AND b.project = '${TEST_PROJECT_1_RECORD_ID}' GROUP BY a.code, b.code HAVING COUNT(*) > 0);"

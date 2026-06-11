@@ -18,6 +18,12 @@
 
 import { listAll } from "../internals/airtable.js";
 import { d1All } from "../internals/researchops-d1.js";
+import {
+	isTestProject1Id,
+	TEST_PROJECT_1_CODE_APPLICATIONS,
+	TEST_PROJECT_1_CODES,
+	TEST_PROJECT_1_JOURNAL_ENTRIES,
+} from "../internals/test-project-1-journal-seed.js";
 
 const TEST_PROJECT_1_LEGACY_ID = "recgdpwEI5hFO7bUZ";
 const TEST_PROJECT_1_CANONICAL_ID = "recgdpwEI5hF07bUZ";
@@ -71,7 +77,44 @@ function parseTags(value) {
 async function fetchCodesByProject(svc, projectId) {
 	const d1Codes = await fetchD1CodesByProject(svc, projectId);
 	if (d1Codes.size) return d1Codes;
-	return fetchAirtableCodesByProject(svc, projectId);
+	const airtableCodes = await fetchAirtableCodesByProject(svc, projectId);
+	if (airtableCodes.size) return airtableCodes;
+	return fetchSeedCodesByProject(projectId);
+}
+
+function fetchSeedCodesByProject(projectId) {
+	if (!isTestProject1Id(projectId)) return new Map();
+	return new Map(TEST_PROJECT_1_CODES.map((code) => [
+		code.id,
+		{ id: code.id, name: code.name, source: "seed" },
+	]));
+}
+
+function seedCodeIdsByEntry(projectId) {
+	if (!isTestProject1Id(projectId)) return new Map();
+	const byEntry = new Map();
+	for (const application of TEST_PROJECT_1_CODE_APPLICATIONS) {
+		if (!byEntry.has(application.entry)) byEntry.set(application.entry, []);
+		byEntry.get(application.entry).push(application.code);
+	}
+	return byEntry;
+}
+
+function seedJournalsByProject(projectId) {
+	if (!isTestProject1Id(projectId)) return [];
+	const codeIdsByEntry = seedCodeIdsByEntry(projectId);
+	return TEST_PROJECT_1_JOURNAL_ENTRIES.map((entry) => ({
+		id: entry.id,
+		body: entry.content || "",
+		content: entry.content || "",
+		category: entry.category || "",
+		codeIds: codeIdsByEntry.get(entry.id) || [],
+		tags: entry.tags || [],
+		createdAt: entry.createdAt || "",
+		project: entry.project || "",
+		localProjectId: entry.localProjectId || "",
+		source: "seed",
+	}));
 }
 
 async function fetchD1CodesByProject(svc, projectId) {
@@ -88,6 +131,10 @@ async function fetchD1CodesByProject(svc, projectId) {
 			    OR local_project_id IN (${list})
 			 ORDER BY datetime(createdat) ASC;
 		`, [...ids, ...ids]);
+
+		if (isTestProject1Id(projectId) && rows.length < TEST_PROJECT_1_CODES.length) {
+			return fetchSeedCodesByProject(projectId);
+		}
 
 		const map = new Map();
 		for (const row of rows) {
@@ -142,10 +189,13 @@ async function fetchD1CodeIdsByEntry(svc, projectId) {
 			if (!byEntry.has(entryId)) byEntry.set(entryId, []);
 			byEntry.get(entryId).push(codeId);
 		}
-		return byEntry;
+		if (isTestProject1Id(projectId) && rows.length < TEST_PROJECT_1_CODE_APPLICATIONS.length) {
+			return seedCodeIdsByEntry(projectId);
+		}
+		return byEntry.size ? byEntry : seedCodeIdsByEntry(projectId);
 	} catch (error) {
 		svc.log?.warn?.("analysis.code_applications.d1.skip", { err: String(error?.message || error).slice(0, 160) });
-		return new Map();
+		return seedCodeIdsByEntry(projectId);
 	}
 }
 
@@ -165,6 +215,10 @@ async function fetchD1JournalsByProject(svc, projectId) {
 			 ORDER BY datetime(createdat) ASC;
 		`, [...ids, ...ids]);
 
+		if (isTestProject1Id(projectId) && rows.length < TEST_PROJECT_1_JOURNAL_ENTRIES.length) {
+			return seedJournalsByProject(projectId);
+		}
+
 		return rows.map((row = {}) => ({
 			id: row.record_id,
 			body: row.content || "",
@@ -179,7 +233,7 @@ async function fetchD1JournalsByProject(svc, projectId) {
 		}));
 	} catch (error) {
 		svc.log?.warn?.("analysis.timeline.d1.skip", { err: String(error?.message || error).slice(0, 160) });
-		return [];
+		return seedJournalsByProject(projectId);
 	}
 }
 
@@ -217,7 +271,9 @@ async function fetchAirtableJournalsByProject(svc, projectId) {
 async function fetchJournalsByProject(svc, projectId) {
 	const d1Entries = await fetchD1JournalsByProject(svc, projectId);
 	if (d1Entries.length) return d1Entries;
-	return fetchAirtableJournalsByProject(svc, projectId);
+	const airtableEntries = await fetchAirtableJournalsByProject(svc, projectId);
+	if (airtableEntries.length) return airtableEntries;
+	return seedJournalsByProject(projectId);
 }
 
 /* ---------- timeline ---------- */

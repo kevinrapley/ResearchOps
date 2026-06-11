@@ -130,9 +130,9 @@ test('listJournalEntries serves seeded Test Project 1 entries for the legacy pro
 	assert.equal(response.status, 200);
 	assert.equal(body.ok, true);
 	assert.equal(body.source, 'seed');
-	assert.equal(body.entries.length, 12);
-	assert.equal(body.entries[0].id, 'd1tp1_journal_012');
-	assert.equal(d1.state.journalEntries.length, 12);
+	assert.equal(body.entries.length, 36);
+	assert.equal(body.entries[0].id, 'd1tp1_journal_036');
+	assert.equal(d1.state.journalEntries.length, 36);
 });
 
 test('updateJournalEntry restores the seeded row before applying edits', async () => {

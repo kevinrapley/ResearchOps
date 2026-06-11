@@ -1,0 +1,79 @@
+{
+  "date": "2026-06-12",
+  "task": "Expand Test Project 1 journal analysis seed data, fix empty co-occurrence in preview, and clarify code hierarchy in the UI.",
+  "branch": "feature/test-project-1-journal-seed",
+  "branchDecision": {
+    "traceRequiredByPolicy": true,
+    "note": "feature/* requires an auditable trace."
+  },
+  "operatingModelFilesLoaded": [
+    "AGENTS.md",
+    ".agent-operating-model/orchestration.xml",
+    ".agent-operating-model/bundle-registry.json",
+    ".agent-operating-model/task-signal-catalog.json",
+    ".agent-operating-model/selection-rules.json",
+    ".agent-operating-model/bootstrap-checklist.md",
+    ".agent-operating-model/precedence-policy.md",
+    ".agent-operating-model/github-mutation-policy.md",
+    ".agent-operating-model/trace-policy.md",
+    ".agent-operating-model/trace-layers.md"
+  ],
+  "selectedBundles": [
+    ".agent-operating-model/bundles/github/",
+    ".agent-operating-model/bundles/researchops-developer-control/",
+    ".agent-operating-model/bundles/multi-functional-team/",
+    ".agent-operating-model/bundles/cloudflare/",
+    ".agent-operating-model/bundles/govuk-design-system/"
+  ],
+  "skippedBundles": [
+    ".agent-operating-model/bundles/openai/",
+    ".agent-operating-model/bundles/mcp-agent-tooling/",
+    ".agent-operating-model/bundles/airtable-public-api/",
+    ".agent-operating-model/bundles/mural-public-api/"
+  ],
+  "changes": [
+    "Expanded canonical seed to 36 journal entries, 40 codes, 12 memos and 180 code applications.",
+    "Added generated forward D1 migration 0019 for the expanded seed.",
+    "Added preview/runtime fallback when D1 is empty or still has the older partial Test Project 1 seed.",
+    "Added GOV.UK tag, summary-list and details UI patterns for thematic, second-order and first-order code visibility.",
+    "Updated route-state and runtime tests for larger seed counts and co-occurrence fallback."
+  ],
+  "validation": [
+    {
+      "name": "script-syntax-checks",
+      "result": "passed"
+    },
+    {
+      "name": "generated-sql-cmp",
+      "result": "passed"
+    },
+    {
+      "name": "sqlite-seed-check",
+      "result": "passed",
+      "details": "36 journal entries, 40 codes, 12 memos, 180 code applications and 200 co-occurring code pairs."
+    },
+    {
+      "name": "focused-tests",
+      "result": "passed",
+      "details": "12 focused tests passed."
+    },
+    {
+      "name": "format-check",
+      "result": "passed"
+    },
+    {
+      "name": "npm-test",
+      "result": "passed",
+      "details": "209 tests passed."
+    },
+    {
+      "name": "npm-run-lint",
+      "result": "passed-with-warnings",
+      "details": "Exit code 0; repository-existing warning-level findings remain."
+    }
+  ],
+  "residualRisks": [
+    "Browser walkthrough was not run in this continuation.",
+    "Remote D1 workflow was not manually dispatched from this local run."
+  ]
+}
