@@ -62,9 +62,28 @@
     {
       "name": "npm-test",
       "result": "passed",
-      "details": "197 tests passed. npm test -- --ci was attempted first and failed because --ci is passed to node --test as an unsupported Node option."
+      "details": "199 tests passed after the Codex review follow-up. npm test -- --ci was attempted earlier and failed because --ci is passed to node --test as an unsupported Node option."
     }
   ],
+  "codexReviewFollowUp": {
+    "threads": [
+      {
+        "path": "infra/cloudflare/src/service/memos.js",
+        "line": 173,
+        "summary": "Return after D1-only memo updates instead of falling through to Airtable."
+      },
+      {
+        "path": "infra/cloudflare/src/service/memos.js",
+        "line": 252,
+        "summary": "Do not require Airtable after successful D1 deletes in D1-only contexts."
+      }
+    ],
+    "changes": [
+      "Added Airtable configuration and Airtable record ID guards.",
+      "Returned success after successful D1 update/delete when Airtable is unavailable or the memo ID is local.",
+      "Added D1-only runtime tests for update and delete with seeded rec-style memo IDs."
+    ]
+  },
   "limitations": [
     "Linear project status update creation was attempted after connector installation, but the backend rejected the exposed status-update tool as unavailable.",
     "No browser walkthrough was run."

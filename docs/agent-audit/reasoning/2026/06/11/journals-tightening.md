@@ -112,6 +112,20 @@ Modified:
 - Analysis feedback was split between custom flash elements, inline retrieval errors, and silent success states. It now uses the page’s GOV.UK notification banner and error summary consistently.
 - Memo data can be served from D1 or Airtable. Delete and update now attempt D1 writes first and use Airtable when the ID is an Airtable record ID.
 
+## Codex review follow-up
+
+After PR review, Codex raised two unresolved P2 threads in `infra/cloudflare/src/service/memos.js`:
+
+- D1-backed memo updates could succeed locally and then still fail the request by falling through to Airtable in D1-only environments.
+- D1-backed memo deletes could delete locally and then still fail the request by calling Airtable when Airtable is not configured, including for seeded `rec...` IDs.
+
+Follow-up changes:
+
+- Added explicit Airtable configuration and Airtable record ID guards.
+- Return success after successful D1 update/delete when Airtable is unavailable or the memo ID is local.
+- Return a real dependency error when D1 did not complete and Airtable is unavailable.
+- Added `tests/memos-d1-only-runtime.test.js` to cover D1-only update and delete behaviour for `rec...` memo IDs.
+
 ## Validation attempted
 
 - Ran targeted Prettier write on touched files.
@@ -130,7 +144,7 @@ Results:
 - ESLint returned `0` errors.
 - ESLint still reported warnings in pre-existing files and pre-existing `console` usage patterns, including `infra/cloudflare/src/core/router.js`, `infra/cloudflare/src/service/index.js`, and existing journals scripts.
 - Trace coverage passed for `fix/journals-tightening`.
-- `npm test` passed with 197 tests.
+- `npm test` passed with 199 tests after the Codex review follow-up.
 - `npm test -- --ci` was attempted first but failed because the repo's current test script passes `--ci` directly to `node --test`, which Node rejects as `bad option: --ci`; the configured `npm test` command was then run successfully.
 
 ## Validation not run
