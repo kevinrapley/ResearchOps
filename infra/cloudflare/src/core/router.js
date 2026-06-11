@@ -261,6 +261,7 @@ export async function handleRequest(request, env) {
 			if (url.pathname === "/api/memos" && request.method === "GET") return service.listMemos(origin, url);
 			if (url.pathname === "/api/memos" && request.method === "POST") return service.createMemo(request, origin);
 			if (url.pathname.startsWith("/api/memos/") && request.method === "PATCH") return service.updateMemo(request, origin, decodeURIComponent(url.pathname.slice("/api/memos/".length)));
+			if (url.pathname.startsWith("/api/memos/") && request.method === "DELETE") return service.deleteMemo(origin, decodeURIComponent(url.pathname.slice("/api/memos/".length)));
 
 			if (url.pathname === "/api/code-applications" && request.method === "GET") return service.listCodeApplications(origin, url);
 			if (url.pathname === "/api/codes" && request.method === "GET") return service.listCodes(origin, url);

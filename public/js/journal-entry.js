@@ -168,11 +168,13 @@ function setBackLinks(entry) {
 	const projectId = resolveProjectId(entry);
 	const href = projectId ? `/pages/projects/journals/?id=${encodeURIComponent(projectId)}` : "/pages/projects/journals/";
 	const dashboardHref = projectId ? `/pages/project-dashboard/?id=${encodeURIComponent(projectId)}` : "/pages/project-dashboard/";
+	const editHref = text(entry.id) ? `/pages/journal/edit?id=${encodeURIComponent(entry.id)}` : href;
 
 	const backLink = document.getElementById("back-to-journals");
 	const returnLink = document.getElementById("journal-entry-return-link");
 	const breadcrumbJournals = document.getElementById("breadcrumb-journals");
 	const breadcrumbProject = document.getElementById("breadcrumb-project");
+	const editLink = document.getElementById("journal-entry-edit-link");
 
 	if (backLink) backLink.href = href;
 	if (returnLink) returnLink.href = href;
@@ -181,9 +183,11 @@ function setBackLinks(entry) {
 		breadcrumbProject.href = dashboardHref;
 		hydrateProjectBreadcrumb(projectId, breadcrumbProject);
 	}
+	if (editLink) editLink.href = editHref;
 }
 
 function renderEntry(entry) {
+	window.__journalEntry = entry;
 	const category = categoryLabel(entry.category);
 	const created = when(entry.createdAt || entry.created_at);
 	const content = text(entry.content || entry.body);
@@ -211,7 +215,39 @@ function renderEntry(entry) {
 	}
 
 	setBackLinks(entry);
+	setHidden(document.getElementById("journal-entry-actions"), false);
 	setHidden(document.getElementById("journal-entry-loading"), true);
+}
+
+function queueJournalFeedback(message, options = {}) {
+	try {
+		sessionStorage.setItem("journal-feedback", JSON.stringify({
+			message,
+			success: !!options.success,
+			title: options.title || "Information",
+			type: options.type || "status"
+		}));
+	} catch {
+		// Ignore storage failures.
+	}
+}
+
+async function deleteJournalEntry() {
+	const entry = window.__journalEntry;
+	const entryId = text(entry?.id);
+	if (!entryId || !confirm("Delete this entry?")) return;
+
+	try {
+		await readJsonResponse(await fetch(apiUrl(`/api/journal-entries/${encodeURIComponent(entryId)}`), {
+			method: "DELETE",
+			credentials: "include"
+		}));
+		const project = text(entry?.localProjectId || entry?.local_project_id || entry?.project || entry?.projectId);
+		queueJournalFeedback("Journal entry deleted.", { success: true, title: "Success" });
+		window.location.href = project ? `/pages/projects/journals/?id=${encodeURIComponent(project)}` : "/pages/projects/journals/";
+	} catch (error) {
+		showError(error?.message || "Could not delete this journal entry.");
+	}
 }
 
 async function loadJournalEntry() {
@@ -237,4 +273,5 @@ async function loadJournalEntry() {
 	}
 }
 
+document.getElementById("journal-entry-delete-btn")?.addEventListener("click", deleteJournalEntry);
 loadJournalEntry();

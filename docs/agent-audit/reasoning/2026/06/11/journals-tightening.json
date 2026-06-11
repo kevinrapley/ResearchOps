@@ -1,0 +1,72 @@
+{
+  "date": "2026-06-11",
+  "task": "Tighten the journals page UI, routing, memo CRUD, and analysis feedback.",
+  "branch": "fix/journals-tightening",
+  "branchDecision": {
+    "traceRequiredByPolicy": true,
+    "note": "fix/* requires an auditable trace. Branch creation was initially blocked by .git ref-lock permissions, then completed after .git write permission was granted."
+  },
+  "operatingModelFilesLoaded": [
+    "AGENTS.md",
+    ".agent-operating-model/orchestration.xml",
+    ".agent-operating-model/bundle-registry.json",
+    ".agent-operating-model/task-signal-catalog.json",
+    ".agent-operating-model/selection-rules.json",
+    ".agent-operating-model/bootstrap-checklist.md",
+    ".agent-operating-model/precedence-policy.md",
+    ".agent-operating-model/trace-policy.md",
+    ".agent-operating-model/trace-layers.md",
+    ".agent-operating-model/behavioural-evals.json",
+    ".agent-operating-model/github-mutation-policy.md"
+  ],
+  "selectedBundles": [
+    ".agent-operating-model/bundles/github/",
+    ".agent-operating-model/bundles/researchops-developer-control/",
+    ".agent-operating-model/bundles/multi-functional-team/",
+    ".agent-operating-model/bundles/govuk-design-system/"
+  ],
+  "skippedBundles": [
+    ".agent-operating-model/bundles/cloudflare/",
+    ".agent-operating-model/bundles/openai/",
+    ".agent-operating-model/bundles/mcp-agent-tooling/",
+    ".agent-operating-model/bundles/airtable-public-api/",
+    ".agent-operating-model/bundles/mural-public-api/"
+  ],
+  "validations": [
+    {
+      "name": "git-diff-check",
+      "result": "passed"
+    },
+    {
+      "name": "browser-script-syntax-check",
+      "result": "passed",
+      "details": "node --check passed for caqdas-interface.js, journal-entry.js, and journal-tabs.js after conflict resolution."
+    },
+    {
+      "name": "format-check",
+      "result": "passed"
+    },
+    {
+      "name": "prettier-targeted",
+      "result": "passed"
+    },
+    {
+      "name": "eslint-targeted",
+      "result": "passed-with-warnings",
+      "details": "0 errors, warnings remained in pre-existing console/no-unused-vars sites."
+    },
+    {
+      "name": "trace-coverage",
+      "result": "passed"
+    },
+    {
+      "name": "npm-test",
+      "result": "passed",
+      "details": "197 tests passed. npm test -- --ci was attempted first and failed because --ci is passed to node --test as an unsupported Node option."
+    }
+  ],
+  "limitations": [
+    "Linear tool discovery exposed GitHub and Airtable tools but no callable Linear namespace, so the Linear project could not be updated from this session.",
+    "No browser walkthrough was run."
+  ]
+}

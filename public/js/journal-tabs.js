@@ -9,6 +9,7 @@
  */
 
 import { runTimeline, runCooccurrence, runRetrieval, runExport } from './caqdas-interface.js';
+import { clearJournalFeedback, showJournalError, showJournalStatus } from './journal-feedback.js';
 
 /* eslint-env browser */
 (function() {
@@ -72,17 +73,12 @@ import { runTimeline, runCooccurrence, runRetrieval, runExport } from './caqdas-
 		return '<div class="govuk-inset-text" id="empty-journal"><p class="govuk-body">No entries match the current filter.</p></div>';
 	}
 
-	function flash(msg, asHtml = false) {
-		let el = document.getElementById('flash');
-		if (!el) {
-			el = document.createElement('div');
-			el.id = 'flash';
-			el.setAttribute('role', 'status');
-			el.setAttribute('aria-live', 'polite');
-			el.className = 'govuk-inset-text';
-			document.querySelector('main')?.prepend(el);
+	function flash(msg, options = {}) {
+		if (options.error) {
+			showJournalError(msg);
+			return;
 		}
-		el[asHtml ? 'innerHTML' : 'textContent'] = msg;
+		showJournalStatus(msg, { success: !!options.success, title: options.title || 'Information' });
 	}
 
 	function fetchJSON(url, init) {
@@ -392,12 +388,13 @@ import { runTimeline, runCooccurrence, runRetrieval, runExport } from './caqdas-
 	function onDeleteEntry(e) {
 		const id = e.currentTarget?.getAttribute('data-id');
 		if (!id || !confirm('Delete this entry?')) return;
+		clearJournalFeedback();
 		fetchJSON(apiUrl('/api/journal-entries/' + encodeURIComponent(id)), { method: 'DELETE' })
 			.then(() => {
-				flash('Entry deleted.');
+				flash('Journal entry deleted.', { success: true, title: 'Success' });
 				loadEntries();
 			})
-			.catch(() => flash('Could not delete entry.'));
+			.catch(() => flash('Could not delete journal entry.', { error: true }));
 	}
 
 	function setupEntryAddForm() {
@@ -429,7 +426,7 @@ import { runTimeline, runCooccurrence, runRetrieval, runExport } from './caqdas-
 			const category = String(fd.get('category') || '');
 			const content = String(fd.get('content') || '');
 			const tagsStr = String(fd.get('tags') || '');
-			if (!category || !content) { flash('Category and content are required.'); return; }
+			if (!category || !content) { flash('Category and content are required.', { error: true }); return; }
 
 			const tags = tagsStr.split(',').map(s => s.trim()).filter(Boolean);
 			const projectLocalId = state.projectLocalId || state.projectId;
@@ -454,27 +451,24 @@ import { runTimeline, runCooccurrence, runRetrieval, runExport } from './caqdas-
 				await _syncToMural({ entryId: created.id, category, description: content, tags, projectId: state.projectId });
 				form.reset();
 				toggle(false);
-				flash('Entry saved.');
+				flash('Journal entry saved.', { success: true, title: 'Success' });
 				await loadEntries();
 			} catch (err) {
 				console.error('add-entry', err);
-				flash('Could not save entry.');
+				flash('Could not save journal entry.', { error: true });
 			}
 		});
 	}
 
 	function setupEntryFilters() {
-		const container = document.querySelector('#journal-entries-panel .filter-chips');
+		const container = document.querySelector('#journal-entries-panel .journal-filter-radios');
 		if (!container) return;
-		const active = container.querySelector('.filter-chip--active');
+		const active = container.querySelector('input[data-filter]:checked');
 		state.entryFilter = active?.dataset?.filter?.toLowerCase() || 'all';
 
-		$all('.filter-chip', container).forEach(b => {
-			b.addEventListener('click', e => {
-				e.preventDefault();
-				$all('.filter-chip', container).forEach(x => x.classList.remove('filter-chip--active'));
-				b.classList.add('filter-chip--active');
-				state.entryFilter = b.dataset.filter || 'all';
+		$all('input[data-filter]', container).forEach(input => {
+			input.addEventListener('change', () => {
+				state.entryFilter = input.dataset.filter || 'all';
 				renderEntries();
 			});
 		});
@@ -527,11 +521,11 @@ import { runTimeline, runCooccurrence, runRetrieval, runExport } from './caqdas-
 				<li class="govuk-!-margin-bottom-4">
 					<article class="govuk-summary-card">
 						<div class="govuk-summary-card__title-wrapper">
-							<h3 class="govuk-summary-card__title">${esc(code.name || code.id)}</h3>
+							<h3 class="govuk-summary-card__title">${esc(code.name || code.id)} <strong class="govuk-tag journal-code-tag">Code</strong></h3>
 						</div>
 						<div class="govuk-summary-card__content">
 							<p class="govuk-body">${esc(code.description || 'No description recorded.')}</p>
-							${code.path ? `<p class="govuk-hint">${esc(code.path)}</p>` : ''}
+							${code.path ? `<p class="govuk-hint"><strong class="govuk-tag govuk-tag--grey journal-code-path-tag">Path</strong> ${esc(code.path)}</p>` : ''}
 						</div>
 					</article>
 				</li>`).join('') + '</ol>' :
@@ -554,7 +548,7 @@ import { runTimeline, runCooccurrence, runRetrieval, runExport } from './caqdas-
 		const form = e.currentTarget;
 		const fd = new FormData(form);
 		const name = String(fd.get('name') || '').trim();
-		if (!name) { flash('Code name is required.'); return; }
+		if (!name) { flash('Code name is required.', { error: true }); return; }
 
 		const body = {
 			projectId: projectIdForWrite(),
@@ -570,11 +564,11 @@ import { runTimeline, runCooccurrence, runRetrieval, runExport } from './caqdas-
 				body: JSON.stringify(body)
 			});
 			state.codeFormOpen = false;
-			flash('Code saved.');
+			flash('Code saved.', { success: true, title: 'Success' });
 			await loadCodes();
 		} catch (err) {
 			console.error('createCode', err);
-			flash('Could not save code.');
+			flash('Could not save code.', { error: true });
 		}
 	}
 
@@ -604,6 +598,15 @@ import { runTimeline, runCooccurrence, runRetrieval, runExport } from './caqdas-
 	}
 
 	function currentMemoFilter() { return String(state.memoFilter || 'all').toLowerCase(); }
+
+	function memoTypeLabel(value) {
+		const key = String(value || 'memo').toLowerCase();
+		if (key === 'analytical') return 'Analytical';
+		if (key === 'methodological') return 'Methodological';
+		if (key === 'theoretical') return 'Theoretical';
+		if (key === 'reflexive') return 'Reflexive';
+		return 'Memo';
+	}
 
 	function renderMemos() {
 		const wrap = document.getElementById('memos-container');
@@ -637,9 +640,13 @@ import { runTimeline, runCooccurrence, runRetrieval, runExport } from './caqdas-
 		const listHtml = list.length ?
 			'<ol class="govuk-list app-memo-list">' + list.map(memo => `
 				<li class="govuk-!-margin-bottom-4">
-					<article class="govuk-summary-card">
+					<article class="govuk-summary-card" data-memo-id="${esc(memo.id)}">
 						<div class="govuk-summary-card__title-wrapper">
-							<h3 class="govuk-summary-card__title">${esc(memo.memoType || 'memo')} memo</h3>
+							<h3 class="govuk-summary-card__title">${memoTypeLabel(memo.memoType)} memo <strong class="govuk-tag govuk-tag--blue memo-type-tag">${esc(memoTypeLabel(memo.memoType))}</strong></h3>
+							<ul class="govuk-summary-card__actions">
+								<li class="govuk-summary-card__action"><button type="button" class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0" data-act="edit-memo" data-id="${esc(memo.id)}">Edit<span class="govuk-visually-hidden"> ${esc(memoTypeLabel(memo.memoType))} memo</span></button></li>
+								<li class="govuk-summary-card__action"><button type="button" class="govuk-button govuk-button--warning govuk-!-margin-bottom-0" data-act="delete-memo" data-id="${esc(memo.id)}">Delete<span class="govuk-visually-hidden"> ${esc(memoTypeLabel(memo.memoType))} memo</span></button></li>
+							</ul>
 						</div>
 						<div class="govuk-summary-card__content">
 							<dl class="govuk-summary-list">
@@ -667,6 +674,8 @@ import { runTimeline, runCooccurrence, runRetrieval, runExport } from './caqdas-
 
 		const form = document.getElementById('add-memo-form');
 		form?.addEventListener('submit', onCreateMemo);
+		$all('[data-act="edit-memo"]', wrap).forEach(btn => btn.addEventListener('click', onEditMemo));
+		$all('[data-act="delete-memo"]', wrap).forEach(btn => btn.addEventListener('click', onDeleteMemo));
 	}
 
 	async function onCreateMemo(e) {
@@ -674,7 +683,7 @@ import { runTimeline, runCooccurrence, runRetrieval, runExport } from './caqdas-
 		const form = e.currentTarget;
 		const fd = new FormData(form);
 		const content = String(fd.get('content') || '').trim();
-		if (!content) { flash('Memo content is required.'); return; }
+		if (!content) { flash('Memo content is required.', { error: true }); return; }
 
 		const body = {
 			project_id: projectIdForWrite(),
@@ -689,11 +698,83 @@ import { runTimeline, runCooccurrence, runRetrieval, runExport } from './caqdas-
 				body: JSON.stringify(body)
 			});
 			state.memoFormOpen = false;
-			flash('Memo saved.');
+			flash('Memo saved.', { success: true, title: 'Success' });
 			await loadMemos();
 		} catch (err) {
 			console.error('createMemo', err);
-			flash('Could not save memo.');
+			flash('Could not save memo.', { error: true });
+		}
+	}
+
+	function onEditMemo(e) {
+		const id = e.currentTarget?.getAttribute('data-id');
+		const memo = state.memos.find(item => item.id === id);
+		const card = e.currentTarget?.closest('.govuk-summary-card');
+		if (!memo || !card) return;
+
+		card.innerHTML = `
+			<form class="govuk-form-group memo-edit-form" data-memo-edit-id="${esc(memo.id)}" novalidate>
+				<label class="govuk-label govuk-label--s" for="memo-type-${esc(memo.id)}">Memo type</label>
+				<select class="govuk-select" id="memo-type-${esc(memo.id)}" name="memo_type" required>
+					<option value="analytical"${memo.memoType === 'analytical' ? ' selected' : ''}>Analytical</option>
+					<option value="methodological"${memo.memoType === 'methodological' ? ' selected' : ''}>Methodological</option>
+					<option value="theoretical"${memo.memoType === 'theoretical' ? ' selected' : ''}>Theoretical</option>
+					<option value="reflexive"${memo.memoType === 'reflexive' ? ' selected' : ''}>Reflexive</option>
+				</select>
+
+				<label class="govuk-label govuk-label--s govuk-!-margin-top-3" for="memo-content-${esc(memo.id)}">Memo</label>
+				<textarea class="govuk-textarea" id="memo-content-${esc(memo.id)}" name="content" rows="8" required>${esc(memo.content || '')}</textarea>
+
+				<div class="govuk-button-group govuk-!-margin-top-3">
+					<button type="submit" class="govuk-button">Save changes</button>
+					<button type="button" class="govuk-button govuk-button--secondary" data-act="cancel-memo-edit">Cancel</button>
+				</div>
+			</form>`;
+
+		const form = card.querySelector('form');
+		form?.addEventListener('submit', onSubmitMemoEdit);
+		card.querySelector('[data-act="cancel-memo-edit"]')?.addEventListener('click', renderMemos);
+		card.querySelector('textarea')?.focus();
+	}
+
+	async function onSubmitMemoEdit(e) {
+		e.preventDefault();
+		const form = e.currentTarget;
+		const memoId = form.getAttribute('data-memo-edit-id');
+		const fd = new FormData(form);
+		const content = String(fd.get('content') || '').trim();
+		if (!memoId || !content) {
+			flash('Memo content is required.', { error: true });
+			return;
+		}
+
+		try {
+			await fetchJSON(apiUrl('/api/memos/' + encodeURIComponent(memoId)), {
+				method: 'PATCH',
+				headers: { 'content-type': 'application/json' },
+				body: JSON.stringify({
+					memo_type: String(fd.get('memo_type') || 'analytical'),
+					content
+				})
+			});
+			flash('Memo updated.', { success: true, title: 'Success' });
+			await loadMemos();
+		} catch (err) {
+			console.error('updateMemo', err);
+			flash('Could not update memo.', { error: true });
+		}
+	}
+
+	async function onDeleteMemo(e) {
+		const memoId = e.currentTarget?.getAttribute('data-id');
+		if (!memoId || !confirm('Delete this memo?')) return;
+		try {
+			await fetchJSON(apiUrl('/api/memos/' + encodeURIComponent(memoId)), { method: 'DELETE' });
+			flash('Memo deleted.', { success: true, title: 'Success' });
+			await loadMemos();
+		} catch (err) {
+			console.error('deleteMemo', err);
+			flash('Could not delete memo.', { error: true });
 		}
 	}
 
@@ -708,17 +789,14 @@ import { runTimeline, runCooccurrence, runRetrieval, runExport } from './caqdas-
 	}
 
 	function setupMemoFilters() {
-		const container = document.querySelector('#memos-panel .filter-chips');
+		const container = document.querySelector('#memos-panel .journal-filter-radios');
 		if (!container) return;
-		const active = container.querySelector('.filter-chip--active');
+		const active = container.querySelector('input[data-memo-filter]:checked');
 		state.memoFilter = active?.dataset?.memoFilter?.toLowerCase() || 'all';
 
-		$all('.filter-chip', container).forEach(b => {
-			b.addEventListener('click', e => {
-				e.preventDefault();
-				$all('.filter-chip', container).forEach(x => x.classList.remove('filter-chip--active'));
-				b.classList.add('filter-chip--active');
-				state.memoFilter = b.dataset.memoFilter || 'all';
+		$all('input[data-memo-filter]', container).forEach(input => {
+			input.addEventListener('change', () => {
+				state.memoFilter = input.dataset.memoFilter || 'all';
 				renderMemos();
 			});
 		});
@@ -736,7 +814,8 @@ import { runTimeline, runCooccurrence, runRetrieval, runExport } from './caqdas-
 			else if (mode === 'co-occurrence') runCooccurrence(state.projectId);
 			else if (mode === 'retrieval') {
 				runRetrieval(state.projectId);
-				flash('Enter a search term in Code retrieval and select Run search.');
+				document.getElementById('retrieval-q')?.focus();
+				showJournalStatus('Enter a search term in Code retrieval, then select Run search.');
 			} else if (mode === 'export') runExport(state.projectId);
 		});
 	}
@@ -768,6 +847,18 @@ import { runTimeline, runCooccurrence, runRetrieval, runExport } from './caqdas-
 		setupMemoFilters();
 		setupAnalysisButtons();
 		ensureMuralSyncPanel();
+		clearJournalFeedback();
+		try {
+			const queued = sessionStorage.getItem('journal-feedback');
+			if (queued) {
+				sessionStorage.removeItem('journal-feedback');
+				const data = JSON.parse(queued);
+				if (data?.type === 'error') showJournalError(data.message);
+				else if (data?.message) showJournalStatus(data.message, { success: !!data.success, title: data.title || 'Information' });
+			}
+		} catch {
+			// Ignore malformed client-side feedback payloads.
+		}
 
 		var active = (location.hash || '').replace(/^#/, '') || 'journal-entries';
 		onTabShown(active);

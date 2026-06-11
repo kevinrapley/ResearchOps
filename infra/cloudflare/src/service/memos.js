@@ -10,6 +10,12 @@
  *  - Author: "Author"
  */
 
+import { d1Run } from "./internals/researchops-d1.js";
+
+function hasD1(env) {
+	return !!env?.RESEARCHOPS_D1;
+}
+
 export async function listMemos(svc, origin, url) {
 	try {
 		const projectId = url.searchParams.get("project") || "";
@@ -155,10 +161,28 @@ export async function createMemo(svc, request, origin) {
 
 export async function updateMemo(svc, request, origin, memoId) {
 	try {
+		if (!memoId) {
+			return svc.json({ error: "Missing memo id" }, 400, svc.corsHeaders(origin));
+		}
+
 		const buf = await request.arrayBuffer();
 		/** @type {{memo_type?:string,content?:string,author?:string,linked_entries?:string[]}} */
 		let p;
 		try { p = JSON.parse(new TextDecoder().decode(buf)); } catch { p = {}; }
+
+		if (hasD1(svc.env)) {
+			try {
+				await d1Run(svc.env, `
+					UPDATE memos
+					   SET type = COALESCE(?, type),
+					       body = COALESCE(?, body)
+					 WHERE record_id = ?
+					    OR local_memo_id = ?
+				`, [p.memo_type ?? null, p.content ?? null, memoId, memoId]);
+			} catch (err) {
+				svc?.log?.warn?.("memos.update.d1.fail", { err: String(err?.message || err || ""), memoId });
+			}
+		}
 
 		const tableRef = svc.env.AIRTABLE_TABLE_MEMOS || "Memos";
 		const { patchRecords } = await import("./internals/airtable.js");
@@ -202,6 +226,39 @@ export async function updateMemo(svc, request, origin, memoId) {
 	} catch (fatal) {
 		const msg = String(fatal?.message || fatal || "");
 		svc?.log?.error?.("memos.update.fatal", { err: msg, memoId });
+		return svc.json({ error: "Internal error", detail: msg }, 500, svc.corsHeaders(origin));
+	}
+}
+
+export async function deleteMemo(svc, origin, memoId) {
+	try {
+		if (!memoId) {
+			return svc.json({ error: "Missing memo id" }, 400, svc.corsHeaders(origin));
+		}
+
+		if (hasD1(svc.env)) {
+			try {
+				await d1Run(svc.env, `
+					DELETE FROM memos
+					 WHERE record_id = ?
+					    OR local_memo_id = ?
+				`, [memoId, memoId]);
+			} catch (err) {
+				svc?.log?.warn?.("memos.delete.d1.fail", { err: String(err?.message || err || ""), memoId });
+			}
+		}
+
+		if (!/^rec[a-zA-Z0-9]{14,}$/.test(String(memoId))) {
+			return svc.json({ ok: true, id: memoId }, 200, svc.corsHeaders(origin));
+		}
+
+		const tableRef = svc.env.AIRTABLE_TABLE_MEMOS || "Memos";
+		const { deleteRecord } = await import("./internals/airtable.js");
+		await deleteRecord(svc.env, tableRef, memoId, svc?.cfg?.TIMEOUT_MS);
+		return svc.json({ ok: true, id: memoId }, 200, svc.corsHeaders(origin));
+	} catch (fatal) {
+		const msg = String(fatal?.message || fatal || "");
+		svc?.log?.error?.("memos.delete.fatal", { err: msg, memoId });
 		return svc.json({ error: "Internal error", detail: msg }, 500, svc.corsHeaders(origin));
 	}
 }

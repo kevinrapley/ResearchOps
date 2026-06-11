@@ -171,6 +171,7 @@ export class ResearchOpsService {
 	listMemos = (origin, url) => ProjectDataHydration.listMemos(this, origin, url);
 	createMemo = (req, origin) => Memos.createMemo(this, req, origin);
 	updateMemo = (req, origin, memoId) => Memos.updateMemo(this, req, origin, memoId);
+	deleteMemo = (origin, memoId) => Memos.deleteMemo(this, origin, memoId);
 
 	/* ─────────────── Code Applications ─────────────── */
 	listCodeApplications = (origin, url) => CodeApplications.listCodeApplications(this, origin, url);
