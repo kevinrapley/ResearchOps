@@ -57,6 +57,17 @@ CREATE TABLE IF NOT EXISTS codes (
 	local_code_id TEXT PRIMARY KEY
 );
 
+CREATE TABLE IF NOT EXISTS code_applications (
+	record_id TEXT,
+	project TEXT,
+	entry TEXT,
+	code TEXT,
+	excerpt TEXT,
+	createdat TEXT,
+	local_project_id TEXT,
+	local_application_id TEXT PRIMARY KEY
+);
+
 CREATE TABLE IF NOT EXISTS rops_studies_cache (
 	id TEXT PRIMARY KEY,
 	project_id TEXT NOT NULL,
@@ -99,6 +110,10 @@ SET project = 'recgdpwEI5hF07bUZ'
 WHERE project = 'recgdpwEI5hFO7bUZ';
 
 UPDATE codes
+SET project = 'recgdpwEI5hF07bUZ'
+WHERE project = 'recgdpwEI5hFO7bUZ';
+
+UPDATE code_applications
 SET project = 'recgdpwEI5hF07bUZ'
 WHERE project = 'recgdpwEI5hFO7bUZ';
 

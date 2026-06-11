@@ -21,32 +21,54 @@ for (const required of [
 	"CREATE TABLE IF NOT EXISTS \"journal_entries\"",
 	"CREATE TABLE IF NOT EXISTS \"memos\"",
 	"CREATE TABLE IF NOT EXISTS \"codes\"",
+	"CREATE TABLE IF NOT EXISTS \"code_applications\"",
 	"idx_journal_entries_test_project_1_local_project_id",
 	"idx_memos_test_project_1_local_project_id",
 	"idx_codes_test_project_1_local_project_id",
+	"idx_code_applications_test_project_1_local_project_id",
+	"idx_code_applications_test_project_1_entry",
+	"idx_code_applications_test_project_1_code",
 	"recgdpwEI5hF07bUZ",
 	"d04ab32e-6756-408e-a649-6859dd0079f2",
-	"Evidence quality",
-	"Uncertainty made visible",
-	"Context switching",
-	"Decision trace",
-	"Evidence quality is becoming the organising problem",
+	"Evidence readiness",
+	"Operational rhythm",
+	"Reflexive practice",
+	"Decision confidence",
+	"Tool-switching burden",
+	"Researcher positionality",
+	"Provenance gaps",
+	"Confidence threshold",
+	"Pause for consent",
+	"Evidence readiness is the organising problem",
 	"Separate operations tracking from synthesis",
+	"Co-occurrence should prompt interpretation",
 	"ON CONFLICT(record_id) DO UPDATE SET",
 	"ON CONFLICT(local_code_id) DO UPDATE SET",
 	"ON CONFLICT(local_memo_id) DO UPDATE SET",
+	"ON CONFLICT(local_application_id) DO UPDATE SET",
 ]) {
 	includes(migration, required, "journal analysis seed migration");
 }
 
 const journalIds = migration.match(/d1tp1_journal_\d{3}/g) || [];
-assert.equal(new Set(journalIds).size, 4, "Expected exactly 4 unique Test Project 1 journal entry IDs");
+assert.equal(new Set(journalIds).size, 12, "Expected exactly 12 unique Test Project 1 journal entry IDs");
 
 const codeIds = migration.match(/d1tp1_code_[a-z_]+/g) || [];
-assert.equal(new Set(codeIds).size, 4, "Expected exactly 4 unique Test Project 1 code IDs");
+assert.equal(new Set(codeIds).size, 21, "Expected exactly 21 unique Test Project 1 code IDs");
 
 const memoIds = migration.match(/d1tp1_memo_\d{3}/g) || [];
-assert.equal(new Set(memoIds).size, 2, "Expected exactly 2 unique Test Project 1 memo IDs");
+assert.equal(new Set(memoIds).size, 5, "Expected exactly 5 unique Test Project 1 memo IDs");
+
+const applicationIds = migration.match(/d1tp1_app_\d{3}/g) || [];
+assert.equal(new Set(applicationIds).size, 48, "Expected exactly 48 unique Test Project 1 code application IDs");
+
+for (const placeholder of ["dummy", "sample", "lorem ipsum"]) {
+	assert.equal(
+		migration.toLowerCase().includes(placeholder),
+		false,
+		`Seed migration should not contain placeholder wording: ${placeholder}`,
+	);
+}
 
 for (const required of [
 	"Apply D1 Test Project 1 Journal Analysis Seed",
@@ -57,6 +79,8 @@ for (const required of [
 	"SELECT COUNT(*) AS journal_entry_count FROM journal_entries",
 	"SELECT COUNT(*) AS code_count FROM codes",
 	"SELECT COUNT(*) AS memo_count FROM memos",
+	"SELECT COUNT(*) AS code_application_count FROM code_applications",
+	"SELECT entry, COUNT(*) AS applied_code_count FROM code_applications",
 ]) {
 	includes(workflow, required, "journal analysis seed workflow");
 }

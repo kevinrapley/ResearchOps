@@ -24,12 +24,14 @@ for (const required of [
 	"CREATE TABLE IF NOT EXISTS journal_entries",
 	"CREATE TABLE IF NOT EXISTS memos",
 	"CREATE TABLE IF NOT EXISTS codes",
+	"CREATE TABLE IF NOT EXISTS code_applications",
 	"CREATE TABLE IF NOT EXISTS rops_studies_cache",
 	"CREATE TABLE IF NOT EXISTS rops_projects_cache",
 	"UPDATE rops_participants_cache",
 	"UPDATE journal_entries",
 	"UPDATE memos",
 	"UPDATE codes",
+	"UPDATE code_applications",
 	"UPDATE rops_studies_cache",
 	"UPDATE rops_projects_cache",
 	"DELETE FROM rops_projects_cache",
@@ -50,6 +52,7 @@ for (const required of [
 	"canonical_journal_project_count",
 	"bad_code_project_count",
 	"bad_memo_project_count",
+	"bad_code_application_project_count",
 ]) {
 	includes(workflow, required, "Test Project 1 ID canonicalisation workflow");
 }

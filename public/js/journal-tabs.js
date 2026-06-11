@@ -100,6 +100,20 @@ import { clearJournalFeedback, showJournalError, showJournalStatus } from './jou
 		return normaliseTags(code.name);
 	}
 
+	function codeParentOptions(selectedId, currentId) {
+		const selected = String(selectedId || '');
+		const current = String(currentId || '');
+		const options = ['<option value="">No parent — thematic aggregate code</option>'];
+		state.codes
+			.filter(code => String(code.id || '') && String(code.id) !== current)
+			.forEach(code => {
+				const id = String(code.id);
+				const label = String(code.path || code.name || id);
+				options.push(`<option value="${esc(id)}"${id === selected ? ' selected' : ''}>${esc(label)}</option>`);
+			});
+		return options.join('');
+	}
+
 	function emptyEntriesHtml() {
 		return '<div class="govuk-inset-text" id="empty-journal"><p class="govuk-body">No entries match the current filter.</p></div>';
 	}
@@ -553,6 +567,14 @@ import { clearJournalFeedback, showJournalError, showJournalStatus } from './jou
 				</div>
 
 				<div class="govuk-form-group">
+					<label class="govuk-label govuk-label--s" for="code-parent">Parent code</label>
+					<div id="code-parent-hint" class="govuk-hint">Leave blank for a thematic aggregate code. Choose an aggregate or interpretive parent to create a lower-level code.</div>
+					<select class="govuk-select" id="code-parent" name="parentId" aria-describedby="code-parent-hint">
+						${codeParentOptions('', '')}
+					</select>
+				</div>
+
+				<div class="govuk-form-group">
 					<label class="govuk-label govuk-label--s" for="code-colour">Colour</label>
 					<input class="govuk-input govuk-input--width-10" id="code-colour" name="colour" type="text" value="#1d70b8ff">
 				</div>
@@ -582,6 +604,14 @@ import { clearJournalFeedback, showJournalError, showJournalStatus } from './jou
 								<div class="govuk-form-group">
 									<label class="govuk-label govuk-label--s" for="code-description-${esc(code.id)}">Description</label>
 									<textarea class="govuk-textarea" id="code-description-${esc(code.id)}" name="description" rows="3">${esc(code.description || '')}</textarea>
+								</div>
+
+								<div class="govuk-form-group">
+									<label class="govuk-label govuk-label--s" for="code-parent-${esc(code.id)}">Parent code</label>
+									<div id="code-parent-hint-${esc(code.id)}" class="govuk-hint">Leave blank for a thematic aggregate code. Choose an aggregate or interpretive parent to create a lower-level code.</div>
+									<select class="govuk-select" id="code-parent-${esc(code.id)}" name="parentId" aria-describedby="code-parent-hint-${esc(code.id)}">
+										${codeParentOptions(code.parentId || '', code.id)}
+									</select>
 								</div>
 
 								<div class="govuk-form-group">
@@ -668,6 +698,7 @@ import { clearJournalFeedback, showJournalError, showJournalStatus } from './jou
 			projectId: projectIdForWrite(),
 			name,
 			description: String(fd.get('description') || '').trim(),
+			parentId: String(fd.get('parentId') || '').trim() || null,
 			colour: String(fd.get('colour') || '#1d70b8ff').trim()
 		};
 
@@ -713,6 +744,7 @@ import { clearJournalFeedback, showJournalError, showJournalStatus } from './jou
 				body: JSON.stringify({
 					name,
 					description: String(fd.get('description') || '').trim(),
+					parentId: String(fd.get('parentId') || '').trim() || null,
 					colour: String(fd.get('colour') || '#1d70b8ff').trim()
 				})
 			});

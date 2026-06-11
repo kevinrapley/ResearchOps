@@ -117,3 +117,8 @@ jobs:
             --remote \
             --config "${WRANGLER_CONFIG}" \
             --command "SELECT COUNT(*) AS bad_memo_project_count FROM memos WHERE project = '${TEST_PROJECT_1_BAD_ID}';"
+
+          npx --yes wrangler@${WRANGLER_VERSION} d1 execute "${D1_DATABASE_NAME}" \
+            --remote \
+            --config "${WRANGLER_CONFIG}" \
+            --command "SELECT COUNT(*) AS bad_code_application_project_count FROM code_applications WHERE project = '${TEST_PROJECT_1_BAD_ID}';"

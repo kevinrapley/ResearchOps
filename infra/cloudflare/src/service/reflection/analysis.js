@@ -69,6 +69,41 @@ function parseTags(value) {
 
 /* ---------- fetchers ---------- */
 async function fetchCodesByProject(svc, projectId) {
+	const d1Codes = await fetchD1CodesByProject(svc, projectId);
+	if (d1Codes.size) return d1Codes;
+	return fetchAirtableCodesByProject(svc, projectId);
+}
+
+async function fetchD1CodesByProject(svc, projectId) {
+	if (!hasD1(svc)) return new Map();
+	const ids = projectAliases(projectId);
+	if (!ids.length) return new Map();
+	const list = placeholders(ids);
+
+	try {
+		const rows = await d1All(svc.env, `
+			SELECT record_id, local_code_id, name
+			  FROM codes
+			 WHERE project IN (${list})
+			    OR local_project_id IN (${list})
+			 ORDER BY datetime(createdat) ASC;
+		`, [...ids, ...ids]);
+
+		const map = new Map();
+		for (const row of rows) {
+			const id = row.record_id || row.local_code_id;
+			if (!id) continue;
+			map.set(id, { id, name: row.name || id, source: "d1" });
+		}
+		return map;
+	} catch (error) {
+		svc.log?.warn?.("analysis.codes.d1.skip", { err: String(error?.message || error).slice(0, 160) });
+		return new Map();
+	}
+}
+
+async function fetchAirtableCodesByProject(svc, projectId) {
+	if (!hasAirtable(svc)) return new Map();
 	const tableRef = svc.env.AIRTABLE_TABLE_CODES || "Codes";
 	const { records } = await listAll(svc.env, tableRef, { pageSize: 100 }, svc.cfg?.TIMEOUT_MS);
 
@@ -85,6 +120,35 @@ async function fetchCodesByProject(svc, projectId) {
 	return map;
 }
 
+async function fetchD1CodeIdsByEntry(svc, projectId) {
+	if (!hasD1(svc)) return new Map();
+	const ids = projectAliases(projectId);
+	if (!ids.length) return new Map();
+	const list = placeholders(ids);
+
+	try {
+		const rows = await d1All(svc.env, `
+			SELECT entry, code
+			  FROM code_applications
+			 WHERE project IN (${list})
+			    OR local_project_id IN (${list});
+		`, [...ids, ...ids]);
+
+		const byEntry = new Map();
+		for (const row of rows) {
+			const entryId = String(row.entry || "").trim();
+			const codeId = String(row.code || "").trim();
+			if (!entryId || !codeId) continue;
+			if (!byEntry.has(entryId)) byEntry.set(entryId, []);
+			byEntry.get(entryId).push(codeId);
+		}
+		return byEntry;
+	} catch (error) {
+		svc.log?.warn?.("analysis.code_applications.d1.skip", { err: String(error?.message || error).slice(0, 160) });
+		return new Map();
+	}
+}
+
 async function fetchD1JournalsByProject(svc, projectId) {
 	if (!hasD1(svc)) return [];
 	const ids = projectAliases(projectId);
@@ -92,6 +156,7 @@ async function fetchD1JournalsByProject(svc, projectId) {
 	const list = placeholders(ids);
 
 	try {
+		const codeIdsByEntry = await fetchD1CodeIdsByEntry(svc, projectId);
 		const rows = await d1All(svc.env, `
 			SELECT record_id, project, category, content, tags, createdat, local_project_id
 			  FROM journal_entries
@@ -105,7 +170,7 @@ async function fetchD1JournalsByProject(svc, projectId) {
 			body: row.content || "",
 			content: row.content || "",
 			category: row.category || "",
-			codeIds: [],
+			codeIds: codeIdsByEntry.get(row.record_id) || [],
 			tags: parseTags(row.tags),
 			createdAt: row.createdat || "",
 			project: row.project || "",
@@ -176,10 +241,6 @@ export async function cooccurrence(svc, origin, url) {
 	const projectId = url.searchParams.get("project") || "";
 	if (!projectId) return bad(svc, origin, "Missing ?project");
 
-	if (!hasAirtable(svc)) {
-		return ok(svc, origin, { nodes: [], links: [] });
-	}
-
 	try {
 		const [codesMap, entries] = await Promise.all([
 			fetchCodesByProject(svc, projectId),
@@ -231,10 +292,6 @@ export async function retrieval(svc, origin, url) {
 	if (!projectId) return bad(svc, origin, "Missing ?project");
 	if (!q) return ok(svc, origin, { results: [] });
 
-	if (!hasAirtable(svc)) {
-		return ok(svc, origin, { results: [] });
-	}
-
 	try {
 		const [codesMap, entries] = await Promise.all([
 			fetchCodesByProject(svc, projectId),
@@ -275,7 +332,7 @@ export async function exportAnalysis(svc, origin, url) {
 
 	try {
 		const entries = await fetchJournalsByProject(svc, projectId);
-		const codesMap = hasAirtable(svc) ? await fetchCodesByProject(svc, projectId) : new Map();
+		const codesMap = await fetchCodesByProject(svc, projectId);
 		const codes = Array.from(codesMap.values()).sort((a, b) => a.name.localeCompare(b.name));
 		const exportPayload = {
 			projectId,

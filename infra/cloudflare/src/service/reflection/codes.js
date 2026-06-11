@@ -9,7 +9,7 @@
  */
 
 import { listAll, createRecords, patchRecords, deleteRecord } from "../internals/airtable.js";
-import { d1Run } from "../internals/researchops-d1.js";
+import { d1Get, d1Run } from "../internals/researchops-d1.js";
 
 const DEFAULT_TABLE = "Codes";
 const TABLE = (service) => service.env.AIRTABLE_TABLE_CODES || DEFAULT_TABLE;
@@ -24,6 +24,90 @@ function hasAirtableConfig(env) {
 
 function isAirtableRecordId(value) {
 	return /^rec[a-zA-Z0-9]{14,}$/.test(String(value || "").trim());
+}
+
+function localCodeId() {
+	if (typeof crypto !== "undefined" && crypto.randomUUID) {
+		return `d1_code_${crypto.randomUUID()}`;
+	}
+	return `d1_code_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 10)}`;
+}
+
+async function ensureD1CodesTable(env) {
+	await d1Run(env, `
+		CREATE TABLE IF NOT EXISTS codes (
+			record_id TEXT,
+			project TEXT,
+			name TEXT,
+			description TEXT,
+			parentcode TEXT,
+			colour TEXT,
+			createdat TEXT,
+			local_project_id TEXT,
+			local_code_id TEXT PRIMARY KEY
+		)
+	`);
+}
+
+async function readD1ParentId(env, codeId) {
+	const row = await d1Get(env, `
+		SELECT parentcode
+		  FROM codes
+		 WHERE record_id = ?
+		    OR local_code_id = ?
+		 LIMIT 1
+	`, [codeId, codeId]);
+	return row?.parentcode || null;
+}
+
+async function computeD1DepthFromId(env, codeId) {
+	let depth = 1;
+	let current = String(codeId || "");
+	let guard = 12;
+	while (current && guard > 0) {
+		const parentId = await readD1ParentId(env, current);
+		if (!parentId) break;
+		depth += 1;
+		current = parentId;
+		guard -= 1;
+	}
+	return depth;
+}
+
+async function validateD1DepthLimit(env, parentId) {
+	if (!parentId) return null;
+	const parentDepth = await computeD1DepthFromId(env, parentId);
+	const newDepth = parentDepth + 1;
+	if (newDepth > 3) {
+		return { ok: false, error: "Codes are limited to 3 levels. Your selection would create level 4." };
+	}
+	return null;
+}
+
+async function wouldD1Cycle(env, movingId, newParentId) {
+	if (!movingId || !newParentId) return false;
+	if (movingId === newParentId) return true;
+	let current = String(newParentId);
+	let guard = 24;
+	while (current && guard > 0) {
+		if (current === movingId) return true;
+		current = await readD1ParentId(env, current);
+		guard -= 1;
+	}
+	return false;
+}
+
+function d1CodeRecord(row = {}) {
+	return {
+		id: row.record_id || row.local_code_id || null,
+		name: row.name || "",
+		description: row.description || "",
+		colour: normaliseHex8(row.colour || "#1d70b8ff"),
+		parentId: row.parentcode || null,
+		projectId: row.project || row.local_project_id || null,
+		tags: [],
+		source: "d1",
+	};
 }
 
 // Helper to normalise hexadecimal colour value to 8-digit alpha
@@ -123,7 +207,6 @@ function detectProjectFieldFromSample(records) {
 	const scored = keys
 		.map(k => {
 			const v = f[k];
-			const arr = Array.isArray(v) ? v : (v ? [v] : []);
 			const looksLinked = Array.isArray(v) && v.length > 0 && typeof v[0] === "string" && v[0].startsWith("rec");
 			const labelScore = /project/i.test(k) ? 2 : 0; // prefer labels mentioning project
 			return { key: k, looksLinked, score: looksLinked ? (1 + labelScore) : -1 };
@@ -332,13 +415,61 @@ export async function createCode(service, request, origin) {
 
 		const table = TABLE(service);
 
+		if (hasD1(service.env) && !hasAirtableConfig(service.env)) {
+			await ensureD1CodesTable(service.env);
+			const depthErr = await validateD1DepthLimit(service.env, parentId);
+			if (depthErr) {
+				return service.json(depthErr, 400, cors);
+			}
+
+			const codeId = localCodeId();
+			const createdAt = new Date().toISOString();
+			await d1Run(service.env, `
+				INSERT INTO codes (
+					record_id,
+					project,
+					name,
+					description,
+					parentcode,
+					colour,
+					createdat,
+					local_project_id,
+					local_code_id
+				) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+			`, [
+				codeId,
+				projectId,
+				name,
+				(body.description || "").trim(),
+				parentId || "",
+				colourHex8,
+				createdAt,
+				projectId,
+				codeId
+			]);
+
+			return service.json({
+				ok: true,
+				record: d1CodeRecord({
+					record_id: codeId,
+					project: projectId,
+					name,
+					description: (body.description || "").trim(),
+					parentcode: parentId || "",
+					colour: colourHex8,
+					local_project_id: projectId,
+					local_code_id: codeId
+				})
+			}, 201, cors);
+		}
+
 		// Detect the linked Project field label (“Project”, “Project (link)”, etc.)
 		let projectFieldLabel = "Project";
 		try {
 			const sample = await listAll(service.env, table, { extraParams: { pageSize: "3" } });
 			const detected = detectProjectFieldFromSample(sample.records || []);
 			if (detected) projectFieldLabel = detected;
-		} catch (_e) { /* keep default */ }
+		} catch { /* keep default */ }
 
 		// Build Airtable fields (no spread literals)
 		const fields = {};
@@ -458,6 +589,64 @@ export async function updateCode(service, request, origin, codeId) {
 		if ("projectId" in body || "project" in body) {
 			const v = body.projectId || body.project || null;
 			fields[projectFieldLabel] = v ? [v] : [];
+		}
+
+		if (hasD1(service.env) && (!hasAirtableConfig(service.env) || !isAirtableRecordId(codeId))) {
+			await ensureD1CodesTable(service.env);
+			if (requestedParent) {
+				if (await wouldD1Cycle(service.env, codeId, requestedParent)) {
+					return service.json({ ok: false, error: "A code cannot be made a child of itself or its descendants." },
+						400,
+						cors
+					);
+				}
+				const depthErr = await validateD1DepthLimit(service.env, requestedParent);
+				if (depthErr) {
+					return service.json(depthErr, 400, cors);
+				}
+			}
+
+			const sets = [];
+			const params = [];
+
+			if ("name" in body) {
+				sets.push("name = ?");
+				params.push(body.name || "");
+			}
+			if ("description" in body) {
+				sets.push("description = ?");
+				params.push(body.description || "");
+			}
+			if ("colour" in body || "color" in body || "colour8" in body || "color8" in body) {
+				const inputColour = body.colour8 || body.color8 || body.colour || body.color || "#1d70b8ff";
+				sets.push("colour = ?");
+				params.push(normaliseHex8(inputColour));
+			}
+			if ("parentId" in body || "parent" in body) {
+				sets.push("parentcode = ?");
+				params.push(requestedParent || "");
+			}
+			if ("projectId" in body || "project" in body) {
+				const v = body.projectId || body.project || null;
+				sets.push("project = ?");
+				params.push(v);
+				sets.push("local_project_id = ?");
+				params.push(v);
+			}
+
+			if (!sets.length) {
+				return service.json({ ok: false, error: "No updatable fields provided" }, 400, cors);
+			}
+
+			params.push(codeId, codeId);
+			await d1Run(service.env, `
+				UPDATE codes
+				   SET ${sets.join(", ")}
+				 WHERE record_id = ?
+				    OR local_code_id = ?
+			`, params);
+
+			return service.json({ ok: true, id: codeId, source: "d1" }, 200, cors);
 		}
 
 		// ---------- persist ----------
