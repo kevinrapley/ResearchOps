@@ -10,6 +10,7 @@ function jsonResponse(body, status = 200) {
 
 function widget(overrides) {
 	return {
+		...overrides,
 		id: overrides.id,
 		type: overrides.type || 'sticky-note',
 		text: overrides.text || '',
@@ -53,6 +54,21 @@ async function postHydrate(svc) {
 			method: 'POST',
 			body: JSON.stringify({
 				mode: 'hydrate',
+				projectId: 'project-1',
+				projectName: 'Test Project 1',
+			}),
+		}),
+		'https://researchops.test'
+	);
+}
+
+async function postStatus(svc) {
+	return muralJournalSync(
+		svc,
+		new Request('https://researchops.test/api/mural/journal-sync', {
+			method: 'POST',
+			body: JSON.stringify({
+				mode: 'status',
 				projectId: 'project-1',
 				projectName: 'Test Project 1',
 			}),
@@ -210,6 +226,105 @@ try {
 	assert.equal(existingData.outcomes[0].action, 'already-synced');
 	assert.equal(existingData.outcomes[0].preserved, true);
 	assert.equal(existingWrites.length, 0);
+
+	const manualEntries = [
+		{
+			id: 'd1tp1_journal_001',
+			category: 'Perceptions',
+			content:
+				'The team is beginning to see research evidence as an operating model rather than a set of documents. People trust findings more when they can see where an observation came from, what is still uncertain and which decision it was meant to support.',
+			tags: ['evidence-readiness', 'confidence', 'decision-support'],
+			createdAt: '2026-06-03T09:15:00.000Z',
+		},
+		{
+			id: 'd1tp1_journal_006',
+			category: 'Perceptions',
+			content:
+				'Several researchers described losing the thread when they moved between the project dashboard, notes, spreadsheets and mural boards. The issue is not only tool count; it is the mental effort of rebuilding context every time.',
+			tags: ['context-rebuilding', 'tool-switching', 'researcher-workload'],
+			createdAt: '2026-06-05T13:10:00.000Z',
+		},
+		{
+			id: 'd1tp1_journal_010',
+			category: 'Perceptions',
+			content:
+				'The dashboard is useful when it shows what changed since the last visit. Researchers do not need another place to duplicate updates; they need a way to re-enter the project without reading every artefact again.',
+			tags: ['duplicate-updates', 'context-rebuilding', 'dashboard'],
+			createdAt: '2026-06-07T14:55:00.000Z',
+		},
+	];
+	const manualWrites = [];
+	globalThis.fetch = async (url, init = {}) => {
+		const href = String(url);
+		const method = String(init.method || 'GET').toUpperCase();
+		if (href.endsWith('/users/me'))
+			return jsonResponse({ value: { companyId: 'homeofficegovuk' } });
+		if (href.endsWith('/murals/workspace.123/widgets')) {
+			if (method !== 'GET') manualWrites.push({ method, href, body: JSON.parse(init.body) });
+			return jsonResponse({
+				value: [
+					widget({
+						id: 'header-perceptions',
+						type: 'shape',
+						text: 'Perceptions',
+						tags: ['perceptions'],
+						x: 0,
+						y: 0,
+						width: 400,
+						height: 80,
+						style: { backgroundColor: '#9120A8FF' },
+					}),
+					widget({
+						id: 'manual-entry-001',
+						plainText: manualEntries[0].content.replace(/\. People/, '.\nPeople'),
+						tags: ['perceptions', 'Test Project 1'],
+						x: 0,
+						y: 120,
+						width: 400,
+						height: 220,
+					}),
+					widget({
+						id: 'manual-entry-006',
+						htmlText: `<p>${manualEntries[1].content}</p>`,
+						tags: ['perceptions', 'Test Project 1'],
+						x: 0,
+						y: 372,
+						width: 400,
+						height: 220,
+					}),
+					widget({
+						id: 'manual-entry-010',
+						content: manualEntries[2].content,
+						tags: ['perceptions', 'Test Project 1'],
+						x: 0,
+						y: 624,
+						width: 400,
+						height: 220,
+					}),
+				],
+			});
+		}
+		throw new Error(`Unexpected fetch: ${method} ${href}`);
+	};
+
+	const manualStatusResponse = await postStatus(service(manualEntries));
+	const manualStatusData = await manualStatusResponse.json();
+	assert.equal(manualStatusResponse.status, 200);
+	assert.equal(manualStatusData.synced, 3);
+	assert.equal(manualStatusData.pending, 0);
+	assert.deepEqual(manualStatusData.byCategory.perceptions, { total: 3, synced: 3, pending: 0 });
+
+	const manualHydrateResponse = await postHydrate(service(manualEntries));
+	const manualHydrateData = await manualHydrateResponse.json();
+	assert.equal(manualHydrateResponse.status, 200);
+	assert.equal(manualHydrateData.createdOrUpdated, 0);
+	assert.equal(manualHydrateData.alreadySynced, 3);
+	assert.equal(manualHydrateData.pending, 0);
+	assert.deepEqual(
+		manualHydrateData.outcomes.map((outcome) => outcome.action),
+		['already-synced', 'already-synced', 'already-synced']
+	);
+	assert.equal(manualWrites.length, 0);
 
 	const repairWrites = [];
 	globalThis.fetch = async (url, init = {}) => {

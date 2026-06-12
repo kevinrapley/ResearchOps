@@ -88,15 +88,55 @@ function tagKeys(widget) {
 }
 
 function widgetText(widget) {
-	return safeText(widget?.text || widget?.htmlText || widget?.title || widget?.name || widget?.label || "");
+	return safeText(
+		widget?.text ||
+		widget?.plainText ||
+		widget?.htmlText ||
+		widget?.content ||
+		widget?.body ||
+		widget?.description ||
+		widget?.properties?.text ||
+		widget?.properties?.plainText ||
+		widget?.properties?.htmlText ||
+		widget?.data?.text ||
+		widget?.data?.plainText ||
+		widget?.data?.htmlText ||
+		widget?.title ||
+		widget?.name ||
+		widget?.label ||
+		""
+	);
 }
 
 function canonicalBodyText(value) {
 	return safeText(value)
 		.replace(/<[^>]*>/g, " ")
+		.replace(/&amp;/gi, "&")
+		.replace(/&lt;/gi, "<")
+		.replace(/&gt;/gi, ">")
 		.replace(/&nbsp;/gi, " ")
 		.replace(/\s+/g, " ")
 		.toLowerCase();
+}
+
+function looseBodyText(value) {
+	return canonicalBodyText(value)
+		.normalize("NFKD")
+		.replace(/[\u0300-\u036f]/g, "")
+		.replace(/[^a-z0-9]+/g, " ")
+		.replace(/\s+/g, " ")
+		.trim();
+}
+
+function bodyTextsMatch(widgetValue, entryValue) {
+	const widgetBody = looseBodyText(widgetValue);
+	const entryBody = looseBodyText(entryValue);
+	if (!widgetBody || !entryBody) return false;
+	if (widgetBody === entryBody) return true;
+
+	const shorter = widgetBody.length < entryBody.length ? widgetBody : entryBody;
+	const longer = widgetBody.length < entryBody.length ? entryBody : widgetBody;
+	return shorter.length >= 80 && longer.includes(shorter);
 }
 
 function isTemplatePlaceholder(widget) {
@@ -353,15 +393,14 @@ function canonicalExistingWidget(widgets, entry, layout, claimedWidgetIds = new 
 		if (!isInLayoutContentFlow(widget, layout)) return false;
 		if (widgetHasEntryTag(widget, entry.entryId)) return true;
 		if (claimedWidgetIds.has(safeText(widget.id))) return false;
-		return canonicalBodyText(widgetText(widget)) === canonicalBodyText(entry.description);
+		return bodyTextsMatch(widgetText(widget), entry.description);
 	});
 }
 
 function staleSyncedWidgets(widgets, entry, layout) {
-	const entryBody = canonicalBodyText(entry.description);
 	return widgets.filter(widget => {
 		const sameEntry = widgetHasEntryTag(widget, entry.entryId) ||
-			(!!entryBody && canonicalBodyText(widgetText(widget)) === entryBody);
+			bodyTextsMatch(widgetText(widget), entry.description);
 		if (!sameEntry || !safeText(widget.id)) return false;
 		return !isColumnContentWidget(widget, entry.categoryKey, layout) || !isInLayoutContentFlow(widget, layout);
 	});

@@ -95,7 +95,8 @@
 			"Write sticky content without unsupported tag fields, then apply board-known tag ids and newly-created Mint user tag ids to the resulting widget.",
 			"Address Codex review thread PRRT_kwDOP3Td2M6JDoxV by preventing one body-matched Mural widget from being reused for multiple distinct journal entry ids in status and hydrate passes.",
 			"Ignore decorative purple title/header cards when selecting reusable journal templates or existing entry cards; require white content-card geometry and allow filled white cards to anchor later placements when category header text is unreadable.",
-			"Repair polluted boards by refusing to count synced widgets above the resolved content-card row, then deleting stale synced widgets outside the content flow after the correct white card is updated or created."
+			"Repair polluted boards by refusing to count synced widgets above the resolved content-card row, then deleting stale synced widgets outside the content flow after the correct white card is updated or created.",
+			"Recognise manually-created white Mural cards as already synced when they are in the correct column and their body text matches a journal entry, even when they lack the internal journal-entry marker and Mural returns text in plainText, htmlText, content, properties or data fields."
 		],
 		"uiReporting": [
 			"Compact journal Mural sync status reports already-present entries as left unchanged.",
@@ -121,7 +122,7 @@
 		{
 			"command": "node tests/mural-journal-sync-layout-runtime.test.js",
 			"status": "passed",
-			"summary": "Includes duplicate-body entries, purple decorative-card and stale-widget repair regression coverage."
+			"summary": "Includes duplicate-body entries, purple decorative-card, stale-widget repair and manual-card recognition regression coverage."
 		},
 		{
 			"command": "node tests/mural-journal-sync-safe-tags-runtime.test.js",
@@ -148,6 +149,10 @@
 			"command": "npm run lint",
 			"status": "passed",
 			"summary": "0 errors, 259 existing warnings"
+		},
+		{
+			"command": "npm run validate",
+			"status": "passed"
 		},
 		{
 			"command": "npm run trace:coverage -- --date 2026-06-12",

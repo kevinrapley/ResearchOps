@@ -91,9 +91,10 @@ Required behaviour:
 - Addressed Codex review thread `PRRT_kwDOP3Td2M6JDoxV`: body-only existing-widget matching now uses a claimed-widget set during status and hydrate passes so one Mural widget cannot satisfy more than one distinct journal entry id.
 - Corrected the later live-board failure where decorative purple title/header notes were treated as reusable entry cards: template selection and existing-card matching now require white content-card geometry, while a filled white card can still anchor later placements when a category header is unreadable.
 - Added polluted-board recovery: widgets without explicit content-card dimensions or positioned above the resolved content-card row no longer count as synced, and stale synced widgets outside the content flow are deleted after the correct white card is updated or created.
+- Corrected manual-card recognition: existing white cards in the correct Mural column can now be recognised by journal-entry body text even when they do not carry the internal `journal-entry:*` marker. The matcher reads common Mural text fields including `plainText`, `htmlText`, `content`, nested `properties` and nested `data` fields, normalises rich text and whitespace, and permits high-confidence long text containment.
 - Updated both Mural sync UI entry points to report already-present entries as left unchanged.
 - Added runtime coverage for first-template update, second-entry creation below the first, existing-entry preservation, sticky-note column headers, and post-write tag application.
-- Updated the layout runtime test so two distinct journal entries with the same Perceptions body still produce two sticky writes, purple decorative tagged cards are ignored as templates, and stale mapped top widgets are deleted during repair.
+- Updated the layout runtime test so two distinct journal entries with the same Perceptions body still produce two sticky writes, purple decorative tagged cards are ignored as templates, stale mapped top widgets are deleted during repair, and three manually-created Perceptions cards without internal markers are counted as 3 synced and 0 pending with no writes.
 
 ## Files changed
 
@@ -125,18 +126,21 @@ node tests/mural-airtable-board-registry.test.js
 npm run format:check
 npm test
 npm run lint
+npm run validate
+npm run trace:coverage -- --date 2026-06-12
 ```
 
 Validation results:
 
 - Focused route-state test passed.
-- Focused layout runtime test passed, including duplicate-body, purple decorative-card and stale-widget repair regression coverage.
+- Focused layout runtime test passed, including duplicate-body, purple decorative-card, stale-widget repair, and manual-card recognition regression coverage.
 - Focused safe-tags runtime test passed.
 - JavaScript syntax checks passed.
 - Related Mural service, UI, return-route and board-registry tests passed.
 - Format check passed after applying Prettier to the new runtime test.
 - Full test suite passed: 215 tests.
 - Lint passed: 0 errors, 259 existing warnings after removing a touched-file unused-argument warning.
+- Repository validation passed.
 - Trace coverage passed for `feature/mural-journal-export-layout`.
 
 ## Residual risk
