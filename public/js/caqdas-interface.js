@@ -204,6 +204,22 @@ function cooccurrencePairLookup(rows) {
 	return lookup;
 }
 
+function cooccurrenceHeatmapCodes(rows, limit = 5) {
+	const selected = [];
+	rows.forEach((row) => {
+		const hasSource = selected.includes(row.source);
+		const hasTarget = selected.includes(row.target);
+		if (hasSource && hasTarget) return;
+		if (hasSource && selected.length < limit) selected.push(row.target);
+		if (hasTarget && selected.length < limit) selected.push(row.source);
+		if (!hasSource && !hasTarget && selected.length <= limit - 2) selected.push(row.source, row.target);
+	});
+	cooccurrenceCodeTotals(rows).forEach((row) => {
+		if (selected.length < limit && !selected.includes(row.code)) selected.push(row.code);
+	});
+	return selected.slice(0, limit);
+}
+
 function cooccurrenceSourceGroups(rows) {
 	const grouped = new Map();
 	rows.forEach((row) => {
@@ -228,28 +244,32 @@ function cooccurrenceBar(width, colour, label, value) {
 }
 
 function renderOnsCooccurrenceHeatmap(rows) {
-	const codes = cooccurrenceCodeTotals(rows).slice(0, 5).map((row) => row.code);
+	const codes = cooccurrenceHeatmapCodes(rows, 5);
 	const lookup = cooccurrencePairLookup(rows);
 	const maxWeight = Math.max(...rows.map((row) => row.weight), 1);
 	return `<section aria-labelledby="cooccurrence-heatmap-heading" data-ons-chart="heatmap">
 		<h4 class="govuk-heading-s" id="cooccurrence-heatmap-heading">Code co-occurrence matrix</h4>
-		<p class="govuk-hint">Showing weights between the 5 most connected codes.</p>
-		<div style="overflow-x: auto;">
-			<table class="govuk-table govuk-!-font-size-16">
+		<p class="govuk-hint">Showing weights between 5 connected high-weight codes.</p>
+		<div style="box-sizing: border-box; max-width: 100%; overflow-x: auto; padding-right: 1rem;">
+			<table class="govuk-table govuk-!-font-size-16" style="table-layout: fixed; width: 100%; min-width: 42rem;">
+				<colgroup>
+					<col style="width: 10rem;">
+					${codes.map(() => '<col>').join('')}
+				</colgroup>
 				<caption class="govuk-table__caption govuk-table__caption--s">Matrix heatmap of code-pair weights</caption>
 				<thead class="govuk-table__head">
 					<tr class="govuk-table__row">
-						<th scope="col" class="govuk-table__header">Code</th>
-						${codes.map((code) => `<th scope="col" class="govuk-table__header" style="max-width: 7rem; overflow-wrap: anywhere;">${esc(code)}</th>`).join('')}
+						<th scope="col" class="govuk-table__header" style="overflow-wrap: anywhere; padding-right: 1rem;">Code</th>
+						${codes.map((code) => `<th scope="col" class="govuk-table__header" style="overflow-wrap: anywhere; padding-right: 1rem;">${esc(code)}</th>`).join('')}
 					</tr>
 				</thead>
 				<tbody class="govuk-table__body">
 					${codes.map((source) => `<tr class="govuk-table__row">
-						<th scope="row" class="govuk-table__header" style="max-width: 9rem; overflow-wrap: anywhere;">${esc(source)}</th>
+						<th scope="row" class="govuk-table__header" style="overflow-wrap: anywhere; padding-right: 1rem;">${esc(source)}</th>
 						${codes.map((target) => {
 							const weight = source === target ? 0 : lookup.get(`${source}\u0000${target}`) || 0;
 							const opacity = weight ? Math.max(0.12, Math.min(0.55, (weight / maxWeight) * 0.55)) : 0;
-							return `<td class="govuk-table__cell govuk-table__cell--numeric" style="${weight ? `background: rgba(32, 96, 149, ${opacity});` : ''}">${weight || ''}</td>`;
+							return `<td class="govuk-table__cell govuk-table__cell--numeric" style="padding-left: 0.75rem; padding-right: 1rem; ${weight ? `background: rgba(32, 96, 149, ${opacity});` : ''}">${weight || ''}</td>`;
 						}).join('')}
 					</tr>`).join('')}
 				</tbody>

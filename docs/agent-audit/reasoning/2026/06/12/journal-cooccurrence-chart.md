@@ -49,6 +49,8 @@ Follow-up scope: add the four further useful options identified from the ONS cha
 
 Second follow-up scope: reduce the matrix heatmap from 12 to the 5 most connected codes so the view fits more comfortably in the analysis panel.
 
+Third follow-up scope: fix heatmap code selection and layout so all selected codes have visible matrix relationships and the final column is not crowded against the panel edge.
+
 ## Implementation summary
 
 - Updated the `charts` submodule from `9455c5525bf545411834c271375a77115b759813` to `758806bcfd61d7c00f18c0c357294e746f1974d6`.
@@ -66,6 +68,8 @@ Second follow-up scope: reduce the matrix heatmap from 12 to the 5 most connecte
 - Generalised the display switch to use `data-cooccurrence-panel` so all six views are controlled by the same GOV.UK radio group.
 - Extended the route-state test to lock the new chart markers, labels, radio values and panel hooks.
 - Reduced the matrix heatmap limit from 12 to 5 most connected codes and updated the visible hint text to match.
+- Changed the matrix heatmap code selection to build the five visible codes from connected high-weight pairs, avoiding empty visible rows for codes whose relationships are outside the displayed set.
+- Added a fixed table layout, column group and explicit right padding to keep the final heatmap column inside the panel with the same spacing as the other columns.
 
 ## Files changed
 
@@ -118,6 +122,16 @@ npm test
 npm run lint
 ```
 
+Heatmap selection and layout follow-up:
+
+```bash
+node tests/journal-cooccurrence-display-route-state.test.js
+node --check public/js/caqdas-interface.js
+npm run format:check
+npm test
+npm run lint
+```
+
 Validation results:
 
 - Focused co-occurrence tests passed: 5 tests.
@@ -136,6 +150,11 @@ Validation results:
 - Heatmap fit format check passed.
 - Heatmap fit full test suite passed: 213 tests.
 - Heatmap fit lint passed with the repository's existing warning set: 0 errors, 260 warnings.
+- Heatmap selection and layout route-state test passed.
+- Heatmap selection and layout JavaScript syntax check passed.
+- Heatmap selection and layout format check passed.
+- Heatmap selection and layout full test suite passed: 213 tests.
+- Heatmap selection and layout lint passed with the repository's existing warning set: 0 errors, 260 warnings.
 
 Validation note:
 

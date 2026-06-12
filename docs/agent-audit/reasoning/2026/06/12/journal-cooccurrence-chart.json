@@ -55,6 +55,8 @@
 		"chartDataLimit": 20,
 		"heatmapCodeLimit": 5,
 		"heatmapFitFollowUp": "Reduced the matrix heatmap from 12 to 5 most connected codes so the view fits more comfortably in the analysis panel.",
+		"heatmapSelectionFollowUp": "Changed heatmap code selection to build the visible five from connected high-weight pairs so every selected code has a visible relationship inside the matrix.",
+		"heatmapLayoutFollowUp": "Added fixed table layout, colgroup sizing and explicit right padding so the final column is not crowded against the panel edge.",
 		"smallMultipleSourceLimit": 6,
 		"stackedSourceLimit": 8,
 		"clusteredSourceLimit": 5,
@@ -176,6 +178,31 @@
 			"command": "npm run lint",
 			"status": "passed",
 			"summary": "Heatmap fit follow-up: 0 errors, 260 existing warnings"
+		},
+		{
+			"command": "node tests/journal-cooccurrence-display-route-state.test.js",
+			"status": "passed",
+			"summary": "Heatmap selection and layout follow-up"
+		},
+		{
+			"command": "node --check public/js/caqdas-interface.js",
+			"status": "passed",
+			"summary": "Heatmap selection and layout follow-up"
+		},
+		{
+			"command": "npm run format:check",
+			"status": "passed",
+			"summary": "Heatmap selection and layout follow-up"
+		},
+		{
+			"command": "npm test",
+			"status": "passed",
+			"summary": "Heatmap selection and layout follow-up: 213 tests passed"
+		},
+		{
+			"command": "npm run lint",
+			"status": "passed",
+			"summary": "Heatmap selection and layout follow-up: 0 errors, 260 existing warnings"
 		}
 	],
 	"browserVerification": {
