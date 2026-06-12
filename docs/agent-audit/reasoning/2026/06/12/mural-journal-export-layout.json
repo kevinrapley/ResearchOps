@@ -49,6 +49,12 @@
 			"minimumScope": "murals:read"
 		},
 		{
+			"file": ".agent-operating-model/bundles/mural-public-api/contracts/endpoints/getmuraltags.yaml",
+			"method": "GET",
+			"path": "/murals/{muralId}/tags",
+			"minimumScope": "murals:read"
+		},
+		{
 			"file": ".agent-operating-model/bundles/mural-public-api/contracts/endpoints/updatestickynote.yaml",
 			"method": "PATCH",
 			"path": "/murals/{muralId}/widgets/sticky-note/{widgetId}",
@@ -81,7 +87,12 @@
 			"Preserve existing template tags such as Raspberry category and Snowberry project tags.",
 			"Do not create category/project tags from ResearchOps as Mint tags.",
 			"Create only explicit ResearchOps user-created tags as Mint tags.",
-			"Strip the internal researchOpsUserTags hint before forwarding write requests to Mural."
+			"Strip the internal researchOpsUserTags hint before forwarding write requests to Mural.",
+			"Apply known Mural tag ids to the sticky after the sticky-note create or update response returns a widget id."
+		],
+		"followUpCorrection": [
+			"Treat exact wide category-label sticky-note widgets as headers so purple column labels are not patched as journal entries.",
+			"Write sticky content without unsupported tag fields, then apply board-known tag ids and newly-created Mint user tag ids to the resulting widget."
 		],
 		"uiReporting": [
 			"Compact journal Mural sync status reports already-present entries as left unchanged.",
@@ -95,6 +106,7 @@
 		"public/js/journal-tabs.js",
 		"tests/mural-journal-sync-route-state.test.js",
 		"tests/mural-journal-sync-layout-runtime.test.js",
+		"tests/mural-journal-sync-safe-tags-runtime.test.js",
 		"docs/agent-audit/reasoning/2026/06/12/mural-journal-export-layout.md",
 		"docs/agent-audit/reasoning/2026/06/12/mural-journal-export-layout.json"
 	],
@@ -108,7 +120,11 @@
 			"status": "passed"
 		},
 		{
-			"command": "node --check infra/cloudflare/src/service/mural-journal-sync-layout.js && node --check infra/cloudflare/src/service/mural-journal-sync-safe-tags.js && node --check public/js/journal-mural-sync-compact.js && node --check public/js/journal-tabs.js",
+			"command": "node tests/mural-journal-sync-safe-tags-runtime.test.js",
+			"status": "passed"
+		},
+		{
+			"command": "node --check infra/cloudflare/src/service/mural-journal-sync-layout.js && node --check infra/cloudflare/src/service/mural-journal-sync-safe-tags.js && node --check tests/mural-journal-sync-safe-tags-runtime.test.js && node --check public/js/journal-mural-sync-compact.js && node --check public/js/journal-tabs.js",
 			"status": "passed"
 		},
 		{
@@ -122,7 +138,7 @@
 		{
 			"command": "npm test",
 			"status": "passed",
-			"summary": "214 tests passed"
+			"summary": "215 tests passed"
 		},
 		{
 			"command": "npm run lint",
@@ -132,6 +148,6 @@
 	],
 	"residualRisks": [
 		"No live Mural board mutation was performed from the local Codex session.",
-		"The safe-tags wrapper preserves existing Mural tag labels when the Mural tags list returns them. If a template carries a tag name that Mural does not report as an existing board tag, the wrapper omits that template tag rather than creating it as Mint."
+		"The safe-tags wrapper applies existing Mural tags by id when the Mural tags list returns them. If a template carries a tag name that Mural does not report as an existing board tag, the wrapper omits that template tag from new cards rather than creating it as Mint."
 	]
 }

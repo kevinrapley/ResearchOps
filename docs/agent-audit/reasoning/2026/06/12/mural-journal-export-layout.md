@@ -56,6 +56,7 @@ Selection rationale:
 Loaded endpoint contracts:
 
 - `contracts/endpoints/getmuralwidgets.yaml` — `GET /murals/{muralId}/widgets`, minimum scope `murals:read`.
+- `contracts/endpoints/getmuraltags.yaml` — `GET /murals/{muralId}/tags`, minimum scope `murals:read`.
 - `contracts/endpoints/updatestickynote.yaml` — `PATCH /murals/{muralId}/widgets/sticky-note/{widgetId}`, minimum scope `murals:write`.
 - `contracts/endpoints/createstickynote.yaml` — `POST /murals/{muralId}/widgets/sticky-note`, minimum scope `murals:write`.
 - `contracts/endpoints/createmuraltag.yaml` — `POST /murals/{muralId}/tags`, minimum scope `murals:write`.
@@ -85,8 +86,10 @@ Required behaviour:
 - Changed tag composition so category/project tags are carried forward from the template sticky rather than recreated by ResearchOps.
 - Added an internal `researchOpsUserTags` hint so the safe-tags wrapper only creates additional user-authored ResearchOps tags as Mint tags.
 - Stripped the internal `researchOpsUserTags` hint before Mural write requests reach the public API.
+- Corrected the follow-up live-board failure where Mural returned purple column labels as sticky-note widgets: exact category-label text plus wide geometry now identifies those widgets as headers, so they are not patched as journal entries.
+- Corrected the tag write path so sticky-note create/update calls write the sticky content first, then apply known Mural tag ids to the resulting widget. ResearchOps user-created tags are created as Mint tags; template category/project tags are only reused when already present on the board.
 - Updated both Mural sync UI entry points to report already-present entries as left unchanged.
-- Added runtime coverage for first-template update, second-entry creation below the first, and existing-entry preservation.
+- Added runtime coverage for first-template update, second-entry creation below the first, existing-entry preservation, sticky-note column headers, and post-write tag application.
 
 ## Files changed
 
@@ -96,6 +99,7 @@ Required behaviour:
 - `public/js/journal-tabs.js`
 - `tests/mural-journal-sync-route-state.test.js`
 - `tests/mural-journal-sync-layout-runtime.test.js`
+- `tests/mural-journal-sync-safe-tags-runtime.test.js`
 - `docs/agent-audit/reasoning/2026/06/12/mural-journal-export-layout.md`
 - `docs/agent-audit/reasoning/2026/06/12/mural-journal-export-layout.json`
 
@@ -104,8 +108,10 @@ Required behaviour:
 ```bash
 node tests/mural-journal-sync-route-state.test.js
 node tests/mural-journal-sync-layout-runtime.test.js
+node tests/mural-journal-sync-safe-tags-runtime.test.js
 node --check infra/cloudflare/src/service/mural-journal-sync-layout.js
 node --check infra/cloudflare/src/service/mural-journal-sync-safe-tags.js
+node --check tests/mural-journal-sync-safe-tags-runtime.test.js
 node --check public/js/journal-mural-sync-compact.js
 node --check public/js/journal-tabs.js
 node tests/mural-service-split-route-state.test.js
@@ -121,14 +127,15 @@ Validation results:
 
 - Focused route-state test passed.
 - Focused layout runtime test passed.
+- Focused safe-tags runtime test passed.
 - JavaScript syntax checks passed.
 - Related Mural service, UI, return-route and board-registry tests passed.
 - Format check passed after applying Prettier to the new runtime test.
-- Full test suite passed: 214 tests.
+- Full test suite passed: 215 tests.
 - Lint passed: 0 errors, 259 existing warnings after removing a touched-file unused-argument warning.
 
 ## Residual risk
 
 No live Mural board mutation was performed from the local Codex session. The implementation is covered with mocked Mural API responses and static route-state assertions against the Mural endpoint contracts.
 
-The safe-tags wrapper preserves existing Mural tag labels when the Mural tags list returns them. If a template carries a tag name that Mural does not report as an existing board tag, the wrapper will avoid creating that template tag as Mint and will omit it from the write payload rather than mis-colouring it.
+The safe-tags wrapper applies existing Mural tags by id when the Mural tags list returns them. If a template carries a tag name that Mural does not report as an existing board tag, the wrapper will avoid creating that template tag as Mint; new cards will omit that missing template tag rather than mis-colouring it.

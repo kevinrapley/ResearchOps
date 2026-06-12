@@ -255,7 +255,7 @@ async function listMuralTags(accessToken, muralId) {
 
 async function createMuralTag(accessToken, muralId, tag) {
 	const text = truncateMuralTag(tag);
-	if (!text) return "";
+	if (!text) return null;
 	const bodies = [{ text, ...MURAL_MINT_TAG_STYLE }, { text }];
 
 	for (const body of bodies) {
@@ -271,10 +271,16 @@ async function createMuralTag(accessToken, muralId, tag) {
 		const data = await res.json().catch(() => ({}));
 		if (res.ok) {
 			const created = Array.isArray(data?.value) ? data.value[0] : (data?.value || data);
-			return truncateMuralTag(created?.text || text);
+			return normalizeMuralTagRecord({ ...created, text: created?.text || text });
 		}
 	}
-	return "";
+	return null;
+}
+
+function normalizeMuralTagRecord(tag) {
+	const text = truncateMuralTag(tag?.text || tag?.name || tag?.title || tag?.label || tag);
+	const id = safeText(tag?.id || tag?.tagId || "");
+	return text ? { ...tag, id, text } : null;
 }
 
 async function ensureKnownTags(accessToken, muralId, tags, createableTags = tags) {
@@ -284,8 +290,8 @@ async function ensureKnownTags(accessToken, muralId, tags, createableTags = tags
 
 	const known = new Map();
 	for (const tag of await listMuralTags(accessToken, muralId)) {
-		const text = truncateMuralTag(tag?.text || tag?.name || tag?.title || tag);
-		if (text) known.set(text.toLowerCase(), text);
+		const record = normalizeMuralTagRecord(tag);
+		if (record) known.set(record.text.toLowerCase(), record);
 	}
 
 	const safe = [];
@@ -296,13 +302,13 @@ async function ensureKnownTags(accessToken, muralId, tags, createableTags = tags
 			continue;
 		}
 		if (!createable.has(key)) continue;
-		const created = await createMuralTag(accessToken, muralId, tag).catch(() => "");
-		if (created) {
-			known.set(created.toLowerCase(), created);
-			safe.push(created);
+		const record = await createMuralTag(accessToken, muralId, tag).catch(() => null);
+		if (record) {
+			known.set(record.text.toLowerCase(), record);
+			safe.push(record);
 		}
 	}
-	return dedupeTags(safe);
+	return safe;
 }
 
 async function responseMentionsMissingTag(response) {
@@ -346,15 +352,6 @@ function withoutTags(body) {
 	return body;
 }
 
-function withTags(body, tags) {
-	if (Array.isArray(body)) return body.map(item => withTags(item, tags));
-	if (body && typeof body === "object") {
-		const next = removeUnsupportedFields(body);
-		return tags.length ? { ...next, tags } : next;
-	}
-	return body;
-}
-
 function tagsFromBody(body) {
 	if (Array.isArray(body)) return body.flatMap(item => normalizeTags(item?.tags));
 	return normalizeTags(body?.tags);
@@ -370,6 +367,11 @@ function widgetsFromBody(body) {
 	if (Array.isArray(body?.widgets)) return body.widgets;
 	if (Array.isArray(body)) return body;
 	return [];
+}
+
+function firstWidgetIdFromBody(body) {
+	const value = Array.isArray(body?.value) ? body.value[0] : body?.value;
+	return safeText(value?.id || body?.id || "");
 }
 
 function widgetById(widgetCache, muralId, widgetId) {
@@ -427,6 +429,37 @@ async function createReplacementSticky(originalFetch, accessToken, muralId, sour
 	return res;
 }
 
+async function applyTagsToWidget(originalFetch, accessToken, muralId, widgetId, tagRecords) {
+	const tagIds = dedupeTags(tagRecords.map(tag => safeText(tag?.id)).filter(Boolean));
+	if (!accessToken || !muralId || !widgetId || !tagIds.length) return false;
+	const res = await originalFetch(`${MURAL_ROOT}/murals/${muralId}/widgets/${widgetId}`, {
+		method: "PATCH",
+		headers: {
+			Authorization: `Bearer ${accessToken}`,
+			"Content-Type": "application/json",
+			Accept: "application/json"
+		},
+		body: JSON.stringify({ tags: tagIds })
+	});
+	return res.ok;
+}
+
+async function attachUserTagsByTagEndpoint(originalFetch, accessToken, muralId, widgetId, tagRecords, createableTags) {
+	const createable = new Set(userFacingTags(createableTags).map(tag => tag.toLowerCase()));
+	for (const tag of tagRecords) {
+		if (!createable.has(safeText(tag?.text).toLowerCase())) continue;
+		await originalFetch(`${MURAL_ROOT}/murals/${muralId}/tags`, {
+			method: "POST",
+			headers: {
+				Authorization: `Bearer ${accessToken}`,
+				"Content-Type": "application/json",
+				Accept: "application/json"
+			},
+			body: JSON.stringify({ text: tag.text, ...MURAL_MINT_TAG_STYLE, widgets: [{ id: widgetId }] })
+		}).catch(() => null);
+	}
+}
+
 async function fallbackToReplacementSticky({ originalFetch, init, url, body, muralId, confirmedTags, firstResponse, widgetCache }) {
 	if (!isPatchRequest(init)) return firstResponse;
 	if (!(await responseMentionsWrongWidgetType(firstResponse))) return firstResponse;
@@ -437,7 +470,7 @@ async function fallbackToReplacementSticky({ originalFetch, init, url, body, mur
 	const replacementText = replacementTextFromBody(body);
 	if (!accessToken || !muralId || !sourceWidget || !replacementText) return firstResponse;
 
-	const withTagResponse = await createReplacementSticky(originalFetch, accessToken, muralId, sourceWidget, body, confirmedTags);
+	const withTagResponse = await createReplacementSticky(originalFetch, accessToken, muralId, sourceWidget, body, confirmedTags.map(tag => tag.text));
 	if (!(await responseMentionsMissingTag(withTagResponse))) return withTagResponse;
 
 	return createReplacementSticky(originalFetch, accessToken, muralId, sourceWidget, body, []);
@@ -499,7 +532,14 @@ function installSafeMuralFetch(svc, originalFetch) {
 
 		const accessToken = accessTokenFromHeaders(init.headers);
 		const confirmedTags = await ensureKnownTags(accessToken, muralId, desiredTags, createableTags).catch(() => []);
-		const firstResponse = await originalFetch(input, { ...init, body: JSON.stringify(confirmedTags.length ? withTags(body, confirmedTags) : withoutTags(body)) });
+		const firstResponse = await originalFetch(input, { ...init, body: JSON.stringify(withoutTags(body)) });
+
+		if (firstResponse.ok && confirmedTags.length) {
+			const responseBody = await firstResponse.clone().json().catch(() => ({}));
+			const widgetId = firstWidgetIdFromBody(responseBody) || widgetIdFromUrl(url);
+			const applied = await applyTagsToWidget(originalFetch, accessToken, muralId, widgetId, confirmedTags).catch(() => false);
+			if (!applied) await attachUserTagsByTagEndpoint(originalFetch, accessToken, muralId, widgetId, confirmedTags, createableTags);
+		}
 
 		const replacementResponse = await fallbackToReplacementSticky({
 			originalFetch,

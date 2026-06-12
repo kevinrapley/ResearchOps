@@ -178,13 +178,11 @@ function isStickyLike(widget) {
 }
 
 function isHeaderWidget(widget, categoryKey) {
-	const type = safeText(widget?.type).toLowerCase();
-	if (type.includes("sticky") || type.includes("note")) return false;
 	const label = categoryLabel(categoryKey);
-	const text = widgetText(widget).toLowerCase();
+	const text = canonicalBodyText(widgetText(widget));
 	const meta = widgetMetadataText(widget);
-	const categoryMatch = text === label || meta === label || text.includes(label);
-	return categoryMatch && numeric(widget.width) > numeric(widget.height);
+	const categoryMatch = text === label || meta === label;
+	return categoryMatch && numeric(widget.width) > numeric(widget.height) * 1.5;
 }
 
 function isColumnContentWidget(widget, categoryKey, layout) {
