@@ -750,7 +750,7 @@ async function resolveBoardAndWidgets(svc, accessToken, payload) {
 		return { ok: false, status: 404, body: { ok: false, error: "mural_board_not_found" } };
 	}
 
-	const rawWidgets = await getWidgets(svc.env, accessToken, board.muralId);
+	const rawWidgets = await getWidgets(svc.env, accessToken, board.muralId, { includeDetails: true });
 	return {
 		ok: true,
 		board,

@@ -102,7 +102,8 @@
 			"Resolve Test Project 1 Mural board mappings across the canonical Airtable id, legacy Airtable id and local id so status checks do not fall back to the wrong board when a page is opened with the legacy URL id.",
 			"Read D1 Mural board mappings from the existing mural_boards.project shape as well as newer project_record_id and local_project_id columns.",
 			"Route compact journal-page Mural status calls on *.pages.dev through same-origin /api/mural/journal-sync so Pages previews use the preview Worker instead of the production rops-api Worker.",
-			"Request limit=100 from the first Mural widget-list page, follow wrapped cursors such as pagination.next, and cover manually-created card status recognition through the active safe-tags wrapper so existing cards without internal journal-entry markers no longer report as 0 synced."
+			"Request limit=100 from the first Mural widget-list page, follow wrapped cursors such as pagination.next, and cover manually-created card status recognition through the active safe-tags wrapper so existing cards without internal journal-entry markers no longer report as 0 synced.",
+			"Enrich Mural list results with GET /murals/{muralId}/widgets/{widgetId} for sticky-like widgets when list results omit visible body text, so manually-created cards can be matched by journal body text even when the list endpoint returns only ids, tags and geometry."
 		],
 		"uiReporting": [
 			"Compact journal Mural sync status reports already-present entries as left unchanged.",
@@ -136,7 +137,7 @@
 		{
 			"command": "node tests/mural-journal-sync-safe-tags-runtime.test.js",
 			"status": "passed",
-			"summary": "Includes active-wrapper manual-card status recognition and first-page limit=100 pagination coverage."
+			"summary": "Includes active-wrapper manual-card status recognition, first-page limit=100 pagination coverage, and widget-detail enrichment when list results omit sticky-note body text."
 		},
 		{
 			"command": "node tests/journals-route-state.test.js && node tests/journal-tabs-api-origin-route-state.test.js",

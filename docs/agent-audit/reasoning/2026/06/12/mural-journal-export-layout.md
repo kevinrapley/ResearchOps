@@ -97,6 +97,7 @@ Required behaviour:
 - Made the Mural board resolver compatible with the D1 `mural_boards.project` mapping shape used by the Airtable mirror, as well as the newer `project_record_id` / `local_project_id` shape, so status checks do not silently fall through to the wrong board source.
 - Corrected the compact journal page Mural status script so `*.pages.dev` previews call same-origin `/api/mural/journal-sync` through the Pages proxy, rather than bypassing the preview Worker and calling the production `rops-api` Worker directly.
 - Corrected the repeated live status failure where manually-created cards still reported as `0 of 36`: the shared Mural widget client now requests `limit=100` from the first widget-list page, follows wrapped pagination cursors such as `pagination.next`, and the active safe-tags wrapper has direct status regression coverage for manually-created cards without internal `journal-entry:*` markers.
+- Corrected the subsequent live status failure after hard refresh: the journal sync now enriches Mural list results with `GET /murals/{muralId}/widgets/{widgetId}` for sticky-like widgets when the list response lacks visible body text, so manually-created cards can be matched by body text even when the list endpoint only returns ids, tags and geometry.
 - Updated both Mural sync UI entry points to report already-present entries as left unchanged.
 - Added runtime coverage for first-template update, second-entry creation below the first, existing-entry preservation, sticky-note column headers, and post-write tag application.
 - Updated the layout runtime test so two distinct journal entries with the same Perceptions body still produce two sticky writes, purple decorative tagged cards are ignored as templates, stale mapped top widgets are deleted during repair, and three manually-created Perceptions cards without internal markers are counted as 3 synced and 0 pending with no writes even when those cards are returned on a second Mural widget page and use nested text fields.
@@ -146,7 +147,7 @@ Validation results:
 - Focused route-state test passed.
 - Journal route-state and journal API-origin tests passed, including the compact page same-origin Pages preview API routing guard.
 - Focused layout runtime test passed, including duplicate-body, purple decorative-card, stale-widget repair, paginated widget loading, nested Mural text payloads, and manual-card recognition regression coverage.
-- Focused safe-tags runtime test passed, including manual-card status recognition through the active safe-tags wrapper and first-page `limit=100` pagination coverage.
+- Focused safe-tags runtime test passed, including manual-card status recognition through the active safe-tags wrapper, first-page `limit=100` pagination coverage, and widget-detail enrichment when the list response omits sticky-note body text.
 - Mural board-registry test passed, including legacy Test Project 1 id resolution to canonical D1 and Airtable board mappings.
 - JavaScript syntax checks passed.
 - Related Mural service, UI, return-route and board-registry tests passed.

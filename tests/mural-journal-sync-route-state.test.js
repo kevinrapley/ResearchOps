@@ -81,6 +81,9 @@ includes(muralLibSource, "js?.next", "Mural lib");
 includes(muralLibSource, "url.searchParams.set(\"limit\", \"100\")", "Mural lib");
 includes(muralLibSource, "url.searchParams.set(\"next\", next)", "Mural lib");
 includes(muralLibSource, "js?.pagination?.next", "Mural lib");
+includes(muralLibSource, "export async function getWidget", "Mural lib");
+includes(muralLibSource, "/widgets/${encodeURIComponent(id)}", "Mural lib");
+includes(muralLibSource, "options.includeDetails", "Mural lib");
 includes(baseRequestSource, "export function parseEntryPayload", "base request helpers");
 includes(baseContextSource, "export async function buildContext", "base context helpers");
 includes(baseContextSource, "export function statusFromEntriesAndWidgets", "base context helpers");
@@ -88,6 +91,7 @@ includes(baseSyncEntrySource, "export function canonicalExistingWidget", "base e
 includes(baseSyncEntrySource, "export async function syncOneEntry", "base entry sync helpers");
 
 includes(layoutSource, "export async function muralJournalSync", "layout service");
+includes(layoutSource, "includeDetails: true", "layout service");
 includes(layoutSource, "function categoryHeaderWidget", "layout service");
 includes(layoutSource, "function columnTemplateWidget", "layout service");
 includes(layoutSource, "function columnLayout", "layout service");

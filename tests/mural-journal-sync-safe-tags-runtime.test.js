@@ -288,34 +288,70 @@ try {
 			}
 			return jsonResponse({
 				value: [
-					widget({
+					{
 						id: 'manual-entry-001',
-						properties: { plainText: manualEntries[0].content.replace(/\. People/, '.\nPeople') },
+						type: 'sticky_note',
 						tags: [{ text: 'perceptions' }, { text: 'Test Project 1' }],
 						x: 0,
 						y: 120,
 						width: 400,
 						height: 220,
-					}),
-					widget({
+					},
+					{
 						id: 'manual-entry-006',
-						data: { htmlText: `<p>${manualEntries[1].content}</p>` },
+						type: 'sticky_note',
 						tags: [{ label: 'perceptions' }, { label: 'Test Project 1' }],
 						x: 0,
 						y: 372,
 						width: 400,
 						height: 220,
-					}),
-					widget({
+					},
+					{
 						id: 'manual-entry-010',
-						content: manualEntries[2].content,
+						type: 'sticky_note',
 						tags: ['perceptions', 'Test Project 1'],
 						x: 0,
 						y: 624,
 						width: 400,
 						height: 220,
-					}),
+					},
 				],
+			});
+		}
+
+		if (
+			parsed.pathname.endsWith('/murals/workspace.123/widgets/manual-entry-001') &&
+			method === 'GET'
+		) {
+			return jsonResponse({
+				value: {
+					id: 'manual-entry-001',
+					properties: { plainText: manualEntries[0].content.replace(/\. People/, '.\nPeople') },
+				},
+			});
+		}
+
+		if (
+			parsed.pathname.endsWith('/murals/workspace.123/widgets/manual-entry-006') &&
+			method === 'GET'
+		) {
+			return jsonResponse({
+				value: {
+					id: 'manual-entry-006',
+					data: { htmlText: `<p>${manualEntries[1].content}</p>` },
+				},
+			});
+		}
+
+		if (
+			parsed.pathname.endsWith('/murals/workspace.123/widgets/manual-entry-010') &&
+			method === 'GET'
+		) {
+			return jsonResponse({
+				value: {
+					id: 'manual-entry-010',
+					content: manualEntries[2].content,
+				},
 			});
 		}
 

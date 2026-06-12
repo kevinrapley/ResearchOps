@@ -614,7 +614,65 @@ export async function duplicateMural(env, accessToken, { roomId, folderId, title
 
 /* ───────────────── Widgets & areas ───────────────── */
 
-export async function getWidgets(env, accessToken, muralId) {
+function firstMuralValue(body) {
+	if (Array.isArray(body?.value)) return body.value[0] || null;
+	if (body?.value) return body.value;
+	return body || null;
+}
+
+function widgetNeedsDetails(widget) {
+	if (!widget?.id) return false;
+	const type = String(widget?.type || "").toLowerCase();
+	const hasText =
+		widget?.text !== undefined ||
+		widget?.plainText !== undefined ||
+		widget?.htmlText !== undefined ||
+		widget?.content !== undefined ||
+		widget?.properties?.text !== undefined ||
+		widget?.properties?.plainText !== undefined ||
+		widget?.properties?.htmlText !== undefined ||
+		widget?.data?.text !== undefined ||
+		widget?.data?.plainText !== undefined ||
+		widget?.data?.htmlText !== undefined;
+	return !hasText && (type.includes("sticky") || type.includes("note") || type.includes("shape") || type.includes("text") || type.includes("title"));
+}
+
+export async function getWidget(env, accessToken, muralId, widgetId) {
+	const id = String(widgetId || "").trim();
+	if (!id) return null;
+	const url = `https://app.mural.co/api/public/v1/murals/${muralId}/widgets/${encodeURIComponent(id)}`;
+	const res = await fetch(url, {
+		headers: {
+			Authorization: `Bearer ${accessToken}`,
+			Accept: "application/json"
+		}
+	});
+	const js = await res.json().catch(() => ({}));
+	if (!res.ok) {
+		if (res.status === 404) return null;
+		throw Object.assign(new Error(`GET /murals/${muralId}/widgets/${id} failed: ${res.status}`), {
+			status: res.status,
+			body: js
+		});
+	}
+	return firstMuralValue(js);
+}
+
+async function enrichWidgetsWithDetails(env, accessToken, muralId, widgets, includeDetails) {
+	if (!includeDetails) return widgets;
+	const enriched = [];
+	for (const widget of widgets) {
+		if (!widgetNeedsDetails(widget)) {
+			enriched.push(widget);
+			continue;
+		}
+		const detail = await getWidget(env, accessToken, muralId, widget.id).catch(() => null);
+		enriched.push(detail ? { ...widget, ...detail } : widget);
+	}
+	return enriched;
+}
+
+export async function getWidgets(env, accessToken, muralId, options = {}) {
 	const baseUrl = `https://app.mural.co/api/public/v1/murals/${muralId}/widgets`;
 	const widgets = [];
 	let next = "";
@@ -642,7 +700,7 @@ export async function getWidgets(env, accessToken, muralId) {
 		if (!next) break;
 	}
 
-	return widgets;
+	return enrichWidgetsWithDetails(env, accessToken, muralId, widgets, options.includeDetails);
 }
 
 export async function createSticky(env, accessToken, muralId, { text, x, y, width = 240, height = 120 }) {
