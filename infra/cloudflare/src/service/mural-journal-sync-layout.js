@@ -111,9 +111,6 @@ function widgetText(widget) {
 function canonicalBodyText(value) {
 	return safeText(value)
 		.replace(/<[^>]*>/g, " ")
-		.replace(/&amp;/gi, "&")
-		.replace(/&lt;/gi, "<")
-		.replace(/&gt;/gi, ">")
 		.replace(/&nbsp;/gi, " ")
 		.replace(/\s+/g, " ")
 		.toLowerCase();
