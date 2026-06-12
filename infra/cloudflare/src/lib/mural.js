@@ -621,10 +621,8 @@ export async function getWidgets(env, accessToken, muralId) {
 
 	for (let page = 0; page < 25; page += 1) {
 		const url = new URL(baseUrl);
-		if (next) {
-			url.searchParams.set("limit", "100");
-			url.searchParams.set("next", next);
-		}
+		url.searchParams.set("limit", "100");
+		if (next) url.searchParams.set("next", next);
 		const res = await fetch(url.toString(), {
 			headers: {
 				Authorization: `Bearer ${accessToken}`,
@@ -640,7 +638,7 @@ export async function getWidgets(env, accessToken, muralId) {
 		}
 		const pageWidgets = js?.value || js?.widgets || [];
 		if (Array.isArray(pageWidgets)) widgets.push(...pageWidgets);
-		next = String(js?.next || "").trim();
+		next = String(js?.next || js?.pagination?.next || js?.paging?.next || js?.meta?.next || "").trim();
 		if (!next) break;
 	}
 

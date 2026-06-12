@@ -110,7 +110,7 @@ try {
 			writes.push({ method: 'POST', href, body });
 			return jsonResponse({ value: { id: 'created-entry-002', ...body } }, 201);
 		}
-		if (href.endsWith('/murals/workspace.123/widgets')) {
+		if (new URL(href).pathname.endsWith('/murals/workspace.123/widgets')) {
 			return jsonResponse({
 				value: [
 					widget({
@@ -186,7 +186,7 @@ try {
 		const href = String(url);
 		if (href.endsWith('/users/me'))
 			return jsonResponse({ value: { companyId: 'homeofficegovuk' } });
-		if (href.endsWith('/murals/workspace.123/widgets')) {
+		if (new URL(href).pathname.endsWith('/murals/workspace.123/widgets')) {
 			if (String(init.method || 'GET').toUpperCase() !== 'GET') {
 				existingWrites.push({ method: init.method, href, body: JSON.parse(init.body) });
 			}
@@ -344,7 +344,7 @@ try {
 		const method = String(init.method || 'GET').toUpperCase();
 		if (href.endsWith('/users/me'))
 			return jsonResponse({ value: { companyId: 'homeofficegovuk' } });
-		if (href.endsWith('/murals/workspace.123/widgets') && method === 'GET') {
+		if (new URL(href).pathname.endsWith('/murals/workspace.123/widgets') && method === 'GET') {
 			return jsonResponse({
 				value: [
 					widget({

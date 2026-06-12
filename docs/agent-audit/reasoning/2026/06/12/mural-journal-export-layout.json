@@ -101,7 +101,8 @@
 			"Extract visible card text from nested Mural payloads such as { text: { plainText: '...' } } so object-shaped text fields are not normalised to [object Object].",
 			"Resolve Test Project 1 Mural board mappings across the canonical Airtable id, legacy Airtable id and local id so status checks do not fall back to the wrong board when a page is opened with the legacy URL id.",
 			"Read D1 Mural board mappings from the existing mural_boards.project shape as well as newer project_record_id and local_project_id columns.",
-			"Route compact journal-page Mural status calls on *.pages.dev through same-origin /api/mural/journal-sync so Pages previews use the preview Worker instead of the production rops-api Worker."
+			"Route compact journal-page Mural status calls on *.pages.dev through same-origin /api/mural/journal-sync so Pages previews use the preview Worker instead of the production rops-api Worker.",
+			"Request limit=100 from the first Mural widget-list page, follow wrapped cursors such as pagination.next, and cover manually-created card status recognition through the active safe-tags wrapper so existing cards without internal journal-entry markers no longer report as 0 synced."
 		],
 		"uiReporting": [
 			"Compact journal Mural sync status reports already-present entries as left unchanged.",
@@ -134,7 +135,8 @@
 		},
 		{
 			"command": "node tests/mural-journal-sync-safe-tags-runtime.test.js",
-			"status": "passed"
+			"status": "passed",
+			"summary": "Includes active-wrapper manual-card status recognition and first-page limit=100 pagination coverage."
 		},
 		{
 			"command": "node tests/journals-route-state.test.js && node tests/journal-tabs-api-origin-route-state.test.js",
