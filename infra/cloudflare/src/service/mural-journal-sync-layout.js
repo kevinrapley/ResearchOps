@@ -905,11 +905,55 @@ async function syncOneEntry({ accessToken, board, widgets, entry, claimedWidgetI
 	};
 }
 
+function layoutDiagnostics(widgets, categoryKey) {
+	const layout = columnLayout(widgets, categoryKey);
+	if (!layout) return null;
+	return {
+		headerId: layout.header?.id || null,
+		templateId: layout.template?.id || null,
+		templateIsBlank: isTemplatePlaceholder(layout.template),
+		x: layout.x,
+		y: layout.y,
+		width: layout.width,
+		height: layout.height
+	};
+}
+
+function statusDiagnostics(widgets) {
+	const stickyLike = widgets.filter(isStickyLike);
+	const ordered = [...stickyLike].sort((a, b) => numeric(a.y) - numeric(b.y) || numeric(a.x) - numeric(b.x));
+	return {
+		widgetCount: widgets.length,
+		stickyLikeCount: stickyLike.length,
+		widgetsWithBodyText: stickyLike.filter(widget => canonicalBodyText(widgetText(widget))).length,
+		taggedWidgetCount: stickyLike.filter(widget => tagKeys(widget).length).length,
+		layouts: Object.fromEntries(CATEGORY_KEYS.map(category => [category, layoutDiagnostics(widgets, category)])),
+		sampleWidgets: ordered.slice(0, 16).map(widget => ({
+			id: widget.id,
+			type: widget.type,
+			x: widget.x,
+			y: widget.y,
+			width: widget.width,
+			height: widget.height,
+			background: widgetBackground(widget) || null,
+			tagTexts: tagKeys(widget),
+			textPreview: canonicalBodyText(widgetText(widget)).slice(0, 80)
+		}))
+	};
+}
+
 async function handleStatus(svc, origin, body) {
 	const ctx = await buildContext(svc, origin, body);
 	if (!ctx.ok) return svc.json(ctx.body, ctx.status, svc.corsHeaders(origin));
 	const status = statusFromEntriesAndWidgets(ctx.entries, ctx.widgets);
-	return svc.json({ ok: true, mode: "status", muralId: ctx.board.muralId, boardSource: ctx.board.source, ...status }, 200, svc.corsHeaders(origin));
+	return svc.json({
+		ok: true,
+		mode: "status",
+		muralId: ctx.board.muralId,
+		boardSource: ctx.board.source,
+		...status,
+		diagnostics: statusDiagnostics(ctx.widgets)
+	}, 200, svc.corsHeaders(origin));
 }
 
 function hydrateReason({ outcomes, failed, skipped, pending }) {
