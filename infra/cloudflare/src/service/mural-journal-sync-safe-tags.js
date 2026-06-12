@@ -74,7 +74,7 @@ function accessTokenFromHeaders(headers) {
 }
 
 function muralIdFromUrl(url) {
-	const match = String(url || "").match(/\/murals\/([^/]+)\/widgets(?:\/|$)/);
+	const match = String(url || "").match(/\/murals\/([^/]+)\/(?:widgets|tags)(?:[/?#]|$)/);
 	return match ? decodeURIComponent(match[1]) : "";
 }
 
@@ -91,6 +91,18 @@ function isMuralWidgetWrite(url, init) {
 function isMuralWidgetsRead(url, init) {
 	const method = String(init?.method || "GET").toUpperCase();
 	return method === "GET" && /app\.mural\.co\/api\/public\/v1\/murals\/[^/]+\/widgets(?:\?|$)/.test(String(url || ""));
+}
+
+function isMuralTagsRead(url, init) {
+	const method = String(init?.method || "GET").toUpperCase();
+	return method === "GET" && /app\.mural\.co\/api\/public\/v1\/murals\/[^/]+\/tags(?:\?|$)/.test(String(url || ""));
+}
+
+function tagsFromListBody(body) {
+	if (Array.isArray(body?.value)) return body.value;
+	if (Array.isArray(body?.tags)) return body.tags;
+	if (Array.isArray(body)) return body;
+	return [];
 }
 
 function isPatchRequest(init) {
@@ -557,6 +569,15 @@ function installSafeMuralFetch(svc, originalFetch) {
 			mergeWidgetCache(widgetCache, muralId, widgetsFromBody(body));
 			const mappings = await listD1MappingsForMural(svc.env, muralId).catch(() => []);
 			return jsonResponseFrom(response, annotateWidgetsWithMappings(body, mappings));
+		}
+
+		if (isMuralTagsRead(url, init)) {
+			const response = await originalFetch(input, init);
+			if (response.ok && muralId) {
+				const body = await response.clone().json().catch(() => null);
+				if (body) tagCache.set(muralId, tagsFromListBody(body));
+			}
+			return response;
 		}
 
 		if (!isMuralWidgetWrite(url, init)) return originalFetch(input, init);

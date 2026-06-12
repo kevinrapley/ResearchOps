@@ -620,21 +620,50 @@ function firstMuralValue(body) {
 	return body || null;
 }
 
+function textFieldHasContent(value) {
+	if (value === null || value === undefined) return false;
+	if (typeof value === "string") return value.trim() !== "";
+	if (typeof value === "object") {
+		return (
+			textFieldHasContent(value.plainText) ||
+			textFieldHasContent(value.text) ||
+			textFieldHasContent(value.htmlText) ||
+			textFieldHasContent(value.content)
+		);
+	}
+	return true;
+}
+
 function widgetNeedsDetails(widget) {
 	if (!widget?.id) return false;
 	const type = String(widget?.type || "").toLowerCase();
 	const hasText =
-		widget?.text !== undefined ||
-		widget?.plainText !== undefined ||
-		widget?.htmlText !== undefined ||
-		widget?.content !== undefined ||
-		widget?.properties?.text !== undefined ||
-		widget?.properties?.plainText !== undefined ||
-		widget?.properties?.htmlText !== undefined ||
-		widget?.data?.text !== undefined ||
-		widget?.data?.plainText !== undefined ||
-		widget?.data?.htmlText !== undefined;
+		textFieldHasContent(widget?.text) ||
+		textFieldHasContent(widget?.plainText) ||
+		textFieldHasContent(widget?.htmlText) ||
+		textFieldHasContent(widget?.content) ||
+		textFieldHasContent(widget?.properties?.text) ||
+		textFieldHasContent(widget?.properties?.plainText) ||
+		textFieldHasContent(widget?.properties?.htmlText) ||
+		textFieldHasContent(widget?.data?.text) ||
+		textFieldHasContent(widget?.data?.plainText) ||
+		textFieldHasContent(widget?.data?.htmlText);
 	return !hasText && (type.includes("sticky") || type.includes("note") || type.includes("shape") || type.includes("text") || type.includes("title"));
+}
+
+export async function getMuralTags(env, accessToken, muralId) {
+	const url = `https://app.mural.co/api/public/v1/murals/${muralId}/tags`;
+	const res = await fetch(url, {
+		headers: {
+			Authorization: `Bearer ${accessToken}`,
+			Accept: "application/json"
+		}
+	});
+	const js = await res.json().catch(() => ({}));
+	if (!res.ok) return [];
+	if (Array.isArray(js?.value)) return js.value;
+	if (Array.isArray(js?.tags)) return js.tags;
+	return [];
 }
 
 export async function getWidget(env, accessToken, muralId, widgetId) {

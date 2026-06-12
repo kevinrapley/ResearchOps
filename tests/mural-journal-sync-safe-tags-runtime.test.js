@@ -535,6 +535,95 @@ try {
 		),
 		true
 	);
+
+	// Live widget-list shape: widgets carry tag IDS (not texts) and empty-string
+	// text fields. Tag texts only resolve via GET /murals/{id}/tags, and card
+	// body text is only available from per-widget detail GETs.
+	const liveShapeWrites = [];
+	let liveShapeDetailReads = 0;
+
+	function liveShapeListWidget(id, y, tagIds, extra = {}) {
+		return {
+			id,
+			type: 'sticky note',
+			htmlText: '',
+			tags: tagIds,
+			x: 0,
+			y,
+			width: 400,
+			height: 220,
+			...extra,
+		};
+	}
+
+	globalThis.fetch = async (url, init = {}) => {
+		const href = String(url);
+		const method = String(init.method || 'GET').toUpperCase();
+		const parsed = new URL(href);
+
+		if (href.endsWith('/users/me')) {
+			return jsonResponse({ value: { companyId: 'homeofficegovuk' } });
+		}
+
+		if (parsed.pathname.endsWith('/murals/workspace.123/widgets') && method === 'GET') {
+			return jsonResponse({
+				value: [
+					liveShapeListWidget('live-header-perceptions', 0, [], {
+						htmlText: '<p>Perceptions</p>',
+						height: 80,
+						style: { backgroundColor: '#9120A8FF' },
+					}),
+					liveShapeListWidget('live-card-001', 120, ['tagid-perceptions', 'tagid-project']),
+					liveShapeListWidget('live-card-006', 372, ['tagid-perceptions', 'tagid-project']),
+					liveShapeListWidget('live-card-010', 624, ['tagid-perceptions', 'tagid-project']),
+				],
+			});
+		}
+
+		if (href.endsWith('/murals/workspace.123/tags') && method === 'GET') {
+			return jsonResponse({
+				value: [
+					{ id: 'tagid-perceptions', text: 'perceptions' },
+					{ id: 'tagid-project', text: 'Test Project 1' },
+				],
+			});
+		}
+
+		const detailMatch = parsed.pathname.match(
+			/\/murals\/workspace\.123\/widgets\/(live-card-\d+)$/
+		);
+		if (detailMatch && method === 'GET') {
+			liveShapeDetailReads += 1;
+			const detailText = {
+				'live-card-001': manualEntries[0].content,
+				'live-card-006': manualEntries[1].content,
+				'live-card-010': manualEntries[2].content,
+			}[detailMatch[1]];
+			return jsonResponse({
+				value: { id: detailMatch[1], htmlText: `<p>${detailText}</p>` },
+			});
+		}
+
+		if (method !== 'GET') {
+			liveShapeWrites.push({ method, href });
+			return jsonResponse({ value: {} });
+		}
+
+		throw new Error(`Unexpected fetch: ${method} ${href}`);
+	};
+
+	const liveShapeResponse = await postStatus(service(manualEntries));
+	const liveShapeData = await liveShapeResponse.json();
+
+	assert.equal(liveShapeResponse.status, 200);
+	assert.equal(liveShapeData.synced, 3);
+	assert.equal(liveShapeData.pending, 0);
+	assert.deepEqual(liveShapeData.byCategory.perceptions, { total: 3, synced: 3, pending: 0 });
+	assert.equal(liveShapeDetailReads, 3);
+	assert.equal(liveShapeWrites.length, 0);
+	// Header plus the three manual cards all expose readable text.
+	assert.equal(liveShapeData.diagnostics.widgetsWithBodyText, 4);
+	assert.equal(liveShapeData.diagnostics.layouts.perceptions !== null, true);
 } finally {
 	globalThis.fetch = originalFetch;
 }

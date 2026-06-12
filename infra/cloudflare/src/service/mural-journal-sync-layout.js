@@ -7,7 +7,8 @@
 import {
 	refreshAccessToken,
 	verifyHomeOfficeByCompany,
-	getWidgets
+	getWidgets,
+	getMuralTags
 } from "../lib/mural.js";
 
 const CATEGORY_KEYS = ["perceptions", "procedures", "decisions", "introspections"];
@@ -109,7 +110,7 @@ function tagKeys(widget) {
 }
 
 function widgetText(widget) {
-	return textValue([
+	const fragments = [
 		widget?.text,
 		widget?.plainText,
 		widget?.htmlText,
@@ -125,7 +126,17 @@ function widgetText(widget) {
 		widget?.title,
 		widget?.name,
 		widget?.label
-	]);
+	].map(textValue).filter(Boolean);
+
+	const seen = new Set();
+	const out = [];
+	for (const fragment of fragments) {
+		const key = looseBodyText(fragment);
+		if (!key || seen.has(key)) continue;
+		seen.add(key);
+		out.push(fragment);
+	}
+	return out.join(" ");
 }
 
 function canonicalBodyText(value) {
@@ -761,6 +772,27 @@ function sortedEntries(entries) {
 	});
 }
 
+function boardTagTextMap(boardTags) {
+	const map = new Map();
+	for (const tag of Array.isArray(boardTags) ? boardTags : []) {
+		const id = safeText(tag?.id || tag?.tagId);
+		const text = safeText(tag?.text || tag?.name || tag?.title || tag?.label);
+		if (id && text) map.set(id, text);
+	}
+	return map;
+}
+
+function resolveWidgetTagTexts(widget, tagTextById) {
+	if (!widget || !Array.isArray(widget.tags) || !tagTextById?.size) return widget;
+	const tags = widget.tags.map(tag => {
+		if (typeof tag === "string") return tagTextById.get(tag) || tag;
+		const text = safeText(tag?.text || tag?.name || tag?.title || tag?.label);
+		if (text) return text;
+		return tagTextById.get(safeText(tag?.id || tag?.tagId)) || tag;
+	});
+	return { ...widget, tags };
+}
+
 async function resolveBoardAndWidgets(svc, accessToken, payload) {
 	const board = await svc.mural.resolveBoard({
 		projectId: payload.projectId,
@@ -774,10 +806,12 @@ async function resolveBoardAndWidgets(svc, accessToken, payload) {
 	}
 
 	const rawWidgets = await getWidgets(svc.env, accessToken, board.muralId, { includeDetails: true });
+	const boardTags = await getMuralTags(svc.env, accessToken, board.muralId).catch(() => []);
+	const tagTextById = boardTagTextMap(boardTags);
 	return {
 		ok: true,
 		board,
-		widgets: rawWidgets.map(normalizeWidget)
+		widgets: rawWidgets.map(widget => normalizeWidget(resolveWidgetTagTexts(widget, tagTextById)))
 	};
 }
 
@@ -853,7 +887,13 @@ async function syncOneEntry({ accessToken, board, widgets, entry, claimedWidgetI
 
 	const layout = columnLayout(widgets, entry.categoryKey);
 	if (!layout) {
-		return { ok: false, action: "category-column-not-found", entryId: entry.entryId, category: entry.categoryKey, detail: `No ${entry.categoryKey} column template or heading was found on the Mural board.` };
+		return {
+			ok: false,
+			action: "category-column-not-found",
+			entryId: entry.entryId,
+			category: entry.categoryKey,
+			detail: `No ${entry.categoryKey} column template or heading was found on Mural board ${safeText(board?.muralId) || "unknown"}. ${boardVisibilitySummary(widgets)}`
+		};
 	}
 
 	const existing = canonicalExistingWidget(widgets, entry, layout, claimedWidgetIds);
@@ -903,6 +943,13 @@ async function syncOneEntry({ accessToken, board, widgets, entry, claimedWidgetI
 		deletedStaleWidgetIds,
 		tags
 	};
+}
+
+function boardVisibilitySummary(widgets) {
+	const stickyLike = widgets.filter(isStickyLike);
+	const withText = stickyLike.filter(widget => canonicalBodyText(widgetText(widget))).length;
+	const tagged = stickyLike.filter(widget => tagKeys(widget).length).length;
+	return `The board returned ${widgets.length} widgets: ${stickyLike.length} sticky-like, ${withText} with readable text, ${tagged} with tags.`;
 }
 
 function layoutDiagnostics(widgets, categoryKey) {
@@ -1008,7 +1055,8 @@ async function handleHydrate(svc, origin, body) {
 		skipped,
 		failed,
 		reason: hydrateReason({ outcomes, failed, skipped, pending: after.pending }),
-		outcomes
+		outcomes,
+		diagnostics: statusDiagnostics(ctx.widgets)
 	}, 200, svc.corsHeaders(origin));
 }
 
