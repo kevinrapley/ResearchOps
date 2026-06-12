@@ -27,9 +27,36 @@
 		"displaySwitch": "GOV.UK radios",
 		"selectedOnsChart": "charts/bar-chart",
 		"selectedOnsChartReason": "Ranked categorical code-pair weights fit horizontal name/value bars and long labels better than columns, lines, doughnuts or maps.",
+		"additionalChartViews": [
+			{
+				"id": "heatmap",
+				"label": "Matrix heatmap",
+				"reason": "Helps researchers scan dense relationships across the most connected codes."
+			},
+			{
+				"id": "small-multiples",
+				"label": "Small multiple bar charts",
+				"reason": "Helps compare strongest target-code links for several source codes on the same scale."
+			},
+			{
+				"id": "stacked",
+				"label": "Stacked bar summary",
+				"reason": "Shows how each high-weight source code is distributed across strongest target codes."
+			},
+			{
+				"id": "clustered",
+				"label": "Clustered bar comparison",
+				"reason": "Compares the strongest target-code links within the highest weighted source-code groups."
+			}
+		],
+		"displayPanels": ["table", "chart", "heatmap", "small-multiples", "stacked", "clustered"],
 		"chartsSubmoduleFrom": "9455c5525bf545411834c271375a77115b759813",
 		"chartsSubmoduleTo": "758806bcfd61d7c00f18c0c357294e746f1974d6",
 		"chartDataLimit": 20,
+		"heatmapCodeLimit": 12,
+		"smallMultipleSourceLimit": 6,
+		"stackedSourceLimit": 8,
+		"clusteredSourceLimit": 5,
 		"chartPalette": "#206095",
 		"ciFollowUp": "Changed the test to assert the parent repository charts gitlink instead of reading files inside the submodule working tree, because GitHub Actions checks out this repository with submodules disabled for unit tests."
 	},
@@ -88,6 +115,41 @@
 			"command": "npm run lint",
 			"status": "passed",
 			"summary": "CI follow-up: 0 errors, 260 existing warnings"
+		},
+		{
+			"command": "node tests/journal-cooccurrence-display-route-state.test.js",
+			"status": "passed",
+			"summary": "Additional chart-options follow-up"
+		},
+		{
+			"command": "node --check public/js/caqdas-interface.js",
+			"status": "passed",
+			"summary": "Additional chart-options follow-up"
+		},
+		{
+			"command": "npm run format -c",
+			"status": "passed",
+			"summary": "Additional chart-options follow-up; repository script formats files in place before generated CSS formatting."
+		},
+		{
+			"command": "npm run lint",
+			"status": "passed",
+			"summary": "Additional chart-options follow-up: 0 errors, existing warning set remained."
+		},
+		{
+			"command": "npm test",
+			"status": "passed",
+			"summary": "Additional chart-options follow-up: 213 tests passed"
+		},
+		{
+			"command": "npm run validate",
+			"status": "passed",
+			"summary": "Additional chart-options follow-up"
+		},
+		{
+			"command": "npm test -- --ci",
+			"status": "not-run",
+			"summary": "Node rejected the forwarded --ci option; the actual repository test command used was npm test."
 		}
 	],
 	"browserVerification": {

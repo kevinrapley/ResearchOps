@@ -1,4 +1,4 @@
-# Agent trace — Journal co-occurrence table and chart
+# Agent trace — Journal co-occurrence table and chart options
 
 **Date:** 2026-06-12  
 **Trace type:** operational audit trace  
@@ -41,9 +41,11 @@ Selection rationale:
 
 ## Task summary
 
-Improve the code co-occurrence output in Reflexive Journal and Analysis so researchers can inspect the same co-occurrence weights as either a GOV.UK Frontend table or a chart-style ranked view.
+Improve the code co-occurrence output in Reflexive Journal and Analysis so researchers can inspect the same co-occurrence weights as a GOV.UK Frontend table or through useful chart-style views.
 
 Update the ONS Charts submodule to the requested working commit and select the most suitable chart pattern for code-pair weights.
+
+Follow-up scope: add the four further useful options identified from the ONS chart guidance review: matrix heatmap, small multiple bar charts, stacked bar summary and clustered bar comparison.
 
 ## Implementation summary
 
@@ -54,6 +56,13 @@ Update the ONS Charts submodule to the requested working commit and select the m
 - Rendered the chart view from the strongest 20 co-occurring code pairs using the same name/value shape as the ONS bar chart and the ONS `oceanBlue` palette colour.
 - Added route-state coverage for the GOV.UK table classes, ONS chart selection, submodule commit and display switch hooks.
 - CI follow-up: changed the submodule assertion to read the parent repository gitlink instead of reading files inside `charts`, because GitHub Actions checks out this repository with `submodules: false` for the failing unit-test jobs.
+- Added four additional switchable views using the same co-occurrence row data:
+  - Matrix heatmap for scanning dense code-pair relationships across the most connected codes.
+  - Small multiple bar charts for comparing each high-weight source code on a shared scale.
+  - Stacked bar summary for showing how each high-weight source code distributes across its strongest target codes.
+  - Clustered bar comparison for comparing the three strongest target-code links within the top source codes.
+- Generalised the display switch to use `data-cooccurrence-panel` so all six views are controlled by the same GOV.UK radio group.
+- Extended the route-state test to lock the new chart markers, labels, radio values and panel hooks.
 
 ## Files changed
 
@@ -85,6 +94,17 @@ npm run validate
 npm run lint
 ```
 
+Additional chart-options follow-up:
+
+```bash
+node tests/journal-cooccurrence-display-route-state.test.js
+node --check public/js/caqdas-interface.js
+npm run format -c
+npm run lint
+npm test
+npm run validate
+```
+
 Validation results:
 
 - Focused co-occurrence tests passed: 5 tests.
@@ -94,6 +114,14 @@ Validation results:
 - Operating model validation passed.
 - Bundle registry validation passed.
 - CI follow-up validation passed after the test was made submodule-checkout independent.
+- Additional chart-options route-state test passed.
+- Additional chart-options JavaScript syntax check passed.
+- Additional chart-options full test suite passed: 213 tests.
+- Additional chart-options validation passed.
+
+Validation note:
+
+- `npm test -- --ci` was attempted because `AGENTS.md` lists that shape, but this repository's current `npm test` script passes unknown arguments directly to Node's test runner and Node rejected `--ci`. The actual repository test command used for validation was `npm test`.
 
 ## Browser verification limitation
 
