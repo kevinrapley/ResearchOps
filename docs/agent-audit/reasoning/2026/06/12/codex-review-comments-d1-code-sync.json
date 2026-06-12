@@ -1,0 +1,82 @@
+{
+  "date": "2026-06-12",
+  "task": "Address active Codex PR review comments about mixed Airtable and D1 codebook persistence.",
+  "branch": "feature/test-project-1-journal-seed",
+  "branchDecision": {
+    "traceRequiredByPolicy": true,
+    "note": "feature/* requires an auditable trace."
+  },
+  "pullRequest": "https://github.com/kevinrapley/ResearchOps/pull/392",
+  "reviewThreads": [
+    {
+      "path": "infra/cloudflare/src/service/reflection/codes.js",
+      "line": 418,
+      "state": "unresolved-non-outdated",
+      "disposition": "legitimate",
+      "summary": "New Airtable-created codes were not mirrored into D1 when D1 backs reads."
+    },
+    {
+      "path": "infra/cloudflare/src/service/reflection/codes.js",
+      "line": 594,
+      "state": "unresolved-non-outdated",
+      "disposition": "legitimate",
+      "summary": "Airtable-backed code edits could leave matching D1 rows stale for rec... ids."
+    }
+  ],
+  "operatingModelFilesLoaded": [
+    "AGENTS.md",
+    ".agent-operating-model/orchestration.xml",
+    ".agent-operating-model/bundle-registry.json",
+    ".agent-operating-model/task-signal-catalog.json",
+    ".agent-operating-model/selection-rules.json",
+    ".agent-operating-model/bootstrap-checklist.md",
+    ".agent-operating-model/precedence-policy.md",
+    ".agent-operating-model/github-mutation-policy.md",
+    ".agent-operating-model/trace-policy.md",
+    ".agent-operating-model/trace-layers.md"
+  ],
+  "selectedBundles": [
+    ".agent-operating-model/bundles/github/",
+    ".agent-operating-model/bundles/researchops-developer-control/",
+    ".agent-operating-model/bundles/multi-functional-team/",
+    ".agent-operating-model/bundles/cloudflare/"
+  ],
+  "skippedBundles": [
+    ".agent-operating-model/bundles/govuk-design-system/",
+    ".agent-operating-model/bundles/openai/",
+    ".agent-operating-model/bundles/mcp-agent-tooling/",
+    ".agent-operating-model/bundles/airtable-public-api/",
+    ".agent-operating-model/bundles/mural-public-api/"
+  ],
+  "changes": [
+    "Added a D1 upsert helper for Airtable-created code records.",
+    "Added a D1 field-update helper for Airtable-backed code edits.",
+    "Mirrored successful Airtable code creates into D1 when D1 is configured.",
+    "Synced matching D1 rows after successful Airtable code edits.",
+    "Added runtime regression tests for mixed Airtable+D1 code creation and update."
+  ],
+  "validation": [
+    {
+      "name": "node-check-codes-service",
+      "result": "passed"
+    },
+    {
+      "name": "focused-runtime-tests",
+      "result": "passed",
+      "details": "9 focused tests passed."
+    },
+    {
+      "name": "format-check",
+      "result": "passed"
+    },
+    {
+      "name": "npm-test",
+      "result": "passed",
+      "details": "211 tests passed."
+    }
+  ],
+  "residualRisks": [
+    "Browser walkthrough was not run because this change is service/runtime persistence behaviour.",
+    "If D1 write fails after Airtable succeeds, operational follow-up is still needed because the service has no cross-store transaction primitive."
+  ]
+}

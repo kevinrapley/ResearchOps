@@ -20,10 +20,11 @@ function excludes(text) {
 }
 
 includes("const API_ORIGIN =");
+includes("function resolveApiBase()");
 includes("document.documentElement?.dataset?.apiOrigin");
 includes("window.API_ORIGIN");
 includes("location.hostname.endsWith('pages.dev')");
-includes("https://rops-api.digikev-kevin-rapley.workers.dev");
+includes("return '';");
 includes("function apiUrl(path)");
 includes("fetchJSON(apiUrl('/api/journal-entries?project='");
 includes("fetchJSON(apiUrl('/api/journal-entries/'");
@@ -35,3 +36,4 @@ excludes("fetchJSON('/api/journal-entries/'");
 excludes("fetchJSON('/api/journal-entries',");
 excludes("fetch('/api/mural/journal-sync'");
 excludes("fetchJSON('/api/mural/journal-sync'");
+excludes("https://rops-api.digikev-kevin-rapley.workers.dev");

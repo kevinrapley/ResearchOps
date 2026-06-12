@@ -14,11 +14,14 @@ import { clearJournalFeedback, showJournalError, showJournalStatus } from './jou
 /* eslint-env browser */
 (function() {
 	const API_ORIGIN =
-		document.documentElement?.dataset?.apiOrigin ||
-		window.API_ORIGIN ||
-		(location.hostname.endsWith('pages.dev') ?
-			'https://rops-api.digikev-kevin-rapley.workers.dev' :
-			location.origin);
+		resolveApiBase();
+
+	function resolveApiBase() {
+		const explicit = document.documentElement?.dataset?.apiOrigin || window.API_ORIGIN || '';
+		if (String(explicit || '').trim()) return String(explicit).trim().replace(/\/+$/, '');
+		if (location.hostname.endsWith('pages.dev')) return '';
+		return location.origin;
+	}
 
 	function apiUrl(path) {
 		const p = String(path || '');
@@ -98,6 +101,41 @@ import { clearJournalFeedback, showJournalError, showJournalStatus } from './jou
 			if (pathTags.length) return pathTags;
 		}
 		return normaliseTags(code.name);
+	}
+
+	function codeParentOptions(selectedId, currentId) {
+		const selected = String(selectedId || '');
+		const current = String(currentId || '');
+		const options = ['<option value="">No parent — thematic aggregate code</option>'];
+		state.codes
+			.filter(code => String(code.id || '') && String(code.id) !== current && codeDepth(code) < 3)
+			.forEach(code => {
+				const id = String(code.id);
+				const label = `${codeLevelLabel(code)}: ${String(code.path || code.name || id)}`;
+				options.push(`<option value="${esc(id)}"${id === selected ? ' selected' : ''}>${esc(label)}</option>`);
+			});
+		return options.join('');
+	}
+
+	function codeDepth(code, guard = 12) {
+		if (!code || !code.parentId || guard <= 0) return 1;
+		const parent = state.codes.find(candidate => String(candidate.id) === String(code.parentId));
+		return 1 + codeDepth(parent, guard - 1);
+	}
+
+	function codeLevelLabel(code) {
+		const depth = codeDepth(code);
+		if (depth <= 1) return 'Thematic code';
+		if (depth === 2) return 'Second-order code';
+		return 'First-order code';
+	}
+
+	function codeLevelTag(code) {
+		const label = codeLevelLabel(code);
+		const modifier = label === 'Thematic code' ? 'govuk-tag--blue' :
+			label === 'Second-order code' ? 'govuk-tag--green' :
+				'govuk-tag--purple';
+		return `<strong class="govuk-tag ${modifier}">${esc(label)}</strong>`;
 	}
 
 	function emptyEntriesHtml() {
@@ -553,6 +591,14 @@ import { clearJournalFeedback, showJournalError, showJournalStatus } from './jou
 				</div>
 
 				<div class="govuk-form-group">
+					<label class="govuk-label govuk-label--s" for="code-parent">Parent code</label>
+					<div id="code-parent-hint" class="govuk-hint">Leave blank for a thematic aggregate code. Choose an aggregate or interpretive parent to create a lower-level code.</div>
+					<select class="govuk-select" id="code-parent" name="parentId" aria-describedby="code-parent-hint">
+						${codeParentOptions('', '')}
+					</select>
+				</div>
+
+				<div class="govuk-form-group">
 					<label class="govuk-label govuk-label--s" for="code-colour">Colour</label>
 					<input class="govuk-input govuk-input--width-10" id="code-colour" name="colour" type="text" value="#1d70b8ff">
 				</div>
@@ -563,8 +609,18 @@ import { clearJournalFeedback, showJournalError, showJournalStatus } from './jou
 				</div>
 			</form>` : '';
 
+		const hierarchyHelp = `
+			<details class="govuk-details">
+				<summary class="govuk-details__summary">
+					<span class="govuk-details__summary-text">How code levels work</span>
+				</summary>
+				<div class="govuk-details__text">
+					<p class="govuk-body">Use thematic codes for aggregate themes, second-order codes for interpretation, and first-order codes for descriptive labels that stay close to the journal entry.</p>
+				</div>
+			</details>`;
+
 		const listHtml = state.codes.length ?
-			'<ol class="govuk-list app-code-list">' + state.codes.map(code => {
+			hierarchyHelp + '<ol class="govuk-list app-code-list">' + state.codes.map(code => {
 				if (state.codeEditingId === code.id) {
 					return `
 				<li class="govuk-!-margin-bottom-4">
@@ -582,6 +638,14 @@ import { clearJournalFeedback, showJournalError, showJournalStatus } from './jou
 								<div class="govuk-form-group">
 									<label class="govuk-label govuk-label--s" for="code-description-${esc(code.id)}">Description</label>
 									<textarea class="govuk-textarea" id="code-description-${esc(code.id)}" name="description" rows="3">${esc(code.description || '')}</textarea>
+								</div>
+
+								<div class="govuk-form-group">
+									<label class="govuk-label govuk-label--s" for="code-parent-${esc(code.id)}">Parent code</label>
+									<div id="code-parent-hint-${esc(code.id)}" class="govuk-hint">Leave blank for a thematic aggregate code. Choose an aggregate or interpretive parent to create a lower-level code.</div>
+									<select class="govuk-select" id="code-parent-${esc(code.id)}" name="parentId" aria-describedby="code-parent-hint-${esc(code.id)}">
+										${codeParentOptions(code.parentId || '', code.id)}
+									</select>
 								</div>
 
 								<div class="govuk-form-group">
@@ -606,7 +670,7 @@ import { clearJournalFeedback, showJournalError, showJournalStatus } from './jou
 				<li class="govuk-!-margin-bottom-4">
 					<article class="govuk-summary-card" data-code-id="${esc(code.id)}">
 						<div class="govuk-summary-card__title-wrapper">
-							<h3 class="govuk-summary-card__title">${esc(code.name || code.id)}</h3>
+							<h3 class="govuk-summary-card__title">${esc(code.name || code.id)} ${codeLevelTag(code)}</h3>
 							<ul class="govuk-summary-card__actions">
 								<li class="govuk-summary-card__action"><button type="button" class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0" data-module="govuk-button" data-act="edit-code" data-id="${esc(code.id)}">Edit<span class="govuk-visually-hidden"> ${esc(code.name || code.id)}</span></button></li>
 								<li class="govuk-summary-card__action"><button type="button" class="govuk-button govuk-button--warning govuk-!-margin-bottom-0" data-module="govuk-button" data-act="delete-code" data-id="${esc(code.id)}">Delete<span class="govuk-visually-hidden"> ${esc(code.name || code.id)}</span></button></li>
@@ -614,6 +678,14 @@ import { clearJournalFeedback, showJournalError, showJournalStatus } from './jou
 						</div>
 						<div class="govuk-summary-card__content">
 							<dl class="govuk-summary-list">
+								<div class="govuk-summary-list__row">
+									<dt class="govuk-summary-list__key">Code type</dt>
+									<dd class="govuk-summary-list__value">${codeLevelTag(code)}</dd>
+								</div>
+								<div class="govuk-summary-list__row">
+									<dt class="govuk-summary-list__key">Path</dt>
+									<dd class="govuk-summary-list__value">${esc(code.path || code.name || code.id)}</dd>
+								</div>
 								<div class="govuk-summary-list__row">
 									<dt class="govuk-summary-list__key">Description</dt>
 									<dd class="govuk-summary-list__value">${esc(code.description || 'No description recorded.')}</dd>
@@ -668,6 +740,7 @@ import { clearJournalFeedback, showJournalError, showJournalStatus } from './jou
 			projectId: projectIdForWrite(),
 			name,
 			description: String(fd.get('description') || '').trim(),
+			parentId: String(fd.get('parentId') || '').trim() || null,
 			colour: String(fd.get('colour') || '#1d70b8ff').trim()
 		};
 
@@ -713,6 +786,7 @@ import { clearJournalFeedback, showJournalError, showJournalStatus } from './jou
 				body: JSON.stringify({
 					name,
 					description: String(fd.get('description') || '').trim(),
+					parentId: String(fd.get('parentId') || '').trim() || null,
 					colour: String(fd.get('colour') || '#1d70b8ff').trim()
 				})
 			});

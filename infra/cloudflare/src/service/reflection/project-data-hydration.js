@@ -1,6 +1,12 @@
 import { safeText } from "../../core/utils.js";
 import { listAll } from "../internals/airtable.js";
 import { d1All } from "../internals/researchops-d1.js";
+import {
+	isTestProject1Id,
+	TEST_PROJECT_1_CODES,
+	TEST_PROJECT_1_JOURNAL_ENTRIES,
+	TEST_PROJECT_1_MEMOS,
+} from "../internals/test-project-1-journal-seed.js";
 import { findProjectRecord } from "../projects/airtable.js";
 
 const JOURNALS_TABLE = (service) => service.env.AIRTABLE_TABLE_JOURNAL || "Journals";
@@ -157,6 +163,46 @@ function mapD1Code(row = {}) {
 	return { id: row.record_id || row.local_code_id || null, name: row.name || row.record_id || row.local_code_id || "", description: row.description || "", colour: normaliseHex8(row.colour || "#505a5fff"), parentId: row.parentcode || null, projectId: row.project || row.local_project_id || null, tags: normTagsArray(row.tags), source: "d1" };
 }
 
+function seedJournalEntries(candidates = []) {
+	if (!candidates.some(isTestProject1Id)) return [];
+	return TEST_PROJECT_1_JOURNAL_ENTRIES.map((entry) => ({
+		id: entry.id,
+		project: entry.project,
+		category: entry.category,
+		content: entry.content,
+		tags: entry.tags || [],
+		createdAt: entry.createdAt,
+		source: "seed",
+	}));
+}
+
+function seedMemos(candidates = []) {
+	if (!candidates.some(isTestProject1Id)) return [];
+	return TEST_PROJECT_1_MEMOS.map((memo) => ({
+		id: memo.id,
+		memoType: memo.memoType,
+		title: memo.title,
+		content: memo.content,
+		linkedEntries: [],
+		createdAt: memo.createdAt,
+		source: "seed",
+	}));
+}
+
+function seedCodes(candidates = []) {
+	if (!candidates.some(isTestProject1Id)) return [];
+	return TEST_PROJECT_1_CODES.map((code) => ({
+		id: code.id,
+		name: code.name,
+		description: code.description,
+		colour: normaliseHex8(code.colour),
+		parentId: code.parentId || null,
+		projectId: TEST_PROJECT_1_CANONICAL_ID,
+		tags: [],
+		source: "seed",
+	}));
+}
+
 function mapAirtableCode(record = {}) {
 	const fields = record.fields || {};
 	return { id: record.id, name: fields.Name || fields.Code || fields["Short Name"] || "", description: fields.Description || "", colour: normaliseHex8(fields.Colour || fields.Color || "#505a5fff"), parentId: linkedValues(fields.Parent)[0] || null, projectId: linkedValues(fields.Project)[0] || null, tags: normTagsArray(fields.Tags), source: "airtable" };
@@ -189,11 +235,15 @@ export async function listJournalEntries(service, origin, url) {
 	if (hasD1(service.env)) {
 		try {
 			const rows = await d1RowsForProjects(service.env, "journal_entries", "record_id, project, category, content, tags, createdat, local_project_id", candidates);
-			if (rows.length) return service.json({ ok: true, source: "d1", entries: rows.map(mapD1JournalEntry) }, 200, service.corsHeaders(origin));
+			if (rows.length && !(candidates.some(isTestProject1Id) && rows.length < TEST_PROJECT_1_JOURNAL_ENTRIES.length)) {
+				return service.json({ ok: true, source: "d1", entries: rows.map(mapD1JournalEntry) }, 200, service.corsHeaders(origin));
+			}
 		} catch (error) {
 			service?.log?.warn?.("project_data.journals.d1.fail", { err: safeText(error?.message || error).slice(0, 200) });
 		}
 	}
+	const fallbackEntries = seedJournalEntries(candidates);
+	if (fallbackEntries.length) return service.json({ ok: true, source: "seed", entries: fallbackEntries }, 200, service.corsHeaders(origin));
 	if (!hasAirtable(service.env)) return service.json({ ok: true, source: "empty", entries: [] }, 200, service.corsHeaders(origin));
 	try {
 		const airtableProjectIds = await resolveAirtableProjectIds(service, candidates);
@@ -214,11 +264,15 @@ export async function listMemos(service, origin, url) {
 	if (hasD1(service.env)) {
 		try {
 			const rows = await d1RowsForProjects(service.env, "memos", "record_id, project, type, title, body, createdat, local_project_id, local_memo_id", candidates);
-			if (rows.length) return service.json({ ok: true, source: "d1", memos: rows.map(mapD1Memo) }, 200, service.corsHeaders(origin));
+			if (rows.length && !(candidates.some(isTestProject1Id) && rows.length < TEST_PROJECT_1_MEMOS.length)) {
+				return service.json({ ok: true, source: "d1", memos: rows.map(mapD1Memo) }, 200, service.corsHeaders(origin));
+			}
 		} catch (error) {
 			service?.log?.warn?.("project_data.memos.d1.fail", { err: safeText(error?.message || error).slice(0, 200) });
 		}
 	}
+	const fallbackMemos = seedMemos(candidates);
+	if (fallbackMemos.length) return service.json({ ok: true, source: "seed", memos: fallbackMemos }, 200, service.corsHeaders(origin));
 	if (!hasAirtable(service.env)) return service.json({ ok: true, source: "empty", memos: [] }, 200, service.corsHeaders(origin));
 	try {
 		const airtableProjectIds = await resolveAirtableProjectIds(service, candidates);
@@ -242,11 +296,15 @@ export async function listCodes(service, origin, url) {
 				  FROM codes
 				 ORDER BY datetime(createdat) DESC;
 			`) : await d1RowsForProjects(service.env, "codes", "record_id, project, name, description, parentcode, colour, createdat, local_project_id, local_code_id, NULL AS tags", candidates);
-			if (rows.length) return service.json({ ok: true, source: "d1", codes: addCodePaths(rows.map(mapD1Code)) }, 200, service.corsHeaders(origin));
+			if (rows.length && !(candidates.some(isTestProject1Id) && rows.length < TEST_PROJECT_1_CODES.length)) {
+				return service.json({ ok: true, source: "d1", codes: addCodePaths(rows.map(mapD1Code)) }, 200, service.corsHeaders(origin));
+			}
 		} catch (error) {
 			service?.log?.warn?.("project_data.codes.d1.fail", { err: safeText(error?.message || error).slice(0, 200) });
 		}
 	}
+	const fallbackCodes = nofilter ? [] : seedCodes(candidates);
+	if (fallbackCodes.length) return service.json({ ok: true, source: "seed", codes: addCodePaths(fallbackCodes) }, 200, service.corsHeaders(origin));
 	if (!hasAirtable(service.env)) return service.json({ ok: true, source: "empty", codes: [] }, 200, service.corsHeaders(origin));
 	try {
 		const airtableProjectIds = nofilter ? [] : await resolveAirtableProjectIds(service, candidates);

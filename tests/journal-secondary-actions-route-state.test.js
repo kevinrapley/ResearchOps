@@ -26,6 +26,18 @@ includes(journalTabs, "function setupCodeAdd()", "journal-tabs.js");
 includes(journalTabs, "async function onCreateCode(e)", "journal-tabs.js");
 includes(journalTabs, "function onEditCode(e)", "journal-tabs.js");
 includes(journalTabs, "async function onSubmitCodeEdit(e)", "journal-tabs.js");
+includes(journalTabs, "function codeParentOptions(selectedId, currentId)", "journal-tabs.js");
+includes(journalTabs, "function codeDepth(code, guard = 12)", "journal-tabs.js");
+includes(journalTabs, "function codeLevelLabel(code)", "journal-tabs.js");
+includes(journalTabs, "function codeLevelTag(code)", "journal-tabs.js");
+includes(journalTabs, "name=\"parentId\"", "journal-tabs.js");
+includes(journalTabs, "No parent — thematic aggregate code", "journal-tabs.js");
+includes(journalTabs, "How code levels work", "journal-tabs.js");
+includes(journalTabs, "Thematic code", "journal-tabs.js");
+includes(journalTabs, "Second-order code", "journal-tabs.js");
+includes(journalTabs, "First-order code", "journal-tabs.js");
+includes(journalTabs, "govuk-summary-list__key\">Code type", "journal-tabs.js");
+includes(journalTabs, "parentId: String(fd.get('parentId') || '').trim() || null", "journal-tabs.js");
 includes(journalTabs, "function onDeleteCode(e)", "journal-tabs.js");
 includes(journalTabs, "async function onConfirmDeleteCode(e)", "journal-tabs.js");
 includes(journalTabs, "fetchJSON(apiUrl('/api/codes?project='", "journal-tabs.js");
@@ -58,6 +70,8 @@ excludes(journalTabs, "if (id === 'codes' && typeof loadCodes === 'function') lo
 excludes(journalTabs, "if (id === 'memos' && typeof loadMemos === 'function') loadMemos();", "journal-tabs.js");
 
 includes(caqdas, "const API_ORIGIN =", "caqdas-interface.js");
+includes(journalTabs, "function resolveApiBase()", "journal-tabs.js");
+includes(caqdas, "function resolveApiBase()", "caqdas-interface.js");
 includes(caqdas, "function apiUrl(path)", "caqdas-interface.js");
 includes(caqdas, "apiUrl('/api/analysis/timeline?project=", "caqdas-interface.js");
 includes(caqdas, "apiUrl('/api/analysis/cooccurrence?project=", "caqdas-interface.js");
@@ -67,3 +81,5 @@ includes(caqdas, "timelineFromJournalEntries(projectId)", "caqdas-interface.js")
 excludes(caqdas, "var url = \"/api/analysis/timeline?project=\"", "caqdas-interface.js");
 excludes(caqdas, "var url = \"/api/analysis/cooccurrence?project=\"", "caqdas-interface.js");
 excludes(caqdas, "var url = \"/api/analysis/retrieval?project=\"", "caqdas-interface.js");
+excludes(journalTabs, "https://rops-api.digikev-kevin-rapley.workers.dev", "journal-tabs.js");
+excludes(caqdas, "https://rops-api.digikev-kevin-rapley.workers.dev", "caqdas-interface.js");

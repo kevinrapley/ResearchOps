@@ -1,0 +1,104 @@
+{
+  "date": "2026-06-11",
+  "task": "Seed Test Project 1 D1 journal analysis data for code co-occurrence and support hierarchical code creation.",
+  "branch": "feature/test-project-1-journal-seed",
+  "branchDecision": {
+    "traceRequiredByPolicy": true,
+    "note": "feature/* requires an auditable trace."
+  },
+  "operatingModelFilesLoaded": [
+    "AGENTS.md",
+    ".agent-operating-model/orchestration.xml",
+    ".agent-operating-model/bundle-registry.json",
+    ".agent-operating-model/task-signal-catalog.json",
+    ".agent-operating-model/selection-rules.json",
+    ".agent-operating-model/bootstrap-checklist.md",
+    ".agent-operating-model/precedence-policy.md",
+    ".agent-operating-model/trace-policy.md",
+    ".agent-operating-model/trace-layers.md",
+    ".agent-operating-model/behavioural-evals.json",
+    ".agent-operating-model/github-mutation-policy.md"
+  ],
+  "selectedBundles": [
+    ".agent-operating-model/bundles/github/",
+    ".agent-operating-model/bundles/researchops-developer-control/",
+    ".agent-operating-model/bundles/multi-functional-team/",
+    ".agent-operating-model/bundles/cloudflare/",
+    ".agent-operating-model/bundles/govuk-design-system/"
+  ],
+  "skippedBundles": [
+    ".agent-operating-model/bundles/openai/",
+    ".agent-operating-model/bundles/mcp-agent-tooling/",
+    ".agent-operating-model/bundles/airtable-public-api/",
+    ".agent-operating-model/bundles/mural-public-api/"
+  ],
+  "filesCreated": [
+    "tests/analysis-d1-cooccurrence-runtime.test.js",
+    "tests/codes-d1-only-runtime.test.js",
+    "docs/agent-audit/reasoning/2026/06/11/test-project-1-journal-cooccurrence-seed.md",
+    "docs/agent-audit/reasoning/2026/06/11/test-project-1-journal-cooccurrence-seed.json"
+  ],
+  "filesModified": [
+    ".github/workflows/apply-d1-test-project-1-id-canonicalisation.yml",
+    ".github/workflows/apply-d1-test-project-1-journal-analysis.yml",
+    "infra/cloudflare/migrations/0017_seed_test_project_1_journal_analysis.sql",
+    "infra/cloudflare/migrations/0018_canonicalise_test_project_1_id.sql",
+    "infra/cloudflare/src/service/internals/test-project-1-journal-seed.js",
+    "infra/cloudflare/src/service/reflection/analysis.js",
+    "infra/cloudflare/src/service/reflection/codes.js",
+    "public/js/journal-tabs.js",
+    "tests/journal-entry-d1-seed-fallback-runtime.test.js",
+    "tests/journal-secondary-actions-route-state.test.js",
+    "tests/test-project-1-id-canonicalisation-route-state.test.js",
+    "tests/test-project-1-journal-analysis-seed-route-state.test.js"
+  ],
+  "changes": [
+    "Seeded 12 realistic journal entries, 21 hierarchical codes, 5 memos and 48 code applications.",
+    "Added D1 code-application support to co-occurrence, retrieval and export analysis paths.",
+    "Added D1-only code create/update support with parent hierarchy validation.",
+    "Added parent-code controls to codebook create/edit forms.",
+    "Expanded focused tests for D1 analysis, D1-only codes, seed migrations, workflows and fallback journals."
+  ],
+  "validation": [
+    {
+      "name": "script-syntax-checks",
+      "result": "passed",
+      "details": "node --check passed for analysis.js, codes.js and journal-tabs.js."
+    },
+    {
+      "name": "prettier-targeted",
+      "result": "passed"
+    },
+    {
+      "name": "git-diff-check",
+      "result": "passed"
+    },
+    {
+      "name": "focused-journal-analysis-tests",
+      "result": "passed",
+      "details": "11 focused tests passed."
+    },
+    {
+      "name": "trace-coverage",
+      "result": "passed"
+    },
+    {
+      "name": "format-check",
+      "result": "passed"
+    },
+    {
+      "name": "npm-test",
+      "result": "passed",
+      "details": "208 tests passed."
+    },
+    {
+      "name": "npm-run-lint",
+      "result": "passed-with-warnings",
+      "details": "Exit code 0; repository-existing warning-level findings remain. Two warning-level findings introduced in codes.js were cleaned up before commit."
+    }
+  ],
+  "residualRisks": [
+    "No browser walkthrough has been run yet.",
+    "Production D1 migration application remains a deployment workflow concern."
+  ]
+}

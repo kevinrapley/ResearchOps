@@ -26,10 +26,12 @@ function createMockD1() {
 			},
 			async all() {
 				if (/FROM journal_entries/i.test(sql)) {
-					const project = args[0];
+					const half = Math.floor(args.length / 2) || 1;
+					const localProjects = new Set(args.slice(0, half));
+					const airtableProjects = new Set(args.slice(half));
 					return {
 						results: state.journalEntries.filter(
-							(row) => row.local_project_id === project || row.project === project
+							(row) => localProjects.has(row.local_project_id) || airtableProjects.has(row.project)
 						),
 					};
 				}
@@ -130,9 +132,37 @@ test('listJournalEntries serves seeded Test Project 1 entries for the legacy pro
 	assert.equal(response.status, 200);
 	assert.equal(body.ok, true);
 	assert.equal(body.source, 'seed');
-	assert.equal(body.entries.length, 4);
-	assert.equal(body.entries[0].id, 'd1tp1_journal_004');
-	assert.equal(d1.state.journalEntries.length, 4);
+	assert.equal(body.entries.length, 36);
+	assert.equal(body.entries[0].id, 'd1tp1_journal_036');
+	assert.equal(d1.state.journalEntries.length, 36);
+});
+
+test('listJournalEntries replaces a partial Test Project 1 D1 population with the expanded seed', async () => {
+	const d1 = createMockD1();
+	d1.state.journalEntries.push({
+		record_id: 'd1tp1_journal_004',
+		project: 'recgdpwEI5hF07bUZ',
+		category: 'introspections',
+		content: 'A single stale preview row.',
+		tags: JSON.stringify(['stale-preview']),
+		createdat: '2026-06-04T16:20:00.000Z',
+		local_project_id: 'd04ab32e-6756-408e-a649-6859dd0079f2',
+	});
+	const svc = createService(d1);
+	const url = new URL('https://local.test/api/journal-entries?project=recgdpwEI5hF07bUZ');
+
+	const response = await listJournalEntries(svc, '', url);
+	const body = await json(response);
+
+	assert.equal(response.status, 200);
+	assert.equal(body.ok, true);
+	assert.equal(body.source, 'seed');
+	assert.equal(body.entries.length, 36);
+	assert.equal(
+		body.entries.some((entry) => entry.id === 'd1tp1_journal_036'),
+		true
+	);
+	assert.equal(d1.state.journalEntries.length, 36);
 });
 
 test('updateJournalEntry restores the seeded row before applying edits', async () => {
