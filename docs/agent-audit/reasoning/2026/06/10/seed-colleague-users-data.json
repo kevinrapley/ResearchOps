@@ -7,7 +7,7 @@
 	"pullRequest": 395,
 	"branchPrefix": "fix/",
 	"traceRequired": true,
-	"taskSummary": "Seed colleague ResearchOps access records in D1 without sending notification emails.",
+	"taskSummary": "Seed colleague ResearchOps access records in D1 without sending notification emails and add visible team context for Test Project 1 users.",
 	"selectedBundles": [
 		"github-diamond",
 		"researchops-developer-control",
@@ -21,6 +21,7 @@
 	],
 	"filesCreatedOrModified": [
 		"infra/cloudflare/migrations/0020_seed_colleague_auth_users.sql",
+		"infra/cloudflare/migrations/0021_bridge_test_project_1_users_to_visible_team_scope.sql",
 		".github/workflows/apply-d1-colleague-auth-users.yml",
 		"docs/deployment/d1-migration-ordering.md",
 		"docs/agent-audit/reasoning/2026/06/10/seed-colleague-users.md",
@@ -30,19 +31,26 @@
 		"Creates active D1 auth user records for named colleagues.",
 		"Adds team-scoped role assignments for ResearchOps Core Team users.",
 		"Adds project-scoped role assignments for Test Project 1 users.",
-		"Adds audit events recording that access was seeded and notification is handled manually outside ResearchOps.",
-		"Adds a guarded workflow to apply the migration to the remote researchops-d1 database.",
-		"Updates D1 migration ordering documentation from 0020 to 0021."
+		"Adds Home Office Biometrics as a visible team context for Test Project 1 users because current project visibility is team-key based.",
+		"Mirrors active Test Project 1 project-scoped role assignments to the Home Office Biometrics team so the current auth context can surface roles and permissions.",
+		"Adds audit events recording seeded access and the visible-scope bridge.",
+		"Adds a guarded workflow to apply both migrations to the remote researchops-d1 database.",
+		"Updates D1 migration ordering documentation from 0021 to 0022."
 	],
 	"counts": {
 		"usersSeeded": 11,
-		"roleAssignmentsSeeded": 34,
-		"auditEventsSeeded": 11,
+		"projectScopedRoleAssignmentsSeeded": 34,
+		"visibleTeamMembershipsDerived": 9,
+		"visibleTeamRoleAssignmentsDerived": 27,
+		"seedAuditEvents": 11,
+		"visibleScopeAuditEventsDerived": 9,
 		"teamScopedUsers": 2,
 		"projectScopedUsers": 9
 	},
 	"scopeIds": {
-		"team": "team_researchops_core",
+		"coreTeam": "team_researchops_core",
+		"visibleProjectTeam": "team_home_office_biometrics",
+		"visibleProjectTeamName": "Home Office Biometrics",
 		"testProject1RecordId": "recgdpwEI5hF07bUZ",
 		"testProject1LocalId": "d04ab32e-6756-408e-a649-6859dd0079f2"
 	},
@@ -53,6 +61,11 @@
 		"createSessions": false,
 		"userContactMethod": "manual_contact_outside_researchops",
 		"loginMethod": "email_one_time_code_on_user_initiated_sign_in"
+	},
+	"codexReviewResponse": {
+		"commentId": 3404468449,
+		"issue": "Project-scoped users would not have a visible team context in the current auth/session model.",
+		"resolution": "Added 0021 bridge migration that creates Home Office Biometrics team membership and mirrored team-scoped roles derived from active Test Project 1 project-scoped assignments."
 	},
 	"workflow": {
 		"path": ".github/workflows/apply-d1-colleague-auth-users.yml",
@@ -74,6 +87,7 @@
 	},
 	"residualRisks": [
 		"Remote D1 is not changed until the workflow runs after merge to main or is manually dispatched with the confirmation inputs.",
+		"The visible team bridge is a compatibility measure for the current team-key auth context and can be retired when project-scoped assignments are surfaced directly by the runtime.",
 		"The migration seeds access records only; the user must contact colleagues outside ResearchOps."
 	]
 }
