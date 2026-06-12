@@ -10,6 +10,7 @@ const baseRequestSource = fs.readFileSync("infra/cloudflare/src/service/mural-jo
 const baseSyncEntrySource = fs.readFileSync("infra/cloudflare/src/service/mural-journal-sync/sync-entry.js", "utf8");
 const baseTextSource = fs.readFileSync("infra/cloudflare/src/service/mural-journal-sync/text.js", "utf8");
 const baseWidgetsSource = fs.readFileSync("infra/cloudflare/src/service/mural-journal-sync/widgets.js", "utf8");
+const muralLibSource = fs.readFileSync("infra/cloudflare/src/lib/mural.js", "utf8");
 const layoutSource = fs.readFileSync("infra/cloudflare/src/service/mural-journal-sync-layout.js", "utf8");
 const safeTagsSource = fs.readFileSync("infra/cloudflare/src/service/mural-journal-sync-safe-tags.js", "utf8");
 const indexSource = fs.readFileSync("infra/cloudflare/src/service/index.js", "utf8");
@@ -76,6 +77,8 @@ includes(baseMuralApiSource, "export async function createStickyFromTemplate", "
 includes(baseMuralApiSource, "widgets/sticky-note", "base Mural API helpers");
 includes(baseMuralApiSource, "template-sticky-minimal-array", "base Mural API helpers");
 includes(baseMuralApiSource, "tags: patch.tags", "base Mural API helpers");
+includes(muralLibSource, "js?.next", "Mural lib");
+includes(muralLibSource, "url.searchParams.set(\"next\", next)", "Mural lib");
 includes(baseRequestSource, "export function parseEntryPayload", "base request helpers");
 includes(baseContextSource, "export async function buildContext", "base context helpers");
 includes(baseContextSource, "export function statusFromEntriesAndWidgets", "base context helpers");
@@ -86,6 +89,7 @@ includes(layoutSource, "export async function muralJournalSync", "layout service
 includes(layoutSource, "function categoryHeaderWidget", "layout service");
 includes(layoutSource, "function columnTemplateWidget", "layout service");
 includes(layoutSource, "function columnLayout", "layout service");
+includes(layoutSource, "function textValue", "layout service");
 includes(layoutSource, "function canonicalBodyText", "layout service");
 includes(layoutSource, "function bodyTextsMatch", "layout service");
 includes(layoutSource, "function isTemplatePlaceholder", "layout service");

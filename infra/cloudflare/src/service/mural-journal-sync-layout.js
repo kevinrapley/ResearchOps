@@ -39,6 +39,27 @@ function safeText(value) {
 	return String(value || "").trim();
 }
 
+function textValue(value) {
+	if (value === null || value === undefined) return "";
+	if (typeof value === "string" || typeof value === "number" || typeof value === "boolean") return safeText(value);
+	if (Array.isArray(value)) return value.map(textValue).filter(Boolean).join(" ");
+	if (typeof value === "object") {
+		return textValue([
+			value.plainText,
+			value.text,
+			value.htmlText,
+			value.content,
+			value.body,
+			value.description,
+			value.value,
+			value.title,
+			value.name,
+			value.label
+		]);
+	}
+	return "";
+}
+
 function categoryLabel(categoryKey) {
 	return {
 		perceptions: "perceptions",
@@ -88,24 +109,23 @@ function tagKeys(widget) {
 }
 
 function widgetText(widget) {
-	return safeText(
-		widget?.text ||
-		widget?.plainText ||
-		widget?.htmlText ||
-		widget?.content ||
-		widget?.body ||
-		widget?.description ||
-		widget?.properties?.text ||
-		widget?.properties?.plainText ||
-		widget?.properties?.htmlText ||
-		widget?.data?.text ||
-		widget?.data?.plainText ||
-		widget?.data?.htmlText ||
-		widget?.title ||
-		widget?.name ||
-		widget?.label ||
-		""
-	);
+	return textValue([
+		widget?.text,
+		widget?.plainText,
+		widget?.htmlText,
+		widget?.content,
+		widget?.body,
+		widget?.description,
+		widget?.properties?.text,
+		widget?.properties?.plainText,
+		widget?.properties?.htmlText,
+		widget?.data?.text,
+		widget?.data?.plainText,
+		widget?.data?.htmlText,
+		widget?.title,
+		widget?.name,
+		widget?.label
+	]);
 }
 
 function canonicalBodyText(value) {

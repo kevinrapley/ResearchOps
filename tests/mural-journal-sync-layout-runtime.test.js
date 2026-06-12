@@ -195,7 +195,7 @@ try {
 					widget({
 						id: 'header-perceptions',
 						type: 'shape',
-						text: 'Perceptions',
+						text: { plainText: 'Perceptions' },
 						tags: ['perceptions'],
 						x: 0,
 						y: 0,
@@ -254,29 +254,39 @@ try {
 		},
 	];
 	const manualWrites = [];
+	let manualWidgetPageLoads = 0;
 	globalThis.fetch = async (url, init = {}) => {
 		const href = String(url);
 		const method = String(init.method || 'GET').toUpperCase();
+		const parsed = new URL(href);
 		if (href.endsWith('/users/me'))
 			return jsonResponse({ value: { companyId: 'homeofficegovuk' } });
-		if (href.endsWith('/murals/workspace.123/widgets')) {
+		if (parsed.pathname.endsWith('/murals/workspace.123/widgets')) {
 			if (method !== 'GET') manualWrites.push({ method, href, body: JSON.parse(init.body) });
+			manualWidgetPageLoads += 1;
+			if (!parsed.searchParams.get('next')) {
+				return jsonResponse({
+					value: [
+						widget({
+							id: 'header-perceptions',
+							type: 'shape',
+							text: 'Perceptions',
+							tags: ['perceptions'],
+							x: 0,
+							y: 0,
+							width: 400,
+							height: 80,
+							style: { backgroundColor: '#9120A8FF' },
+						}),
+					],
+					next: 'manual-page-2',
+				});
+			}
 			return jsonResponse({
 				value: [
 					widget({
-						id: 'header-perceptions',
-						type: 'shape',
-						text: 'Perceptions',
-						tags: ['perceptions'],
-						x: 0,
-						y: 0,
-						width: 400,
-						height: 80,
-						style: { backgroundColor: '#9120A8FF' },
-					}),
-					widget({
 						id: 'manual-entry-001',
-						plainText: manualEntries[0].content.replace(/\. People/, '.\nPeople'),
+						text: { plainText: manualEntries[0].content.replace(/\. People/, '.\nPeople') },
 						tags: ['perceptions', 'Test Project 1'],
 						x: 0,
 						y: 120,
@@ -313,6 +323,7 @@ try {
 	assert.equal(manualStatusData.synced, 3);
 	assert.equal(manualStatusData.pending, 0);
 	assert.deepEqual(manualStatusData.byCategory.perceptions, { total: 3, synced: 3, pending: 0 });
+	assert.equal(manualWidgetPageLoads, 2);
 
 	const manualHydrateResponse = await postHydrate(service(manualEntries));
 	const manualHydrateData = await manualHydrateResponse.json();
@@ -324,6 +335,7 @@ try {
 		manualHydrateData.outcomes.map((outcome) => outcome.action),
 		['already-synced', 'already-synced', 'already-synced']
 	);
+	assert.equal(manualWidgetPageLoads, 4);
 	assert.equal(manualWrites.length, 0);
 
 	const repairWrites = [];

@@ -615,16 +615,36 @@ export async function duplicateMural(env, accessToken, { roomId, folderId, title
 /* ───────────────── Widgets & areas ───────────────── */
 
 export async function getWidgets(env, accessToken, muralId) {
-	const url = `https://app.mural.co/api/public/v1/murals/${muralId}/widgets`;
-	const res = await fetch(url, { headers: { Authorization: `Bearer ${accessToken}` } });
-	const js = await res.json().catch(() => ({}));
-	if (!res.ok) {
-		throw Object.assign(new Error(`GET /murals/${muralId}/widgets failed: ${res.status}`), {
-			status: res.status,
-			body: js
+	const baseUrl = `https://app.mural.co/api/public/v1/murals/${muralId}/widgets`;
+	const widgets = [];
+	let next = "";
+
+	for (let page = 0; page < 25; page += 1) {
+		const url = new URL(baseUrl);
+		if (next) {
+			url.searchParams.set("limit", "100");
+			url.searchParams.set("next", next);
+		}
+		const res = await fetch(url.toString(), {
+			headers: {
+				Authorization: `Bearer ${accessToken}`,
+				Accept: "application/json"
+			}
 		});
+		const js = await res.json().catch(() => ({}));
+		if (!res.ok) {
+			throw Object.assign(new Error(`GET /murals/${muralId}/widgets failed: ${res.status}`), {
+				status: res.status,
+				body: js
+			});
+		}
+		const pageWidgets = js?.value || js?.widgets || [];
+		if (Array.isArray(pageWidgets)) widgets.push(...pageWidgets);
+		next = String(js?.next || "").trim();
+		if (!next) break;
 	}
-	return js?.value || js?.widgets || [];
+
+	return widgets;
 }
 
 export async function createSticky(env, accessToken, muralId, { text, x, y, width = 240, height = 120 }) {

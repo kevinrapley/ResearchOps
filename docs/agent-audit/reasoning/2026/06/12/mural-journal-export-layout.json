@@ -96,7 +96,9 @@
 			"Address Codex review thread PRRT_kwDOP3Td2M6JDoxV by preventing one body-matched Mural widget from being reused for multiple distinct journal entry ids in status and hydrate passes.",
 			"Ignore decorative purple title/header cards when selecting reusable journal templates or existing entry cards; require white content-card geometry and allow filled white cards to anchor later placements when category header text is unreadable.",
 			"Repair polluted boards by refusing to count synced widgets above the resolved content-card row, then deleting stale synced widgets outside the content flow after the correct white card is updated or created.",
-			"Recognise manually-created white Mural cards as already synced when they are in the correct column and their body text matches a journal entry, even when they lack the internal journal-entry marker and Mural returns text in plainText, htmlText, content, properties or data fields."
+			"Recognise manually-created white Mural cards as already synced when they are in the correct column and their body text matches a journal entry, even when they lack the internal journal-entry marker and Mural returns text in plainText, htmlText, content, properties or data fields.",
+			"Follow Mural widget-list pagination via the public API next cursor so status and hydrate scan all board widgets rather than only the first page.",
+			"Extract visible card text from nested Mural payloads such as { text: { plainText: '...' } } so object-shaped text fields are not normalised to [object Object]."
 		],
 		"uiReporting": [
 			"Compact journal Mural sync status reports already-present entries as left unchanged.",
@@ -105,6 +107,7 @@
 	},
 	"filesChanged": [
 		"infra/cloudflare/src/service/mural-journal-sync-layout.js",
+		"infra/cloudflare/src/lib/mural.js",
 		"infra/cloudflare/src/service/mural-journal-sync-safe-tags.js",
 		"public/js/journal-mural-sync-compact.js",
 		"public/js/journal-tabs.js",
@@ -122,7 +125,7 @@
 		{
 			"command": "node tests/mural-journal-sync-layout-runtime.test.js",
 			"status": "passed",
-			"summary": "Includes duplicate-body entries, purple decorative-card, stale-widget repair and manual-card recognition regression coverage."
+			"summary": "Includes duplicate-body entries, purple decorative-card, stale-widget repair, paginated widget loading, nested Mural text payloads and manual-card recognition regression coverage."
 		},
 		{
 			"command": "node tests/mural-journal-sync-safe-tags-runtime.test.js",
