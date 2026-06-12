@@ -1,1 +1,79 @@
-{}
+{
+	"schema": "researchops.agentAuditTrace.v1",
+	"date": "2026-06-10",
+	"traceLayer": "operational",
+	"repository": "kevinrapley/ResearchOps",
+	"branch": "fix/seed-colleague-auth-users",
+	"pullRequest": 395,
+	"branchPrefix": "fix/",
+	"traceRequired": true,
+	"taskSummary": "Seed colleague ResearchOps access records in D1 without sending notification emails.",
+	"selectedBundles": [
+		"github-diamond",
+		"researchops-developer-control",
+		"multi-functional-team",
+		"cloudflare"
+	],
+	"signals": [
+		"repository-affecting-task",
+		"government-product-assurance-default",
+		"runtime-or-deployment-change"
+	],
+	"filesCreatedOrModified": [
+		"infra/cloudflare/migrations/0020_seed_colleague_auth_users.sql",
+		".github/workflows/apply-d1-colleague-auth-users.yml",
+		"docs/deployment/d1-migration-ordering.md",
+		"docs/agent-audit/reasoning/2026/06/10/seed-colleague-users.md",
+		"docs/agent-audit/reasoning/2026/06/10/seed-colleague-users-data.json"
+	],
+	"implementationSummary": [
+		"Creates active D1 auth user records for named colleagues.",
+		"Adds team-scoped role assignments for ResearchOps Core Team users.",
+		"Adds project-scoped role assignments for Test Project 1 users.",
+		"Adds audit events recording that access was seeded and notification is handled manually outside ResearchOps.",
+		"Adds a guarded workflow to apply the migration to the remote researchops-d1 database.",
+		"Updates D1 migration ordering documentation from 0020 to 0021."
+	],
+	"counts": {
+		"usersSeeded": 11,
+		"roleAssignmentsSeeded": 34,
+		"auditEventsSeeded": 11,
+		"teamScopedUsers": 2,
+		"projectScopedUsers": 9
+	},
+	"scopeIds": {
+		"team": "team_researchops_core",
+		"testProject1RecordId": "recgdpwEI5hF07bUZ",
+		"testProject1LocalId": "d04ab32e-6756-408e-a649-6859dd0079f2"
+	},
+	"emailPolicy": {
+		"sendNotificationEmails": false,
+		"createOneTimeCodes": false,
+		"createLoginChallenges": false,
+		"createSessions": false,
+		"userContactMethod": "manual_contact_outside_researchops",
+		"loginMethod": "email_one_time_code_on_user_initiated_sign_in"
+	},
+	"workflow": {
+		"path": ".github/workflows/apply-d1-colleague-auth-users.yml",
+		"targetDatabase": "researchops-d1",
+		"manualConfirmation": "SEED_COLLEAGUE_AUTH_USERS",
+		"autoRunOnMainPathChange": true
+	},
+	"validation": {
+		"status": "pending",
+		"requiredChecks": [
+			"CI",
+			"Validate ResearchOps",
+			"Worker CI",
+			"Release Gate",
+			"Accessibility audit",
+			"qa-bdd",
+			"Lychee"
+		]
+	},
+	"residualRisks": [
+		"Remote D1 is not changed until the workflow runs after merge to main or is manually dispatched with the confirmation inputs.",
+		"The migration seeds access records only; the user must contact colleagues outside ResearchOps."
+	]
+}
