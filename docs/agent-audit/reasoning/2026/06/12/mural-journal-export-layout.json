@@ -98,7 +98,9 @@
 			"Repair polluted boards by refusing to count synced widgets above the resolved content-card row, then deleting stale synced widgets outside the content flow after the correct white card is updated or created.",
 			"Recognise manually-created white Mural cards as already synced when they are in the correct column and their body text matches a journal entry, even when they lack the internal journal-entry marker and Mural returns text in plainText, htmlText, content, properties or data fields.",
 			"Follow Mural widget-list pagination via the public API next cursor so status and hydrate scan all board widgets rather than only the first page.",
-			"Extract visible card text from nested Mural payloads such as { text: { plainText: '...' } } so object-shaped text fields are not normalised to [object Object]."
+			"Extract visible card text from nested Mural payloads such as { text: { plainText: '...' } } so object-shaped text fields are not normalised to [object Object].",
+			"Resolve Test Project 1 Mural board mappings across the canonical Airtable id, legacy Airtable id and local id so status checks do not fall back to the wrong board when a page is opened with the legacy URL id.",
+			"Read D1 Mural board mappings from the existing mural_boards.project shape as well as newer project_record_id and local_project_id columns."
 		],
 		"uiReporting": [
 			"Compact journal Mural sync status reports already-present entries as left unchanged.",
@@ -108,12 +110,14 @@
 	"filesChanged": [
 		"infra/cloudflare/src/service/mural-journal-sync-layout.js",
 		"infra/cloudflare/src/lib/mural.js",
+		"infra/cloudflare/src/service/internals/mural-board-registry.js",
 		"infra/cloudflare/src/service/mural-journal-sync-safe-tags.js",
 		"public/js/journal-mural-sync-compact.js",
 		"public/js/journal-tabs.js",
 		"tests/mural-journal-sync-route-state.test.js",
 		"tests/mural-journal-sync-layout-runtime.test.js",
 		"tests/mural-journal-sync-safe-tags-runtime.test.js",
+		"tests/mural-airtable-board-registry.test.js",
 		"docs/agent-audit/reasoning/2026/06/12/mural-journal-export-layout.md",
 		"docs/agent-audit/reasoning/2026/06/12/mural-journal-export-layout.json"
 	],
@@ -132,6 +136,11 @@
 			"status": "passed"
 		},
 		{
+			"command": "node tests/mural-airtable-board-registry.test.js",
+			"status": "passed",
+			"summary": "Includes legacy Test Project 1 id resolution to canonical D1 and Airtable Mural board mappings."
+		},
+		{
 			"command": "node --check infra/cloudflare/src/service/mural-journal-sync-layout.js && node --check infra/cloudflare/src/service/mural-journal-sync-safe-tags.js && node --check tests/mural-journal-sync-safe-tags-runtime.test.js && node --check public/js/journal-mural-sync-compact.js && node --check public/js/journal-tabs.js",
 			"status": "passed"
 		},
@@ -146,12 +155,12 @@
 		{
 			"command": "npm test",
 			"status": "passed",
-			"summary": "215 tests passed"
+			"summary": "217 tests passed"
 		},
 		{
 			"command": "npm run lint",
 			"status": "passed",
-			"summary": "0 errors, 259 existing warnings"
+			"summary": "0 errors, 258 existing warnings"
 		},
 		{
 			"command": "npm run validate",

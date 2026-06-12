@@ -4,12 +4,44 @@ import {
 	resolveProjectRecordId as atResolveProjectRecordId,
 	updateBoard as atUpdateBoard,
 } from "./airtable.js";
-import { d1Get, d1GetProjectByLocalId } from "./researchops-d1.js";
+import {
+	d1Get,
+	d1GetMuralBoardForProject,
+	d1GetProjectByLocalId,
+} from "./researchops-d1.js";
+import {
+	TEST_PROJECT_1_CANONICAL_ID,
+	TEST_PROJECT_1_LEGACY_ID,
+	TEST_PROJECT_1_LOCAL_ID,
+} from "./test-project-1-journal-seed.js";
 
 export const PURPOSE_REFLEXIVE = "reflexive_journal";
 
 const memoryCache = new Map();
 const resolveBoardCache = new Map();
+
+function appendUnique(values, value) {
+	const safeValue = String(value || "").trim();
+	if (safeValue && !values.includes(safeValue)) values.push(safeValue);
+}
+
+function projectLookupAliases(projectId) {
+	const rawProjectId = String(projectId || "").trim();
+	const aliases = [];
+	appendUnique(aliases, rawProjectId);
+
+	if (
+		rawProjectId === TEST_PROJECT_1_CANONICAL_ID ||
+		rawProjectId === TEST_PROJECT_1_LEGACY_ID ||
+		rawProjectId === TEST_PROJECT_1_LOCAL_ID
+	) {
+		appendUnique(aliases, TEST_PROJECT_1_CANONICAL_ID);
+		appendUnique(aliases, TEST_PROJECT_1_LEGACY_ID);
+		appendUnique(aliases, TEST_PROJECT_1_LOCAL_ID);
+	}
+
+	return aliases;
+}
 
 async function kvProjectMapping(env, { uid, projectId }) {
 	const key = `mural:${uid || "anon"}:project:id::${String(projectId || "")}`;
@@ -26,12 +58,35 @@ async function kvProjectMapping(env, { uid, projectId }) {
  * Best-effort lookup of a Mural board in D1 for a given project.
  * Airtable remains primary; D1 is only used when Airtable fails or has no row.
  */
-async function d1ResolveMuralBoard(env, { projectRecordId, localProjectId, purpose }) {
+async function d1ResolveMuralBoard(env, { projectRecordId, localProjectId, purpose }, log = null) {
 	const purposeLower = (purpose || "").toLowerCase().trim();
 	const hasProjectRecordId = !!projectRecordId;
 	const hasLocalProjectId = !!localProjectId;
 
 	if (!env || !env.RESEARCHOPS_D1) return null;
+
+	try {
+		const row = await d1GetMuralBoardForProject(env, {
+			projectRecordId,
+			localProjectId,
+			purpose,
+		});
+		if (row?.mural_id) {
+			const project = String(row.project || "").trim();
+			return {
+				mural_id: row.mural_id,
+				board_url: row.board_url || null,
+				workspace_id: row.workspace_id || null,
+				project_record_id: project.startsWith("rec") ? project : projectRecordId || null,
+				local_project_id:
+					project && !project.startsWith("rec") ? project : localProjectId || null,
+			};
+		}
+	} catch (err) {
+		log?.warn?.("[mural.d1ResolveMuralBoard] compatible D1 lookup failed", {
+			message: String(err?.message || err),
+		});
+	}
 
 	const attempts = [];
 
@@ -102,7 +157,7 @@ async function d1ResolveMuralBoard(env, { projectRecordId, localProjectId, purpo
 				};
 			}
 		} catch (err) {
-			console.warn("[mural.d1ResolveMuralBoard] D1 lookup attempt failed", {
+			log?.warn?.("[mural.d1ResolveMuralBoard] D1 lookup attempt failed", {
 				message: String(err?.message || err),
 			});
 		}
@@ -141,6 +196,7 @@ export async function resolveBoardForService(self, { projectId, uid, purpose = P
 	const log = self.root.log || console;
 	const airtableConfigured =
 		!!(env.AIRTABLE_BASE_ID || env.AIRTABLE_BASE) && !!(env.AIRTABLE_API_KEY || env.AIRTABLE_PAT);
+	const lookupProjectIds = projectLookupAliases(rawProjectId);
 
 	let localProjectId = null;
 	let projectRecordId = null;
@@ -156,6 +212,7 @@ export async function resolveBoardForService(self, { projectId, uid, purpose = P
 			const proj = await d1GetProjectByLocalId(env, localProjectId);
 			if (proj?.record_id) {
 				projectRecordId = proj.record_id;
+				appendUnique(lookupProjectIds, projectRecordId);
 				log.info?.("[mural.resolveBoard] D1 mapped local project id → Airtable record id", {
 					localProjectId,
 					projectRecordId,
@@ -173,6 +230,7 @@ export async function resolveBoardForService(self, { projectId, uid, purpose = P
 	if (!projectRecordId && airtableConfigured && rawProjectId) {
 		try {
 			projectRecordId = await atResolveProjectRecordId(env, rawProjectId);
+			appendUnique(lookupProjectIds, projectRecordId);
 		} catch (err) {
 			airtableError = String(err?.message || err);
 			log.warn?.("[mural.resolveBoard] atResolveProjectRecordId failed", {
@@ -184,46 +242,55 @@ export async function resolveBoardForService(self, { projectId, uid, purpose = P
 
 	let boardFromAirtable = null;
 
-	if (airtableConfigured && (projectRecordId || rawProjectId)) {
-		try {
-			const rows = await atListBoards(
-				env,
-				{
-					projectId: projectRecordId || rawProjectId,
-					uid,
-					purpose,
-					active: true,
-					max: 25,
-				},
-				self.root,
-			);
+	if (airtableConfigured && (projectRecordId || lookupProjectIds.length)) {
+		const airtableProjectIds = [];
+		appendUnique(airtableProjectIds, projectRecordId);
+		for (const lookupProjectId of lookupProjectIds) appendUnique(airtableProjectIds, lookupProjectId);
 
-			if (Array.isArray(rows) && rows.length) {
-				const primaryRow =
-					rows.find((r) => {
-						const f = r?.fields || {};
-						return f["Primary?"] === true || String(f["Primary?"] || "").toLowerCase() === "true";
-					}) || rows[0];
+		for (const lookupProjectId of airtableProjectIds) {
+			try {
+				const rows = await atListBoards(
+					env,
+					{
+						projectId: lookupProjectId,
+						uid,
+						purpose,
+						active: true,
+						max: 25,
+					},
+					self.root,
+				);
 
-				const f = primaryRow.fields || {};
-				const muralId = f["Mural ID"] || f.mural_id || null;
-				const boardUrl = f["Board URL"] || f.board_url || null;
-				const workspaceId = f["Workspace ID"] || f.workspace_id || null;
+				if (Array.isArray(rows) && rows.length) {
+					const primaryRow =
+						rows.find((r) => {
+							const f = r?.fields || {};
+							return f["Primary?"] === true || String(f["Primary?"] || "").toLowerCase() === "true";
+						}) || rows[0];
 
-				if (muralId) {
-					boardFromAirtable = {
-						muralId,
-						boardUrl,
-						workspaceId,
-						projectRecordId: projectRecordId || null,
-					};
+					const f = primaryRow.fields || {};
+					const muralId = f["Mural ID"] || f.mural_id || null;
+					const boardUrl = f["Board URL"] || f.board_url || null;
+					const workspaceId = f["Workspace ID"] || f.workspace_id || null;
+
+					if (muralId) {
+						boardFromAirtable = {
+							muralId,
+							boardUrl,
+							workspaceId,
+							projectRecordId:
+								lookupProjectId.startsWith("rec") ? lookupProjectId : projectRecordId || null,
+						};
+						break;
+					}
 				}
+			} catch (err) {
+				airtableError = String(err?.message || err);
+				log.warn?.("[mural.resolveBoard] Airtable listBoards failed; will consider D1 fallback", {
+					projectId: lookupProjectId,
+					err: airtableError,
+				});
 			}
-		} catch (err) {
-			airtableError = String(err?.message || err);
-			log.warn?.("[mural.resolveBoard] Airtable listBoards failed; will consider D1 fallback", {
-				err: airtableError,
-			});
 		}
 	}
 
@@ -240,16 +307,29 @@ export async function resolveBoardForService(self, { projectId, uid, purpose = P
 	}
 
 	let boardFromD1 = null;
-	try {
-		boardFromD1 = await d1ResolveMuralBoard(env, {
-			projectRecordId,
-			localProjectId,
-			purpose,
-		});
-	} catch (err) {
-		log.warn?.("[mural.resolveBoard] D1 mural_boards lookup failed", {
-			err: String(err?.message || err),
-		});
+	const d1ProjectIds = [];
+	appendUnique(d1ProjectIds, projectRecordId);
+	appendUnique(d1ProjectIds, localProjectId);
+	for (const lookupProjectId of lookupProjectIds) appendUnique(d1ProjectIds, lookupProjectId);
+
+	for (const lookupProjectId of d1ProjectIds) {
+		try {
+			boardFromD1 = await d1ResolveMuralBoard(
+				env,
+				{
+					projectRecordId: lookupProjectId.startsWith("rec") ? lookupProjectId : null,
+					localProjectId: lookupProjectId.startsWith("rec") ? null : lookupProjectId,
+					purpose,
+				},
+				log,
+			);
+			if (boardFromD1?.mural_id) break;
+		} catch (err) {
+			log.warn?.("[mural.resolveBoard] D1 mural_boards lookup failed", {
+				projectId: lookupProjectId,
+				err: String(err?.message || err),
+			});
+		}
 	}
 
 	if (boardFromD1?.mural_id) {
@@ -265,12 +345,17 @@ export async function resolveBoardForService(self, { projectId, uid, purpose = P
 	}
 
 	let kv = null;
-	try {
-		kv = await kvProjectMapping(env, { uid: uid || "anon", projectId: rawProjectId });
-	} catch (err) {
-		log.warn?.("[mural.resolveBoard] KV project mapping lookup failed", {
-			err: String(err?.message || err),
-		});
+	const kvProjectIds = lookupProjectIds.length ? lookupProjectIds : [rawProjectId];
+	for (const lookupProjectId of kvProjectIds) {
+		try {
+			kv = await kvProjectMapping(env, { uid: uid || "anon", projectId: lookupProjectId });
+			if (kv?.muralId) break;
+		} catch (err) {
+			log.warn?.("[mural.resolveBoard] KV project mapping lookup failed", {
+				projectId: lookupProjectId,
+				err: String(err?.message || err),
+			});
+		}
 	}
 
 	if (kv?.muralId) {

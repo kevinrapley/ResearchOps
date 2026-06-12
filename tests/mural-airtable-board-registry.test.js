@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 
 import { createBoard, listBoards } from '../infra/cloudflare/src/service/internals/airtable.js';
+import { resolveBoardForService } from '../infra/cloudflare/src/service/internals/mural-board-registry.js';
 
 const env = {
 	AIRTABLE_BASE_ID: 'appFixture',
@@ -19,6 +20,9 @@ function makeD1({ rows = [], onRun = () => {} } = {}) {
 				},
 				async all() {
 					return { results: rows };
+				},
+				async first() {
+					return null;
 				},
 				async run() {
 					onRun(sql, this.params);
@@ -68,6 +72,103 @@ test('listBoards returns D1 board mappings before external fallback', async () =
 		assert.equal(rows[0]._source, 'd1');
 		assert.equal(rows[0].fields['Mural ID'], 'board-from-d1');
 		assert.equal(fetched, false);
+	} finally {
+		globalThis.fetch = originalFetch;
+	}
+});
+
+test('resolveBoardForService resolves legacy Test Project 1 id to canonical D1 board mapping', async () => {
+	const result = await resolveBoardForService(
+		{
+			root: {
+				env: {
+					RESEARCHOPS_D1: makeD1({
+						rows: [
+							{
+								mural_id: 'canonical-d1-board',
+								project: 'recgdpwEI5hF07bUZ',
+								purpose: 'reflexive_journal',
+								board_url: 'https://example.test/mural/canonical',
+								workspace_id: 'workspace-fixture',
+							},
+						],
+					}),
+					MURAL_REFLEXIVE_MURAL_ID: 'wrong-fallback-board',
+				},
+				log: { warn() {}, info() {} },
+			},
+		},
+		{
+			projectId: 'recgdpwEI5hFO7bUZ',
+			uid: 'anon',
+			purpose: 'reflexive_journal',
+		}
+	);
+
+	assert.equal(result.source, 'd1');
+	assert.equal(result.muralId, 'canonical-d1-board');
+	assert.equal(result.boardUrl, 'https://example.test/mural/canonical');
+});
+
+test('resolveBoardForService resolves legacy Test Project 1 id to canonical Airtable board mapping', async () => {
+	const formulas = [];
+	const originalFetch = globalThis.fetch;
+	globalThis.fetch = async (resource) => {
+		const url = new URL(String(resource));
+		const formula = url.searchParams.get('filterByFormula') || '';
+		formulas.push(formula);
+		if (formula.includes('{Project ID} = "recgdpwEI5hF07bUZ"')) {
+			return new Response(
+				JSON.stringify({
+					records: [
+						{
+							id: 'recBoardCanonical',
+							fields: {
+								'Project ID': 'recgdpwEI5hF07bUZ',
+								UID: 'airtable-fixture',
+								Purpose: 'reflexive_journal',
+								Active: true,
+								'Mural ID': 'canonical-airtable-board',
+								'Board URL': 'https://example.test/mural/airtable-canonical',
+								'Workspace ID': 'workspace-fixture',
+								'Primary?': true,
+							},
+						},
+					],
+				}),
+				{ status: 200, headers: { 'content-type': 'application/json' } }
+			);
+		}
+		return new Response(JSON.stringify({ records: [] }), {
+			status: 200,
+			headers: { 'content-type': 'application/json' },
+		});
+	};
+
+	try {
+		const result = await resolveBoardForService(
+			{
+				root: {
+					env: {
+						...env,
+						AIRTABLE_API_KEY: 'fixture-token',
+						RESEARCHOPS_D1: makeD1({ rows: [] }),
+						MURAL_REFLEXIVE_MURAL_ID: 'wrong-fallback-board',
+					},
+					log: { warn() {}, info() {}, debug() {} },
+				},
+			},
+			{
+				projectId: 'recgdpwEI5hFO7bUZ',
+				uid: 'airtable-fixture',
+				purpose: 'reflexive_journal',
+			}
+		);
+
+		assert.equal(result.source, 'airtable');
+		assert.equal(result.muralId, 'canonical-airtable-board');
+		assert.equal(result.projectRecordId, 'recgdpwEI5hF07bUZ');
+		assert.ok(formulas.some((formula) => formula.includes('{Project ID} = "recgdpwEI5hF07bUZ"')));
 	} finally {
 		globalThis.fetch = originalFetch;
 	}
