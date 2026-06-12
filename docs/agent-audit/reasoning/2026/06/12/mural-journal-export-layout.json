@@ -119,7 +119,11 @@
 			"Corrected the live category-column-not-found failure: widget tags returned as Mural tag ids are now resolved to tag texts via GET /murals/{muralId}/tags before column/template matching, and widget detail enrichment now triggers when list text fields are present but empty rather than only when they are absent.",
 			"Fixed muralIdFromUrl in the safe-tags wrapper so widget-list reads with query strings (always sent as ?limit=100) are recognised; previously the D1 journal-entry annotation and widget cache silently never ran in production.",
 			"Deduplicated widget text fragments so normalised text plus htmlText no longer double the body, which broke exact short-body matching and exact header-label detection.",
-			"Added status and hydrate diagnostics (resolved widget counts, text/tag visibility, per-column layout detection, positional widget sample) and embedded a board visibility summary in the category-column-not-found outcome so live failures are self-describing."
+			"Added status and hydrate diagnostics (resolved widget counts, text/tag visibility, per-column layout detection, positional widget sample) and embedded a board visibility summary in the category-column-not-found outcome so live failures are self-describing.",
+			"Resolved the project name server-side from the D1 projects and rops_projects_cache records (checking all Test Project 1 id aliases) so the Snowberry project tag carries onto new cards even when browser route hydration fails and the client can only echo the project id; the client-sent name remains a fallback and names longer than Mural's 25-character tag limit match their truncated board tag.",
+			"Merged the tags already on a widget into PATCH tag application (resolved by id or text, including widget tag objects whose ids are missing from the board tag list) because the Mural widget PATCH replaces the whole tag set; the Raspberry category and Snowberry project tags can no longer be stripped from a patched template sticky.",
+			"Restyled user-authored ResearchOps tags that already existed on the board with default styling to the Mint contract via the documented PATCH /murals/{muralId}/tags/{tagId} endpoint; board-curated category and project tags are never restyled.",
+			"Aligned the compact journal Mural sync payload with the journal tabs payload so both prefer the hydrated main[data-project-name] value before falling back to the page heading or project id."
 		],
 		"uiReporting": [
 			"Compact journal Mural sync status reports already-present entries as left unchanged.",
@@ -200,10 +204,21 @@
 			"command": "node tests/mural-journal-sync-safe-tags-runtime.test.js",
 			"status": "passed",
 			"summary": "Includes live widget-list shape regression: tag ids resolved via the board tag list, empty-string list text enriched via widget detail GETs, three manual cards counted as synced with no writes."
+		},
+		{
+			"command": "node tests/mural-journal-sync-layout-runtime.test.js",
+			"status": "passed",
+			"summary": "Includes D1 project-name resolution regression: a hydrate request that only carries the project id still carries the Snowberry project tag onto new cards."
+		},
+		{
+			"command": "node tests/mural-journal-sync-safe-tags-runtime.test.js",
+			"status": "passed",
+			"summary": "Includes Mint restyle and tag-preservation regression: a pre-existing default-styled user tag is restyled to Mint instead of recreated, and tag application onto a patched template keeps the project tag even when the board tag list omits it and the client could not send the project name."
 		}
 	],
 	"residualRisks": [
 		"No live Mural board mutation was performed from the local Codex session.",
-		"The safe-tags wrapper applies existing Mural tags by id when the Mural tags list returns them. If a template carries a tag name that Mural does not report as an existing board tag, the wrapper omits that template tag from new cards rather than creating it as Mint."
+		"The safe-tags wrapper applies existing Mural tags by id when the Mural tags list returns them. If a template carries a tag name that Mural does not report as an existing board tag, the wrapper omits that template tag from new cards rather than creating it as Mint; existing widgets keep such tags because tag application merges the tags already on the widget.",
+		"Mural does not publicly document its built-in tag preset colour values. The Mint constants in mural-journal-sync-safe-tags.js (#DDF7E8FF background, #98DDB8FF border, #0B0C0CFF text) are the single place to adjust if the workspace's built-in Mint preset differs."
 	]
 }

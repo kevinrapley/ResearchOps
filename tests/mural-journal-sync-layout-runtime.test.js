@@ -392,6 +392,89 @@ try {
 		['PATCH', 'DELETE']
 	);
 	assert.deepEqual(repairData.outcomes[0].deletedStaleWidgetIds, ['bad-title-entry-001']);
+
+	// When route hydration fails in the browser the client can only echo the
+	// project id, so the project name (and the Snowberry project tag carried
+	// onto new cards) must resolve from the D1 project record instead.
+	const d1NameWrites = [];
+	globalThis.fetch = async (url, init = {}) => {
+		const href = String(url);
+		const method = String(init.method || 'GET').toUpperCase();
+		if (href.endsWith('/users/me'))
+			return jsonResponse({ value: { companyId: 'homeofficegovuk' } });
+		if (new URL(href).pathname.endsWith('/murals/workspace.123/widgets') && method === 'GET') {
+			return jsonResponse({
+				value: [
+					widget({
+						id: 'header-perceptions',
+						type: 'shape',
+						text: 'Perceptions',
+						tags: ['perceptions'],
+						x: 0,
+						y: 0,
+						width: 400,
+						height: 80,
+						style: { backgroundColor: '#9120A8FF' },
+					}),
+					widget({
+						id: 'existing-entry-001',
+						text: entries[0].content,
+						tags: ['perceptions', 'Test Project 1', 'evidence', 'journal-entry:entry-001'],
+						x: 0,
+						y: 120,
+						width: 400,
+						height: 220,
+					}),
+				],
+			});
+		}
+		if (href.endsWith('/murals/workspace.123/widgets/sticky-note') && method === 'POST') {
+			const body = JSON.parse(init.body);
+			d1NameWrites.push({ method, href, body });
+			return jsonResponse({ value: { id: 'created-entry-002', ...body } }, 201);
+		}
+		throw new Error(`Unexpected fetch: ${method} ${href}`);
+	};
+
+	const d1NameService = service(entries);
+	d1NameService.env.RESEARCHOPS_D1 = {
+		prepare() {
+			return {
+				bind() {
+					return this;
+				},
+				async first() {
+					return { name: 'Test Project 1' };
+				},
+				async all() {
+					return { results: [] };
+				},
+				async run() {
+					return {};
+				},
+			};
+		},
+	};
+	const d1NameResponse = await muralJournalSync(
+		d1NameService,
+		new Request('https://researchops.test/api/mural/journal-sync', {
+			method: 'POST',
+			body: JSON.stringify({
+				mode: 'hydrate',
+				projectId: 'recgdpwEI5hFO7bUZ',
+				projectName: 'recgdpwEI5hFO7bUZ',
+			}),
+		}),
+		'https://researchops.test'
+	);
+	const d1NameData = await d1NameResponse.json();
+	assert.equal(d1NameResponse.status, 200);
+	assert.equal(d1NameData.createdOrUpdated, 1);
+	assert.equal(d1NameData.alreadySynced, 1);
+	assert.equal(d1NameWrites.length, 1);
+	assert.equal(d1NameWrites[0].body.text, entries[1].content);
+	// The Snowberry project tag carries over; the other card's user tags do not.
+	assert.deepEqual(d1NameWrites[0].body.tags, ['perceptions', 'Test Project 1', 'tool-switching']);
 } finally {
 	globalThis.fetch = originalFetch;
 }

@@ -297,6 +297,26 @@ function normalizeMuralTagRecord(tag) {
 	return text ? { ...tag, id, text } : null;
 }
 
+function isMintStyledTag(record) {
+	return safeText(record?.backgroundColor).toUpperCase() === MURAL_MINT_TAG_STYLE.backgroundColor &&
+		safeText(record?.borderColor).toUpperCase() === MURAL_MINT_TAG_STYLE.borderColor;
+}
+
+async function restyleMuralTagAsMint(accessToken, muralId, record) {
+	if (!record?.id) return record;
+	const res = await fetch(`${MURAL_ROOT}/murals/${muralId}/tags/${record.id}`, {
+		method: "PATCH",
+		headers: {
+			Authorization: `Bearer ${accessToken}`,
+			"Content-Type": "application/json",
+			Accept: "application/json"
+		},
+		body: JSON.stringify(MURAL_MINT_TAG_STYLE)
+	});
+	if (!res.ok) return record;
+	return { ...record, ...MURAL_MINT_TAG_STYLE };
+}
+
 async function ensureKnownTags(accessToken, muralId, tags, createableTags = tags, tagCache = null) {
 	const desired = userFacingTags(tags);
 	if (!desired.length || !accessToken || !muralId) return [];
@@ -313,7 +333,20 @@ async function ensureKnownTags(accessToken, muralId, tags, createableTags = tags
 	for (const tag of desired) {
 		const key = tag.toLowerCase();
 		if (known.has(key)) {
-			safe.push(known.get(key));
+			let record = known.get(key);
+			// User-authored tags created by earlier syncs (or by hand) keep
+			// whatever style they were created with; bring them onto the
+			// Mint contract. Board-curated tags are never restyled.
+			if (createable.has(key) && !isMintStyledTag(record)) {
+				record = await restyleMuralTagAsMint(accessToken, muralId, record).catch(() => record);
+				known.set(key, record);
+				if (isMintStyledTag(record) && tagCache && tagCache.has(muralId)) {
+					const cached = tagCache.get(muralId);
+					const idx = cached.findIndex(tag => safeText(tag?.id || tag?.tagId) === record.id);
+					if (idx >= 0) cached[idx] = { ...cached[idx], ...MURAL_MINT_TAG_STYLE };
+				}
+			}
+			safe.push(record);
 			continue;
 		}
 		if (!createable.has(key)) continue;
@@ -453,6 +486,53 @@ async function createReplacementSticky(originalFetch, accessToken, muralId, sour
 	return lastResponse;
 }
 
+function dedupeTagRecords(tagRecords) {
+	const seen = new Set();
+	const out = [];
+	for (const record of tagRecords) {
+		const id = safeText(record?.id);
+		if (!id || seen.has(id)) continue;
+		seen.add(id);
+		out.push(record);
+	}
+	return out;
+}
+
+/**
+ * Mural's widget PATCH replaces the whole tag set, so an update must carry the
+ * tags already on the widget (the Raspberry category and Snowberry project
+ * tags from the template) or they are silently removed.
+ */
+async function existingWidgetTagRecords(accessToken, muralId, widgetId, widgetCache, tagCache) {
+	const widget = widgetById(widgetCache, muralId, widgetId);
+	const widgetTags = Array.isArray(widget?.tags) ? widget.tags : [];
+	if (!widgetTags.length) return [];
+
+	const listed = await listMuralTags(accessToken, muralId, tagCache).catch(() => []);
+	const byId = new Map();
+	const byText = new Map();
+	for (const tag of listed) {
+		const record = normalizeMuralTagRecord(tag);
+		if (!record?.id) continue;
+		byId.set(record.id, record);
+		byText.set(record.text.toLowerCase(), record);
+	}
+
+	const records = [];
+	for (const tag of widgetTags) {
+		if (typeof tag === "string") {
+			const record = byId.get(safeText(tag)) || byText.get(safeText(tag).toLowerCase());
+			if (record) records.push(record);
+			continue;
+		}
+		const id = safeText(tag?.id || tag?.tagId);
+		const text = safeText(tag?.text || tag?.name || tag?.title || tag?.label);
+		const record = (id && byId.get(id)) || (text && byText.get(text.toLowerCase())) || (id ? { ...tag, id, text } : null);
+		if (record) records.push(record);
+	}
+	return dedupeTagRecords(records);
+}
+
 async function applyTagsToWidget(originalFetch, accessToken, muralId, widgetId, tagRecords) {
 	const tagIds = dedupeTags(tagRecords.map(tag => safeText(tag?.id)).filter(Boolean));
 	if (!accessToken || !muralId || !widgetId || !tagIds.length) return false;
@@ -590,7 +670,11 @@ function installSafeMuralFetch(svc, originalFetch) {
 		}
 
 		const accessToken = accessTokenFromHeaders(init.headers);
-		const confirmedTags = await ensureKnownTags(accessToken, muralId, desiredTags, createableTags, tagCache).catch(() => []);
+		let confirmedTags = await ensureKnownTags(accessToken, muralId, desiredTags, createableTags, tagCache).catch(() => []);
+		if (isPatchRequest(init) && confirmedTags.length) {
+			const preserved = await existingWidgetTagRecords(accessToken, muralId, widgetIdFromUrl(url), widgetCache, tagCache).catch(() => []);
+			confirmedTags = dedupeTagRecords([...confirmedTags, ...preserved]);
+		}
 		const firstResponse = await originalFetch(input, { ...init, body: JSON.stringify(withoutTags(body)) });
 
 		if (firstResponse.ok && confirmedTags.length) {

@@ -32,7 +32,10 @@
 			mode,
 			uid: muralUid(),
 			projectId: projectId(),
-			projectName: document.querySelector('h1')?.textContent?.trim() || projectId()
+			projectName:
+				document.querySelector('main')?.dataset?.projectName ||
+				document.querySelector('h1')?.textContent?.trim() ||
+				projectId()
 		};
 	}
 

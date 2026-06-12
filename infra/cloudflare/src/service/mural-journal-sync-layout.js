@@ -10,6 +10,12 @@ import {
 	getWidgets,
 	getMuralTags
 } from "../lib/mural.js";
+import { d1Get } from "./internals/researchops-d1.js";
+import {
+	TEST_PROJECT_1_CANONICAL_ID,
+	TEST_PROJECT_1_LEGACY_ID,
+	TEST_PROJECT_1_LOCAL_ID
+} from "./internals/test-project-1-journal-seed.js";
 
 const CATEGORY_KEYS = ["perceptions", "procedures", "decisions", "introspections"];
 const CREATED_ACTIONS = ["updated-template-widget", "created-template-sticky"];
@@ -17,6 +23,7 @@ const DEFAULT_WIDTH = 260;
 const DEFAULT_HEIGHT = 160;
 const GRID_GAP = 32;
 const PURPOSE_REFLEXIVE = "reflexive_journal";
+const MURAL_TAG_TEXT_LIMIT = 25;
 const ENTRY_MARKER_RE = /journal-entry:[a-z0-9_-]+/i;
 const DEFAULT_STICKY_BACKGROUND = "#FFFFFFFF";
 const CONTENT_CARD_BACKGROUNDS = new Set(["#FFFFFFFF", "#FAFAFAFF", "#FDFDFDFF"]);
@@ -491,13 +498,21 @@ function stickyStyle(template) {
 	return style;
 }
 
+function tagMatchesProjectName(tagKey, projectName) {
+	if (!projectName) return false;
+	if (tagKey === projectName) return true;
+	// Mural truncates tag text to 25 characters, so long project names only
+	// match their truncated board tag.
+	return projectName.length > MURAL_TAG_TEXT_LIMIT && tagKey === projectName.slice(0, MURAL_TAG_TEXT_LIMIT).trim();
+}
+
 function templateCarryTags(layout, entry) {
 	const templateTags = userFacingTags(layout.template?.tags);
 	if (isTemplatePlaceholder(layout.template)) return templateTags;
 	const projectName = safeText(entry.projectName).toLowerCase();
 	return templateTags.filter(tag => {
 		const key = tag.toLowerCase();
-		return key === entry.categoryKey || (projectName && key === projectName);
+		return key === entry.categoryKey || tagMatchesProjectName(key, projectName);
 	});
 }
 
@@ -712,6 +727,52 @@ async function validAccessToken(svc, uid) {
 	}
 }
 
+function projectIdAliases(projectId) {
+	const raw = safeText(projectId);
+	const aliases = raw ? [raw] : [];
+	const testProjectIds = [TEST_PROJECT_1_CANONICAL_ID, TEST_PROJECT_1_LEGACY_ID, TEST_PROJECT_1_LOCAL_ID];
+	if (testProjectIds.includes(raw)) {
+		for (const alias of testProjectIds) {
+			if (!aliases.includes(alias)) aliases.push(alias);
+		}
+	}
+	return aliases;
+}
+
+async function projectNameFromD1(env, projectId) {
+	if (!env?.RESEARCHOPS_D1) return "";
+	for (const alias of projectIdAliases(projectId)) {
+		const lookups = alias.startsWith("rec")
+			? [
+				["SELECT name FROM projects WHERE record_id = ? LIMIT 1", alias],
+				["SELECT name FROM rops_projects_cache WHERE id = ? LIMIT 1", alias]
+			]
+			: [
+				["SELECT name FROM projects WHERE local_id = ? LIMIT 1", alias],
+				["SELECT name FROM rops_projects_cache WHERE id = ? LIMIT 1", alias]
+			];
+		for (const [sql, param] of lookups) {
+			try {
+				const row = await d1Get(env, sql, [param]);
+				const name = safeText(row?.name);
+				if (name) return name;
+			} catch {}
+		}
+	}
+	return "";
+}
+
+/**
+ * The board's Snowberry project tag is matched by text, so the project name
+ * must be the real project name. Clients can only echo whatever heading they
+ * rendered (and fall back to the project id when route hydration fails), so
+ * prefer the D1 project record and keep the client value as a fallback.
+ */
+async function resolveProjectName(env, payload) {
+	const resolved = await projectNameFromD1(env, payload.projectId);
+	return resolved || safeText(payload.projectName);
+}
+
 function parseBasePayload(body) {
 	const projectId = safeText(body.projectId || body.project || body.project_airtable_id || body.project_local_id);
 	const projectName = safeText(body.projectName || body.projectTitle || body.projectLabel || projectId);
@@ -825,6 +886,8 @@ async function buildContext(svc, origin, body) {
 	if (!token.ok) {
 		return { ok: false, status: 401, body: { ok: false, error: token.reason || "not_authenticated" } };
 	}
+
+	payload.projectName = await resolveProjectName(svc.env, payload);
 
 	try {
 		const boardAndWidgets = await resolveBoardAndWidgets(svc, token.token, payload);
@@ -1068,6 +1131,8 @@ async function handleEntrySync(svc, origin, body) {
 
 	const token = await validAccessToken(svc, entry.uid);
 	if (!token.ok) return svc.json({ ok: false, error: token.reason || "not_authenticated" }, 401, svc.corsHeaders(origin));
+
+	entry.projectName = await resolveProjectName(svc.env, entry);
 
 	try {
 		const boardAndWidgets = await resolveBoardAndWidgets(svc, token.token, entry);

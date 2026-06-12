@@ -624,6 +624,132 @@ try {
 	// Header plus the three manual cards all expose readable text.
 	assert.equal(liveShapeData.diagnostics.widgetsWithBodyText, 4);
 	assert.equal(liveShapeData.diagnostics.layouts.perceptions !== null, true);
+
+	// User tags created by earlier syncs without the Mint style must be
+	// restyled, and applying tags to an existing widget must keep the tags
+	// already on it (the Snowberry project tag survives even when the client
+	// could not send the project name and D1 cannot resolve it).
+	const preserveEntries = [
+		{
+			id: 'preserve-entry-001',
+			category: 'Perceptions',
+			content: 'The team is beginning to see research evidence as an operating model.',
+			tags: ['evidence'],
+			createdAt: '2026-01-01T09:00:00.000Z',
+		},
+	];
+	const preserveTagRestyles = [];
+	const preserveTagCreates = [];
+	const preserveTagApplications = [];
+	const preserveStickyWrites = [];
+
+	globalThis.fetch = async (url, init = {}) => {
+		const href = String(url);
+		const method = String(init.method || 'GET').toUpperCase();
+
+		if (href.endsWith('/users/me')) {
+			return jsonResponse({ value: { companyId: 'homeofficegovuk' } });
+		}
+
+		if (new URL(href).pathname.endsWith('/murals/workspace.123/widgets') && method === 'GET') {
+			return jsonResponse({
+				value: [
+					widget({
+						id: 'header-perceptions',
+						type: 'sticky-note',
+						text: 'Perceptions',
+						tags: [{ id: 'tag-perceptions', text: 'perceptions' }],
+						x: 0,
+						y: 0,
+						width: 400,
+						height: 80,
+						style: { backgroundColor: '#9120A8FF' },
+					}),
+					widget({
+						id: 'template-perceptions',
+						text: '',
+						tags: [
+							{ id: 'tag-perceptions', text: 'perceptions' },
+							{ id: 'tag-project', text: 'Test Project 1' },
+						],
+						x: 0,
+						y: 120,
+						width: 400,
+						height: 220,
+					}),
+				],
+			});
+		}
+
+		// The board tag list is missing the project tag, and the pre-existing
+		// user tag carries a default (non-Mint) style.
+		if (href.endsWith('/murals/workspace.123/tags') && method === 'GET') {
+			return jsonResponse({
+				value: [
+					{ id: 'tag-perceptions', text: 'perceptions', backgroundColor: '#F7D7F3FF' },
+					{
+						id: 'tag-evidence',
+						text: 'evidence',
+						backgroundColor: '#FFFFFFFF',
+						borderColor: '#CCCCCCFF',
+					},
+				],
+			});
+		}
+
+		if (href.endsWith('/murals/workspace.123/tags/tag-evidence') && method === 'PATCH') {
+			preserveTagRestyles.push(JSON.parse(init.body));
+			return jsonResponse({ value: { id: 'tag-evidence', text: 'evidence' } });
+		}
+
+		if (href.endsWith('/murals/workspace.123/tags') && method === 'POST') {
+			preserveTagCreates.push(JSON.parse(init.body));
+			return jsonResponse({ value: { id: 'tag-created', text: 'created' } }, 201);
+		}
+
+		if (href.endsWith('/widgets/sticky-note/template-perceptions') && method === 'PATCH') {
+			const body = JSON.parse(init.body);
+			if (Array.isArray(body.tags) && body.text === undefined) {
+				preserveTagApplications.push({ href, body });
+				return jsonResponse({ value: { id: 'template-perceptions', ...body } });
+			}
+			preserveStickyWrites.push({ method, href, body });
+			return jsonResponse({ value: { id: 'template-perceptions', ...body } });
+		}
+
+		throw new Error(`Unexpected fetch: ${method} ${href}`);
+	};
+
+	const preserveResponse = await muralJournalSync(
+		service(preserveEntries),
+		new Request('https://researchops.test/api/mural/journal-sync', {
+			method: 'POST',
+			body: JSON.stringify({
+				mode: 'hydrate',
+				projectId: 'project-1',
+				projectName: 'project-1',
+			}),
+		}),
+		'https://researchops.test'
+	);
+	const preserveData = await preserveResponse.json();
+
+	assert.equal(preserveResponse.status, 200);
+	assert.equal(preserveData.createdOrUpdated, 1);
+	assert.equal(preserveStickyWrites.length, 1);
+	assert.equal(preserveStickyWrites[0].body.text, preserveEntries[0].content);
+	// The pre-existing user tag was restyled to Mint, not recreated.
+	assert.deepEqual(preserveTagRestyles, [
+		{ backgroundColor: '#DDF7E8FF', borderColor: '#98DDB8FF', color: '#0B0C0CFF' },
+	]);
+	assert.deepEqual(preserveTagCreates, []);
+	// The project tag missing from the tag list is still preserved on the widget.
+	assert.equal(preserveTagApplications.length, 1);
+	assert.deepEqual(preserveTagApplications[0].body.tags, [
+		'tag-perceptions',
+		'tag-evidence',
+		'tag-project',
+	]);
 } finally {
 	globalThis.fetch = originalFetch;
 }
