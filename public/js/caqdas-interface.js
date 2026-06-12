@@ -228,12 +228,12 @@ function cooccurrenceBar(width, colour, label, value) {
 }
 
 function renderOnsCooccurrenceHeatmap(rows) {
-	const codes = cooccurrenceCodeTotals(rows).slice(0, 12).map((row) => row.code);
+	const codes = cooccurrenceCodeTotals(rows).slice(0, 5).map((row) => row.code);
 	const lookup = cooccurrencePairLookup(rows);
 	const maxWeight = Math.max(...rows.map((row) => row.weight), 1);
 	return `<section aria-labelledby="cooccurrence-heatmap-heading" data-ons-chart="heatmap">
 		<h4 class="govuk-heading-s" id="cooccurrence-heatmap-heading">Code co-occurrence matrix</h4>
-		<p class="govuk-hint">Showing weights between the 12 most connected codes.</p>
+		<p class="govuk-hint">Showing weights between the 5 most connected codes.</p>
 		<div style="overflow-x: auto;">
 			<table class="govuk-table govuk-!-font-size-16">
 				<caption class="govuk-table__caption govuk-table__caption--s">Matrix heatmap of code-pair weights</caption>

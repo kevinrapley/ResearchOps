@@ -25,6 +25,8 @@ includes(caqdas, "#206095", "CAQDAS co-occurrence renderer");
 includes(caqdas, "function renderOnsCooccurrenceHeatmap(rows)", "CAQDAS co-occurrence renderer");
 includes(caqdas, 'data-ons-chart="heatmap"', "CAQDAS co-occurrence renderer");
 includes(caqdas, "Code co-occurrence matrix", "CAQDAS co-occurrence renderer");
+includes(caqdas, "cooccurrenceCodeTotals(rows).slice(0, 5)", "CAQDAS co-occurrence renderer");
+includes(caqdas, "Showing weights between the 5 most connected codes.", "CAQDAS co-occurrence renderer");
 includes(caqdas, "function renderOnsCooccurrenceSmallMultiples(rows)", "CAQDAS co-occurrence renderer");
 includes(caqdas, 'data-ons-chart="bar-chart-sm"', "CAQDAS co-occurrence renderer");
 includes(caqdas, "Small multiple bar charts", "CAQDAS co-occurrence renderer");

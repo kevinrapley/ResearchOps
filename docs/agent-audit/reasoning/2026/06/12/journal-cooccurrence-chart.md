@@ -47,6 +47,8 @@ Update the ONS Charts submodule to the requested working commit and select the m
 
 Follow-up scope: add the four further useful options identified from the ONS chart guidance review: matrix heatmap, small multiple bar charts, stacked bar summary and clustered bar comparison.
 
+Second follow-up scope: reduce the matrix heatmap from 12 to the 5 most connected codes so the view fits more comfortably in the analysis panel.
+
 ## Implementation summary
 
 - Updated the `charts` submodule from `9455c5525bf545411834c271375a77115b759813` to `758806bcfd61d7c00f18c0c357294e746f1974d6`.
@@ -63,6 +65,7 @@ Follow-up scope: add the four further useful options identified from the ONS cha
   - Clustered bar comparison for comparing the three strongest target-code links within the top source codes.
 - Generalised the display switch to use `data-cooccurrence-panel` so all six views are controlled by the same GOV.UK radio group.
 - Extended the route-state test to lock the new chart markers, labels, radio values and panel hooks.
+- Reduced the matrix heatmap limit from 12 to 5 most connected codes and updated the visible hint text to match.
 
 ## Files changed
 
@@ -105,6 +108,16 @@ npm test
 npm run validate
 ```
 
+Heatmap fit follow-up:
+
+```bash
+node tests/journal-cooccurrence-display-route-state.test.js
+node --check public/js/caqdas-interface.js
+npm run format:check
+npm test
+npm run lint
+```
+
 Validation results:
 
 - Focused co-occurrence tests passed: 5 tests.
@@ -118,6 +131,11 @@ Validation results:
 - Additional chart-options JavaScript syntax check passed.
 - Additional chart-options full test suite passed: 213 tests.
 - Additional chart-options validation passed.
+- Heatmap fit route-state test passed.
+- Heatmap fit JavaScript syntax check passed.
+- Heatmap fit format check passed.
+- Heatmap fit full test suite passed: 213 tests.
+- Heatmap fit lint passed with the repository's existing warning set: 0 errors, 260 warnings.
 
 Validation note:
 

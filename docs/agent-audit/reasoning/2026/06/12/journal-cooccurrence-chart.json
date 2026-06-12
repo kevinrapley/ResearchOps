@@ -53,7 +53,8 @@
 		"chartsSubmoduleFrom": "9455c5525bf545411834c271375a77115b759813",
 		"chartsSubmoduleTo": "758806bcfd61d7c00f18c0c357294e746f1974d6",
 		"chartDataLimit": 20,
-		"heatmapCodeLimit": 12,
+		"heatmapCodeLimit": 5,
+		"heatmapFitFollowUp": "Reduced the matrix heatmap from 12 to 5 most connected codes so the view fits more comfortably in the analysis panel.",
 		"smallMultipleSourceLimit": 6,
 		"stackedSourceLimit": 8,
 		"clusteredSourceLimit": 5,
@@ -150,6 +151,31 @@
 			"command": "npm test -- --ci",
 			"status": "not-run",
 			"summary": "Node rejected the forwarded --ci option; the actual repository test command used was npm test."
+		},
+		{
+			"command": "node tests/journal-cooccurrence-display-route-state.test.js",
+			"status": "passed",
+			"summary": "Heatmap fit follow-up"
+		},
+		{
+			"command": "node --check public/js/caqdas-interface.js",
+			"status": "passed",
+			"summary": "Heatmap fit follow-up"
+		},
+		{
+			"command": "npm run format:check",
+			"status": "passed",
+			"summary": "Heatmap fit follow-up"
+		},
+		{
+			"command": "npm test",
+			"status": "passed",
+			"summary": "Heatmap fit follow-up: 213 tests passed"
+		},
+		{
+			"command": "npm run lint",
+			"status": "passed",
+			"summary": "Heatmap fit follow-up: 0 errors, 260 existing warnings"
 		}
 	],
 	"browserVerification": {
