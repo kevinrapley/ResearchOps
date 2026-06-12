@@ -16,8 +16,11 @@ import {
 import { createJournalEntryDualWrite } from "./internals/journals-dualwrite.js";
 import {
 	isTestProject1Id,
+	TEST_PROJECT_1_CANONICAL_ID,
 	testProject1JournalEntryById,
-	TEST_PROJECT_1_JOURNAL_ENTRIES
+	TEST_PROJECT_1_JOURNAL_ENTRIES,
+	TEST_PROJECT_1_LEGACY_ID,
+	TEST_PROJECT_1_LOCAL_ID
 } from "./internals/test-project-1-journal-seed.js";
 
 /* ───────────────────────────── helpers / constants ───────────────────────────── */
@@ -102,6 +105,36 @@ function seedEntriesNewestFirst() {
 	});
 }
 
+function uniqueValues(values = []) {
+	const seen = new Set();
+	const out = [];
+	for (const value of values) {
+		const text = String(value || "").trim();
+		if (!text || seen.has(text)) continue;
+		seen.add(text);
+		out.push(text);
+	}
+	return out;
+}
+
+function projectAliasesForJournalQuery(projectParam) {
+	const project = String(projectParam || "").trim();
+	if (!project) return [];
+	if (isTestProject1Id(project)) {
+		return uniqueValues([
+			project,
+			TEST_PROJECT_1_CANONICAL_ID,
+			TEST_PROJECT_1_LEGACY_ID,
+			TEST_PROJECT_1_LOCAL_ID
+		]);
+	}
+	return [project];
+}
+
+function placeholders(values = []) {
+	return values.map(() => "?").join(", ");
+}
+
 async function upsertSeedEntryBestEffort(svc, entry) {
 	if (!entry || !hasD1(svc?.env)) return;
 	try {
@@ -113,8 +146,9 @@ async function upsertSeedEntryBestEffort(svc, entry) {
 }
 
 async function d1ListJournalEntriesForProject(env, projectParam) {
-	const project = String(projectParam || "").trim();
-	if (!project) return [];
+	const projects = projectAliasesForJournalQuery(projectParam);
+	if (!projects.length) return [];
+	const list = placeholders(projects);
 
 	const rows = await d1All(env, `
 		SELECT record_id,
@@ -122,12 +156,13 @@ async function d1ListJournalEntriesForProject(env, projectParam) {
 		       category,
 		       content,
 		       tags,
-		       createdat
+		       createdat,
+		       local_project_id
 		  FROM journal_entries
-		 WHERE local_project_id = ?
-		    OR project = ?
+		 WHERE local_project_id IN (${list})
+		    OR project IN (${list})
 		 ORDER BY datetime(createdat) DESC;
-	`, [project, project]);
+	`, [...projects, ...projects]);
 
 	return rows.map(d1EntryFromRow);
 }
@@ -208,6 +243,18 @@ export async function listJournalEntries(svc, origin, url) {
 			const entries = await d1ListJournalEntriesForProject(env, projectParam);
 
 			if (entries.length) {
+				if (isTestProject1Id(projectParam) && entries.length < TEST_PROJECT_1_JOURNAL_ENTRIES.length) {
+					const seedEntries = seedEntriesNewestFirst();
+					for (const entry of seedEntries) {
+						await upsertSeedEntryBestEffort(svc, entry);
+					}
+					return svc.json({
+						ok: true,
+						source: "seed",
+						entries: seedEntries.map(entry => seedEntryResponse(entry))
+					}, 200, svc.corsHeaders(origin));
+				}
+
 				return svc.json({ ok: true, source: "d1", entries }, 200, svc.corsHeaders(origin));
 			}
 

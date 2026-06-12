@@ -14,11 +14,14 @@ import { clearJournalFeedback, showJournalError, showJournalStatus } from './jou
 /* eslint-env browser */
 (function() {
 	const API_ORIGIN =
-		document.documentElement?.dataset?.apiOrigin ||
-		window.API_ORIGIN ||
-		(location.hostname.endsWith('pages.dev') ?
-			'https://rops-api.digikev-kevin-rapley.workers.dev' :
-			location.origin);
+		resolveApiBase();
+
+	function resolveApiBase() {
+		const explicit = document.documentElement?.dataset?.apiOrigin || window.API_ORIGIN || '';
+		if (String(explicit || '').trim()) return String(explicit).trim().replace(/\/+$/, '');
+		if (location.hostname.endsWith('pages.dev')) return '';
+		return location.origin;
+	}
 
 	function apiUrl(path) {
 		const p = String(path || '');

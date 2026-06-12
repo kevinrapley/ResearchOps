@@ -70,6 +70,8 @@ excludes(journalTabs, "if (id === 'codes' && typeof loadCodes === 'function') lo
 excludes(journalTabs, "if (id === 'memos' && typeof loadMemos === 'function') loadMemos();", "journal-tabs.js");
 
 includes(caqdas, "const API_ORIGIN =", "caqdas-interface.js");
+includes(journalTabs, "function resolveApiBase()", "journal-tabs.js");
+includes(caqdas, "function resolveApiBase()", "caqdas-interface.js");
 includes(caqdas, "function apiUrl(path)", "caqdas-interface.js");
 includes(caqdas, "apiUrl('/api/analysis/timeline?project=", "caqdas-interface.js");
 includes(caqdas, "apiUrl('/api/analysis/cooccurrence?project=", "caqdas-interface.js");
@@ -79,3 +81,5 @@ includes(caqdas, "timelineFromJournalEntries(projectId)", "caqdas-interface.js")
 excludes(caqdas, "var url = \"/api/analysis/timeline?project=\"", "caqdas-interface.js");
 excludes(caqdas, "var url = \"/api/analysis/cooccurrence?project=\"", "caqdas-interface.js");
 excludes(caqdas, "var url = \"/api/analysis/retrieval?project=\"", "caqdas-interface.js");
+excludes(journalTabs, "https://rops-api.digikev-kevin-rapley.workers.dev", "journal-tabs.js");
+excludes(caqdas, "https://rops-api.digikev-kevin-rapley.workers.dev", "caqdas-interface.js");

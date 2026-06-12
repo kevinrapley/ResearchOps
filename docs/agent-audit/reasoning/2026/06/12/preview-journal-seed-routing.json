@@ -1,0 +1,77 @@
+{
+  "date": "2026-06-12",
+  "task": "Fix Cloudflare Pages preview routing so expanded Test Project 1 journal seed data appears on PR previews.",
+  "branch": "feature/test-project-1-journal-seed",
+  "branchDecision": {
+    "traceRequiredByPolicy": true,
+    "note": "feature/* requires an auditable trace."
+  },
+  "pullRequest": "https://github.com/kevinrapley/ResearchOps/pull/392",
+  "reportedPreview": "https://0f8a7f9b.researchops.pages.dev/",
+  "operatingModelFilesLoaded": [
+    "AGENTS.md",
+    ".agent-operating-model/orchestration.xml",
+    ".agent-operating-model/bundle-registry.json",
+    ".agent-operating-model/task-signal-catalog.json",
+    ".agent-operating-model/selection-rules.json",
+    ".agent-operating-model/github-mutation-policy.md",
+    ".agent-operating-model/precedence-policy.md",
+    ".agent-operating-model/trace-policy.md"
+  ],
+  "selectedBundles": [
+    ".agent-operating-model/bundles/github/",
+    ".agent-operating-model/bundles/researchops-developer-control/",
+    ".agent-operating-model/bundles/multi-functional-team/",
+    ".agent-operating-model/bundles/cloudflare/",
+    ".agent-operating-model/bundles/govuk-design-system/"
+  ],
+  "skippedBundles": [
+    ".agent-operating-model/bundles/openai/",
+    ".agent-operating-model/bundles/mcp-agent-tooling/",
+    ".agent-operating-model/bundles/airtable-public-api/",
+    ".agent-operating-model/bundles/mural-public-api/"
+  ],
+  "evidence": [
+    "The reported preview URL redirected unauthenticated local requests to Cloudflare Access.",
+    "public/_worker.js already routes preview-host /api/* requests to the passwordless preview API.",
+    "public/js/journal-tabs.js and public/js/caqdas-interface.js hard-coded the production API worker for pages.dev hosts.",
+    "infra/cloudflare/src/service/journals.js returned any D1 rows before checking whether Test Project 1 D1 data was partial."
+  ],
+  "changes": [
+    "Journal and CAQDAS scripts now use same-origin /api/* on pages.dev unless an explicit API origin is configured.",
+    "Journal D1 project lookup now aliases Test Project 1 canonical id, legacy id and local id.",
+    "Partial Test Project 1 D1 journal populations now fall back to and restore the complete expanded seed.",
+    "Route-state and runtime tests cover preview-safe API routing and partial D1 seed recovery."
+  ],
+  "validation": [
+    {
+      "name": "focused-journal-seed-runtime",
+      "result": "passed"
+    },
+    {
+      "name": "focused-secondary-actions-and-cooccurrence",
+      "result": "passed"
+    },
+    {
+      "name": "npm-test",
+      "result": "passed",
+      "details": "212 tests passed."
+    },
+    {
+      "name": "format-check",
+      "result": "passed"
+    },
+    {
+      "name": "lint",
+      "result": "passed",
+      "details": "0 errors; existing warning set remains."
+    }
+  ],
+  "validationNotRun": [
+    "Authenticated preview browser verification was not possible because the preview is Cloudflare Access protected from this environment."
+  ],
+  "residualRisks": [
+    "The live Pages preview requires Cloudflare deployment completion before user verification.",
+    "A preview API environment with stale non-journal seed tables could still need the existing code/memo/co-occurrence fallbacks until remote D1 migration catches up."
+  ]
+}

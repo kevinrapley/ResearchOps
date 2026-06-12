@@ -2,10 +2,10 @@ import assert from "node:assert/strict";
 import { listJournalEntries } from "../infra/cloudflare/src/service/journals.js";
 
 const rows = [
-  {
-    record_id: "recJournalA",
-    project: "recgdpwEI5hF07bUZ",
-    local_project_id: "local-project-1",
+	{
+		record_id: "recJournalA",
+		project: "recProjectA123456",
+		local_project_id: "local-project-1",
     category: "perceptions",
     content: "Entry linked by both project ids.",
     tags: '["alpha","beta"]',
@@ -79,7 +79,7 @@ async function readEntriesFor(projectId) {
   return payload.entries;
 }
 
-const entriesByAirtableId = await readEntriesFor("recgdpwEI5hF07bUZ");
+const entriesByAirtableId = await readEntriesFor("recProjectA123456");
 assert.equal(entriesByAirtableId.length, 1);
 assert.equal(entriesByAirtableId[0].id, "recJournalA");
 assert.equal(entriesByAirtableId[0].content, "Entry linked by both project ids.");
