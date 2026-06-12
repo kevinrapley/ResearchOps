@@ -122,6 +122,17 @@ function numeric(value, fallback = 0) {
 	return Number.isFinite(n) ? n : fallback;
 }
 
+function explicitGeometryValue(widget, key) {
+	const geometry = widget?.geometry || widget?.bounds || {};
+	const value = widget?.[key] ?? geometry[key];
+	const n = Number(value);
+	return Number.isFinite(n) ? n : null;
+}
+
+function hasExplicitCanvasSize(widget) {
+	return explicitGeometryValue(widget, "width") !== null && explicitGeometryValue(widget, "height") !== null;
+}
+
 function rounded(value, fallback = 0) {
 	return Math.round(numeric(value, fallback));
 }
@@ -180,9 +191,20 @@ function isStickyLike(widget) {
 	return type.includes("sticky") || type.includes("note") || type.includes("shape") || type === "";
 }
 
+function widgetBackground(widget) {
+	return muralHexAlpha(
+		widget?.style?.backgroundColor ||
+		widget?.backgroundColor ||
+		widget?.color ||
+		widget?.style?.color,
+		""
+	);
+}
+
 function isWhiteContentCard(widget) {
-	const background = muralHexAlpha(widget?.style?.backgroundColor || widget?.backgroundColor, "");
-	return (!background || CONTENT_CARD_BACKGROUNDS.has(background)) &&
+	const background = widgetBackground(widget);
+	return hasExplicitCanvasSize(widget) &&
+		(!background || CONTENT_CARD_BACKGROUNDS.has(background)) &&
 		numeric(widget.width, DEFAULT_WIDTH) >= MIN_CONTENT_CARD_WIDTH &&
 		numeric(widget.height, DEFAULT_HEIGHT) >= MIN_CONTENT_CARD_HEIGHT;
 }
@@ -225,6 +247,12 @@ function isInHeaderColumn(widget, header) {
 	const left = numeric(header.x) - Math.max(24, numeric(header.width) * 0.1);
 	const right = numeric(header.x) + numeric(header.width) + Math.max(24, numeric(header.width) * 0.1);
 	return y > numeric(header.y) + numeric(header.height) && centre >= left && centre <= right;
+}
+
+function isInLayoutContentFlow(widget, layout) {
+	if (!layout) return true;
+	const contentTop = numeric(layout.y, 0) - Math.max(16, numeric(layout.height, DEFAULT_HEIGHT) * 0.25);
+	return numeric(widget.y, 0) >= contentTop;
 }
 
 function isCategoryTaggedTemplate(widget, categoryKey) {
@@ -322,15 +350,27 @@ function widgetMatchesCategory(widget, categoryKey, layout) {
 function canonicalExistingWidget(widgets, entry, layout, claimedWidgetIds = new Set()) {
 	return widgets.find(widget => {
 		if (!isColumnContentWidget(widget, entry.categoryKey, layout)) return false;
+		if (!isInLayoutContentFlow(widget, layout)) return false;
 		if (widgetHasEntryTag(widget, entry.entryId)) return true;
 		if (claimedWidgetIds.has(safeText(widget.id))) return false;
 		return canonicalBodyText(widgetText(widget)) === canonicalBodyText(entry.description);
 	});
 }
 
+function staleSyncedWidgets(widgets, entry, layout) {
+	const entryBody = canonicalBodyText(entry.description);
+	return widgets.filter(widget => {
+		const sameEntry = widgetHasEntryTag(widget, entry.entryId) ||
+			(!!entryBody && canonicalBodyText(widgetText(widget)) === entryBody);
+		if (!sameEntry || !safeText(widget.id)) return false;
+		return !isColumnContentWidget(widget, entry.categoryKey, layout) || !isInLayoutContentFlow(widget, layout);
+	});
+}
+
 function latestCanonicalWidget(widgets, categoryKey, layout) {
 	return widgets
 		.filter(widget => isColumnContentWidget(widget, categoryKey, layout))
+		.filter(widget => isInLayoutContentFlow(widget, layout))
 		.filter(widget => widgetHasAnyEntryTag(widget) || !isTemplatePlaceholder(widget))
 		.sort((a, b) => numeric(b.y) - numeric(a.y))[0] || null;
 }
@@ -471,6 +511,38 @@ async function patchSticky(accessToken, muralId, widgetId, body) {
 		throw Object.assign(new Error(`Update Mural template sticky failed: ${res.status}`), { status: res.status, body: data });
 	}
 	return firstMuralValue(data) || { id: widgetId, ...body };
+}
+
+async function deleteWidget(accessToken, muralId, widgetId) {
+	const url = `https://app.mural.co/api/public/v1/murals/${muralId}/widgets/${widgetId}`;
+	const res = await fetch(url, {
+		method: "DELETE",
+		headers: {
+			Authorization: `Bearer ${accessToken}`,
+			Accept: "application/json"
+		}
+	});
+	if (!res.ok && res.status !== 404) {
+		const data = await res.json().catch(() => ({}));
+		throw Object.assign(new Error(`Delete stale Mural widget failed: ${res.status}`), { status: res.status, body: data });
+	}
+	return true;
+}
+
+async function deleteStaleSyncedWidgets(accessToken, board, widgets, staleWidgets, keepWidgetId = "") {
+	const keep = safeText(keepWidgetId);
+	const deleted = [];
+	for (const widget of staleWidgets) {
+		const widgetId = safeText(widget.id);
+		if (!widgetId || widgetId === keep) continue;
+		try {
+			await deleteWidget(accessToken, board.muralId, widgetId);
+			const idx = widgets.findIndex(item => safeText(item.id) === widgetId);
+			if (idx >= 0) widgets.splice(idx, 1);
+			deleted.push(widgetId);
+		} catch {}
+	}
+	return deleted;
 }
 
 async function updateTemplateSticky(accessToken, muralId, template, text, tags, userTags = []) {
@@ -706,9 +778,11 @@ async function syncOneEntry({ accessToken, board, widgets, entry, claimedWidgetI
 	}
 
 	const existing = canonicalExistingWidget(widgets, entry, layout, claimedWidgetIds);
+	const staleWidgets = staleSyncedWidgets(widgets, entry, layout);
 	if (existing) {
 		if (existing.id) claimedWidgetIds.add(safeText(existing.id));
-		return { ok: true, action: "already-synced", entryId: entry.entryId, category: entry.categoryKey, widgetId: existing.id, preserved: true };
+		const deletedStaleWidgetIds = await deleteStaleSyncedWidgets(accessToken, board, widgets, staleWidgets, existing.id);
+		return { ok: true, action: "already-synced", entryId: entry.entryId, category: entry.categoryKey, widgetId: existing.id, preserved: true, deletedStaleWidgetIds };
 	}
 
 	const tags = tagsForEntry(layout, entry);
@@ -721,6 +795,7 @@ async function syncOneEntry({ accessToken, board, widgets, entry, claimedWidgetI
 		if (idx >= 0) widgets[idx] = local;
 		else widgets.push(local);
 		if (local.id) claimedWidgetIds.add(safeText(local.id));
+		const deletedStaleWidgetIds = await deleteStaleSyncedWidgets(accessToken, board, widgets, staleWidgets, local.id || updated?.id || layout.template.id);
 
 		return {
 			ok: true,
@@ -728,6 +803,7 @@ async function syncOneEntry({ accessToken, board, widgets, entry, claimedWidgetI
 			entryId: entry.entryId,
 			category: entry.categoryKey,
 			widgetId: local.id || updated?.id || layout.template.id,
+			deletedStaleWidgetIds,
 			tags
 		};
 	}
@@ -737,6 +813,7 @@ async function syncOneEntry({ accessToken, board, widgets, entry, claimedWidgetI
 	const local = localEntryWidget({ ...layout.template, ...firstMuralValue(created) }, entry, layout, tags, placement);
 	widgets.push(local);
 	if (local.id) claimedWidgetIds.add(safeText(local.id));
+	const deletedStaleWidgetIds = await deleteStaleSyncedWidgets(accessToken, board, widgets, staleWidgets, local.id || created?.id || null);
 
 	return {
 		ok: true,
@@ -744,6 +821,7 @@ async function syncOneEntry({ accessToken, board, widgets, entry, claimedWidgetI
 		entryId: entry.entryId,
 		category: entry.categoryKey,
 		widgetId: local.id || created?.id || null,
+		deletedStaleWidgetIds,
 		tags
 	};
 }

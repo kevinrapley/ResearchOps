@@ -210,6 +210,61 @@ try {
 	assert.equal(existingData.outcomes[0].action, 'already-synced');
 	assert.equal(existingData.outcomes[0].preserved, true);
 	assert.equal(existingWrites.length, 0);
+
+	const repairWrites = [];
+	globalThis.fetch = async (url, init = {}) => {
+		const href = String(url);
+		const method = String(init.method || 'GET').toUpperCase();
+		if (href.endsWith('/users/me'))
+			return jsonResponse({ value: { companyId: 'homeofficegovuk' } });
+		if (href.endsWith('/murals/workspace.123/widgets') && method === 'GET') {
+			return jsonResponse({
+				value: [
+					widget({
+						id: 'bad-title-entry-001',
+						text: entries[0].content,
+						tags: ['perceptions', 'Test Project 1', 'journal-entry:entry-001'],
+						x: 0,
+						y: -72,
+						width: 260,
+						height: 160,
+					}),
+					widget({
+						id: 'template-perceptions',
+						text: '',
+						tags: ['perceptions', 'Test Project 1'],
+						x: 0,
+						y: 120,
+						width: 260,
+						height: 160,
+					}),
+				],
+			});
+		}
+		if (href.endsWith('/widgets/sticky-note/template-perceptions') && method === 'PATCH') {
+			const body = JSON.parse(init.body);
+			repairWrites.push({ method, href, body });
+			return jsonResponse({ value: { id: 'template-perceptions', ...body } });
+		}
+		if (href.endsWith('/murals/workspace.123/widgets/bad-title-entry-001') && method === 'DELETE') {
+			repairWrites.push({ method, href, body: null });
+			return new Response(null, { status: 204 });
+		}
+		throw new Error(`Unexpected fetch: ${method} ${href}`);
+	};
+
+	const repairResponse = await postHydrate(service([entries[0]]));
+	const repairData = await repairResponse.json();
+	assert.equal(repairResponse.status, 200);
+	assert.equal(repairData.createdOrUpdated, 1);
+	assert.equal(repairData.pending, 0);
+	assert.equal(repairData.outcomes[0].action, 'updated-template-widget');
+	assert.equal(repairWrites[0].href.endsWith('/widgets/sticky-note/template-perceptions'), true);
+	assert.deepEqual(
+		repairWrites.map((write) => write.method),
+		['PATCH', 'DELETE']
+	);
+	assert.deepEqual(repairData.outcomes[0].deletedStaleWidgetIds, ['bad-title-entry-001']);
 } finally {
 	globalThis.fetch = originalFetch;
 }

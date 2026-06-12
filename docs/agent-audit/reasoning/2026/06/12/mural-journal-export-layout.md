@@ -90,9 +90,10 @@ Required behaviour:
 - Corrected the tag write path so sticky-note create/update calls write the sticky content first, then apply known Mural tag ids to the resulting widget. ResearchOps user-created tags are created as Mint tags; template category/project tags are only reused when already present on the board.
 - Addressed Codex review thread `PRRT_kwDOP3Td2M6JDoxV`: body-only existing-widget matching now uses a claimed-widget set during status and hydrate passes so one Mural widget cannot satisfy more than one distinct journal entry id.
 - Corrected the later live-board failure where decorative purple title/header notes were treated as reusable entry cards: template selection and existing-card matching now require white content-card geometry, while a filled white card can still anchor later placements when a category header is unreadable.
+- Added polluted-board recovery: widgets without explicit content-card dimensions or positioned above the resolved content-card row no longer count as synced, and stale synced widgets outside the content flow are deleted after the correct white card is updated or created.
 - Updated both Mural sync UI entry points to report already-present entries as left unchanged.
 - Added runtime coverage for first-template update, second-entry creation below the first, existing-entry preservation, sticky-note column headers, and post-write tag application.
-- Updated the layout runtime test so two distinct journal entries with the same Perceptions body still produce two sticky writes and purple decorative tagged cards are ignored as templates.
+- Updated the layout runtime test so two distinct journal entries with the same Perceptions body still produce two sticky writes, purple decorative tagged cards are ignored as templates, and stale mapped top widgets are deleted during repair.
 
 ## Files changed
 
@@ -129,7 +130,7 @@ npm run lint
 Validation results:
 
 - Focused route-state test passed.
-- Focused layout runtime test passed, including duplicate-body and purple decorative-card regression coverage.
+- Focused layout runtime test passed, including duplicate-body, purple decorative-card and stale-widget repair regression coverage.
 - Focused safe-tags runtime test passed.
 - JavaScript syntax checks passed.
 - Related Mural service, UI, return-route and board-registry tests passed.
