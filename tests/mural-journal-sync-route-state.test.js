@@ -89,6 +89,7 @@ includes(layoutSource, "function columnLayout", "layout service");
 includes(layoutSource, "function canonicalBodyText", "layout service");
 includes(layoutSource, "function isTemplatePlaceholder", "layout service");
 includes(layoutSource, "function isColumnContentWidget", "layout service");
+includes(layoutSource, "claimedWidgetIds", "layout service");
 includes(layoutSource, "function researchOpsUserTags", "layout service");
 includes(layoutSource, "researchOpsUserTags", "layout service");
 includes(layoutSource, "function widgetMatchesColumnLayout", "layout service");

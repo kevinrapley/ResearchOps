@@ -88,8 +88,10 @@ Required behaviour:
 - Stripped the internal `researchOpsUserTags` hint before Mural write requests reach the public API.
 - Corrected the follow-up live-board failure where Mural returned purple column labels as sticky-note widgets: exact category-label text plus wide geometry now identifies those widgets as headers, so they are not patched as journal entries.
 - Corrected the tag write path so sticky-note create/update calls write the sticky content first, then apply known Mural tag ids to the resulting widget. ResearchOps user-created tags are created as Mint tags; template category/project tags are only reused when already present on the board.
+- Addressed Codex review thread `PRRT_kwDOP3Td2M6JDoxV`: body-only existing-widget matching now uses a claimed-widget set during status and hydrate passes so one Mural widget cannot satisfy more than one distinct journal entry id.
 - Updated both Mural sync UI entry points to report already-present entries as left unchanged.
 - Added runtime coverage for first-template update, second-entry creation below the first, existing-entry preservation, sticky-note column headers, and post-write tag application.
+- Updated the layout runtime test so two distinct journal entries with the same Perceptions body still produce two sticky writes.
 
 ## Files changed
 
@@ -133,6 +135,7 @@ Validation results:
 - Format check passed after applying Prettier to the new runtime test.
 - Full test suite passed: 215 tests.
 - Lint passed: 0 errors, 259 existing warnings after removing a touched-file unused-argument warning.
+- Trace coverage passed for `feature/mural-journal-export-layout`.
 
 ## Residual risk
 

@@ -92,7 +92,8 @@
 		],
 		"followUpCorrection": [
 			"Treat exact wide category-label sticky-note widgets as headers so purple column labels are not patched as journal entries.",
-			"Write sticky content without unsupported tag fields, then apply board-known tag ids and newly-created Mint user tag ids to the resulting widget."
+			"Write sticky content without unsupported tag fields, then apply board-known tag ids and newly-created Mint user tag ids to the resulting widget.",
+			"Address Codex review thread PRRT_kwDOP3Td2M6JDoxV by preventing one body-matched Mural widget from being reused for multiple distinct journal entry ids in status and hydrate passes."
 		],
 		"uiReporting": [
 			"Compact journal Mural sync status reports already-present entries as left unchanged.",
@@ -117,7 +118,8 @@
 		},
 		{
 			"command": "node tests/mural-journal-sync-layout-runtime.test.js",
-			"status": "passed"
+			"status": "passed",
+			"summary": "Includes duplicate-body entries regression coverage."
 		},
 		{
 			"command": "node tests/mural-journal-sync-safe-tags-runtime.test.js",
@@ -144,6 +146,11 @@
 			"command": "npm run lint",
 			"status": "passed",
 			"summary": "0 errors, 259 existing warnings"
+		},
+		{
+			"command": "npm run trace:coverage -- --date 2026-06-12",
+			"status": "passed",
+			"summary": "Trace coverage confirmed for feature/mural-journal-export-layout."
 		}
 	],
 	"residualRisks": [

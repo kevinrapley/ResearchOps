@@ -303,10 +303,11 @@ function widgetMatchesCategory(widget, categoryKey, layout) {
 	return tags.includes(categoryKey) || meta.includes(categoryKey) || widgetMatchesColumnLayout(widget, layout);
 }
 
-function canonicalExistingWidget(widgets, entry, layout) {
+function canonicalExistingWidget(widgets, entry, layout, claimedWidgetIds = new Set()) {
 	return widgets.find(widget => {
 		if (!isColumnContentWidget(widget, entry.categoryKey, layout)) return false;
 		if (widgetHasEntryTag(widget, entry.entryId)) return true;
+		if (claimedWidgetIds.has(safeText(widget.id))) return false;
 		return canonicalBodyText(widgetText(widget)) === canonicalBodyText(entry.description);
 	});
 }
@@ -642,6 +643,7 @@ async function buildContext(svc, origin, body) {
 function statusFromEntriesAndWidgets(entries, widgets) {
 	const validEntries = entries.filter(entry => safeText(entry.id));
 	const syncedEntryIds = new Set();
+	const claimedWidgetIds = new Set();
 	const layouts = Object.fromEntries(CATEGORY_KEYS.map(category => [category, columnLayout(widgets, category)]));
 
 	for (const entry of validEntries) {
@@ -649,11 +651,9 @@ function statusFromEntriesAndWidgets(entries, widgets) {
 		const layout = layouts[category];
 		if (!layout) continue;
 		const payload = entryPayloadFromEntry(entry, { projectId: "", projectName: "", uid: "anon" });
-		if (widgets.some(widget => {
-			if (!isColumnContentWidget(widget, category, layout)) return false;
-			if (widgetHasEntryTag(widget, entry.id)) return true;
-			return canonicalBodyText(widgetText(widget)) === canonicalBodyText(payload.description);
-		})) {
+		const existing = canonicalExistingWidget(widgets, payload, layout, claimedWidgetIds);
+		if (existing) {
+			if (existing.id) claimedWidgetIds.add(safeText(existing.id));
 			syncedEntryIds.add(String(entry.id));
 		}
 	}
@@ -676,7 +676,7 @@ function statusFromEntriesAndWidgets(entries, widgets) {
 	};
 }
 
-async function syncOneEntry({ accessToken, board, widgets, entry }) {
+async function syncOneEntry({ accessToken, board, widgets, entry, claimedWidgetIds = new Set() }) {
 	if (!entry.entryId || !entry.categoryKey || !entry.description) {
 		return { ok: false, action: "skipped-invalid-entry", entryId: entry.entryId || null, category: entry.categoryKey || null, detail: "Entry is missing an id, category, or description." };
 	}
@@ -689,8 +689,9 @@ async function syncOneEntry({ accessToken, board, widgets, entry }) {
 		return { ok: false, action: "category-column-not-found", entryId: entry.entryId, category: entry.categoryKey, detail: `No ${entry.categoryKey} column template or heading was found on the Mural board.` };
 	}
 
-	const existing = canonicalExistingWidget(widgets, entry, layout);
+	const existing = canonicalExistingWidget(widgets, entry, layout, claimedWidgetIds);
 	if (existing) {
+		if (existing.id) claimedWidgetIds.add(safeText(existing.id));
 		return { ok: true, action: "already-synced", entryId: entry.entryId, category: entry.categoryKey, widgetId: existing.id, preserved: true };
 	}
 
@@ -703,6 +704,7 @@ async function syncOneEntry({ accessToken, board, widgets, entry }) {
 		const idx = widgets.findIndex(widget => widget.id === layout.template.id);
 		if (idx >= 0) widgets[idx] = local;
 		else widgets.push(local);
+		if (local.id) claimedWidgetIds.add(safeText(local.id));
 
 		return {
 			ok: true,
@@ -718,6 +720,7 @@ async function syncOneEntry({ accessToken, board, widgets, entry }) {
 	const created = await createStickyFromTemplate(accessToken, board.muralId, layout.template, placement, entry.description, tags, userTags);
 	const local = localEntryWidget({ ...layout.template, ...firstMuralValue(created) }, entry, layout, tags, placement);
 	widgets.push(local);
+	if (local.id) claimedWidgetIds.add(safeText(local.id));
 
 	return {
 		ok: true,
@@ -752,6 +755,7 @@ async function handleHydrate(svc, origin, body) {
 	const before = statusFromEntriesAndWidgets(ctx.entries, ctx.widgets);
 	const outcomes = [];
 	const base = ctx.payload;
+	const claimedWidgetIds = new Set();
 
 	for (const category of CATEGORY_KEYS) {
 		const entries = sortedEntries(ctx.entries)
@@ -759,7 +763,7 @@ async function handleHydrate(svc, origin, body) {
 			.filter(entry => entry.categoryKey === category);
 		for (const entry of entries) {
 			try {
-				outcomes.push(await syncOneEntry({ accessToken: ctx.accessToken, board: ctx.board, widgets: ctx.widgets, entry }));
+				outcomes.push(await syncOneEntry({ accessToken: ctx.accessToken, board: ctx.board, widgets: ctx.widgets, entry, claimedWidgetIds }));
 			} catch (err) {
 				outcomes.push({ ok: false, action: "sync-failed", entryId: entry.entryId, category: entry.categoryKey, detail: String(err?.message || err), status: err?.status || undefined, errors: err?.errors || undefined });
 			}

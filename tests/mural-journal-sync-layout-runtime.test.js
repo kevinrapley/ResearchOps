@@ -75,7 +75,7 @@ try {
 		{
 			id: 'entry-002',
 			category: 'Perceptions',
-			content: 'Several researchers described losing the thread when they moved between tools.',
+			content: 'The team is beginning to see research evidence as an operating model.',
 			tags: ['tool-switching'],
 			createdAt: '2026-01-02T09:00:00.000Z',
 		},
