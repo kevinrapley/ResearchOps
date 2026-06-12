@@ -110,6 +110,90 @@ function d1CodeRecord(row = {}) {
 	};
 }
 
+async function upsertD1Code(service, code, fallback = {}) {
+	if (!hasD1(service.env) || !code?.id) return false;
+	await ensureD1CodesTable(service.env);
+	const codeId = code.id;
+	const projectId = code.projectId || fallback.projectId || fallback.project || null;
+	await d1Run(service.env, `
+		INSERT INTO codes (
+			record_id,
+			project,
+			name,
+			description,
+			parentcode,
+			colour,
+			createdat,
+			local_project_id,
+			local_code_id
+		) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+		ON CONFLICT(local_code_id) DO UPDATE SET
+			record_id = excluded.record_id,
+			project = excluded.project,
+			name = excluded.name,
+			description = excluded.description,
+			parentcode = excluded.parentcode,
+			colour = excluded.colour,
+			createdat = excluded.createdat,
+			local_project_id = excluded.local_project_id
+	`, [
+		codeId,
+		projectId,
+		code.name || fallback.name || "",
+		code.description || fallback.description || "",
+		code.parentId || fallback.parentId || "",
+		normaliseHex8(code.colour || fallback.colour || "#1d70b8ff"),
+		fallback.createdAt || new Date().toISOString(),
+		projectId,
+		codeId
+	]);
+	return true;
+}
+
+async function updateD1CodeFields(service, codeId, body, requestedParent) {
+	if (!hasD1(service.env) || !codeId) return false;
+	await ensureD1CodesTable(service.env);
+
+	const sets = [];
+	const params = [];
+
+	if ("name" in body) {
+		sets.push("name = ?");
+		params.push(body.name || "");
+	}
+	if ("description" in body) {
+		sets.push("description = ?");
+		params.push(body.description || "");
+	}
+	if ("colour" in body || "color" in body || "colour8" in body || "color8" in body) {
+		const inputColour = body.colour8 || body.color8 || body.colour || body.color || "#1d70b8ff";
+		sets.push("colour = ?");
+		params.push(normaliseHex8(inputColour));
+	}
+	if ("parentId" in body || "parent" in body) {
+		sets.push("parentcode = ?");
+		params.push(requestedParent || "");
+	}
+	if ("projectId" in body || "project" in body) {
+		const v = body.projectId || body.project || null;
+		sets.push("project = ?");
+		params.push(v);
+		sets.push("local_project_id = ?");
+		params.push(v);
+	}
+
+	if (!sets.length) return false;
+
+	params.push(codeId, codeId);
+	await d1Run(service.env, `
+		UPDATE codes
+		   SET ${sets.join(", ")}
+		 WHERE record_id = ?
+		    OR local_code_id = ?
+	`, params);
+	return true;
+}
+
 // Helper to normalise hexadecimal colour value to 8-digit alpha
 function normaliseHex8(v) {
 	let val = String(v || "").trim().toLowerCase();
@@ -511,7 +595,17 @@ export async function createCode(service, request, origin) {
 		}
 
 		const record = (resp.records || [])[0] || null;
-		const bodyOut = { ok: true, record: record ? mapCodeRecord(record) : null };
+		const mappedRecord = record ? mapCodeRecord(record) : null;
+		if (mappedRecord && hasD1(service.env)) {
+			await upsertD1Code(service, mappedRecord, {
+				projectId,
+				name,
+				description: descVal,
+				parentId,
+				colour: colourHex8
+			});
+		}
+		const bodyOut = { ok: true, record: mappedRecord };
 		const extra = maybeDiag(service, urlObj, { table: table, fieldsSubmitted: fields, rawResponse: resp });
 		if (extra) bodyOut.diag = extra;
 
@@ -649,6 +743,20 @@ export async function updateCode(service, request, origin, codeId) {
 			return service.json({ ok: true, id: codeId, source: "d1" }, 200, cors);
 		}
 
+		if (hasD1(service.env) && requestedParent) {
+			await ensureD1CodesTable(service.env);
+			if (await wouldD1Cycle(service.env, codeId, requestedParent)) {
+				return service.json({ ok: false, error: "A code cannot be made a child of itself or its descendants." },
+					400,
+					cors
+				);
+			}
+			const depthErr = await validateD1DepthLimit(service.env, requestedParent);
+			if (depthErr) {
+				return service.json(depthErr, 400, cors);
+			}
+		}
+
 		// ---------- persist ----------
 		let resp;
 		try {
@@ -669,7 +777,11 @@ export async function updateCode(service, request, origin, codeId) {
 		}
 
 		const record = (resp.records || [])[0] || null;
-		return service.json({ ok: true, record: record ? mapCodeRecord(record) : null }, 200, cors);
+		const mappedRecord = record ? mapCodeRecord(record) : null;
+		if (hasD1(service.env)) {
+			await updateD1CodeFields(service, codeId, body, requestedParent);
+		}
+		return service.json({ ok: true, record: mappedRecord }, 200, cors);
 	} catch (err) {
 		const out = { ok: false, error: "Internal error" };
 		const diag = maybeDiag(service, urlObj, { stage: "handler-catch", err: String(err) });
