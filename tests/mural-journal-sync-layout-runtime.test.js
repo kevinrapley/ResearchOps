@@ -98,9 +98,19 @@ try {
 			return jsonResponse({
 				value: [
 					widget({
+						id: 'title-perceptions',
+						text: 'The team is beginning to see research evidence as',
+						tags: ['perceptions', 'Test Project 1'],
+						x: 0,
+						y: -72,
+						width: 260,
+						height: 64,
+						style: { backgroundColor: '#9120A8FF' },
+					}),
+					widget({
 						id: 'header-perceptions',
 						type: 'shape',
-						text: 'Perceptions',
+						text: '',
 						tags: ['perceptions'],
 						x: 0,
 						y: 0,

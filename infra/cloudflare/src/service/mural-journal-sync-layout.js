@@ -18,6 +18,9 @@ const GRID_GAP = 32;
 const PURPOSE_REFLEXIVE = "reflexive_journal";
 const ENTRY_MARKER_RE = /journal-entry:[a-z0-9_-]+/i;
 const DEFAULT_STICKY_BACKGROUND = "#FFFFFFFF";
+const CONTENT_CARD_BACKGROUNDS = new Set(["#FFFFFFFF", "#FAFAFAFF", "#FDFDFDFF"]);
+const MIN_CONTENT_CARD_WIDTH = 180;
+const MIN_CONTENT_CARD_HEIGHT = 110;
 const DEFAULT_MURAL_FONT = "proxima-nova";
 const TEMPLATE_PLACEHOLDER_RE = /^(add|write|enter|capture|sticky|note|template|placeholder)\b/i;
 const SUPPORTED_MURAL_FONTS = new Set([
@@ -177,6 +180,17 @@ function isStickyLike(widget) {
 	return type.includes("sticky") || type.includes("note") || type.includes("shape") || type === "";
 }
 
+function isWhiteContentCard(widget) {
+	const background = muralHexAlpha(widget?.style?.backgroundColor || widget?.backgroundColor, "");
+	return (!background || CONTENT_CARD_BACKGROUNDS.has(background)) &&
+		numeric(widget.width, DEFAULT_WIDTH) >= MIN_CONTENT_CARD_WIDTH &&
+		numeric(widget.height, DEFAULT_HEIGHT) >= MIN_CONTENT_CARD_HEIGHT;
+}
+
+function isContentTemplateCandidate(widget) {
+	return isStickyLike(widget) && isWhiteContentCard(widget);
+}
+
 function isHeaderWidget(widget, categoryKey) {
 	const label = categoryLabel(categoryKey);
 	const text = canonicalBodyText(widgetText(widget));
@@ -187,7 +201,7 @@ function isHeaderWidget(widget, categoryKey) {
 
 function isColumnContentWidget(widget, categoryKey, layout) {
 	if (!widget || isHeaderWidget(widget, categoryKey)) return false;
-	if (!isStickyLike(widget)) return false;
+	if (!isContentTemplateCandidate(widget)) return false;
 	if (layout && !widgetMatchesColumnLayout(widget, layout)) return false;
 	return widgetMatchesCategory(widget, categoryKey, layout);
 }
@@ -222,12 +236,14 @@ function isCategoryTaggedTemplate(widget, categoryKey) {
 
 function columnTemplateWidgetFromTags(widgets, categoryKey) {
 	const candidates = widgets
-		.filter(isStickyLike)
+		.filter(isContentTemplateCandidate)
 		.filter(widget => isCategoryTaggedTemplate(widget, categoryKey))
 		.filter(widget => !isHeaderWidget(widget, categoryKey))
-		.filter(widget => !widgetHasAnyEntryTag(widget))
 		.sort((a, b) => numeric(a.y) - numeric(b.y) || numeric(a.x) - numeric(b.x));
-	return candidates.find(isTemplatePlaceholder) || candidates[0] || null;
+	return candidates.find(widget => !widgetHasAnyEntryTag(widget) && isTemplatePlaceholder(widget)) ||
+		candidates.find(widget => !widgetHasAnyEntryTag(widget)) ||
+		candidates[0] ||
+		null;
 }
 
 function columnTemplateWidget(widgets, categoryKey) {
@@ -236,7 +252,7 @@ function columnTemplateWidget(widgets, categoryKey) {
 
 	const candidates = widgets
 		.filter(widget => widget.id !== header.id)
-		.filter(isStickyLike)
+		.filter(isContentTemplateCandidate)
 		.filter(widget => !isHeaderWidget(widget, categoryKey))
 		.filter(widget => isInHeaderColumn(widget, header))
 		.sort((a, b) => numeric(a.y) - numeric(b.y) || Math.abs(centreX(a) - centreX(header)) - Math.abs(centreX(b) - centreX(header)));
