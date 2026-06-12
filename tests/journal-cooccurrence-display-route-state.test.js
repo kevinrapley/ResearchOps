@@ -29,13 +29,8 @@ includes(caqdas, "setupCooccurrenceDisplaySwitch(wrap)", "CAQDAS co-occurrence r
 excludes(caqdas, '<table class="table">', "CAQDAS co-occurrence renderer");
 excludes(caqdas, '<span class="tag">${esc(nodeLabel(nodes, link.source))}</span>', "CAQDAS co-occurrence renderer");
 
-const chartsCommit = execFileSync("git", ["-C", "charts", "rev-parse", "HEAD"], {
+const chartsGitlink = execFileSync("git", ["ls-tree", "HEAD", "charts"], {
 	encoding: "utf8",
 }).trim();
 
-assert.equal(chartsCommit, "758806bcfd61d7c00f18c0c357294e746f1974d6");
-
-const onsBarChart = fs.readFileSync("charts/bar-chart/script.js", "utf8");
-includes(onsBarChart, "scaleBand()", "ONS Charts horizontal bar chart");
-includes(onsBarChart, "graphicData.map((d) => d.name)", "ONS Charts horizontal bar chart");
-includes(onsBarChart, "d.value", "ONS Charts horizontal bar chart");
+includes(chartsGitlink, "160000 commit 758806bcfd61d7c00f18c0c357294e746f1974d6", "Charts submodule gitlink");

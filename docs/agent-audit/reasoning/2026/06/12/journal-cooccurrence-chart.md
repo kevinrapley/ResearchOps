@@ -53,6 +53,7 @@ Update the ONS Charts submodule to the requested working commit and select the m
 - Added a GOV.UK radio control that lets the researcher switch between table and chart views without changing the underlying data.
 - Rendered the chart view from the strongest 20 co-occurring code pairs using the same name/value shape as the ONS bar chart and the ONS `oceanBlue` palette colour.
 - Added route-state coverage for the GOV.UK table classes, ONS chart selection, submodule commit and display switch hooks.
+- CI follow-up: changed the submodule assertion to read the parent repository gitlink instead of reading files inside `charts`, because GitHub Actions checks out this repository with `submodules: false` for the failing unit-test jobs.
 
 ## Files changed
 
@@ -74,6 +75,16 @@ npm run agent:model:validate
 npm run agent:bundles:validate
 ```
 
+CI follow-up after failed PR checks:
+
+```bash
+node --test tests/journal-cooccurrence-display-route-state.test.js tests/journal-secondary-actions-route-state.test.js tests/analysis-d1-cooccurrence-runtime.test.js
+npm run format:check
+npm test
+npm run validate
+npm run lint
+```
+
 Validation results:
 
 - Focused co-occurrence tests passed: 5 tests.
@@ -82,6 +93,7 @@ Validation results:
 - Lint passed with the repository's existing warning set: 0 errors, 260 warnings.
 - Operating model validation passed.
 - Bundle registry validation passed.
+- CI follow-up validation passed after the test was made submodule-checkout independent.
 
 ## Browser verification limitation
 
@@ -92,3 +104,5 @@ It could not complete because the Playwright Chromium binary is not installed in
 ## Residual risk
 
 The ONS Charts submodule files are not currently served directly from `public/`, so this PR selects and mirrors the ONS `bar-chart` data pattern locally rather than embedding the submodule example page. A future asset-pipeline change could expose chart templates directly if the product needs full upstream ONS chart runtime embedding.
+
+GitHub Actions does not check out submodule working trees for the unit-test jobs, so tests must verify the `charts` gitlink in the parent repository rather than reading files inside the submodule.

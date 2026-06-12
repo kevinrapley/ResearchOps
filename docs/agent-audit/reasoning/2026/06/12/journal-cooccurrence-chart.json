@@ -30,7 +30,8 @@
 		"chartsSubmoduleFrom": "9455c5525bf545411834c271375a77115b759813",
 		"chartsSubmoduleTo": "758806bcfd61d7c00f18c0c357294e746f1974d6",
 		"chartDataLimit": 20,
-		"chartPalette": "#206095"
+		"chartPalette": "#206095",
+		"ciFollowUp": "Changed the test to assert the parent repository charts gitlink instead of reading files inside the submodule working tree, because GitHub Actions checks out this repository with submodules disabled for unit tests."
 	},
 	"filesChanged": [
 		"charts",
@@ -67,6 +68,26 @@
 		{
 			"command": "npm run agent:bundles:validate",
 			"status": "passed"
+		},
+		{
+			"command": "node --test tests/journal-cooccurrence-display-route-state.test.js tests/journal-secondary-actions-route-state.test.js tests/analysis-d1-cooccurrence-runtime.test.js",
+			"status": "passed",
+			"summary": "CI follow-up: 5 tests passed after making the submodule assertion checkout-independent"
+		},
+		{
+			"command": "npm run validate",
+			"status": "passed",
+			"summary": "CI follow-up"
+		},
+		{
+			"command": "npm test",
+			"status": "passed",
+			"summary": "CI follow-up: 213 tests passed"
+		},
+		{
+			"command": "npm run lint",
+			"status": "passed",
+			"summary": "CI follow-up: 0 errors, 260 existing warnings"
 		}
 	],
 	"browserVerification": {
@@ -75,6 +96,7 @@
 		"blocker": "Playwright Chromium is not installed locally and the available Microsoft Edge app aborts under headless launch in this sandbox."
 	},
 	"residualRisks": [
-		"The ONS Charts submodule is not currently served directly from public assets, so the PR mirrors the selected ONS bar-chart data pattern locally rather than embedding the submodule example page."
+		"The ONS Charts submodule is not currently served directly from public assets, so the PR mirrors the selected ONS bar-chart data pattern locally rather than embedding the submodule example page.",
+		"GitHub Actions does not check out submodule working trees for unit tests, so tests must verify the charts gitlink rather than reading files inside charts."
 	]
 }
