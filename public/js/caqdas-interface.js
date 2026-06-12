@@ -120,6 +120,100 @@ function nodeLabel(nodes, id) {
 	return found?.label || found?.name || String(id);
 }
 
+function cooccurrenceRows(nodes, links) {
+	return links
+		.map((link) => {
+			const weight = Number(link.weight == null ? 1 : link.weight);
+			const source = nodeLabel(nodes, link.source);
+			const target = nodeLabel(nodes, link.target);
+			return {
+				source,
+				target,
+				weight: Number.isFinite(weight) ? weight : 1,
+				label: `${source} and ${target}`,
+			};
+		})
+		.sort((a, b) => b.weight - a.weight || a.source.localeCompare(b.source) || a.target.localeCompare(b.target));
+}
+
+function renderCooccurrenceTable(rows) {
+	return `<table class="govuk-table">
+		<caption class="govuk-table__caption govuk-table__caption--m">Code pairs by strength</caption>
+		<thead class="govuk-table__head">
+			<tr class="govuk-table__row">
+				<th scope="col" class="govuk-table__header">Source code</th>
+				<th scope="col" class="govuk-table__header">Target code</th>
+				<th scope="col" class="govuk-table__header govuk-table__header--numeric">Weight</th>
+			</tr>
+		</thead>
+		<tbody class="govuk-table__body">
+			${rows.map((row) => `<tr class="govuk-table__row">
+				<td class="govuk-table__cell">${esc(row.source)}</td>
+				<td class="govuk-table__cell">${esc(row.target)}</td>
+				<td class="govuk-table__cell govuk-table__cell--numeric">${esc(String(row.weight))}</td>
+			</tr>`).join('')}
+		</tbody>
+	</table>`;
+}
+
+function renderOnsCooccurrenceBarChart(rows) {
+	const topRows = rows.slice(0, 20);
+	const maxWeight = Math.max(...topRows.map((row) => row.weight), 1);
+	return `<section aria-labelledby="cooccurrence-chart-heading" data-ons-chart="bar-chart">
+		<h4 class="govuk-heading-s" id="cooccurrence-chart-heading">Highest weighted code pairs</h4>
+		<p class="govuk-hint">Showing the 20 strongest co-occurring pairs.</p>
+		<ol class="govuk-list">
+			${topRows.map((row) => {
+				const width = Math.max(4, Math.round((row.weight / maxWeight) * 100));
+				return `<li class="govuk-!-margin-bottom-3">
+					<div class="govuk-body-s govuk-!-font-weight-bold govuk-!-margin-bottom-1">${esc(row.label)}</div>
+					<div style="display: flex; align-items: center; gap: 0.75rem;">
+						<div aria-hidden="true" style="background: #206095; min-width: 2px; width: ${width}%; height: 1.25rem;"></div>
+						<span class="govuk-body-s govuk-!-margin-bottom-0">${esc(String(row.weight))}</span>
+					</div>
+				</li>`;
+			}).join('')}
+		</ol>
+	</section>`;
+}
+
+function renderCooccurrenceOutput(rows) {
+	return `<div class="govuk-form-group">
+		<fieldset class="govuk-fieldset" aria-describedby="cooccurrence-display-hint">
+			<legend class="govuk-fieldset__legend govuk-fieldset__legend--s">Display co-occurrence as</legend>
+			<div id="cooccurrence-display-hint" class="govuk-hint">The table and chart use the same code-pair weights.</div>
+			<div class="govuk-radios govuk-radios--small" data-module="govuk-radios">
+				<div class="govuk-radios__item">
+					<input class="govuk-radios__input" id="cooccurrence-view-table" name="cooccurrence-view" type="radio" value="table" checked aria-controls="cooccurrence-table-panel">
+					<label class="govuk-label govuk-radios__label" for="cooccurrence-view-table">Table</label>
+				</div>
+				<div class="govuk-radios__item">
+					<input class="govuk-radios__input" id="cooccurrence-view-chart" name="cooccurrence-view" type="radio" value="chart" aria-controls="cooccurrence-chart-panel">
+					<label class="govuk-label govuk-radios__label" for="cooccurrence-view-chart">Chart</label>
+				</div>
+			</div>
+		</fieldset>
+	</div>
+	<div id="cooccurrence-table-panel">
+		${renderCooccurrenceTable(rows)}
+	</div>
+	<div id="cooccurrence-chart-panel" hidden>
+		${renderOnsCooccurrenceBarChart(rows)}
+	</div>`;
+}
+
+function setupCooccurrenceDisplaySwitch(wrap) {
+	const tablePanel = wrap.querySelector('#cooccurrence-table-panel');
+	const chartPanel = wrap.querySelector('#cooccurrence-chart-panel');
+	wrap.querySelectorAll('input[name="cooccurrence-view"]').forEach((input) => {
+		input.addEventListener('change', () => {
+			const showChart = input.value === 'chart' && input.checked;
+			if (tablePanel) tablePanel.hidden = showChart;
+			if (chartPanel) chartPanel.hidden = !showChart;
+		});
+	});
+}
+
 function entryText(entry) {
 	return entry.body || entry.content || entry.description || '';
 }
@@ -192,10 +286,9 @@ function runCooccurrence(projectId) {
 			flashStatus('Code co-occurrence is ready. No co-occurring codes were found.');
 			return;
 		}
-		links.sort((a, b) => (b.weight || 0) - (a.weight || 0));
-		wrap.innerHTML = '<table class="table"><caption>Code pairs by strength</caption><thead><tr><th>Source</th><th>Target</th><th>Weight</th></tr></thead><tbody>' +
-			links.map((link) => `<tr><td><span class="tag">${esc(nodeLabel(nodes, link.source))}</span></td><td><span class="tag">${esc(nodeLabel(nodes, link.target))}</span></td><td>${esc(String(link.weight == null ? 1 : link.weight))}</td></tr>`).join('') +
-			'</tbody></table>';
+		const rows = cooccurrenceRows(nodes, links);
+		wrap.innerHTML = renderCooccurrenceOutput(rows);
+		setupCooccurrenceDisplaySwitch(wrap);
 		flashStatus('Code co-occurrence updated.', { success: true, title: 'Success' });
 	}).catch((err) => {
 		console.error('runCooccurrence', err);

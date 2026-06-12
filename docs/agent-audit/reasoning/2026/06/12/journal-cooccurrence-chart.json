@@ -1,0 +1,80 @@
+{
+	"date": "2026-06-12",
+	"traceType": "operational-audit-trace",
+	"branch": "feature/journal-cooccurrence-chart",
+	"relatedWork": "Reflexive Journals — code co-occurrence display",
+	"traceRequired": true,
+	"operatingModelBootstrap": {
+		"loadedSources": [
+			"AGENTS.md",
+			".agent-operating-model/orchestration.xml",
+			".agent-operating-model/bundle-registry.json",
+			".agent-operating-model/task-signal-catalog.json",
+			".agent-operating-model/selection-rules.json",
+			".agent-operating-model/github-mutation-policy.md",
+			".agent-operating-model/precedence-policy.md"
+		],
+		"selectedBundles": [
+			".agent-operating-model/bundles/github/",
+			".agent-operating-model/bundles/researchops-developer-control/",
+			".agent-operating-model/bundles/multi-functional-team/",
+			".agent-operating-model/bundles/govuk-design-system/",
+			".agent-operating-model/bundles/cloudflare/"
+		]
+	},
+	"implementationSummary": {
+		"govukTableMarkup": true,
+		"displaySwitch": "GOV.UK radios",
+		"selectedOnsChart": "charts/bar-chart",
+		"selectedOnsChartReason": "Ranked categorical code-pair weights fit horizontal name/value bars and long labels better than columns, lines, doughnuts or maps.",
+		"chartsSubmoduleFrom": "9455c5525bf545411834c271375a77115b759813",
+		"chartsSubmoduleTo": "758806bcfd61d7c00f18c0c357294e746f1974d6",
+		"chartDataLimit": 20,
+		"chartPalette": "#206095"
+	},
+	"filesChanged": [
+		"charts",
+		"public/js/caqdas-interface.js",
+		"tests/journal-cooccurrence-display-route-state.test.js",
+		"tests/journal-secondary-actions-route-state.test.js",
+		"docs/agent-audit/reasoning/2026/06/12/journal-cooccurrence-chart.md",
+		"docs/agent-audit/reasoning/2026/06/12/journal-cooccurrence-chart.json"
+	],
+	"validationRun": [
+		{
+			"command": "node --test tests/journal-cooccurrence-display-route-state.test.js tests/journal-secondary-actions-route-state.test.js tests/analysis-d1-cooccurrence-runtime.test.js",
+			"status": "passed",
+			"summary": "5 tests passed"
+		},
+		{
+			"command": "npm run format:check",
+			"status": "passed"
+		},
+		{
+			"command": "npm test",
+			"status": "passed",
+			"summary": "213 tests passed"
+		},
+		{
+			"command": "npm run lint",
+			"status": "passed",
+			"summary": "0 errors, 260 existing warnings"
+		},
+		{
+			"command": "npm run agent:model:validate",
+			"status": "passed"
+		},
+		{
+			"command": "npm run agent:bundles:validate",
+			"status": "passed"
+		}
+	],
+	"browserVerification": {
+		"attempted": true,
+		"completed": false,
+		"blocker": "Playwright Chromium is not installed locally and the available Microsoft Edge app aborts under headless launch in this sandbox."
+	},
+	"residualRisks": [
+		"The ONS Charts submodule is not currently served directly from public assets, so the PR mirrors the selected ONS bar-chart data pattern locally rather than embedding the submodule example page."
+	]
+}
