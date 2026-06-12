@@ -3,9 +3,12 @@
 	const API_ORIGIN =
 		document.documentElement?.dataset?.apiOrigin ||
 		window.API_ORIGIN ||
-		(location.hostname.endsWith('pages.dev') ?
-			'https://rops-api.digikev-kevin-rapley.workers.dev' :
-			location.origin);
+		defaultApiOrigin();
+
+	function defaultApiOrigin() {
+		if (location.hostname.endsWith('pages.dev')) return '';
+		return location.origin;
+	}
 
 	let lastStatus = null;
 	let applying = false;

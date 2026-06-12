@@ -95,6 +95,7 @@ Required behaviour:
 - Corrected the follow-up live status failure where the UI still reported `0 of 36`: the Mural widget list helper now follows the public API `next` pagination cursor so manually-created cards on later widget pages are included in the status scan. The visible-text extractor also handles nested Mural text payloads, for example `{ text: { plainText: "..." } }`, rather than converting those objects to `[object Object]`.
 - Corrected the later deployed status failure where Test Project 1 pages opened with the legacy Airtable id `recgdpwEI5hFO7bUZ` could miss a board mapping registered under the canonical id `recgdpwEI5hF07bUZ`: board resolution now checks all known Test Project 1 identifiers across Airtable, D1 and KV mappings before falling back to the environment default board.
 - Made the Mural board resolver compatible with the D1 `mural_boards.project` mapping shape used by the Airtable mirror, as well as the newer `project_record_id` / `local_project_id` shape, so status checks do not silently fall through to the wrong board source.
+- Corrected the compact journal page Mural status script so `*.pages.dev` previews call same-origin `/api/mural/journal-sync` through the Pages proxy, rather than bypassing the preview Worker and calling the production `rops-api` Worker directly.
 - Updated both Mural sync UI entry points to report already-present entries as left unchanged.
 - Added runtime coverage for first-template update, second-entry creation below the first, existing-entry preservation, sticky-note column headers, and post-write tag application.
 - Updated the layout runtime test so two distinct journal entries with the same Perceptions body still produce two sticky writes, purple decorative tagged cards are ignored as templates, stale mapped top widgets are deleted during repair, and three manually-created Perceptions cards without internal markers are counted as 3 synced and 0 pending with no writes even when those cards are returned on a second Mural widget page and use nested text fields.
@@ -121,6 +122,8 @@ Required behaviour:
 node tests/mural-journal-sync-route-state.test.js
 node tests/mural-journal-sync-layout-runtime.test.js
 node tests/mural-journal-sync-safe-tags-runtime.test.js
+node tests/journals-route-state.test.js
+node tests/journal-tabs-api-origin-route-state.test.js
 node tests/mural-airtable-board-registry.test.js
 node --check infra/cloudflare/src/service/mural-journal-sync-layout.js
 node --check infra/cloudflare/src/service/mural-journal-sync-safe-tags.js
@@ -140,6 +143,7 @@ npm run trace:coverage -- --date 2026-06-12
 Validation results:
 
 - Focused route-state test passed.
+- Journal route-state and journal API-origin tests passed, including the compact page same-origin Pages preview API routing guard.
 - Focused layout runtime test passed, including duplicate-body, purple decorative-card, stale-widget repair, paginated widget loading, nested Mural text payloads, and manual-card recognition regression coverage.
 - Focused safe-tags runtime test passed.
 - Mural board-registry test passed, including legacy Test Project 1 id resolution to canonical D1 and Airtable board mappings.

@@ -149,6 +149,9 @@ includes(pageSource, "journal-mural-sync.css", "page");
 
 includes(compactSource, "function loadMuralSyncStatus()", "compact script");
 includes(compactSource, "function addPendingEntriesToMural()", "compact script");
+includes(compactSource, "function defaultApiOrigin()", "compact script");
+includes(compactSource, "location.hostname.endsWith('pages.dev')", "compact script");
+includes(compactSource, "return '';", "compact script");
 includes(compactSource, "postJson('status')", "compact script");
 includes(compactSource, "postJson('hydrate')", "compact script");
 includes(compactSource, "not yet on Mural", "compact script");
@@ -175,3 +178,4 @@ excludes(serviceSource, "created-sticky", "service");
 excludes(layoutSource, "created-template-widget", "layout service");
 excludes(safeTagsSource, "tags: [", "safe tags");
 excludes(compactSource, "Sync pending entries", "compact script");
+excludes(compactSource, "https://rops-api.digikev-kevin-rapley.workers.dev", "compact script");

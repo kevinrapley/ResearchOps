@@ -100,7 +100,8 @@
 			"Follow Mural widget-list pagination via the public API next cursor so status and hydrate scan all board widgets rather than only the first page.",
 			"Extract visible card text from nested Mural payloads such as { text: { plainText: '...' } } so object-shaped text fields are not normalised to [object Object].",
 			"Resolve Test Project 1 Mural board mappings across the canonical Airtable id, legacy Airtable id and local id so status checks do not fall back to the wrong board when a page is opened with the legacy URL id.",
-			"Read D1 Mural board mappings from the existing mural_boards.project shape as well as newer project_record_id and local_project_id columns."
+			"Read D1 Mural board mappings from the existing mural_boards.project shape as well as newer project_record_id and local_project_id columns.",
+			"Route compact journal-page Mural status calls on *.pages.dev through same-origin /api/mural/journal-sync so Pages previews use the preview Worker instead of the production rops-api Worker."
 		],
 		"uiReporting": [
 			"Compact journal Mural sync status reports already-present entries as left unchanged.",
@@ -134,6 +135,11 @@
 		{
 			"command": "node tests/mural-journal-sync-safe-tags-runtime.test.js",
 			"status": "passed"
+		},
+		{
+			"command": "node tests/journals-route-state.test.js && node tests/journal-tabs-api-origin-route-state.test.js",
+			"status": "passed",
+			"summary": "Includes compact journal-page same-origin Pages preview API routing guard."
 		},
 		{
 			"command": "node tests/mural-airtable-board-registry.test.js",
