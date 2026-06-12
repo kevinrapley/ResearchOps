@@ -5,6 +5,7 @@ on:
     branches: [ main ]
     paths:
       - "infra/cloudflare/migrations/0020_seed_colleague_auth_users.sql"
+      - "infra/cloudflare/migrations/0021_bridge_test_project_1_users_to_visible_team_scope.sql"
       - ".github/workflows/apply-d1-colleague-auth-users.yml"
   workflow_dispatch:
     inputs:
@@ -31,6 +32,7 @@ env:
   D1_DATABASE_NAME: "researchops-d1"
   WRANGLER_CONFIG: "infra/cloudflare/wrangler.toml"
   COLLEAGUE_AUTH_USERS_MIGRATION: "infra/cloudflare/migrations/0020_seed_colleague_auth_users.sql"
+  COLLEAGUE_VISIBLE_SCOPE_MIGRATION: "infra/cloudflare/migrations/0021_bridge_test_project_1_users_to_visible_team_scope.sql"
 
 jobs:
   apply:
@@ -67,8 +69,10 @@ jobs:
       - name: Record Wrangler toolchain version
         run: npx --yes wrangler@${WRANGLER_VERSION} --version
 
-      - name: Check migration file exists
-        run: test -f "${COLLEAGUE_AUTH_USERS_MIGRATION}"
+      - name: Check migration files exist
+        run: |
+          test -f "${COLLEAGUE_AUTH_USERS_MIGRATION}"
+          test -f "${COLLEAGUE_VISIBLE_SCOPE_MIGRATION}"
 
       - name: Apply colleague auth user seed to remote D1
         env:
@@ -80,7 +84,12 @@ jobs:
             --config "${WRANGLER_CONFIG}" \
             --file "${COLLEAGUE_AUTH_USERS_MIGRATION}"
 
-      - name: Check colleague auth user seed
+          npx --yes wrangler@${WRANGLER_VERSION} d1 execute "${D1_DATABASE_NAME}" \
+            --remote \
+            --config "${WRANGLER_CONFIG}" \
+            --file "${COLLEAGUE_VISIBLE_SCOPE_MIGRATION}"
+
+      - name: Check visible colleague access scope
         if: ${{ github.event_name == 'push' || inputs.run_post_apply_checks }}
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
@@ -89,14 +98,14 @@ jobs:
           npx --yes wrangler@${WRANGLER_VERSION} d1 execute "${D1_DATABASE_NAME}" \
             --remote \
             --config "${WRANGLER_CONFIG}" \
-            --command "SELECT COUNT(*) AS active_seeded_colleague_users FROM auth_users WHERE account_status = 'active' AND lower(email) IN ('mansoor.mir@homeoffice.gov.uk','lucy.branford-white@digital.homeoffice.gov.uk','laurence.piercy@homeoffice.gov.uk','amy.everett1@homeoffice.gov.uk','rachael.sumner@homeoffice.gov.uk','erin.bramwell@homeoffice.gov.uk','helen.orlando@homeoffice.gov.uk','andrew.warner@homeoffice.gov.uk','andrew.barker6@homeoffice.gov.uk','gillian.woodlock@homeoffice.gov.uk','jenna.murison@homeoffice.gov.uk');"
+            --command "SELECT COUNT(*) AS visible_scope_memberships FROM auth_team_memberships m INNER JOIN auth_teams t ON t.id = m.team_id WHERE t.id = 'team_home_office_biometrics' AND m.membership_status = 'active';"
 
           npx --yes wrangler@${WRANGLER_VERSION} d1 execute "${D1_DATABASE_NAME}" \
             --remote \
             --config "${WRANGLER_CONFIG}" \
-            --command "SELECT COUNT(*) AS seeded_colleague_role_assignments FROM auth_role_assignments ra INNER JOIN auth_users u ON u.id = ra.user_id WHERE lower(u.email) IN ('mansoor.mir@homeoffice.gov.uk','lucy.branford-white@digital.homeoffice.gov.uk','laurence.piercy@homeoffice.gov.uk','amy.everett1@homeoffice.gov.uk','rachael.sumner@homeoffice.gov.uk','erin.bramwell@homeoffice.gov.uk','helen.orlando@homeoffice.gov.uk','andrew.warner@homeoffice.gov.uk','andrew.barker6@homeoffice.gov.uk','gillian.woodlock@homeoffice.gov.uk','jenna.murison@homeoffice.gov.uk') AND ra.assignment_status = 'active';"
+            --command "SELECT COUNT(*) AS visible_scope_role_assignments FROM auth_role_assignments WHERE scope_type = 'team' AND scope_id = 'team_home_office_biometrics' AND assignment_status = 'active';"
 
           npx --yes wrangler@${WRANGLER_VERSION} d1 execute "${D1_DATABASE_NAME}" \
             --remote \
             --config "${WRANGLER_CONFIG}" \
-            --command "SELECT COUNT(*) AS seeded_colleague_email_code_challenges FROM auth_login_challenges WHERE lower(email) IN ('mansoor.mir@homeoffice.gov.uk','lucy.branford-white@digital.homeoffice.gov.uk','laurence.piercy@homeoffice.gov.uk','amy.everett1@homeoffice.gov.uk','rachael.sumner@homeoffice.gov.uk','erin.bramwell@homeoffice.gov.uk','helen.orlando@homeoffice.gov.uk','andrew.warner@homeoffice.gov.uk','andrew.barker6@homeoffice.gov.uk','gillian.woodlock@homeoffice.gov.uk','jenna.murison@homeoffice.gov.uk');"
+            --command "SELECT COUNT(*) AS visible_scope_audit_events FROM auth_audit_events WHERE event_type = 'auth.colleague_user.visible_team_scope_seeded';"
