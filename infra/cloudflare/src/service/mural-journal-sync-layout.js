@@ -480,10 +480,19 @@ function stickyStyle(template) {
 	return style;
 }
 
-function tagsForEntry(layout, entry) {
+function templateCarryTags(layout, entry) {
 	const templateTags = userFacingTags(layout.template?.tags);
+	if (isTemplatePlaceholder(layout.template)) return templateTags;
+	const projectName = safeText(entry.projectName).toLowerCase();
+	return templateTags.filter(tag => {
+		const key = tag.toLowerCase();
+		return key === entry.categoryKey || (projectName && key === projectName);
+	});
+}
+
+function tagsForEntry(layout, entry) {
 	return dedupeTags([
-		...templateTags,
+		...templateCarryTags(layout, entry),
 		...userFacingTags(entry.tags)
 	]);
 }
@@ -521,22 +530,35 @@ function createStyledStickyPayload(template, placement, text, tags, userTags = [
 	return body;
 }
 
-function createSizedStickyPayload(placement, text) {
-	return {
+function createSizedStickyPayload(placement, text, tags = [], userTags = []) {
+	const body = {
 		x: numeric(placement.x, 0),
 		y: numeric(placement.y, 0),
 		width: positiveInteger(placement.width, DEFAULT_WIDTH),
 		height: positiveInteger(placement.height, DEFAULT_HEIGHT),
-		shape: "rectangle",
 		text
 	};
+	if (tags.length) body.tags = tags;
+	if (userTags.length) body.researchOpsUserTags = userTags;
+	return body;
 }
 
-function createDocumentedStickyPayload(placement, text) {
+function createDocumentedStickyPayload(template, placement, text, tags = [], userTags = []) {
+	const body = {
+		x: numeric(placement.x, 0),
+		y: numeric(placement.y, 0),
+		text,
+		backgroundColor: stickyBackground(template)
+	};
+	if (tags.length) body.tags = tags;
+	if (userTags.length) body.researchOpsUserTags = userTags;
+	return body;
+}
+
+function createMinimalStickyPayload(placement, text) {
 	return {
 		x: numeric(placement.x, 0),
 		y: numeric(placement.y, 0),
-		shape: "rectangle",
 		text
 	};
 }
@@ -604,7 +626,7 @@ async function deleteStaleSyncedWidgets(accessToken, board, widgets, staleWidget
 async function updateTemplateSticky(accessToken, muralId, template, text, tags, userTags = []) {
 	const attempts = [
 		patchStickyPayload(template, text, tags, userTags),
-		tags.length ? { text, tags } : { text },
+		tags.length ? { text, tags, researchOpsUserTags: userTags } : { text },
 		{ text }
 	];
 	const errors = [];
@@ -641,8 +663,9 @@ async function postSticky(accessToken, muralId, body) {
 async function createStickyFromTemplate(accessToken, muralId, template, placement, text, tags, userTags = []) {
 	const attempts = [
 		createStyledStickyPayload(template, placement, text, tags, userTags),
-		createSizedStickyPayload(placement, text),
-		createDocumentedStickyPayload(placement, text)
+		createSizedStickyPayload(placement, text, tags, userTags),
+		createDocumentedStickyPayload(template, placement, text, tags, userTags),
+		createMinimalStickyPayload(placement, text)
 	];
 	const errors = [];
 

@@ -241,7 +241,8 @@ async function persistMappings(svc, body, data) {
 	return results;
 }
 
-async function listMuralTags(accessToken, muralId) {
+async function listMuralTags(accessToken, muralId, tagCache = null) {
+	if (tagCache && tagCache.has(muralId)) return tagCache.get(muralId);
 	const res = await fetch(`${MURAL_ROOT}/murals/${muralId}/tags`, {
 		headers: {
 			Authorization: `Bearer ${accessToken}`,
@@ -249,8 +250,9 @@ async function listMuralTags(accessToken, muralId) {
 		}
 	});
 	const body = await res.json().catch(() => ({}));
-	if (!res.ok) return [];
-	return Array.isArray(body?.value) ? body.value : (Array.isArray(body?.tags) ? body.tags : []);
+	const tags = res.ok ? (Array.isArray(body?.value) ? body.value : (Array.isArray(body?.tags) ? body.tags : [])) : [];
+	if (tagCache && res.ok) tagCache.set(muralId, tags);
+	return tags;
 }
 
 async function createMuralTag(accessToken, muralId, tag) {
@@ -283,13 +285,14 @@ function normalizeMuralTagRecord(tag) {
 	return text ? { ...tag, id, text } : null;
 }
 
-async function ensureKnownTags(accessToken, muralId, tags, createableTags = tags) {
+async function ensureKnownTags(accessToken, muralId, tags, createableTags = tags, tagCache = null) {
 	const desired = userFacingTags(tags);
 	if (!desired.length || !accessToken || !muralId) return [];
 	const createable = new Set(userFacingTags(createableTags).map(tag => tag.toLowerCase()));
 
 	const known = new Map();
-	for (const tag of await listMuralTags(accessToken, muralId)) {
+	const listed = await listMuralTags(accessToken, muralId, tagCache);
+	for (const tag of listed) {
 		const record = normalizeMuralTagRecord(tag);
 		if (record) known.set(record.text.toLowerCase(), record);
 	}
@@ -306,6 +309,7 @@ async function ensureKnownTags(accessToken, muralId, tags, createableTags = tags
 		if (record) {
 			known.set(record.text.toLowerCase(), record);
 			safe.push(record);
+			if (tagCache && tagCache.has(muralId)) tagCache.get(muralId).push(record);
 		}
 	}
 	return safe;
@@ -399,49 +403,64 @@ function replacementStyleFromWidget(widget) {
 	};
 }
 
-function replacementStickyBody(sourceWidget, requestedBody, tags) {
+function replacementStickyBodies(sourceWidget, requestedBody) {
 	const geometry = sourceWidget?.geometry || sourceWidget?.bounds || {};
 	const text = replacementTextFromBody(requestedBody);
-	const body = {
-		x: numberValue(sourceWidget?.x ?? geometry.x, 0),
-		y: numberValue(sourceWidget?.y ?? geometry.y, 0),
-		width: numberValue(sourceWidget?.width ?? geometry.width, 260),
-		height: numberValue(sourceWidget?.height ?? geometry.height, 160),
-		shape: "rectangle",
-		text,
-		style: replacementStyleFromWidget(sourceWidget),
-		stackingOrder: numberValue(sourceWidget?.stackingOrder, 1) + 1
-	};
-	if (tags.length) body.tags = tags;
-	return body;
+	const x = numberValue(sourceWidget?.x ?? geometry.x, 0);
+	const y = numberValue(sourceWidget?.y ?? geometry.y, 0);
+	const style = replacementStyleFromWidget(sourceWidget);
+	return [
+		{
+			x,
+			y,
+			width: numberValue(sourceWidget?.width ?? geometry.width, 260),
+			height: numberValue(sourceWidget?.height ?? geometry.height, 160),
+			text,
+			style,
+			stackingOrder: numberValue(sourceWidget?.stackingOrder, 1) + 1
+		},
+		{ x, y, text, backgroundColor: style.backgroundColor },
+		{ x, y, text }
+	];
 }
 
-async function createReplacementSticky(originalFetch, accessToken, muralId, sourceWidget, requestedBody, tags) {
-	const res = await originalFetch(`${MURAL_ROOT}/murals/${muralId}/widgets/sticky-note`, {
-		method: "POST",
-		headers: {
-			Authorization: `Bearer ${accessToken}`,
-			"Content-Type": "application/json",
-			Accept: "application/json"
-		},
-		body: JSON.stringify(replacementStickyBody(sourceWidget, requestedBody, tags))
-	});
-	return res;
+async function createReplacementSticky(originalFetch, accessToken, muralId, sourceWidget, requestedBody) {
+	let lastResponse = null;
+	for (const body of replacementStickyBodies(sourceWidget, requestedBody)) {
+		lastResponse = await originalFetch(`${MURAL_ROOT}/murals/${muralId}/widgets/sticky-note`, {
+			method: "POST",
+			headers: {
+				Authorization: `Bearer ${accessToken}`,
+				"Content-Type": "application/json",
+				Accept: "application/json"
+			},
+			body: JSON.stringify(body)
+		});
+		if (lastResponse.ok) return lastResponse;
+	}
+	return lastResponse;
 }
 
 async function applyTagsToWidget(originalFetch, accessToken, muralId, widgetId, tagRecords) {
 	const tagIds = dedupeTags(tagRecords.map(tag => safeText(tag?.id)).filter(Boolean));
 	if (!accessToken || !muralId || !widgetId || !tagIds.length) return false;
-	const res = await originalFetch(`${MURAL_ROOT}/murals/${muralId}/widgets/${widgetId}`, {
-		method: "PATCH",
-		headers: {
-			Authorization: `Bearer ${accessToken}`,
-			"Content-Type": "application/json",
-			Accept: "application/json"
-		},
-		body: JSON.stringify({ tags: tagIds })
-	});
-	return res.ok;
+	const urls = [
+		`${MURAL_ROOT}/murals/${muralId}/widgets/sticky-note/${widgetId}`,
+		`${MURAL_ROOT}/murals/${muralId}/widgets/${widgetId}`
+	];
+	for (const url of urls) {
+		const res = await originalFetch(url, {
+			method: "PATCH",
+			headers: {
+				Authorization: `Bearer ${accessToken}`,
+				"Content-Type": "application/json",
+				Accept: "application/json"
+			},
+			body: JSON.stringify({ tags: tagIds })
+		});
+		if (res.ok) return true;
+	}
+	return false;
 }
 
 async function attachUserTagsByTagEndpoint(originalFetch, accessToken, muralId, widgetId, tagRecords, createableTags) {
@@ -470,10 +489,15 @@ async function fallbackToReplacementSticky({ originalFetch, init, url, body, mur
 	const replacementText = replacementTextFromBody(body);
 	if (!accessToken || !muralId || !sourceWidget || !replacementText) return firstResponse;
 
-	const withTagResponse = await createReplacementSticky(originalFetch, accessToken, muralId, sourceWidget, body, confirmedTags.map(tag => tag.text));
-	if (!(await responseMentionsMissingTag(withTagResponse))) return withTagResponse;
-
-	return createReplacementSticky(originalFetch, accessToken, muralId, sourceWidget, body, []);
+	const replacementResponse = await createReplacementSticky(originalFetch, accessToken, muralId, sourceWidget, body);
+	if (replacementResponse?.ok && confirmedTags.length) {
+		const responseBody = await replacementResponse.clone().json().catch(() => ({}));
+		const replacementWidgetId = firstWidgetIdFromBody(responseBody);
+		if (replacementWidgetId) {
+			await applyTagsToWidget(originalFetch, accessToken, muralId, replacementWidgetId, confirmedTags).catch(() => false);
+		}
+	}
+	return replacementResponse || firstResponse;
 }
 
 function annotateWidgetsWithMappings(body, mappings) {
@@ -504,8 +528,22 @@ function jsonResponseFrom(original, body) {
 	return new Response(JSON.stringify(body), { status: original.status, statusText: original.statusText, headers });
 }
 
+function mergeWidgetCache(widgetCache, muralId, pageWidgets) {
+	const byId = new Map();
+	for (const widget of widgetCache.get(muralId) || []) {
+		const id = safeText(widget?.id);
+		if (id) byId.set(id, widget);
+	}
+	for (const widget of pageWidgets) {
+		const id = safeText(widget?.id);
+		if (id) byId.set(id, widget);
+	}
+	widgetCache.set(muralId, Array.from(byId.values()));
+}
+
 function installSafeMuralFetch(svc, originalFetch) {
 	const widgetCache = new Map();
+	const tagCache = new Map();
 
 	return async function safeMuralFetch(input, init = {}) {
 		const url = typeof input === "string" ? input : input?.url;
@@ -516,7 +554,7 @@ function installSafeMuralFetch(svc, originalFetch) {
 			if (!response.ok || !muralId) return response;
 			const body = await response.clone().json().catch(() => null);
 			if (!body) return response;
-			widgetCache.set(muralId, widgetsFromBody(body));
+			mergeWidgetCache(widgetCache, muralId, widgetsFromBody(body));
 			const mappings = await listD1MappingsForMural(svc.env, muralId).catch(() => []);
 			return jsonResponseFrom(response, annotateWidgetsWithMappings(body, mappings));
 		}
@@ -531,7 +569,7 @@ function installSafeMuralFetch(svc, originalFetch) {
 		}
 
 		const accessToken = accessTokenFromHeaders(init.headers);
-		const confirmedTags = await ensureKnownTags(accessToken, muralId, desiredTags, createableTags).catch(() => []);
+		const confirmedTags = await ensureKnownTags(accessToken, muralId, desiredTags, createableTags, tagCache).catch(() => []);
 		const firstResponse = await originalFetch(input, { ...init, body: JSON.stringify(withoutTags(body)) });
 
 		if (firstResponse.ok && confirmedTags.length) {

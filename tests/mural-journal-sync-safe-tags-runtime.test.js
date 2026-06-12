@@ -162,25 +162,26 @@ try {
 			);
 		}
 
-		if (href.endsWith('/widgets/sticky-note/template-perceptions') && method === 'PATCH') {
+		if (
+			/\/murals\/workspace\.123\/widgets\/sticky-note\/(?:template-perceptions|created-entry-002)$/.test(
+				href
+			) &&
+			method === 'PATCH'
+		) {
 			const body = JSON.parse(init.body);
+			const widgetId = href.split('/').at(-1);
+			if (Array.isArray(body.tags) && body.text === undefined) {
+				tagApplications.push({ href, body });
+				return jsonResponse({ value: { id: widgetId, ...body } });
+			}
 			stickyWrites.push({ method, href, body });
-			return jsonResponse({ value: { id: 'template-perceptions', ...body } });
+			return jsonResponse({ value: { id: widgetId, ...body } });
 		}
 
 		if (href.endsWith('/murals/workspace.123/widgets/sticky-note') && method === 'POST') {
 			const body = JSON.parse(init.body);
 			stickyWrites.push({ method, href, body });
 			return jsonResponse({ value: { id: 'created-entry-002', ...body } }, 201);
-		}
-
-		if (
-			/\/murals\/workspace\.123\/widgets\/(?:template-perceptions|created-entry-002)$/.test(href) &&
-			method === 'PATCH'
-		) {
-			const body = JSON.parse(init.body);
-			tagApplications.push({ href, body });
-			return jsonResponse({ value: { id: href.split('/').at(-1), ...body } });
 		}
 
 		throw new Error(`Unexpected fetch: ${method} ${href}`);
@@ -226,6 +227,10 @@ try {
 		'tag-project',
 		'tag-tool-switching',
 	]);
+	assert.equal(
+		tagApplications.every((application) => application.href.includes('/widgets/sticky-note/')),
+		true
+	);
 
 	const manualEntries = [
 		{
@@ -368,6 +373,168 @@ try {
 	assert.equal(widgetReadUrls[0].searchParams.get('limit'), '100');
 	assert.equal(widgetReadUrls[1].searchParams.get('next'), 'manual-page-2');
 	assert.equal(manualWrites.length, 0);
+
+	// Strict-contract Mural: the live API rejects sticky-note bodies that carry
+	// undocumented properties (style, shape, width, height, stackingOrder).
+	// The sync must degrade to the documented payloads so entries still land.
+	const strictEntries = [
+		{
+			id: 'strict-entry-001',
+			category: 'Perceptions',
+			content: 'The team is beginning to see research evidence as an operating model.',
+			tags: ['evidence-readiness', 'confidence'],
+			createdAt: '2026-06-03T09:15:00.000Z',
+		},
+		{
+			id: 'strict-entry-002',
+			category: 'Perceptions',
+			content: 'Several researchers described losing the thread when they moved between tools.',
+			tags: ['tool-switching'],
+			createdAt: '2026-06-05T13:10:00.000Z',
+		},
+	];
+
+	const DOCUMENTED_STICKY_FIELDS = new Set(['text', 'x', 'y', 'backgroundColor']);
+	const strictStickyWrites = [];
+	const strictRejectedWrites = [];
+	const strictTagApplications = [];
+	const strictTagCreates = [];
+	let strictTagListReads = 0;
+	let strictCreatedCount = 0;
+
+	function strictInvalidFields(body) {
+		return Object.keys(body).filter((key) => !DOCUMENTED_STICKY_FIELDS.has(key));
+	}
+
+	globalThis.fetch = async (url, init = {}) => {
+		const href = String(url);
+		const method = String(init.method || 'GET').toUpperCase();
+
+		if (href.endsWith('/users/me')) {
+			return jsonResponse({ value: { companyId: 'homeofficegovuk' } });
+		}
+
+		if (new URL(href).pathname.endsWith('/murals/workspace.123/widgets') && method === 'GET') {
+			return jsonResponse({
+				value: [
+					widget({
+						id: 'header-perceptions',
+						type: 'sticky-note',
+						text: 'Perceptions',
+						tags: ['perceptions'],
+						x: 0,
+						y: 0,
+						width: 400,
+						height: 80,
+						style: { backgroundColor: '#9120A8FF' },
+					}),
+					widget({
+						id: 'template-perceptions',
+						text: '',
+						tags: ['perceptions', 'Test Project 1'],
+						x: 0,
+						y: 120,
+						width: 400,
+						height: 220,
+					}),
+				],
+			});
+		}
+
+		if (href.endsWith('/murals/workspace.123/tags') && method === 'GET') {
+			strictTagListReads += 1;
+			return jsonResponse({
+				value: [
+					{ id: 'tag-perceptions', text: 'perceptions', backgroundColor: '#F7D7F3FF' },
+					{ id: 'tag-project', text: 'Test Project 1', backgroundColor: '#F3F2F1FF' },
+				],
+			});
+		}
+
+		if (href.endsWith('/murals/workspace.123/tags') && method === 'POST') {
+			const body = JSON.parse(init.body);
+			strictTagCreates.push(body);
+			return jsonResponse({ value: { id: `tag-${body.text}`, text: body.text } }, 201);
+		}
+
+		if (/\/murals\/workspace\.123\/widgets\/sticky-note\/[^/]+$/.test(href) && method === 'PATCH') {
+			const body = JSON.parse(init.body);
+			const widgetId = href.split('/').at(-1);
+			if (Array.isArray(body.tags) && body.text === undefined) {
+				strictTagApplications.push({ href, body });
+				return jsonResponse({ value: { id: widgetId, ...body } });
+			}
+			const invalid = strictInvalidFields(body);
+			if (invalid.length) {
+				strictRejectedWrites.push({ method, href, invalid });
+				return jsonResponse(
+					{ code: 'INVALID_BODY', message: `Invalid properties: ${invalid.join(', ')}` },
+					400
+				);
+			}
+			strictStickyWrites.push({ method, href, body });
+			return jsonResponse({ value: { id: widgetId, ...body } });
+		}
+
+		if (href.endsWith('/murals/workspace.123/widgets/sticky-note') && method === 'POST') {
+			const body = JSON.parse(init.body);
+			const invalid = strictInvalidFields(body);
+			if (invalid.length) {
+				strictRejectedWrites.push({ method, href, invalid });
+				return jsonResponse(
+					{ code: 'INVALID_BODY', message: `Invalid properties: ${invalid.join(', ')}` },
+					400
+				);
+			}
+			strictCreatedCount += 1;
+			strictStickyWrites.push({ method, href, body });
+			return jsonResponse({ value: { id: `strict-created-${strictCreatedCount}`, ...body } }, 201);
+		}
+
+		throw new Error(`Unexpected fetch: ${method} ${href}`);
+	};
+
+	const strictResponse = await postHydrate(service(strictEntries));
+	const strictData = await strictResponse.json();
+
+	assert.equal(strictResponse.status, 200);
+	assert.equal(strictData.failed, 0);
+	assert.equal(strictData.createdOrUpdated, 2);
+
+	const strictPatch = strictStickyWrites.find((write) => write.method === 'PATCH');
+	assert.equal(strictPatch.href.endsWith('/widgets/sticky-note/template-perceptions'), true);
+	assert.equal(strictPatch.body.text, strictEntries[0].content);
+
+	const strictCreate = strictStickyWrites.find((write) => write.method === 'POST');
+	assert.equal(strictCreate.body.text, strictEntries[1].content);
+	assert.equal(
+		Object.keys(strictCreate.body).every((key) => DOCUMENTED_STICKY_FIELDS.has(key)),
+		true
+	);
+
+	assert.equal(strictTagListReads, 1);
+	assert.deepEqual(strictTagCreates.map((tag) => tag.text).sort(), [
+		'confidence',
+		'evidence-readiness',
+		'tool-switching',
+	]);
+	assert.deepEqual(strictTagApplications[0].body.tags, [
+		'tag-perceptions',
+		'tag-project',
+		'tag-evidence-readiness',
+		'tag-confidence',
+	]);
+	assert.deepEqual(strictTagApplications[1].body.tags, [
+		'tag-perceptions',
+		'tag-project',
+		'tag-tool-switching',
+	]);
+	assert.equal(
+		strictTagApplications.every((application) =>
+			application.href.includes('/widgets/sticky-note/')
+		),
+		true
+	);
 } finally {
 	globalThis.fetch = originalFetch;
 }

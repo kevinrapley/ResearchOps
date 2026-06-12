@@ -74,7 +74,12 @@
 		}
 	],
 	"implementationSummary": {
-		"columnOrder": ["perceptions", "procedures", "decisions", "introspections"],
+		"columnOrder": [
+			"perceptions",
+			"procedures",
+			"decisions",
+			"introspections"
+		],
 		"templateSelection": "Use the first non-header sticky-note card under each category heading, preferring blank or placeholder cards.",
 		"firstEntryAction": "PATCH existing template sticky when it is still blank or placeholder text.",
 		"laterEntryAction": "POST new sticky-note below the latest synced item with the existing grid gap.",
@@ -103,7 +108,14 @@
 			"Read D1 Mural board mappings from the existing mural_boards.project shape as well as newer project_record_id and local_project_id columns.",
 			"Route compact journal-page Mural status calls on *.pages.dev through same-origin /api/mural/journal-sync so Pages previews use the preview Worker instead of the production rops-api Worker.",
 			"Request limit=100 from the first Mural widget-list page, follow wrapped cursors such as pagination.next, and cover manually-created card status recognition through the active safe-tags wrapper so existing cards without internal journal-entry markers no longer report as 0 synced.",
-			"Enrich Mural list results with GET /murals/{muralId}/widgets/{widgetId} for sticky-like widgets when list results omit visible body text, so manually-created cards can be matched by journal body text even when the list endpoint returns only ids, tags and geometry."
+			"Enrich Mural list results with GET /murals/{muralId}/widgets/{widgetId} for sticky-like widgets when list results omit visible body text, so manually-created cards can be matched by journal body text even when the list endpoint returns only ids, tags and geometry.",
+			"Degrade sticky-note create payloads to the documented contract: when Mural rejects the styled payload, retry without shape, then with only x, y, text and backgroundColor, then with only x, y and text, so entries still land when the live API rejects undocumented body properties.",
+			"Carry tags and the researchOpsUserTags hint on every create fallback attempt so Mint tag creation and post-write tag application still happen when the styled payload is rejected.",
+			"Apply tag ids through the documented PATCH /murals/{muralId}/widgets/sticky-note/{widgetId} route first, retaining the generic widget route only as a fallback.",
+			"Create replacement stickies without inline tag text values and apply confirmed tag ids to the replacement widget after creation, since the create contract does not accept tag names.",
+			"Merge Mural widget-list pages into the safe-tags widget cache instead of overwriting the cache with the last page, so replacement-sticky fallbacks can find source widgets from any page.",
+			"Cache the board tag list for the duration of one sync request so hydrate runs do not re-fetch GET /murals/{muralId}/tags for every write.",
+			"Stop later entries inheriting earlier entries' Mint tags: once a column template is no longer a blank placeholder, only its category and project-name tags are carried forward to new cards."
 		],
 		"uiReporting": [
 			"Compact journal Mural sync status reports already-present entries as left unchanged.",
@@ -137,7 +149,7 @@
 		{
 			"command": "node tests/mural-journal-sync-safe-tags-runtime.test.js",
 			"status": "passed",
-			"summary": "Includes active-wrapper manual-card status recognition, first-page limit=100 pagination coverage, and widget-detail enrichment when list results omit sticky-note body text."
+			"summary": "Includes active-wrapper manual-card status recognition, first-page limit=100 pagination coverage, and widget-detail enrichment when list results omit sticky-note body text. Includes a strict-contract Mural regression where the API rejects undocumented sticky-note body properties and the sync still lands both entries with tags applied by id."
 		},
 		{
 			"command": "node tests/journals-route-state.test.js && node tests/journal-tabs-api-origin-route-state.test.js",
