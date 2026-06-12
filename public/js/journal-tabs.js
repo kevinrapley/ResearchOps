@@ -295,9 +295,14 @@ import { clearJournalFeedback, showJournalError, showJournalStatus } from './jou
 			const synced = Number(after.synced || 0);
 			const total = Number(after.total || 0);
 			const changed = Number(result.createdOrUpdated || 0);
+			const alreadySynced = Number(result.alreadySynced || 0);
+			const changedText = changed ?
+				`${changed} ${changed === 1 ? 'entry was' : 'entries were'} synced.` :
+				'No new entries needed syncing.';
+			const preservedText = alreadySynced ? ` ${alreadySynced} ${alreadySynced === 1 ? 'entry was' : 'entries were'} already on Mural and left unchanged.` : '';
 			setMuralSyncPanel(
 				pending ? 'Pending' : 'Synced',
-				`${changed} ${changed === 1 ? 'entry was' : 'entries were'} synced. ${synced} of ${total} journal entries are now on the Reflexive Journal Mural.`,
+				`${changedText}${preservedText} ${synced} of ${total} journal entries are now on the Reflexive Journal Mural.`,
 				pending,
 				false
 			);

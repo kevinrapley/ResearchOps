@@ -19,6 +19,7 @@ const PURPOSE_REFLEXIVE = "reflexive_journal";
 const ENTRY_MARKER_RE = /journal-entry:[a-z0-9_-]+/i;
 const DEFAULT_STICKY_BACKGROUND = "#FFFFFFFF";
 const DEFAULT_MURAL_FONT = "proxima-nova";
+const TEMPLATE_PLACEHOLDER_RE = /^(add|write|enter|capture|sticky|note|template|placeholder)\b/i;
 const SUPPORTED_MURAL_FONTS = new Set([
 	"adelle",
 	"blambot-casual",
@@ -85,6 +86,19 @@ function tagKeys(widget) {
 
 function widgetText(widget) {
 	return safeText(widget?.text || widget?.htmlText || widget?.title || widget?.name || widget?.label || "");
+}
+
+function canonicalBodyText(value) {
+	return safeText(value)
+		.replace(/<[^>]*>/g, " ")
+		.replace(/&nbsp;/gi, " ")
+		.replace(/\s+/g, " ")
+		.toLowerCase();
+}
+
+function isTemplatePlaceholder(widget) {
+	const text = canonicalBodyText(widgetText(widget));
+	return !text || TEMPLATE_PLACEHOLDER_RE.test(text);
 }
 
 function widgetMetadataText(widget) {
@@ -164,12 +178,20 @@ function isStickyLike(widget) {
 }
 
 function isHeaderWidget(widget, categoryKey) {
+	const type = safeText(widget?.type).toLowerCase();
+	if (type.includes("sticky") || type.includes("note")) return false;
 	const label = categoryLabel(categoryKey);
 	const text = widgetText(widget).toLowerCase();
 	const meta = widgetMetadataText(widget);
-	const tags = tagKeys(widget);
-	const categoryMatch = text === label || meta === label || tags.includes(categoryKey);
+	const categoryMatch = text === label || meta === label || text.includes(label);
 	return categoryMatch && numeric(widget.width) > numeric(widget.height);
+}
+
+function isColumnContentWidget(widget, categoryKey, layout) {
+	if (!widget || isHeaderWidget(widget, categoryKey)) return false;
+	if (!isStickyLike(widget)) return false;
+	if (layout && !widgetMatchesColumnLayout(widget, layout)) return false;
+	return widgetMatchesCategory(widget, categoryKey, layout);
 }
 
 function categoryHeaderWidget(widgets, categoryKey) {
@@ -201,22 +223,26 @@ function isCategoryTaggedTemplate(widget, categoryKey) {
 }
 
 function columnTemplateWidgetFromTags(widgets, categoryKey) {
-	return widgets
+	const candidates = widgets
 		.filter(isStickyLike)
 		.filter(widget => isCategoryTaggedTemplate(widget, categoryKey))
+		.filter(widget => !isHeaderWidget(widget, categoryKey))
 		.filter(widget => !widgetHasAnyEntryTag(widget))
-		.sort((a, b) => numeric(a.y) - numeric(b.y) || numeric(a.x) - numeric(b.x))[0] || null;
+		.sort((a, b) => numeric(a.y) - numeric(b.y) || numeric(a.x) - numeric(b.x));
+	return candidates.find(isTemplatePlaceholder) || candidates[0] || null;
 }
 
 function columnTemplateWidget(widgets, categoryKey) {
 	const header = categoryHeaderWidget(widgets, categoryKey);
 	if (!header) return columnTemplateWidgetFromTags(widgets, categoryKey);
 
-	return widgets
+	const candidates = widgets
 		.filter(widget => widget.id !== header.id)
 		.filter(isStickyLike)
+		.filter(widget => !isHeaderWidget(widget, categoryKey))
 		.filter(widget => isInHeaderColumn(widget, header))
-		.sort((a, b) => numeric(a.y) - numeric(b.y) || Math.abs(centreX(a) - centreX(header)) - Math.abs(centreX(b) - centreX(header)))[0] ||
+		.sort((a, b) => numeric(a.y) - numeric(b.y) || Math.abs(centreX(a) - centreX(header)) - Math.abs(centreX(b) - centreX(header)));
+	return candidates.find(isTemplatePlaceholder) || candidates[0] ||
 		columnTemplateWidgetFromTags(widgets, categoryKey);
 }
 
@@ -281,17 +307,16 @@ function widgetMatchesCategory(widget, categoryKey, layout) {
 
 function canonicalExistingWidget(widgets, entry, layout) {
 	return widgets.find(widget => {
-		return widgetHasEntryTag(widget, entry.entryId) &&
-			widgetMatchesCategory(widget, entry.categoryKey, layout) &&
-			widgetMatchesColumnLayout(widget, layout);
+		if (!isColumnContentWidget(widget, entry.categoryKey, layout)) return false;
+		if (widgetHasEntryTag(widget, entry.entryId)) return true;
+		return canonicalBodyText(widgetText(widget)) === canonicalBodyText(entry.description);
 	});
 }
 
 function latestCanonicalWidget(widgets, categoryKey, layout) {
 	return widgets
-		.filter(widget => widgetHasAnyEntryTag(widget))
-		.filter(widget => widgetMatchesCategory(widget, categoryKey, layout))
-		.filter(widget => widgetMatchesColumnLayout(widget, layout))
+		.filter(widget => isColumnContentWidget(widget, categoryKey, layout))
+		.filter(widget => widgetHasAnyEntryTag(widget) || !isTemplatePlaceholder(widget))
 		.sort((a, b) => numeric(b.y) - numeric(a.y))[0] || null;
 }
 
@@ -348,10 +373,12 @@ function tagsForEntry(layout, entry) {
 	const templateTags = userFacingTags(layout.template?.tags);
 	return dedupeTags([
 		...templateTags,
-		entry.categoryKey,
-		entry.projectName,
 		...userFacingTags(entry.tags)
 	]);
+}
+
+function researchOpsUserTags(entry) {
+	return userFacingTags(entry.tags);
 }
 
 function localEntryWidget(widget, entry, layout, tags, placement = {}) {
@@ -367,7 +394,7 @@ function localEntryWidget(widget, entry, layout, tags, placement = {}) {
 	});
 }
 
-function createStyledStickyPayload(template, placement, text, tags) {
+function createStyledStickyPayload(template, placement, text, tags, userTags = []) {
 	const body = {
 		x: numeric(placement.x, 0),
 		y: numeric(placement.y, 0),
@@ -379,6 +406,7 @@ function createStyledStickyPayload(template, placement, text, tags) {
 		stackingOrder: positiveInteger(template?.stackingOrder, 1) + 1
 	};
 	if (tags.length) body.tags = tags;
+	if (userTags.length) body.researchOpsUserTags = userTags;
 	return body;
 }
 
@@ -402,6 +430,53 @@ function createDocumentedStickyPayload(placement, text) {
 	};
 }
 
+function patchStickyPayload(template, text, tags, userTags = []) {
+	const body = {
+		text,
+		style: stickyStyle(template)
+	};
+	if (tags.length) body.tags = tags;
+	if (userTags.length) body.researchOpsUserTags = userTags;
+	return body;
+}
+
+async function patchSticky(accessToken, muralId, widgetId, body) {
+	const url = `https://app.mural.co/api/public/v1/murals/${muralId}/widgets/sticky-note/${widgetId}`;
+	const res = await fetch(url, {
+		method: "PATCH",
+		headers: {
+			Authorization: `Bearer ${accessToken}`,
+			"Content-Type": "application/json",
+			Accept: "application/json"
+		},
+		body: JSON.stringify(body)
+	});
+	const data = await res.json().catch(() => ({}));
+	if (!res.ok) {
+		throw Object.assign(new Error(`Update Mural template sticky failed: ${res.status}`), { status: res.status, body: data });
+	}
+	return firstMuralValue(data) || { id: widgetId, ...body };
+}
+
+async function updateTemplateSticky(accessToken, muralId, template, text, tags, userTags = []) {
+	const attempts = [
+		patchStickyPayload(template, text, tags, userTags),
+		tags.length ? { text, tags } : { text },
+		{ text }
+	];
+	const errors = [];
+
+	for (const body of attempts) {
+		try {
+			return await patchSticky(accessToken, muralId, template.id, body);
+		} catch (err) {
+			errors.push(muralErrorSummary(err));
+		}
+	}
+
+	throw new Error(`Update Mural template sticky failed after ${errors.length} documented payload attempts: ${errors.at(-1) || "unknown error"}`);
+}
+
 async function postSticky(accessToken, muralId, body) {
 	const url = `https://app.mural.co/api/public/v1/murals/${muralId}/widgets/sticky-note`;
 	const res = await fetch(url, {
@@ -420,9 +495,9 @@ async function postSticky(accessToken, muralId, body) {
 	return firstMuralValue(data) || body;
 }
 
-async function createStickyFromTemplate(accessToken, muralId, template, placement, text, tags) {
+async function createStickyFromTemplate(accessToken, muralId, template, placement, text, tags, userTags = []) {
 	const attempts = [
-		createStyledStickyPayload(template, placement, text, tags),
+		createStyledStickyPayload(template, placement, text, tags, userTags),
 		createSizedStickyPayload(placement, text),
 		createDocumentedStickyPayload(placement, text)
 	];
@@ -575,7 +650,12 @@ function statusFromEntriesAndWidgets(entries, widgets) {
 		const category = normalizeCategoryKey(entry.category);
 		const layout = layouts[category];
 		if (!layout) continue;
-		if (widgets.some(widget => widgetHasEntryTag(widget, entry.id) && widgetMatchesCategory(widget, category, layout) && widgetMatchesColumnLayout(widget, layout))) {
+		const payload = entryPayloadFromEntry(entry, { projectId: "", projectName: "", uid: "anon" });
+		if (widgets.some(widget => {
+			if (!isColumnContentWidget(widget, category, layout)) return false;
+			if (widgetHasEntryTag(widget, entry.id)) return true;
+			return canonicalBodyText(widgetText(widget)) === canonicalBodyText(payload.description);
+		})) {
 			syncedEntryIds.add(String(entry.id));
 		}
 	}
@@ -613,13 +693,31 @@ async function syncOneEntry({ accessToken, board, widgets, entry }) {
 
 	const existing = canonicalExistingWidget(widgets, entry, layout);
 	if (existing) {
-		return { ok: true, action: "already-synced", entryId: entry.entryId, category: entry.categoryKey, widgetId: existing.id };
+		return { ok: true, action: "already-synced", entryId: entry.entryId, category: entry.categoryKey, widgetId: existing.id, preserved: true };
 	}
 
 	const tags = tagsForEntry(layout, entry);
+	const userTags = researchOpsUserTags(entry);
 	const latest = latestCanonicalWidget(widgets, entry.categoryKey, layout);
+	if (!latest && layout.template?.id && isTemplatePlaceholder(layout.template)) {
+		const updated = await updateTemplateSticky(accessToken, board.muralId, layout.template, entry.description, tags, userTags);
+		const local = localEntryWidget({ ...layout.template, ...firstMuralValue(updated) }, entry, layout, tags, placementOverTemplate(layout));
+		const idx = widgets.findIndex(widget => widget.id === layout.template.id);
+		if (idx >= 0) widgets[idx] = local;
+		else widgets.push(local);
+
+		return {
+			ok: true,
+			action: "updated-template-widget",
+			entryId: entry.entryId,
+			category: entry.categoryKey,
+			widgetId: local.id || updated?.id || layout.template.id,
+			tags
+		};
+	}
+
 	const placement = latest ? placementBelow(layout, latest) : placementOverTemplate(layout);
-	const created = await createStickyFromTemplate(accessToken, board.muralId, layout.template, placement, entry.description, tags);
+	const created = await createStickyFromTemplate(accessToken, board.muralId, layout.template, placement, entry.description, tags, userTags);
 	const local = localEntryWidget({ ...layout.template, ...firstMuralValue(created) }, entry, layout, tags, placement);
 	widgets.push(local);
 

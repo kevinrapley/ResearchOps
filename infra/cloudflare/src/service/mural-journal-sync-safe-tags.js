@@ -10,6 +10,11 @@ import { d1All, d1Run } from "./internals/researchops-d1.js";
 
 const SYSTEM_TAG_RE = /^journal-entry:/i;
 const MURAL_ROOT = "https://app.mural.co/api/public/v1";
+const MURAL_MINT_TAG_STYLE = {
+	backgroundColor: "#DDF7E8FF",
+	borderColor: "#98DDB8FF",
+	color: "#0B0C0CFF"
+};
 
 function safeText(value) {
 	return String(value || "").trim();
@@ -251,7 +256,7 @@ async function listMuralTags(accessToken, muralId) {
 async function createMuralTag(accessToken, muralId, tag) {
 	const text = truncateMuralTag(tag);
 	if (!text) return "";
-	const bodies = [{ text }, { text, backgroundColor: "#F6D6FF", borderColor: "#B15FD1", color: "#0B0C0C" }];
+	const bodies = [{ text, ...MURAL_MINT_TAG_STYLE }, { text }];
 
 	for (const body of bodies) {
 		const res = await fetch(`${MURAL_ROOT}/murals/${muralId}/tags`, {
@@ -272,9 +277,10 @@ async function createMuralTag(accessToken, muralId, tag) {
 	return "";
 }
 
-async function ensureKnownTags(accessToken, muralId, tags) {
+async function ensureKnownTags(accessToken, muralId, tags, createableTags = tags) {
 	const desired = userFacingTags(tags);
 	if (!desired.length || !accessToken || !muralId) return [];
+	const createable = new Set(userFacingTags(createableTags).map(tag => tag.toLowerCase()));
 
 	const known = new Map();
 	for (const tag of await listMuralTags(accessToken, muralId)) {
@@ -289,6 +295,7 @@ async function ensureKnownTags(accessToken, muralId, tags) {
 			safe.push(known.get(key));
 			continue;
 		}
+		if (!createable.has(key)) continue;
 		const created = await createMuralTag(accessToken, muralId, tag).catch(() => "");
 		if (created) {
 			known.set(created.toLowerCase(), created);
@@ -317,6 +324,7 @@ function removeUnsupportedFields(body) {
 	if (body && typeof body === "object") {
 		const next = { ...body };
 		delete next.title;
+		delete next.researchOpsUserTags;
 		if (Array.isArray(next.tags)) {
 			next.tags = userFacingTags(next.tags);
 			if (!next.tags.length) delete next.tags;
@@ -332,6 +340,7 @@ function withoutTags(body) {
 		const next = { ...body };
 		delete next.tags;
 		delete next.title;
+		delete next.researchOpsUserTags;
 		return next;
 	}
 	return body;
@@ -349,6 +358,11 @@ function withTags(body, tags) {
 function tagsFromBody(body) {
 	if (Array.isArray(body)) return body.flatMap(item => normalizeTags(item?.tags));
 	return normalizeTags(body?.tags);
+}
+
+function researchOpsUserTagsFromBody(body) {
+	if (Array.isArray(body)) return body.flatMap(item => normalizeTags(item?.researchOpsUserTags));
+	return normalizeTags(body?.researchOpsUserTags);
 }
 
 function widgetsFromBody(body) {
@@ -413,7 +427,7 @@ async function createReplacementSticky(originalFetch, accessToken, muralId, sour
 	return res;
 }
 
-async function fallbackToReplacementSticky({ originalFetch, input, init, url, body, muralId, confirmedTags, firstResponse, widgetCache }) {
+async function fallbackToReplacementSticky({ originalFetch, init, url, body, muralId, confirmedTags, firstResponse, widgetCache }) {
 	if (!isPatchRequest(init)) return firstResponse;
 	if (!(await responseMentionsWrongWidgetType(firstResponse))) return firstResponse;
 
@@ -478,17 +492,17 @@ function installSafeMuralFetch(svc, originalFetch) {
 
 		const body = await bodyAsJson(init.body);
 		const desiredTags = tagsFromBody(body);
+		const createableTags = researchOpsUserTagsFromBody(body);
 		if (!body || !desiredTags.length) {
 			return originalFetch(input, { ...init, body: body ? JSON.stringify(removeUnsupportedFields(body)) : init.body });
 		}
 
 		const accessToken = accessTokenFromHeaders(init.headers);
-		const confirmedTags = await ensureKnownTags(accessToken, muralId, desiredTags).catch(() => []);
+		const confirmedTags = await ensureKnownTags(accessToken, muralId, desiredTags, createableTags).catch(() => []);
 		const firstResponse = await originalFetch(input, { ...init, body: JSON.stringify(confirmedTags.length ? withTags(body, confirmedTags) : withoutTags(body)) });
 
 		const replacementResponse = await fallbackToReplacementSticky({
 			originalFetch,
-			input,
 			init,
 			url,
 			body,
