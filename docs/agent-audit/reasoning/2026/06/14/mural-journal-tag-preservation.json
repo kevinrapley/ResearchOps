@@ -1,0 +1,121 @@
+{
+	"date": "2026-06-14",
+	"traceType": "operational-audit-trace",
+	"branch": "feature/mural-journal-export-layout",
+	"relatedWork": "Reflexive Journals — Mural integration (follow-up to the 2026-06-12 layout fix)",
+	"traceRequired": true,
+	"extendsTrace": "docs/agent-audit/reasoning/2026/06/12/mural-journal-export-layout.json",
+	"operatingModelBootstrap": {
+		"loadedSources": [
+			"AGENTS.md",
+			".agent-operating-model/orchestration.xml",
+			".agent-operating-model/bundle-registry.json",
+			".agent-operating-model/task-signal-catalog.json",
+			".agent-operating-model/selection-rules.json",
+			".agent-operating-model/trace-policy.md"
+		],
+		"selectedBundles": [
+			".agent-operating-model/bundles/researchops-developer-control/",
+			".agent-operating-model/bundles/cloudflare/",
+			".agent-operating-model/bundles/mural-public-api/",
+			".agent-operating-model/bundles/multi-functional-team/"
+		]
+	},
+	"muralEndpointContracts": [
+		{
+			"file": ".agent-operating-model/bundles/mural-public-api/contracts/endpoints/getmuraltags.yaml",
+			"method": "GET",
+			"path": "/murals/{muralId}/tags",
+			"minimumScope": "murals:read"
+		},
+		{
+			"file": ".agent-operating-model/bundles/mural-public-api/contracts/endpoints/createmuraltag.yaml",
+			"method": "POST",
+			"path": "/murals/{muralId}/tags",
+			"minimumScope": "murals:write"
+		},
+		{
+			"file": ".agent-operating-model/bundles/mural-public-api/contracts/endpoints/updatetagbyid.yaml",
+			"method": "PATCH",
+			"path": "/murals/{muralId}/tags/{tagId}",
+			"minimumScope": "murals:write"
+		},
+		{
+			"file": ".agent-operating-model/bundles/mural-public-api/contracts/endpoints/updatestickynote.yaml",
+			"method": "PATCH",
+			"path": "/murals/{muralId}/widgets/sticky-note/{widgetId}",
+			"minimumScope": "murals:write"
+		}
+	],
+	"reportedDefects": [
+		"Synced journal cards lost the board's Snowberry project tag (Test Project 1).",
+		"User-created ResearchOps tags did not render with Mural's Mint background and border colour.",
+		"project-context.js logged 401 authentication_required from /api/projects/:id, so project-route hydration failed on the preview."
+	],
+	"rootCause": {
+		"snowberryTagLoss": "The server only carries the board project tag onto a card when the client-sent projectName text-matches the tag. When project-route hydration fails, main[data-project-name] is empty and the client sends the project id, so the project-name tag filter drops the Snowberry tag. The Mural widget PATCH also replaces the whole tag set, so applying a list missing the project tag stripped Snowberry from a patched template sticky.",
+		"tagsNotMint": "The safe-tags wrapper only applied the Mint style at tag creation. User tags already present on the board from earlier sync attempts were reused as-is with their original default style."
+	},
+	"implementationSummary": [
+		"Resolve the project name server-side from the D1 projects and rops_projects_cache records, checking all Test Project 1 id aliases (canonical, legacy, local); keep the client-sent name as a fallback. Names longer than Mural's 25-character tag limit match their truncated board tag.",
+		"Merge the tags already on a widget into PATCH tag application (resolved by id or text, including widget tag objects whose ids are absent from the board tag list) so a PATCH cannot strip the Raspberry category or Snowberry project tag from an existing sticky.",
+		"Restyle user-authored ResearchOps tags that already exist with non-Mint styling to the Mint contract via PATCH /murals/{muralId}/tags/{tagId}; never restyle board-curated category or project tags; update the in-request tag cache after a successful restyle so the same tag is not re-patched on every write.",
+		"Align the compact journal Mural sync payload with the journal tabs payload so both prefer the hydrated main[data-project-name] value before falling back to the page heading or project id.",
+		"Add this trace artefact dated 2026-06-14 to satisfy the feature-branch trace-coverage gate, which keys required traces to the CI run date."
+	],
+	"filesChanged": [
+		"infra/cloudflare/src/service/mural-journal-sync-layout.js",
+		"infra/cloudflare/src/service/mural-journal-sync-safe-tags.js",
+		"public/js/journal-mural-sync-compact.js",
+		"tests/mural-journal-sync-layout-runtime.test.js",
+		"tests/mural-journal-sync-safe-tags-runtime.test.js",
+		"docs/agent-audit/reasoning/2026/06/12/mural-journal-export-layout.md",
+		"docs/agent-audit/reasoning/2026/06/12/mural-journal-export-layout.json",
+		"docs/agent-audit/reasoning/2026/06/14/mural-journal-tag-preservation.md",
+		"docs/agent-audit/reasoning/2026/06/14/mural-journal-tag-preservation.json"
+	],
+	"validationRun": [
+		{
+			"command": "node --check infra/cloudflare/src/service/mural-journal-sync-layout.js && node --check infra/cloudflare/src/service/mural-journal-sync-safe-tags.js && node --check public/js/journal-mural-sync-compact.js",
+			"status": "passed"
+		},
+		{
+			"command": "node tests/mural-journal-sync-layout-runtime.test.js",
+			"status": "passed",
+			"summary": "Includes D1 project-name resolution regression: a hydrate request carrying only the project id still carries the Snowberry project tag onto new cards."
+		},
+		{
+			"command": "node tests/mural-journal-sync-safe-tags-runtime.test.js",
+			"status": "passed",
+			"summary": "Includes Mint restyle and tag-preservation regression: a pre-existing default-styled user tag is restyled to Mint instead of recreated, and tag application keeps the project tag even when the board tag list omits it and the client could not send the project name."
+		},
+		{
+			"command": "node tests/mural-journal-sync-route-state.test.js",
+			"status": "passed"
+		},
+		{
+			"command": "npm run format:check",
+			"status": "passed"
+		},
+		{
+			"command": "npm test",
+			"status": "passed",
+			"summary": "217 tests passed"
+		},
+		{
+			"command": "npm run lint",
+			"status": "passed",
+			"summary": "0 errors, 258 existing warnings"
+		},
+		{
+			"command": "npm run validate",
+			"status": "passed",
+			"summary": "Passed once a 2026-06-14 trace directory existed."
+		}
+	],
+	"residualRisks": [
+		"No live Mural board mutation was performed from this session; coverage is via mocked Mural API responses.",
+		"Mural does not publicly document its built-in tag preset colour values. The Mint constants in mural-journal-sync-safe-tags.js (#DDF7E8FF background, #98DDB8FF border, #0B0C0CFF text) are the single place to adjust if the workspace's built-in Mint preset differs.",
+		"The trace-coverage gate keys the required trace directory to the CI run date (UTC); a CI re-run on a later calendar day will require a trace directory for that day. This is existing repository behaviour, not introduced by this change."
+	]
+}
