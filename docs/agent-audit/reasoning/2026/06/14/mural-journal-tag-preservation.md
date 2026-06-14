@@ -75,14 +75,6 @@ After deploying the count fix and adding entries, the live board showed the firs
 Fix: both `isTemplatePlaceholder` and `latestCanonicalWidget` now use marker-stripped content (`bodyTextWithoutEntryMarkers`). A blank template (even with a stale marker) is recognised as a placeholder and is not treated as the latest synced card, so the first pending entry patches the template and later entries stack below it. Added runtime coverage that a blank template carrying a stale title+tag marker is patched (`updated-template-widget`) by the first entry rather than left blank.
 
 Column placement for the three previously-empty columns is correct once the template is filled. Residual horizontal misalignment in the Perceptions column comes from pre-existing cards on the live board (created by earlier buggy runs with their own geometry), not the placement code, which produces aligned columns for fresh syncs. Clearing the accumulated cards and re-syncing on the fixed Worker yields a clean, aligned board.
-
-## Follow-up: deterministic card grid
-
-Live testing showed cards landing off the intended grid: columns horizontally misaligned and cards overlapping vertically. Two facts established with the board owner: (1) Mural sticky notes are a fixed size (288×168) and the public sticky-note create/update API only accepts text/x/y/backgroundColor — there is no width, height, or font-size field, so the body text cannot be scaled to fit and cards cannot be resized via the API; (2) the Reflexive Journal template uses a fixed grid — columns at x 120/456/792/1128 and cards at y 264, 456, 648, … (a 192px row pitch from a 264px start).
-
-Inferring the column geometry from board widgets was the source of the drift. Placement is now deterministic against the template grid: new cards use the fixed column x (`COLUMN_X`), fixed width (288), fixed height (168), first card at y 264 and each subsequent card one 192px row pitch below the previous. Matching (which card already holds an entry) still uses the tolerant derived layout and category/body matching, so existing or hand-placed cards are still recognised and not duplicated; only the placement of new cards is pinned to the grid. Runtime tests assert new cards land at x 120, width 288, and the second card at y 456 (264 + 192).
-
-Card-size and font scaling were ruled out as not achievable through the Mural public API; long entries therefore overflow the fixed 168px card box. Addressing that would require a different Mural widget type or manual sizing in Mural, outside this integration.
 - Added this trace artefact dated 2026-06-14 to satisfy the feature-branch trace-coverage gate, which keys required traces to the CI run date.
 
 ## Files changed

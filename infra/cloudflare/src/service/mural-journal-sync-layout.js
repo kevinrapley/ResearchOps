@@ -21,23 +21,6 @@ const CATEGORY_KEYS = ["perceptions", "procedures", "decisions", "introspections
 const CREATED_ACTIONS = ["updated-template-widget", "created-template-sticky"];
 const DEFAULT_WIDTH = 260;
 const DEFAULT_HEIGHT = 160;
-// Mural's fixed sticky-note card size and the Reflexive Journal template's
-// column x positions. The journal Mural is a duplicate of a fixed template, so
-// these are stable across projects and far more reliable than inferring the
-// column geometry from board widgets.
-const FIXED_CARD_WIDTH = 288;
-const FIXED_CARD_HEIGHT = 168;
-// The Reflexive Journal template's fixed card grid: each column's x, the first
-// card's y, and the pitch between consecutive cards. The journal Mural is a
-// duplicate of a fixed template, so placing cards on this grid is reliable.
-const COLUMN_X = {
-	perceptions: 120,
-	procedures: 456,
-	decisions: 792,
-	introspections: 1128
-};
-const COLUMN_START_Y = 264;
-const ROW_PITCH = 192;
 const GRID_GAP = 32;
 const PURPOSE_REFLEXIVE = "reflexive_journal";
 const MURAL_TAG_TEXT_LIMIT = 25;
@@ -488,30 +471,22 @@ function latestCanonicalWidget(widgets, categoryKey, layout) {
 		.sort((a, b) => numeric(b.y) - numeric(a.y))[0] || null;
 }
 
-function columnX(layout) {
-	// New cards are placed on the template's fixed column grid. Matching still
-	// uses the tolerant derived layout, but placement is deterministic so cards
-	// always land under the correct column header regardless of board drift.
-	return COLUMN_X[layout?.categoryKey] ?? numeric(layout?.x, 0);
-}
-
 function placementBelow(layout, latest) {
-	// Fixed grid: each card sits one row pitch below the previous card, falling
-	// back to the column's first row when there is no prior card.
+	const from = latest || layout.template;
 	return {
-		x: columnX(layout),
-		y: numeric(latest?.y, COLUMN_START_Y) + ROW_PITCH,
-		width: FIXED_CARD_WIDTH,
-		height: FIXED_CARD_HEIGHT
+		x: numeric(layout.x, 0),
+		y: numeric(from.y, layout.y) + numeric(from.height, layout.height) + GRID_GAP,
+		width: positiveInteger(layout.width, DEFAULT_WIDTH),
+		height: positiveInteger(layout.height, DEFAULT_HEIGHT)
 	};
 }
 
 function placementOverTemplate(layout) {
 	return {
-		x: columnX(layout),
-		y: COLUMN_START_Y,
-		width: FIXED_CARD_WIDTH,
-		height: FIXED_CARD_HEIGHT
+		x: numeric(layout.x, 0),
+		y: numeric(layout.template?.y, layout.y),
+		width: positiveInteger(layout.width, DEFAULT_WIDTH),
+		height: positiveInteger(layout.height, DEFAULT_HEIGHT)
 	};
 }
 
