@@ -255,6 +255,17 @@ function widgetHasAnyEntryTag(widget) {
 	return ENTRY_MARKER_RE.test([widgetMetadataText(widget), tagKeys(widget).join(" ")].join(" "));
 }
 
+function bodyTextWithoutEntryMarkers(widget) {
+	// Visible card text with any journal-entry:<id> marker removed. Status
+	// annotation injects that marker into the widget title (and normalizeWidget
+	// folds the title into .text), so a blank template carrying a stale marker
+	// must not be mistaken for a card that holds real entry content.
+	return canonicalBodyText(widgetText(widget))
+		.replace(/journal-entry:[a-z0-9_-]+/gi, " ")
+		.replace(/\s+/g, " ")
+		.trim();
+}
+
 function widgetHasEntryTag(widget, entryId) {
 	const tag = entrySyncTag(entryId).toLowerCase();
 	if (!tag) return false;
@@ -428,8 +439,9 @@ function canonicalExistingWidget(widgets, entry, layout, claimedWidgetIds = new 
 		if (!isInLayoutContentFlow(widget, layout)) return false;
 		// A blank column template holds no entry content. A stale or incorrect
 		// journal-entry marker (e.g. a D1 mapping pointing an entry at the
-		// template) must not count the empty card as a synced entry.
-		if (!canonicalBodyText(widgetText(widget))) return false;
+		// template) must not count the empty card as a synced entry, so ignore
+		// the marker text when deciding whether the card is blank.
+		if (!bodyTextWithoutEntryMarkers(widget)) return false;
 		if (widgetHasEntryTag(widget, entry.entryId)) return true;
 		if (claimedWidgetIds.has(safeText(widget.id))) return false;
 		return bodyTextsMatch(widgetText(widget), entry.description);

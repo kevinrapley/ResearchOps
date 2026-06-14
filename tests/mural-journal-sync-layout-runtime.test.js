@@ -501,6 +501,10 @@ try {
 					widget({
 						id: 'template-perceptions',
 						text: '',
+						// Status annotation injects the journal-entry marker into
+						// the title and tags of a card mapped in D1; the card body
+						// stays empty. This must still be treated as a blank template.
+						title: 'journal-entry:entry-001',
 						tags: ['perceptions', 'Test Project 1', 'journal-entry:entry-001'],
 						x: 0,
 						y: 120,
