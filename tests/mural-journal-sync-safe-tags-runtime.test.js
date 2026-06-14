@@ -218,15 +218,15 @@ try {
 	);
 
 	assert.deepEqual(tagApplications[0].body.tags, [
-		'tag-perceptions',
-		'tag-project',
-		'tag-evidence',
-		'tag-operating-model',
+		'perceptions',
+		'Test Project 1',
+		'evidence',
+		'operating-model',
 	]);
 	assert.deepEqual(tagApplications[1].body.tags, [
-		'tag-perceptions',
-		'tag-project',
-		'tag-tool-switching',
+		'perceptions',
+		'Test Project 1',
+		'tool-switching',
 	]);
 	assert.equal(
 		tagApplications.every((application) => application.href.includes('/widgets/sticky-note/')),
@@ -522,15 +522,15 @@ try {
 		'tool-switching',
 	]);
 	assert.deepEqual(strictTagApplications[0].body.tags, [
-		'tag-perceptions',
-		'tag-project',
-		'tag-evidence-readiness',
-		'tag-confidence',
+		'perceptions',
+		'Test Project 1',
+		'evidence-readiness',
+		'confidence',
 	]);
 	assert.deepEqual(strictTagApplications[1].body.tags, [
-		'tag-perceptions',
-		'tag-project',
-		'tag-tool-switching',
+		'perceptions',
+		'Test Project 1',
+		'tool-switching',
 	]);
 	assert.equal(
 		strictTagApplications.every((application) =>
@@ -749,9 +749,9 @@ try {
 	// The project tag missing from the tag list is still preserved on the widget.
 	assert.equal(preserveTagApplications.length, 1);
 	assert.deepEqual(preserveTagApplications[0].body.tags, [
-		'tag-perceptions',
-		'tag-evidence',
-		'tag-project',
+		'perceptions',
+		'evidence',
+		'Test Project 1',
 	]);
 } finally {
 	globalThis.fetch = originalFetch;

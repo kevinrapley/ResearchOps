@@ -534,8 +534,8 @@ async function existingWidgetTagRecords(accessToken, muralId, widgetId, widgetCa
 }
 
 async function applyTagsToWidget(originalFetch, accessToken, muralId, widgetId, tagRecords) {
-	const tagIds = dedupeTags(tagRecords.map(tag => safeText(tag?.id)).filter(Boolean));
-	if (!accessToken || !muralId || !widgetId || !tagIds.length) return false;
+	const tagLabels = dedupeTags(tagRecords.map(tag => safeText(tag?.text || tag?.name || tag?.title || tag?.label)).filter(Boolean));
+	if (!accessToken || !muralId || !widgetId || !tagLabels.length) return false;
 	const urls = [
 		`${MURAL_ROOT}/murals/${muralId}/widgets/sticky-note/${widgetId}`,
 		`${MURAL_ROOT}/murals/${muralId}/widgets/${widgetId}`
@@ -548,7 +548,7 @@ async function applyTagsToWidget(originalFetch, accessToken, muralId, widgetId, 
 				"Content-Type": "application/json",
 				Accept: "application/json"
 			},
-			body: JSON.stringify({ tags: tagIds })
+			body: JSON.stringify({ tags: tagLabels })
 		});
 		if (res.ok) return true;
 	}
