@@ -175,7 +175,10 @@ function bodyTextsMatch(widgetValue, entryValue) {
 }
 
 function isTemplatePlaceholder(widget) {
-	const text = canonicalBodyText(widgetText(widget));
+	// Ignore a stale journal-entry marker: a blank template that only carries a
+	// marker (folded into .text by normalizeWidget) is still a placeholder that
+	// should receive the first entry rather than be treated as filled content.
+	const text = bodyTextWithoutEntryMarkers(widget);
 	return !text || TEMPLATE_PLACEHOLDER_RE.test(text);
 }
 
@@ -458,10 +461,13 @@ function staleSyncedWidgets(widgets, entry, layout) {
 }
 
 function latestCanonicalWidget(widgets, categoryKey, layout) {
+	// Only a card holding real entry text counts as the latest synced card. A
+	// blank template carrying a stale marker must not anchor placement, or the
+	// first entry is created below it and the template is left empty.
 	return widgets
 		.filter(widget => isColumnContentWidget(widget, categoryKey, layout))
 		.filter(widget => isInLayoutContentFlow(widget, layout))
-		.filter(widget => widgetHasAnyEntryTag(widget) || !isTemplatePlaceholder(widget))
+		.filter(widget => !!bodyTextWithoutEntryMarkers(widget))
 		.sort((a, b) => numeric(b.y) - numeric(a.y))[0] || null;
 }
 

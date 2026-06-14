@@ -523,6 +523,58 @@ try {
 	assert.equal(blankStatusData.synced, 0);
 	assert.equal(blankStatusData.pending, 1);
 	assert.deepEqual(blankStatusData.byCategory.perceptions, { total: 1, synced: 0, pending: 1 });
+
+	// A blank template carrying a stale marker must be FILLED (patched) by the
+	// first pending entry, not left blank with the entry created below it.
+	const fillWrites = [];
+	globalThis.fetch = async (url, init = {}) => {
+		const href = String(url);
+		const method = String(init.method || 'GET').toUpperCase();
+		if (href.endsWith('/users/me'))
+			return jsonResponse({ value: { companyId: 'homeofficegovuk' } });
+		if (new URL(href).pathname.endsWith('/murals/workspace.123/widgets') && method === 'GET') {
+			return jsonResponse({
+				value: [
+					widget({
+						id: 'header-perceptions',
+						type: 'shape',
+						text: 'Perceptions',
+						tags: ['perceptions'],
+						x: 0,
+						y: 0,
+						width: 400,
+						height: 80,
+						style: { backgroundColor: '#9120A8FF' },
+					}),
+					widget({
+						id: 'template-perceptions',
+						text: '',
+						title: 'journal-entry:entry-001',
+						tags: ['perceptions', 'Test Project 1', 'journal-entry:entry-001'],
+						x: 0,
+						y: 120,
+						width: 400,
+						height: 220,
+					}),
+				],
+			});
+		}
+		if (href.endsWith('/widgets/sticky-note/template-perceptions') && method === 'PATCH') {
+			const body = JSON.parse(init.body);
+			fillWrites.push({ method, href, body });
+			return jsonResponse({ value: { id: 'template-perceptions', ...body } });
+		}
+		throw new Error(`Unexpected fetch: ${method} ${href}`);
+	};
+
+	const fillResponse = await postHydrate(service([entries[0]]));
+	const fillData = await fillResponse.json();
+	assert.equal(fillResponse.status, 200);
+	assert.equal(fillData.createdOrUpdated, 1);
+	assert.equal(fillData.outcomes[0].action, 'updated-template-widget');
+	assert.equal(fillWrites.length, 1);
+	assert.equal(fillWrites[0].method, 'PATCH');
+	assert.equal(fillWrites[0].body.text, entries[0].content);
 } finally {
 	globalThis.fetch = originalFetch;
 }

@@ -67,6 +67,14 @@ Root cause: `canonicalExistingWidget` treated a column card as a synced entry wh
 Fix: `canonicalExistingWidget` now requires the candidate widget to hold real entry text — its visible text with any `journal-entry:<id>` marker removed must be non-empty — before it can match by marker or by body. This is necessary because the status annotation injects the marker into the widget **title**, and `normalizeWidget` folds the title into the widget's `.text`, so a content-only or naive non-empty check is still fooled by the marker; stripping the marker token first is what correctly identifies the card as blank. Real synced cards always contain the entry text (the first-entry flow patches the template with it), so they still count; blank templates stop counting and remain available for the first-entry update. This corrects both the status count and the hydrate idempotency check, so pending entries are created instead of being skipped as already-synced.
 
 Added runtime coverage: a blank column template carrying a stale `journal-entry:` marker in both its title and tags (as the annotation produces) is reported as pending (not synced) by the status endpoint.
+
+## Follow-up: blank template left empty / placement
+
+After deploying the count fix and adding entries, the live board showed the first card in each previously-empty column created *below* a still-blank template, leaving the template empty. Same root cause as the count over-count: `isTemplatePlaceholder` and `latestCanonicalWidget` decided "is this card blank/the latest synced card" from `widgetText`, which includes the stale marker folded in from the title — so a marker-only blank template was treated as a filled, latest card, and the first entry was created beneath it instead of patching it.
+
+Fix: both `isTemplatePlaceholder` and `latestCanonicalWidget` now use marker-stripped content (`bodyTextWithoutEntryMarkers`). A blank template (even with a stale marker) is recognised as a placeholder and is not treated as the latest synced card, so the first pending entry patches the template and later entries stack below it. Added runtime coverage that a blank template carrying a stale title+tag marker is patched (`updated-template-widget`) by the first entry rather than left blank.
+
+Column placement for the three previously-empty columns is correct once the template is filled. Residual horizontal misalignment in the Perceptions column comes from pre-existing cards on the live board (created by earlier buggy runs with their own geometry), not the placement code, which produces aligned columns for fresh syncs. Clearing the accumulated cards and re-syncing on the fixed Worker yields a clean, aligned board.
 - Added this trace artefact dated 2026-06-14 to satisfy the feature-branch trace-coverage gate, which keys required traces to the CI run date.
 
 ## Files changed
