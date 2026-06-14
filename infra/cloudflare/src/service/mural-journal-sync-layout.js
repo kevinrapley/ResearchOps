@@ -685,7 +685,7 @@ async function deleteStaleSyncedWidgets(accessToken, board, widgets, staleWidget
 	return deleted;
 }
 
-async function updateTemplateSticky(accessToken, muralId, template, placement, text, tags, userTags = []) {
+async function updateTemplateSticky(accessToken, muralId, template, text, tags, userTags = []) {
 	const attempts = [
 		patchStickyPayload(template, text, tags, userTags),
 		tags.length ? { text, tags, researchOpsUserTags: userTags } : { text },
@@ -1008,7 +1008,7 @@ async function syncOneEntry({ accessToken, board, widgets, entry, claimedWidgetI
 	const latest = latestCanonicalWidget(widgets, entry.categoryKey, layout);
 	const placement = placementForRow(layout, rowIndex);
 	if (!latest && layout.template?.id && isTemplatePlaceholder(layout.template)) {
-		const updated = await updateTemplateSticky(accessToken, board.muralId, layout.template, placement, entry.description, tags, userTags);
+		const updated = await updateTemplateSticky(accessToken, board.muralId, layout.template, entry.description, tags, userTags);
 		const local = localEntryWidget({ ...layout.template, ...firstMuralValue(updated) }, entry, layout, tags, placement);
 		const idx = widgets.findIndex(widget => widget.id === layout.template.id);
 		if (idx >= 0) widgets[idx] = local;
