@@ -1,0 +1,76 @@
+{
+  "schemaVersion": "1.0.0",
+  "traceLayer": "operational",
+  "date": "2026-06-15",
+  "task": "Remote-only restore of feature/mural-journal-export-layout to commit 34fc6f72dcddc61da2e625aa1aee0defdf505a4b without modifying the local checkout.",
+  "branch": "feature/mural-journal-export-layout",
+  "branchPrefix": "feature/",
+  "traceDecision": "Trace required because feature/ branches require auditable traces for repository-affecting work.",
+  "requestedTargetCommit": "34fc6f72dcddc61da2e625aa1aee0defdf505a4b",
+  "currentRemoteHeadBeforeChange": "b58e8f6658ec781a05131ce54ad71621d345a493",
+  "targetTree": "6a332741b81df4d086e5e80f914a829c0d48ddc3",
+  "operatingModelFilesLoaded": [
+    "AGENTS.md",
+    ".agent-operating-model/orchestration.xml",
+    ".agent-operating-model/bundle-registry.json",
+    ".agent-operating-model/task-signal-catalog.json",
+    ".agent-operating-model/selection-rules.json",
+    ".agent-operating-model/bootstrap-checklist.md",
+    ".agent-operating-model/precedence-policy.md",
+    ".agent-operating-model/trace-policy.md",
+    ".agent-operating-model/trace-layers.md",
+    ".agent-operating-model/behavioural-evals.json",
+    ".agent-operating-model/github-mutation-policy.md"
+  ],
+  "selectedBundles": [
+    {
+      "id": "github-diamond",
+      "canonicalPath": ".agent-operating-model/bundles/github/",
+      "reason": "Always-loaded repository and GitHub mutation governance for remote branch update."
+    },
+    {
+      "id": "researchops-developer-control",
+      "canonicalPath": ".agent-operating-model/bundles/researchops-developer-control/",
+      "reason": "Always-loaded ResearchOps platform governance for repository-affecting work."
+    },
+    {
+      "id": "multi-functional-team",
+      "canonicalPath": ".agent-operating-model/bundles/multi-functional-team/",
+      "reason": "Always-loaded government product assurance context."
+    }
+  ],
+  "skippedBundles": [
+    "govuk-design-system: no UI or content implementation change requested",
+    "cloudflare: no runtime, deployment, binding or Worker code change requested",
+    "openai-platform: no OpenAI API work requested",
+    "mcp-agent-tooling: no MCP tool or protocol change requested",
+    "airtable-public-api: no Airtable data or API change requested",
+    "mural-public-api: no Mural API implementation change requested; this is a GitHub branch restore only"
+  ],
+  "precedenceDecisions": [
+    "GitHub Diamond governs repository safety and remote mutation mechanics.",
+    "ResearchOps Developer Control and Multi-Functional Team remain loaded as always-on governance but do not expand the requested scope.",
+    "User instruction to avoid local changes was honoured by using GitHub git object API operations only."
+  ],
+  "filesCreatedOrModifiedOnRemote": [
+    "docs/agent-audit/reasoning/2026/06/15/remote-revert-to-34fc6f72.md",
+    "docs/agent-audit/reasoning/2026/06/15/remote-revert-to-34fc6f72.json"
+  ],
+  "implementation": {
+    "method": "GitHub git object API via gh api",
+    "localCheckoutMutation": false,
+    "refUpdateForce": false,
+    "commitTreeStrategy": "Base the new tree on the requested target commit tree, then add only the required trace Markdown and JSON files."
+  },
+  "validationPlanned": [
+    "Verify remote branch points at the new commit.",
+    "Verify compare from requested target commit to new commit lists only trace files.",
+    "Verify local checkout status remains clean and not reset."
+  ],
+  "validationNotRun": [
+    "Application test suite not run because this is a remote-only branch restore, not a local build or code edit."
+  ],
+  "residualRisks": [
+    "GitHub Actions may still need to run on the remote branch after the ref update."
+  ]
+}
