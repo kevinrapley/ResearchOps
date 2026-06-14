@@ -193,11 +193,23 @@ try {
 	assert.equal(response.status, 200);
 	assert.equal(data.createdOrUpdated, 2);
 	assert.equal(stickyWrites[0].href.endsWith('/widgets/sticky-note/template-perceptions'), true);
-	assert.equal(stickyWrites[0].body.text, entries[0].content);
+	assert.equal(stickyWrites[0].body.text, undefined);
 	assert.equal(stickyWrites[0].body.tags, undefined);
 	assert.equal(stickyWrites[0].body.researchOpsUserTags, undefined);
+	assert.equal(stickyWrites[0].body.x, 120);
+	assert.equal(stickyWrites[0].body.y, 264);
+	assert.equal(stickyWrites[0].body.width, 288);
+	assert.equal(stickyWrites[0].body.height, 168);
+	assert.equal(stickyWrites[1].href.endsWith('/widgets/sticky-note/template-perceptions'), true);
+	assert.equal(stickyWrites[1].body.text, entries[0].content);
+	assert.equal(stickyWrites[1].body.tags, undefined);
+	assert.equal(stickyWrites[1].body.researchOpsUserTags, undefined);
+	assert.equal(stickyWrites[1].body.x, undefined);
+	assert.equal(stickyWrites[1].body.y, undefined);
+	assert.equal(stickyWrites[1].body.width, undefined);
+	assert.equal(stickyWrites[1].body.height, undefined);
 	// Second card sits on the fixed grid: first card y=264 + row pitch 192 = 456.
-	assert.equal(stickyWrites[1].body.y, 456);
+	assert.equal(stickyWrites[2].body.y, 456);
 
 	assert.deepEqual(tagCreates.map((tag) => tag.text).sort(), [
 		'evidence',
@@ -502,7 +514,21 @@ try {
 	assert.equal(strictData.failed, 0);
 	assert.equal(strictData.createdOrUpdated, 2);
 
-	const strictPatch = strictStickyWrites.find((write) => write.method === 'PATCH');
+	const strictPlacementPatch = strictStickyWrites.find(
+		(write) => write.method === 'PATCH' && write.body.text === undefined
+	);
+	assert.equal(
+		strictPlacementPatch.href.endsWith('/widgets/sticky-note/template-perceptions'),
+		true
+	);
+	assert.equal(strictPlacementPatch.body.x, 120);
+	assert.equal(strictPlacementPatch.body.y, 264);
+	assert.equal(strictPlacementPatch.body.width, undefined);
+	assert.equal(strictPlacementPatch.body.height, undefined);
+
+	const strictPatch = strictStickyWrites.find(
+		(write) => write.method === 'PATCH' && write.body.text
+	);
 	assert.equal(strictPatch.href.endsWith('/widgets/sticky-note/template-perceptions'), true);
 	assert.equal(strictPatch.body.text, strictEntries[0].content);
 
@@ -737,8 +763,13 @@ try {
 
 	assert.equal(preserveResponse.status, 200);
 	assert.equal(preserveData.createdOrUpdated, 1);
-	assert.equal(preserveStickyWrites.length, 1);
-	assert.equal(preserveStickyWrites[0].body.text, preserveEntries[0].content);
+	assert.equal(preserveStickyWrites.length, 2);
+	assert.equal(preserveStickyWrites[0].body.text, undefined);
+	assert.equal(preserveStickyWrites[0].body.x, 120);
+	assert.equal(preserveStickyWrites[0].body.y, 264);
+	assert.equal(preserveStickyWrites[1].body.text, preserveEntries[0].content);
+	assert.equal(preserveStickyWrites[1].body.x, undefined);
+	assert.equal(preserveStickyWrites[1].body.y, undefined);
 	// The pre-existing user tag was restyled to Mint, not recreated.
 	assert.deepEqual(preserveTagRestyles, [
 		{ backgroundColor: '#DDF7E8FF', borderColor: '#98DDB8FF', color: '#0B0C0CFF' },
