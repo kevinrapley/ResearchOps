@@ -625,25 +625,6 @@ function createMinimalStickyPayload(placement, text) {
 	};
 }
 
-function patchStickyPlacementPayload(placement) {
-	return {
-		x: numeric(placement.x, 0),
-		y: numeric(placement.y, 0),
-		width: positiveInteger(placement.width, DEFAULT_WIDTH),
-		height: positiveInteger(placement.height, DEFAULT_HEIGHT)
-	};
-}
-
-function patchStickyPlacementPayloads(placement) {
-	return [
-		patchStickyPlacementPayload(placement),
-		{
-			x: numeric(placement.x, 0),
-			y: numeric(placement.y, 0)
-		}
-	];
-}
-
 function patchStickyPayload(template, text, tags, userTags = []) {
 	const body = {
 		text,
@@ -705,21 +686,6 @@ async function deleteStaleSyncedWidgets(accessToken, board, widgets, staleWidget
 }
 
 async function updateTemplateSticky(accessToken, muralId, template, placement, text, tags, userTags = []) {
-	let placed = null;
-	let placedBody = null;
-	const placementErrors = [];
-	for (const body of patchStickyPlacementPayloads(placement)) {
-		try {
-			placed = await patchSticky(accessToken, muralId, template.id, body);
-			placedBody = body;
-			break;
-		} catch (err) {
-			placementErrors.push(muralErrorSummary(err));
-		}
-	}
-	if (!placed) {
-		throw new Error(`Update Mural template sticky placement failed after ${placementErrors.length} payload attempts: ${placementErrors.at(-1) || "unknown error"}`);
-	}
 	const attempts = [
 		patchStickyPayload(template, text, tags, userTags),
 		tags.length ? { text, tags, researchOpsUserTags: userTags } : { text },
@@ -729,8 +695,7 @@ async function updateTemplateSticky(accessToken, muralId, template, placement, t
 
 	for (const body of attempts) {
 		try {
-			const updated = await patchSticky(accessToken, muralId, template.id, body);
-			return { ...placed, ...updated, ...placedBody };
+			return await patchSticky(accessToken, muralId, template.id, body);
 		} catch (err) {
 			errors.push(muralErrorSummary(err));
 		}

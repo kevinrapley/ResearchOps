@@ -84,16 +84,11 @@ Inferring the next placement from the latest widget on the board was the source 
 
 The first/template card update now receives the same fixed placement as newly created cards. This is important because the first pending entry in a column patches the blank template sticky; without x/y/width/height on that PATCH, the first card can remain at template geometry while later cards use grid geometry. Matching (which card already holds an entry) still uses tolerant derived layout and category/body matching, so existing or hand-placed cards are recognised and not duplicated; only new or patched pending cards are pinned to the grid. Runtime tests assert the patched first card lands at x 120/y 264/288×168, the second Perceptions card lands at y 456, and the four column starts are x 120/456/792/1128 at y 264.
 
-## Follow-up: preserve known-good tag payload while keeping fixed placement
+## Follow-up: restore known-good tag payload while keeping generated-card placement
 
-After the deterministic grid change, live testing showed card placement was correct but Mural tags rendered as generated tag ids (`tag-...`) instead of the tag names. The user identified `87459b1fbba36836d504ecec979811f28a6859a0` as the known-good tag behaviour and `bdae4111490da4a50c6700033388d5d144828fff` as the known-good placement behaviour.
+Live testing after the previous corrective commit showed generated cards had no tags. The user identified `87459b1fbba36836d504ecec979811f28a6859a0` as the known-good tag behaviour and `bdae4111490da4a50c6700033388d5d144828fff` as the known-good placement behaviour.
 
-Diff inspection showed the dedicated safe-tags code and compact client payload were unchanged between those commits. The only tag-adjacent behaviour introduced by the placement fix was that template-card updates combined x/y/width/height with the same PATCH body that carries text, tags and `researchOpsUserTags`. The fix keeps the fixed placement grid, but separates template-card updates into:
-
-1. a placement-only sticky PATCH using the fixed grid coordinates (with an x/y fallback for strict documented payloads); and
-2. the existing content/tag PATCH body shape from `87459b1f`, with no placement fields mixed into it.
-
-This keeps new card placement at x 120/456/792/1128 and y 264/456/648/... while preserving the known-good tag/content request path. Runtime tests now assert that template-card placement is sent separately, while the tag/content PATCH contains text and ResearchOps user tags but no x/y/width/height fields.
+The corrective change removes the split placement/tag PATCH that was introduced after `bdae4111`. Template sticky updates now use the `87459b1f` tag/content PATCH shape again: text, style, tags and `researchOpsUserTags`, with no placement-only PATCH beforehand. Generated cards still use the `bdae4111` row-based placement for created cards, so second and later entries are posted at the fixed x/y/width/height grid positions.
 - Added this trace artefact dated 2026-06-14 to satisfy the feature-branch trace-coverage gate, which keys required traces to the CI run date.
 
 ## Files changed

@@ -171,62 +171,43 @@ try {
 	assert.equal(data.pending, 0);
 	assert.deepEqual(
 		writes.map((write) => write.method),
-		['PATCH', 'PATCH', 'POST']
+		['PATCH', 'POST']
 	);
 	assert.equal(writes[0].href.endsWith('/widgets/sticky-note/template-perceptions'), true);
-	assert.equal(writes[0].body.x, 120);
-	assert.equal(writes[0].body.y, 264);
-	assert.equal(writes[0].body.width, 288);
-	assert.equal(writes[0].body.height, 168);
-	assert.equal(writes[0].body.text, undefined);
-	assert.equal(writes[0].body.tags, undefined);
-	assert.equal(writes[1].href.endsWith('/widgets/sticky-note/template-perceptions'), true);
-	assert.equal(writes[1].body.text, entries[0].content);
-	assert.deepEqual(writes[1].body.researchOpsUserTags, ['evidence', 'operating-model']);
-	assert.equal(writes[1].body.x, undefined);
-	assert.equal(writes[1].body.y, undefined);
-	assert.equal(writes[1].body.width, undefined);
-	assert.equal(writes[1].body.height, undefined);
-	assert.equal(writes[2].body.text, entries[1].content);
-	assert.deepEqual(writes[2].body.researchOpsUserTags, ['tool-switching']);
+	assert.equal(writes[0].body.text, entries[0].content);
+	assert.deepEqual(writes[0].body.researchOpsUserTags, ['evidence', 'operating-model']);
+	assert.equal(writes[0].body.x, undefined);
+	assert.equal(writes[0].body.y, undefined);
+	assert.equal(writes[0].body.width, undefined);
+	assert.equal(writes[0].body.height, undefined);
+	assert.equal(writes[1].body.text, entries[1].content);
+	assert.deepEqual(writes[1].body.researchOpsUserTags, ['tool-switching']);
 	// New cards land on the fixed template grid: Perceptions column x=120,
 	// width 288, first card y=264, each subsequent card one row pitch (192)
 	// below. The second card is therefore at 264 + 192 = 456.
-	assert.equal(writes[2].body.x, 120);
-	assert.equal(writes[2].body.width, 288);
-	assert.equal(writes[2].body.height, 168);
-	assert.equal(writes[2].body.y, 456);
+	assert.equal(writes[1].body.x, 120);
+	assert.equal(writes[1].body.width, 288);
+	assert.equal(writes[1].body.height, 168);
+	assert.equal(writes[1].body.y, 456);
 
-	const gridEntries = [
-		{
-			id: 'grid-perceptions',
-			category: 'Perceptions',
-			content: 'Perceptions card content',
-			tags: [],
-			createdAt: '2026-01-01T09:00:00.000Z',
-		},
-		{
-			id: 'grid-procedures',
-			category: 'Procedures',
-			content: 'Procedures card content',
-			tags: [],
-			createdAt: '2026-01-01T09:01:00.000Z',
-		},
-		{
-			id: 'grid-decisions',
-			category: 'Decisions',
-			content: 'Decisions card content',
-			tags: [],
-			createdAt: '2026-01-01T09:02:00.000Z',
-		},
-		{
-			id: 'grid-introspections',
-			category: 'Introspections',
-			content: 'Introspections card content',
-			tags: [],
-			createdAt: '2026-01-01T09:03:00.000Z',
-		},
-	];
+	const gridEntries = ['Perceptions', 'Procedures', 'Decisions', 'Introspections'].flatMap(
+		(category, categoryIndex) => [
+			{
+				id: `grid-${category.toLowerCase()}-first`,
+				category,
+				content: `${category} first card content`,
+				tags: [],
+				createdAt: `2026-01-01T09:0${categoryIndex}:00.000Z`,
+			},
+			{
+				id: `grid-${category.toLowerCase()}-second`,
+				category,
+				content: `${category} second card content`,
+				tags: [],
+				createdAt: `2026-01-01T10:0${categoryIndex}:00.000Z`,
+			},
+		]
+	);
 	const gridWrites = [];
 	const columns = [
 		['perceptions', 120],
@@ -271,23 +252,28 @@ try {
 			const id = href.split('/').at(-1);
 			return jsonResponse({ value: { id, ...body } });
 		}
+		if (href.endsWith('/murals/workspace.123/widgets/sticky-note') && method === 'POST') {
+			const body = JSON.parse(init.body);
+			gridWrites.push({ method, href, body });
+			return jsonResponse({ value: { id: `created-${gridWrites.length}`, ...body } }, 201);
+		}
 		throw new Error(`Unexpected fetch: ${method} ${href}`);
 	};
 
 	const gridResponse = await postHydrate(service(gridEntries));
 	const gridData = await gridResponse.json();
 	assert.equal(gridResponse.status, 200);
-	assert.equal(gridData.createdOrUpdated, 4);
+	assert.equal(gridData.createdOrUpdated, 8);
 	assert.equal(gridWrites.length, 8);
 	assert.deepEqual(
 		gridWrites
-			.filter((write) => write.body.text === undefined)
+			.filter((write) => write.method === 'POST')
 			.map((write) => [write.body.x, write.body.y, write.body.width, write.body.height]),
 		[
-			[120, 264, 288, 168],
-			[456, 264, 288, 168],
-			[792, 264, 288, 168],
-			[1128, 264, 288, 168],
+			[120, 456, 288, 168],
+			[456, 456, 288, 168],
+			[792, 456, 288, 168],
+			[1128, 456, 288, 168],
 		]
 	);
 
@@ -500,7 +486,7 @@ try {
 	assert.equal(repairWrites[0].href.endsWith('/widgets/sticky-note/template-perceptions'), true);
 	assert.deepEqual(
 		repairWrites.map((write) => write.method),
-		['PATCH', 'PATCH', 'DELETE']
+		['PATCH', 'DELETE']
 	);
 	assert.deepEqual(repairData.outcomes[0].deletedStaleWidgetIds, ['bad-title-entry-001']);
 
@@ -683,15 +669,11 @@ try {
 	assert.equal(fillResponse.status, 200);
 	assert.equal(fillData.createdOrUpdated, 1);
 	assert.equal(fillData.outcomes[0].action, 'updated-template-widget');
-	assert.equal(fillWrites.length, 2);
+	assert.equal(fillWrites.length, 1);
 	assert.equal(fillWrites[0].method, 'PATCH');
-	assert.equal(fillWrites[0].body.text, undefined);
-	assert.equal(fillWrites[0].body.x, 120);
-	assert.equal(fillWrites[0].body.y, 264);
-	assert.equal(fillWrites[1].method, 'PATCH');
-	assert.equal(fillWrites[1].body.text, entries[0].content);
-	assert.equal(fillWrites[1].body.x, undefined);
-	assert.equal(fillWrites[1].body.y, undefined);
+	assert.equal(fillWrites[0].body.text, entries[0].content);
+	assert.equal(fillWrites[0].body.x, undefined);
+	assert.equal(fillWrites[0].body.y, undefined);
 } finally {
 	globalThis.fetch = originalFetch;
 }

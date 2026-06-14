@@ -65,7 +65,7 @@
 		"Place pending cards on the Reflexive Journal template's fixed grid by category row index (columns at x 120/456/792/1128, cards 288x168, first row y 264, 192px row pitch) instead of using the latest existing widget y as the anchor. This prevents stale, oversized, merged or overlapping widgets from causing stacked cards. The first/template card PATCH receives the same fixed placement as newly created cards, so row 0 is also pinned to x/y/width/height. Matching still uses the tolerant derived layout so existing/hand-placed cards are recognised; only pending card placement is pinned to the grid. The implementation does not send literal Auto for font sizing because that value was rejected by Mural.",
 		"Make isTemplatePlaceholder and latestCanonicalWidget use marker-stripped content (bodyTextWithoutEntryMarkers) so a blank template carrying a stale journal-entry marker is recognised as a placeholder and not treated as the latest synced card; the first pending entry patches the template instead of being created below it leaving the template blank. Covered with a runtime test that a blank template with a stale title+tag marker is patched (updated-template-widget). Perceptions horizontal misalignment on the live board is pre-existing-card pollution, not a placement-code defect; fresh syncs produce aligned columns.",
 		"Require canonicalExistingWidget candidates to hold real entry text — visible text with any journal-entry:<id> marker stripped must be non-empty — before matching by marker or by body. The status annotation injects the marker into the widget title and normalizeWidget folds the title into .text, so a naive non-empty check is still fooled; stripping the marker is what identifies the card as blank. This corrects the status over-count (6 of 36 reported when only 3 cards existed, persisting after the first attempt) and the hydrate idempotency check, and was covered with a blank-template-with-stale-marker (title and tags) status regression test.",
-		"Preserve the known-good tag/content request shape from 87459b1fbba36836d504ecec979811f28a6859a0 while keeping the fixed card grid from bdae4111490da4a50c6700033388d5d144828fff. Template-card updates now send placement-only PATCHes first (fixed x/y/width/height, with x/y fallback for strict payloads) and then send the existing content/tag PATCH body without placement fields, so tag handling is not affected by placement fields."
+		"Restore the known-good tag/content PATCH shape from 87459b1fbba36836d504ecec979811f28a6859a0 for template sticky updates, removing the split placement/tag PATCH introduced after bdae4111490da4a50c6700033388d5d144828fff. Generated cards still use the bdae4111 row-based fixed grid placement for created cards."
 	],
 	"filesChanged": [
 		"infra/cloudflare/src/service/mural-journal-sync-layout.js",
@@ -86,12 +86,12 @@
 		{
 			"command": "node tests/mural-journal-sync-layout-runtime.test.js",
 			"status": "passed",
-			"summary": "Includes fixed-grid coverage for template-card placement and asserts the content/tag PATCH keeps the 87459b1f shape without placement fields."
+			"summary": "Includes fixed-grid coverage for created/generated cards while template sticky updates keep the 87459b1f tag/content PATCH shape."
 		},
 		{
 			"command": "node tests/mural-journal-sync-safe-tags-runtime.test.js",
 			"status": "passed",
-			"summary": "Includes Mint restyle/tag-preservation coverage and asserts template-card placement is separated from tag/content writes."
+			"summary": "Includes Mint restyle/tag-preservation coverage with the restored 87459b1f template tag/content write path."
 		},
 		{
 			"command": "node tests/mural-journal-sync-route-state.test.js",
