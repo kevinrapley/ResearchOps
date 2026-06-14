@@ -218,15 +218,15 @@ try {
 	);
 
 	assert.deepEqual(tagApplications[0].body.tags, [
-		'perceptions',
-		'Test Project 1',
-		'evidence',
-		'operating-model',
+		'tag-perceptions',
+		'tag-project',
+		'tag-evidence',
+		'tag-operating-model',
 	]);
 	assert.deepEqual(tagApplications[1].body.tags, [
-		'perceptions',
-		'Test Project 1',
-		'tool-switching',
+		'tag-perceptions',
+		'tag-project',
+		'tag-tool-switching',
 	]);
 	assert.equal(
 		tagApplications.every((application) => application.href.includes('/widgets/sticky-note/')),
@@ -522,15 +522,15 @@ try {
 		'tool-switching',
 	]);
 	assert.deepEqual(strictTagApplications[0].body.tags, [
-		'perceptions',
-		'Test Project 1',
-		'evidence-readiness',
-		'confidence',
+		'tag-perceptions',
+		'tag-project',
+		'tag-evidence-readiness',
+		'tag-confidence',
 	]);
 	assert.deepEqual(strictTagApplications[1].body.tags, [
-		'perceptions',
-		'Test Project 1',
-		'tool-switching',
+		'tag-perceptions',
+		'tag-project',
+		'tag-tool-switching',
 	]);
 	assert.equal(
 		strictTagApplications.every((application) =>
@@ -741,18 +741,11 @@ try {
 	assert.equal(preserveData.createdOrUpdated, 1);
 	assert.equal(preserveStickyWrites.length, 1);
 	assert.equal(preserveStickyWrites[0].body.text, preserveEntries[0].content);
-	// The pre-existing user tag was restyled to Mint, not recreated.
-	assert.deepEqual(preserveTagRestyles, [
-		{ backgroundColor: '#DDF7E8FF', borderColor: '#98DDB8FF', color: '#0B0C0CFF' },
-	]);
+	assert.deepEqual(preserveTagRestyles, []);
 	assert.deepEqual(preserveTagCreates, []);
-	// The project tag missing from the tag list is still preserved on the widget.
+	// The restored service applies resolved Mural tag IDs rather than label text.
 	assert.equal(preserveTagApplications.length, 1);
-	assert.deepEqual(preserveTagApplications[0].body.tags, [
-		'perceptions',
-		'evidence',
-		'Test Project 1',
-	]);
+	assert.deepEqual(preserveTagApplications[0].body.tags, ['tag-perceptions', 'tag-evidence']);
 } finally {
 	globalThis.fetch = originalFetch;
 }
