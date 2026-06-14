@@ -495,21 +495,10 @@ function columnX(layout) {
 	return COLUMN_X[layout?.categoryKey] ?? numeric(layout?.x, 0);
 }
 
-function placementBelow(layout, latest) {
-	// Fixed grid: each card sits one row pitch below the previous card, falling
-	// back to the column's first row when there is no prior card.
+function placementForRow(layout, rowIndex = 0) {
 	return {
 		x: columnX(layout),
-		y: numeric(latest?.y, COLUMN_START_Y) + ROW_PITCH,
-		width: FIXED_CARD_WIDTH,
-		height: FIXED_CARD_HEIGHT
-	};
-}
-
-function placementOverTemplate(layout) {
-	return {
-		x: columnX(layout),
-		y: COLUMN_START_Y,
+		y: COLUMN_START_Y + Math.max(0, positiveInteger(rowIndex + 1, 1) - 1) * ROW_PITCH,
 		width: FIXED_CARD_WIDTH,
 		height: FIXED_CARD_HEIGHT
 	};
@@ -636,8 +625,12 @@ function createMinimalStickyPayload(placement, text) {
 	};
 }
 
-function patchStickyPayload(template, text, tags, userTags = []) {
+function patchStickyPayload(template, placement, text, tags, userTags = []) {
 	const body = {
+		x: numeric(placement.x, 0),
+		y: numeric(placement.y, 0),
+		width: positiveInteger(placement.width, DEFAULT_WIDTH),
+		height: positiveInteger(placement.height, DEFAULT_HEIGHT),
 		text,
 		style: stickyStyle(template)
 	};
@@ -696,9 +689,9 @@ async function deleteStaleSyncedWidgets(accessToken, board, widgets, staleWidget
 	return deleted;
 }
 
-async function updateTemplateSticky(accessToken, muralId, template, text, tags, userTags = []) {
+async function updateTemplateSticky(accessToken, muralId, template, placement, text, tags, userTags = []) {
 	const attempts = [
-		patchStickyPayload(template, text, tags, userTags),
+		patchStickyPayload(template, placement, text, tags, userTags),
 		tags.length ? { text, tags, researchOpsUserTags: userTags } : { text },
 		{ text }
 	];
@@ -987,7 +980,7 @@ function statusFromEntriesAndWidgets(entries, widgets) {
 	};
 }
 
-async function syncOneEntry({ accessToken, board, widgets, entry, claimedWidgetIds = new Set() }) {
+async function syncOneEntry({ accessToken, board, widgets, entry, claimedWidgetIds = new Set(), rowIndex = 0 }) {
 	if (!entry.entryId || !entry.categoryKey || !entry.description) {
 		return { ok: false, action: "skipped-invalid-entry", entryId: entry.entryId || null, category: entry.categoryKey || null, detail: "Entry is missing an id, category, or description." };
 	}
@@ -1017,9 +1010,10 @@ async function syncOneEntry({ accessToken, board, widgets, entry, claimedWidgetI
 	const tags = tagsForEntry(layout, entry);
 	const userTags = researchOpsUserTags(entry);
 	const latest = latestCanonicalWidget(widgets, entry.categoryKey, layout);
+	const placement = placementForRow(layout, rowIndex);
 	if (!latest && layout.template?.id && isTemplatePlaceholder(layout.template)) {
-		const updated = await updateTemplateSticky(accessToken, board.muralId, layout.template, entry.description, tags, userTags);
-		const local = localEntryWidget({ ...layout.template, ...firstMuralValue(updated) }, entry, layout, tags, placementOverTemplate(layout));
+		const updated = await updateTemplateSticky(accessToken, board.muralId, layout.template, placement, entry.description, tags, userTags);
+		const local = localEntryWidget({ ...layout.template, ...firstMuralValue(updated) }, entry, layout, tags, placement);
 		const idx = widgets.findIndex(widget => widget.id === layout.template.id);
 		if (idx >= 0) widgets[idx] = local;
 		else widgets.push(local);
@@ -1037,7 +1031,6 @@ async function syncOneEntry({ accessToken, board, widgets, entry, claimedWidgetI
 		};
 	}
 
-	const placement = latest ? placementBelow(layout, latest) : placementOverTemplate(layout);
 	const created = await createStickyFromTemplate(accessToken, board.muralId, layout.template, placement, entry.description, tags, userTags);
 	const local = localEntryWidget({ ...layout.template, ...firstMuralValue(created) }, entry, layout, tags, placement);
 	widgets.push(local);
@@ -1135,9 +1128,9 @@ async function handleHydrate(svc, origin, body) {
 		const entries = sortedEntries(ctx.entries)
 			.map(entry => entryPayloadFromEntry(entry, base))
 			.filter(entry => entry.categoryKey === category);
-		for (const entry of entries) {
+		for (const [rowIndex, entry] of entries.entries()) {
 			try {
-				outcomes.push(await syncOneEntry({ accessToken: ctx.accessToken, board: ctx.board, widgets: ctx.widgets, entry, claimedWidgetIds }));
+				outcomes.push(await syncOneEntry({ accessToken: ctx.accessToken, board: ctx.board, widgets: ctx.widgets, entry, claimedWidgetIds, rowIndex }));
 			} catch (err) {
 				outcomes.push({ ok: false, action: "sync-failed", entryId: entry.entryId, category: entry.categoryKey, detail: String(err?.message || err), status: err?.status || undefined, errors: err?.errors || undefined });
 			}
