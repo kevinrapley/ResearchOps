@@ -57,6 +57,16 @@ The browser console also showed `401 authentication_required` from `project-cont
 - Restyled user-authored ResearchOps tags that already exist on the board with non-Mint styling to the Mint contract via `PATCH /murals/{muralId}/tags/{tagId}`. Board-curated category and project tags are never restyled. The in-request tag cache is updated after a successful restyle so the same tag is not re-patched on every subsequent write.
 - Aligned the compact journal Mural sync payload (`journal-mural-sync-compact.js`) with the journal tabs payload so both prefer the hydrated `main[data-project-name]` value before falling back to the page heading or project id.
 - Added runtime coverage: a hydrate request that only carries the project id still carries the Snowberry tag onto new cards (via D1 name resolution); and a pre-existing default-styled user tag is restyled to Mint rather than recreated while the project tag survives tag application even when the board tag list omits it.
+
+## Follow-up: blank cards counted as synced (status over-count)
+
+After deploying this branch's preview Worker, the journals page reported `6 of 36` entries on Mural when only `3` were actually present — the three empty column templates (Procedures, Decisions, Introspections) were each counted as a synced entry, which also disabled the "Add entries" button and blocked the repair path.
+
+Root cause: `canonicalExistingWidget` treated a column card as a synced entry when the card carried that entry's `journal-entry:<id>` marker, without checking that the card actually held entry text. The marker is injected onto live widgets from the D1 `mural_journal_entry_widgets` mapping table, so a stale or incorrect mapping pointing an entry at the blank column template made the empty card count as synced. The body-text match path already rejected blank cards; only the marker path bypassed that check.
+
+Fix: `canonicalExistingWidget` now requires the candidate widget to have non-empty canonical body text before it can match by marker or by body. Real synced cards always contain the entry text (the first-entry flow patches the template with it), so they still count; blank templates stop counting and remain available for the first-entry update. This corrects both the status count and the hydrate idempotency check, so pending entries are created instead of being skipped as already-synced.
+
+Added runtime coverage: a blank column template carrying a stale `journal-entry:` marker is reported as pending (not synced) by the status endpoint.
 - Added this trace artefact dated 2026-06-14 to satisfy the feature-branch trace-coverage gate, which keys required traces to the CI run date.
 
 ## Files changed

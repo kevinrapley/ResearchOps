@@ -426,6 +426,10 @@ function canonicalExistingWidget(widgets, entry, layout, claimedWidgetIds = new 
 	return widgets.find(widget => {
 		if (!isColumnContentWidget(widget, entry.categoryKey, layout)) return false;
 		if (!isInLayoutContentFlow(widget, layout)) return false;
+		// A blank column template holds no entry content. A stale or incorrect
+		// journal-entry marker (e.g. a D1 mapping pointing an entry at the
+		// template) must not count the empty card as a synced entry.
+		if (!canonicalBodyText(widgetText(widget))) return false;
 		if (widgetHasEntryTag(widget, entry.entryId)) return true;
 		if (claimedWidgetIds.has(safeText(widget.id))) return false;
 		return bodyTextsMatch(widgetText(widget), entry.description);

@@ -61,7 +61,8 @@
 		"Merge the tags already on a widget into PATCH tag application (resolved by id or text, including widget tag objects whose ids are absent from the board tag list) so a PATCH cannot strip the Raspberry category or Snowberry project tag from an existing sticky.",
 		"Restyle user-authored ResearchOps tags that already exist with non-Mint styling to the Mint contract via PATCH /murals/{muralId}/tags/{tagId}; never restyle board-curated category or project tags; update the in-request tag cache after a successful restyle so the same tag is not re-patched on every write.",
 		"Align the compact journal Mural sync payload with the journal tabs payload so both prefer the hydrated main[data-project-name] value before falling back to the page heading or project id.",
-		"Add this trace artefact dated 2026-06-14 to satisfy the feature-branch trace-coverage gate, which keys required traces to the CI run date."
+		"Add this trace artefact dated 2026-06-14 to satisfy the feature-branch trace-coverage gate, which keys required traces to the CI run date.",
+		"Require canonicalExistingWidget candidates to have non-empty canonical body text before matching by journal-entry marker or by body, so blank column templates carrying a stale D1 journal-entry mapping are no longer counted as synced entries; this corrects the status over-count (6 of 36 reported when only 3 cards existed) and the hydrate idempotency check, and was covered with a blank-template-with-stale-marker status regression test."
 	],
 	"filesChanged": [
 		"infra/cloudflare/src/service/mural-journal-sync-layout.js",

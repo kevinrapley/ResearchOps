@@ -475,6 +475,50 @@ try {
 	assert.equal(d1NameWrites[0].body.text, entries[1].content);
 	// The Snowberry project tag carries over; the other card's user tags do not.
 	assert.deepEqual(d1NameWrites[0].body.tags, ['perceptions', 'Test Project 1', 'tool-switching']);
+
+	// A blank column template carrying a stale journal-entry marker must NOT be
+	// counted as a synced entry. Status should report the entry as pending so
+	// the board's empty cards are not mistaken for landed content.
+	globalThis.fetch = async (url, init = {}) => {
+		const href = String(url);
+		const method = String(init.method || 'GET').toUpperCase();
+		if (href.endsWith('/users/me'))
+			return jsonResponse({ value: { companyId: 'homeofficegovuk' } });
+		if (new URL(href).pathname.endsWith('/murals/workspace.123/widgets') && method === 'GET') {
+			return jsonResponse({
+				value: [
+					widget({
+						id: 'header-perceptions',
+						type: 'shape',
+						text: 'Perceptions',
+						tags: ['perceptions'],
+						x: 0,
+						y: 0,
+						width: 400,
+						height: 80,
+						style: { backgroundColor: '#9120A8FF' },
+					}),
+					widget({
+						id: 'template-perceptions',
+						text: '',
+						tags: ['perceptions', 'Test Project 1', 'journal-entry:entry-001'],
+						x: 0,
+						y: 120,
+						width: 400,
+						height: 220,
+					}),
+				],
+			});
+		}
+		throw new Error(`Unexpected fetch: ${method} ${href}`);
+	};
+
+	const blankStatusResponse = await postStatus(service([entries[0]]));
+	const blankStatusData = await blankStatusResponse.json();
+	assert.equal(blankStatusResponse.status, 200);
+	assert.equal(blankStatusData.synced, 0);
+	assert.equal(blankStatusData.pending, 1);
+	assert.deepEqual(blankStatusData.byCategory.perceptions, { total: 1, synced: 0, pending: 1 });
 } finally {
 	globalThis.fetch = originalFetch;
 }
