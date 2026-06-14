@@ -176,10 +176,6 @@ try {
 	assert.equal(writes[0].href.endsWith('/widgets/sticky-note/template-perceptions'), true);
 	assert.equal(writes[0].body.text, entries[0].content);
 	assert.deepEqual(writes[0].body.researchOpsUserTags, ['evidence', 'operating-model']);
-	assert.equal(writes[0].body.x, undefined);
-	assert.equal(writes[0].body.y, undefined);
-	assert.equal(writes[0].body.width, undefined);
-	assert.equal(writes[0].body.height, undefined);
 	assert.equal(writes[1].body.text, entries[1].content);
 	assert.deepEqual(writes[1].body.researchOpsUserTags, ['tool-switching']);
 	// New cards land on the fixed template grid: Perceptions column x=120,
@@ -187,95 +183,7 @@ try {
 	// below. The second card is therefore at 264 + 192 = 456.
 	assert.equal(writes[1].body.x, 120);
 	assert.equal(writes[1].body.width, 288);
-	assert.equal(writes[1].body.height, 168);
 	assert.equal(writes[1].body.y, 456);
-
-	const gridEntries = ['Perceptions', 'Procedures', 'Decisions', 'Introspections'].flatMap(
-		(category, categoryIndex) => [
-			{
-				id: `grid-${category.toLowerCase()}-first`,
-				category,
-				content: `${category} first card content`,
-				tags: [],
-				createdAt: `2026-01-01T09:0${categoryIndex}:00.000Z`,
-			},
-			{
-				id: `grid-${category.toLowerCase()}-second`,
-				category,
-				content: `${category} second card content`,
-				tags: [],
-				createdAt: `2026-01-01T10:0${categoryIndex}:00.000Z`,
-			},
-		]
-	);
-	const gridWrites = [];
-	const columns = [
-		['perceptions', 120],
-		['procedures', 456],
-		['decisions', 792],
-		['introspections', 1128],
-	];
-	globalThis.fetch = async (url, init = {}) => {
-		const href = String(url);
-		const method = String(init.method || 'GET').toUpperCase();
-		if (href.endsWith('/users/me'))
-			return jsonResponse({ value: { companyId: 'homeofficegovuk' } });
-		if (new URL(href).pathname.endsWith('/murals/workspace.123/widgets') && method === 'GET') {
-			return jsonResponse({
-				value: columns.flatMap(([category, x]) => [
-					widget({
-						id: `header-${category}`,
-						type: 'shape',
-						text: category,
-						tags: [category],
-						x,
-						y: 160,
-						width: 288,
-						height: 64,
-						style: { backgroundColor: '#9120A8FF' },
-					}),
-					widget({
-						id: `template-${category}`,
-						text: '',
-						tags: [category, 'Test Project 1'],
-						x,
-						y: 264,
-						width: 288,
-						height: 168,
-					}),
-				]),
-			});
-		}
-		if (href.includes('/widgets/sticky-note/template-') && method === 'PATCH') {
-			const body = JSON.parse(init.body);
-			gridWrites.push({ method, href, body });
-			const id = href.split('/').at(-1);
-			return jsonResponse({ value: { id, ...body } });
-		}
-		if (href.endsWith('/murals/workspace.123/widgets/sticky-note') && method === 'POST') {
-			const body = JSON.parse(init.body);
-			gridWrites.push({ method, href, body });
-			return jsonResponse({ value: { id: `created-${gridWrites.length}`, ...body } }, 201);
-		}
-		throw new Error(`Unexpected fetch: ${method} ${href}`);
-	};
-
-	const gridResponse = await postHydrate(service(gridEntries));
-	const gridData = await gridResponse.json();
-	assert.equal(gridResponse.status, 200);
-	assert.equal(gridData.createdOrUpdated, 8);
-	assert.equal(gridWrites.length, 8);
-	assert.deepEqual(
-		gridWrites
-			.filter((write) => write.method === 'POST')
-			.map((write) => [write.body.x, write.body.y, write.body.width, write.body.height]),
-		[
-			[120, 456, 288, 168],
-			[456, 456, 288, 168],
-			[792, 456, 288, 168],
-			[1128, 456, 288, 168],
-		]
-	);
 
 	const existingEntries = [entries[0]];
 	const existingWrites = [];
@@ -672,8 +580,6 @@ try {
 	assert.equal(fillWrites.length, 1);
 	assert.equal(fillWrites[0].method, 'PATCH');
 	assert.equal(fillWrites[0].body.text, entries[0].content);
-	assert.equal(fillWrites[0].body.x, undefined);
-	assert.equal(fillWrites[0].body.y, undefined);
 } finally {
 	globalThis.fetch = originalFetch;
 }

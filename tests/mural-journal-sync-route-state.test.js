@@ -105,7 +105,7 @@ includes(layoutSource, "function researchOpsUserTags", "layout service");
 includes(layoutSource, "researchOpsUserTags", "layout service");
 includes(layoutSource, "function widgetMatchesColumnLayout", "layout service");
 includes(layoutSource, "for (const category of CATEGORY_KEYS)", "layout service");
-includes(layoutSource, "placementForRow", "layout service");
+includes(layoutSource, "placementBelow", "layout service");
 includes(layoutSource, "function updateTemplateSticky", "layout service");
 includes(layoutSource, "action: \"already-synced\"", "layout service");
 includes(layoutSource, "preserved: true", "layout service");

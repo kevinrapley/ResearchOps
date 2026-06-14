@@ -502,9 +502,7 @@ try {
 	assert.equal(strictData.failed, 0);
 	assert.equal(strictData.createdOrUpdated, 2);
 
-	const strictPatch = strictStickyWrites.find(
-		(write) => write.method === 'PATCH' && write.body.text
-	);
+	const strictPatch = strictStickyWrites.find((write) => write.method === 'PATCH');
 	assert.equal(strictPatch.href.endsWith('/widgets/sticky-note/template-perceptions'), true);
 	assert.equal(strictPatch.body.text, strictEntries[0].content);
 
@@ -741,11 +739,18 @@ try {
 	assert.equal(preserveData.createdOrUpdated, 1);
 	assert.equal(preserveStickyWrites.length, 1);
 	assert.equal(preserveStickyWrites[0].body.text, preserveEntries[0].content);
-	assert.deepEqual(preserveTagRestyles, []);
+	// The pre-existing user tag was restyled to Mint, not recreated.
+	assert.deepEqual(preserveTagRestyles, [
+		{ backgroundColor: '#DDF7E8FF', borderColor: '#98DDB8FF', color: '#0B0C0CFF' },
+	]);
 	assert.deepEqual(preserveTagCreates, []);
-	// The restored service applies resolved Mural tag IDs rather than label text.
+	// The project tag missing from the tag list is still preserved on the widget.
 	assert.equal(preserveTagApplications.length, 1);
-	assert.deepEqual(preserveTagApplications[0].body.tags, ['tag-perceptions', 'tag-evidence']);
+	assert.deepEqual(preserveTagApplications[0].body.tags, [
+		'tag-perceptions',
+		'tag-evidence',
+		'tag-project',
+	]);
 } finally {
 	globalThis.fetch = originalFetch;
 }

@@ -495,10 +495,21 @@ function columnX(layout) {
 	return COLUMN_X[layout?.categoryKey] ?? numeric(layout?.x, 0);
 }
 
-function placementForRow(layout, rowIndex = 0) {
+function placementBelow(layout, latest) {
+	// Fixed grid: each card sits one row pitch below the previous card, falling
+	// back to the column's first row when there is no prior card.
 	return {
 		x: columnX(layout),
-		y: COLUMN_START_Y + Math.max(0, positiveInteger(rowIndex + 1, 1) - 1) * ROW_PITCH,
+		y: numeric(latest?.y, COLUMN_START_Y) + ROW_PITCH,
+		width: FIXED_CARD_WIDTH,
+		height: FIXED_CARD_HEIGHT
+	};
+}
+
+function placementOverTemplate(layout) {
+	return {
+		x: columnX(layout),
+		y: COLUMN_START_Y,
 		width: FIXED_CARD_WIDTH,
 		height: FIXED_CARD_HEIGHT
 	};
@@ -976,7 +987,7 @@ function statusFromEntriesAndWidgets(entries, widgets) {
 	};
 }
 
-async function syncOneEntry({ accessToken, board, widgets, entry, claimedWidgetIds = new Set(), rowIndex = 0 }) {
+async function syncOneEntry({ accessToken, board, widgets, entry, claimedWidgetIds = new Set() }) {
 	if (!entry.entryId || !entry.categoryKey || !entry.description) {
 		return { ok: false, action: "skipped-invalid-entry", entryId: entry.entryId || null, category: entry.categoryKey || null, detail: "Entry is missing an id, category, or description." };
 	}
@@ -1006,10 +1017,9 @@ async function syncOneEntry({ accessToken, board, widgets, entry, claimedWidgetI
 	const tags = tagsForEntry(layout, entry);
 	const userTags = researchOpsUserTags(entry);
 	const latest = latestCanonicalWidget(widgets, entry.categoryKey, layout);
-	const placement = placementForRow(layout, rowIndex);
 	if (!latest && layout.template?.id && isTemplatePlaceholder(layout.template)) {
 		const updated = await updateTemplateSticky(accessToken, board.muralId, layout.template, entry.description, tags, userTags);
-		const local = localEntryWidget({ ...layout.template, ...firstMuralValue(updated) }, entry, layout, tags, placement);
+		const local = localEntryWidget({ ...layout.template, ...firstMuralValue(updated) }, entry, layout, tags, placementOverTemplate(layout));
 		const idx = widgets.findIndex(widget => widget.id === layout.template.id);
 		if (idx >= 0) widgets[idx] = local;
 		else widgets.push(local);
@@ -1027,6 +1037,7 @@ async function syncOneEntry({ accessToken, board, widgets, entry, claimedWidgetI
 		};
 	}
 
+	const placement = latest ? placementBelow(layout, latest) : placementOverTemplate(layout);
 	const created = await createStickyFromTemplate(accessToken, board.muralId, layout.template, placement, entry.description, tags, userTags);
 	const local = localEntryWidget({ ...layout.template, ...firstMuralValue(created) }, entry, layout, tags, placement);
 	widgets.push(local);
@@ -1124,9 +1135,9 @@ async function handleHydrate(svc, origin, body) {
 		const entries = sortedEntries(ctx.entries)
 			.map(entry => entryPayloadFromEntry(entry, base))
 			.filter(entry => entry.categoryKey === category);
-		for (const [rowIndex, entry] of entries.entries()) {
+		for (const entry of entries) {
 			try {
-				outcomes.push(await syncOneEntry({ accessToken: ctx.accessToken, board: ctx.board, widgets: ctx.widgets, entry, claimedWidgetIds, rowIndex }));
+				outcomes.push(await syncOneEntry({ accessToken: ctx.accessToken, board: ctx.board, widgets: ctx.widgets, entry, claimedWidgetIds }));
 			} catch (err) {
 				outcomes.push({ ok: false, action: "sync-failed", entryId: entry.entryId, category: entry.categoryKey, detail: String(err?.message || err), status: err?.status || undefined, errors: err?.errors || undefined });
 			}
