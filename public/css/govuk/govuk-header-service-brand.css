@@ -53,6 +53,16 @@
 	text-decoration: none;
 	}
 
+.govuk-header__container {
+	display: flex;
+	align-items: center;
+	}
+
+.govuk-header__logo {
+	width: auto;
+	margin: 0;
+	}
+
 .govuk-header .govuk-header__logotype,
 .govuk-header .researchops-header__logotype {
 	display: inline-flex;
@@ -98,6 +108,24 @@
 	forced-color-adjust: none;
 	}
 
+.researchops-header__account {
+	display: flex;
+	align-items: center;
+	justify-content: flex-end;
+	gap: 30px;
+	margin-left: auto;
+	font-size: 19px;
+	line-height: 1.3157894737;
+	}
+
+.researchops-header__account[hidden] {
+	display: none;
+	}
+
+.researchops-header__account-link {
+	white-space: nowrap;
+	}
+
 @media (forced-colors: active) {
 	.govuk-header .researchops-header__logotype,
 	.govuk-header .researchops-header__wordmark,
@@ -110,6 +138,18 @@
 	.govuk-header .govuk-header__service-name {
 		background: transparent;
 		color: LinkText;
+		}
+	}
+
+@media (max-width: 40.0525em) {
+	.govuk-header__container {
+		flex-wrap: wrap;
+		gap: 12px;
+		}
+
+	.researchops-header__account {
+		width: 100%;
+		margin-left: 0;
 		}
 	}
 

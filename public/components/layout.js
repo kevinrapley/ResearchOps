@@ -111,6 +111,7 @@ class XInclude extends HTMLElement {
 	}
 
 	fetchCacheMode(src) {
+		if (src.includes("/partials/header.html")) return "no-store";
 		return src.includes("/partials/debug") ? "no-store" : "force-cache";
 	}
 
@@ -159,12 +160,12 @@ class XInclude extends HTMLElement {
 			this.innerHTML = html;
 			if (html.includes("<script")) this.executeScripts();
 			this.applyActiveNav();
-			this.dispatchEvent(new CustomEvent("x-include:loaded", { detail: { src, ok: true } }));
+			this.dispatchEvent(new CustomEvent("x-include:loaded", { bubbles: true, detail: { src, ok: true } }));
 		} catch (error) {
 			if (renderId !== this._renderId || error?.name === "AbortError") return;
 			console.error("[x-include] render error:", src, error);
 			this.innerHTML = `<!-- x-include error: ${this.escapeHtml(String(error?.message || error))} -->`;
-			this.dispatchEvent(new CustomEvent("x-include:error", { detail: { src, error: String(error) } }));
+			this.dispatchEvent(new CustomEvent("x-include:error", { bubbles: true, detail: { src, error: String(error) } }));
 		} finally {
 			if (renderId !== this._renderId) return;
 			this._abort = null;

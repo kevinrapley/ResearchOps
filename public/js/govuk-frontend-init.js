@@ -20,4 +20,10 @@ if (document.readyState === 'loading') {
 
 document.addEventListener('x-include:loaded', (event) => {
 	initialiseGovukFrontend(event.target);
+	const src = event?.detail?.src || event?.target?.getAttribute?.('src') || '';
+	if (String(src).startsWith('/partials/header.html')) {
+		import('/js/auth-header-links.js?v=header-account-links-20260615-2').then((module) => {
+			module.initAuthHeaderLinks(event.target);
+		});
+	}
 });

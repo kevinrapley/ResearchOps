@@ -4,6 +4,7 @@ import fs from 'node:fs';
 const signInPage = fs.readFileSync('public/pages/account/sign-in/index.html', 'utf8');
 const signInScript = fs.readFileSync('public/js/auth-sign-in-page.js', 'utf8');
 const accountScript = fs.readFileSync('public/js/auth-account-page.js', 'utf8');
+const headerScript = fs.readFileSync('public/js/auth-header-links.js', 'utf8');
 const worker = fs.readFileSync('infra/cloudflare/src/worker.js', 'utf8');
 const access = fs.readFileSync('infra/cloudflare/src/core/auth/access.js', 'utf8');
 const accessScoped = fs.readFileSync('infra/cloudflare/src/core/auth/access-scoped.js', 'utf8');
@@ -109,6 +110,10 @@ function assertAC8SignOutIsAvailableAndUnderstandable() {
 	includes(accountScript, "logout: document.getElementById('account-logout')", 'account page script');
 	includes(accountScript, "await fetchJson('/api/auth/logout', { method: 'POST', body: JSON.stringify({}) });", 'account page script');
 	includes(accountScript, 'location.assign(CONFIG.SIGN_IN_URL)', 'account page script');
+	includes(headerScript, "fetchJson('/api/me')", 'header account links script');
+	includes(headerScript, "ACCOUNT_URL: '/pages/account/'", 'header account links script');
+	includes(headerScript, "await fetchJson('/api/auth/logout', { method: 'POST', body: JSON.stringify({}) });", 'header account links script');
+	includes(headerScript, 'location.assign(CONFIG.SIGN_IN_URL)', 'header account links script');
 	includes(passwordless, 'async function logout(request, env)', 'passwordless auth service');
 	includes(passwordless, "UPDATE auth_sessions SET session_status = 'revoked'", 'passwordless auth service');
 	includes(passwordless, "'set-cookie': sessionCookie(request, '', 0)", 'passwordless auth service');
