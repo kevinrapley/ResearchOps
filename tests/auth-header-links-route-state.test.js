@@ -7,6 +7,9 @@ const headerCss = fs.readFileSync('public/css/govuk/govuk-header-service-brand.c
 const layoutScript = fs.readFileSync('public/components/layout.js', 'utf8');
 const govukInitScript = fs.readFileSync('public/js/govuk-frontend-init.js', 'utf8');
 const accountPage = fs.readFileSync('public/pages/account/index.html', 'utf8');
+const researchopsLayoutTemplate = fs.readFileSync('src/govuk/templates/layouts/researchops.njk', 'utf8');
+const govukPageRenderer = fs.readFileSync('scripts/govuk/render-govuk-pages.mjs', 'utf8');
+const servicePageNormaliser = fs.readFileSync('scripts/govuk/normalise-service-pages.mjs', 'utf8');
 const authStoryTest = fs.readFileSync('tests/auth-story-1-acceptance-route-state.test.js', 'utf8');
 
 function includes(source, text, label) {
@@ -65,7 +68,11 @@ function assertHeaderPartialBypassesStaleIncludeCache() {
 	includes(layoutScript, 'return "no-store";', 'shared include loader');
 	includes(accountPage, '/components/layout.js?v=header-account-links-20260615', 'account page');
 	includes(accountPage, '/js/govuk-frontend-init.js?v=header-account-links-20260615', 'account page');
-	includes(accountPage, '/partials/header.html?v=header-account-links-20260615', 'account page');
+	includes(accountPage, '<x-include src="/partials/header.html"', 'account page');
+	includes(researchopsLayoutTemplate, '{% if layoutCacheKey %}?v={{ layoutCacheKey }}{% endif %}', 'ResearchOps layout template');
+	includes(govukPageRenderer, "layoutCacheKey: 'header-account-links-20260615'", 'GOV.UK page renderer');
+	includes(servicePageNormaliser, 'function hasIncludeForPartial', 'service page normaliser');
+	includes(servicePageNormaliser, '(?:\\\\?[^"\']*)?', 'service page normaliser');
 }
 
 function assertSharedInitLoadsHeaderAuthAfterInclude() {

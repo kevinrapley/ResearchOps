@@ -36,6 +36,10 @@ function headerInclude(activeNavigation) {
 	return `<x-include src="${HEADER_PARTIAL}" vars='${vars}'></x-include>`;
 }
 
+function hasIncludeForPartial(html, partial) {
+	return new RegExp(`<x-include\\b[^>]*\\bsrc=["']${partial.replaceAll('.', '\\.')}(?:\\?[^"']*)?["']`, 'i').test(html);
+}
+
 function supportSnippet() {
 	return `<script>document.body.className += ' js-enabled' + ('noModule' in HTMLScriptElement.prototype ? ' govuk-frontend-supported' : '');</script>`;
 }
@@ -121,7 +125,7 @@ function normaliseMain(html) {
 }
 
 function normaliseHeader(html, activeNavigation) {
-	if (html.includes(`src="${HEADER_PARTIAL}"`)) return html;
+	if (hasIncludeForPartial(html, HEADER_PARTIAL)) return html;
 
 	const insert = `\n\t${headerInclude(activeNavigation)}`;
 	if (html.includes(supportSnippet())) {
@@ -132,7 +136,7 @@ function normaliseHeader(html, activeNavigation) {
 }
 
 function normaliseFooter(html) {
-	if (html.includes(`src="${FOOTER_PARTIAL}"`)) return html;
+	if (hasIncludeForPartial(html, FOOTER_PARTIAL)) return html;
 	return html.replace(/\s*<\/body>/i, `\n\t<x-include src="${FOOTER_PARTIAL}"></x-include>\n</body>`);
 }
 

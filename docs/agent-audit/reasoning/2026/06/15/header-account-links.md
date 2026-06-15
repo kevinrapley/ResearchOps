@@ -99,8 +99,16 @@ continues to call the real `/api/me/identity` endpoint and does not use a mocked
 identity.
 
 Updated `public/pages/account/index.html` to version the shared layout loader and
-header include URL for this feature so the live preview account page does not
-reuse a visitor's previously cached loader or header partial.
+GOV.UK initialisation module for this feature so the live preview account page
+does not reuse a visitor's previously cached loader. The header include keeps
+the standard `/partials/header.html` shape and the updated loader fetches that
+partial with `no-store`.
+
+Updated `src/govuk/templates/layouts/researchops.njk`,
+`scripts/govuk/render-govuk-pages.mjs` and
+`scripts/govuk/normalise-service-pages.mjs` so the account-page cache keys are
+source-driven and the service-page normaliser recognises versioned shared
+header/footer includes.
 
 Added focused route-state tests for the shared header, identity-only auth check,
 sign-out behaviour and right-aligned account-link layout. Extended the existing
@@ -122,6 +130,8 @@ Read:
 - `public/components/layout.js`
 - `public/pages/account/index.html`
 - `src/govuk/templates/layouts/researchops.njk`
+- `scripts/govuk/render-govuk-pages.mjs`
+- `scripts/govuk/normalise-service-pages.mjs`
 - `public/js/auth-account-page.js`
 - `public/js/auth-sign-in-page.js`
 - `public/js/govuk-frontend-init.js`
@@ -147,6 +157,9 @@ Modified:
 - `public/js/auth-header-links.js`
 - `public/js/govuk-frontend-init.js`
 - `public/partials/header.html`
+- `src/govuk/templates/layouts/researchops.njk`
+- `scripts/govuk/render-govuk-pages.mjs`
+- `scripts/govuk/normalise-service-pages.mjs`
 - `tests/auth-story-1-acceptance-route-state.test.js`
 
 Local user config updated outside repository:
