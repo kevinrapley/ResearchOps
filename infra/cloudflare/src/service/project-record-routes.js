@@ -262,6 +262,28 @@ function buildProjectFields(payload = {}, authContext = {}, env = {}) {
 	return fields;
 }
 
+function projectTeamFieldNames(env = {}) {
+	return [env.AIRTABLE_PROJECT_TEAM_NAME_FIELD || "Team Name", env.AIRTABLE_PROJECT_TEAM_ID_FIELD || "Team ID"];
+}
+
+function hasProjectTeamFields(fields = {}, env = {}) {
+	return projectTeamFieldNames(env).some((field) => Object.hasOwn(fields, field));
+}
+
+function rejectedProjectTeamFieldNames(error, env = {}) {
+	const text = `${error?.message || ""} ${error?.body || ""}`;
+	return projectTeamFieldNames(env).filter((field) => text.includes(field));
+}
+
+function withoutProjectTeamFields(fields = {}, env = {}, rejectedFields = []) {
+	const next = { ...fields };
+	const fieldsToRemove = rejectedFields.length ? rejectedFields : projectTeamFieldNames(env);
+	for (const field of fieldsToRemove) {
+		delete next[field];
+	}
+	return next;
+}
+
 function buildProjectDetailFields(payload = {}, projectRecordId) {
 	const fields = {
 		Project: [projectRecordId],
@@ -430,6 +452,15 @@ function sourceHeaders(source, warning = null) {
 	};
 }
 
+async function createProjectInAirtable(env, table, fields) {
+	const data = await airtableJson(env, `https://api.airtable.com/v0/${env.AIRTABLE_BASE_ID}/${table}`, {
+		method: "POST",
+		headers: { "Content-Type": "application/json" },
+		body: JSON.stringify({ records: [{ fields }] }),
+	});
+	return data.records?.[0] || null;
+}
+
 export async function createProjectRecord(request, env, authContext = {}) {
 	requireEnv(env, ["AIRTABLE_BASE_ID", "AIRTABLE_TABLE_PROJECTS", "AIRTABLE_API_KEY"]);
 	if (!canStartProject(authContext)) return json({ ok: false, error: "forbidden", detail: "You do not have permission to start a research project." }, 403);
@@ -449,12 +480,15 @@ export async function createProjectRecord(request, env, authContext = {}) {
 
 	try {
 		const table = encodeURIComponent(env.AIRTABLE_TABLE_PROJECTS);
-		const data = await airtableJson(env, `https://api.airtable.com/v0/${env.AIRTABLE_BASE_ID}/${table}`, {
-			method: "POST",
-			headers: { "Content-Type": "application/json" },
-			body: JSON.stringify({ records: [{ fields }] }),
-		});
-		const record = data.records?.[0];
+		let record = null;
+		let projectWarning = null;
+		try {
+			record = await createProjectInAirtable(env, table, fields);
+		} catch (error) {
+			if (!isUnknownFieldError(error) || !hasProjectTeamFields(fields, env)) throw error;
+			projectWarning = "project_team_fields_missing";
+			record = await createProjectInAirtable(env, table, withoutProjectTeamFields(fields, env, rejectedProjectTeamFieldNames(error, env)));
+		}
 		if (!record?.id) return json({ ok: false, error: "Project create failed" }, 502);
 
 		let detailRecord = null;
@@ -476,13 +510,13 @@ export async function createProjectRecord(request, env, authContext = {}) {
 					lead_researcher_email: displayText(detailFields["Lead Researcher Email"] || payload.lead_researcher_email || payload["Lead Researcher Email"] || ""),
 					notes: displayText(detailFields.Notes || payload.notes || payload.Notes || ""),
 				},
+				projectWarning,
 				detailWarning,
 			},
 			201,
 			sourceHeaders("airtable"),
 		);
 	} catch (error) {
-		if (isUnknownFieldError(error)) return json({ ok: false, error: "project_team_fields_missing", detail: "Airtable rejected the configured project team fields." }, 500);
 		return json({ ok: false, error: `Airtable ${error?.status || 500}`, detail: displayText(error?.message || error) }, error?.status || 500);
 	}
 }

@@ -274,7 +274,8 @@ function projectRecords() {
 	];
 }
 
-function createMockFetch(calls) {
+function createMockFetch(calls, { rejectProjectTeamField = "" } = {}) {
+	let projectTeamFieldRejections = 0;
 	return async (resource, options = {}) => {
 		const url = String(resource);
 		calls.push({ url, options });
@@ -288,12 +289,25 @@ function createMockFetch(calls) {
 
 		if (url.endsWith("/Projects") && options.method === "POST") {
 			const body = JSON.parse(String(options.body || "{}"));
+			const fields = body.records?.[0]?.fields || {};
+			if (rejectProjectTeamField && projectTeamFieldRejections === 0 && Object.hasOwn(fields, rejectProjectTeamField)) {
+				projectTeamFieldRejections += 1;
+				return jsonResponse(
+					{
+						error: {
+							type: "UNKNOWN_FIELD_NAME",
+							message: `Unknown field name: ${rejectProjectTeamField}`,
+						},
+					},
+					{ status: 422 },
+				);
+			}
 			return jsonResponse({
 				records: [
 					{
 						id: PROJECT_RECORD_IDS[0],
 						createdTime: "2026-06-15T10:00:00.000Z",
-						fields: body.records?.[0]?.fields || {},
+						fields,
 					},
 				],
 			});
@@ -480,6 +494,55 @@ async function assertAuthenticatedProjectCreateUsesSessionContext() {
 	}
 }
 
+async function assertProjectCreateDoesNotBlockWhenTeamFieldsAreMissing() {
+	const calls = [];
+	const originalFetch = globalThis.fetch;
+	globalThis.fetch = createMockFetch(calls, { rejectProjectTeamField: "Team ID" });
+
+	try {
+		const response = await worker.fetch(
+			new Request("https://worker.test/api/projects", {
+				method: "POST",
+				headers: {
+					"content-type": "application/json",
+					cookie: `rops_session=${TEST_SESSION_TOKEN}`,
+				},
+				body: JSON.stringify({
+					name: "Third Country National Discovery",
+					description: "Discovery research project",
+					phase: "Discovery",
+					status: "Goal setting & problem defining",
+					objectives: ["Understand the problem space"],
+					user_groups: ["Law enforcement"],
+				}),
+			}),
+			env,
+			{},
+		);
+		assert.equal(response.status, 201);
+
+		const payload = await response.json();
+		assert.equal(payload.ok, true);
+		assert.equal(payload.projectWarning, "project_team_fields_missing");
+		assert.equal(payload.project.name, "Third Country National Discovery");
+		assert.equal(payload.project.teamName, TEST_TEAM_NAME);
+
+		const projectCreateCalls = calls.filter(({ url, options }) => url.endsWith("/Projects") && options.method === "POST");
+		assert.equal(projectCreateCalls.length, 2);
+
+		const rejectedFields = JSON.parse(projectCreateCalls[0].options.body).records[0].fields;
+		assert.equal(rejectedFields["Team ID"], TEST_TEAM_ID);
+		assert.equal(rejectedFields["Team Name"], TEST_TEAM_NAME);
+
+		const retriedFields = JSON.parse(projectCreateCalls[1].options.body).records[0].fields;
+		assert.equal(Object.hasOwn(retriedFields, "Team ID"), false);
+		assert.equal(retriedFields["Team Name"], TEST_TEAM_NAME);
+		assert.equal(retriedFields.Name, "Third Country National Discovery");
+	} finally {
+		globalThis.fetch = originalFetch;
+	}
+}
+
 async function assertProjectReadResolvesAirtableRecordId() {
 	const calls = [];
 	const originalFetch = globalThis.fetch;
@@ -554,6 +617,7 @@ function assertLegacyProjectsDirectHandlerIsAbsent() {
 await assertProjectsRouteFailsClosedWithoutSession();
 await assertProjectsRouteUsesAirtableProjectsTable();
 await assertAuthenticatedProjectCreateUsesSessionContext();
+await assertProjectCreateDoesNotBlockWhenTeamFieldsAreMissing();
 await assertProjectReadResolvesAirtableRecordId();
 await assertNonRecordProjectIdIsNotFound();
 await assertProjectsCsvRouteStillWorks();
