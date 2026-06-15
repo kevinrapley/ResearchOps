@@ -99,6 +99,13 @@ guard verifies the Nunjucks renderer registration, shared GOV.UK layout shell,
 absence of legacy CSS, and the role-assignment form controls without depending
 on one-line generated HTML formatting.
 
+After PR #399 opened, the Node 20, Node 22 and Worker CI unit-test jobs failed
+on the role-assignment route-state test. The failing checks used the generated
+GOV.UK page helper, which renders valid Nunjucks output with different
+attribute and label line breaks than the committed generated HTML. The test
+helpers were hardened to normalize copy checks and accept valid generated label
+markup instead of assuming a single serialized shape.
+
 ## Files
 
 Read:
@@ -154,6 +161,7 @@ Attempted:
 - `npm run build:govuk-pages` - passed and regenerated GOV.UK pages through the
   repository build script and post-build normalisation step.
 - `node --test tests/auth-role-assignment-ui-route-state.test.js tests/auth-role-assignment-error-copy-route-state.test.js tests/visual-walkthrough-role-assignment-route-state.test.js tests/govuk-generated-html-test-source-route-state.test.js tests/govuk-frontend-service-pages-route-state.test.js tests/govuk-frontend-integration-route-state.test.js` - passed.
+- `npm test` - passed after the CI assertion hardening, 220 tests passed.
 - `node -e` JSON parse check for `docs/agent-audit/reasoning/2026/06/15/role-assignments-govuk-template.json` - passed.
 - `npm run trace:coverage` - passed.
 - `git diff --check` - passed.
@@ -171,6 +179,9 @@ Not run:
 - Local browser visual verification, because this unit changes page chrome by
   switching to the shared GOV.UK template and was covered by generated HTML and
   route-state checks.
+- `npm test -- --ci`, because the documented command forwards `--ci` to the
+  Node test runner in the current script and fails with `node: bad option: --ci`.
+  The repository's actual `npm test` command was run instead.
 
 ## Residual Risk
 

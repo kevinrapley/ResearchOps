@@ -7,6 +7,7 @@ const styleSource = fs.readFileSync('public/css/auth-role-assignments.css', 'utf
 const govukFrontendSource = fs.readFileSync('public/css/govuk/govuk-frontend-v6.css', 'utf8');
 const rendererSource = fs.readFileSync('scripts/govuk/render-govuk-pages.mjs', 'utf8');
 const templateSource = fs.readFileSync('src/govuk/templates/pages/role-assignments.njk', 'utf8');
+const normalizedPageText = pageSource.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
 
 function escapeRegExp(value) {
 	return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -16,7 +17,7 @@ function assertRadioOption(id, name, value, label) {
 	assert.match(
 		pageSource,
 		new RegExp(
-			`<input\\s+class="govuk-radios__input"\\s+id="${id}"\\s+name="${name}"\\s+type="radio"\\s+value="${value}"\\s*/>\\s*<label\\s+class="govuk-label govuk-radios__label"\\s+for="${id}">\\s*${escapeRegExp(label)}\\s*</label>`,
+			`<input\\s+class="govuk-radios__input"\\s+id="${id}"\\s+name="${name}"\\s+type="radio"\\s+value="${value}"\\s*/>\\s*<label\\s+class="govuk-label govuk-radios__label"\\s+for="${id}"\\s*>\\s*${escapeRegExp(label)}\\s*</label\\s*>`,
 		),
 	);
 }
@@ -136,8 +137,14 @@ function assertExplicitTeamChoiceExists() {
 
 function assertMembershipCreationCopyExists() {
 	assert.match(pageSource, /give someone access to a role in a ResearchOps team you manage/);
-	assert.match(pageSource, /ResearchOps will add them when you assign the\s+role/);
-	assert.match(pageSource, /If you create a new team, ResearchOps will make you Team\s+Admin for that team/);
+	assert.ok(
+		normalizedPageText.includes('ResearchOps will add them when you assign the role'),
+		'Expected membership creation copy to explain the person is added when the role is assigned',
+	);
+	assert.ok(
+		normalizedPageText.includes('If you create a new team, ResearchOps will make you Team Admin for that team'),
+		'Expected review copy to explain the assigner becomes Team Admin for a new team',
+	);
 	assert.match(scriptSource, /They were also added as an active member of this team/);
 	assert.match(scriptSource, /teamMembership/);
 	assert.match(scriptSource, /createdOrReactivated/);

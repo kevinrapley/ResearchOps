@@ -109,6 +109,12 @@
       "reasonCommitted": "Cloudflare Pages currently publishes committed public/ files under docs/deployment/generated-html-policy.md."
     }
   ],
+  "ciFollowUp": {
+    "pr": 399,
+    "failedChecks": ["Node 20", "Node 22", "Validate Cloudflare Workers", "Release gate"],
+    "rootCause": "The generated GOV.UK page helper renders valid Nunjucks output with different attribute and label line breaks than the committed generated HTML, so route-state assertions that assumed one serialized label shape failed.",
+    "disposition": "Hardened tests to normalize copy checks and accept valid generated label markup."
+  },
   "subAgents": [
     {
       "nickname": "Maxwell",
@@ -151,6 +157,11 @@
       "command": "node --test tests/auth-role-assignment-ui-route-state.test.js tests/auth-role-assignment-error-copy-route-state.test.js tests/visual-walkthrough-role-assignment-route-state.test.js tests/govuk-generated-html-test-source-route-state.test.js tests/govuk-frontend-service-pages-route-state.test.js tests/govuk-frontend-integration-route-state.test.js",
       "status": "passed",
       "summary": "Focused role assignment route-state and GOV.UK frontend tests passed."
+    },
+    {
+      "command": "npm test",
+      "status": "passed",
+      "summary": "Full local unit suite passed after CI assertion hardening: 220 tests passed."
     },
     {
       "command": "node -e JSON parse check for docs/agent-audit/reasoning/2026/06/15/role-assignments-govuk-template.json",
@@ -201,6 +212,10 @@
     {
       "command": "Local browser visual verification",
       "reason": "This unit changes page chrome by switching to the shared GOV.UK template and was covered by generated HTML and route-state checks."
+    },
+    {
+      "command": "npm test -- --ci",
+      "reason": "The documented command forwards --ci to the Node test runner in the current script and fails with node: bad option: --ci. The repository's actual npm test command was run instead."
     }
   ],
   "residualRisks": [
