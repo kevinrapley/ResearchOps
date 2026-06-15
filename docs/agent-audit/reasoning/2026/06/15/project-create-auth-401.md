@@ -43,17 +43,19 @@ Selected bundle stack:
 - `multi-functional-team` at `.agent-operating-model/bundles/multi-functional-team/`
 - `govuk-design-system` at `.agent-operating-model/bundles/govuk-design-system/`
 - `cloudflare` at `.agent-operating-model/bundles/cloudflare/`
+- `airtable-public-api` at `.agent-operating-model/bundles/airtable-public-api/`
 
 The first three bundles are always-load bundles. `govuk-design-system` applies
 because the user-facing error is in the GOV.UK start-project form flow.
 `cloudflare` applies because the root cause is in Cloudflare Pages Worker proxy
-and Worker authentication behaviour.
+and Worker authentication behaviour. `airtable-public-api` applies to the
+follow-up because Airtable rejected configured project team fields during record
+creation.
 
 Skipped conditional bundles:
 
 - `openai-platform` - no OpenAI API, model or eval implementation was in scope.
 - `mcp-agent-tooling` - no MCP tool, resource, prompt or consent work was in scope.
-- `airtable-public-api` - Airtable create behaviour was mocked in tests, but no Airtable API integration contract changed.
 - `mural-public-api` - no Mural API or collaboration integration work was in scope.
 
 Precedence decisions:
@@ -63,6 +65,7 @@ Precedence decisions:
 - Multi-Functional Team governed public-sector assurance and residual-risk framing.
 - GOV.UK Design System governed the check-answers flow constraints and error presentation context.
 - Cloudflare governed Pages Worker proxy and Worker auth handling.
+- Airtable Public API governed the record-create fallback boundary for optional team fields.
 
 No bundle conflicts were identified.
 
@@ -100,6 +103,12 @@ Extended `tests/start-project-step-1-defaults-route-state.test.js` to ensure the
 start-project controller uses `resolveApiBase()`, includes credentials, and does
 not restore the hardcoded production Worker origin fallback.
 
+Follow-up implementation: updated `infra/cloudflare/src/service/project-record-routes.js`
+so a project create is not blocked when Airtable rejects only the configured
+project team fields. The route now retries once without those optional fields
+and returns `201` with `projectWarning: "project_team_fields_missing"` when the
+fallback succeeds. Other Airtable create errors still surface as failures.
+
 ## Files
 
 Read:
@@ -118,6 +127,8 @@ Read:
 - `infra/cloudflare/src/core/auth/access-scoped.js`
 - `infra/cloudflare/src/core/auth/passwordless.js`
 - `infra/cloudflare/src/service/project-record-routes.js`
+- `.agent-operating-model/bundles/airtable-public-api/prompt.spec.yaml`
+- `.agent-operating-model/bundles/airtable-public-api/prompt.body.xml`
 - `tests/start-project-step-1-defaults-route-state.test.js`
 - `tests/start-page-route-state.test.js`
 - `tests/projects-route-contract.test.js`
@@ -132,6 +143,7 @@ Modified:
 
 - `public/_worker.js`
 - `public/pages/start/start-new-project.js`
+- `infra/cloudflare/src/service/project-record-routes.js`
 - `tests/projects-route-contract.test.js`
 - `tests/start-project-step-1-defaults-route-state.test.js`
 
@@ -155,6 +167,14 @@ Follow-up after GitHub review:
 - `python3 .../gh-fix-ci/scripts/inspect_pr_checks.py --repo . --pr 403 --json` - confirmed the failing status was the CodeQL code-scanning alert, while the GitHub Actions CodeQL run completed successfully.
 - `node tests/projects-route-contract.test.js` - passed after replacing the unsafe hostname substring assertion.
 - `npx prettier -c tests/projects-route-contract.test.js` - passed.
+- `node tests/projects-route-contract.test.js` - passed after adding the Airtable team-field fallback.
+- `npx prettier -c infra/cloudflare/src/service/project-record-routes.js tests/projects-route-contract.test.js` - passed.
+
+Follow-up for non-blocking Airtable team fields:
+
+- Screenshot showed `Error 500: Airtable rejected the configured project team fields.`
+- Added a retry path that removes only the configured team fields when Airtable reports an unknown-field error for a project create that included team fields.
+- Added route-contract coverage proving the first Airtable create attempt includes `Team ID` and `Team Name`, the retry omits them, and the route still returns `201`.
 
 ## Review Thread Disposition
 
