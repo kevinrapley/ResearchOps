@@ -110,7 +110,7 @@ function assertAC8SignOutIsAvailableAndUnderstandable() {
 	includes(accountScript, "logout: document.getElementById('account-logout')", 'account page script');
 	includes(accountScript, "await fetchJson('/api/auth/logout', { method: 'POST', body: JSON.stringify({}) });", 'account page script');
 	includes(accountScript, 'location.assign(CONFIG.SIGN_IN_URL)', 'account page script');
-	includes(headerScript, "fetchJson('/api/me/identity')", 'header account links script');
+	includes(headerScript, "fetchJson('/api/me')", 'header account links script');
 	includes(headerScript, "ACCOUNT_URL: '/pages/account/'", 'header account links script');
 	includes(headerScript, "await fetchJson('/api/auth/logout', { method: 'POST', body: JSON.stringify({}) });", 'header account links script');
 	includes(headerScript, 'location.assign(CONFIG.SIGN_IN_URL)', 'header account links script');

@@ -177,12 +177,12 @@
     {
       "command": "Preview-environment follow-up",
       "status": "completed",
-      "summary": "Header partial fetching changed to no-store so branch previews do not keep a stale cached header; live identity remains the real /api/me/identity response."
+      "summary": "Header partial fetching changed to no-store so branch previews do not keep a stale cached header; live account context remains the real /api/me response."
     }
   ],
   "validationPlanned": [],
   "residualRisks": [
-    "The header account navigation is client-hydrated after the shared header partial loads, so signed-in users may briefly see no account links until the identity-only request completes.",
+    "The header account navigation is client-hydrated after the shared header partial loads, so signed-in users may briefly see no account links until the account-context request completes.",
     "The local max_threads entry records intended orchestration capacity, but the current running Codex session may need to reload config before any platform thread limit changes take effect."
   ]
 }

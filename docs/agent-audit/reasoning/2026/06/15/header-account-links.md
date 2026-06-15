@@ -76,15 +76,15 @@ region inside the GOV.UK header container. The region contains a user-name link
 to `/pages/account/` and a `Sign out` link. It is hidden by default so signed-out
 users do not see account actions while the browser checks session state.
 
-Added `public/js/auth-header-links.js`. It calls `/api/me/identity`, which is
-the identity-only signed-in endpoint, and reveals the account navigation only
-when the response confirms an authenticated user. The script uses the display
-name, falling back to the email local part, and posts to `/api/auth/logout`
-before redirecting to `/pages/account/sign-in/`.
+Added `public/js/auth-header-links.js`. It calls the same real `/api/me`
+account context endpoint as the account dashboard, and reveals the account
+navigation only when that response succeeds. The script uses the display name,
+falling back to the email local part, and posts to `/api/auth/logout` before
+redirecting to `/pages/account/sign-in/`.
 
 Updated `public/js/auth-header-links.js` and `public/js/govuk-frontend-init.js`
 so header account hydration also runs from the shared `x-include:loaded` event.
-This keeps the live behaviour tied to the real `/api/me/identity` response while
+This keeps the live behaviour tied to the real `/api/me` response while
 avoiding reliance on script execution from an injected partial.
 
 Updated `public/css/govuk/govuk-header-service-brand.css` so the account links
@@ -95,8 +95,7 @@ on narrow screens.
 Updated `public/components/layout.js` so `/partials/header.html` is fetched with
 `no-store` by the shared include loader. This prevents preview environments from
 showing a stale cached header partial after a branch deployment. The live header
-continues to call the real `/api/me/identity` endpoint and does not use a mocked
-identity.
+continues to call the real `/api/me` endpoint and does not use a mocked identity.
 
 Updated `public/pages/account/index.html` to version the shared layout loader and
 GOV.UK initialisation module for this feature so the live preview account page
@@ -110,7 +109,7 @@ Updated `src/govuk/templates/layouts/researchops.njk`,
 source-driven and the service-page normaliser recognises versioned shared
 header/footer includes.
 
-Added focused route-state tests for the shared header, identity-only auth check,
+Added focused route-state tests for the shared header, account-context auth check,
 sign-out behaviour and right-aligned account-link layout. Extended the existing
 auth story acceptance route-state test so header sign-out is part of the sign-out
 contract.
@@ -200,7 +199,7 @@ Completed:
 ## Residual Risk
 
 The header account navigation is client-hydrated after the shared header partial
-loads. Signed-in users may briefly see no account links until the identity-only
+loads. Signed-in users may briefly see no account links until the account-context
 request completes. The hidden-by-default behaviour is intentional to avoid
 showing account actions to signed-out users.
 

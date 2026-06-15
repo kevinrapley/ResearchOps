@@ -106,8 +106,8 @@ async function init(root = document) {
 	elements.signOutLink.addEventListener('click', signOut);
 
 	try {
-		const response = await fetchJson('/api/me/identity');
-		if (!response.ok || !response.data?.ok || !response.data?.authenticated) return;
+		const response = await fetchJson('/api/me');
+		if (!response.ok || !response.data?.ok) return;
 		renderSignedInUser(elements, response.data);
 	} catch {
 		setVisible(elements.accountNav, false);

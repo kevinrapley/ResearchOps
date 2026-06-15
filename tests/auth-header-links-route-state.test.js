@@ -29,12 +29,13 @@ function assertSharedHeaderContainsSignedInAccountNavigation() {
 	includes(headerPartial, '<script type="module" src="/js/auth-header-links.js"></script>', 'shared header partial');
 }
 
-function assertHeaderScriptUsesIdentityOnlySessionCheck() {
-	includes(headerScript, "fetchJson('/api/me/identity')", 'header auth script');
+function assertHeaderScriptUsesAccountContextSessionCheck() {
+	includes(headerScript, "fetchJson('/api/me')", 'header auth script');
 	includes(headerScript, "credentials: 'include'", 'header auth script');
 	includes(headerScript, "ACCOUNT_URL: '/pages/account/'", 'header auth script');
 	includes(headerScript, "SIGN_IN_URL: '/pages/account/sign-in/'", 'header auth script');
-	includes(headerScript, 'response.data?.authenticated', 'header auth script');
+	includes(headerScript, 'response.data?.ok', 'header auth script');
+	excludes(headerScript, "fetchJson('/api/me/identity')", 'header auth script');
 	includes(headerScript, 'const hydratedAccountNavs = new WeakSet()', 'header auth script');
 	includes(headerScript, 'hydratedAccountNavs.has(elements.accountNav)', 'header auth script');
 	includes(headerScript, 'elements.userLink.textContent = name', 'header auth script');
@@ -86,7 +87,7 @@ function assertAuthAcceptanceReferencesHeaderSignOut() {
 }
 
 assertSharedHeaderContainsSignedInAccountNavigation();
-assertHeaderScriptUsesIdentityOnlySessionCheck();
+assertHeaderScriptUsesAccountContextSessionCheck();
 assertHeaderAccountLinksAreRightAligned();
 assertHeaderPartialBypassesStaleIncludeCache();
 assertSharedInitLoadsHeaderAuthAfterInclude();
