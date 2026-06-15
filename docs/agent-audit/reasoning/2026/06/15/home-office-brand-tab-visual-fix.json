@@ -5,7 +5,7 @@
   "traceRequired": true,
   "traceDecision": "Required because repository-affecting work on branches starting with fix/ must have an auditable trace.",
   "relatedWork": "Home Office brand GOV.UK tab component visual repair",
-  "task": "Fix Home Office brand tab appearance so non-current tabs use #d2bfd8 and the tab panel uses white, while committing SCSS source only.",
+  "task": "Fix Home Office brand tab appearance so non-current tabs use #d2bfd8 and the tab panel uses white, while preserving GOV.UK keyboard focus styling and committing SCSS source only.",
   "selectedBundles": [
     {
       "id": "github-diamond",
@@ -90,7 +90,9 @@
     "tests/sass-migration-route-state.test.js",
     "scripts/styles/generated-css-targets.mjs",
     "scripts/styles/build-generated-css.mjs",
-    "public/css/brands/home-office.css"
+    "public/css/brands/home-office.css",
+    "GitHub review thread data for PR #398 via gh api graphql",
+    "GitHub review thread data for PR #398 via gh-address-comments/scripts/fetch_comments.py"
   ],
   "filesCreated": [
     "docs/agent-audit/reasoning/2026/06/15/home-office-brand-tab-visual-fix.md",
@@ -98,10 +100,23 @@
   ],
   "filesModified": [
     "src/styles/brands/home-office.scss",
-    "tests/brand-variant-route-state.test.js"
+    "tests/brand-variant-route-state.test.js",
+    "docs/agent-audit/reasoning/2026/06/15/home-office-brand-tab-visual-fix.md",
+    "docs/agent-audit/reasoning/2026/06/15/home-office-brand-tab-visual-fix.json"
   ],
   "generatedForValidationOnlyThenRestored": [
     "public/css/brands/home-office.css"
+  ],
+  "reviewThreads": [
+    {
+      "pr": 398,
+      "threadId": "PRRT_kwDOP3Td2M6JkDW7",
+      "status": "unresolved and non-outdated when inspected",
+      "author": "chatgpt-codex-connector",
+      "path": "src/styles/brands/home-office.scss",
+      "summary": "Codex correctly identified that the inactive tab background selector could override the yellow keyboard focus background on focused tab links.",
+      "disposition": "Addressed by narrowing the tab-link background selector to .govuk-tabs__tab:not(:focus)."
+    }
   ],
   "subAgents": [
     {
@@ -145,6 +160,26 @@
       "command": "Browser verification at http://127.0.0.1:4173/pages/projects/journals/?brand=home-office",
       "status": "passed",
       "summary": "Inactive tab backgrounds computed as rgb(210, 191, 216); tab panel background computed as rgb(255, 255, 255)."
+    },
+    {
+      "command": "rg inspection of generated public/css/brands/home-office.css",
+      "status": "passed",
+      "summary": "Generated output contains the .govuk-tabs__tab:not(:focus) background selector and tab panel background rule."
+    },
+    {
+      "command": "node -e JSON parse check for docs/agent-audit/reasoning/2026/06/15/home-office-brand-tab-visual-fix.json",
+      "status": "passed",
+      "summary": "Trace JSON parsed successfully after review-resolution updates."
+    },
+    {
+      "command": "npx prettier -c src/styles/brands/home-office.scss tests/brand-variant-route-state.test.js docs/agent-audit/reasoning/2026/06/15/home-office-brand-tab-visual-fix.md docs/agent-audit/reasoning/2026/06/15/home-office-brand-tab-visual-fix.json",
+      "status": "passed",
+      "summary": "Changed SCSS, test and trace files use Prettier formatting."
+    },
+    {
+      "command": "npm run trace:coverage",
+      "status": "passed",
+      "summary": "Trace coverage confirmed for the fix/ branch."
     }
   ],
   "validationNotRun": [
@@ -155,6 +190,10 @@
     {
       "command": "Generated CSS clean check",
       "reason": "Generated CSS is deliberately excluded from the committed file set for this task."
+    },
+    {
+      "command": "Follow-up local Playwright focus verification after Codex comment",
+      "reason": "The Node runtime did not have the required Playwright browser binary installed. The focus conflict was instead validated by narrowing the generated selector to .govuk-tabs__tab:not(:focus), which cannot match a focused tab link."
     }
   ],
   "residualRisks": [

@@ -86,8 +86,8 @@ a deliberate generated-output waiver for this unit of work.
 Changed `src/styles/brands/home-office.scss` only for brand styling:
 
 - added a Home Office brand rule for unselected `.govuk-tabs__list-item`
-  elements and their `.govuk-tabs__tab` links to use `$ho-mid`, which is
-  `#d2bfd8`;
+  elements and their non-focused `.govuk-tabs__tab` links to use `$ho-mid`,
+  which is `#d2bfd8`;
 - added a Home Office brand rule for `.govuk-tabs__panel` to use `$ho-white`,
   which is `#ffffff`.
 
@@ -96,6 +96,13 @@ contract without requiring generated CSS to be committed.
 
 Generated `public/css/brands/home-office.css` locally for validation and browser
 inspection, then restored it before completion so it is not part of the commit.
+
+After PR #398 was opened, Codex left one unresolved non-outdated review thread
+against `src/styles/brands/home-office.scss`. The comment correctly identified
+that the inactive tab background rule could override the yellow keyboard focus
+background on focused tab links. The selector was narrowed to
+`.govuk-tabs__tab:not(:focus)` so keyboard users retain the GOV.UK focus
+affordance.
 
 ## Files
 
@@ -110,6 +117,9 @@ Read:
 - `scripts/styles/generated-css-targets.mjs`
 - `scripts/styles/build-generated-css.mjs`
 - `public/css/brands/home-office.css`
+- GitHub review thread data for PR #398, fetched with `gh api graphql`
+- GitHub review thread data for PR #398, fetched with
+  `gh-address-comments/scripts/fetch_comments.py`
 
 Created:
 
@@ -120,6 +130,8 @@ Modified:
 
 - `src/styles/brands/home-office.scss`
 - `tests/brand-variant-route-state.test.js`
+- `docs/agent-audit/reasoning/2026/06/15/home-office-brand-tab-visual-fix.md`
+- `docs/agent-audit/reasoning/2026/06/15/home-office-brand-tab-visual-fix.json`
 
 Generated for validation only, then restored:
 
@@ -141,6 +153,12 @@ Attempted:
 
 - `node --test tests/brand-variant-route-state.test.js tests/sass-migration-route-state.test.js` - passed.
 - `npm run build:generated-css -- public/css/brands/home-office.css` - passed and generated local CSS for inspection.
+- `rg` inspection of generated `public/css/brands/home-office.css` - passed:
+  generated output contains the `.govuk-tabs__tab:not(:focus)` background
+  selector and the tab panel background rule.
+- `node -e` JSON parse check for the trace file - passed.
+- `npx prettier -c` for the changed SCSS, test and trace files - passed.
+- `npm run trace:coverage` - passed.
 - Local browser verification against
   `http://127.0.0.1:4173/pages/projects/journals/?brand=home-office` - passed:
   inactive tab backgrounds computed as `rgb(210, 191, 216)` and the tab panel
@@ -152,6 +170,11 @@ Not run:
   fix with a targeted source-level test and browser verification.
 - Generated CSS clean check, because this task deliberately excludes generated
   CSS from the committed file set.
+- Follow-up local Playwright focus verification after the Codex comment,
+  because the Node runtime did not have the required Playwright browser binary
+  installed. The focus conflict was instead validated by narrowing the generated
+  selector to `.govuk-tabs__tab:not(:focus)`, which means it cannot match a
+  focused tab link and therefore cannot override GOV.UK focus styling.
 
 ## Residual Risk
 

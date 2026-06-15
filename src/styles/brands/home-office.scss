@@ -328,7 +328,7 @@ html[data-researchops-brand='home-office'] {
 	}
 
 	.govuk-tabs__list-item:not(.govuk-tabs__list-item--selected),
-	.govuk-tabs__list-item:not(.govuk-tabs__list-item--selected) .govuk-tabs__tab {
+	.govuk-tabs__list-item:not(.govuk-tabs__list-item--selected) .govuk-tabs__tab:not(:focus) {
 		background: $ho-mid;
 	}
 
