@@ -146,6 +146,36 @@
       "command": "node tests/projects-route-contract.test.js",
       "status": "passed",
       "summary": "Confirmed authenticated GET and POST project routes pass with mocked D1 and Airtable."
+    },
+    {
+      "command": "python3 .../gh-address-comments/scripts/fetch_comments.py --repo . --pr 403",
+      "status": "passed",
+      "summary": "Found one unresolved GitHub Advanced Security thread for incomplete URL substring sanitization in tests/projects-route-contract.test.js."
+    },
+    {
+      "command": "python3 .../gh-fix-ci/scripts/inspect_pr_checks.py --repo . --pr 403 --json",
+      "status": "completed-with-finding",
+      "summary": "Confirmed the failing status was the CodeQL code-scanning alert; the GitHub Actions CodeQL workflow run itself completed successfully."
+    },
+    {
+      "command": "node tests/projects-route-contract.test.js",
+      "status": "passed",
+      "summary": "Confirmed project route contract tests pass after replacing the unsafe hostname substring assertion."
+    },
+    {
+      "command": "npx prettier -c tests/projects-route-contract.test.js",
+      "status": "passed",
+      "summary": "Confirmed the edited test file matches repository formatting."
+    }
+  ],
+  "reviewThreadDisposition": [
+    {
+      "tool": "GitHub Advanced Security",
+      "threadId": "PRRT_kwDOP3Td2M6Jr5D2",
+      "path": "tests/projects-route-contract.test.js",
+      "finding": "CodeQL / Incomplete URL substring sanitization",
+      "status": "addressed",
+      "resolution": "Replaced url.includes(\"raw.githubusercontent.com\") with URL parsing and strict https protocol plus raw.githubusercontent.com hostname checks."
     }
   ],
   "residualRisks": [

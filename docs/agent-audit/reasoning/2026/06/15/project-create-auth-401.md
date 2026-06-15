@@ -149,6 +149,21 @@ Completed:
 - `node tests/start-page-route-state.test.js` - passed.
 - `node tests/projects-route-contract.test.js` - passed.
 
+Follow-up after GitHub review:
+
+- `python3 .../gh-address-comments/scripts/fetch_comments.py --repo . --pr 403` - found one unresolved CodeQL review thread on `tests/projects-route-contract.test.js`.
+- `python3 .../gh-fix-ci/scripts/inspect_pr_checks.py --repo . --pr 403 --json` - confirmed the failing status was the CodeQL code-scanning alert, while the GitHub Actions CodeQL run completed successfully.
+- `node tests/projects-route-contract.test.js` - passed after replacing the unsafe hostname substring assertion.
+- `npx prettier -c tests/projects-route-contract.test.js` - passed.
+
+## Review Thread Disposition
+
+GitHub Advanced Security reported `CodeQL / Incomplete URL substring
+sanitization` because the test asserted `url.includes("raw.githubusercontent.com")`.
+The assertion now parses the URL and compares `protocol === "https:"` and
+`hostname === "raw.githubusercontent.com"`, avoiding arbitrary host-prefix or
+host-suffix matches.
+
 ## Residual Risk
 
 The local reproduction used repository mocks rather than the live Home Office

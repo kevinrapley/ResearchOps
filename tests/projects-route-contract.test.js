@@ -48,6 +48,15 @@ function csvResponse(body) {
 	});
 }
 
+function isRawGitHubContentUrl(value) {
+	try {
+		const url = new URL(String(value));
+		return url.protocol === "https:" && url.hostname === "raw.githubusercontent.com";
+	} catch {
+		return false;
+	}
+}
+
 function authenticatedRequest(url) {
 	return new Request(url, {
 		headers: {
@@ -528,7 +537,7 @@ async function assertProjectsCsvRouteStillWorks() {
 		const body = await response.text();
 		assert.match(body, /LocalId,Name,CreatedAt/);
 		assert.equal(
-			calls.some(({ url }) => url.includes("raw.githubusercontent.com")),
+			calls.some(({ url }) => isRawGitHubContentUrl(url)),
 			true,
 		);
 	} finally {
