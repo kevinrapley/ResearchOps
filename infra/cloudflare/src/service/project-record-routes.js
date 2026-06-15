@@ -270,9 +270,15 @@ function hasProjectTeamFields(fields = {}, env = {}) {
 	return projectTeamFieldNames(env).some((field) => Object.hasOwn(fields, field));
 }
 
-function withoutProjectTeamFields(fields = {}, env = {}) {
+function rejectedProjectTeamFieldNames(error, env = {}) {
+	const text = `${error?.message || ""} ${error?.body || ""}`;
+	return projectTeamFieldNames(env).filter((field) => text.includes(field));
+}
+
+function withoutProjectTeamFields(fields = {}, env = {}, rejectedFields = []) {
 	const next = { ...fields };
-	for (const field of projectTeamFieldNames(env)) {
+	const fieldsToRemove = rejectedFields.length ? rejectedFields : projectTeamFieldNames(env);
+	for (const field of fieldsToRemove) {
 		delete next[field];
 	}
 	return next;
@@ -481,7 +487,7 @@ export async function createProjectRecord(request, env, authContext = {}) {
 		} catch (error) {
 			if (!isUnknownFieldError(error) || !hasProjectTeamFields(fields, env)) throw error;
 			projectWarning = "project_team_fields_missing";
-			record = await createProjectInAirtable(env, table, withoutProjectTeamFields(fields, env));
+			record = await createProjectInAirtable(env, table, withoutProjectTeamFields(fields, env, rejectedProjectTeamFieldNames(error, env)));
 		}
 		if (!record?.id) return json({ ok: false, error: "Project create failed" }, 502);
 

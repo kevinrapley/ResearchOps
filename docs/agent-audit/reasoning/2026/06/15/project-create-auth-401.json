@@ -180,6 +180,26 @@
       "command": "npx prettier -c infra/cloudflare/src/service/project-record-routes.js tests/projects-route-contract.test.js",
       "status": "passed",
       "summary": "Confirmed the Airtable fallback service edit and route-contract test match repository formatting."
+    },
+    {
+      "command": "python3 .../gh-address-comments/scripts/fetch_comments.py --repo . --pr 404",
+      "status": "passed",
+      "summary": "Found one unresolved Codex review thread on infra/cloudflare/src/service/project-record-routes.js about preserving supported team metadata on fallback."
+    },
+    {
+      "command": "node tests/projects-route-contract.test.js",
+      "status": "passed",
+      "summary": "Confirmed the project create fallback removes only the named rejected team field and preserves Team Name when Team ID is rejected."
+    },
+    {
+      "command": "npx prettier -c infra/cloudflare/src/service/project-record-routes.js tests/projects-route-contract.test.js",
+      "status": "passed",
+      "summary": "Confirmed the Codex review follow-up service edit and test update match repository formatting."
+    },
+    {
+      "command": "git diff --check",
+      "status": "passed",
+      "summary": "Confirmed no whitespace errors in the Codex review follow-up diff."
     }
   ],
   "followUps": [
@@ -188,6 +208,12 @@
       "status": "addressed",
       "resolution": "Project creation now retries once without the optional configured project team fields when Airtable reports an unknown-field error for a create request that included those fields.",
       "evidence": "tests/projects-route-contract.test.js asserts the first create includes Team ID and Team Name, the retry omits them, and the response is 201 with projectWarning project_team_fields_missing."
+    },
+    {
+      "trigger": "PR #404 Codex review reported that dropping both configured team fields on fallback could remove all team metadata when Airtable rejected only one field.",
+      "status": "addressed",
+      "resolution": "The retry now removes only the configured project team field named in the Airtable unknown-field error, preserving any remaining supported team metadata.",
+      "evidence": "tests/projects-route-contract.test.js asserts that when Airtable rejects Team ID, the retry omits Team ID, keeps Team Name, returns 201 and maps teamName on the response project."
     }
   ],
   "reviewThreadDisposition": [
@@ -198,6 +224,14 @@
       "finding": "CodeQL / Incomplete URL substring sanitization",
       "status": "addressed",
       "resolution": "Replaced url.includes(\"raw.githubusercontent.com\") with URL parsing and strict https protocol plus raw.githubusercontent.com hostname checks."
+    },
+    {
+      "tool": "Codex Review",
+      "threadId": "PRRT_kwDOP3Td2M6JsVQI",
+      "path": "infra/cloudflare/src/service/project-record-routes.js",
+      "finding": "Fallback create removed both configured project team fields even when Airtable rejected only one, risking invisible projects for team-scoped creators.",
+      "status": "addressed",
+      "resolution": "Added rejectedProjectTeamFieldNames() and changed withoutProjectTeamFields() so named unknown team fields are removed individually while supported team fields are preserved."
     }
   ],
   "residualRisks": [

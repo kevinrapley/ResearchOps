@@ -274,7 +274,7 @@ function projectRecords() {
 	];
 }
 
-function createMockFetch(calls, { rejectProjectTeamFields = false } = {}) {
+function createMockFetch(calls, { rejectProjectTeamField = "" } = {}) {
 	let projectTeamFieldRejections = 0;
 	return async (resource, options = {}) => {
 		const url = String(resource);
@@ -290,13 +290,13 @@ function createMockFetch(calls, { rejectProjectTeamFields = false } = {}) {
 		if (url.endsWith("/Projects") && options.method === "POST") {
 			const body = JSON.parse(String(options.body || "{}"));
 			const fields = body.records?.[0]?.fields || {};
-			if (rejectProjectTeamFields && projectTeamFieldRejections === 0 && (Object.hasOwn(fields, "Team ID") || Object.hasOwn(fields, "Team Name"))) {
+			if (rejectProjectTeamField && projectTeamFieldRejections === 0 && Object.hasOwn(fields, rejectProjectTeamField)) {
 				projectTeamFieldRejections += 1;
 				return jsonResponse(
 					{
 						error: {
 							type: "UNKNOWN_FIELD_NAME",
-							message: "Unknown field name: Team ID",
+							message: `Unknown field name: ${rejectProjectTeamField}`,
 						},
 					},
 					{ status: 422 },
@@ -497,7 +497,7 @@ async function assertAuthenticatedProjectCreateUsesSessionContext() {
 async function assertProjectCreateDoesNotBlockWhenTeamFieldsAreMissing() {
 	const calls = [];
 	const originalFetch = globalThis.fetch;
-	globalThis.fetch = createMockFetch(calls, { rejectProjectTeamFields: true });
+	globalThis.fetch = createMockFetch(calls, { rejectProjectTeamField: "Team ID" });
 
 	try {
 		const response = await worker.fetch(
@@ -525,6 +525,7 @@ async function assertProjectCreateDoesNotBlockWhenTeamFieldsAreMissing() {
 		assert.equal(payload.ok, true);
 		assert.equal(payload.projectWarning, "project_team_fields_missing");
 		assert.equal(payload.project.name, "Third Country National Discovery");
+		assert.equal(payload.project.teamName, TEST_TEAM_NAME);
 
 		const projectCreateCalls = calls.filter(({ url, options }) => url.endsWith("/Projects") && options.method === "POST");
 		assert.equal(projectCreateCalls.length, 2);
@@ -535,7 +536,7 @@ async function assertProjectCreateDoesNotBlockWhenTeamFieldsAreMissing() {
 
 		const retriedFields = JSON.parse(projectCreateCalls[1].options.body).records[0].fields;
 		assert.equal(Object.hasOwn(retriedFields, "Team ID"), false);
-		assert.equal(Object.hasOwn(retriedFields, "Team Name"), false);
+		assert.equal(retriedFields["Team Name"], TEST_TEAM_NAME);
 		assert.equal(retriedFields.Name, "Third Country National Discovery");
 	} finally {
 		globalThis.fetch = originalFetch;

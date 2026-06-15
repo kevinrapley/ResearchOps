@@ -114,6 +114,12 @@ project team fields. The route now retries once without those optional fields
 and returns `201` with `projectWarning: "project_team_fields_missing"` when the
 fallback succeeds. Other Airtable create errors still surface as failures.
 
+Codex review follow-up: refined the Airtable fallback so the retry removes only
+the configured project team field named in the Airtable unknown-field error.
+This preserves remaining supported team metadata, for example keeping
+`Team Name` when only `Team ID` is rejected, so the created project remains
+visible to team-scoped creators.
+
 ## Files
 
 Read:
@@ -181,6 +187,13 @@ Follow-up for non-blocking Airtable team fields:
 - Added a retry path that removes only the configured team fields when Airtable reports an unknown-field error for a project create that included team fields.
 - Added route-contract coverage proving the first Airtable create attempt includes `Team ID` and `Team Name`, the retry omits them, and the route still returns `201`.
 
+Codex review follow-up:
+
+- `python3 .../gh-address-comments/scripts/fetch_comments.py --repo . --pr 404` - found one unresolved Codex review thread on `infra/cloudflare/src/service/project-record-routes.js`.
+- `node tests/projects-route-contract.test.js` - passed after changing the retry to preserve team metadata that Airtable did not reject.
+- `npx prettier -c infra/cloudflare/src/service/project-record-routes.js tests/projects-route-contract.test.js` - passed.
+- `git diff --check` - passed.
+
 ## Review Thread Disposition
 
 GitHub Advanced Security reported `CodeQL / Incomplete URL substring
@@ -188,6 +201,11 @@ sanitization` because the test asserted `url.includes("raw.githubusercontent.com
 The assertion now parses the URL and compares `protocol === "https:"` and
 `hostname === "raw.githubusercontent.com"`, avoiding arbitrary host-prefix or
 host-suffix matches.
+
+PR #404 Codex review reported that dropping both configured team fields on
+fallback could make a newly created project invisible when Airtable rejected only
+one field. The fallback now removes named rejected team fields only, preserving
+supported team metadata on the retry.
 
 ## Residual Risk
 
