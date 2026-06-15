@@ -244,6 +244,11 @@
       "command": "Browser smoke check http://127.0.0.1:4173/pages/start/",
       "status": "passed",
       "summary": "Confirmed page title, H1, project form, four steps, generated GOV.UK CSS, start route CSS and no legacy forms fragment stylesheet."
+    },
+    {
+      "command": "node --import ./tests/helpers/generated-govuk-page-source.mjs --test tests/start-page-route-state.test.js tests/govuk-forms-application-route-state.test.js tests/start-project-step-1-defaults-route-state.test.js tests/sass-migration-route-state.test.js",
+      "status": "passed",
+      "summary": "Focused start page checks passed after addressing the Codex review comment about the hidden utility."
     }
   ],
   "validationPendingAtUpdate": [],
@@ -267,6 +272,10 @@
     {
       "issue": "Direct validate checks failed on brittle exact-string assertions after generated HTML wrapped attributes.",
       "pivot": "Changed the assertions to check ID and class contracts independently."
+    },
+    {
+      "issue": "Codex review noted that the AI assist panels still used the hidden utility after /css/screen.css was removed.",
+      "pivot": "Added a route-local .hidden display rule to src/styles/start.scss, regenerated public/css/start.css and covered it in tests/start-page-route-state.test.js."
     }
   ],
   "residualRisks": [

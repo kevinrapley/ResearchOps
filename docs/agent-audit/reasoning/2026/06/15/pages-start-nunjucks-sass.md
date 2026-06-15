@@ -205,6 +205,21 @@ asserted exact one-line generated attributes. Those assertions were updated to
 check the same `id` and class contracts independently, then `npm run validate`
 passed.
 
+## Codex Review Follow-Up
+
+Codex review left one unresolved, non-outdated comment on
+`src/govuk/templates/pages/start.njk`. The comment was legitimate: moving the
+start page to the shared GOV.UK layout removed `/css/screen.css`, but the AI
+assistance panels still use the old `hidden` utility class.
+
+Disposition:
+
+- Added a route-local `.hidden { display: none; }` rule to `src/styles/start.scss`.
+- Regenerated `public/css/start.css`.
+- Added a route-state assertion that the generated start stylesheet includes
+  the `.hidden` rule.
+- Re-ran focused start page checks.
+
 ## Residual Risk
 
 `public/pages/start/index.html` has a larger generated diff because the page

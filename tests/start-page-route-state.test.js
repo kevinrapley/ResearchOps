@@ -73,6 +73,7 @@ includes(buttonCssSource, ".govuk-button--warning", "GOV.UK button stylesheet");
 includes(stylesheetSource, ".start-card", "start stylesheet");
 includes(stylesheetSource, ".start-step", "start stylesheet");
 includes(stylesheetSource, ".start-step[hidden]", "start stylesheet");
+includes(stylesheetSource, ".hidden", "start stylesheet");
 includes(stylesheetSource, ".start-form", "start stylesheet");
 includes(stylesheetSource, ".start-panel", "start stylesheet");
 includes(stylesheetSource, ".start-assist", "start stylesheet");

@@ -25,6 +25,10 @@
 	display: none;
 	}
 
+.hidden {
+	display: none;
+	}
+
 .start-step .lede, .start-step .govuk-body {
 	max-width: 760px;
 	}
