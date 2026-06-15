@@ -6,6 +6,8 @@ const TEST_TEAM_ID = "team_daas";
 const TEST_TEAM_NAME = "DaaS";
 const TEST_USER_ID = "usr_project_contract";
 const TEST_SESSION_TOKEN = "project-contract-session";
+const d1RunCalls = [];
+let d1HasPartialProject = false;
 
 const PROJECT_RECORD_IDS = [
 	"recMtdmBbaFilF2Tm",
@@ -166,6 +168,10 @@ function firstRowForSql(sql) {
 		return { id: "ra_core_admin" };
 	}
 
+	if (sql.includes("SELECT id FROM rops_projects_cache") && sql.includes("source = 'airtable-partial'")) {
+		return d1HasPartialProject ? { id: PROJECT_RECORD_IDS[0] } : null;
+	}
+
 	return null;
 }
 
@@ -181,6 +187,7 @@ function createMockStatement(sql, args = []) {
 			return { results: allRowsForSql(sql) };
 		},
 		async run() {
+			d1RunCalls.push({ sql, args });
 			return { success: true, meta: { changes: 1 }, args };
 		},
 	};
@@ -421,9 +428,34 @@ async function assertProjectsRouteUsesAirtableProjectsTable() {
 	}
 }
 
+async function assertPartialProjectCacheDoesNotShortCircuitProjectList() {
+	const calls = [];
+	const originalFetch = globalThis.fetch;
+	d1HasPartialProject = true;
+	globalThis.fetch = createMockFetch(calls);
+
+	try {
+		const response = await worker.fetch(authenticatedRequest("https://worker.test/api/projects"), env, {});
+		assert.equal(response.status, 200);
+
+		const payload = await response.json();
+		assert.equal(payload.ok, true);
+		assert.equal(payload.projects.length, 5);
+		assert.equal(response.headers.get("x-rops-source"), "airtable");
+		assert.equal(
+			calls.some(({ url }) => url.includes("/Projects?")),
+			true,
+		);
+	} finally {
+		d1HasPartialProject = false;
+		globalThis.fetch = originalFetch;
+	}
+}
+
 async function assertAuthenticatedProjectCreateUsesSessionContext() {
 	const calls = [];
 	const originalFetch = globalThis.fetch;
+	d1RunCalls.length = 0;
 	globalThis.fetch = createMockFetch(calls);
 
 	try {
@@ -491,6 +523,21 @@ async function assertAuthenticatedProjectCreateUsesSessionContext() {
 		assert.equal(detailCreateBody.records[0].fields["Lead Researcher"], "Amy Everett");
 		assert.equal(detailCreateBody.records[0].fields["Lead Researcher Email"], "amy.everett@homeoffice.gov.uk");
 		assert.equal(detailCreateBody.records[0].fields.Notes, "Created from the start-project check answers flow");
+
+		assert.equal(
+			d1RunCalls.some((call) => call.sql.includes("UPDATE rops_projects_cache SET active = 0")),
+			false,
+		);
+		const cacheInsertCall = d1RunCalls.find((call) => call.sql.includes("INSERT INTO rops_projects_cache"));
+		assert.ok(cacheInsertCall);
+		assert.equal(cacheInsertCall.args[5], "airtable-partial");
+		const cachedProject = JSON.parse(cacheInsertCall.args[7]);
+		assert.deepEqual(cachedProject.objectives, ["Understand the problem space", "Map end-to-end workflows"]);
+		assert.deepEqual(cachedProject.user_groups, ["Law enforcement", "Borders and immigration"]);
+		assert.equal(cachedProject.stakeholders.length, 1);
+		assert.equal(cachedProject.stakeholders[0].name, "Pam Thethi");
+		assert.equal(cachedProject.lead_researcher, "Amy Everett");
+		assert.equal(cachedProject.lead_researcher_email, "amy.everett@homeoffice.gov.uk");
 	} finally {
 		globalThis.fetch = originalFetch;
 	}
@@ -648,6 +695,7 @@ async function assertProjectCreateDoesNotBlockWhenOrgFieldIsMissing() {
 async function assertProjectReadResolvesAirtableRecordId() {
 	const calls = [];
 	const originalFetch = globalThis.fetch;
+	d1RunCalls.length = 0;
 	globalThis.fetch = createMockFetch(calls);
 
 	try {
@@ -660,6 +708,8 @@ async function assertProjectReadResolvesAirtableRecordId() {
 		assert.equal(project.recordId, PROJECT_RECORD_IDS[2]);
 		assert.equal(project.name, "Test Project 1");
 		assert.equal(project.lead_researcher, "Lead Test");
+		assert.equal(project.lead_researcher_email, "lead.test@example.test");
+		assert.equal(project.notes, "Joined detail notes");
 		assert.equal(
 			calls.some(({ url }) => url.includes(`/Projects/${PROJECT_RECORD_IDS[2]}`)),
 			true,
@@ -668,6 +718,13 @@ async function assertProjectReadResolvesAirtableRecordId() {
 			calls.some(({ url }) => url.includes("/Projects?") && !url.includes("/Project%20Details?")),
 			false,
 		);
+		const cacheInsertCall = d1RunCalls.find((call) => call.sql.includes("INSERT INTO rops_projects_cache"));
+		assert.ok(cacheInsertCall);
+		assert.equal(cacheInsertCall.args[5], "airtable-partial");
+		const cachedProject = JSON.parse(cacheInsertCall.args[7]);
+		assert.equal(cachedProject.lead_researcher, "Lead Test");
+		assert.equal(cachedProject.lead_researcher_email, "lead.test@example.test");
+		assert.equal(cachedProject.notes, "Joined detail notes");
 	} finally {
 		globalThis.fetch = originalFetch;
 	}
@@ -718,6 +775,7 @@ function assertLegacyProjectsDirectHandlerIsAbsent() {
 
 await assertProjectsRouteFailsClosedWithoutSession();
 await assertProjectsRouteUsesAirtableProjectsTable();
+await assertPartialProjectCacheDoesNotShortCircuitProjectList();
 await assertAuthenticatedProjectCreateUsesSessionContext();
 await assertProjectCreateDoesNotBlockWhenTeamFieldsAreMissing();
 await assertProjectCreatePreservesSupportedTeamFields();

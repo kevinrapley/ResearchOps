@@ -416,21 +416,32 @@ async function ensureProjectCache(db) {
 	}
 }
 
-async function syncActiveProjectsToD1(env, projects = []) {
+async function sourceForProjectCacheWrite(db, projectId, mode) {
+	if (mode !== "preserve-full") return mode === "full" ? "airtable" : "airtable-partial";
+	const row = await db.prepare("SELECT source FROM rops_projects_cache WHERE id = ? LIMIT 1").bind(projectId).first();
+	return row?.source === "airtable" ? "airtable" : "airtable-partial";
+}
+
+async function syncActiveProjectsToD1(env, projects = [], options = {}) {
 	const db = env.RESEARCHOPS_D1;
 	if (!db?.prepare) return;
 	const currentProjects = projects.filter((project) => isAirtableRecordId(project.id));
 	if (!currentProjects.length) return;
+	const replaceActiveSet = options.replaceActiveSet !== false;
+	const cacheMode = options.cacheMode || (replaceActiveSet ? "full" : "partial");
 
 	try {
 		await ensureProjectCache(db);
-		await db.prepare("UPDATE rops_projects_cache SET active = 0 WHERE source = 'airtable'").run();
+		if (replaceActiveSet) {
+			await db.prepare("UPDATE rops_projects_cache SET active = 0 WHERE source IN ('airtable', 'airtable-partial')").run();
+		}
 
 		const updatedAt = new Date().toISOString();
 		for (const project of currentProjects) {
+			const source = await sourceForProjectCacheWrite(db, project.id, cacheMode);
 			await db
-				.prepare("INSERT INTO rops_projects_cache (id, name, org, phase, status, active, source, updated_at, payload_json) VALUES (?, ?, ?, ?, ?, 1, 'airtable', ?, ?) ON CONFLICT(id) DO UPDATE SET name = excluded.name, org = excluded.org, phase = excluded.phase, status = excluded.status, active = excluded.active, source = excluded.source, updated_at = excluded.updated_at, payload_json = excluded.payload_json")
-				.bind(project.id, project.name || "", project.org || "", project["rops:servicePhase"] || "", project["rops:projectStatus"] || "", updatedAt, JSON.stringify(project))
+				.prepare("INSERT INTO rops_projects_cache (id, name, org, phase, status, active, source, updated_at, payload_json) VALUES (?, ?, ?, ?, ?, 1, ?, ?, ?) ON CONFLICT(id) DO UPDATE SET name = excluded.name, org = excluded.org, phase = excluded.phase, status = excluded.status, active = excluded.active, source = excluded.source, updated_at = excluded.updated_at, payload_json = excluded.payload_json")
+				.bind(project.id, project.name || "", project.org || "", project["rops:servicePhase"] || "", project["rops:projectStatus"] || "", source, updatedAt, JSON.stringify(project))
 				.run();
 		}
 	} catch {
@@ -442,8 +453,17 @@ async function readD1ProjectCache(env) {
 	const db = env.RESEARCHOPS_D1;
 	if (!db?.prepare) throw Object.assign(new Error("RESEARCHOPS_D1 binding not available"), { source: "d1" });
 	await ensureProjectCache(db);
-	const response = await db.prepare("SELECT * FROM rops_projects_cache WHERE active = 1 ORDER BY updated_at DESC").all();
+	const partial = await db.prepare("SELECT id FROM rops_projects_cache WHERE active = 1 AND source = 'airtable-partial' LIMIT 1").first();
+	const response = await db.prepare("SELECT * FROM rops_projects_cache WHERE active = 1 AND source = 'airtable' ORDER BY updated_at DESC").all();
 	const rows = response?.results || [];
+	if (partial) {
+		return {
+			projects: [],
+			activeProjectCount: rows.length,
+			invalidProjectCount: 0,
+			incomplete: true,
+		};
+	}
 	const projects = rows.map(mapD1Project).filter(isRenderable);
 	return {
 		projects,
@@ -456,7 +476,7 @@ async function getD1ProjectRecord(env, projectId) {
 	const db = env.RESEARCHOPS_D1;
 	if (!db?.prepare) throw Object.assign(new Error("RESEARCHOPS_D1 binding not available"), { source: "d1" });
 	await ensureProjectCache(db);
-	const row = await db.prepare("SELECT * FROM rops_projects_cache WHERE active = 1 AND id = ? LIMIT 1").bind(projectId).first();
+	const row = await db.prepare("SELECT * FROM rops_projects_cache WHERE active = 1 AND source IN ('airtable', 'airtable-partial') AND id = ? LIMIT 1").bind(projectId).first();
 	const project = mapD1Project(row || {});
 	return isRenderable(project) ? project : null;
 }
@@ -524,17 +544,18 @@ export async function createProjectRecord(request, env, authContext = {}) {
 			detailWarning = isUnknownFieldError(error) ? "project_detail_fields_missing" : "project_detail_create_failed";
 		}
 
-		const project = mapProject(record);
 		const detailFields = detailRecord?.fields || {};
+		const project = {
+			...mapProject(record),
+			lead_researcher: displayText(detailFields["Lead Researcher"] || payload.lead_researcher || payload["Lead Researcher"] || ""),
+			lead_researcher_email: displayText(detailFields["Lead Researcher Email"] || payload.lead_researcher_email || payload["Lead Researcher Email"] || ""),
+			notes: displayText(detailFields.Notes || payload.notes || payload.Notes || ""),
+		};
+		await syncActiveProjectsToD1(env, [project], { replaceActiveSet: false });
 		return json(
 			{
 				ok: true,
-				project: {
-					...project,
-					lead_researcher: displayText(detailFields["Lead Researcher"] || payload.lead_researcher || payload["Lead Researcher"] || ""),
-					lead_researcher_email: displayText(detailFields["Lead Researcher Email"] || payload.lead_researcher_email || payload["Lead Researcher Email"] || ""),
-					notes: displayText(detailFields.Notes || payload.notes || payload.Notes || ""),
-				},
+				project,
 				projectWarning,
 				detailWarning,
 			},
@@ -636,8 +657,8 @@ export async function getProjectRecord(_request, env, projectId, authContext = {
 			if (!hasProjectShape(projectRecord)) return json({ ok: false, error: "Project not found" }, 404);
 			const project = mapProject(projectRecord);
 			if (!isRenderable(project) || !userCanSee(project, authContext)) return json({ ok: false, error: "Project not found" }, 404);
-			await syncActiveProjectsToD1(env, [project]);
 			const joined = await joinDetails(env, [project]);
+			await syncActiveProjectsToD1(env, [joined[0]], { replaceActiveSet: false, cacheMode: "preserve-full" });
 			return json(joined[0], 200, sourceHeaders("airtable"));
 		} catch (error) {
 			if (error?.status === 404) return json({ ok: false, error: "Project not found" }, 404);
