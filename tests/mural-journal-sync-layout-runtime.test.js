@@ -480,6 +480,22 @@ try {
 	// The Snowberry project tag carries over; the other card's user tags do not.
 	assert.deepEqual(d1NameWrites[0].body.tags, ['perceptions', 'Test Project 1', 'tool-switching']);
 
+	globalThis.fetch = async (url) => {
+		const href = String(url);
+		if (href.endsWith('/users/me'))
+			return jsonResponse({ value: { companyId: 'homeofficegovuk' } });
+		if (new URL(href).pathname.endsWith('/murals/workspace.123/widgets')) {
+			return jsonResponse({ message: 'Not found' }, 404);
+		}
+		throw new Error(`Unexpected fetch: ${href}`);
+	};
+
+	const staleBoardStatusResponse = await postStatus(service(entries));
+	const staleBoardStatusData = await staleBoardStatusResponse.json();
+	assert.equal(staleBoardStatusResponse.status, 404);
+	assert.equal(staleBoardStatusData.ok, false);
+	assert.equal(staleBoardStatusData.error, 'mural_board_not_found');
+
 	// A blank column template carrying a stale journal-entry marker must NOT be
 	// counted as a synced entry. Status should report the entry as pending so
 	// the board's empty cards are not mistaken for landed content.

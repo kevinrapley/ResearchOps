@@ -37,7 +37,7 @@ function mappingInsert(writes, muralId) {
 	return writes.find((write) => write.params[0] === muralId) || null;
 }
 
-test('listBoards returns D1 board mappings before external fallback', async () => {
+test('listBoards returns D1 board mappings when Airtable is not configured', async () => {
 	let fetched = false;
 	const originalFetch = globalThis.fetch;
 	globalThis.fetch = async () => {
@@ -72,6 +72,66 @@ test('listBoards returns D1 board mappings before external fallback', async () =
 		assert.equal(rows[0]._source, 'd1');
 		assert.equal(rows[0].fields['Mural ID'], 'board-from-d1');
 		assert.equal(fetched, false);
+	} finally {
+		globalThis.fetch = originalFetch;
+	}
+});
+
+test('listBoards prefers Airtable board mappings over stale D1 rows when Airtable is configured', async () => {
+	let fetched = false;
+	const originalFetch = globalThis.fetch;
+	globalThis.fetch = async () => {
+		fetched = true;
+		return new Response(
+			JSON.stringify({
+				records: [
+					{
+						id: 'recBoardLive',
+						fields: {
+							'Project ID': 'recgdpwEI5hFO7bUZ',
+							UID: 'anon',
+							Purpose: 'reflexive_journal',
+							Active: true,
+							'Mural ID': 'live-airtable-board',
+							'Board URL': 'https://example.test/mural/live-airtable',
+							'Workspace ID': 'workspace-fixture',
+							'Primary?': true,
+						},
+					},
+				],
+			}),
+			{ status: 200, headers: { 'content-type': 'application/json' } }
+		);
+	};
+
+	try {
+		const rows = await listBoards(
+			{
+				...env,
+				AIRTABLE_API_KEY: 'fixture-token',
+				RESEARCHOPS_D1: makeD1({
+					rows: [
+						{
+							mural_id: 'stale-d1-board',
+							project: 'recgdpwEI5hFO7bUZ',
+							purpose: 'reflexive_journal',
+							board_url: 'https://example.test/mural/stale',
+							workspace_id: 'workspace-fixture',
+						},
+					],
+				}),
+			},
+			{
+				projectId: 'recgdpwEI5hFO7bUZ',
+				uid: 'anon',
+				purpose: 'reflexive_journal',
+			}
+		);
+
+		assert.equal(fetched, true);
+		assert.equal(rows.length, 1);
+		assert.equal(rows[0].fields['Mural ID'], 'live-airtable-board');
+		assert.equal(rows[0].fields['Board URL'], 'https://example.test/mural/live-airtable');
 	} finally {
 		globalThis.fetch = originalFetch;
 	}
@@ -206,6 +266,7 @@ test('listBoards uses exact Project ID Airtable fallback before broad scan', asy
 		const rows = await listBoards(
 			{
 				...env,
+				AIRTABLE_API_KEY: 'fixture-token',
 				RESEARCHOPS_D1: makeD1({
 					onRun(sql, params) {
 						d1Writes.push({ sql, params });
@@ -267,6 +328,7 @@ test('listBoards preserves legacy fallback rows without Project ID text', async 
 		const rows = await listBoards(
 			{
 				...env,
+				AIRTABLE_API_KEY: 'fixture-token',
 				RESEARCHOPS_D1: makeD1({ rows: [] }),
 			},
 			{

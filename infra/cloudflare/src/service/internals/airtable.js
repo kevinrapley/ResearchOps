@@ -434,6 +434,30 @@ function boardMatchesProject(fields, pidRaw) {
 	return textVal && textVal === pidRaw;
 }
 
+function hasAirtableConfig(env) {
+	return !!(env?.AIRTABLE_BASE_ID || env?.AIRTABLE_BASE) && !!airtableToken(env);
+}
+
+async function listD1BoardsForProject(env, { projectId, uid, purpose }, log = null) {
+	const pidRaw = String(projectId || "").trim();
+	if (!pidRaw) return [];
+	try {
+		const row = await d1GetMuralBoardForProject(env, {
+			projectRecordId: looksLikeAirtableId(pidRaw) ? pidRaw : null,
+			localProjectId: looksLikeAirtableId(pidRaw) ? null : pidRaw,
+			purpose,
+		});
+		if (row?.mural_id) {
+			return [d1BoardRecord(row, { projectId: pidRaw, uid, purpose })];
+		}
+	} catch (err) {
+		log?.warn?.("d1.mural_boards.list.failed", {
+			err: String(err?.message || err),
+		});
+	}
+	return [];
+}
+
 async function fetchBoardRows(env, formulaParts, max, log, timeoutMs) {
 	const url = new URL(makeTableUrl(env, boardsTableName(env)));
 	if (formulaParts.length) {
@@ -489,21 +513,10 @@ export async function listBoards(
 	timeoutMs = DEFAULTS.TIMEOUT_MS,
 ) {
 	const pidRaw = String(projectId || "").trim();
-	if (pidRaw) {
-		try {
-			const row = await d1GetMuralBoardForProject(env, {
-				projectRecordId: looksLikeAirtableId(pidRaw) ? pidRaw : null,
-				localProjectId: looksLikeAirtableId(pidRaw) ? null : pidRaw,
-				purpose,
-			});
-			if (row?.mural_id) {
-				return [d1BoardRecord(row, { projectId: pidRaw, uid, purpose })];
-			}
-		} catch (err) {
-			log?.warn?.("d1.mural_boards.list.failed", {
-				err: String(err?.message || err),
-			});
-		}
+	const airtableAvailable = hasAirtableConfig(env);
+
+	if (!airtableAvailable) {
+		return listD1BoardsForProject(env, { projectId: pidRaw, uid, purpose }, log);
 	}
 
 	const commonParts = [];
@@ -512,29 +525,37 @@ export async function listBoards(
 		commonParts.push(`{Active} = ${active ? "1" : "0"}`);
 	}
 
-	if (pidRaw) {
-		const exactRows = await fetchBoardRows(
-			env,
-			[`{Project ID} = "${escFormula(pidRaw)}"`, ...commonParts],
-			max,
-			log,
-			timeoutMs,
-		);
-		if (exactRows.length) {
-			await mirrorRowsToD1(env, exactRows, log);
-			return exactRows;
+	try {
+		if (pidRaw) {
+			const exactRows = await fetchBoardRows(
+				env,
+				[`{Project ID} = "${escFormula(pidRaw)}"`, ...commonParts],
+				max,
+				log,
+				timeoutMs,
+			);
+			if (exactRows.length) {
+				await mirrorRowsToD1(env, exactRows, log);
+				return exactRows;
+			}
 		}
+
+		const broadParts = [...commonParts];
+		if (!pidRaw && uid) broadParts.push(`{UID} = "${escFormula(uid)}"`);
+		const broadRows = await fetchBoardRows(env, broadParts, max, log, timeoutMs);
+		if (!projectId) return broadRows;
+		const matchedRows = broadRows.filter((row) => {
+			return boardMatchesProject(airtableBoardFields(row), pidRaw);
+		});
+		if (matchedRows.length) await mirrorRowsToD1(env, matchedRows, log);
+		if (matchedRows.length) return matchedRows;
+	} catch (err) {
+		log?.warn?.("airtable.boards.list.failed_using_d1_fallback", {
+			err: String(err?.message || err),
+		});
 	}
 
-	const broadParts = [...commonParts];
-	if (!pidRaw && uid) broadParts.push(`{UID} = "${escFormula(uid)}"`);
-	const broadRows = await fetchBoardRows(env, broadParts, max, log, timeoutMs);
-	if (!projectId) return broadRows;
-	const matchedRows = broadRows.filter((row) => {
-		return boardMatchesProject(airtableBoardFields(row), pidRaw);
-	});
-	if (matchedRows.length) await mirrorRowsToD1(env, matchedRows, log);
-	return matchedRows;
+	return listD1BoardsForProject(env, { projectId: pidRaw, uid, purpose }, log);
 }
 
 export async function createBoard(
