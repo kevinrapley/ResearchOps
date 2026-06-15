@@ -1,0 +1,84 @@
+{
+  "date": "2026-06-15",
+  "traceType": "operational-audit-trace",
+  "branch": "fix/retain-project-lead-details",
+  "traceRequired": true,
+  "task": "Keep project dashboard lead researcher details visible across authorised login contexts.",
+  "selectedBundles": [
+    {
+      "id": "github-diamond",
+      "canonicalPath": ".agent-operating-model/bundles/github/",
+      "selectionBasis": "always-load"
+    },
+    {
+      "id": "researchops-developer-control",
+      "canonicalPath": ".agent-operating-model/bundles/researchops-developer-control/",
+      "selectionBasis": "always-load"
+    },
+    {
+      "id": "multi-functional-team",
+      "canonicalPath": ".agent-operating-model/bundles/multi-functional-team/",
+      "selectionBasis": "always-load"
+    },
+    {
+      "id": "govuk-design-system",
+      "canonicalPath": ".agent-operating-model/bundles/govuk-design-system/",
+      "selectionBasis": "conditional: dashboard UI route behaviour"
+    },
+    {
+      "id": "cloudflare",
+      "canonicalPath": ".agent-operating-model/bundles/cloudflare/",
+      "selectionBasis": "conditional: Worker API route data flow"
+    },
+    {
+      "id": "airtable-public-api",
+      "canonicalPath": ".agent-operating-model/bundles/airtable-public-api/",
+      "selectionBasis": "conditional: Project Details join data"
+    }
+  ],
+  "implementationNotes": [
+    "The dashboard now loads /api/projects/:id before falling back to /api/projects.",
+    "The record endpoint is the joined Project Details data source for lead researcher and lead researcher email.",
+    "The dashboard JavaScript query string was bumped in Nunjucks and generated HTML."
+  ],
+  "filesModified": [
+    "public/js/project-dashboard.js",
+    "src/govuk/templates/pages/project-dashboard.njk",
+    "public/pages/project-dashboard/index.html",
+    "tests/project-dashboard-route-state.test.js"
+  ],
+  "filesCreated": [
+    "docs/agent-audit/reasoning/2026/06/15/retain-project-lead-details.md",
+    "docs/agent-audit/reasoning/2026/06/15/retain-project-lead-details.json"
+  ],
+  "validation": [
+    {
+      "command": "node tests/project-dashboard-route-state.test.js",
+      "status": "passed",
+      "summary": "Confirm dashboard controller loads the project record endpoint first."
+    },
+    {
+      "command": "node tests/projects-route-contract.test.js",
+      "status": "passed",
+      "summary": "Confirm the project record endpoint still returns and caches joined lead details."
+    },
+    {
+      "command": "npx prettier -c public/js/project-dashboard.js public/pages/project-dashboard/index.html tests/project-dashboard-route-state.test.js docs/agent-audit/reasoning/2026/06/15/retain-project-lead-details.md docs/agent-audit/reasoning/2026/06/15/retain-project-lead-details.json",
+      "status": "passed",
+      "summary": "Confirm supported changed files use repository formatting."
+    },
+    {
+      "command": "npm run trace:coverage",
+      "status": "passed",
+      "summary": "Confirm audit trace coverage for the fix branch."
+    },
+    {
+      "command": "git diff --check",
+      "status": "passed",
+      "summary": "Confirm there are no whitespace errors."
+    }
+  ],
+  "residualRisks": [
+    "The fix relies on the project record endpoint remaining the authoritative source for joined Project Details."
+  ]
+}
