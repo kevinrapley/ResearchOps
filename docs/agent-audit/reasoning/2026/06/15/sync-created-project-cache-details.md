@@ -38,6 +38,14 @@ mapped project fields plus lead researcher, lead researcher email and notes.
 Updated D1 sync so single-record syncs do not mark the whole Airtable cache
 inactive. Full list refreshes still replace the active Airtable set.
 
+Handled Codex review comments by marking create-time single-project cache writes
+as `airtable-partial`. Project list reads treat partial rows as an incomplete
+cache and query Airtable instead of returning a partial list. Project-by-ID
+reads still allow partial rows as a fallback.
+
+Updated project-by-ID Airtable refresh to join Project Details before syncing to
+D1, so lead researcher, email and notes are preserved in the cached payload.
+
 ## Files
 
 Modified:

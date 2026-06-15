@@ -34,7 +34,10 @@
   "implementationNotes": [
     "Created projects are now synced to D1 with the same project object returned by the create response.",
     "Single-record D1 sync no longer deactivates the full Airtable project cache.",
-    "The route contract test verifies objectives, user groups, stakeholders and lead researcher are preserved in payload_json."
+    "Create-time single-project cache writes use the airtable-partial source so list reads do not treat them as a complete cache.",
+    "Project-by-ID Airtable refresh joins Project Details before syncing to D1 so lead researcher, email and notes stay in payload_json.",
+    "The route contract test verifies objectives, user groups, stakeholders and lead researcher are preserved in payload_json.",
+    "The route contract test verifies partial cache rows do not short-circuit the project list."
   ],
   "filesModified": [
     "infra/cloudflare/src/service/project-record-routes.js",
