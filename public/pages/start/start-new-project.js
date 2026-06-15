@@ -4,12 +4,12 @@
  * @summary Start → 4-step flow controller (navigation + validation + review + submit).
  */
 
-const API_ORIGIN =
-	document.documentElement?.dataset?.apiOrigin ||
-	window.API_ORIGIN ||
-	(location.hostname.endsWith("pages.dev") ?
-		"https://rops-api.digikev-kevin-rapley.workers.dev" :
-		location.origin);
+function resolveApiBase() {
+	const explicit = document.documentElement?.dataset?.apiOrigin || window.API_ORIGIN || "";
+	return String(explicit || "").trim().replace(/\/+$/, "");
+}
+
+const API_ORIGIN = resolveApiBase();
 
 function esc(value) {
 	return String(value ?? "").replace(/[&<>"']/g, c => ({

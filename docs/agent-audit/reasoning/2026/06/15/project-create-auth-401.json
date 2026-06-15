@@ -1,0 +1,155 @@
+{
+  "date": "2026-06-15",
+  "traceType": "operational-audit-trace",
+  "branch": "fix/project-create-auth-401",
+  "traceRequired": true,
+  "traceDecision": "Required because repository-affecting work on branches starting with fix/ must have an auditable trace.",
+  "relatedWork": "Fix authenticated project creation from the Start a new research project check-answers step",
+  "task": "Investigate and fix a 401 authentication_required error shown to kevin.rapley@homeoffice.gov.uk when submitting the start-project check-answers flow.",
+  "selectedBundles": [
+    {
+      "id": "github-diamond",
+      "canonicalPath": ".agent-operating-model/bundles/github/",
+      "selectionBasis": "always-load"
+    },
+    {
+      "id": "researchops-developer-control",
+      "canonicalPath": ".agent-operating-model/bundles/researchops-developer-control/",
+      "selectionBasis": "always-load"
+    },
+    {
+      "id": "multi-functional-team",
+      "canonicalPath": ".agent-operating-model/bundles/multi-functional-team/",
+      "selectionBasis": "always-load"
+    },
+    {
+      "id": "govuk-design-system",
+      "canonicalPath": ".agent-operating-model/bundles/govuk-design-system/",
+      "selectionBasis": "conditional: GOV.UK start-project form and check-answers flow"
+    },
+    {
+      "id": "cloudflare",
+      "canonicalPath": ".agent-operating-model/bundles/cloudflare/",
+      "selectionBasis": "conditional: Cloudflare Pages Worker proxy and Worker authentication behaviour"
+    }
+  ],
+  "skippedBundles": [
+    {
+      "id": "openai-platform",
+      "canonicalPath": ".agent-operating-model/bundles/openai/",
+      "reason": "No OpenAI API, model or eval implementation was in scope."
+    },
+    {
+      "id": "mcp-agent-tooling",
+      "canonicalPath": ".agent-operating-model/bundles/mcp-agent-tooling/",
+      "reason": "No MCP tool, resource, prompt or consent work was in scope."
+    },
+    {
+      "id": "airtable-public-api",
+      "canonicalPath": ".agent-operating-model/bundles/airtable-public-api/",
+      "reason": "Airtable create behaviour was mocked in tests, but no Airtable API integration contract changed."
+    },
+    {
+      "id": "mural-public-api",
+      "canonicalPath": ".agent-operating-model/bundles/mural-public-api/",
+      "reason": "No Mural API or collaboration integration work was in scope."
+    }
+  ],
+  "precedenceDecisions": [
+    "GitHub Diamond governed branch naming, trace coverage, surgical mutation and PR readiness.",
+    "ResearchOps Developer Control governed the start-project route and authenticated API conventions.",
+    "Multi-Functional Team governed public-sector assurance and residual-risk framing.",
+    "GOV.UK Design System governed the check-answers flow constraints and error presentation context.",
+    "Cloudflare governed Pages Worker proxy and Worker auth handling."
+  ],
+  "subAgents": [
+    {
+      "role": "RuntimeDev",
+      "result": "Identified that public/_worker.js stripped cf-access-jwt-assertion before forwarding preview API traffic."
+    },
+    {
+      "role": "TestDev",
+      "result": "Identified missing positive authenticated POST /api/projects coverage and suggested route contract assertions."
+    },
+    {
+      "role": "BranchGuard+TraceGuard",
+      "result": "Confirmed branch hygiene, trace requirement, trace location and unrelated local changes to exclude."
+    }
+  ],
+  "filesRead": [
+    "AGENTS.md",
+    ".agent-operating-model/orchestration.xml",
+    ".agent-operating-model/bundle-registry.json",
+    ".agent-operating-model/task-signal-catalog.json",
+    ".agent-operating-model/selection-rules.json",
+    ".agent-operating-model/github-mutation-policy.md",
+    ".agent-operating-model/precedence-policy.md",
+    ".agent-operating-model/trace-policy.md",
+    ".agent-operating-model/trace-layers.md",
+    ".agent-operating-model/bundles/github/prompt.spec.yaml",
+    ".agent-operating-model/bundles/github/prompt.body.xml",
+    ".agent-operating-model/bundles/researchops-developer-control/prompt.spec.yaml",
+    ".agent-operating-model/bundles/researchops-developer-control/prompt.body.xml",
+    ".agent-operating-model/bundles/multi-functional-team/prompt.spec.yaml",
+    ".agent-operating-model/bundles/multi-functional-team/prompt.body.xml",
+    ".agent-operating-model/bundles/govuk-design-system/prompt.spec.yaml",
+    ".agent-operating-model/bundles/govuk-design-system/prompt.body.xml",
+    ".agent-operating-model/bundles/cloudflare/prompt.spec.yaml",
+    ".agent-operating-model/bundles/cloudflare/prompt.body.xml",
+    "/Users/kevin.rapley/.codex/config.toml",
+    "/Users/kevin.rapley/.codex/rules/default.rules",
+    "public/pages/start/start-new-project.js",
+    "public/_worker.js",
+    "public/js/auth-header-links.js",
+    "public/components/layout.js",
+    "infra/cloudflare/src/worker.js",
+    "infra/cloudflare/src/core/auth/access.js",
+    "infra/cloudflare/src/core/auth/access-scoped.js",
+    "infra/cloudflare/src/core/auth/passwordless.js",
+    "infra/cloudflare/src/service/project-record-routes.js",
+    "tests/start-project-step-1-defaults-route-state.test.js",
+    "tests/start-page-route-state.test.js",
+    "tests/projects-route-contract.test.js"
+  ],
+  "filesCreated": [
+    "tests/pages-advanced-worker-auth-route-state.test.js",
+    "docs/agent-audit/reasoning/2026/06/15/project-create-auth-401.md",
+    "docs/agent-audit/reasoning/2026/06/15/project-create-auth-401.json"
+  ],
+  "filesModified": [
+    "public/_worker.js",
+    "public/pages/start/start-new-project.js",
+    "tests/projects-route-contract.test.js",
+    "tests/start-project-step-1-defaults-route-state.test.js"
+  ],
+  "preExistingLocalChangesLeftUnstaged": [
+    "infra/cloudflare/src/core/auth/passwordless.js",
+    "ResearchOps.sublime-workspace"
+  ],
+  "validation": [
+    {
+      "command": "node tests/pages-advanced-worker-auth-route-state.test.js",
+      "status": "passed",
+      "summary": "Confirmed the Pages advanced worker strips unsigned email Access headers but keeps cf-access-jwt-assertion."
+    },
+    {
+      "command": "node tests/start-project-step-1-defaults-route-state.test.js",
+      "status": "passed",
+      "summary": "Confirmed the start-project controller keeps same-origin API resolution and credentials."
+    },
+    {
+      "command": "node tests/start-page-route-state.test.js",
+      "status": "passed",
+      "summary": "Confirmed the start page route-state contract still passes."
+    },
+    {
+      "command": "node tests/projects-route-contract.test.js",
+      "status": "passed",
+      "summary": "Confirmed authenticated GET and POST project routes pass with mocked D1 and Airtable."
+    }
+  ],
+  "residualRisks": [
+    "The local reproduction used repository mocks rather than the live Home Office account.",
+    "The fix preserves Worker-side JWT validation and forwards the signed Access JWT through the trusted Pages proxy."
+  ]
+}

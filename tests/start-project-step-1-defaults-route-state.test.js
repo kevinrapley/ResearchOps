@@ -42,6 +42,11 @@ includes(
 includes(startController, 'phase: DEFAULT_PROJECT_PHASE,', 'start controller');
 includes(startController, 'status: DEFAULT_PROJECT_STATUS,', 'start controller');
 includes(startController, 'Set by default', 'start controller');
+includes(startController, 'function resolveApiBase()', 'start controller');
+includes(startController, 'const API_ORIGIN = resolveApiBase();', 'start controller');
+includes(startController, 'credentials: "include"', 'start controller');
+excludes(startController, 'rops-api.digikev-kevin-rapley.workers.dev', 'start controller');
+excludes(startController, 'location.hostname.endsWith("pages.dev")', 'start controller');
 excludes(startController, 'document.querySelector("#p_phase")', 'start controller');
 excludes(startController, 'document.querySelector("#p_status")', 'start controller');
 
