@@ -5,6 +5,22 @@ const pageSource = fs.readFileSync('public/pages/team/role-assignments/index.htm
 const scriptSource = fs.readFileSync('public/js/auth-role-assignment-page.js', 'utf8');
 const styleSource = fs.readFileSync('public/css/auth-role-assignments.css', 'utf8');
 const govukFrontendSource = fs.readFileSync('public/css/govuk/govuk-frontend-v6.css', 'utf8');
+const rendererSource = fs.readFileSync('scripts/govuk/render-govuk-pages.mjs', 'utf8');
+const templateSource = fs.readFileSync('src/govuk/templates/pages/role-assignments.njk', 'utf8');
+const normalizedPageText = pageSource.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+
+function escapeRegExp(value) {
+	return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+function assertRadioOption(id, name, value, label) {
+	assert.match(
+		pageSource,
+		new RegExp(
+			`<input\\s+class="govuk-radios__input"\\s+id="${id}"\\s+name="${name}"\\s+type="radio"\\s+value="${value}"\\s*/>\\s*<label\\s+class="govuk-label govuk-radios__label"\\s+for="${id}"\\s*>\\s*${escapeRegExp(label)}\\s*</label\\s*>`,
+		),
+	);
+}
 
 function assertPageStructure() {
 	assert.match(pageSource, /<title>Assign a role to a team member [-—] ResearchOps Demo Suite<\/title>/);
@@ -44,13 +60,48 @@ function assertTopLevelAdminInformationArchitecture() {
 	assert.match(pageSource, /govuk-breadcrumbs/);
 	assert.ok(breadcrumbIndex > -1, 'Expected breadcrumb navigation to exist');
 	assert.ok(mainIndex > -1, 'Expected main landmark to exist');
-	assert.ok(breadcrumbIndex < mainIndex, 'Expected breadcrumb navigation to sit before main');
-	assert.match(pageSource, />Home</);
+	assert.ok(breadcrumbIndex > mainIndex, 'Expected breadcrumb navigation to sit inside main');
+	assert.match(
+		pageSource,
+		/<a class="govuk-breadcrumbs__link" href="\/">Home<\/a>[\s\S]*?<a class="govuk-breadcrumbs__link" href="\/pages\/account\/">Your account<\/a>[\s\S]*?>Team administration</,
+	);
 	assert.match(pageSource, />Team administration</);
 	assert.doesNotMatch(pageSource, /govuk-back-link/);
 	assert.doesNotMatch(pageSource, /Back to projects/);
 	assert.doesNotMatch(pageSource, /type="reset"/);
 	assert.doesNotMatch(pageSource, /Clear form/);
+}
+
+function assertUsesFullGOVUKFrontendTemplate() {
+	assert.match(pageSource, /<html class="govuk-template" lang="en">/);
+	assert.match(pageSource, /<body class="govuk-template__body">/);
+	assert.match(pageSource, /\/assets\/govuk\/govuk-frontend\.css/);
+	assert.match(pageSource, /\/components\/layout\.js/);
+	assert.match(pageSource, /\/js\/govuk-frontend-init\.js/);
+	assert.match(pageSource, /<x-include src="\/partials\/header\.html"/);
+	assert.match(pageSource, /<x-include src="\/partials\/footer\.html"/);
+	assert.doesNotMatch(pageSource, /\/css\/govuk\/govuk-typography\.css/);
+	assert.doesNotMatch(pageSource, /\/css\/govuk\/govuk-colours\.css/);
+	assert.doesNotMatch(pageSource, /\/css\/govuk\/govuk-page-chrome\.css/);
+	assert.doesNotMatch(pageSource, /\/css\/govuk\/govuk-buttons\.css/);
+	assert.doesNotMatch(pageSource, /\/css\/govuk\/govuk-forms\.css/);
+	assert.doesNotMatch(pageSource, /\/css\/govuk\/govuk-frontend-v6\.css/);
+	assert.doesNotMatch(pageSource, /\/css\/screen\.css/);
+}
+
+function assertRoleAssignmentPageIsGeneratedFromNunjucks() {
+	assert.match(rendererSource, /template: 'pages\/role-assignments\.njk'/);
+	assert.match(rendererSource, /output: 'public\/pages\/team\/role-assignments\/index\.html'/);
+	assert.match(templateSource, /{% extends "layouts\/researchops\.njk" %}/);
+	assert.match(templateSource, /{% block head %}/);
+	assert.match(templateSource, /\/css\/auth-role-assignments\.css/);
+	assert.match(templateSource, /{% block content %}/);
+	assert.match(templateSource, /id="role-assignment-form"/);
+	assert.match(templateSource, /{% block scripts %}/);
+	assert.match(templateSource, /\/js\/auth-role-assignment-page\.js\?v=inline-team-creation-20260513/);
+	assert.doesNotMatch(templateSource, /<html class="govuk-template"/);
+	assert.doesNotMatch(templateSource, /<x-include src="\/partials\/header\.html"/);
+	assert.doesNotMatch(templateSource, /<x-include src="\/partials\/footer\.html"/);
 }
 
 function assertCurrentAccessPanelIsReducedToTeamScope() {
@@ -68,7 +119,7 @@ function assertExplicitTeamChoiceExists() {
 	assert.match(pageSource, /Use an existing team/);
 	assert.match(pageSource, /Create a new team/);
 	assert.match(pageSource, /You will become Team Admin for the new team/);
-	assert.match(pageSource, /The person will be added to this team if they are not already a member/);
+	assert.match(pageSource, /The person will be added to this team if they are not already a\s+member/);
 	assert.match(scriptSource, /teamOptions: document\.getElementById\("team-id-options"\)/);
 	assert.match(scriptSource, /existingTeamPanel: document\.getElementById\("existing-team-panel"\)/);
 	assert.match(scriptSource, /newTeamPanel: document\.getElementById\("new-team-panel"\)/);
@@ -89,8 +140,14 @@ function assertExplicitTeamChoiceExists() {
 
 function assertMembershipCreationCopyExists() {
 	assert.match(pageSource, /give someone access to a role in a ResearchOps team you manage/);
-	assert.match(pageSource, /ResearchOps will add them when you assign the role/);
-	assert.match(pageSource, /If you create a new team, ResearchOps will make you Team Admin for that team/);
+	assert.ok(
+		normalizedPageText.includes('ResearchOps will add them when you assign the role'),
+		'Expected membership creation copy to explain the person is added when the role is assigned',
+	);
+	assert.ok(
+		normalizedPageText.includes('If you create a new team, ResearchOps will make you Team Admin for that team'),
+		'Expected review copy to explain the assigner becomes Team Admin for a new team',
+	);
 	assert.match(scriptSource, /They were also added as an active member of this team/);
 	assert.match(scriptSource, /teamMembership/);
 	assert.match(scriptSource, /createdOrReactivated/);
@@ -105,13 +162,16 @@ function assertUserIdUsesDetailsWithoutExample() {
 
 function assertRoleOptionsUseGOVUKRadios() {
 	assert.doesNotMatch(pageSource, /<select class="govuk-select" id="role-key"/);
-	assert.match(pageSource, /<div class="govuk-radios auth-role-assignment-radios" data-module="govuk-radios" aria-describedby="role-key-hint">/);
-	assert.match(pageSource, /<input class="govuk-radios__input" id="role-key-observer" name="roleKey" type="radio" value="observer" \/>\s*<label class="govuk-label govuk-radios__label" for="role-key-observer">Observer<\/label>/);
-	assert.match(pageSource, /<input class="govuk-radios__input" id="role-key-researcher" name="roleKey" type="radio" value="researcher" \/>\s*<label class="govuk-label govuk-radios__label" for="role-key-researcher">Researcher<\/label>/);
-	assert.match(pageSource, /<input class="govuk-radios__input" id="role-key-research-lead" name="roleKey" type="radio" value="research_lead" \/>\s*<label class="govuk-label govuk-radios__label" for="role-key-research-lead">Research Lead<\/label>/);
-	assert.match(pageSource, /<input class="govuk-radios__input" id="role-key-approver" name="roleKey" type="radio" value="approver" \/>\s*<label class="govuk-label govuk-radios__label" for="role-key-approver">Approver<\/label>/);
-	assert.match(pageSource, /<input class="govuk-radios__input" id="role-key-safeguarding-lead" name="roleKey" type="radio" value="safeguarding_lead" \/>\s*<label class="govuk-label govuk-radios__label" for="role-key-safeguarding-lead">Safeguarding Lead<\/label>/);
-	assert.match(pageSource, /<input class="govuk-radios__input" id="role-key-team-admin" name="roleKey" type="radio" value="team_admin" \/>\s*<label class="govuk-label govuk-radios__label" for="role-key-team-admin">Team Admin<\/label>/);
+	assert.match(
+		pageSource,
+		/class="govuk-radios auth-role-assignment-radios"[\s\S]*?data-module="govuk-radios"[\s\S]*?aria-describedby="role-key-hint"/,
+	);
+	assertRadioOption('role-key-observer', 'roleKey', 'observer', 'Observer');
+	assertRadioOption('role-key-researcher', 'roleKey', 'researcher', 'Researcher');
+	assertRadioOption('role-key-research-lead', 'roleKey', 'research_lead', 'Research Lead');
+	assertRadioOption('role-key-approver', 'roleKey', 'approver', 'Approver');
+	assertRadioOption('role-key-safeguarding-lead', 'roleKey', 'safeguarding_lead', 'Safeguarding Lead');
+	assertRadioOption('role-key-team-admin', 'roleKey', 'team_admin', 'Team Admin');
 	assert.match(pageSource, /Start with the lowest role that gives the person what they need/);
 }
 
@@ -155,11 +215,11 @@ function assertPageStylesDoNotRecreateGOVUKRadioInternals() {
 function assertDurationModelUsesGovernedPresets() {
 	assert.doesNotMatch(pageSource, /type="datetime-local"/);
 	assert.match(pageSource, /How long should this role last\?/);
-	assert.match(pageSource, /name="durationPreset" type="radio" value="30"/);
-	assert.match(pageSource, /name="durationPreset" type="radio" value="60"/);
-	assert.match(pageSource, /name="durationPreset" type="radio" value="90"/);
-	assert.match(pageSource, /name="durationPreset" type="radio" value="180"/);
-	assert.match(pageSource, /name="durationPreset" type="radio" value="custom"/);
+	assertRadioOption('duration-30', 'durationPreset', '30', '30 days');
+	assertRadioOption('duration-60', 'durationPreset', '60', '60 days');
+	assertRadioOption('duration-90', 'durationPreset', '90', '90 days');
+	assertRadioOption('duration-180', 'durationPreset', '180', '180 days');
+	assertRadioOption('duration-custom', 'durationPreset', 'custom', 'Until a specific date');
 	assert.match(pageSource, /Access ends at the end of the selected day/);
 	assert.match(scriptSource, /const DURATION_LABELS = Object\.freeze/);
 	assert.match(scriptSource, /expiresAtFor/);
@@ -272,6 +332,8 @@ function assertStylesExist() {
 
 assertPageStructure();
 assertTopLevelAdminInformationArchitecture();
+assertUsesFullGOVUKFrontendTemplate();
+assertRoleAssignmentPageIsGeneratedFromNunjucks();
 assertCurrentAccessPanelIsReducedToTeamScope();
 assertExplicitTeamChoiceExists();
 assertMembershipCreationCopyExists();
