@@ -1,0 +1,108 @@
+{
+	"date": "2026-06-15",
+	"traceType": "operational-audit-trace",
+	"branch": "feature/mural-journal-export-layout",
+	"traceRequired": true,
+	"relatedWork": "Project dashboard Mural availability",
+	"task": "Fix the project dashboard so a deleted linked Mural board is not reported as available or exposed as an open-board link.",
+	"operatingModelFilesLoaded": [
+		"AGENTS.md",
+		".agent-operating-model/orchestration.xml",
+		".agent-operating-model/bundle-registry.json",
+		".agent-operating-model/task-signal-catalog.json",
+		".agent-operating-model/selection-rules.json",
+		".agent-operating-model/bootstrap-checklist.md",
+		".agent-operating-model/precedence-policy.md",
+		".agent-operating-model/trace-policy.md",
+		".agent-operating-model/trace-layers.md",
+		".agent-operating-model/github-mutation-policy.md"
+	],
+	"selectedBundles": [
+		{
+			"id": "github-diamond",
+			"canonicalPath": ".agent-operating-model/bundles/github/"
+		},
+		{
+			"id": "researchops-developer-control",
+			"canonicalPath": ".agent-operating-model/bundles/researchops-developer-control/"
+		},
+		{
+			"id": "multi-functional-team",
+			"canonicalPath": ".agent-operating-model/bundles/multi-functional-team/"
+		},
+		{
+			"id": "mural-public-api",
+			"canonicalPath": ".agent-operating-model/bundles/mural-public-api/"
+		}
+	],
+	"additionalBundleContextRead": [
+		{
+			"id": "govuk-design-system",
+			"canonicalPath": ".agent-operating-model/bundles/govuk-design-system/"
+		},
+		{
+			"id": "cloudflare",
+			"canonicalPath": ".agent-operating-model/bundles/cloudflare/"
+		},
+		{
+			"id": "airtable-public-api",
+			"canonicalPath": ".agent-operating-model/bundles/airtable-public-api/"
+		}
+	],
+	"skippedBundles": ["openai-platform", "mcp-agent-tooling"],
+	"precedenceDecision": "GitHub repository governance first, then ResearchOps implementation rules, government product assurance, UI and runtime context, and Mural API behavior for the endpoint-specific fix.",
+	"instructionConflicts": [],
+	"evidence": [
+		"The dashboard frontend calls /api/mural/resolve and already treats a 404 response as the no-board state.",
+		"The backend endpoint previously trusted active saved Airtable/D1/KV board mappings without checking whether the Mural board still existed.",
+		"The preview URL redirects to Cloudflare Access, so authenticated live inspection was not available from this session."
+	],
+	"filesRead": [
+		"public/components/mural-integration.js",
+		"public/components/project-dashboard-mural-state.js",
+		"public/js/project-dashboard.js",
+		"infra/cloudflare/src/service/internals/mural.js",
+		"infra/cloudflare/src/service/internals/mural-board-registry.js",
+		"infra/cloudflare/src/service/internals/mural-tokens.js",
+		"infra/cloudflare/src/lib/mural.js",
+		"tests/mural-airtable-board-registry.test.js",
+		"tests/project-dashboard-route-state.test.js"
+	],
+	"filesModified": ["infra/cloudflare/src/service/internals/mural.js"],
+	"filesCreated": [
+		"tests/mural-resolve-runtime.test.js",
+		"docs/agent-audit/reasoning/2026/06/15/mural-deleted-board-availability.md",
+		"docs/agent-audit/reasoning/2026/06/15/mural-deleted-board-availability.json"
+	],
+	"change": [
+		"muralResolve validates a resolved saved Mural ID with Mural when a user token is present.",
+		"Mural 403, 404 or 410 for the saved board now returns a 404 response with error stale_board_unavailable.",
+		"Runtime tests cover deleted-board and live-board resolve behavior."
+	],
+	"validation": [
+		{
+			"command": "npm test -- tests/mural-resolve-runtime.test.js tests/mural-airtable-board-registry.test.js tests/project-dashboard-route-state.test.js",
+			"status": "passed",
+			"summary": "9 tests passed"
+		},
+		{
+			"command": "npm test",
+			"status": "passed",
+			"summary": "219 tests passed"
+		},
+		{
+			"command": "npm run format:check",
+			"status": "passed"
+		},
+		{
+			"command": "npm run lint",
+			"status": "passed",
+			"summary": "0 errors, existing repository warnings"
+		}
+	],
+	"validationNotRun": [],
+	"residualRisks": [
+		"No authenticated live dashboard session was available because the preview URL is behind Cloudflare Access.",
+		"Coverage is via mocked Mural API responses at the Worker endpoint boundary."
+	]
+}
