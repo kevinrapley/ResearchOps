@@ -83,7 +83,9 @@
   "implementationNotes": [
     "Project creation now writes the authenticated active team name to Org as a stable ownership field.",
     "The configured Team Name and Team ID fields remain best-effort and can be removed individually when Airtable rejects them.",
-    "The contract test models the authenticated team as DaaS and verifies Org is preserved across all team-field fallback retries."
+    "The contract test models the authenticated team as DaaS and verifies Org is preserved across team-field fallback retries.",
+    "Codex review identified that Org must not be an unconditional blocker on deployments without a writable Org column.",
+    "The ownership fallback field is now configurable through AIRTABLE_PROJECT_TEAM_FALLBACK_FIELD and removed by the bounded retry path if Airtable rejects it."
   ],
   "filesCreated": [
     "docs/agent-audit/reasoning/2026/06/15/project-create-team-id-quoted-field.md",
@@ -93,7 +95,7 @@
     {
       "command": "node tests/projects-route-contract.test.js",
       "status": "passed",
-      "summary": "Confirmed project create handles quoted Team ID and sequential team field unknown errors."
+      "summary": "Confirmed project create handles quoted Team ID, sequential team field unknown errors, DaaS ownership mapping and Org unknown-field fallback."
     },
     {
       "command": "npx prettier -c infra/cloudflare/src/service/project-record-routes.js tests/projects-route-contract.test.js",

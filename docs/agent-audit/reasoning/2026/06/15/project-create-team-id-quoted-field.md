@@ -11,6 +11,8 @@ Fix the remaining Start a new research project create failure where Airtable
 returns `Error 422: Unknown field name: "Team ID"` from the check-answers step.
 Follow-up: ensure a successfully created project remains assigned to Kevin
 Rapley's DaaS team and is visible on `/pages/projects/` after redirect.
+Review follow-up: address Codex feedback that the fallback ownership field must
+not make project creation fail on deployments without a writable `Org` column.
 
 ## Branch Trace Decision
 
@@ -72,6 +74,12 @@ active team. `Org` is already read as a project team name by the list route, so
 the DaaS assignment survives even if the configured `Team ID` and `Team Name`
 fields are rejected by Airtable.
 
+After Codex review, made the ownership field configurable through
+`AIRTABLE_PROJECT_TEAM_FALLBACK_FIELD` and managed it through the same bounded
+Airtable unknown-field fallback as the configured team fields. If a deployment
+does not have a writable `Org` column, project creation now retries without that
+field instead of surfacing Airtable's `422` response.
+
 Updated `tests/projects-route-contract.test.js` to cover quoted Airtable unknown
 field messages. The tests verify that:
 
@@ -81,6 +89,8 @@ field messages. The tests verify that:
 - the project create contract models the authenticated team as DaaS
 - `Org` is included on the original create request and every retry, and maps
   back as the visible project team
+- if `Org` is rejected by Airtable, the retry removes `Org` while preserving
+  supported `Team Name` and `Team ID` fields
 
 ## Files
 
