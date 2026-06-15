@@ -1,9 +1,9 @@
 {
   "date": "2026-06-15",
   "traceType": "operational-audit-trace",
-  "branch": "fix/project-create-auth-401",
+  "branch": "fix/project-create-team-fields-nonblocking",
   "traceRequired": true,
-  "traceDecision": "Required because repository-affecting work on branches starting with fix/ must have an auditable trace.",
+  "traceDecision": "Required because repository-affecting work on branches starting with fix/ must have an auditable trace. PR #403 was merged before the Airtable team-field fallback reached main, so the follow-up fix was carried onto replacement branch fix/project-create-team-fields-nonblocking from current origin/main.",
   "relatedWork": "Fix authenticated project creation from the Start a new research project check-answers step",
   "task": "Investigate and fix a 401 authentication_required error shown to kevin.rapley@homeoffice.gov.uk when submitting the start-project check-answers flow.",
   "selectedBundles": [
@@ -31,6 +31,11 @@
       "id": "cloudflare",
       "canonicalPath": ".agent-operating-model/bundles/cloudflare/",
       "selectionBasis": "conditional: Cloudflare Pages Worker proxy and Worker authentication behaviour"
+    },
+    {
+      "id": "airtable-public-api",
+      "canonicalPath": ".agent-operating-model/bundles/airtable-public-api/",
+      "selectionBasis": "conditional: Airtable rejected configured project team fields during record creation"
     }
   ],
   "skippedBundles": [
@@ -45,11 +50,6 @@
       "reason": "No MCP tool, resource, prompt or consent work was in scope."
     },
     {
-      "id": "airtable-public-api",
-      "canonicalPath": ".agent-operating-model/bundles/airtable-public-api/",
-      "reason": "Airtable create behaviour was mocked in tests, but no Airtable API integration contract changed."
-    },
-    {
       "id": "mural-public-api",
       "canonicalPath": ".agent-operating-model/bundles/mural-public-api/",
       "reason": "No Mural API or collaboration integration work was in scope."
@@ -60,7 +60,8 @@
     "ResearchOps Developer Control governed the start-project route and authenticated API conventions.",
     "Multi-Functional Team governed public-sector assurance and residual-risk framing.",
     "GOV.UK Design System governed the check-answers flow constraints and error presentation context.",
-    "Cloudflare governed Pages Worker proxy and Worker auth handling."
+    "Cloudflare governed Pages Worker proxy and Worker auth handling.",
+    "Airtable Public API governed the record-create fallback boundary for optional team fields."
   ],
   "subAgents": [
     {
@@ -96,6 +97,8 @@
     ".agent-operating-model/bundles/govuk-design-system/prompt.body.xml",
     ".agent-operating-model/bundles/cloudflare/prompt.spec.yaml",
     ".agent-operating-model/bundles/cloudflare/prompt.body.xml",
+    ".agent-operating-model/bundles/airtable-public-api/prompt.spec.yaml",
+    ".agent-operating-model/bundles/airtable-public-api/prompt.body.xml",
     "/Users/kevin.rapley/.codex/config.toml",
     "/Users/kevin.rapley/.codex/rules/default.rules",
     "public/pages/start/start-new-project.js",
@@ -119,6 +122,7 @@
   "filesModified": [
     "public/_worker.js",
     "public/pages/start/start-new-project.js",
+    "infra/cloudflare/src/service/project-record-routes.js",
     "tests/projects-route-contract.test.js",
     "tests/start-project-step-1-defaults-route-state.test.js"
   ],
@@ -166,6 +170,24 @@
       "command": "npx prettier -c tests/projects-route-contract.test.js",
       "status": "passed",
       "summary": "Confirmed the edited test file matches repository formatting."
+    },
+    {
+      "command": "node tests/projects-route-contract.test.js",
+      "status": "passed",
+      "summary": "Confirmed project create retries without optional team fields when Airtable rejects those configured fields and still returns 201."
+    },
+    {
+      "command": "npx prettier -c infra/cloudflare/src/service/project-record-routes.js tests/projects-route-contract.test.js",
+      "status": "passed",
+      "summary": "Confirmed the Airtable fallback service edit and route-contract test match repository formatting."
+    }
+  ],
+  "followUps": [
+    {
+      "trigger": "Screenshot showed Error 500: Airtable rejected the configured project team fields.",
+      "status": "addressed",
+      "resolution": "Project creation now retries once without the optional configured project team fields when Airtable reports an unknown-field error for a create request that included those fields.",
+      "evidence": "tests/projects-route-contract.test.js asserts the first create includes Team ID and Team Name, the retry omits them, and the response is 201 with projectWarning project_team_fields_missing."
     }
   ],
   "reviewThreadDisposition": [
