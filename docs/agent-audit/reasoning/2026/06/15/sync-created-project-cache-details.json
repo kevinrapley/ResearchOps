@@ -1,0 +1,72 @@
+{
+  "date": "2026-06-15",
+  "traceType": "operational-audit-trace",
+  "branch": "fix/sync-created-project-cache-details",
+  "traceRequired": true,
+  "task": "Sync newly created project cache details into D1 immediately after Airtable create.",
+  "selectedBundles": [
+    {
+      "id": "github-diamond",
+      "canonicalPath": ".agent-operating-model/bundles/github/",
+      "selectionBasis": "always-load"
+    },
+    {
+      "id": "researchops-developer-control",
+      "canonicalPath": ".agent-operating-model/bundles/researchops-developer-control/",
+      "selectionBasis": "always-load"
+    },
+    {
+      "id": "multi-functional-team",
+      "canonicalPath": ".agent-operating-model/bundles/multi-functional-team/",
+      "selectionBasis": "always-load"
+    },
+    {
+      "id": "cloudflare",
+      "canonicalPath": ".agent-operating-model/bundles/cloudflare/",
+      "selectionBasis": "conditional: D1 cache write behaviour"
+    },
+    {
+      "id": "airtable-public-api",
+      "canonicalPath": ".agent-operating-model/bundles/airtable-public-api/",
+      "selectionBasis": "conditional: Airtable create route data mapping"
+    }
+  ],
+  "implementationNotes": [
+    "Created projects are now synced to D1 with the same project object returned by the create response.",
+    "Single-record D1 sync no longer deactivates the full Airtable project cache.",
+    "The route contract test verifies objectives, user groups, stakeholders and lead researcher are preserved in payload_json."
+  ],
+  "filesModified": [
+    "infra/cloudflare/src/service/project-record-routes.js",
+    "tests/projects-route-contract.test.js"
+  ],
+  "filesCreated": [
+    "docs/agent-audit/reasoning/2026/06/15/sync-created-project-cache-details.md",
+    "docs/agent-audit/reasoning/2026/06/15/sync-created-project-cache-details.json"
+  ],
+  "validation": [
+    {
+      "command": "node tests/projects-route-contract.test.js",
+      "status": "passed",
+      "summary": "Confirm project create caches full project details without deactivating the cache."
+    },
+    {
+      "command": "npx prettier -c infra/cloudflare/src/service/project-record-routes.js tests/projects-route-contract.test.js docs/agent-audit/reasoning/2026/06/15/sync-created-project-cache-details.md docs/agent-audit/reasoning/2026/06/15/sync-created-project-cache-details.json",
+      "status": "passed",
+      "summary": "Confirm changed files use repository formatting."
+    },
+    {
+      "command": "npm run trace:coverage",
+      "status": "passed",
+      "summary": "Confirm audit trace coverage for the fix branch."
+    },
+    {
+      "command": "git diff --check",
+      "status": "passed",
+      "summary": "Confirm there are no whitespace errors."
+    }
+  ],
+  "residualRisks": [
+    "The test uses route mocks rather than a live Airtable write."
+  ]
+}

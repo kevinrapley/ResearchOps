@@ -6,6 +6,7 @@ const TEST_TEAM_ID = "team_daas";
 const TEST_TEAM_NAME = "DaaS";
 const TEST_USER_ID = "usr_project_contract";
 const TEST_SESSION_TOKEN = "project-contract-session";
+const d1RunCalls = [];
 
 const PROJECT_RECORD_IDS = [
 	"recMtdmBbaFilF2Tm",
@@ -181,6 +182,7 @@ function createMockStatement(sql, args = []) {
 			return { results: allRowsForSql(sql) };
 		},
 		async run() {
+			d1RunCalls.push({ sql, args });
 			return { success: true, meta: { changes: 1 }, args };
 		},
 	};
@@ -424,6 +426,7 @@ async function assertProjectsRouteUsesAirtableProjectsTable() {
 async function assertAuthenticatedProjectCreateUsesSessionContext() {
 	const calls = [];
 	const originalFetch = globalThis.fetch;
+	d1RunCalls.length = 0;
 	globalThis.fetch = createMockFetch(calls);
 
 	try {
@@ -491,6 +494,20 @@ async function assertAuthenticatedProjectCreateUsesSessionContext() {
 		assert.equal(detailCreateBody.records[0].fields["Lead Researcher"], "Amy Everett");
 		assert.equal(detailCreateBody.records[0].fields["Lead Researcher Email"], "amy.everett@homeoffice.gov.uk");
 		assert.equal(detailCreateBody.records[0].fields.Notes, "Created from the start-project check answers flow");
+
+		assert.equal(
+			d1RunCalls.some((call) => call.sql.includes("UPDATE rops_projects_cache SET active = 0")),
+			false,
+		);
+		const cacheInsertCall = d1RunCalls.find((call) => call.sql.includes("INSERT INTO rops_projects_cache"));
+		assert.ok(cacheInsertCall);
+		const cachedProject = JSON.parse(cacheInsertCall.args[6]);
+		assert.deepEqual(cachedProject.objectives, ["Understand the problem space", "Map end-to-end workflows"]);
+		assert.deepEqual(cachedProject.user_groups, ["Law enforcement", "Borders and immigration"]);
+		assert.equal(cachedProject.stakeholders.length, 1);
+		assert.equal(cachedProject.stakeholders[0].name, "Pam Thethi");
+		assert.equal(cachedProject.lead_researcher, "Amy Everett");
+		assert.equal(cachedProject.lead_researcher_email, "amy.everett@homeoffice.gov.uk");
 	} finally {
 		globalThis.fetch = originalFetch;
 	}

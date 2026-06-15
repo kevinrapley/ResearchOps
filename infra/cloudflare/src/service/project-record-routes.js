@@ -416,15 +416,18 @@ async function ensureProjectCache(db) {
 	}
 }
 
-async function syncActiveProjectsToD1(env, projects = []) {
+async function syncActiveProjectsToD1(env, projects = [], options = {}) {
 	const db = env.RESEARCHOPS_D1;
 	if (!db?.prepare) return;
 	const currentProjects = projects.filter((project) => isAirtableRecordId(project.id));
 	if (!currentProjects.length) return;
+	const replaceActiveSet = options.replaceActiveSet !== false;
 
 	try {
 		await ensureProjectCache(db);
-		await db.prepare("UPDATE rops_projects_cache SET active = 0 WHERE source = 'airtable'").run();
+		if (replaceActiveSet) {
+			await db.prepare("UPDATE rops_projects_cache SET active = 0 WHERE source = 'airtable'").run();
+		}
 
 		const updatedAt = new Date().toISOString();
 		for (const project of currentProjects) {
@@ -524,17 +527,18 @@ export async function createProjectRecord(request, env, authContext = {}) {
 			detailWarning = isUnknownFieldError(error) ? "project_detail_fields_missing" : "project_detail_create_failed";
 		}
 
-		const project = mapProject(record);
 		const detailFields = detailRecord?.fields || {};
+		const project = {
+			...mapProject(record),
+			lead_researcher: displayText(detailFields["Lead Researcher"] || payload.lead_researcher || payload["Lead Researcher"] || ""),
+			lead_researcher_email: displayText(detailFields["Lead Researcher Email"] || payload.lead_researcher_email || payload["Lead Researcher Email"] || ""),
+			notes: displayText(detailFields.Notes || payload.notes || payload.Notes || ""),
+		};
+		await syncActiveProjectsToD1(env, [project], { replaceActiveSet: false });
 		return json(
 			{
 				ok: true,
-				project: {
-					...project,
-					lead_researcher: displayText(detailFields["Lead Researcher"] || payload.lead_researcher || payload["Lead Researcher"] || ""),
-					lead_researcher_email: displayText(detailFields["Lead Researcher Email"] || payload.lead_researcher_email || payload["Lead Researcher Email"] || ""),
-					notes: displayText(detailFields.Notes || payload.notes || payload.Notes || ""),
-				},
+				project,
 				projectWarning,
 				detailWarning,
 			},
@@ -636,7 +640,7 @@ export async function getProjectRecord(_request, env, projectId, authContext = {
 			if (!hasProjectShape(projectRecord)) return json({ ok: false, error: "Project not found" }, 404);
 			const project = mapProject(projectRecord);
 			if (!isRenderable(project) || !userCanSee(project, authContext)) return json({ ok: false, error: "Project not found" }, 404);
-			await syncActiveProjectsToD1(env, [project]);
+			await syncActiveProjectsToD1(env, [project], { replaceActiveSet: false });
 			const joined = await joinDetails(env, [project]);
 			return json(joined[0], 200, sourceHeaders("airtable"));
 		} catch (error) {
