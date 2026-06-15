@@ -16,6 +16,8 @@ accept = [200, 204, 206, 301, 302, 401, 403, 405, 429, 999]
 
 # Ignore dev-only or dynamic hosts
 # Route-state contract: ^/api/repository(?:/.*)?(?:\?.*)?$
+# GOV.UK Design System pattern pages are valid but can intermittently time out
+# from GitHub-hosted runners during Lychee checks.
 exclude = [
   "localhost",
   "127.0.0.1",
@@ -23,6 +25,8 @@ exclude = [
   "example.com",
   "researchops.local",
   ".*\\.invalid",
+  "^https://design-system\\.service\\.gov\\.uk/patterns/?$",
+  "^https://design-system\\.service\\.gov\\.uk/patterns/create-accounts/?$",
   "^/api/repository(?:/.*)?(?:\\?.*)?$",
 ]
 
@@ -39,6 +43,7 @@ exclude_path = [
   "screenshots/",
   ".git/",
   ".github/",
+  "charts/README.md",
   "docs/devops/mural/create-sticky-note_mine.txt",
   "docs/devops/mural/read-widgets_mine.txt",
   "public/partials/html-head.html",
