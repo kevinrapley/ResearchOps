@@ -1,0 +1,168 @@
+{
+  "date": "2026-06-15",
+  "traceType": "operational-audit-trace",
+  "branch": "feature/header-account-links",
+  "traceRequired": true,
+  "traceDecision": "Required because repository-affecting work on branches starting with feature/ must have an auditable trace.",
+  "relatedWork": "Shared signed-in account links in the ResearchOps GOV.UK header",
+  "task": "Add signed-in header account links showing the user's display name linked to /pages/account/ and a Sign out link positioned furthest right.",
+  "selectedBundles": [
+    {
+      "id": "github-diamond",
+      "canonicalPath": ".agent-operating-model/bundles/github/",
+      "selectionBasis": "always-load"
+    },
+    {
+      "id": "researchops-developer-control",
+      "canonicalPath": ".agent-operating-model/bundles/researchops-developer-control/",
+      "selectionBasis": "always-load"
+    },
+    {
+      "id": "multi-functional-team",
+      "canonicalPath": ".agent-operating-model/bundles/multi-functional-team/",
+      "selectionBasis": "always-load"
+    },
+    {
+      "id": "govuk-design-system",
+      "canonicalPath": ".agent-operating-model/bundles/govuk-design-system/",
+      "selectionBasis": "conditional: shared GOV.UK header, navigation and accessibility change"
+    }
+  ],
+  "skippedBundles": [
+    {
+      "id": "cloudflare",
+      "canonicalPath": ".agent-operating-model/bundles/cloudflare/",
+      "reason": "No Worker, Pages deployment, binding or route implementation changed."
+    },
+    {
+      "id": "openai-platform",
+      "canonicalPath": ".agent-operating-model/bundles/openai/",
+      "reason": "No OpenAI API, model or eval implementation was in scope."
+    },
+    {
+      "id": "mcp-agent-tooling",
+      "canonicalPath": ".agent-operating-model/bundles/mcp-agent-tooling/",
+      "reason": "No MCP tool, resource, prompt or consent work was in scope."
+    },
+    {
+      "id": "airtable-public-api",
+      "canonicalPath": ".agent-operating-model/bundles/airtable-public-api/",
+      "reason": "No Airtable API or data integration work was in scope."
+    },
+    {
+      "id": "mural-public-api",
+      "canonicalPath": ".agent-operating-model/bundles/mural-public-api/",
+      "reason": "No Mural API or collaboration integration work was in scope."
+    }
+  ],
+  "precedenceDecisions": [
+    "GitHub Diamond governed branch naming, trace coverage, surgical mutation and PR readiness.",
+    "ResearchOps Developer Control governed the shared header and auth route conventions.",
+    "Multi-Functional Team governed public-sector assurance and residual-risk framing.",
+    "GOV.UK Design System governed the header link pattern, keyboard focus and accessible navigation labelling."
+  ],
+  "filesRead": [
+    "AGENTS.md",
+    ".agent-operating-model/orchestration.xml",
+    ".agent-operating-model/bundle-registry.json",
+    ".agent-operating-model/task-signal-catalog.json",
+    ".agent-operating-model/selection-rules.json",
+    ".agent-operating-model/github-mutation-policy.md",
+    ".agent-operating-model/precedence-policy.md",
+    ".agent-operating-model/trace-policy.md",
+    ".agent-operating-model/trace-layers.md",
+    ".agent-operating-model/bundles/github/prompt.spec.yaml",
+    ".agent-operating-model/bundles/github/prompt.body.xml",
+    ".agent-operating-model/bundles/researchops-developer-control/prompt.spec.yaml",
+    ".agent-operating-model/bundles/researchops-developer-control/prompt.body.xml",
+    ".agent-operating-model/bundles/multi-functional-team/prompt.spec.yaml",
+    ".agent-operating-model/bundles/multi-functional-team/prompt.body.xml",
+    ".agent-operating-model/bundles/govuk-design-system/prompt.spec.yaml",
+    ".agent-operating-model/bundles/govuk-design-system/prompt.body.xml",
+    "public/partials/header.html",
+    "src/govuk/templates/layouts/researchops.njk",
+    "public/js/auth-account-page.js",
+    "public/js/auth-sign-in-page.js",
+    "infra/cloudflare/src/core/auth/access-scoped.js",
+    "public/css/govuk/govuk-header-service-brand.css",
+    "public/css/govuk/govuk-page-chrome.css",
+    "tests/auth-account-dashboard-route-state.test.js",
+    "tests/auth-story-1-acceptance-route-state.test.js",
+    "tests/govuk-page-chrome-navigation-route-state.test.js",
+    "/Users/kevin.rapley/.codex/config.toml"
+  ],
+  "filesCreated": [
+    "public/js/auth-header-links.js",
+    "tests/auth-header-links-route-state.test.js",
+    "docs/agent-audit/reasoning/2026/06/15/header-account-links.md",
+    "docs/agent-audit/reasoning/2026/06/15/header-account-links.json"
+  ],
+  "filesModified": [
+    "public/css/govuk/govuk-header-service-brand.css",
+    "public/partials/header.html",
+    "tests/auth-story-1-acceptance-route-state.test.js"
+  ],
+  "localConfigModifiedOutsideRepository": [
+    "/Users/kevin.rapley/.codex/config.toml"
+  ],
+  "customSubagentRoles": [
+    "BranchGuard",
+    "CheckGuard",
+    "ReviewGuard",
+    "RenderGuard",
+    "TraceGuard",
+    "TemplateDev",
+    "RuntimeDev",
+    "StyleDev",
+    "TestDev",
+    "DocsDev"
+  ],
+  "subAgentStatus": "Previous standing sub-agent IDs were no longer available and new spawning was blocked by the active thread limit. Work continued locally and local config now records role names plus max_threads = 10 for future orchestration.",
+  "validation": [
+    {
+      "command": "node --test tests/auth-header-links-route-state.test.js tests/auth-story-1-acceptance-route-state.test.js tests/govuk-page-chrome-navigation-route-state.test.js",
+      "status": "passed",
+      "summary": "Focused header, auth sign-out and shared page chrome route-state checks passed."
+    },
+    {
+      "command": "node -e config inspection for /Users/kevin.rapley/.codex/config.toml",
+      "status": "passed",
+      "summary": "Confirmed max_threads = 10 and 10 custom sub-agent role entries are present."
+    },
+    {
+      "command": "Browser preview with mock signed-in identity",
+      "status": "passed",
+      "summary": "Confirmed the header renders the user's name linked to /pages/account/ followed by Sign out, with Sign out furthest right."
+    },
+    {
+      "command": "Desktop browser viewport check at 1280 by 720",
+      "status": "passed",
+      "summary": "Confirmed the header container renders as a flex row and the account navigation is right-aligned in the header row."
+    },
+    {
+      "command": "npx prettier -c public/js/auth-header-links.js tests/auth-header-links-route-state.test.js tests/auth-story-1-acceptance-route-state.test.js docs/agent-audit/reasoning/2026/06/15/header-account-links.md docs/agent-audit/reasoning/2026/06/15/header-account-links.json",
+      "status": "passed",
+      "summary": "Changed source, test and trace files matched repository formatting."
+    },
+    {
+      "command": "npm run trace:coverage",
+      "status": "passed",
+      "summary": "Trace coverage passed for the feature branch."
+    },
+    {
+      "command": "git diff --check",
+      "status": "passed",
+      "summary": "No whitespace errors were reported."
+    },
+    {
+      "command": "npm test",
+      "status": "passed",
+      "summary": "Full test suite passed: 221 tests."
+    }
+  ],
+  "validationPlanned": [],
+  "residualRisks": [
+    "The header account navigation is client-hydrated after the shared header partial loads, so signed-in users may briefly see no account links until the identity-only request completes.",
+    "The local max_threads entry records intended orchestration capacity, but the current running Codex session may need to reload config before any platform thread limit changes take effect."
+  ]
+}
