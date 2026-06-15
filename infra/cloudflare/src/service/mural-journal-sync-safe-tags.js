@@ -10,6 +10,19 @@ import { d1All, d1Run } from "./internals/researchops-d1.js";
 
 const SYSTEM_TAG_RE = /^journal-entry:/i;
 const MURAL_ROOT = "https://app.mural.co/api/public/v1";
+const MURAL_MINT_TAG_STYLE = {
+	backgroundColor: "#DDF7E8FF",
+	borderColor: "#98DDB8FF",
+	color: "#0B0C0CFF"
+};
+
+// Per-request telemetry for how tags were applied to Mural widgets. The tag
+// calls happen server-side, so this is surfaced in the sync response to make
+// live tag-application behaviour observable from the browser.
+let tagSyncEvents = [];
+function recordTagSyncEvent(event) {
+	if (tagSyncEvents.length < 60) tagSyncEvents.push(event);
+}
 
 function safeText(value) {
 	return String(value || "").trim();
@@ -69,7 +82,7 @@ function accessTokenFromHeaders(headers) {
 }
 
 function muralIdFromUrl(url) {
-	const match = String(url || "").match(/\/murals\/([^/]+)\/widgets(?:\/|$)/);
+	const match = String(url || "").match(/\/murals\/([^/]+)\/(?:widgets|tags)(?:[/?#]|$)/);
 	return match ? decodeURIComponent(match[1]) : "";
 }
 
@@ -86,6 +99,18 @@ function isMuralWidgetWrite(url, init) {
 function isMuralWidgetsRead(url, init) {
 	const method = String(init?.method || "GET").toUpperCase();
 	return method === "GET" && /app\.mural\.co\/api\/public\/v1\/murals\/[^/]+\/widgets(?:\?|$)/.test(String(url || ""));
+}
+
+function isMuralTagsRead(url, init) {
+	const method = String(init?.method || "GET").toUpperCase();
+	return method === "GET" && /app\.mural\.co\/api\/public\/v1\/murals\/[^/]+\/tags(?:\?|$)/.test(String(url || ""));
+}
+
+function tagsFromListBody(body) {
+	if (Array.isArray(body?.value)) return body.value;
+	if (Array.isArray(body?.tags)) return body.tags;
+	if (Array.isArray(body)) return body;
+	return [];
 }
 
 function isPatchRequest(init) {
@@ -236,7 +261,8 @@ async function persistMappings(svc, body, data) {
 	return results;
 }
 
-async function listMuralTags(accessToken, muralId) {
+async function listMuralTags(accessToken, muralId, tagCache = null) {
+	if (tagCache && tagCache.has(muralId)) return tagCache.get(muralId);
 	const res = await fetch(`${MURAL_ROOT}/murals/${muralId}/tags`, {
 		headers: {
 			Authorization: `Bearer ${accessToken}`,
@@ -244,14 +270,15 @@ async function listMuralTags(accessToken, muralId) {
 		}
 	});
 	const body = await res.json().catch(() => ({}));
-	if (!res.ok) return [];
-	return Array.isArray(body?.value) ? body.value : (Array.isArray(body?.tags) ? body.tags : []);
+	const tags = res.ok ? (Array.isArray(body?.value) ? body.value : (Array.isArray(body?.tags) ? body.tags : [])) : [];
+	if (tagCache && res.ok) tagCache.set(muralId, tags);
+	return tags;
 }
 
 async function createMuralTag(accessToken, muralId, tag) {
 	const text = truncateMuralTag(tag);
-	if (!text) return "";
-	const bodies = [{ text }, { text, backgroundColor: "#F6D6FF", borderColor: "#B15FD1", color: "#0B0C0C" }];
+	if (!text) return null;
+	const bodies = [{ text, ...MURAL_MINT_TAG_STYLE }, { text }];
 
 	for (const body of bodies) {
 		const res = await fetch(`${MURAL_ROOT}/murals/${muralId}/tags`, {
@@ -266,36 +293,79 @@ async function createMuralTag(accessToken, muralId, tag) {
 		const data = await res.json().catch(() => ({}));
 		if (res.ok) {
 			const created = Array.isArray(data?.value) ? data.value[0] : (data?.value || data);
-			return truncateMuralTag(created?.text || text);
+			return normalizeMuralTagRecord({ ...created, text: created?.text || text });
 		}
 	}
-	return "";
+	return null;
 }
 
-async function ensureKnownTags(accessToken, muralId, tags) {
+function normalizeMuralTagRecord(tag) {
+	const text = truncateMuralTag(tag?.text || tag?.name || tag?.title || tag?.label || tag);
+	const id = safeText(tag?.id || tag?.tagId || "");
+	return text ? { ...tag, id, text } : null;
+}
+
+function isMintStyledTag(record) {
+	return safeText(record?.backgroundColor).toUpperCase() === MURAL_MINT_TAG_STYLE.backgroundColor &&
+		safeText(record?.borderColor).toUpperCase() === MURAL_MINT_TAG_STYLE.borderColor;
+}
+
+async function restyleMuralTagAsMint(accessToken, muralId, record) {
+	if (!record?.id) return record;
+	const res = await fetch(`${MURAL_ROOT}/murals/${muralId}/tags/${record.id}`, {
+		method: "PATCH",
+		headers: {
+			Authorization: `Bearer ${accessToken}`,
+			"Content-Type": "application/json",
+			Accept: "application/json"
+		},
+		body: JSON.stringify(MURAL_MINT_TAG_STYLE)
+	});
+	if (!res.ok) return record;
+	return { ...record, ...MURAL_MINT_TAG_STYLE };
+}
+
+async function ensureKnownTags(accessToken, muralId, tags, createableTags = tags, tagCache = null) {
 	const desired = userFacingTags(tags);
 	if (!desired.length || !accessToken || !muralId) return [];
+	const createable = new Set(userFacingTags(createableTags).map(tag => tag.toLowerCase()));
 
 	const known = new Map();
-	for (const tag of await listMuralTags(accessToken, muralId)) {
-		const text = truncateMuralTag(tag?.text || tag?.name || tag?.title || tag);
-		if (text) known.set(text.toLowerCase(), text);
+	const listed = await listMuralTags(accessToken, muralId, tagCache);
+	for (const tag of listed) {
+		const record = normalizeMuralTagRecord(tag);
+		if (record) known.set(record.text.toLowerCase(), record);
 	}
 
 	const safe = [];
 	for (const tag of desired) {
 		const key = tag.toLowerCase();
 		if (known.has(key)) {
-			safe.push(known.get(key));
+			let record = known.get(key);
+			// User-authored tags created by earlier syncs (or by hand) keep
+			// whatever style they were created with; bring them onto the
+			// Mint contract. Board-curated tags are never restyled.
+			if (createable.has(key) && !isMintStyledTag(record)) {
+				record = await restyleMuralTagAsMint(accessToken, muralId, record).catch(() => record);
+				known.set(key, record);
+				if (isMintStyledTag(record) && tagCache && tagCache.has(muralId)) {
+					const cached = tagCache.get(muralId);
+					const idx = cached.findIndex(tag => safeText(tag?.id || tag?.tagId) === record.id);
+					if (idx >= 0) cached[idx] = { ...cached[idx], ...MURAL_MINT_TAG_STYLE };
+				}
+			}
+			safe.push(record);
 			continue;
 		}
-		const created = await createMuralTag(accessToken, muralId, tag).catch(() => "");
-		if (created) {
-			known.set(created.toLowerCase(), created);
-			safe.push(created);
+		if (!createable.has(key)) continue;
+		const record = await createMuralTag(accessToken, muralId, tag).catch(() => null);
+		if (record) {
+			known.set(record.text.toLowerCase(), record);
+			safe.push(record);
+			if (tagCache && tagCache.has(muralId)) tagCache.get(muralId).push(record);
 		}
 	}
-	return dedupeTags(safe);
+	return safe;
 }
 
 async function responseMentionsMissingTag(response) {
@@ -317,6 +387,7 @@ function removeUnsupportedFields(body) {
 	if (body && typeof body === "object") {
 		const next = { ...body };
 		delete next.title;
+		delete next.researchOpsUserTags;
 		if (Array.isArray(next.tags)) {
 			next.tags = userFacingTags(next.tags);
 			if (!next.tags.length) delete next.tags;
@@ -332,16 +403,8 @@ function withoutTags(body) {
 		const next = { ...body };
 		delete next.tags;
 		delete next.title;
+		delete next.researchOpsUserTags;
 		return next;
-	}
-	return body;
-}
-
-function withTags(body, tags) {
-	if (Array.isArray(body)) return body.map(item => withTags(item, tags));
-	if (body && typeof body === "object") {
-		const next = removeUnsupportedFields(body);
-		return tags.length ? { ...next, tags } : next;
 	}
 	return body;
 }
@@ -351,11 +414,21 @@ function tagsFromBody(body) {
 	return normalizeTags(body?.tags);
 }
 
+function researchOpsUserTagsFromBody(body) {
+	if (Array.isArray(body)) return body.flatMap(item => normalizeTags(item?.researchOpsUserTags));
+	return normalizeTags(body?.researchOpsUserTags);
+}
+
 function widgetsFromBody(body) {
 	if (Array.isArray(body?.value)) return body.value;
 	if (Array.isArray(body?.widgets)) return body.widgets;
 	if (Array.isArray(body)) return body;
 	return [];
+}
+
+function firstWidgetIdFromBody(body) {
+	const value = Array.isArray(body?.value) ? body.value[0] : body?.value;
+	return safeText(value?.id || body?.id || "");
 }
 
 function widgetById(widgetCache, muralId, widgetId) {
@@ -383,37 +456,127 @@ function replacementStyleFromWidget(widget) {
 	};
 }
 
-function replacementStickyBody(sourceWidget, requestedBody, tags) {
+function replacementStickyBodies(sourceWidget, requestedBody) {
 	const geometry = sourceWidget?.geometry || sourceWidget?.bounds || {};
 	const text = replacementTextFromBody(requestedBody);
-	const body = {
-		x: numberValue(sourceWidget?.x ?? geometry.x, 0),
-		y: numberValue(sourceWidget?.y ?? geometry.y, 0),
-		width: numberValue(sourceWidget?.width ?? geometry.width, 260),
-		height: numberValue(sourceWidget?.height ?? geometry.height, 160),
-		shape: "rectangle",
-		text,
-		style: replacementStyleFromWidget(sourceWidget),
-		stackingOrder: numberValue(sourceWidget?.stackingOrder, 1) + 1
-	};
-	if (tags.length) body.tags = tags;
-	return body;
-}
-
-async function createReplacementSticky(originalFetch, accessToken, muralId, sourceWidget, requestedBody, tags) {
-	const res = await originalFetch(`${MURAL_ROOT}/murals/${muralId}/widgets/sticky-note`, {
-		method: "POST",
-		headers: {
-			Authorization: `Bearer ${accessToken}`,
-			"Content-Type": "application/json",
-			Accept: "application/json"
+	const x = numberValue(sourceWidget?.x ?? geometry.x, 0);
+	const y = numberValue(sourceWidget?.y ?? geometry.y, 0);
+	const style = replacementStyleFromWidget(sourceWidget);
+	return [
+		{
+			x,
+			y,
+			width: numberValue(sourceWidget?.width ?? geometry.width, 260),
+			height: numberValue(sourceWidget?.height ?? geometry.height, 160),
+			text,
+			style,
+			stackingOrder: numberValue(sourceWidget?.stackingOrder, 1) + 1
 		},
-		body: JSON.stringify(replacementStickyBody(sourceWidget, requestedBody, tags))
-	});
-	return res;
+		{ x, y, text, backgroundColor: style.backgroundColor },
+		{ x, y, text }
+	];
 }
 
-async function fallbackToReplacementSticky({ originalFetch, input, init, url, body, muralId, confirmedTags, firstResponse, widgetCache }) {
+async function createReplacementSticky(originalFetch, accessToken, muralId, sourceWidget, requestedBody) {
+	let lastResponse = null;
+	for (const body of replacementStickyBodies(sourceWidget, requestedBody)) {
+		lastResponse = await originalFetch(`${MURAL_ROOT}/murals/${muralId}/widgets/sticky-note`, {
+			method: "POST",
+			headers: {
+				Authorization: `Bearer ${accessToken}`,
+				"Content-Type": "application/json",
+				Accept: "application/json"
+			},
+			body: JSON.stringify(body)
+		});
+		if (lastResponse.ok) return lastResponse;
+	}
+	return lastResponse;
+}
+
+function dedupeTagRecords(tagRecords) {
+	const seen = new Set();
+	const out = [];
+	for (const record of tagRecords) {
+		const id = safeText(record?.id);
+		if (!id || seen.has(id)) continue;
+		seen.add(id);
+		out.push(record);
+	}
+	return out;
+}
+
+/**
+ * Mural's widget PATCH replaces the whole tag set, so an update must carry the
+ * tags already on the widget (the Raspberry category and Snowberry project
+ * tags from the template) or they are silently removed.
+ */
+async function existingWidgetTagRecords(accessToken, muralId, widgetId, widgetCache, tagCache) {
+	const widget = widgetById(widgetCache, muralId, widgetId);
+	const widgetTags = Array.isArray(widget?.tags) ? widget.tags : [];
+	if (!widgetTags.length) return [];
+
+	const listed = await listMuralTags(accessToken, muralId, tagCache).catch(() => []);
+	const byId = new Map();
+	const byText = new Map();
+	for (const tag of listed) {
+		const record = normalizeMuralTagRecord(tag);
+		if (!record?.id) continue;
+		byId.set(record.id, record);
+		byText.set(record.text.toLowerCase(), record);
+	}
+
+	const records = [];
+	for (const tag of widgetTags) {
+		if (typeof tag === "string") {
+			const record = byId.get(safeText(tag)) || byText.get(safeText(tag).toLowerCase());
+			if (record) records.push(record);
+			continue;
+		}
+		const id = safeText(tag?.id || tag?.tagId);
+		const text = safeText(tag?.text || tag?.name || tag?.title || tag?.label);
+		const record = (id && byId.get(id)) || (text && byText.get(text.toLowerCase())) || (id ? { ...tag, id, text } : null);
+		if (record) records.push(record);
+	}
+	return dedupeTagRecords(records);
+}
+
+// Mural's only API that attaches a tag to a widget is "create tag with
+// widgets: [{ id }]" — widget update silently ignores a tags field, and there
+// is no add-existing-tag-to-widget endpoint. Mural deduplicates tags by text
+// within a mural, so re-posting an existing tag (with the same text) associates
+// the existing tag with the widget rather than creating a duplicate. Each tag
+// keeps its own colour: board category/project tags keep their existing colour
+// (Raspberry/Snowberry), user tags use Mint.
+async function associateTagsWithWidget(originalFetch, accessToken, muralId, widgetId, tagRecords) {
+	if (!accessToken || !muralId || !widgetId) return false;
+	let associated = 0;
+	for (const tag of dedupeTagRecords(tagRecords)) {
+		const text = truncateMuralTag(tag?.text);
+		if (!text) continue;
+		const style = {
+			backgroundColor: safeText(tag?.backgroundColor) || MURAL_MINT_TAG_STYLE.backgroundColor,
+			borderColor: safeText(tag?.borderColor) || MURAL_MINT_TAG_STYLE.borderColor,
+			color: safeText(tag?.color) || MURAL_MINT_TAG_STYLE.color
+		};
+		const res = await originalFetch(`${MURAL_ROOT}/murals/${muralId}/tags`, {
+			method: "POST",
+			headers: {
+				Authorization: `Bearer ${accessToken}`,
+				"Content-Type": "application/json",
+				Accept: "application/json"
+			},
+			body: JSON.stringify({ text, ...style, widgets: [{ id: widgetId }] })
+		}).catch(() => null);
+		const ok = !!res?.ok;
+		if (ok) associated += 1;
+		const detail = ok ? "" : await (res?.clone?.().text?.().catch(() => "") || Promise.resolve(""));
+		recordTagSyncEvent({ stage: "tag-associate", widgetId: safeText(widgetId), text, ok, status: res?.status, detail: detail ? String(detail).slice(0, 160) : undefined });
+	}
+	return associated > 0;
+}
+
+async function fallbackToReplacementSticky({ originalFetch, init, url, body, muralId, confirmedTags, firstResponse, widgetCache }) {
 	if (!isPatchRequest(init)) return firstResponse;
 	if (!(await responseMentionsWrongWidgetType(firstResponse))) return firstResponse;
 
@@ -423,10 +586,15 @@ async function fallbackToReplacementSticky({ originalFetch, input, init, url, bo
 	const replacementText = replacementTextFromBody(body);
 	if (!accessToken || !muralId || !sourceWidget || !replacementText) return firstResponse;
 
-	const withTagResponse = await createReplacementSticky(originalFetch, accessToken, muralId, sourceWidget, body, confirmedTags);
-	if (!(await responseMentionsMissingTag(withTagResponse))) return withTagResponse;
-
-	return createReplacementSticky(originalFetch, accessToken, muralId, sourceWidget, body, []);
+	const replacementResponse = await createReplacementSticky(originalFetch, accessToken, muralId, sourceWidget, body);
+	if (replacementResponse?.ok && confirmedTags.length) {
+		const responseBody = await replacementResponse.clone().json().catch(() => ({}));
+		const replacementWidgetId = firstWidgetIdFromBody(responseBody);
+		if (replacementWidgetId) {
+			await associateTagsWithWidget(originalFetch, accessToken, muralId, replacementWidgetId, confirmedTags).catch(() => false);
+		}
+	}
+	return replacementResponse || firstResponse;
 }
 
 function annotateWidgetsWithMappings(body, mappings) {
@@ -457,8 +625,22 @@ function jsonResponseFrom(original, body) {
 	return new Response(JSON.stringify(body), { status: original.status, statusText: original.statusText, headers });
 }
 
+function mergeWidgetCache(widgetCache, muralId, pageWidgets) {
+	const byId = new Map();
+	for (const widget of widgetCache.get(muralId) || []) {
+		const id = safeText(widget?.id);
+		if (id) byId.set(id, widget);
+	}
+	for (const widget of pageWidgets) {
+		const id = safeText(widget?.id);
+		if (id) byId.set(id, widget);
+	}
+	widgetCache.set(muralId, Array.from(byId.values()));
+}
+
 function installSafeMuralFetch(svc, originalFetch) {
 	const widgetCache = new Map();
+	const tagCache = new Map();
 
 	return async function safeMuralFetch(input, init = {}) {
 		const url = typeof input === "string" ? input : input?.url;
@@ -469,26 +651,52 @@ function installSafeMuralFetch(svc, originalFetch) {
 			if (!response.ok || !muralId) return response;
 			const body = await response.clone().json().catch(() => null);
 			if (!body) return response;
-			widgetCache.set(muralId, widgetsFromBody(body));
+			mergeWidgetCache(widgetCache, muralId, widgetsFromBody(body));
 			const mappings = await listD1MappingsForMural(svc.env, muralId).catch(() => []);
 			return jsonResponseFrom(response, annotateWidgetsWithMappings(body, mappings));
+		}
+
+		if (isMuralTagsRead(url, init)) {
+			const response = await originalFetch(input, init);
+			if (response.ok && muralId) {
+				const body = await response.clone().json().catch(() => null);
+				if (body) tagCache.set(muralId, tagsFromListBody(body));
+			}
+			return response;
 		}
 
 		if (!isMuralWidgetWrite(url, init)) return originalFetch(input, init);
 
 		const body = await bodyAsJson(init.body);
 		const desiredTags = tagsFromBody(body);
+		const createableTags = researchOpsUserTagsFromBody(body);
+		const method = String(init?.method || "GET").toUpperCase();
 		if (!body || !desiredTags.length) {
-			return originalFetch(input, { ...init, body: body ? JSON.stringify(removeUnsupportedFields(body)) : init.body });
+			const passthrough = await originalFetch(input, { ...init, body: body ? JSON.stringify(removeUnsupportedFields(body)) : init.body });
+			if (method === "POST") {
+				recordTagSyncEvent({ stage: "create-without-tags", ok: passthrough.ok, status: passthrough.status });
+			}
+			return passthrough;
 		}
 
 		const accessToken = accessTokenFromHeaders(init.headers);
-		const confirmedTags = await ensureKnownTags(accessToken, muralId, desiredTags).catch(() => []);
-		const firstResponse = await originalFetch(input, { ...init, body: JSON.stringify(confirmedTags.length ? withTags(body, confirmedTags) : withoutTags(body)) });
+		let confirmedTags = await ensureKnownTags(accessToken, muralId, desiredTags, createableTags, tagCache).catch(() => []);
+		if (isPatchRequest(init) && confirmedTags.length) {
+			const preserved = await existingWidgetTagRecords(accessToken, muralId, widgetIdFromUrl(url), widgetCache, tagCache).catch(() => []);
+			confirmedTags = dedupeTagRecords([...confirmedTags, ...preserved]);
+		}
+		const firstResponse = await originalFetch(input, { ...init, body: JSON.stringify(withoutTags(body)) });
+
+		if (firstResponse.ok && confirmedTags.length) {
+			const responseBody = await firstResponse.clone().json().catch(() => ({}));
+			const widgetId = firstWidgetIdFromBody(responseBody) || widgetIdFromUrl(url);
+			await associateTagsWithWidget(originalFetch, accessToken, muralId, widgetId, confirmedTags);
+		} else if (!firstResponse.ok && desiredTags.length) {
+			recordTagSyncEvent({ stage: "write-rejected", method, status: firstResponse.status, confirmed: confirmedTags.length });
+		}
 
 		const replacementResponse = await fallbackToReplacementSticky({
 			originalFetch,
-			input,
 			init,
 			url,
 			body,
@@ -508,12 +716,13 @@ async function responseWithMappings(response, svc, body) {
 	const data = await response.clone().json().catch(() => null);
 	if (!data || !data.ok || (data.mode !== "hydrate" && data.mode !== "entry")) return response;
 	const mappings = await persistMappings(svc, body, data);
-	return jsonResponseFrom(response, { ...data, mappings });
+	return jsonResponseFrom(response, { ...data, mappings, tagSync: tagSyncEvents.slice() });
 }
 
 export async function muralJournalSync(svc, request, origin) {
 	const originalFetch = globalThis.fetch;
 	const body = await requestBody(request);
+	tagSyncEvents = [];
 	globalThis.fetch = installSafeMuralFetch(svc, originalFetch);
 	try {
 		const response = await BaseMuralJournalSync.muralJournalSync(svc, request, origin);

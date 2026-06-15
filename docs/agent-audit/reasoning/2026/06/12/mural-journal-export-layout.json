@@ -1,0 +1,224 @@
+{
+	"date": "2026-06-12",
+	"traceType": "operational-audit-trace",
+	"branch": "feature/mural-journal-export-layout",
+	"relatedWork": "Reflexive Journals — Mural integration",
+	"traceRequired": true,
+	"operatingModelBootstrap": {
+		"loadedSources": [
+			"AGENTS.md",
+			".agent-operating-model/orchestration.xml",
+			".agent-operating-model/bundle-registry.json",
+			".agent-operating-model/task-signal-catalog.json",
+			".agent-operating-model/selection-rules.json",
+			".agent-operating-model/bootstrap-checklist.md",
+			".agent-operating-model/precedence-policy.md",
+			".agent-operating-model/trace-policy.md",
+			".agent-operating-model/trace-layers.md",
+			".agent-operating-model/behavioural-evals.json",
+			".agent-operating-model/github-mutation-policy.md"
+		],
+		"selectedBundles": [
+			".agent-operating-model/bundles/github/",
+			".agent-operating-model/bundles/researchops-developer-control/",
+			".agent-operating-model/bundles/multi-functional-team/",
+			".agent-operating-model/bundles/govuk-design-system/",
+			".agent-operating-model/bundles/cloudflare/",
+			".agent-operating-model/bundles/mural-public-api/"
+		],
+		"skippedBundles": [
+			{
+				"path": ".agent-operating-model/bundles/openai/",
+				"reason": "No OpenAI API, model, retrieval or evaluation change."
+			},
+			{
+				"path": ".agent-operating-model/bundles/mcp-agent-tooling/",
+				"reason": "No MCP protocol or tool contract change."
+			},
+			{
+				"path": ".agent-operating-model/bundles/airtable-public-api/",
+				"reason": "Airtable-backed mapping persistence was left in place but no Airtable API contract was changed."
+			}
+		]
+	},
+	"muralEndpointContracts": [
+		{
+			"file": ".agent-operating-model/bundles/mural-public-api/contracts/endpoints/getmuralwidgets.yaml",
+			"method": "GET",
+			"path": "/murals/{muralId}/widgets",
+			"minimumScope": "murals:read"
+		},
+		{
+			"file": ".agent-operating-model/bundles/mural-public-api/contracts/endpoints/getmuraltags.yaml",
+			"method": "GET",
+			"path": "/murals/{muralId}/tags",
+			"minimumScope": "murals:read"
+		},
+		{
+			"file": ".agent-operating-model/bundles/mural-public-api/contracts/endpoints/updatestickynote.yaml",
+			"method": "PATCH",
+			"path": "/murals/{muralId}/widgets/sticky-note/{widgetId}",
+			"minimumScope": "murals:write"
+		},
+		{
+			"file": ".agent-operating-model/bundles/mural-public-api/contracts/endpoints/createstickynote.yaml",
+			"method": "POST",
+			"path": "/murals/{muralId}/widgets/sticky-note",
+			"minimumScope": "murals:write"
+		},
+		{
+			"file": ".agent-operating-model/bundles/mural-public-api/contracts/endpoints/createmuraltag.yaml",
+			"method": "POST",
+			"path": "/murals/{muralId}/tags",
+			"minimumScope": "murals:write"
+		}
+	],
+	"implementationSummary": {
+		"columnOrder": [
+			"perceptions",
+			"procedures",
+			"decisions",
+			"introspections"
+		],
+		"templateSelection": "Use the first non-header sticky-note card under each category heading, preferring blank or placeholder cards.",
+		"firstEntryAction": "PATCH existing template sticky when it is still blank or placeholder text.",
+		"laterEntryAction": "POST new sticky-note below the latest synced item with the existing grid gap.",
+		"idempotency": [
+			"Detect existing entries by journal-entry marker when D1 mapping annotations are available.",
+			"Detect existing entries by exact body/category match when live widgets lack mapping annotations.",
+			"Return already-synced outcomes with preserved: true."
+		],
+		"tagHandling": [
+			"Preserve existing template tags such as Raspberry category and Snowberry project tags.",
+			"Do not create category/project tags from ResearchOps as Mint tags.",
+			"Create only explicit ResearchOps user-created tags as Mint tags.",
+			"Strip the internal researchOpsUserTags hint before forwarding write requests to Mural.",
+			"Apply known Mural tag ids to the sticky after the sticky-note create or update response returns a widget id."
+		],
+		"followUpCorrection": [
+			"Treat exact wide category-label sticky-note widgets as headers so purple column labels are not patched as journal entries.",
+			"Write sticky content without unsupported tag fields, then apply board-known tag ids and newly-created Mint user tag ids to the resulting widget.",
+			"Address Codex review thread PRRT_kwDOP3Td2M6JDoxV by preventing one body-matched Mural widget from being reused for multiple distinct journal entry ids in status and hydrate passes.",
+			"Ignore decorative purple title/header cards when selecting reusable journal templates or existing entry cards; require white content-card geometry and allow filled white cards to anchor later placements when category header text is unreadable.",
+			"Repair polluted boards by refusing to count synced widgets above the resolved content-card row, then deleting stale synced widgets outside the content flow after the correct white card is updated or created.",
+			"Recognise manually-created white Mural cards as already synced when they are in the correct column and their body text matches a journal entry, even when they lack the internal journal-entry marker and Mural returns text in plainText, htmlText, content, properties or data fields.",
+			"Follow Mural widget-list pagination via the public API next cursor so status and hydrate scan all board widgets rather than only the first page.",
+			"Extract visible card text from nested Mural payloads such as { text: { plainText: '...' } } so object-shaped text fields are not normalised to [object Object].",
+			"Resolve Test Project 1 Mural board mappings across the canonical Airtable id, legacy Airtable id and local id so status checks do not fall back to the wrong board when a page is opened with the legacy URL id.",
+			"Read D1 Mural board mappings from the existing mural_boards.project shape as well as newer project_record_id and local_project_id columns.",
+			"Route compact journal-page Mural status calls on *.pages.dev through same-origin /api/mural/journal-sync so Pages previews use the preview Worker instead of the production rops-api Worker.",
+			"Request limit=100 from the first Mural widget-list page, follow wrapped cursors such as pagination.next, and cover manually-created card status recognition through the active safe-tags wrapper so existing cards without internal journal-entry markers no longer report as 0 synced.",
+			"Enrich Mural list results with GET /murals/{muralId}/widgets/{widgetId} for sticky-like widgets when list results omit visible body text, so manually-created cards can be matched by journal body text even when the list endpoint returns only ids, tags and geometry.",
+			"Degrade sticky-note create payloads to the documented contract: when Mural rejects the styled payload, retry without shape, then with only x, y, text and backgroundColor, then with only x, y and text, so entries still land when the live API rejects undocumented body properties.",
+			"Carry tags and the researchOpsUserTags hint on every create fallback attempt so Mint tag creation and post-write tag application still happen when the styled payload is rejected.",
+			"Apply tag ids through the documented PATCH /murals/{muralId}/widgets/sticky-note/{widgetId} route first, retaining the generic widget route only as a fallback.",
+			"Create replacement stickies without inline tag text values and apply confirmed tag ids to the replacement widget after creation, since the create contract does not accept tag names.",
+			"Merge Mural widget-list pages into the safe-tags widget cache instead of overwriting the cache with the last page, so replacement-sticky fallbacks can find source widgets from any page.",
+			"Cache the board tag list for the duration of one sync request so hydrate runs do not re-fetch GET /murals/{muralId}/tags for every write.",
+			"Stop later entries inheriting earlier entries' Mint tags: once a column template is no longer a blank placeholder, only its category and project-name tags are carried forward to new cards.",
+			"Corrected the live category-column-not-found failure: widget tags returned as Mural tag ids are now resolved to tag texts via GET /murals/{muralId}/tags before column/template matching, and widget detail enrichment now triggers when list text fields are present but empty rather than only when they are absent.",
+			"Fixed muralIdFromUrl in the safe-tags wrapper so widget-list reads with query strings (always sent as ?limit=100) are recognised; previously the D1 journal-entry annotation and widget cache silently never ran in production.",
+			"Deduplicated widget text fragments so normalised text plus htmlText no longer double the body, which broke exact short-body matching and exact header-label detection.",
+			"Added status and hydrate diagnostics (resolved widget counts, text/tag visibility, per-column layout detection, positional widget sample) and embedded a board visibility summary in the category-column-not-found outcome so live failures are self-describing.",
+			"Resolved the project name server-side from the D1 projects and rops_projects_cache records (checking all Test Project 1 id aliases) so the Snowberry project tag carries onto new cards even when browser route hydration fails and the client can only echo the project id; the client-sent name remains a fallback and names longer than Mural's 25-character tag limit match their truncated board tag.",
+			"Merged the tags already on a widget into PATCH tag application (resolved by id or text, including widget tag objects whose ids are missing from the board tag list) because the Mural widget PATCH replaces the whole tag set; the Raspberry category and Snowberry project tags can no longer be stripped from a patched template sticky.",
+			"Restyled user-authored ResearchOps tags that already existed on the board with default styling to the Mint contract via the documented PATCH /murals/{muralId}/tags/{tagId} endpoint; board-curated category and project tags are never restyled.",
+			"Aligned the compact journal Mural sync payload with the journal tabs payload so both prefer the hydrated main[data-project-name] value before falling back to the page heading or project id."
+		],
+		"uiReporting": [
+			"Compact journal Mural sync status reports already-present entries as left unchanged.",
+			"Journal tabs sync panel reports already-present entries as left unchanged."
+		]
+	},
+	"filesChanged": [
+		"infra/cloudflare/src/service/mural-journal-sync-layout.js",
+		"infra/cloudflare/src/lib/mural.js",
+		"infra/cloudflare/src/service/internals/mural-board-registry.js",
+		"infra/cloudflare/src/service/mural-journal-sync-safe-tags.js",
+		"public/js/journal-mural-sync-compact.js",
+		"public/js/journal-tabs.js",
+		"tests/mural-journal-sync-route-state.test.js",
+		"tests/mural-journal-sync-layout-runtime.test.js",
+		"tests/mural-journal-sync-safe-tags-runtime.test.js",
+		"tests/mural-airtable-board-registry.test.js",
+		"docs/agent-audit/reasoning/2026/06/12/mural-journal-export-layout.md",
+		"docs/agent-audit/reasoning/2026/06/12/mural-journal-export-layout.json"
+	],
+	"validationRun": [
+		{
+			"command": "node tests/mural-journal-sync-route-state.test.js",
+			"status": "passed"
+		},
+		{
+			"command": "node tests/mural-journal-sync-layout-runtime.test.js",
+			"status": "passed",
+			"summary": "Includes duplicate-body entries, purple decorative-card, stale-widget repair, paginated widget loading, nested Mural text payloads and manual-card recognition regression coverage."
+		},
+		{
+			"command": "node tests/mural-journal-sync-safe-tags-runtime.test.js",
+			"status": "passed",
+			"summary": "Includes active-wrapper manual-card status recognition, first-page limit=100 pagination coverage, and widget-detail enrichment when list results omit sticky-note body text. Includes a strict-contract Mural regression where the API rejects undocumented sticky-note body properties and the sync still lands both entries with tags applied by id."
+		},
+		{
+			"command": "node tests/journals-route-state.test.js && node tests/journal-tabs-api-origin-route-state.test.js",
+			"status": "passed",
+			"summary": "Includes compact journal-page same-origin Pages preview API routing guard."
+		},
+		{
+			"command": "node tests/mural-airtable-board-registry.test.js",
+			"status": "passed",
+			"summary": "Includes legacy Test Project 1 id resolution to canonical D1 and Airtable Mural board mappings."
+		},
+		{
+			"command": "node --check infra/cloudflare/src/service/mural-journal-sync-layout.js && node --check infra/cloudflare/src/service/mural-journal-sync-safe-tags.js && node --check tests/mural-journal-sync-safe-tags-runtime.test.js && node --check public/js/journal-mural-sync-compact.js && node --check public/js/journal-tabs.js",
+			"status": "passed"
+		},
+		{
+			"command": "node tests/mural-service-split-route-state.test.js && node tests/mural-ui-route-state.test.js && node tests/pages-config-mural-return-route-state.test.js && node tests/mural-airtable-board-registry.test.js",
+			"status": "passed"
+		},
+		{
+			"command": "npm run format:check",
+			"status": "passed"
+		},
+		{
+			"command": "npm test",
+			"status": "passed",
+			"summary": "217 tests passed"
+		},
+		{
+			"command": "npm run lint",
+			"status": "passed",
+			"summary": "0 errors, 258 existing warnings"
+		},
+		{
+			"command": "npm run validate",
+			"status": "passed"
+		},
+		{
+			"command": "npm run trace:coverage -- --date 2026-06-12",
+			"status": "passed",
+			"summary": "Trace coverage confirmed for feature/mural-journal-export-layout."
+		},
+		{
+			"command": "node tests/mural-journal-sync-safe-tags-runtime.test.js",
+			"status": "passed",
+			"summary": "Includes live widget-list shape regression: tag ids resolved via the board tag list, empty-string list text enriched via widget detail GETs, three manual cards counted as synced with no writes."
+		},
+		{
+			"command": "node tests/mural-journal-sync-layout-runtime.test.js",
+			"status": "passed",
+			"summary": "Includes D1 project-name resolution regression: a hydrate request that only carries the project id still carries the Snowberry project tag onto new cards."
+		},
+		{
+			"command": "node tests/mural-journal-sync-safe-tags-runtime.test.js",
+			"status": "passed",
+			"summary": "Includes Mint restyle and tag-preservation regression: a pre-existing default-styled user tag is restyled to Mint instead of recreated, and tag application onto a patched template keeps the project tag even when the board tag list omits it and the client could not send the project name."
+		}
+	],
+	"residualRisks": [
+		"No live Mural board mutation was performed from the local Codex session.",
+		"The safe-tags wrapper applies existing Mural tags by id when the Mural tags list returns them. If a template carries a tag name that Mural does not report as an existing board tag, the wrapper omits that template tag from new cards rather than creating it as Mint; existing widgets keep such tags because tag application merges the tags already on the widget.",
+		"Mural does not publicly document its built-in tag preset colour values. The Mint constants in mural-journal-sync-safe-tags.js (#DDF7E8FF background, #98DDB8FF border, #0B0C0CFF text) are the single place to adjust if the workspace's built-in Mint preset differs."
+	]
+}

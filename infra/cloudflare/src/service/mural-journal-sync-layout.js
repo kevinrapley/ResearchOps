@@ -7,18 +7,47 @@
 import {
 	refreshAccessToken,
 	verifyHomeOfficeByCompany,
-	getWidgets
+	getWidgets,
+	getMuralTags
 } from "../lib/mural.js";
+import { d1Get } from "./internals/researchops-d1.js";
+import {
+	TEST_PROJECT_1_CANONICAL_ID,
+	TEST_PROJECT_1_LEGACY_ID,
+	TEST_PROJECT_1_LOCAL_ID
+} from "./internals/test-project-1-journal-seed.js";
 
 const CATEGORY_KEYS = ["perceptions", "procedures", "decisions", "introspections"];
 const CREATED_ACTIONS = ["updated-template-widget", "created-template-sticky"];
 const DEFAULT_WIDTH = 260;
 const DEFAULT_HEIGHT = 160;
+// Mural's fixed sticky-note card size and the Reflexive Journal template's
+// column x positions. The journal Mural is a duplicate of a fixed template, so
+// these are stable across projects and far more reliable than inferring the
+// column geometry from board widgets.
+const FIXED_CARD_WIDTH = 288;
+const FIXED_CARD_HEIGHT = 168;
+// The Reflexive Journal template's fixed card grid: each column's x, the first
+// card's y, and the pitch between consecutive cards. The journal Mural is a
+// duplicate of a fixed template, so placing cards on this grid is reliable.
+const COLUMN_X = {
+	perceptions: 120,
+	procedures: 456,
+	decisions: 792,
+	introspections: 1128
+};
+const COLUMN_START_Y = 264;
+const ROW_PITCH = 192;
 const GRID_GAP = 32;
 const PURPOSE_REFLEXIVE = "reflexive_journal";
+const MURAL_TAG_TEXT_LIMIT = 25;
 const ENTRY_MARKER_RE = /journal-entry:[a-z0-9_-]+/i;
 const DEFAULT_STICKY_BACKGROUND = "#FFFFFFFF";
+const CONTENT_CARD_BACKGROUNDS = new Set(["#FFFFFFFF", "#FAFAFAFF", "#FDFDFDFF"]);
+const MIN_CONTENT_CARD_WIDTH = 180;
+const MIN_CONTENT_CARD_HEIGHT = 110;
 const DEFAULT_MURAL_FONT = "proxima-nova";
+const TEMPLATE_PLACEHOLDER_RE = /^(add|write|enter|capture|sticky|note|template|placeholder)\b/i;
 const SUPPORTED_MURAL_FONTS = new Set([
 	"adelle",
 	"blambot-casual",
@@ -33,6 +62,27 @@ const SUPPORTED_TEXT_ALIGN = new Set(["left", "center", "right"]);
 
 function safeText(value) {
 	return String(value || "").trim();
+}
+
+function textValue(value) {
+	if (value === null || value === undefined) return "";
+	if (typeof value === "string" || typeof value === "number" || typeof value === "boolean") return safeText(value);
+	if (Array.isArray(value)) return value.map(textValue).filter(Boolean).join(" ");
+	if (typeof value === "object") {
+		return textValue([
+			value.plainText,
+			value.text,
+			value.htmlText,
+			value.content,
+			value.body,
+			value.description,
+			value.value,
+			value.title,
+			value.name,
+			value.label
+		]);
+	}
+	return "";
 }
 
 function categoryLabel(categoryKey) {
@@ -84,7 +134,69 @@ function tagKeys(widget) {
 }
 
 function widgetText(widget) {
-	return safeText(widget?.text || widget?.htmlText || widget?.title || widget?.name || widget?.label || "");
+	const fragments = [
+		widget?.text,
+		widget?.plainText,
+		widget?.htmlText,
+		widget?.content,
+		widget?.body,
+		widget?.description,
+		widget?.properties?.text,
+		widget?.properties?.plainText,
+		widget?.properties?.htmlText,
+		widget?.data?.text,
+		widget?.data?.plainText,
+		widget?.data?.htmlText,
+		widget?.title,
+		widget?.name,
+		widget?.label
+	].map(textValue).filter(Boolean);
+
+	const seen = new Set();
+	const out = [];
+	for (const fragment of fragments) {
+		const key = looseBodyText(fragment);
+		if (!key || seen.has(key)) continue;
+		seen.add(key);
+		out.push(fragment);
+	}
+	return out.join(" ");
+}
+
+function canonicalBodyText(value) {
+	return safeText(value)
+		.replace(/<[^>]*>/g, " ")
+		.replace(/&nbsp;/gi, " ")
+		.replace(/\s+/g, " ")
+		.toLowerCase();
+}
+
+function looseBodyText(value) {
+	return canonicalBodyText(value)
+		.normalize("NFKD")
+		.replace(/[\u0300-\u036f]/g, "")
+		.replace(/[^a-z0-9]+/g, " ")
+		.replace(/\s+/g, " ")
+		.trim();
+}
+
+function bodyTextsMatch(widgetValue, entryValue) {
+	const widgetBody = looseBodyText(widgetValue);
+	const entryBody = looseBodyText(entryValue);
+	if (!widgetBody || !entryBody) return false;
+	if (widgetBody === entryBody) return true;
+
+	const shorter = widgetBody.length < entryBody.length ? widgetBody : entryBody;
+	const longer = widgetBody.length < entryBody.length ? entryBody : widgetBody;
+	return shorter.length >= 80 && longer.includes(shorter);
+}
+
+function isTemplatePlaceholder(widget) {
+	// Ignore a stale journal-entry marker: a blank template that only carries a
+	// marker (folded into .text by normalizeWidget) is still a placeholder that
+	// should receive the first entry rather than be treated as filled content.
+	const text = bodyTextWithoutEntryMarkers(widget);
+	return !text || TEMPLATE_PLACEHOLDER_RE.test(text);
 }
 
 function widgetMetadataText(widget) {
@@ -103,6 +215,17 @@ function widgetMetadataText(widget) {
 function numeric(value, fallback = 0) {
 	const n = Number(value);
 	return Number.isFinite(n) ? n : fallback;
+}
+
+function explicitGeometryValue(widget, key) {
+	const geometry = widget?.geometry || widget?.bounds || {};
+	const value = widget?.[key] ?? geometry[key];
+	const n = Number(value);
+	return Number.isFinite(n) ? n : null;
+}
+
+function hasExplicitCanvasSize(widget) {
+	return explicitGeometryValue(widget, "width") !== null && explicitGeometryValue(widget, "height") !== null;
 }
 
 function rounded(value, fallback = 0) {
@@ -152,6 +275,17 @@ function widgetHasAnyEntryTag(widget) {
 	return ENTRY_MARKER_RE.test([widgetMetadataText(widget), tagKeys(widget).join(" ")].join(" "));
 }
 
+function bodyTextWithoutEntryMarkers(widget) {
+	// Visible card text with any journal-entry:<id> marker removed. Status
+	// annotation injects that marker into the widget title (and normalizeWidget
+	// folds the title into .text), so a blank template carrying a stale marker
+	// must not be mistaken for a card that holds real entry content.
+	return canonicalBodyText(widgetText(widget))
+		.replace(/journal-entry:[a-z0-9_-]+/gi, " ")
+		.replace(/\s+/g, " ")
+		.trim();
+}
+
 function widgetHasEntryTag(widget, entryId) {
 	const tag = entrySyncTag(entryId).toLowerCase();
 	if (!tag) return false;
@@ -163,13 +297,41 @@ function isStickyLike(widget) {
 	return type.includes("sticky") || type.includes("note") || type.includes("shape") || type === "";
 }
 
+function widgetBackground(widget) {
+	return muralHexAlpha(
+		widget?.style?.backgroundColor ||
+		widget?.backgroundColor ||
+		widget?.color ||
+		widget?.style?.color,
+		""
+	);
+}
+
+function isWhiteContentCard(widget) {
+	const background = widgetBackground(widget);
+	return hasExplicitCanvasSize(widget) &&
+		(!background || CONTENT_CARD_BACKGROUNDS.has(background)) &&
+		numeric(widget.width, DEFAULT_WIDTH) >= MIN_CONTENT_CARD_WIDTH &&
+		numeric(widget.height, DEFAULT_HEIGHT) >= MIN_CONTENT_CARD_HEIGHT;
+}
+
+function isContentTemplateCandidate(widget) {
+	return isStickyLike(widget) && isWhiteContentCard(widget);
+}
+
 function isHeaderWidget(widget, categoryKey) {
 	const label = categoryLabel(categoryKey);
-	const text = widgetText(widget).toLowerCase();
+	const text = canonicalBodyText(widgetText(widget));
 	const meta = widgetMetadataText(widget);
-	const tags = tagKeys(widget);
-	const categoryMatch = text === label || meta === label || tags.includes(categoryKey);
-	return categoryMatch && numeric(widget.width) > numeric(widget.height);
+	const categoryMatch = text === label || meta === label;
+	return categoryMatch && numeric(widget.width) > numeric(widget.height) * 1.5;
+}
+
+function isColumnContentWidget(widget, categoryKey, layout) {
+	if (!widget || isHeaderWidget(widget, categoryKey)) return false;
+	if (!isContentTemplateCandidate(widget)) return false;
+	if (layout && !widgetMatchesColumnLayout(widget, layout)) return false;
+	return widgetMatchesCategory(widget, categoryKey, layout);
 }
 
 function categoryHeaderWidget(widgets, categoryKey) {
@@ -193,6 +355,12 @@ function isInHeaderColumn(widget, header) {
 	return y > numeric(header.y) + numeric(header.height) && centre >= left && centre <= right;
 }
 
+function isInLayoutContentFlow(widget, layout) {
+	if (!layout) return true;
+	const contentTop = numeric(layout.y, 0) - Math.max(16, numeric(layout.height, DEFAULT_HEIGHT) * 0.25);
+	return numeric(widget.y, 0) >= contentTop;
+}
+
 function isCategoryTaggedTemplate(widget, categoryKey) {
 	const tags = tagKeys(widget);
 	const meta = widgetMetadataText(widget);
@@ -201,22 +369,28 @@ function isCategoryTaggedTemplate(widget, categoryKey) {
 }
 
 function columnTemplateWidgetFromTags(widgets, categoryKey) {
-	return widgets
-		.filter(isStickyLike)
+	const candidates = widgets
+		.filter(isContentTemplateCandidate)
 		.filter(widget => isCategoryTaggedTemplate(widget, categoryKey))
-		.filter(widget => !widgetHasAnyEntryTag(widget))
-		.sort((a, b) => numeric(a.y) - numeric(b.y) || numeric(a.x) - numeric(b.x))[0] || null;
+		.filter(widget => !isHeaderWidget(widget, categoryKey))
+		.sort((a, b) => numeric(a.y) - numeric(b.y) || numeric(a.x) - numeric(b.x));
+	return candidates.find(widget => !widgetHasAnyEntryTag(widget) && isTemplatePlaceholder(widget)) ||
+		candidates.find(widget => !widgetHasAnyEntryTag(widget)) ||
+		candidates[0] ||
+		null;
 }
 
 function columnTemplateWidget(widgets, categoryKey) {
 	const header = categoryHeaderWidget(widgets, categoryKey);
 	if (!header) return columnTemplateWidgetFromTags(widgets, categoryKey);
 
-	return widgets
+	const candidates = widgets
 		.filter(widget => widget.id !== header.id)
-		.filter(isStickyLike)
+		.filter(isContentTemplateCandidate)
+		.filter(widget => !isHeaderWidget(widget, categoryKey))
 		.filter(widget => isInHeaderColumn(widget, header))
-		.sort((a, b) => numeric(a.y) - numeric(b.y) || Math.abs(centreX(a) - centreX(header)) - Math.abs(centreX(b) - centreX(header)))[0] ||
+		.sort((a, b) => numeric(a.y) - numeric(b.y) || Math.abs(centreX(a) - centreX(header)) - Math.abs(centreX(b) - centreX(header)));
+	return candidates.find(isTemplatePlaceholder) || candidates[0] ||
 		columnTemplateWidgetFromTags(widgets, categoryKey);
 }
 
@@ -279,38 +453,54 @@ function widgetMatchesCategory(widget, categoryKey, layout) {
 	return tags.includes(categoryKey) || meta.includes(categoryKey) || widgetMatchesColumnLayout(widget, layout);
 }
 
-function canonicalExistingWidget(widgets, entry, layout) {
+function canonicalExistingWidget(widgets, entry, layout, claimedWidgetIds = new Set()) {
 	return widgets.find(widget => {
-		return widgetHasEntryTag(widget, entry.entryId) &&
-			widgetMatchesCategory(widget, entry.categoryKey, layout) &&
-			widgetMatchesColumnLayout(widget, layout);
+		if (!isColumnContentWidget(widget, entry.categoryKey, layout)) return false;
+		if (!isInLayoutContentFlow(widget, layout)) return false;
+		// A blank column template holds no entry content. A stale or incorrect
+		// journal-entry marker (e.g. a D1 mapping pointing an entry at the
+		// template) must not count the empty card as a synced entry, so ignore
+		// the marker text when deciding whether the card is blank.
+		if (!bodyTextWithoutEntryMarkers(widget)) return false;
+		if (widgetHasEntryTag(widget, entry.entryId)) return true;
+		if (claimedWidgetIds.has(safeText(widget.id))) return false;
+		return bodyTextsMatch(widgetText(widget), entry.description);
+	});
+}
+
+function staleSyncedWidgets(widgets, entry, layout) {
+	return widgets.filter(widget => {
+		const sameEntry = widgetHasEntryTag(widget, entry.entryId) ||
+			bodyTextsMatch(widgetText(widget), entry.description);
+		if (!sameEntry || !safeText(widget.id)) return false;
+		return !isColumnContentWidget(widget, entry.categoryKey, layout) || !isInLayoutContentFlow(widget, layout);
 	});
 }
 
 function latestCanonicalWidget(widgets, categoryKey, layout) {
+	// Only a card holding real entry text counts as the latest synced card. A
+	// blank template carrying a stale marker must not anchor placement, or the
+	// first entry is created below it and the template is left empty.
 	return widgets
-		.filter(widget => widgetHasAnyEntryTag(widget))
-		.filter(widget => widgetMatchesCategory(widget, categoryKey, layout))
-		.filter(widget => widgetMatchesColumnLayout(widget, layout))
+		.filter(widget => isColumnContentWidget(widget, categoryKey, layout))
+		.filter(widget => isInLayoutContentFlow(widget, layout))
+		.filter(widget => !!bodyTextWithoutEntryMarkers(widget))
 		.sort((a, b) => numeric(b.y) - numeric(a.y))[0] || null;
 }
 
-function placementBelow(layout, latest) {
-	const from = latest || layout.template;
-	return {
-		x: numeric(layout.x, 0),
-		y: numeric(from.y, layout.y) + numeric(from.height, layout.height) + GRID_GAP,
-		width: positiveInteger(layout.width, DEFAULT_WIDTH),
-		height: positiveInteger(layout.height, DEFAULT_HEIGHT)
-	};
+function columnX(layout) {
+	// New cards are placed on the template's fixed column grid. Matching still
+	// uses the tolerant derived layout, but placement is deterministic so cards
+	// always land under the correct column header regardless of board drift.
+	return COLUMN_X[layout?.categoryKey] ?? numeric(layout?.x, 0);
 }
 
-function placementOverTemplate(layout) {
+function placementForRow(layout, rowIndex = 0) {
 	return {
-		x: numeric(layout.x, 0),
-		y: numeric(layout.template?.y, layout.y),
-		width: positiveInteger(layout.width, DEFAULT_WIDTH),
-		height: positiveInteger(layout.height, DEFAULT_HEIGHT)
+		x: columnX(layout),
+		y: COLUMN_START_Y + Math.max(0, positiveInteger(rowIndex + 1, 1) - 1) * ROW_PITCH,
+		width: FIXED_CARD_WIDTH,
+		height: FIXED_CARD_HEIGHT
 	};
 }
 
@@ -344,14 +534,33 @@ function stickyStyle(template) {
 	return style;
 }
 
-function tagsForEntry(layout, entry) {
+function tagMatchesProjectName(tagKey, projectName) {
+	if (!projectName) return false;
+	if (tagKey === projectName) return true;
+	// Mural truncates tag text to 25 characters, so long project names only
+	// match their truncated board tag.
+	return projectName.length > MURAL_TAG_TEXT_LIMIT && tagKey === projectName.slice(0, MURAL_TAG_TEXT_LIMIT).trim();
+}
+
+function templateCarryTags(layout, entry) {
 	const templateTags = userFacingTags(layout.template?.tags);
+	if (isTemplatePlaceholder(layout.template)) return templateTags;
+	const projectName = safeText(entry.projectName).toLowerCase();
+	return templateTags.filter(tag => {
+		const key = tag.toLowerCase();
+		return key === entry.categoryKey || tagMatchesProjectName(key, projectName);
+	});
+}
+
+function tagsForEntry(layout, entry) {
 	return dedupeTags([
-		...templateTags,
-		entry.categoryKey,
-		entry.projectName,
+		...templateCarryTags(layout, entry),
 		...userFacingTags(entry.tags)
 	]);
+}
+
+function researchOpsUserTags(entry) {
+	return userFacingTags(entry.tags);
 }
 
 function localEntryWidget(widget, entry, layout, tags, placement = {}) {
@@ -367,7 +576,7 @@ function localEntryWidget(widget, entry, layout, tags, placement = {}) {
 	});
 }
 
-function createStyledStickyPayload(template, placement, text, tags) {
+function createStyledStickyPayload(template, placement, text, tags, userTags = []) {
 	const body = {
 		x: numeric(placement.x, 0),
 		y: numeric(placement.y, 0),
@@ -379,27 +588,120 @@ function createStyledStickyPayload(template, placement, text, tags) {
 		stackingOrder: positiveInteger(template?.stackingOrder, 1) + 1
 	};
 	if (tags.length) body.tags = tags;
+	if (userTags.length) body.researchOpsUserTags = userTags;
 	return body;
 }
 
-function createSizedStickyPayload(placement, text) {
-	return {
+function createSizedStickyPayload(placement, text, tags = [], userTags = []) {
+	const body = {
 		x: numeric(placement.x, 0),
 		y: numeric(placement.y, 0),
 		width: positiveInteger(placement.width, DEFAULT_WIDTH),
 		height: positiveInteger(placement.height, DEFAULT_HEIGHT),
-		shape: "rectangle",
+		text
+	};
+	if (tags.length) body.tags = tags;
+	if (userTags.length) body.researchOpsUserTags = userTags;
+	return body;
+}
+
+function createDocumentedStickyPayload(template, placement, text, tags = [], userTags = []) {
+	const body = {
+		x: numeric(placement.x, 0),
+		y: numeric(placement.y, 0),
+		text,
+		backgroundColor: stickyBackground(template)
+	};
+	if (tags.length) body.tags = tags;
+	if (userTags.length) body.researchOpsUserTags = userTags;
+	return body;
+}
+
+function createMinimalStickyPayload(placement, text) {
+	return {
+		x: numeric(placement.x, 0),
+		y: numeric(placement.y, 0),
 		text
 	};
 }
 
-function createDocumentedStickyPayload(placement, text) {
-	return {
-		x: numeric(placement.x, 0),
-		y: numeric(placement.y, 0),
-		shape: "rectangle",
-		text
+function patchStickyPayload(template, text, tags, userTags = []) {
+	const body = {
+		text,
+		style: stickyStyle(template)
 	};
+	if (tags.length) body.tags = tags;
+	if (userTags.length) body.researchOpsUserTags = userTags;
+	return body;
+}
+
+async function patchSticky(accessToken, muralId, widgetId, body) {
+	const url = `https://app.mural.co/api/public/v1/murals/${muralId}/widgets/sticky-note/${widgetId}`;
+	const res = await fetch(url, {
+		method: "PATCH",
+		headers: {
+			Authorization: `Bearer ${accessToken}`,
+			"Content-Type": "application/json",
+			Accept: "application/json"
+		},
+		body: JSON.stringify(body)
+	});
+	const data = await res.json().catch(() => ({}));
+	if (!res.ok) {
+		throw Object.assign(new Error(`Update Mural template sticky failed: ${res.status}`), { status: res.status, body: data });
+	}
+	return firstMuralValue(data) || { id: widgetId, ...body };
+}
+
+async function deleteWidget(accessToken, muralId, widgetId) {
+	const url = `https://app.mural.co/api/public/v1/murals/${muralId}/widgets/${widgetId}`;
+	const res = await fetch(url, {
+		method: "DELETE",
+		headers: {
+			Authorization: `Bearer ${accessToken}`,
+			Accept: "application/json"
+		}
+	});
+	if (!res.ok && res.status !== 404) {
+		const data = await res.json().catch(() => ({}));
+		throw Object.assign(new Error(`Delete stale Mural widget failed: ${res.status}`), { status: res.status, body: data });
+	}
+	return true;
+}
+
+async function deleteStaleSyncedWidgets(accessToken, board, widgets, staleWidgets, keepWidgetId = "") {
+	const keep = safeText(keepWidgetId);
+	const deleted = [];
+	for (const widget of staleWidgets) {
+		const widgetId = safeText(widget.id);
+		if (!widgetId || widgetId === keep) continue;
+		try {
+			await deleteWidget(accessToken, board.muralId, widgetId);
+			const idx = widgets.findIndex(item => safeText(item.id) === widgetId);
+			if (idx >= 0) widgets.splice(idx, 1);
+			deleted.push(widgetId);
+		} catch {}
+	}
+	return deleted;
+}
+
+async function updateTemplateSticky(accessToken, muralId, template, text, tags, userTags = []) {
+	const attempts = [
+		patchStickyPayload(template, text, tags, userTags),
+		tags.length ? { text, tags, researchOpsUserTags: userTags } : { text },
+		{ text }
+	];
+	const errors = [];
+
+	for (const body of attempts) {
+		try {
+			return await patchSticky(accessToken, muralId, template.id, body);
+		} catch (err) {
+			errors.push(muralErrorSummary(err));
+		}
+	}
+
+	throw new Error(`Update Mural template sticky failed after ${errors.length} documented payload attempts: ${errors.at(-1) || "unknown error"}`);
 }
 
 async function postSticky(accessToken, muralId, body) {
@@ -420,11 +722,12 @@ async function postSticky(accessToken, muralId, body) {
 	return firstMuralValue(data) || body;
 }
 
-async function createStickyFromTemplate(accessToken, muralId, template, placement, text, tags) {
+async function createStickyFromTemplate(accessToken, muralId, template, placement, text, tags, userTags = []) {
 	const attempts = [
-		createStyledStickyPayload(template, placement, text, tags),
-		createSizedStickyPayload(placement, text),
-		createDocumentedStickyPayload(placement, text)
+		createStyledStickyPayload(template, placement, text, tags, userTags),
+		createSizedStickyPayload(placement, text, tags, userTags),
+		createDocumentedStickyPayload(template, placement, text, tags, userTags),
+		createMinimalStickyPayload(placement, text)
 	];
 	const errors = [];
 
@@ -458,6 +761,52 @@ async function validAccessToken(svc, uid) {
 		}
 		return { ok: false, reason: "not_authenticated" };
 	}
+}
+
+function projectIdAliases(projectId) {
+	const raw = safeText(projectId);
+	const aliases = raw ? [raw] : [];
+	const testProjectIds = [TEST_PROJECT_1_CANONICAL_ID, TEST_PROJECT_1_LEGACY_ID, TEST_PROJECT_1_LOCAL_ID];
+	if (testProjectIds.includes(raw)) {
+		for (const alias of testProjectIds) {
+			if (!aliases.includes(alias)) aliases.push(alias);
+		}
+	}
+	return aliases;
+}
+
+async function projectNameFromD1(env, projectId) {
+	if (!env?.RESEARCHOPS_D1) return "";
+	for (const alias of projectIdAliases(projectId)) {
+		const lookups = alias.startsWith("rec")
+			? [
+				["SELECT name FROM projects WHERE record_id = ? LIMIT 1", alias],
+				["SELECT name FROM rops_projects_cache WHERE id = ? LIMIT 1", alias]
+			]
+			: [
+				["SELECT name FROM projects WHERE local_id = ? LIMIT 1", alias],
+				["SELECT name FROM rops_projects_cache WHERE id = ? LIMIT 1", alias]
+			];
+		for (const [sql, param] of lookups) {
+			try {
+				const row = await d1Get(env, sql, [param]);
+				const name = safeText(row?.name);
+				if (name) return name;
+			} catch {}
+		}
+	}
+	return "";
+}
+
+/**
+ * The board's Snowberry project tag is matched by text, so the project name
+ * must be the real project name. Clients can only echo whatever heading they
+ * rendered (and fall back to the project id when route hydration fails), so
+ * prefer the D1 project record and keep the client value as a fallback.
+ */
+async function resolveProjectName(env, payload) {
+	const resolved = await projectNameFromD1(env, payload.projectId);
+	return resolved || safeText(payload.projectName);
 }
 
 function parseBasePayload(body) {
@@ -520,6 +869,27 @@ function sortedEntries(entries) {
 	});
 }
 
+function boardTagTextMap(boardTags) {
+	const map = new Map();
+	for (const tag of Array.isArray(boardTags) ? boardTags : []) {
+		const id = safeText(tag?.id || tag?.tagId);
+		const text = safeText(tag?.text || tag?.name || tag?.title || tag?.label);
+		if (id && text) map.set(id, text);
+	}
+	return map;
+}
+
+function resolveWidgetTagTexts(widget, tagTextById) {
+	if (!widget || !Array.isArray(widget.tags) || !tagTextById?.size) return widget;
+	const tags = widget.tags.map(tag => {
+		if (typeof tag === "string") return tagTextById.get(tag) || tag;
+		const text = safeText(tag?.text || tag?.name || tag?.title || tag?.label);
+		if (text) return text;
+		return tagTextById.get(safeText(tag?.id || tag?.tagId)) || tag;
+	});
+	return { ...widget, tags };
+}
+
 async function resolveBoardAndWidgets(svc, accessToken, payload) {
 	const board = await svc.mural.resolveBoard({
 		projectId: payload.projectId,
@@ -532,12 +902,19 @@ async function resolveBoardAndWidgets(svc, accessToken, payload) {
 		return { ok: false, status: 404, body: { ok: false, error: "mural_board_not_found" } };
 	}
 
-	const rawWidgets = await getWidgets(svc.env, accessToken, board.muralId);
+	const rawWidgets = await getWidgets(svc.env, accessToken, board.muralId, { includeDetails: true });
+	const boardTags = await getMuralTags(svc.env, accessToken, board.muralId).catch(() => []);
+	const tagTextById = boardTagTextMap(boardTags);
 	return {
 		ok: true,
 		board,
-		widgets: rawWidgets.map(normalizeWidget)
+		widgets: rawWidgets.map(widget => normalizeWidget(resolveWidgetTagTexts(widget, tagTextById)))
 	};
+}
+
+function isMissingOrInaccessibleMuralError(err) {
+	const status = Number(err?.status || 0);
+	return status === 403 || status === 404 || status === 410;
 }
 
 async function buildContext(svc, origin, body) {
@@ -551,6 +928,8 @@ async function buildContext(svc, origin, body) {
 		return { ok: false, status: 401, body: { ok: false, error: token.reason || "not_authenticated" } };
 	}
 
+	payload.projectName = await resolveProjectName(svc.env, payload);
+
 	try {
 		const boardAndWidgets = await resolveBoardAndWidgets(svc, token.token, payload);
 		if (!boardAndWidgets.ok) return boardAndWidgets;
@@ -558,6 +937,9 @@ async function buildContext(svc, origin, body) {
 		return { ok: true, payload, accessToken: token.token, board: boardAndWidgets.board, widgets: boardAndWidgets.widgets, entries };
 	} catch (err) {
 		const status = Number(err?.status || 0);
+		if (isMissingOrInaccessibleMuralError(err)) {
+			return { ok: false, status: 404, body: { ok: false, error: "mural_board_not_found", status } };
+		}
 		return {
 			ok: false,
 			status: status >= 400 && status < 600 ? status : 500,
@@ -569,13 +951,17 @@ async function buildContext(svc, origin, body) {
 function statusFromEntriesAndWidgets(entries, widgets) {
 	const validEntries = entries.filter(entry => safeText(entry.id));
 	const syncedEntryIds = new Set();
+	const claimedWidgetIds = new Set();
 	const layouts = Object.fromEntries(CATEGORY_KEYS.map(category => [category, columnLayout(widgets, category)]));
 
 	for (const entry of validEntries) {
 		const category = normalizeCategoryKey(entry.category);
 		const layout = layouts[category];
 		if (!layout) continue;
-		if (widgets.some(widget => widgetHasEntryTag(widget, entry.id) && widgetMatchesCategory(widget, category, layout) && widgetMatchesColumnLayout(widget, layout))) {
+		const payload = entryPayloadFromEntry(entry, { projectId: "", projectName: "", uid: "anon" });
+		const existing = canonicalExistingWidget(widgets, payload, layout, claimedWidgetIds);
+		if (existing) {
+			if (existing.id) claimedWidgetIds.add(safeText(existing.id));
 			syncedEntryIds.add(String(entry.id));
 		}
 	}
@@ -598,7 +984,7 @@ function statusFromEntriesAndWidgets(entries, widgets) {
 	};
 }
 
-async function syncOneEntry({ accessToken, board, widgets, entry }) {
+async function syncOneEntry({ accessToken, board, widgets, entry, claimedWidgetIds = new Set(), rowIndex = 0 }) {
 	if (!entry.entryId || !entry.categoryKey || !entry.description) {
 		return { ok: false, action: "skipped-invalid-entry", entryId: entry.entryId || null, category: entry.categoryKey || null, detail: "Entry is missing an id, category, or description." };
 	}
@@ -608,20 +994,52 @@ async function syncOneEntry({ accessToken, board, widgets, entry }) {
 
 	const layout = columnLayout(widgets, entry.categoryKey);
 	if (!layout) {
-		return { ok: false, action: "category-column-not-found", entryId: entry.entryId, category: entry.categoryKey, detail: `No ${entry.categoryKey} column template or heading was found on the Mural board.` };
+		return {
+			ok: false,
+			action: "category-column-not-found",
+			entryId: entry.entryId,
+			category: entry.categoryKey,
+			detail: `No ${entry.categoryKey} column template or heading was found on Mural board ${safeText(board?.muralId) || "unknown"}. ${boardVisibilitySummary(widgets)}`
+		};
 	}
 
-	const existing = canonicalExistingWidget(widgets, entry, layout);
+	const existing = canonicalExistingWidget(widgets, entry, layout, claimedWidgetIds);
+	const staleWidgets = staleSyncedWidgets(widgets, entry, layout);
 	if (existing) {
-		return { ok: true, action: "already-synced", entryId: entry.entryId, category: entry.categoryKey, widgetId: existing.id };
+		if (existing.id) claimedWidgetIds.add(safeText(existing.id));
+		const deletedStaleWidgetIds = await deleteStaleSyncedWidgets(accessToken, board, widgets, staleWidgets, existing.id);
+		return { ok: true, action: "already-synced", entryId: entry.entryId, category: entry.categoryKey, widgetId: existing.id, preserved: true, deletedStaleWidgetIds };
 	}
 
 	const tags = tagsForEntry(layout, entry);
+	const userTags = researchOpsUserTags(entry);
 	const latest = latestCanonicalWidget(widgets, entry.categoryKey, layout);
-	const placement = latest ? placementBelow(layout, latest) : placementOverTemplate(layout);
-	const created = await createStickyFromTemplate(accessToken, board.muralId, layout.template, placement, entry.description, tags);
+	const placement = placementForRow(layout, rowIndex);
+	if (!latest && layout.template?.id && isTemplatePlaceholder(layout.template)) {
+		const updated = await updateTemplateSticky(accessToken, board.muralId, layout.template, entry.description, tags, userTags);
+		const local = localEntryWidget({ ...layout.template, ...firstMuralValue(updated) }, entry, layout, tags, placement);
+		const idx = widgets.findIndex(widget => widget.id === layout.template.id);
+		if (idx >= 0) widgets[idx] = local;
+		else widgets.push(local);
+		if (local.id) claimedWidgetIds.add(safeText(local.id));
+		const deletedStaleWidgetIds = await deleteStaleSyncedWidgets(accessToken, board, widgets, staleWidgets, local.id || updated?.id || layout.template.id);
+
+		return {
+			ok: true,
+			action: "updated-template-widget",
+			entryId: entry.entryId,
+			category: entry.categoryKey,
+			widgetId: local.id || updated?.id || layout.template.id,
+			deletedStaleWidgetIds,
+			tags
+		};
+	}
+
+	const created = await createStickyFromTemplate(accessToken, board.muralId, layout.template, placement, entry.description, tags, userTags);
 	const local = localEntryWidget({ ...layout.template, ...firstMuralValue(created) }, entry, layout, tags, placement);
 	widgets.push(local);
+	if (local.id) claimedWidgetIds.add(safeText(local.id));
+	const deletedStaleWidgetIds = await deleteStaleSyncedWidgets(accessToken, board, widgets, staleWidgets, local.id || created?.id || null);
 
 	return {
 		ok: true,
@@ -629,7 +1047,52 @@ async function syncOneEntry({ accessToken, board, widgets, entry }) {
 		entryId: entry.entryId,
 		category: entry.categoryKey,
 		widgetId: local.id || created?.id || null,
+		deletedStaleWidgetIds,
 		tags
+	};
+}
+
+function boardVisibilitySummary(widgets) {
+	const stickyLike = widgets.filter(isStickyLike);
+	const withText = stickyLike.filter(widget => canonicalBodyText(widgetText(widget))).length;
+	const tagged = stickyLike.filter(widget => tagKeys(widget).length).length;
+	return `The board returned ${widgets.length} widgets: ${stickyLike.length} sticky-like, ${withText} with readable text, ${tagged} with tags.`;
+}
+
+function layoutDiagnostics(widgets, categoryKey) {
+	const layout = columnLayout(widgets, categoryKey);
+	if (!layout) return null;
+	return {
+		headerId: layout.header?.id || null,
+		templateId: layout.template?.id || null,
+		templateIsBlank: isTemplatePlaceholder(layout.template),
+		x: layout.x,
+		y: layout.y,
+		width: layout.width,
+		height: layout.height
+	};
+}
+
+function statusDiagnostics(widgets) {
+	const stickyLike = widgets.filter(isStickyLike);
+	const ordered = [...stickyLike].sort((a, b) => numeric(a.y) - numeric(b.y) || numeric(a.x) - numeric(b.x));
+	return {
+		widgetCount: widgets.length,
+		stickyLikeCount: stickyLike.length,
+		widgetsWithBodyText: stickyLike.filter(widget => canonicalBodyText(widgetText(widget))).length,
+		taggedWidgetCount: stickyLike.filter(widget => tagKeys(widget).length).length,
+		layouts: Object.fromEntries(CATEGORY_KEYS.map(category => [category, layoutDiagnostics(widgets, category)])),
+		sampleWidgets: ordered.slice(0, 16).map(widget => ({
+			id: widget.id,
+			type: widget.type,
+			x: widget.x,
+			y: widget.y,
+			width: widget.width,
+			height: widget.height,
+			background: widgetBackground(widget) || null,
+			tagTexts: tagKeys(widget),
+			textPreview: canonicalBodyText(widgetText(widget)).slice(0, 80)
+		}))
 	};
 }
 
@@ -637,7 +1100,14 @@ async function handleStatus(svc, origin, body) {
 	const ctx = await buildContext(svc, origin, body);
 	if (!ctx.ok) return svc.json(ctx.body, ctx.status, svc.corsHeaders(origin));
 	const status = statusFromEntriesAndWidgets(ctx.entries, ctx.widgets);
-	return svc.json({ ok: true, mode: "status", muralId: ctx.board.muralId, boardSource: ctx.board.source, ...status }, 200, svc.corsHeaders(origin));
+	return svc.json({
+		ok: true,
+		mode: "status",
+		muralId: ctx.board.muralId,
+		boardSource: ctx.board.source,
+		...status,
+		diagnostics: statusDiagnostics(ctx.widgets)
+	}, 200, svc.corsHeaders(origin));
 }
 
 function hydrateReason({ outcomes, failed, skipped, pending }) {
@@ -656,14 +1126,15 @@ async function handleHydrate(svc, origin, body) {
 	const before = statusFromEntriesAndWidgets(ctx.entries, ctx.widgets);
 	const outcomes = [];
 	const base = ctx.payload;
+	const claimedWidgetIds = new Set();
 
 	for (const category of CATEGORY_KEYS) {
 		const entries = sortedEntries(ctx.entries)
 			.map(entry => entryPayloadFromEntry(entry, base))
 			.filter(entry => entry.categoryKey === category);
-		for (const entry of entries) {
+		for (const [rowIndex, entry] of entries.entries()) {
 			try {
-				outcomes.push(await syncOneEntry({ accessToken: ctx.accessToken, board: ctx.board, widgets: ctx.widgets, entry }));
+				outcomes.push(await syncOneEntry({ accessToken: ctx.accessToken, board: ctx.board, widgets: ctx.widgets, entry, claimedWidgetIds, rowIndex }));
 			} catch (err) {
 				outcomes.push({ ok: false, action: "sync-failed", entryId: entry.entryId, category: entry.categoryKey, detail: String(err?.message || err), status: err?.status || undefined, errors: err?.errors || undefined });
 			}
@@ -691,7 +1162,8 @@ async function handleHydrate(svc, origin, body) {
 		skipped,
 		failed,
 		reason: hydrateReason({ outcomes, failed, skipped, pending: after.pending }),
-		outcomes
+		outcomes,
+		diagnostics: statusDiagnostics(ctx.widgets)
 	}, 200, svc.corsHeaders(origin));
 }
 
@@ -703,6 +1175,8 @@ async function handleEntrySync(svc, origin, body) {
 
 	const token = await validAccessToken(svc, entry.uid);
 	if (!token.ok) return svc.json({ ok: false, error: token.reason || "not_authenticated" }, 401, svc.corsHeaders(origin));
+
+	entry.projectName = await resolveProjectName(svc.env, entry);
 
 	try {
 		const boardAndWidgets = await resolveBoardAndWidgets(svc, token.token, entry);

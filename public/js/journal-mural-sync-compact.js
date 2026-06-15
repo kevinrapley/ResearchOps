@@ -3,9 +3,12 @@
 	const API_ORIGIN =
 		document.documentElement?.dataset?.apiOrigin ||
 		window.API_ORIGIN ||
-		(location.hostname.endsWith('pages.dev') ?
-			'https://rops-api.digikev-kevin-rapley.workers.dev' :
-			location.origin);
+		defaultApiOrigin();
+
+	function defaultApiOrigin() {
+		if (location.hostname.endsWith('pages.dev')) return '';
+		return location.origin;
+	}
 
 	let lastStatus = null;
 	let applying = false;
@@ -29,7 +32,10 @@
 			mode,
 			uid: muralUid(),
 			projectId: projectId(),
-			projectName: document.querySelector('h1')?.textContent?.trim() || projectId()
+			projectName:
+				document.querySelector('main')?.dataset?.projectName ||
+				document.querySelector('h1')?.textContent?.trim() ||
+				projectId()
 		};
 	}
 
@@ -110,6 +116,7 @@
 			const synced = Number(after.synced || result.synced || 0);
 			const total = Number(after.total || result.total || 0);
 			const changed = Number(result.createdOrUpdated || 0);
+			const alreadySynced = Number(result.alreadySynced || 0);
 			const failed = Number(result.failed || 0);
 			const skipped = Number(result.skipped || 0);
 
@@ -119,8 +126,11 @@
 				return;
 			}
 
-			const added = `${changed} ${changed === 1 ? 'entry was' : 'entries were'} added to Mural.`;
-			setStatus(pending ? 'Action needed' : 'Up to date', `${added} ${statusMessage(pending, synced, total)}`, pending, false);
+			const added = changed ?
+				`${changed} ${changed === 1 ? 'entry was' : 'entries were'} added to Mural.` :
+				'No new entries needed adding to Mural.';
+			const preserved = alreadySynced ? ` ${alreadySynced} ${alreadySynced === 1 ? 'entry was' : 'entries were'} already on Mural and left unchanged.` : '';
+			setStatus(pending ? 'Action needed' : 'Up to date', `${added}${preserved} ${statusMessage(pending, synced, total)}`, pending, false);
 		} catch {
 			const pending = Number(lastStatus?.pending || 0);
 			setStatus('Not added', 'could not add entries to Mural. Entries remain saved in ResearchOps.', pending, false);

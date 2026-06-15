@@ -25,6 +25,11 @@ export async function resolveBoardAndWidgets(svc, token, payload) {
 	};
 }
 
+function isMissingOrInaccessibleMuralError(err) {
+	const status = Number(err?.status || 0);
+	return status === 403 || status === 404 || status === 410;
+}
+
 export async function listEntriesForProject(svc, origin, projectId) {
 	const url = new URL("https://local/api/journal-entries");
 	url.searchParams.set("project", projectId);
@@ -106,6 +111,13 @@ export async function buildContext(svc, origin, body) {
 		};
 	} catch (err) {
 		const status = Number(err?.status || 0);
+		if (isMissingOrInaccessibleMuralError(err)) {
+			return {
+				ok: false,
+				status: 404,
+				body: { ok: false, error: "mural_board_not_found", status }
+			};
+		}
 		return {
 			ok: false,
 			status: status >= 400 && status < 600 ? status : 500,

@@ -14,16 +14,18 @@
 
 (() => {
 	const logger = globalThis.ResearchOpsLogger?.create("mural-ui") || { debug() {} };
-	const API_ORIGIN =
-		document.documentElement?.dataset?.apiOrigin ||
-		window.API_ORIGIN ||
-		(location.hostname.endsWith("pages.dev") ?
-			"https://rops-api.digikev-kevin-rapley.workers.dev" :
-			location.origin);
+	const API_ORIGIN = resolveApiBase();
 
 	const $ = (s, r = document) => r.querySelector(s);
 	const byId = (id) => document.getElementById(id);
 	const sleep = (ms) => new Promise((res) => setTimeout(res, ms));
+
+	function resolveApiBase() {
+		const explicit = document.documentElement?.dataset?.apiOrigin || window.API_ORIGIN || "";
+		if (String(explicit || "").trim()) return String(explicit).trim().replace(/\/+$/, "");
+		if (location.hostname.endsWith("pages.dev")) return "";
+		return location.origin;
+	}
 
 	function addDebug(url) {
 		try {

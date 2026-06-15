@@ -18,6 +18,7 @@ import {
 	ensureProjectFolder,
 	createMural,
 	duplicateMural,
+	getMural,
 	getMe,
 	getActiveWorkspaceIdFromMe,
 	listUserWorkspaces,
@@ -44,6 +45,11 @@ function _wantDebugFromUrl(urlLike) {
 	} catch {
 		return false;
 	}
+}
+
+function isMissingOrInaccessibleMural(err) {
+	const status = Number(err?.status || 0);
+	return status === 403 || status === 404 || status === 410;
 }
 
 /* ───────────────────────── Class ───────────────────────── */
@@ -507,6 +513,28 @@ export class MuralServicePart {
 			const resolved = await this.resolveBoard({ projectId, uid: uid || undefined, purpose });
 			if (!resolved?.muralId && !resolved?.boardUrl) {
 				return this.root.json({ ok: false, error: "not_found" }, 404, cors);
+			}
+			if (resolved?.muralId && uid) {
+				const tokenRes = await getValidAccessToken(this, uid);
+				if (tokenRes.ok) {
+					try {
+						await getMural(this.root.env, tokenRes.token, resolved.muralId);
+					} catch (err) {
+						if (isMissingOrInaccessibleMural(err)) {
+							return this.root.json(
+								{
+									ok: false,
+									error: "stale_board_unavailable",
+									muralId: resolved.muralId,
+									source: resolved.source || null
+								},
+								404,
+								cors
+							);
+						}
+						throw err;
+					}
+				}
 			}
 			return this.root.json({
 					ok: true,

@@ -614,17 +614,122 @@ export async function duplicateMural(env, accessToken, { roomId, folderId, title
 
 /* ───────────────── Widgets & areas ───────────────── */
 
-export async function getWidgets(env, accessToken, muralId) {
-	const url = `https://app.mural.co/api/public/v1/murals/${muralId}/widgets`;
-	const res = await fetch(url, { headers: { Authorization: `Bearer ${accessToken}` } });
+function firstMuralValue(body) {
+	if (Array.isArray(body?.value)) return body.value[0] || null;
+	if (body?.value) return body.value;
+	return body || null;
+}
+
+function textFieldHasContent(value) {
+	if (value === null || value === undefined) return false;
+	if (typeof value === "string") return value.trim() !== "";
+	if (typeof value === "object") {
+		return (
+			textFieldHasContent(value.plainText) ||
+			textFieldHasContent(value.text) ||
+			textFieldHasContent(value.htmlText) ||
+			textFieldHasContent(value.content)
+		);
+	}
+	return true;
+}
+
+function widgetNeedsDetails(widget) {
+	if (!widget?.id) return false;
+	const type = String(widget?.type || "").toLowerCase();
+	const hasText =
+		textFieldHasContent(widget?.text) ||
+		textFieldHasContent(widget?.plainText) ||
+		textFieldHasContent(widget?.htmlText) ||
+		textFieldHasContent(widget?.content) ||
+		textFieldHasContent(widget?.properties?.text) ||
+		textFieldHasContent(widget?.properties?.plainText) ||
+		textFieldHasContent(widget?.properties?.htmlText) ||
+		textFieldHasContent(widget?.data?.text) ||
+		textFieldHasContent(widget?.data?.plainText) ||
+		textFieldHasContent(widget?.data?.htmlText);
+	return !hasText && (type.includes("sticky") || type.includes("note") || type.includes("shape") || type.includes("text") || type.includes("title"));
+}
+
+export async function getMuralTags(env, accessToken, muralId) {
+	const url = `https://app.mural.co/api/public/v1/murals/${muralId}/tags`;
+	const res = await fetch(url, {
+		headers: {
+			Authorization: `Bearer ${accessToken}`,
+			Accept: "application/json"
+		}
+	});
+	const js = await res.json().catch(() => ({}));
+	if (!res.ok) return [];
+	if (Array.isArray(js?.value)) return js.value;
+	if (Array.isArray(js?.tags)) return js.tags;
+	return [];
+}
+
+export async function getWidget(env, accessToken, muralId, widgetId) {
+	const id = String(widgetId || "").trim();
+	if (!id) return null;
+	const url = `https://app.mural.co/api/public/v1/murals/${muralId}/widgets/${encodeURIComponent(id)}`;
+	const res = await fetch(url, {
+		headers: {
+			Authorization: `Bearer ${accessToken}`,
+			Accept: "application/json"
+		}
+	});
 	const js = await res.json().catch(() => ({}));
 	if (!res.ok) {
-		throw Object.assign(new Error(`GET /murals/${muralId}/widgets failed: ${res.status}`), {
+		if (res.status === 404) return null;
+		throw Object.assign(new Error(`GET /murals/${muralId}/widgets/${id} failed: ${res.status}`), {
 			status: res.status,
 			body: js
 		});
 	}
-	return js?.value || js?.widgets || [];
+	return firstMuralValue(js);
+}
+
+async function enrichWidgetsWithDetails(env, accessToken, muralId, widgets, includeDetails) {
+	if (!includeDetails) return widgets;
+	const enriched = [];
+	for (const widget of widgets) {
+		if (!widgetNeedsDetails(widget)) {
+			enriched.push(widget);
+			continue;
+		}
+		const detail = await getWidget(env, accessToken, muralId, widget.id).catch(() => null);
+		enriched.push(detail ? { ...widget, ...detail } : widget);
+	}
+	return enriched;
+}
+
+export async function getWidgets(env, accessToken, muralId, options = {}) {
+	const baseUrl = `https://app.mural.co/api/public/v1/murals/${muralId}/widgets`;
+	const widgets = [];
+	let next = "";
+
+	for (let page = 0; page < 25; page += 1) {
+		const url = new URL(baseUrl);
+		url.searchParams.set("limit", "100");
+		if (next) url.searchParams.set("next", next);
+		const res = await fetch(url.toString(), {
+			headers: {
+				Authorization: `Bearer ${accessToken}`,
+				Accept: "application/json"
+			}
+		});
+		const js = await res.json().catch(() => ({}));
+		if (!res.ok) {
+			throw Object.assign(new Error(`GET /murals/${muralId}/widgets failed: ${res.status}`), {
+				status: res.status,
+				body: js
+			});
+		}
+		const pageWidgets = js?.value || js?.widgets || [];
+		if (Array.isArray(pageWidgets)) widgets.push(...pageWidgets);
+		next = String(js?.next || js?.pagination?.next || js?.paging?.next || js?.meta?.next || "").trim();
+		if (!next) break;
+	}
+
+	return enrichWidgetsWithDetails(env, accessToken, muralId, widgets, options.includeDetails);
 }
 
 export async function createSticky(env, accessToken, muralId, { text, x, y, width = 240, height = 120 }) {

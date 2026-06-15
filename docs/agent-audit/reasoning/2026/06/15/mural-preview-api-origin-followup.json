@@ -1,0 +1,99 @@
+{
+	"date": "2026-06-15",
+	"traceType": "operational-audit-trace",
+	"branch": "feature/mural-journal-export-layout",
+	"traceRequired": true,
+	"relatedWork": "Project dashboard Mural availability",
+	"task": "Follow up on the deleted-board fix after Test Project 1 still showed a linked Mural board in the branch preview.",
+	"operatingModelFilesLoaded": [
+		"AGENTS.md",
+		".agent-operating-model/orchestration.xml",
+		".agent-operating-model/bundle-registry.json",
+		".agent-operating-model/task-signal-catalog.json",
+		".agent-operating-model/selection-rules.json",
+		".agent-operating-model/precedence-policy.md",
+		".agent-operating-model/trace-policy.md"
+	],
+	"selectedBundles": [
+		{
+			"id": "github-diamond",
+			"canonicalPath": ".agent-operating-model/bundles/github/"
+		},
+		{
+			"id": "researchops-developer-control",
+			"canonicalPath": ".agent-operating-model/bundles/researchops-developer-control/"
+		},
+		{
+			"id": "multi-functional-team",
+			"canonicalPath": ".agent-operating-model/bundles/multi-functional-team/"
+		},
+		{
+			"id": "mural-public-api",
+			"canonicalPath": ".agent-operating-model/bundles/mural-public-api/"
+		}
+	],
+	"additionalBundleContextRead": [
+		{
+			"id": "govuk-design-system",
+			"canonicalPath": ".agent-operating-model/bundles/govuk-design-system/"
+		},
+		{
+			"id": "cloudflare",
+			"canonicalPath": ".agent-operating-model/bundles/cloudflare/"
+		}
+	],
+	"evidence": [
+		"The previous backend fix was pushed and the preview Worker deployment for feature/mural-journal-export-layout completed successfully.",
+		"public/components/mural-integration.js still hardcoded the production Worker on pages.dev.",
+		"functions/api/[[path]].js routes branch previews to the passwordless preview Worker when calls use same-origin /api.",
+		"The protected preview page could not be loaded without Cloudflare Access from this session."
+	],
+	"filesRead": [
+		"public/components/mural-integration.js",
+		"functions/api/[[path]].js",
+		"tests/mural-ui-route-state.test.js",
+		"tests/project-dashboard-route-state.test.js",
+		"tests/pages-config-mural-return-route-state.test.js"
+	],
+	"filesModified": [
+		"public/components/mural-integration.js",
+		"tests/mural-ui-route-state.test.js",
+		"tests/project-dashboard-route-state.test.js"
+	],
+	"filesCreated": [
+		"docs/agent-audit/reasoning/2026/06/15/mural-preview-api-origin-followup.md",
+		"docs/agent-audit/reasoning/2026/06/15/mural-preview-api-origin-followup.json"
+	],
+	"change": [
+		"Mural dashboard integration now resolves API origin from explicit overrides, otherwise uses same-origin /api on pages.dev.",
+		"Route-state tests now reject the production Worker hardcode in the Mural dashboard component."
+	],
+	"validation": [
+		{
+			"command": "npm test -- tests/mural-ui-route-state.test.js tests/project-dashboard-route-state.test.js tests/pages-config-mural-return-route-state.test.js tests/mural-resolve-runtime.test.js",
+			"status": "passed",
+			"summary": "5 tests passed"
+		},
+		{
+			"command": "npm run format:check",
+			"status": "passed"
+		},
+		{
+			"command": "npm run lint",
+			"status": "passed",
+			"summary": "0 errors, existing repository warnings"
+		},
+		{
+			"command": "npm test",
+			"status": "passed",
+			"summary": "219 tests passed after rerun without concurrent generated CSS rebuild"
+		}
+	],
+	"issuesAndPivots": [
+		"A full-suite run started in parallel with npm run lint failed tests/deploy-asset-paths.test.js because lint rebuilt generated CSS while the test was reading generated assets. The generated CSS check passed and npm test passed when rerun on its own."
+	],
+	"residualRisks": [
+		"The protected preview page could not be loaded without Cloudflare Access.",
+		"The fix relies on repository routing evidence and route-state tests confirming same-origin /api reaches the preview Worker."
+	]
+}

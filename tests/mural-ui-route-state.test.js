@@ -18,7 +18,10 @@ function configIncludes(text) {
 
 includes("Project Dashboard ↔ Mural wiring with GOV.UK Frontend dashboard state");
 includes("location.hostname.endsWith(\"pages.dev\")");
-includes("https://rops-api.digikev-kevin-rapley.workers.dev");
+includes("function resolveApiBase()");
+includes("document.documentElement?.dataset?.apiOrigin");
+includes("window.API_ORIGIN");
+includes("return \"\";");
 includes("function projectDashboardPath(projectId)");
 includes("/pages/project-dashboard/?id=");
 includes("function wireConnectButton(projectId)");
@@ -50,6 +53,7 @@ excludes("Mural not checked");
 excludes("const backAbs = absolutePagesUrl");
 excludes("return=${encodeURIComponent(backAbs)}");
 excludes("function absolutePagesUrl(pathAndQuery)");
+excludes("https://rops-api.digikev-kevin-rapley.workers.dev");
 
 configIncludes('PAGES_ORIGIN       = "https://chore-govuk-frontend-integra.researchops.pages.dev"');
 configIncludes("https://chore-govuk-frontend-integra.researchops.pages.dev");

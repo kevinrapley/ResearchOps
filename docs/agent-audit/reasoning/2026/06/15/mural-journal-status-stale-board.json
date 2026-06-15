@@ -1,0 +1,87 @@
+{
+  "date": "2026-06-15",
+  "branch": "feature/mural-journal-export-layout",
+  "traceTrigger": "feature branch prefix",
+  "task": "Fix the Journals page reporting Mural as unavailable after a new board was created for Test Project 1.",
+  "operatingModelFilesLoaded": [
+    "AGENTS.md",
+    ".agent-operating-model/orchestration.xml",
+    ".agent-operating-model/bundle-registry.json",
+    ".agent-operating-model/task-signal-catalog.json",
+    ".agent-operating-model/selection-rules.json",
+    ".agent-operating-model/precedence-policy.md",
+    ".agent-operating-model/trace-policy.md",
+    ".agent-operating-model/github-mutation-policy.md"
+  ],
+  "selectedBundles": [
+    {
+      "id": "github-diamond",
+      "path": ".agent-operating-model/bundles/github/"
+    },
+    {
+      "id": "researchops-developer-control",
+      "path": ".agent-operating-model/bundles/researchops-developer-control/"
+    },
+    {
+      "id": "multi-functional-team",
+      "path": ".agent-operating-model/bundles/multi-functional-team/"
+    },
+    {
+      "id": "govuk-design-system",
+      "path": ".agent-operating-model/bundles/govuk-design-system/"
+    },
+    {
+      "id": "cloudflare",
+      "path": ".agent-operating-model/bundles/cloudflare/"
+    },
+    {
+      "id": "mural-public-api",
+      "path": ".agent-operating-model/bundles/mural-public-api/"
+    }
+  ],
+  "skippedBundles": [
+    "openai-platform",
+    "mcp-agent-tooling",
+    "airtable-public-api"
+  ],
+  "filesModified": [
+    "infra/cloudflare/src/service/internals/airtable.js",
+    "infra/cloudflare/src/service/mural-journal-sync-layout.js",
+    "infra/cloudflare/src/service/mural-journal-sync/context.js",
+    "tests/mural-airtable-board-registry.test.js",
+    "tests/mural-journal-sync-layout-runtime.test.js",
+    "docs/agent-audit/reasoning/2026/06/15/mural-journal-status-stale-board.md",
+    "docs/agent-audit/reasoning/2026/06/15/mural-journal-status-stale-board.json"
+  ],
+  "validation": [
+    {
+      "command": "npm test -- tests/mural-airtable-board-registry.test.js",
+      "result": "passed"
+    },
+    {
+      "command": "npm test -- tests/mural-journal-sync-layout-runtime.test.js",
+      "result": "passed"
+    },
+    {
+      "command": "npm test -- tests/mural-journal-sync-route-state.test.js tests/journal-tabs-api-origin-route-state.test.js",
+      "result": "passed"
+    },
+    {
+      "command": "npm test -- tests/mural-journal-sync-safe-tags-runtime.test.js tests/mural-journal-sync-layout-runtime.test.js tests/mural-airtable-board-registry.test.js tests/mural-journal-sync-route-state.test.js tests/journal-tabs-api-origin-route-state.test.js",
+      "result": "passed"
+    },
+    {
+      "command": "npm run format:check",
+      "result": "passed"
+    },
+    {
+      "command": "npm run lint",
+      "result": "passed with existing warnings"
+    },
+    {
+      "command": "npm test",
+      "result": "passed, 220 tests"
+    }
+  ],
+  "residualRisk": "If no live Airtable or D1 row exists for the newly-created board, the Journals page will ask for board creation or reconnection."
+}
