@@ -31,7 +31,7 @@ function assertRoleAssignmentErrorsDoNotExposeProgrammaticTerms() {
 }
 
 function assertRoleAssignmentScriptCacheKeyWasRefreshed() {
-	assert.match(pageSource, /auth-role-assignment-page\.js\?v=inline-team-creation-20260513/);
+	assert.match(pageSource, /auth-role-assignment-page\.js\?v=hide-internal-codes-20260615/);
 }
 
 assertRoleAssignmentErrorsAreUserFacing();

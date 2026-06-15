@@ -1,0 +1,198 @@
+{
+  "date": "2026-06-15",
+  "traceType": "operational-audit-trace",
+  "branch": "fix/role-assignment-check-answers",
+  "traceRequired": true,
+  "traceDecision": "Required because repository-affecting work on branches starting with fix/ must have an auditable trace.",
+  "relatedWork": "PR #401 Codex review comment; replacement PR #402",
+  "task": "Move the branch from an unapproved claude/ prefix to a sensible fix/ branch, inspect Codex review comments, and ensure the role-assignment check-answers view uses GOV.UK Summary list layout from Sass/Nunjucks sources.",
+  "branchCorrection": {
+    "from": "claude/lucid-ritchie-s7jjmz",
+    "to": "fix/role-assignment-check-answers",
+    "reason": "Repository policy allows fix/ work branches and prohibits claude/ work branches.",
+    "remoteRename": "The remote GitHub branch was renamed to fix/role-assignment-check-answers after PR #401 still showed the old claude/ head ref.",
+    "pullRequestOutcome": "GitHub closed PR #401 when the old head ref was removed; replacement PR #402 was opened from the approved fix/ branch."
+  },
+  "selectedBundles": [
+    {
+      "id": "github-diamond",
+      "canonicalPath": ".agent-operating-model/bundles/github/",
+      "selectionBasis": "always-load"
+    },
+    {
+      "id": "researchops-developer-control",
+      "canonicalPath": ".agent-operating-model/bundles/researchops-developer-control/",
+      "selectionBasis": "always-load"
+    },
+    {
+      "id": "multi-functional-team",
+      "canonicalPath": ".agent-operating-model/bundles/multi-functional-team/",
+      "selectionBasis": "always-load"
+    },
+    {
+      "id": "govuk-design-system",
+      "canonicalPath": ".agent-operating-model/bundles/govuk-design-system/",
+      "selectionBasis": "conditional: GOV.UK page template and generated route output"
+    },
+    {
+      "id": "cloudflare",
+      "canonicalPath": ".agent-operating-model/bundles/cloudflare/",
+      "selectionBasis": "conditional: cached Pages asset concern"
+    }
+  ],
+  "skippedBundles": [
+    {
+      "id": "openai-platform",
+      "canonicalPath": ".agent-operating-model/bundles/openai/",
+      "reason": "No OpenAI API, model or eval implementation was in scope."
+    },
+    {
+      "id": "mcp-agent-tooling",
+      "canonicalPath": ".agent-operating-model/bundles/mcp-agent-tooling/",
+      "reason": "No MCP server, resource, prompt or tool contract work was in scope."
+    },
+    {
+      "id": "airtable-public-api",
+      "canonicalPath": ".agent-operating-model/bundles/airtable-public-api/",
+      "reason": "No Airtable API or data integration work was in scope."
+    },
+    {
+      "id": "mural-public-api",
+      "canonicalPath": ".agent-operating-model/bundles/mural-public-api/",
+      "reason": "No Mural API or collaboration integration work was in scope."
+    }
+  ],
+  "precedenceDecisions": [
+    "GitHub Diamond governed branch naming, trace coverage, PR comment handling and validation evidence.",
+    "ResearchOps Developer Control governed repository conventions and generated-page output.",
+    "Multi-Functional Team governed public-sector privacy risk framing.",
+    "GOV.UK Design System governed the Nunjucks page/template output boundary.",
+    "Cloudflare governed the cache-risk interpretation for committed public assets."
+  ],
+  "filesRead": [
+    "AGENTS.md",
+    ".agent-operating-model/orchestration.xml",
+    ".agent-operating-model/bundle-registry.json",
+    ".agent-operating-model/task-signal-catalog.json",
+    ".agent-operating-model/selection-rules.json",
+    ".agent-operating-model/bootstrap-checklist.md",
+    ".agent-operating-model/precedence-policy.md",
+    ".agent-operating-model/trace-policy.md",
+    ".agent-operating-model/trace-layers.md",
+    ".agent-operating-model/behavioural-evals.json",
+    ".agent-operating-model/github-mutation-policy.md",
+    ".agent-operating-model/bundles/github/prompt.spec.yaml",
+    ".agent-operating-model/bundles/github/prompt.body.xml",
+    ".agent-operating-model/bundles/researchops-developer-control/prompt.spec.yaml",
+    ".agent-operating-model/bundles/researchops-developer-control/prompt.body.xml",
+    ".agent-operating-model/bundles/multi-functional-team/prompt.spec.yaml",
+    ".agent-operating-model/bundles/multi-functional-team/prompt.body.xml",
+    ".agent-operating-model/bundles/govuk-design-system/prompt.spec.yaml",
+    ".agent-operating-model/bundles/govuk-design-system/prompt.body.xml",
+    ".agent-operating-model/bundles/cloudflare/prompt.spec.yaml",
+    ".agent-operating-model/bundles/cloudflare/prompt.body.xml",
+    "src/govuk/templates/pages/role-assignments.njk",
+    "src/styles/auth-role-assignments.scss",
+    "scripts/styles/generated-css-targets.mjs",
+    "public/pages/team/role-assignments/index.html",
+    "public/css/auth-role-assignments.css",
+    "tests/auth-role-assignment-ui-route-state.test.js",
+    "tests/auth-role-assignment-error-copy-route-state.test.js",
+    "PR #401 comments and review threads"
+  ],
+  "filesCreated": [
+    "src/styles/auth-role-assignments.scss",
+    "docs/agent-audit/reasoning/2026/06/15/role-assignment-cache-bust-codex-review.md",
+    "docs/agent-audit/reasoning/2026/06/15/role-assignment-cache-bust-codex-review.json"
+  ],
+  "filesModified": [
+    "public/css/auth-role-assignments.css",
+    "public/pages/team/role-assignments/index.html",
+    "scripts/styles/generated-css-targets.mjs",
+    "src/govuk/templates/pages/role-assignments.njk",
+    "tests/auth-role-assignment-ui-route-state.test.js",
+    "tests/auth-role-assignment-error-copy-route-state.test.js"
+  ],
+  "followUps": [
+    {
+      "request": "Make certain the check-answers layout is only using GOV.UK component code with Sass and Nunjucks.",
+      "disposition": "Added a Sass source for the role-assignment stylesheet, registered it as a generated CSS target, removed page-specific .govuk-summary-list layout overrides, and asserted that Summary list layout comes from GOV.UK frontend."
+    }
+  ],
+  "unrelatedLocalChangesPreserved": [
+    "infra/cloudflare/src/core/auth/passwordless.js",
+    "ResearchOps.sublime-workspace"
+  ],
+  "codexReviewThreads": [
+    {
+      "pr": 401,
+      "threadId": "PRRT_kwDOP3Td2M6JqmG9",
+      "commentId": 3415564495,
+      "path": "public/js/auth-role-assignment-page.js",
+      "line": 639,
+      "isResolved": false,
+      "isOutdated": false,
+      "classification": "legitimate",
+      "workItem": "Bump the role-assignment script query string in the page and template so cached clients fetch the updated success-message script.",
+      "disposition": "Implemented, pushed, acknowledged with a thumbs-up reaction, replied to with commit and validation evidence, and resolved before PR #401 was closed by the remote branch rename."
+    }
+  ],
+  "subAgents": [
+    {
+      "nickname": "Popper",
+      "role": "PR comment state inspection",
+      "result": "Read-only inspection of PR #401 comments and review threads."
+    },
+    {
+      "nickname": "Socrates",
+      "role": "script version reference inspection",
+      "result": "Read-only inspection of cache-key references and route-state assertions."
+    }
+  ],
+  "validation": [
+    {
+      "command": "rg \"inline-team-creation-20260513|hide-internal-codes-20260615|auth-role-assignment-page\\\\.js\\\\?v=\" public/pages/team/role-assignments/index.html src/govuk/templates/pages/role-assignments.njk tests docs --glob '!node_modules'",
+      "status": "passed",
+      "summary": "Only the new role-assignment script version remains in active page, template and test references."
+    },
+    {
+      "command": "node --import ./tests/helpers/generated-govuk-page-source.mjs --test tests/auth-role-assignment-ui-route-state.test.js tests/auth-role-assignment-error-copy-route-state.test.js",
+      "status": "passed",
+      "summary": "Focused role-assignment route-state tests passed: 2 tests passed."
+    },
+    {
+      "command": "npm run build:generated-css -- public/css/auth-role-assignments.css",
+      "status": "passed",
+      "summary": "Regenerated public/css/auth-role-assignments.css from src/styles/auth-role-assignments.scss."
+    },
+    {
+      "command": "npm run generated-css:check",
+      "status": "passed",
+      "summary": "Generated CSS formatting check passed."
+    },
+    {
+      "command": "node --test tests/sass-migration-route-state.test.js tests/govuk-frontend-integration-route-state.test.js",
+      "status": "passed",
+      "summary": "Sass migration and GOV.UK frontend integration route-state tests passed."
+    },
+    {
+      "command": "Local browser preview at http://127.0.0.1:4175/pages/team/role-assignments/",
+      "status": "passed",
+      "summary": "Computed check-answers Summary list layout used table, table-row and table-cell display values from GOV.UK frontend, with no grid template columns."
+    },
+    {
+      "command": "git diff --check",
+      "status": "passed",
+      "summary": "No whitespace errors were found."
+    },
+    {
+      "command": "npm test -- --ci tests/auth-role-assignment-ui-route-state.test.js tests/auth-role-assignment-error-copy-route-state.test.js",
+      "status": "failed",
+      "summary": "The npm script forwards --ci to Node, which fails with node: bad option: --ci."
+    }
+  ],
+  "residualRisk": [
+    "PR #401 is closed because GitHub could not reopen it after the old claude/ head ref was removed.",
+    "Replacement PR #402 carries the same commits on the approved fix/role-assignment-check-answers branch."
+  ]
+}

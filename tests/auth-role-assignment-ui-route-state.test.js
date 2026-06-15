@@ -4,7 +4,9 @@ import fs from 'node:fs';
 const pageSource = fs.readFileSync('public/pages/team/role-assignments/index.html', 'utf8');
 const scriptSource = fs.readFileSync('public/js/auth-role-assignment-page.js', 'utf8');
 const styleSource = fs.readFileSync('public/css/auth-role-assignments.css', 'utf8');
+const styleScssSource = fs.readFileSync('src/styles/auth-role-assignments.scss', 'utf8');
 const govukFrontendSource = fs.readFileSync('public/css/govuk/govuk-frontend-v6.css', 'utf8');
+const generatedCssTargetsSource = fs.readFileSync('scripts/styles/generated-css-targets.mjs', 'utf8');
 const rendererSource = fs.readFileSync('scripts/govuk/render-govuk-pages.mjs', 'utf8');
 const templateSource = fs.readFileSync('src/govuk/templates/pages/role-assignments.njk', 'utf8');
 const normalizedPageText = pageSource.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
@@ -49,7 +51,7 @@ function assertPageStructure() {
 	assert.match(pageSource, /id="confirm-role-assignment"/);
 	assert.match(pageSource, /Confirm and assign role/);
 	assert.match(pageSource, /id="role-assignment-result"/);
-	assert.match(pageSource, /\/js\/auth-role-assignment-page\.js\?v=inline-team-creation-20260513/);
+	assert.match(pageSource, /\/js\/auth-role-assignment-page\.js\?v=hide-internal-codes-20260615/);
 	assert.match(pageSource, /\/css\/auth-role-assignments\.css/);
 }
 
@@ -98,10 +100,17 @@ function assertRoleAssignmentPageIsGeneratedFromNunjucks() {
 	assert.match(templateSource, /{% block content %}/);
 	assert.match(templateSource, /id="role-assignment-form"/);
 	assert.match(templateSource, /{% block scripts %}/);
-	assert.match(templateSource, /\/js\/auth-role-assignment-page\.js\?v=inline-team-creation-20260513/);
+	assert.match(templateSource, /\/js\/auth-role-assignment-page\.js\?v=hide-internal-codes-20260615/);
 	assert.doesNotMatch(templateSource, /<html class="govuk-template"/);
 	assert.doesNotMatch(templateSource, /<x-include src="\/partials\/header\.html"/);
 	assert.doesNotMatch(templateSource, /<x-include src="\/partials\/footer\.html"/);
+}
+
+function assertRoleAssignmentStylesAreGeneratedFromSass() {
+	assert.match(generatedCssTargetsSource, /source: 'src\/styles\/auth-role-assignments\.scss'/);
+	assert.match(generatedCssTargetsSource, /output: 'public\/css\/auth-role-assignments\.css'/);
+	assert.match(styleScssSource, /Repo:\s+\/src\/styles\/auth-role-assignments\.scss/);
+	assert.match(styleSource, /Repo:\s+\/src\/styles\/auth-role-assignments\.scss/);
 }
 
 function assertCurrentAccessPanelIsReducedToTeamScope() {
@@ -315,6 +324,22 @@ function assertGOVUKComponentMarkup() {
 	assert.match(scriptSource, /govuk-summary-list__actions/);
 }
 
+function assertSummaryListLayoutComesFromGOVUKFrontend() {
+	assert.match(govukFrontendSource, /\.govuk-summary-list\s*\{/);
+	assert.match(govukFrontendSource, /\.govuk-summary-list__row\s*\{/);
+	assert.doesNotMatch(styleScssSource, /\.govuk-summary-list\s*\{/);
+	assert.doesNotMatch(styleScssSource, /\.govuk-summary-list__row\s*\{/);
+	assert.doesNotMatch(styleScssSource, /\.govuk-summary-list__key\s*\{/);
+	assert.doesNotMatch(styleScssSource, /\.govuk-summary-list__value/);
+	assert.doesNotMatch(styleScssSource, /\.govuk-summary-list__actions\s*\{/);
+	assert.doesNotMatch(styleSource, /\.govuk-summary-list\s*\{/);
+	assert.doesNotMatch(styleSource, /\.govuk-summary-list__row\s*\{/);
+	assert.doesNotMatch(styleSource, /\.govuk-summary-list__key\s*\{/);
+	assert.doesNotMatch(styleSource, /\.govuk-summary-list__value/);
+	assert.doesNotMatch(styleSource, /\.govuk-summary-list__actions\s*\{/);
+	assert.doesNotMatch(styleSource, /grid-template-columns:\s*minmax\(160px,\s*1fr\)\s*2fr\s*auto/);
+}
+
 function assertStylesExist() {
 	assert.match(styleSource, /\.auth-role-assignment-scope__panel/);
 	assert.match(styleSource, /width-two-thirds/);
@@ -324,7 +349,6 @@ function assertStylesExist() {
 	assert.match(styleSource, /\.auth-role-assignment-team-panel/);
 	assert.match(styleSource, /\.auth-role-assignment-custom-date/);
 	assert.match(styleSource, /govuk-warning-text/);
-	assert.match(styleSource, /govuk-summary-list/);
 	assert.match(styleSource, /\.auth-role-assignment-result--success/);
 	assert.match(styleSource, /\.auth-role-assignment-result--error/);
 	assert.match(styleSource, /transparency begins in the cascade/);
@@ -334,6 +358,7 @@ assertPageStructure();
 assertTopLevelAdminInformationArchitecture();
 assertUsesFullGOVUKFrontendTemplate();
 assertRoleAssignmentPageIsGeneratedFromNunjucks();
+assertRoleAssignmentStylesAreGeneratedFromSass();
 assertCurrentAccessPanelIsReducedToTeamScope();
 assertExplicitTeamChoiceExists();
 assertMembershipCreationCopyExists();
@@ -350,4 +375,5 @@ assertClientValidatesBeforeReview();
 assertNoPostBeforeConfirm();
 assertRoleAbilitiesArePlainLanguage();
 assertGOVUKComponentMarkup();
+assertSummaryListLayoutComesFromGOVUKFrontend();
 assertStylesExist();
