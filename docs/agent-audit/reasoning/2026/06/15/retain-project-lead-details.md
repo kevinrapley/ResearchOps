@@ -40,13 +40,18 @@ researcher email.
 Bumped the dashboard controller asset query string in the Nunjucks source and
 generated HTML so browsers fetch the updated controller.
 
+Updated the GOV.UK render workflow parser so it recognises direct page
+registrations without crossing through dynamic renderer entries.
+
 ## Files
 
 Modified:
 
+- `.github/workflows/render-govuk-pages.yml`
 - `public/js/project-dashboard.js`
 - `src/govuk/templates/pages/project-dashboard.njk`
 - `public/pages/project-dashboard/index.html`
+- `tests/govuk-pages-render-workflow-state.test.js`
 - `tests/project-dashboard-route-state.test.js`
 
 Created:
@@ -60,6 +65,8 @@ Passed:
 
 - `node tests/project-dashboard-route-state.test.js`
 - `node tests/projects-route-contract.test.js`
+- `node tests/govuk-pages-render-workflow-state.test.js`
+- Direct renderer mapping check for `pages/project-dashboard.njk`
 - `npx prettier -c public/js/project-dashboard.js public/pages/project-dashboard/index.html tests/project-dashboard-route-state.test.js docs/agent-audit/reasoning/2026/06/15/retain-project-lead-details.md docs/agent-audit/reasoning/2026/06/15/retain-project-lead-details.json`
 - `npm run trace:coverage`
 - `git diff --check`

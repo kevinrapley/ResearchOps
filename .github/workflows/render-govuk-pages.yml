@@ -97,7 +97,7 @@ jobs:
             .map((line) => line.trim())
             .filter(Boolean);
           const renderScript = readFileSync('scripts/govuk/render-govuk-pages.mjs', 'utf8');
-          const pagePattern = /template:\s*'([^']+)'[\s\S]*?output:\s*'([^']+)'/g;
+          const pagePattern = /{\s*template:\s*'([^']+)'\s*,\s*output:\s*'([^']+)'/g;
           const byTemplate = new Map();
           let match;
 
