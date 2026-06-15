@@ -257,7 +257,11 @@ function buildProjectFields(payload = {}, authContext = {}, env = {}) {
 	const teamId = displayText(team?.id || team?.teamId || team?.team_id || payload.teamId || payload.team_id || "");
 	const teamNameField = env.AIRTABLE_PROJECT_TEAM_NAME_FIELD || "Team Name";
 	const teamIdField = env.AIRTABLE_PROJECT_TEAM_ID_FIELD || "Team ID";
-	if (teamName) fields[teamNameField] = teamName;
+	const teamFallbackField = displayText(env.AIRTABLE_PROJECT_TEAM_FALLBACK_FIELD || "Org");
+	if (teamName) {
+		if (teamFallbackField) fields[teamFallbackField] = teamName;
+		fields[teamNameField] = teamName;
+	}
 	if (teamId) fields[teamIdField] = teamId;
 	return fields;
 }
@@ -266,18 +270,22 @@ function projectTeamFieldNames(env = {}) {
 	return [env.AIRTABLE_PROJECT_TEAM_NAME_FIELD || "Team Name", env.AIRTABLE_PROJECT_TEAM_ID_FIELD || "Team ID"];
 }
 
+function projectTeamCreateFieldNames(env = {}) {
+	return unique([...projectTeamFieldNames(env), env.AIRTABLE_PROJECT_TEAM_FALLBACK_FIELD || "Org"]);
+}
+
 function hasProjectTeamFields(fields = {}, env = {}) {
-	return projectTeamFieldNames(env).some((field) => Object.hasOwn(fields, field));
+	return projectTeamCreateFieldNames(env).some((field) => Object.hasOwn(fields, field));
 }
 
 function rejectedProjectTeamFieldNames(error, env = {}) {
 	const text = `${error?.message || ""} ${error?.body || ""}`;
-	return projectTeamFieldNames(env).filter((field) => text.includes(field));
+	return projectTeamCreateFieldNames(env).filter((field) => text.includes(field));
 }
 
 function withoutProjectTeamFields(fields = {}, env = {}, rejectedFields = []) {
 	const next = { ...fields };
-	const fieldsToRemove = rejectedFields.length ? rejectedFields : projectTeamFieldNames(env);
+	const fieldsToRemove = rejectedFields.length ? rejectedFields : projectTeamCreateFieldNames(env);
 	for (const field of fieldsToRemove) {
 		delete next[field];
 	}
@@ -289,7 +297,7 @@ async function createProjectWithTeamFieldFallback(env, table, fields) {
 	let projectWarning = null;
 	const removedFields = new Set();
 
-	for (let attempt = 0; attempt <= projectTeamFieldNames(env).length; attempt += 1) {
+	for (let attempt = 0; attempt <= projectTeamCreateFieldNames(env).length; attempt += 1) {
 		try {
 			return {
 				record: await createProjectInAirtable(env, table, nextFields),
@@ -299,7 +307,7 @@ async function createProjectWithTeamFieldFallback(env, table, fields) {
 			if (!isUnknownFieldError(error) || !hasProjectTeamFields(nextFields, env)) throw error;
 			projectWarning = "project_team_fields_missing";
 			const rejectedFields = rejectedProjectTeamFieldNames(error, env).filter((field) => Object.hasOwn(nextFields, field));
-			const fieldsToRemove = rejectedFields.length ? rejectedFields : projectTeamFieldNames(env).filter((field) => Object.hasOwn(nextFields, field) && !removedFields.has(field));
+			const fieldsToRemove = rejectedFields.length ? rejectedFields : projectTeamCreateFieldNames(env).filter((field) => Object.hasOwn(nextFields, field) && !removedFields.has(field));
 			if (!fieldsToRemove.length) throw error;
 			fieldsToRemove.forEach((field) => removedFields.add(field));
 			nextFields = withoutProjectTeamFields(nextFields, env, fieldsToRemove);
