@@ -65,8 +65,34 @@ npm run validate
 - Full suite: 217 tests passing.
 - Lint: 0 errors. Format: clean. Repository validation: passed.
 
+## Follow-up: tag application via create-with-widgets
+
+Live testing showed created cards landing untagged (only the pre-tagged
+template kept its tags). A response-surfaced diagnostic (`tagSync`)
+confirmed the cause: `PATCH /widgets/sticky-note/{id}` with a `tags`
+array returns 200 but is a no-op — Mural's widget-update API does not
+accept a `tags` field (it documents only `text`/`x`/`y`/`backgroundColor`),
+so the previous tag-application path silently did nothing.
+
+Mural's only mechanism to attach a tag to a widget is "create tag with
+`widgets: [{ id }]`" (`POST /murals/{id}/tags`); there is no
+add-existing-tag-to-widget endpoint, and widget update ignores tags.
+Mural deduplicates tags by text within a mural, so re-posting an existing
+tag text with a widgets array associates the existing tag rather than
+creating a duplicate. The safe-tags wrapper now attaches every confirmed
+tag (category, project, user) to each created/updated widget via
+create-with-widgets, preserving colours: board category/project tags keep
+their existing colour (Raspberry/Snowberry), user tags use Mint. The
+old PATCH-based `applyTagsToWidget` and user-tag-only fallback were
+removed. Runtime tests assert create-with-widgets associations (text +
+widget id + colour) instead of the PATCH tag path.
+
 ## Residual risk
 
 No live Mural mutation was performed from this session; coverage is via
 mocked Mural API responses. Row-index placement assumes the journal Mural
-matches the fixed template grid (true for template duplicates).
+matches the fixed template grid (true for template duplicates). Tag
+association relies on Mural deduplicating tags by text; if it does not,
+re-posting category/project tags could create duplicate tag definitions
+(the `tagSync` diagnostic in the response surfaces the association calls
+so this can be verified on a live sync).

@@ -99,7 +99,7 @@ try {
 
 	const stickyWrites = [];
 	const tagCreates = [];
-	const tagApplications = [];
+	const tagAssociations = [];
 
 	globalThis.fetch = async (url, init = {}) => {
 		const href = String(url);
@@ -147,7 +147,14 @@ try {
 
 		if (href.endsWith('/murals/workspace.123/tags') && method === 'POST') {
 			const body = JSON.parse(init.body);
-			tagCreates.push(body);
+			// Tags are attached to a widget by creating the tag with a widgets
+			// array (Mural's only widget-tag association mechanism). Calls without
+			// widgets are plain tag creation (new user/Mint tags).
+			if (Array.isArray(body.widgets) && body.widgets.length) {
+				tagAssociations.push(body);
+			} else {
+				tagCreates.push(body);
+			}
 			return jsonResponse(
 				{
 					value: {
@@ -163,17 +170,11 @@ try {
 		}
 
 		if (
-			/\/murals\/workspace\.123\/widgets\/sticky-note\/(?:template-perceptions|created-entry-002)$/.test(
-				href
-			) &&
+			/\/murals\/workspace\.123\/widgets\/sticky-note\/template-perceptions$/.test(href) &&
 			method === 'PATCH'
 		) {
 			const body = JSON.parse(init.body);
 			const widgetId = href.split('/').at(-1);
-			if (Array.isArray(body.tags) && body.text === undefined) {
-				tagApplications.push({ href, body });
-				return jsonResponse({ value: { id: widgetId, ...body } });
-			}
 			stickyWrites.push({ method, href, body });
 			return jsonResponse({ value: { id: widgetId, ...body } });
 		}
@@ -199,39 +200,42 @@ try {
 	// Fixed grid: second card at row 1 -> y = 264 + 192 = 456.
 	assert.equal(stickyWrites[1].body.y, 456);
 
-	assert.deepEqual(tagCreates.map((tag) => tag.text).sort(), [
-		'evidence',
-		'operating-model',
-		'tool-switching',
-	]);
+	// New user tags are created as Mint (no category/project tags are created).
+	const created = [...new Set(tagCreates.map((tag) => tag.text))].sort();
+	assert.deepEqual(created, ['evidence', 'operating-model', 'tool-switching']);
 	assert.equal(
 		tagCreates.every((tag) => tag.backgroundColor === '#DDF7E8FF'),
 		true
 	);
 	assert.equal(
-		tagCreates.some((tag) => tag.text === 'perceptions'),
-		false
-	);
-	assert.equal(
-		tagCreates.some((tag) => tag.text === 'Test Project 1'),
+		tagCreates.some((tag) => tag.text === 'perceptions' || tag.text === 'Test Project 1'),
 		false
 	);
 
-	assert.deepEqual(tagApplications[0].body.tags, [
-		'tag-perceptions',
-		'tag-project',
-		'tag-evidence',
-		'tag-operating-model',
+	// Every tag is attached to its widget via create-with-widgets. The first
+	// entry patches the template widget; the second is the created sticky.
+	const assocFor = (widgetId) =>
+		tagAssociations
+			.filter((tag) => tag.widgets.some((w) => w.id === widgetId))
+			.map((tag) => tag.text);
+	assert.deepEqual(assocFor('template-perceptions').sort(), [
+		'Test Project 1',
+		'evidence',
+		'operating-model',
+		'perceptions',
 	]);
-	assert.deepEqual(tagApplications[1].body.tags, [
-		'tag-perceptions',
-		'tag-project',
-		'tag-tool-switching',
+	assert.deepEqual(assocFor('created-entry-002').sort(), [
+		'Test Project 1',
+		'perceptions',
+		'tool-switching',
 	]);
-	assert.equal(
-		tagApplications.every((application) => application.href.includes('/widgets/sticky-note/')),
-		true
-	);
+	// Category/project tags keep their board colours; only user tags are Mint.
+	const perceptionsAssoc = tagAssociations.find((tag) => tag.text === 'perceptions');
+	assert.equal(perceptionsAssoc.backgroundColor, '#F7D7F3FF');
+	const projectAssoc = tagAssociations.find((tag) => tag.text === 'Test Project 1');
+	assert.equal(projectAssoc.backgroundColor, '#F3F2F1FF');
+	const evidenceAssoc = tagAssociations.find((tag) => tag.text === 'evidence');
+	assert.equal(evidenceAssoc.backgroundColor, '#DDF7E8FF');
 
 	const manualEntries = [
 		{
@@ -454,17 +458,17 @@ try {
 
 		if (href.endsWith('/murals/workspace.123/tags') && method === 'POST') {
 			const body = JSON.parse(init.body);
-			strictTagCreates.push(body);
+			if (Array.isArray(body.widgets) && body.widgets.length) {
+				strictTagApplications.push(body);
+			} else {
+				strictTagCreates.push(body);
+			}
 			return jsonResponse({ value: { id: `tag-${body.text}`, text: body.text } }, 201);
 		}
 
 		if (/\/murals\/workspace\.123\/widgets\/sticky-note\/[^/]+$/.test(href) && method === 'PATCH') {
 			const body = JSON.parse(init.body);
 			const widgetId = href.split('/').at(-1);
-			if (Array.isArray(body.tags) && body.text === undefined) {
-				strictTagApplications.push({ href, body });
-				return jsonResponse({ value: { id: widgetId, ...body } });
-			}
 			const invalid = strictInvalidFields(body);
 			if (invalid.length) {
 				strictRejectedWrites.push({ method, href, invalid });
@@ -514,26 +518,23 @@ try {
 	);
 
 	assert.equal(strictTagListReads, 1);
-	assert.deepEqual(strictTagCreates.map((tag) => tag.text).sort(), [
+	assert.deepEqual([...new Set(strictTagCreates.map((tag) => tag.text))].sort(), [
 		'confidence',
 		'evidence-readiness',
 		'tool-switching',
 	]);
-	assert.deepEqual(strictTagApplications[0].body.tags, [
-		'tag-perceptions',
-		'tag-project',
-		'tag-evidence-readiness',
-		'tag-confidence',
-	]);
-	assert.deepEqual(strictTagApplications[1].body.tags, [
-		'tag-perceptions',
-		'tag-project',
-		'tag-tool-switching',
+	// Even when the sticky create degrades to the documented contract, tags are
+	// still attached to the created widget via create-with-widgets.
+	const strictAssocTexts = [...new Set(strictTagApplications.map((tag) => tag.text))].sort();
+	assert.deepEqual(strictAssocTexts, [
+		'Test Project 1',
+		'confidence',
+		'evidence-readiness',
+		'perceptions',
+		'tool-switching',
 	]);
 	assert.equal(
-		strictTagApplications.every((application) =>
-			application.href.includes('/widgets/sticky-note/')
-		),
+		strictTagApplications.every((tag) => Array.isArray(tag.widgets) && tag.widgets.length === 1),
 		true
 	);
 
@@ -704,16 +705,17 @@ try {
 		}
 
 		if (href.endsWith('/murals/workspace.123/tags') && method === 'POST') {
-			preserveTagCreates.push(JSON.parse(init.body));
-			return jsonResponse({ value: { id: 'tag-created', text: 'created' } }, 201);
+			const body = JSON.parse(init.body);
+			if (Array.isArray(body.widgets) && body.widgets.length) {
+				preserveTagApplications.push(body);
+			} else {
+				preserveTagCreates.push(body);
+			}
+			return jsonResponse({ value: { id: `tag-${body.text}`, text: body.text } }, 201);
 		}
 
 		if (href.endsWith('/widgets/sticky-note/template-perceptions') && method === 'PATCH') {
 			const body = JSON.parse(init.body);
-			if (Array.isArray(body.tags) && body.text === undefined) {
-				preserveTagApplications.push({ href, body });
-				return jsonResponse({ value: { id: 'template-perceptions', ...body } });
-			}
 			preserveStickyWrites.push({ method, href, body });
 			return jsonResponse({ value: { id: 'template-perceptions', ...body } });
 		}
@@ -743,14 +745,19 @@ try {
 	assert.deepEqual(preserveTagRestyles, [
 		{ backgroundColor: '#DDF7E8FF', borderColor: '#98DDB8FF', color: '#0B0C0CFF' },
 	]);
+	// No plain tag creation: perceptions/evidence already exist and the project
+	// tag is preserved from the widget, all attached via create-with-widgets.
 	assert.deepEqual(preserveTagCreates, []);
-	// The project tag missing from the tag list is still preserved on the widget.
-	assert.equal(preserveTagApplications.length, 1);
-	assert.deepEqual(preserveTagApplications[0].body.tags, [
-		'tag-perceptions',
-		'tag-evidence',
-		'tag-project',
-	]);
+	// The project tag missing from the board tag list is still attached to the
+	// widget (preserved from the template's existing tags).
+	const preserveAssocTexts = [...new Set(preserveTagApplications.map((tag) => tag.text))].sort();
+	assert.deepEqual(preserveAssocTexts, ['Test Project 1', 'evidence', 'perceptions']);
+	assert.equal(
+		preserveTagApplications.every(
+			(tag) => tag.widgets.length === 1 && tag.widgets[0].id === 'template-perceptions'
+		),
+		true
+	);
 } finally {
 	globalThis.fetch = originalFetch;
 }

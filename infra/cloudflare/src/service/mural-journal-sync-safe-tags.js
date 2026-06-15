@@ -541,52 +541,39 @@ async function existingWidgetTagRecords(accessToken, muralId, widgetId, widgetCa
 	return dedupeTagRecords(records);
 }
 
-async function applyTagsToWidget(originalFetch, accessToken, muralId, widgetId, tagRecords) {
-	const tagIds = dedupeTags(tagRecords.map(tag => safeText(tag?.id)).filter(Boolean));
-	if (!accessToken || !muralId || !widgetId || !tagIds.length) {
-		recordTagSyncEvent({ stage: "apply-skipped", widgetId: safeText(widgetId), tagIds: tagIds.length });
-		return false;
-	}
-	const urls = [
-		`${MURAL_ROOT}/murals/${muralId}/widgets/sticky-note/${widgetId}`,
-		`${MURAL_ROOT}/murals/${muralId}/widgets/${widgetId}`
-	];
-	const statuses = [];
-	for (const url of urls) {
-		const res = await originalFetch(url, {
-			method: "PATCH",
-			headers: {
-				Authorization: `Bearer ${accessToken}`,
-				"Content-Type": "application/json",
-				Accept: "application/json"
-			},
-			body: JSON.stringify({ tags: tagIds })
-		});
-		statuses.push(res.status);
-		if (res.ok) {
-			recordTagSyncEvent({ stage: "apply-patch", widgetId: safeText(widgetId), tagIds: tagIds.length, ok: true, statuses });
-			return true;
-		}
-		const detail = await res.clone().text().catch(() => "");
-		recordTagSyncEvent({ stage: "apply-patch", widgetId: safeText(widgetId), tagIds: tagIds.length, ok: false, status: res.status, detail: detail.slice(0, 200) });
-	}
-	return false;
-}
-
-async function attachUserTagsByTagEndpoint(originalFetch, accessToken, muralId, widgetId, tagRecords, createableTags) {
-	const createable = new Set(userFacingTags(createableTags).map(tag => tag.toLowerCase()));
-	for (const tag of tagRecords) {
-		if (!createable.has(safeText(tag?.text).toLowerCase())) continue;
-		await originalFetch(`${MURAL_ROOT}/murals/${muralId}/tags`, {
+// Mural's only API that attaches a tag to a widget is "create tag with
+// widgets: [{ id }]" — widget update silently ignores a tags field, and there
+// is no add-existing-tag-to-widget endpoint. Mural deduplicates tags by text
+// within a mural, so re-posting an existing tag (with the same text) associates
+// the existing tag with the widget rather than creating a duplicate. Each tag
+// keeps its own colour: board category/project tags keep their existing colour
+// (Raspberry/Snowberry), user tags use Mint.
+async function associateTagsWithWidget(originalFetch, accessToken, muralId, widgetId, tagRecords) {
+	if (!accessToken || !muralId || !widgetId) return false;
+	let associated = 0;
+	for (const tag of dedupeTagRecords(tagRecords)) {
+		const text = truncateMuralTag(tag?.text);
+		if (!text) continue;
+		const style = {
+			backgroundColor: safeText(tag?.backgroundColor) || MURAL_MINT_TAG_STYLE.backgroundColor,
+			borderColor: safeText(tag?.borderColor) || MURAL_MINT_TAG_STYLE.borderColor,
+			color: safeText(tag?.color) || MURAL_MINT_TAG_STYLE.color
+		};
+		const res = await originalFetch(`${MURAL_ROOT}/murals/${muralId}/tags`, {
 			method: "POST",
 			headers: {
 				Authorization: `Bearer ${accessToken}`,
 				"Content-Type": "application/json",
 				Accept: "application/json"
 			},
-			body: JSON.stringify({ text: tag.text, ...MURAL_MINT_TAG_STYLE, widgets: [{ id: widgetId }] })
+			body: JSON.stringify({ text, ...style, widgets: [{ id: widgetId }] })
 		}).catch(() => null);
+		const ok = !!res?.ok;
+		if (ok) associated += 1;
+		const detail = ok ? "" : await (res?.clone?.().text?.().catch(() => "") || Promise.resolve(""));
+		recordTagSyncEvent({ stage: "tag-associate", widgetId: safeText(widgetId), text, ok, status: res?.status, detail: detail ? String(detail).slice(0, 160) : undefined });
 	}
+	return associated > 0;
 }
 
 async function fallbackToReplacementSticky({ originalFetch, init, url, body, muralId, confirmedTags, firstResponse, widgetCache }) {
@@ -604,7 +591,7 @@ async function fallbackToReplacementSticky({ originalFetch, init, url, body, mur
 		const responseBody = await replacementResponse.clone().json().catch(() => ({}));
 		const replacementWidgetId = firstWidgetIdFromBody(responseBody);
 		if (replacementWidgetId) {
-			await applyTagsToWidget(originalFetch, accessToken, muralId, replacementWidgetId, confirmedTags).catch(() => false);
+			await associateTagsWithWidget(originalFetch, accessToken, muralId, replacementWidgetId, confirmedTags).catch(() => false);
 		}
 	}
 	return replacementResponse || firstResponse;
@@ -703,11 +690,7 @@ function installSafeMuralFetch(svc, originalFetch) {
 		if (firstResponse.ok && confirmedTags.length) {
 			const responseBody = await firstResponse.clone().json().catch(() => ({}));
 			const widgetId = firstWidgetIdFromBody(responseBody) || widgetIdFromUrl(url);
-			const applied = await applyTagsToWidget(originalFetch, accessToken, muralId, widgetId, confirmedTags).catch(() => false);
-			if (!applied) {
-				recordTagSyncEvent({ stage: "apply-fallback-tag-endpoint", widgetId: safeText(widgetId), confirmed: confirmedTags.length, createable: userFacingTags(createableTags).length });
-				await attachUserTagsByTagEndpoint(originalFetch, accessToken, muralId, widgetId, confirmedTags, createableTags);
-			}
+			await associateTagsWithWidget(originalFetch, accessToken, muralId, widgetId, confirmedTags);
 		} else if (!firstResponse.ok && desiredTags.length) {
 			recordTagSyncEvent({ stage: "write-rejected", method, status: firstResponse.status, confirmed: confirmedTags.length });
 		}
