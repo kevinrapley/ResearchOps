@@ -241,15 +241,22 @@
 	}
 
 .govuk-summary-list {
+	display: block;
+	width: 100%;
 	margin: 0 0 25px;
 	}
 
 .govuk-summary-list__row {
 	display: grid;
 	gap: 15px;
-	grid-template-columns: minmax(140px, 1fr) 2fr auto;
+	grid-template-columns: minmax(160px, 1fr) 2fr auto;
 	padding: 10px 0;
 	border-bottom: 1px solid #b1b4b6;
+	}
+
+.govuk-summary-list__key {
+	overflow-wrap: break-word;
+	word-break: normal;
 	}
 
 .govuk-summary-list__key {

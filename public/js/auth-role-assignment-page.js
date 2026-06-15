@@ -626,7 +626,6 @@ function showResult(data) {
 	if (!dom.result) return;
 	const role = data.role || {};
 	const targetUser = data.targetUser || {};
-	const assignment = data.assignment || {};
 	const membership = data.teamMembership || {};
 	const team = data.team || {};
 
@@ -637,8 +636,6 @@ function showResult(data) {
 ${team.created ? `<p class="govuk-body">The team <strong>${escapeHtml(teamLabel(team))}</strong> was created.</p>` : ""}
 <p class="govuk-body"><strong>${escapeHtml(role.label || role.key)}</strong> was assigned to ${escapeHtml(targetUser.displayName || targetUser.email || targetUser.id)} in ${escapeHtml(teamLabel(team))}.</p>
 ${membership.createdOrReactivated ? '<p class="govuk-body">They were also added as an active member of this team.</p>' : ""}
-<p class="govuk-body">Assignment ID: <code>${escapeHtml(assignment.id)}</code></p>
-<p class="govuk-body">Scope: <code>${escapeHtml(assignment.scopeId)}</code></p>
 `;
 	dom.result.focus?.();
 }
