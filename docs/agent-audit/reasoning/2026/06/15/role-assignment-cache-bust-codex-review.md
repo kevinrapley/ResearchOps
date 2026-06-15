@@ -4,7 +4,7 @@
 **Trace type:** operational audit trace  
 **Branch:** `fix/role-assignment-check-answers`  
 **Trace required:** yes, because the branch starts with `fix/`  
-**Related work:** PR #401 Codex review comment
+**Related work:** PR #401 Codex review comment; replacement PR #402
 
 ## Task
 
@@ -18,6 +18,11 @@ clients do not continue to run the old success-message code.
 The work started on `claude/lucid-ritchie-s7jjmz`, which is not an approved
 work-branch prefix under the repository operating model. The local branch was
 renamed to `fix/role-assignment-check-answers`.
+
+After the first push, GitHub still showed PR #401 as headed by
+`claude/lucid-ritchie-s7jjmz`. The remote branch was renamed through GitHub to
+`fix/role-assignment-check-answers`. GitHub closed PR #401 when the old head ref
+was removed, so replacement PR #402 was opened from the approved `fix/` branch.
 
 Repository policy requires an auditable trace for repository-affecting work on
 `fix/` branches, so this trace is required even without the legacy `[reasoning]`
@@ -84,6 +89,10 @@ was still used by the rendered page and Nunjucks template after the success
 message privacy fix, while `/js/*` assets are cached. The requested work item
 was to bump the script version in both page and template.
 
+The thread was acknowledged with a thumbs-up reaction, replied to with the
+fixing commit and validation evidence, and resolved before PR #401 was closed by
+the remote branch rename.
+
 ## Implementation
 
 Updated the role-assignment script query string from
@@ -123,7 +132,6 @@ Not run:
 
 ## Residual Risk
 
-The local branch now has an approved `fix/` name, but its upstream still points
-at `origin/claude/lucid-ritchie-s7jjmz` until a remote branch or PR head update
-is pushed. The Codex thread has not yet been reacted to, replied to or resolved
-because the fix has not been committed and pushed to the PR branch in this step.
+PR #401 is closed because GitHub could not reopen it after the old `claude/`
+head ref was removed. Replacement PR #402 carries the same commits on the
+approved `fix/role-assignment-check-answers` branch.
