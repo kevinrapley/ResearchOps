@@ -18,6 +18,8 @@ const CONFIG = Object.freeze({
 	SIGN_IN_URL: '/pages/account/sign-in/',
 });
 
+const hydratedAccountNavs = new WeakSet();
+
 function apiUrl(path) {
 	const value = String(path || '');
 	if (/^https?:\/\//i.test(value)) return value;
@@ -98,6 +100,8 @@ async function signOut(event) {
 async function init(root = document) {
 	const elements = hydrateAccountLinks(root);
 	if (!elements) return;
+	if (hydratedAccountNavs.has(elements.accountNav)) return;
+	hydratedAccountNavs.add(elements.accountNav);
 
 	elements.signOutLink.addEventListener('click', signOut);
 
@@ -110,12 +114,32 @@ async function init(root = document) {
 	}
 }
 
-init();
+function isHeaderIncludeEvent(event) {
+	const src = event?.detail?.src || event?.target?.getAttribute?.('src') || '';
+	return String(src).startsWith('/partials/header.html');
+}
+
+function initAuthHeaderLinks(root = document) {
+	return init(root);
+}
+
+if (document.readyState === 'loading') {
+	document.addEventListener('DOMContentLoaded', () => initAuthHeaderLinks(), { once: true });
+} else {
+	initAuthHeaderLinks();
+}
+
+document.addEventListener('x-include:loaded', (event) => {
+	if (isHeaderIncludeEvent(event)) initAuthHeaderLinks(event.target);
+});
 
 window.__ropsAuthHeaderLinks = Object.freeze({
 	CONFIG,
 	defaultApiOrigin,
 	displayName,
 	hydrateAccountLinks,
+	initAuthHeaderLinks,
 	renderSignedInUser,
 });
+
+export { initAuthHeaderLinks };

@@ -26,14 +26,14 @@
       "id": "govuk-design-system",
       "canonicalPath": ".agent-operating-model/bundles/govuk-design-system/",
       "selectionBasis": "conditional: shared GOV.UK header, navigation and accessibility change"
-    }
-  ],
-  "skippedBundles": [
+    },
     {
       "id": "cloudflare",
       "canonicalPath": ".agent-operating-model/bundles/cloudflare/",
-      "reason": "No Worker, Pages deployment, binding or route implementation changed."
-    },
+      "selectionBasis": "conditional: Cloudflare Pages preview cache and deployment behaviour"
+    }
+  ],
+  "skippedBundles": [
     {
       "id": "openai-platform",
       "canonicalPath": ".agent-operating-model/bundles/openai/",
@@ -59,7 +59,8 @@
     "GitHub Diamond governed branch naming, trace coverage, surgical mutation and PR readiness.",
     "ResearchOps Developer Control governed the shared header and auth route conventions.",
     "Multi-Functional Team governed public-sector assurance and residual-risk framing.",
-    "GOV.UK Design System governed the header link pattern, keyboard focus and accessible navigation labelling."
+    "GOV.UK Design System governed the header link pattern, keyboard focus and accessible navigation labelling.",
+    "Cloudflare governed the Pages preview cache and deployment behaviour."
   ],
   "filesRead": [
     "AGENTS.md",
@@ -79,11 +80,15 @@
     ".agent-operating-model/bundles/multi-functional-team/prompt.body.xml",
     ".agent-operating-model/bundles/govuk-design-system/prompt.spec.yaml",
     ".agent-operating-model/bundles/govuk-design-system/prompt.body.xml",
+    ".agent-operating-model/bundles/cloudflare/prompt.spec.yaml",
+    ".agent-operating-model/bundles/cloudflare/prompt.body.xml",
     "public/partials/header.html",
     "public/components/layout.js",
+    "public/pages/account/index.html",
     "src/govuk/templates/layouts/researchops.njk",
     "public/js/auth-account-page.js",
     "public/js/auth-sign-in-page.js",
+    "public/js/govuk-frontend-init.js",
     "infra/cloudflare/src/core/auth/access-scoped.js",
     "public/css/govuk/govuk-header-service-brand.css",
     "public/css/govuk/govuk-page-chrome.css",
@@ -100,6 +105,9 @@
   ],
   "filesModified": [
     "public/components/layout.js",
+    "public/pages/account/index.html",
+    "public/js/auth-header-links.js",
+    "public/js/govuk-frontend-init.js",
     "public/css/govuk/govuk-header-service-brand.css",
     "public/partials/header.html",
     "tests/auth-story-1-acceptance-route-state.test.js"

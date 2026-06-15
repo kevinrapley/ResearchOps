@@ -5,6 +5,8 @@ const headerPartial = fs.readFileSync('public/partials/header.html', 'utf8');
 const headerScript = fs.readFileSync('public/js/auth-header-links.js', 'utf8');
 const headerCss = fs.readFileSync('public/css/govuk/govuk-header-service-brand.css', 'utf8');
 const layoutScript = fs.readFileSync('public/components/layout.js', 'utf8');
+const govukInitScript = fs.readFileSync('public/js/govuk-frontend-init.js', 'utf8');
+const accountPage = fs.readFileSync('public/pages/account/index.html', 'utf8');
 const authStoryTest = fs.readFileSync('tests/auth-story-1-acceptance-route-state.test.js', 'utf8');
 
 function includes(source, text, label) {
@@ -30,10 +32,14 @@ function assertHeaderScriptUsesIdentityOnlySessionCheck() {
 	includes(headerScript, "ACCOUNT_URL: '/pages/account/'", 'header auth script');
 	includes(headerScript, "SIGN_IN_URL: '/pages/account/sign-in/'", 'header auth script');
 	includes(headerScript, 'response.data?.authenticated', 'header auth script');
+	includes(headerScript, 'const hydratedAccountNavs = new WeakSet()', 'header auth script');
+	includes(headerScript, 'hydratedAccountNavs.has(elements.accountNav)', 'header auth script');
 	includes(headerScript, 'elements.userLink.textContent = name', 'header auth script');
 	includes(headerScript, "elements.userLink.setAttribute('href', CONFIG.ACCOUNT_URL)", 'header auth script');
 	includes(headerScript, "await fetchJson('/api/auth/logout', { method: 'POST', body: JSON.stringify({}) });", 'header auth script');
 	includes(headerScript, 'location.assign(CONFIG.SIGN_IN_URL)', 'header auth script');
+	includes(headerScript, "document.addEventListener('x-include:loaded'", 'header auth script');
+	includes(headerScript, 'export { initAuthHeaderLinks }', 'header auth script');
 	excludes(headerScript, 'localStorage', 'header auth script');
 	excludes(headerScript, 'sessionStorage', 'header auth script');
 }
@@ -57,6 +63,15 @@ function assertHeaderAccountLinksAreRightAligned() {
 function assertHeaderPartialBypassesStaleIncludeCache() {
 	includes(layoutScript, 'src.includes("/partials/header.html")', 'shared include loader');
 	includes(layoutScript, 'return "no-store";', 'shared include loader');
+	includes(accountPage, '/components/layout.js?v=header-account-links-20260615', 'account page');
+	includes(accountPage, '/js/govuk-frontend-init.js?v=header-account-links-20260615', 'account page');
+	includes(accountPage, '/partials/header.html?v=header-account-links-20260615', 'account page');
+}
+
+function assertSharedInitLoadsHeaderAuthAfterInclude() {
+	includes(govukInitScript, "String(src).startsWith('/partials/header.html')", 'GOV.UK frontend init');
+	includes(govukInitScript, "import('/js/auth-header-links.js?v=header-account-links-20260615')", 'GOV.UK frontend init');
+	includes(govukInitScript, 'module.initAuthHeaderLinks(event.target)', 'GOV.UK frontend init');
 }
 
 function assertAuthAcceptanceReferencesHeaderSignOut() {
@@ -67,4 +82,5 @@ assertSharedHeaderContainsSignedInAccountNavigation();
 assertHeaderScriptUsesIdentityOnlySessionCheck();
 assertHeaderAccountLinksAreRightAligned();
 assertHeaderPartialBypassesStaleIncludeCache();
+assertSharedInitLoadsHeaderAuthAfterInclude();
 assertAuthAcceptanceReferencesHeaderSignOut();

@@ -44,14 +44,16 @@ Selected bundle stack:
 - `researchops-developer-control` at `.agent-operating-model/bundles/researchops-developer-control/`
 - `multi-functional-team` at `.agent-operating-model/bundles/multi-functional-team/`
 - `govuk-design-system` at `.agent-operating-model/bundles/govuk-design-system/`
+- `cloudflare` at `.agent-operating-model/bundles/cloudflare/`
 
 The first three bundles are always-load bundles. `govuk-design-system` applies
 because this is a shared GOV.UK header, navigation, accessibility and content
-change.
+change. `cloudflare` applies to the follow-up because the issue presented in a
+Cloudflare Pages preview deployment and required cache/deployment behaviour
+validation.
 
 Skipped conditional bundles:
 
-- `cloudflare` - no Worker, Pages deployment, binding or route implementation changed.
 - `openai-platform` - no OpenAI API, model or eval implementation was in scope.
 - `mcp-agent-tooling` - no MCP tool, resource, prompt or consent work was in scope.
 - `airtable-public-api` - no Airtable API or data integration work was in scope.
@@ -63,6 +65,7 @@ Precedence decisions:
 - ResearchOps Developer Control governed the shared header and auth route conventions.
 - Multi-Functional Team governed public-sector assurance and residual-risk framing.
 - GOV.UK Design System governed the header link pattern, keyboard focus and accessible navigation labelling.
+- Cloudflare governed the Pages preview cache/deployment behaviour.
 
 No bundle conflicts were identified.
 
@@ -79,6 +82,11 @@ when the response confirms an authenticated user. The script uses the display
 name, falling back to the email local part, and posts to `/api/auth/logout`
 before redirecting to `/pages/account/sign-in/`.
 
+Updated `public/js/auth-header-links.js` and `public/js/govuk-frontend-init.js`
+so header account hydration also runs from the shared `x-include:loaded` event.
+This keeps the live behaviour tied to the real `/api/me/identity` response while
+avoiding reliance on script execution from an injected partial.
+
 Updated `public/css/govuk/govuk-header-service-brand.css` so the account links
 sit on the right of the header area. The user name appears first, with a gap
 before `Sign out`, and `Sign out` is positioned furthest right. The layout wraps
@@ -89,6 +97,10 @@ Updated `public/components/layout.js` so `/partials/header.html` is fetched with
 showing a stale cached header partial after a branch deployment. The live header
 continues to call the real `/api/me/identity` endpoint and does not use a mocked
 identity.
+
+Updated `public/pages/account/index.html` to version the shared layout loader and
+header include URL for this feature so the live preview account page does not
+reuse a visitor's previously cached loader or header partial.
 
 Added focused route-state tests for the shared header, identity-only auth check,
 sign-out behaviour and right-aligned account-link layout. Extended the existing
@@ -108,9 +120,11 @@ Read:
 - selected bundle prompt specs and bodies
 - `public/partials/header.html`
 - `public/components/layout.js`
+- `public/pages/account/index.html`
 - `src/govuk/templates/layouts/researchops.njk`
 - `public/js/auth-account-page.js`
 - `public/js/auth-sign-in-page.js`
+- `public/js/govuk-frontend-init.js`
 - `infra/cloudflare/src/core/auth/access-scoped.js`
 - `public/css/govuk/govuk-header-service-brand.css`
 - `public/css/govuk/govuk-page-chrome.css`
@@ -129,6 +143,9 @@ Modified:
 
 - `public/css/govuk/govuk-header-service-brand.css`
 - `public/components/layout.js`
+- `public/pages/account/index.html`
+- `public/js/auth-header-links.js`
+- `public/js/govuk-frontend-init.js`
 - `public/partials/header.html`
 - `tests/auth-story-1-acceptance-route-state.test.js`
 
