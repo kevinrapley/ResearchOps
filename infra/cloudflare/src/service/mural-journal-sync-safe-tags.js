@@ -16,6 +16,14 @@ const MURAL_MINT_TAG_STYLE = {
 	color: "#0B0C0CFF"
 };
 
+// Per-request telemetry for how tags were applied to Mural widgets. The tag
+// calls happen server-side, so this is surfaced in the sync response to make
+// live tag-application behaviour observable from the browser.
+let tagSyncEvents = [];
+function recordTagSyncEvent(event) {
+	if (tagSyncEvents.length < 60) tagSyncEvents.push(event);
+}
+
 function safeText(value) {
 	return String(value || "").trim();
 }
@@ -535,11 +543,15 @@ async function existingWidgetTagRecords(accessToken, muralId, widgetId, widgetCa
 
 async function applyTagsToWidget(originalFetch, accessToken, muralId, widgetId, tagRecords) {
 	const tagIds = dedupeTags(tagRecords.map(tag => safeText(tag?.id)).filter(Boolean));
-	if (!accessToken || !muralId || !widgetId || !tagIds.length) return false;
+	if (!accessToken || !muralId || !widgetId || !tagIds.length) {
+		recordTagSyncEvent({ stage: "apply-skipped", widgetId: safeText(widgetId), tagIds: tagIds.length });
+		return false;
+	}
 	const urls = [
 		`${MURAL_ROOT}/murals/${muralId}/widgets/sticky-note/${widgetId}`,
 		`${MURAL_ROOT}/murals/${muralId}/widgets/${widgetId}`
 	];
+	const statuses = [];
 	for (const url of urls) {
 		const res = await originalFetch(url, {
 			method: "PATCH",
@@ -550,7 +562,13 @@ async function applyTagsToWidget(originalFetch, accessToken, muralId, widgetId, 
 			},
 			body: JSON.stringify({ tags: tagIds })
 		});
-		if (res.ok) return true;
+		statuses.push(res.status);
+		if (res.ok) {
+			recordTagSyncEvent({ stage: "apply-patch", widgetId: safeText(widgetId), tagIds: tagIds.length, ok: true, statuses });
+			return true;
+		}
+		const detail = await res.clone().text().catch(() => "");
+		recordTagSyncEvent({ stage: "apply-patch", widgetId: safeText(widgetId), tagIds: tagIds.length, ok: false, status: res.status, detail: detail.slice(0, 200) });
 	}
 	return false;
 }
@@ -665,8 +683,13 @@ function installSafeMuralFetch(svc, originalFetch) {
 		const body = await bodyAsJson(init.body);
 		const desiredTags = tagsFromBody(body);
 		const createableTags = researchOpsUserTagsFromBody(body);
+		const method = String(init?.method || "GET").toUpperCase();
 		if (!body || !desiredTags.length) {
-			return originalFetch(input, { ...init, body: body ? JSON.stringify(removeUnsupportedFields(body)) : init.body });
+			const passthrough = await originalFetch(input, { ...init, body: body ? JSON.stringify(removeUnsupportedFields(body)) : init.body });
+			if (method === "POST") {
+				recordTagSyncEvent({ stage: "create-without-tags", ok: passthrough.ok, status: passthrough.status });
+			}
+			return passthrough;
 		}
 
 		const accessToken = accessTokenFromHeaders(init.headers);
@@ -681,7 +704,12 @@ function installSafeMuralFetch(svc, originalFetch) {
 			const responseBody = await firstResponse.clone().json().catch(() => ({}));
 			const widgetId = firstWidgetIdFromBody(responseBody) || widgetIdFromUrl(url);
 			const applied = await applyTagsToWidget(originalFetch, accessToken, muralId, widgetId, confirmedTags).catch(() => false);
-			if (!applied) await attachUserTagsByTagEndpoint(originalFetch, accessToken, muralId, widgetId, confirmedTags, createableTags);
+			if (!applied) {
+				recordTagSyncEvent({ stage: "apply-fallback-tag-endpoint", widgetId: safeText(widgetId), confirmed: confirmedTags.length, createable: userFacingTags(createableTags).length });
+				await attachUserTagsByTagEndpoint(originalFetch, accessToken, muralId, widgetId, confirmedTags, createableTags);
+			}
+		} else if (!firstResponse.ok && desiredTags.length) {
+			recordTagSyncEvent({ stage: "write-rejected", method, status: firstResponse.status, confirmed: confirmedTags.length });
 		}
 
 		const replacementResponse = await fallbackToReplacementSticky({
@@ -705,12 +733,13 @@ async function responseWithMappings(response, svc, body) {
 	const data = await response.clone().json().catch(() => null);
 	if (!data || !data.ok || (data.mode !== "hydrate" && data.mode !== "entry")) return response;
 	const mappings = await persistMappings(svc, body, data);
-	return jsonResponseFrom(response, { ...data, mappings });
+	return jsonResponseFrom(response, { ...data, mappings, tagSync: tagSyncEvents.slice() });
 }
 
 export async function muralJournalSync(svc, request, origin) {
 	const originalFetch = globalThis.fetch;
 	const body = await requestBody(request);
+	tagSyncEvents = [];
 	globalThis.fetch = installSafeMuralFetch(svc, originalFetch);
 	try {
 		const response = await BaseMuralJournalSync.muralJournalSync(svc, request, origin);
