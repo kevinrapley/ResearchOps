@@ -47,6 +47,7 @@ assets/researchops/researchops-home.css
 *.jpeg
 *.gif
 *.svg
+*.sublime-workspace
 
 # Repository operating model control files are validated by agent:model:validate.
 .agent-operating-model/**
