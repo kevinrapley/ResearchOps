@@ -67,18 +67,18 @@ function assertHeaderAccountLinksAreRightAligned() {
 function assertHeaderPartialBypassesStaleIncludeCache() {
 	includes(layoutScript, 'src.includes("/partials/header.html")', 'shared include loader');
 	includes(layoutScript, 'return "no-store";', 'shared include loader');
-	includes(accountPage, '/components/layout.js?v=header-account-links-20260615', 'account page');
-	includes(accountPage, '/js/govuk-frontend-init.js?v=header-account-links-20260615', 'account page');
+	includes(accountPage, '/components/layout.js?v=header-account-links-20260615-2', 'account page');
+	includes(accountPage, '/js/govuk-frontend-init.js?v=header-account-links-20260615-2', 'account page');
 	includes(accountPage, '<x-include src="/partials/header.html"', 'account page');
 	includes(researchopsLayoutTemplate, '{% if layoutCacheKey %}?v={{ layoutCacheKey }}{% endif %}', 'ResearchOps layout template');
-	includes(govukPageRenderer, "layoutCacheKey: 'header-account-links-20260615'", 'GOV.UK page renderer');
+	includes(govukPageRenderer, "layoutCacheKey: 'header-account-links-20260615-2'", 'GOV.UK page renderer');
 	includes(servicePageNormaliser, 'function hasIncludeForPartial', 'service page normaliser');
 	includes(servicePageNormaliser, '(?:\\\\?[^"\']*)?', 'service page normaliser');
 }
 
 function assertSharedInitLoadsHeaderAuthAfterInclude() {
 	includes(govukInitScript, "String(src).startsWith('/partials/header.html')", 'GOV.UK frontend init');
-	includes(govukInitScript, "import('/js/auth-header-links.js?v=header-account-links-20260615')", 'GOV.UK frontend init');
+	includes(govukInitScript, "import('/js/auth-header-links.js?v=header-account-links-20260615-2')", 'GOV.UK frontend init');
 	includes(govukInitScript, 'module.initAuthHeaderLinks(event.target)', 'GOV.UK frontend init');
 }
 

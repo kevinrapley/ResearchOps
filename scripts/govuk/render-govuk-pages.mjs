@@ -203,7 +203,7 @@ export const govukPages = [
 			pageTitle: 'Your ResearchOps account - ResearchOps Demo Suite',
 			serviceName: 'ResearchOps Demo Suite',
 			activeNavigation: '',
-			layoutCacheKey: 'header-account-links-20260615',
+			layoutCacheKey: 'header-account-links-20260615-2',
 			navigation: accountNavigation,
 		},
 	},

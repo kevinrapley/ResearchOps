@@ -206,3 +206,11 @@ showing account actions to signed-out users.
 The local `max_threads` entry records intended orchestration capacity, but the
 current running Codex session may need to reload config before any platform
 thread limit changes take effect.
+
+## Preview Follow-Up
+
+After the preview still served no visible signed-in links, the account page
+cache key was bumped to `header-account-links-20260615-2` in the GOV.UK page
+renderer and shared frontend initialiser. `public/pages/account/index.html` was
+regenerated so the main ResearchOps Pages preview receives a concrete public
+HTML change and browsers request the current `/js/auth-header-links.js` module.

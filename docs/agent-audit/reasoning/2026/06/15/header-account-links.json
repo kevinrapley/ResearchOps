@@ -115,7 +115,10 @@
     "scripts/govuk/render-govuk-pages.mjs",
     "scripts/govuk/normalise-service-pages.mjs",
     "public/partials/header.html",
-    "tests/auth-story-1-acceptance-route-state.test.js"
+    "tests/auth-story-1-acceptance-route-state.test.js",
+    "tests/auth-header-links-route-state.test.js",
+    "docs/agent-audit/reasoning/2026/06/15/header-account-links.md",
+    "docs/agent-audit/reasoning/2026/06/15/header-account-links.json"
   ],
   "localConfigModifiedOutsideRepository": [
     "/Users/kevin.rapley/.codex/config.toml"
@@ -178,6 +181,11 @@
       "command": "Preview-environment follow-up",
       "status": "completed",
       "summary": "Header partial fetching changed to no-store so branch previews do not keep a stale cached header; live account context remains the real /api/me response."
+    },
+    {
+      "command": "Preview-environment cache-key follow-up",
+      "status": "completed",
+      "summary": "Account page cache key bumped to header-account-links-20260615-2 and the generated page was rebuilt so the preview requests the current header account module."
     }
   ],
   "validationPlanned": [],
