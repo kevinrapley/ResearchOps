@@ -124,7 +124,10 @@ excludes(participantListSource, "Contact details restricted", "participant list 
 
 includes(muralIntegrationSource, "Project Dashboard ↔ Mural wiring with GOV.UK Frontend dashboard state", "Mural integration component");
 includes(muralIntegrationSource, "location.hostname.endsWith(\"pages.dev\")", "Mural integration component");
-includes(muralIntegrationSource, "https://rops-api.digikev-kevin-rapley.workers.dev", "Mural integration component");
+includes(muralIntegrationSource, "function resolveApiBase()", "Mural integration component");
+includes(muralIntegrationSource, "document.documentElement?.dataset?.apiOrigin", "Mural integration component");
+includes(muralIntegrationSource, "window.API_ORIGIN", "Mural integration component");
+includes(muralIntegrationSource, "return \"\";", "Mural integration component");
 includes(muralIntegrationSource, "function projectDashboardPath(projectId)", "Mural integration component");
 includes(muralIntegrationSource, "function wireConnectButton(projectId)", "Mural integration component");
 includes(muralIntegrationSource, "function verify()", "Mural integration component");
@@ -154,6 +157,7 @@ excludes(muralIntegrationSource, "Mural not checked", "Mural integration compone
 excludes(muralIntegrationSource, "const backAbs = absolutePagesUrl", "Mural integration component");
 excludes(muralIntegrationSource, "return=${encodeURIComponent(backAbs)}", "Mural integration component");
 excludes(muralIntegrationSource, "function absolutePagesUrl(pathAndQuery)", "Mural integration component");
+excludes(muralIntegrationSource, "https://rops-api.digikev-kevin-rapley.workers.dev", "Mural integration component");
 
 includes(muralStateSource, "Normalises Project Dashboard Mural action presentation", "Project Dashboard Mural state bridge");
 includes(muralStateSource, "function hideLegacyOpenAction()", "Project Dashboard Mural state bridge");
