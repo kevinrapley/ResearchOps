@@ -1,0 +1,108 @@
+{
+  "date": "2026-06-15",
+  "traceType": "operational-audit-trace",
+  "branch": "fix/project-create-team-id-quoted-field",
+  "traceRequired": true,
+  "traceDecision": "Required because repository-affecting work on branches starting with fix/ must have an auditable trace.",
+  "task": "Fix remaining project create failure where Airtable returns Error 422: Unknown field name: \"Team ID\".",
+  "selectedBundles": [
+    {
+      "id": "github-diamond",
+      "canonicalPath": ".agent-operating-model/bundles/github/",
+      "selectionBasis": "always-load"
+    },
+    {
+      "id": "researchops-developer-control",
+      "canonicalPath": ".agent-operating-model/bundles/researchops-developer-control/",
+      "selectionBasis": "always-load"
+    },
+    {
+      "id": "multi-functional-team",
+      "canonicalPath": ".agent-operating-model/bundles/multi-functional-team/",
+      "selectionBasis": "always-load"
+    },
+    {
+      "id": "govuk-design-system",
+      "canonicalPath": ".agent-operating-model/bundles/govuk-design-system/",
+      "selectionBasis": "conditional: GOV.UK start-project check-answers form flow"
+    },
+    {
+      "id": "cloudflare",
+      "canonicalPath": ".agent-operating-model/bundles/cloudflare/",
+      "selectionBasis": "conditional: Cloudflare Worker route behaviour"
+    },
+    {
+      "id": "airtable-public-api",
+      "canonicalPath": ".agent-operating-model/bundles/airtable-public-api/",
+      "selectionBasis": "conditional: Airtable record create unknown field response"
+    }
+  ],
+  "skippedBundles": [
+    {
+      "id": "openai-platform",
+      "canonicalPath": ".agent-operating-model/bundles/openai/",
+      "reason": "No OpenAI API, model or eval implementation was in scope."
+    },
+    {
+      "id": "mcp-agent-tooling",
+      "canonicalPath": ".agent-operating-model/bundles/mcp-agent-tooling/",
+      "reason": "No MCP tool, resource, prompt or consent work was in scope."
+    },
+    {
+      "id": "mural-public-api",
+      "canonicalPath": ".agent-operating-model/bundles/mural-public-api/",
+      "reason": "No Mural API or collaboration integration work was in scope."
+    }
+  ],
+  "precedenceDecisions": [
+    "GitHub Diamond governed branch naming, trace coverage, surgical mutation and PR readiness.",
+    "ResearchOps Developer Control governed the project-create route contract.",
+    "Multi-Functional Team governed public-sector assurance and residual-risk framing.",
+    "GOV.UK Design System governed the user-facing check-answers context.",
+    "Cloudflare governed Worker route behaviour and deployment evidence.",
+    "Airtable Public API governed the record-create retry boundary."
+  ],
+  "filesRead": [
+    "AGENTS.md",
+    ".agent-operating-model/orchestration.xml",
+    ".agent-operating-model/bundle-registry.json",
+    ".agent-operating-model/task-signal-catalog.json",
+    ".agent-operating-model/selection-rules.json",
+    ".agent-operating-model/github-mutation-policy.md",
+    ".agent-operating-model/precedence-policy.md",
+    ".agent-operating-model/trace-policy.md",
+    ".agent-operating-model/trace-layers.md",
+    ".agent-operating-model/behavioural-evals.json",
+    "infra/cloudflare/src/service/project-record-routes.js",
+    "tests/projects-route-contract.test.js"
+  ],
+  "filesModified": [
+    "infra/cloudflare/src/service/project-record-routes.js",
+    "tests/projects-route-contract.test.js"
+  ],
+  "filesCreated": [
+    "docs/agent-audit/reasoning/2026/06/15/project-create-team-id-quoted-field.md",
+    "docs/agent-audit/reasoning/2026/06/15/project-create-team-id-quoted-field.json"
+  ],
+  "validation": [
+    {
+      "command": "node tests/projects-route-contract.test.js",
+      "status": "passed",
+      "summary": "Confirmed project create handles quoted Team ID and sequential team field unknown errors."
+    },
+    {
+      "command": "npx prettier -c infra/cloudflare/src/service/project-record-routes.js tests/projects-route-contract.test.js",
+      "status": "passed",
+      "summary": "Confirmed changed service and test files match repository formatting."
+    },
+    {
+      "command": "git diff --check",
+      "status": "passed",
+      "summary": "Confirmed no whitespace errors in the diff."
+    }
+  ],
+  "residualRisks": [
+    "The reproduction uses Worker route mocks rather than a live Airtable write.",
+    "The retry is bounded by configured team-field count and does not retry non-team Airtable errors."
+  ]
+}
