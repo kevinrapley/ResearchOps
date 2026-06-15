@@ -49,7 +49,7 @@ function assertPageStructure() {
 	assert.match(pageSource, /id="confirm-role-assignment"/);
 	assert.match(pageSource, /Confirm and assign role/);
 	assert.match(pageSource, /id="role-assignment-result"/);
-	assert.match(pageSource, /\/js\/auth-role-assignment-page\.js\?v=inline-team-creation-20260513/);
+	assert.match(pageSource, /\/js\/auth-role-assignment-page\.js\?v=hide-internal-codes-20260615/);
 	assert.match(pageSource, /\/css\/auth-role-assignments\.css/);
 }
 
@@ -98,7 +98,7 @@ function assertRoleAssignmentPageIsGeneratedFromNunjucks() {
 	assert.match(templateSource, /{% block content %}/);
 	assert.match(templateSource, /id="role-assignment-form"/);
 	assert.match(templateSource, /{% block scripts %}/);
-	assert.match(templateSource, /\/js\/auth-role-assignment-page\.js\?v=inline-team-creation-20260513/);
+	assert.match(templateSource, /\/js\/auth-role-assignment-page\.js\?v=hide-internal-codes-20260615/);
 	assert.doesNotMatch(templateSource, /<html class="govuk-template"/);
 	assert.doesNotMatch(templateSource, /<x-include src="\/partials\/header\.html"/);
 	assert.doesNotMatch(templateSource, /<x-include src="\/partials\/footer\.html"/);
