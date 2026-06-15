@@ -84,6 +84,12 @@ sit on the right of the header area. The user name appears first, with a gap
 before `Sign out`, and `Sign out` is positioned furthest right. The layout wraps
 on narrow screens.
 
+Updated `public/components/layout.js` so `/partials/header.html` is fetched with
+`no-store` by the shared include loader. This prevents preview environments from
+showing a stale cached header partial after a branch deployment. The live header
+continues to call the real `/api/me/identity` endpoint and does not use a mocked
+identity.
+
 Added focused route-state tests for the shared header, identity-only auth check,
 sign-out behaviour and right-aligned account-link layout. Extended the existing
 auth story acceptance route-state test so header sign-out is part of the sign-out
@@ -101,6 +107,7 @@ Read:
 - operating-model files listed above
 - selected bundle prompt specs and bodies
 - `public/partials/header.html`
+- `public/components/layout.js`
 - `src/govuk/templates/layouts/researchops.njk`
 - `public/js/auth-account-page.js`
 - `public/js/auth-sign-in-page.js`
@@ -121,6 +128,7 @@ Created:
 Modified:
 
 - `public/css/govuk/govuk-header-service-brand.css`
+- `public/components/layout.js`
 - `public/partials/header.html`
 - `tests/auth-story-1-acceptance-route-state.test.js`
 

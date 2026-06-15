@@ -4,6 +4,7 @@ import fs from 'node:fs';
 const headerPartial = fs.readFileSync('public/partials/header.html', 'utf8');
 const headerScript = fs.readFileSync('public/js/auth-header-links.js', 'utf8');
 const headerCss = fs.readFileSync('public/css/govuk/govuk-header-service-brand.css', 'utf8');
+const layoutScript = fs.readFileSync('public/components/layout.js', 'utf8');
 const authStoryTest = fs.readFileSync('tests/auth-story-1-acceptance-route-state.test.js', 'utf8');
 
 function includes(source, text, label) {
@@ -53,6 +54,11 @@ function assertHeaderAccountLinksAreRightAligned() {
 	includes(headerCss, 'white-space: nowrap;', 'header stylesheet');
 }
 
+function assertHeaderPartialBypassesStaleIncludeCache() {
+	includes(layoutScript, 'src.includes("/partials/header.html")', 'shared include loader');
+	includes(layoutScript, 'return "no-store";', 'shared include loader');
+}
+
 function assertAuthAcceptanceReferencesHeaderSignOut() {
 	includes(authStoryTest, 'assertAC8SignOutIsAvailableAndUnderstandable', 'auth story route-state test');
 }
@@ -60,4 +66,5 @@ function assertAuthAcceptanceReferencesHeaderSignOut() {
 assertSharedHeaderContainsSignedInAccountNavigation();
 assertHeaderScriptUsesIdentityOnlySessionCheck();
 assertHeaderAccountLinksAreRightAligned();
+assertHeaderPartialBypassesStaleIncludeCache();
 assertAuthAcceptanceReferencesHeaderSignOut();

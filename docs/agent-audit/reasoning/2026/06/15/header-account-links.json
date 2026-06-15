@@ -80,6 +80,7 @@
     ".agent-operating-model/bundles/govuk-design-system/prompt.spec.yaml",
     ".agent-operating-model/bundles/govuk-design-system/prompt.body.xml",
     "public/partials/header.html",
+    "public/components/layout.js",
     "src/govuk/templates/layouts/researchops.njk",
     "public/js/auth-account-page.js",
     "public/js/auth-sign-in-page.js",
@@ -98,6 +99,7 @@
     "docs/agent-audit/reasoning/2026/06/15/header-account-links.json"
   ],
   "filesModified": [
+    "public/components/layout.js",
     "public/css/govuk/govuk-header-service-brand.css",
     "public/partials/header.html",
     "tests/auth-story-1-acceptance-route-state.test.js"
@@ -158,6 +160,11 @@
       "command": "npm test",
       "status": "passed",
       "summary": "Full test suite passed: 221 tests."
+    },
+    {
+      "command": "Preview-environment follow-up",
+      "status": "completed",
+      "summary": "Header partial fetching changed to no-store so branch previews do not keep a stale cached header; live identity remains the real /api/me/identity response."
     }
   ],
   "validationPlanned": [],
