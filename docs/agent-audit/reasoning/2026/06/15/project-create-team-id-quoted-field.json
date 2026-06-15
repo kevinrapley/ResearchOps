@@ -4,7 +4,7 @@
   "branch": "fix/project-create-team-id-quoted-field",
   "traceRequired": true,
   "traceDecision": "Required because repository-affecting work on branches starting with fix/ must have an auditable trace.",
-  "task": "Fix remaining project create failure where Airtable returns Error 422: Unknown field name: \"Team ID\".",
+  "task": "Fix remaining project create failure where Airtable returns Error 422: Unknown field name: \"Team ID\", and ensure created projects remain assigned to the authenticated user's DaaS team.",
   "selectedBundles": [
     {
       "id": "github-diamond",
@@ -79,6 +79,11 @@
   "filesModified": [
     "infra/cloudflare/src/service/project-record-routes.js",
     "tests/projects-route-contract.test.js"
+  ],
+  "implementationNotes": [
+    "Project creation now writes the authenticated active team name to Org as a stable ownership field.",
+    "The configured Team Name and Team ID fields remain best-effort and can be removed individually when Airtable rejects them.",
+    "The contract test models the authenticated team as DaaS and verifies Org is preserved across all team-field fallback retries."
   ],
   "filesCreated": [
     "docs/agent-audit/reasoning/2026/06/15/project-create-team-id-quoted-field.md",

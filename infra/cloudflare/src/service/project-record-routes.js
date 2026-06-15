@@ -257,7 +257,10 @@ function buildProjectFields(payload = {}, authContext = {}, env = {}) {
 	const teamId = displayText(team?.id || team?.teamId || team?.team_id || payload.teamId || payload.team_id || "");
 	const teamNameField = env.AIRTABLE_PROJECT_TEAM_NAME_FIELD || "Team Name";
 	const teamIdField = env.AIRTABLE_PROJECT_TEAM_ID_FIELD || "Team ID";
-	if (teamName) fields[teamNameField] = teamName;
+	if (teamName) {
+		fields.Org = teamName;
+		fields[teamNameField] = teamName;
+	}
 	if (teamId) fields[teamIdField] = teamId;
 	return fields;
 }

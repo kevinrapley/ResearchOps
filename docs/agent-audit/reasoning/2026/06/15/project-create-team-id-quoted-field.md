@@ -9,6 +9,8 @@
 
 Fix the remaining Start a new research project create failure where Airtable
 returns `Error 422: Unknown field name: "Team ID"` from the check-answers step.
+Follow-up: ensure a successfully created project remains assigned to Kevin
+Rapley's DaaS team and is visible on `/pages/projects/` after redirect.
 
 ## Branch Trace Decision
 
@@ -65,12 +67,20 @@ reports an unknown team field, the route removes the named rejected field and
 retries. If Airtable then rejects another configured team field, the route
 removes that field too and retries again. Other Airtable errors still fail.
 
+Updated the create payload to also set `Org` from the authenticated user's
+active team. `Org` is already read as a project team name by the list route, so
+the DaaS assignment survives even if the configured `Team ID` and `Team Name`
+fields are rejected by Airtable.
+
 Updated `tests/projects-route-contract.test.js` to cover quoted Airtable unknown
 field messages. The tests verify that:
 
 - when only `Team ID` is rejected, the retry preserves `Team Name`
 - when `Team ID` and then `Team Name` are both rejected, the route still returns
   `201` after retrying without configured team fields
+- the project create contract models the authenticated team as DaaS
+- `Org` is included on the original create request and every retry, and maps
+  back as the visible project team
 
 ## Files
 
