@@ -1,0 +1,210 @@
+{
+  "date": "2026-06-15",
+  "traceType": "operational-audit-trace",
+  "branch": "fix/role-assignments-govuk-template",
+  "traceRequired": true,
+  "traceDecision": "Required because repository-affecting work on branches starting with fix/ must have an auditable trace.",
+  "relatedWork": "/pages/team/role-assignments/ GOV.UK frontend templating repair",
+  "task": "Convert the role assignments page to a Nunjucks-generated GOV.UK frontend page so header, breadcrumbs, phase banner and shared page chrome use the repository templating path.",
+  "selectedBundles": [
+    {
+      "id": "github-diamond",
+      "canonicalPath": ".agent-operating-model/bundles/github/",
+      "selectionBasis": "always-load"
+    },
+    {
+      "id": "researchops-developer-control",
+      "canonicalPath": ".agent-operating-model/bundles/researchops-developer-control/",
+      "selectionBasis": "always-load"
+    },
+    {
+      "id": "multi-functional-team",
+      "canonicalPath": ".agent-operating-model/bundles/multi-functional-team/",
+      "selectionBasis": "always-load"
+    },
+    {
+      "id": "govuk-design-system",
+      "canonicalPath": ".agent-operating-model/bundles/govuk-design-system/",
+      "selectionBasis": "conditional: GOV.UK frontend page chrome, breadcrumbs and component markup"
+    },
+    {
+      "id": "cloudflare",
+      "canonicalPath": ".agent-operating-model/bundles/cloudflare/",
+      "selectionBasis": "conditional: Cloudflare Pages publishes committed public/ generated HTML"
+    }
+  ],
+  "skippedBundles": [
+    {
+      "id": "openai-platform",
+      "canonicalPath": ".agent-operating-model/bundles/openai/",
+      "reason": "No OpenAI API, model or eval implementation was in scope."
+    },
+    {
+      "id": "mcp-agent-tooling",
+      "canonicalPath": ".agent-operating-model/bundles/mcp-agent-tooling/",
+      "reason": "No MCP tool, resource, prompt or consent work was in scope."
+    },
+    {
+      "id": "airtable-public-api",
+      "canonicalPath": ".agent-operating-model/bundles/airtable-public-api/",
+      "reason": "No Airtable API or data integration work was in scope."
+    },
+    {
+      "id": "mural-public-api",
+      "canonicalPath": ".agent-operating-model/bundles/mural-public-api/",
+      "reason": "No Mural API or collaboration integration work was in scope."
+    }
+  ],
+  "precedenceDecisions": [
+    "GitHub Diamond governed branch naming, trace coverage, surgical mutation and validation evidence.",
+    "ResearchOps Developer Control governed repository conventions and the GOV.UK generated-page workflow.",
+    "Multi-Functional Team governed public-sector assurance and residual-risk framing.",
+    "GOV.UK Design System governed the shared frontend layout, breadcrumbs and component markup expectations.",
+    "Cloudflare context governed the decision to commit regenerated public/ HTML while the deployment contract publishes committed files."
+  ],
+  "filesRead": [
+    "AGENTS.md",
+    ".agent-operating-model/orchestration.xml",
+    ".agent-operating-model/bundle-registry.json",
+    ".agent-operating-model/task-signal-catalog.json",
+    ".agent-operating-model/selection-rules.json",
+    ".agent-operating-model/bootstrap-checklist.md",
+    ".agent-operating-model/precedence-policy.md",
+    ".agent-operating-model/trace-policy.md",
+    ".agent-operating-model/trace-layers.md",
+    ".agent-operating-model/behavioural-evals.json",
+    ".agent-operating-model/github-mutation-policy.md",
+    ".agent-operating-model/bundles/github/prompt.spec.yaml",
+    ".agent-operating-model/bundles/github/prompt.body.xml",
+    ".agent-operating-model/bundles/researchops-developer-control/prompt.spec.yaml",
+    ".agent-operating-model/bundles/researchops-developer-control/prompt.body.xml",
+    ".agent-operating-model/bundles/multi-functional-team/prompt.spec.yaml",
+    ".agent-operating-model/bundles/multi-functional-team/prompt.body.xml",
+    ".agent-operating-model/bundles/govuk-design-system/prompt.spec.yaml",
+    ".agent-operating-model/bundles/govuk-design-system/prompt.body.xml",
+    ".agent-operating-model/bundles/cloudflare/prompt.spec.yaml",
+    ".agent-operating-model/bundles/cloudflare/prompt.body.xml",
+    "docs/deployment/generated-html-policy.md",
+    "src/govuk/templates/layouts/researchops.njk",
+    "src/govuk/templates/pages/team-access-requests.njk",
+    "scripts/govuk/render-govuk-pages.mjs",
+    "public/pages/team/role-assignments/index.html",
+    "tests/auth-role-assignment-ui-route-state.test.js",
+    "adjacent GOV.UK page and route-state tests"
+  ],
+  "filesCreated": [
+    "src/govuk/templates/pages/role-assignments.njk",
+    "docs/agent-audit/reasoning/2026/06/15/role-assignments-govuk-template.md",
+    "docs/agent-audit/reasoning/2026/06/15/role-assignments-govuk-template.json"
+  ],
+  "filesModified": [
+    "public/pages/team/role-assignments/index.html",
+    "scripts/govuk/render-govuk-pages.mjs",
+    "tests/auth-role-assignment-ui-route-state.test.js"
+  ],
+  "generatedOutput": [
+    {
+      "path": "public/pages/team/role-assignments/index.html",
+      "source": "src/govuk/templates/pages/role-assignments.njk",
+      "reasonCommitted": "Cloudflare Pages currently publishes committed public/ files under docs/deployment/generated-html-policy.md."
+    }
+  ],
+  "subAgents": [
+    {
+      "nickname": "Maxwell",
+      "role": "branch drift poller",
+      "result": "Confirmed the branch was based on current origin/main with no drift blocker."
+    },
+    {
+      "nickname": "Ptolemy",
+      "role": "CI and validation lane",
+      "result": "Ran focused validation and identified template formatting before PR readiness."
+    },
+    {
+      "nickname": "Boyle",
+      "role": "route and generated-output lane",
+      "result": "Confirmed the renderer output blast radius was limited to the intended role assignments public page."
+    },
+    {
+      "nickname": "Descartes",
+      "role": "trace and documentation lane",
+      "result": "Confirmed trace requirements and generated HTML policy details."
+    },
+    {
+      "nickname": "Gauss",
+      "role": "PR readiness lane",
+      "result": "Confirmed changed-file scope was plausible once the trace and template were included."
+    }
+  ],
+  "validation": [
+    {
+      "command": "node scripts/govuk/render-govuk-pages.mjs",
+      "status": "passed",
+      "summary": "Regenerated GOV.UK pages including public/pages/team/role-assignments/index.html."
+    },
+    {
+      "command": "npm run build:govuk-pages",
+      "status": "passed",
+      "summary": "Regenerated GOV.UK pages through the repository build script and post-build normalisation step."
+    },
+    {
+      "command": "node --test tests/auth-role-assignment-ui-route-state.test.js tests/auth-role-assignment-error-copy-route-state.test.js tests/visual-walkthrough-role-assignment-route-state.test.js tests/govuk-generated-html-test-source-route-state.test.js tests/govuk-frontend-service-pages-route-state.test.js tests/govuk-frontend-integration-route-state.test.js",
+      "status": "passed",
+      "summary": "Focused role assignment route-state and GOV.UK frontend tests passed."
+    },
+    {
+      "command": "node -e JSON parse check for docs/agent-audit/reasoning/2026/06/15/role-assignments-govuk-template.json",
+      "status": "passed",
+      "summary": "Trace JSON parsed successfully."
+    },
+    {
+      "command": "npm run trace:coverage",
+      "status": "passed",
+      "summary": "Trace coverage confirmed for the fix/ branch."
+    },
+    {
+      "command": "git diff --check",
+      "status": "passed",
+      "summary": "No whitespace errors were found."
+    },
+    {
+      "command": "npx prettier -c scripts/govuk/render-govuk-pages.mjs tests/auth-role-assignment-ui-route-state.test.js docs/agent-audit/reasoning/2026/06/15/role-assignments-govuk-template.md docs/agent-audit/reasoning/2026/06/15/role-assignments-govuk-template.json",
+      "status": "passed",
+      "summary": "Changed JavaScript, test and trace files use Prettier formatting."
+    },
+    {
+      "command": "node --test tests/govuk-pages-render-workflow-state.test.js tests/govuk-generated-html-test-source-route-state.test.js tests/govuk-frontend-service-pages-route-state.test.js",
+      "status": "passed",
+      "summary": "Passed in the validation sub-agent lane."
+    },
+    {
+      "command": "node --import ./tests/helpers/generated-govuk-page-source.mjs --test tests/auth-role-assignment-ui-route-state.test.js tests/auth-role-assignment-error-copy-route-state.test.js",
+      "status": "passed",
+      "summary": "Passed in the validation sub-agent lane."
+    },
+    {
+      "command": "node --test tests/govuk-page-chrome-navigation-route-state.test.js tests/govuk-breadcrumb-back-link-route-state.test.js",
+      "status": "passed",
+      "summary": "Passed in the validation sub-agent lane."
+    },
+    {
+      "command": "npm run generated-css:check",
+      "status": "passed",
+      "summary": "Passed in the validation sub-agent lane."
+    }
+  ],
+  "validationNotRun": [
+    {
+      "command": "Full repository validation suite",
+      "reason": "Change was a narrow GOV.UK page generation migration with focused renderer, generated-page and route-state coverage."
+    },
+    {
+      "command": "Local browser visual verification",
+      "reason": "This unit changes page chrome by switching to the shared GOV.UK template and was covered by generated HTML and route-state checks."
+    }
+  ],
+  "residualRisks": [
+    "The generated HTML diff is large because the page moved from hand-maintained static HTML to the shared GOV.UK renderer.",
+    "Review should focus on the Nunjucks template, renderer registration and route-state assertions, while still checking regenerated public HTML for deployment output."
+  ]
+}

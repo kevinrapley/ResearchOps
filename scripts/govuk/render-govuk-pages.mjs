@@ -227,6 +227,16 @@ export const govukPages = [
 		},
 	},
 	{
+		template: 'pages/role-assignments.njk',
+		output: 'public/pages/team/role-assignments/index.html',
+		context: {
+			pageTitle: 'Assign a role to a team member - ResearchOps Demo Suite',
+			serviceName: 'ResearchOps Demo Suite',
+			activeNavigation: '',
+			navigation: accountNavigation,
+		},
+	},
+	{
 		template: 'pages/projects.njk',
 		output: 'public/pages/projects/index.html',
 		context: {
