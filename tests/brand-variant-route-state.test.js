@@ -50,6 +50,11 @@ assert.ok(brandStylesSource.includes('.repository-filter-panel'));
 assert.ok(brandStylesSource.includes('.drawer'));
 assert.ok(brandStylesSource.includes('.study-session-gate'));
 assert.ok(brandStylesSource.includes('.govuk-tabs__list-item--selected'));
+assert.ok(brandStylesSource.includes('.govuk-tabs__list-item:not(.govuk-tabs__list-item--selected)'));
+assert.ok(brandStylesSource.includes('.govuk-tabs__tab:not(:focus)'));
+assert.ok(brandStylesSource.includes('.govuk-tabs__panel'));
+assert.ok(brandStylesSource.includes('background: $ho-mid'));
+assert.ok(brandStylesSource.includes('background: $ho-white'));
 assert.ok(brandStylesSource.includes('.govuk-footer'));
 assert.equal(brandStylesSource.includes('--govuk-link-colour'), false);
 

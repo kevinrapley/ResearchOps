@@ -327,6 +327,15 @@ html[data-researchops-brand='home-office'] {
 		border-color: $ho-purple;
 	}
 
+	.govuk-tabs__list-item:not(.govuk-tabs__list-item--selected),
+	.govuk-tabs__list-item:not(.govuk-tabs__list-item--selected) .govuk-tabs__tab:not(:focus) {
+		background: $ho-mid;
+	}
+
+	.govuk-tabs__panel {
+		background: $ho-white;
+	}
+
 	.govuk-footer {
 		border-top: 10px solid $ho-purple;
 		background: $ho-light;
