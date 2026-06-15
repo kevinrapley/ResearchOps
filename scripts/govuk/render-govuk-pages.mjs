@@ -197,6 +197,19 @@ export const govukPages = [
 		},
 	},
 	{
+		template: 'pages/start.njk',
+		output: 'public/pages/start/index.html',
+		context: {
+			pageTitle: 'Start a new research project - ResearchOps Demo Suite',
+			serviceName: 'ResearchOps Demo Suite',
+			activeNavigation: 'Start Research Project',
+			navigation: navigation.map((item) => ({
+				...item,
+				active: item.href === '/pages/start/overview/',
+			})),
+		},
+	},
+	{
 		template: 'pages/account.njk',
 		output: 'public/pages/account/index.html',
 		context: {

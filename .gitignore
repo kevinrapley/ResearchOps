@@ -31,3 +31,4 @@ public/pages/repository/
 
 # OS/editor noise
 .DS_Store
+*.sublime-workspace

@@ -2,7 +2,6 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 
 const legacyFormRoutes = [
-	"public/pages/start/index.html",
 	"public/pages/search/index.html",
 	"public/pages/notes/index.html",
 	"public/pages/consent/index.html",
@@ -36,7 +35,10 @@ for (const route of legacyFormRoutes) {
 }
 
 const startPage = read("public/pages/start/index.html");
-includes(startPage, "id=\"error-summary\" class=\"govuk-error-summary start-panel\"", "Start route");
+includes(startPage, "href=\"/assets/govuk/govuk-frontend.css\"", "Start route");
+excludes(startPage, "href=\"/css/govuk/govuk-forms.css\"", "Start route");
+includes(startPage, "id=\"error-summary\"", "Start route");
+includes(startPage, "class=\"govuk-error-summary start-panel\"", "Start route");
 includes(startPage, "class=\"govuk-textarea\"", "Start route");
 includes(startPage, "class=\"govuk-button-group cta\"", "Start route");
 includes(startPage, "Give the project a name and description.", "Start route");

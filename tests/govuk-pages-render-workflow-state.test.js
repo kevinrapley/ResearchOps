@@ -82,6 +82,8 @@ assert.equal(
 
 includes(renderer, "output: 'public/pages/projects/journals/index.html'", 'GOV.UK pages renderer');
 includes(renderer, "template: 'pages/projects-journals.njk'", 'GOV.UK pages renderer');
+includes(renderer, "output: 'public/pages/start/index.html'", 'GOV.UK pages renderer');
+includes(renderer, "template: 'pages/start.njk'", 'GOV.UK pages renderer');
 
 for (const snippet of [
 	'Cloudflare Pages currently publishes the committed `public/` directory',

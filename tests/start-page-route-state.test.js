@@ -3,6 +3,10 @@ import fs from "node:fs";
 
 const pageSource = fs.readFileSync("public/pages/start/index.html", "utf8");
 const stylesheetSource = fs.readFileSync("public/css/start.css", "utf8");
+const startTemplateSource = fs.readFileSync("src/govuk/templates/pages/start.njk", "utf8");
+const startSassSource = fs.readFileSync("src/styles/start.scss", "utf8");
+const generatedCssTargets = fs.readFileSync("scripts/styles/generated-css-targets.mjs", "utf8");
+const govukPageRenderer = fs.readFileSync("scripts/govuk/render-govuk-pages.mjs", "utf8");
 const buttonCssSource = fs.readFileSync("public/css/govuk/govuk-buttons.css", "utf8");
 
 function includes(source, text, label) {
@@ -13,19 +17,21 @@ function excludes(source, text, label) {
   assert.equal(source.includes(text), false, `Expected ${label} not to include: ${text}`);
 }
 
-includes(pageSource, "href=\"/css/govuk/govuk-page-chrome.css\"", "start page");
-includes(pageSource, "href=\"/css/screen.css\"", "start page");
-includes(pageSource, "href=\"/css/govuk/govuk-buttons.css\"", "start page");
+includes(pageSource, "href=\"/assets/govuk/govuk-frontend.css\"", "start page");
 includes(pageSource, "href=\"/css/start.css\"", "start page");
 includes(pageSource, "src=\"/components/layout.js\" defer", "start page");
 includes(pageSource, "src=\"/js/start-description-assist.js\" defer", "start page");
 includes(pageSource, "src=\"/js/start-objectives-assist.js\" defer", "start page");
 includes(pageSource, "src=\"start-new-project.js\" defer", "start page");
+excludes(pageSource, "href=\"/css/govuk/govuk-page-chrome.css\"", "start page");
+excludes(pageSource, "href=\"/css/govuk/govuk-buttons.css\"", "start page");
+excludes(pageSource, "href=\"/css/govuk/govuk-forms.css\"", "start page");
 includes(pageSource, "<main class=\"govuk-main-wrapper\" id=\"main-content\" role=\"main\" tabindex=\"-1\">", "start page");
 includes(pageSource, "<div class=\"govuk-width-container\">", "start page");
 includes(pageSource, "<div class=\"govuk-grid-column-two-thirds\">", "start page");
 includes(pageSource, "class=\"card start-card\"", "start page");
-includes(pageSource, "id=\"error-summary\" class=\"govuk-error-summary start-panel\"", "start page");
+includes(pageSource, "id=\"error-summary\"", "start page");
+includes(pageSource, "class=\"govuk-error-summary start-panel\"", "start page");
 includes(pageSource, "id=\"error-list\" class=\"govuk-list govuk-error-summary__list\"", "start page");
 includes(pageSource, "class=\"start-step\"", "start page");
 includes(pageSource, "class=\"start-form\"", "start page");
@@ -74,3 +80,16 @@ includes(stylesheetSource, ".start-assist-output", "start stylesheet");
 includes(stylesheetSource, ".start-error", "start stylesheet");
 includes(stylesheetSource, ".start-summary-list", "start stylesheet");
 includes(stylesheetSource, "/* transparency begins in the cascade */", "start stylesheet");
+
+includes(startTemplateSource, '{% extends "layouts/researchops.njk" %}', "start template");
+includes(startTemplateSource, 'href="/css/start.css"', "start template");
+includes(startTemplateSource, 'id="projectForm"', "start template");
+includes(startTemplateSource, 'id="step4"', "start template");
+includes(startTemplateSource, 'src="start-new-project.js"', "start template");
+includes(startSassSource, ".start-card", "start Sass source");
+includes(startSassSource, "margin-bottom: 24px", "start Sass source");
+includes(startSassSource, "border: 2px solid #0b0c0c", "start Sass source");
+includes(generatedCssTargets, "source: 'src/styles/start.scss'", "generated CSS targets");
+includes(generatedCssTargets, "output: 'public/css/start.css'", "generated CSS targets");
+includes(govukPageRenderer, "template: 'pages/start.njk'", "GOV.UK page renderer");
+includes(govukPageRenderer, "output: 'public/pages/start/index.html'", "GOV.UK page renderer");
