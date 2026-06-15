@@ -284,6 +284,31 @@ function withoutProjectTeamFields(fields = {}, env = {}, rejectedFields = []) {
 	return next;
 }
 
+async function createProjectWithTeamFieldFallback(env, table, fields) {
+	let nextFields = fields;
+	let projectWarning = null;
+	const removedFields = new Set();
+
+	for (let attempt = 0; attempt <= projectTeamFieldNames(env).length; attempt += 1) {
+		try {
+			return {
+				record: await createProjectInAirtable(env, table, nextFields),
+				projectWarning,
+			};
+		} catch (error) {
+			if (!isUnknownFieldError(error) || !hasProjectTeamFields(nextFields, env)) throw error;
+			projectWarning = "project_team_fields_missing";
+			const rejectedFields = rejectedProjectTeamFieldNames(error, env).filter((field) => Object.hasOwn(nextFields, field));
+			const fieldsToRemove = rejectedFields.length ? rejectedFields : projectTeamFieldNames(env).filter((field) => Object.hasOwn(nextFields, field) && !removedFields.has(field));
+			if (!fieldsToRemove.length) throw error;
+			fieldsToRemove.forEach((field) => removedFields.add(field));
+			nextFields = withoutProjectTeamFields(nextFields, env, fieldsToRemove);
+		}
+	}
+
+	return { record: null, projectWarning };
+}
+
 function buildProjectDetailFields(payload = {}, projectRecordId) {
 	const fields = {
 		Project: [projectRecordId],
@@ -478,18 +503,10 @@ export async function createProjectRecord(request, env, authContext = {}) {
 	const fields = buildProjectFields(payload, authContext, env);
 	if (!fields.Name) return json({ ok: false, error: "Project name is required" }, 400);
 
-	try {
-		const table = encodeURIComponent(env.AIRTABLE_TABLE_PROJECTS);
-		let record = null;
-		let projectWarning = null;
 		try {
-			record = await createProjectInAirtable(env, table, fields);
-		} catch (error) {
-			if (!isUnknownFieldError(error) || !hasProjectTeamFields(fields, env)) throw error;
-			projectWarning = "project_team_fields_missing";
-			record = await createProjectInAirtable(env, table, withoutProjectTeamFields(fields, env, rejectedProjectTeamFieldNames(error, env)));
-		}
-		if (!record?.id) return json({ ok: false, error: "Project create failed" }, 502);
+			const table = encodeURIComponent(env.AIRTABLE_TABLE_PROJECTS);
+			const { record, projectWarning } = await createProjectWithTeamFieldFallback(env, table, fields);
+			if (!record?.id) return json({ ok: false, error: "Project create failed" }, 502);
 
 		let detailRecord = null;
 		let detailWarning = null;
