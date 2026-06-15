@@ -100,6 +100,7 @@
   "filesModified": [
     "public/pages/team/role-assignments/index.html",
     "scripts/govuk/render-govuk-pages.mjs",
+    "src/govuk/templates/pages/role-assignments.njk",
     "tests/auth-role-assignment-ui-route-state.test.js"
   ],
   "generatedOutput": [
@@ -114,6 +115,24 @@
     "failedChecks": ["Node 20", "Node 22", "Validate Cloudflare Workers", "Release gate"],
     "rootCause": "The generated GOV.UK page helper renders valid Nunjucks output with different attribute and label line breaks than the committed generated HTML, so route-state assertions that assumed one serialized label shape failed.",
     "disposition": "Hardened tests to normalize copy checks and accept valid generated label markup."
+  },
+  "previewFollowUp": {
+    "request": "Update the role assignments breadcrumb to Home > Your account > Team administration.",
+    "disposition": "Updated the Nunjucks template, regenerated the committed public HTML, and added a route-state assertion for the linked breadcrumb hierarchy.",
+    "links": [
+      {
+        "text": "Home",
+        "href": "/"
+      },
+      {
+        "text": "Your account",
+        "href": "/pages/account/"
+      },
+      {
+        "text": "Team administration",
+        "href": null
+      }
+    ]
   },
   "subAgents": [
     {
@@ -157,6 +176,11 @@
       "command": "node --test tests/auth-role-assignment-ui-route-state.test.js tests/auth-role-assignment-error-copy-route-state.test.js tests/visual-walkthrough-role-assignment-route-state.test.js tests/govuk-generated-html-test-source-route-state.test.js tests/govuk-frontend-service-pages-route-state.test.js tests/govuk-frontend-integration-route-state.test.js",
       "status": "passed",
       "summary": "Focused role assignment route-state and GOV.UK frontend tests passed."
+    },
+    {
+      "command": "node --test tests/auth-role-assignment-ui-route-state.test.js tests/govuk-generated-html-test-source-route-state.test.js tests/govuk-breadcrumb-back-link-route-state.test.js",
+      "status": "passed",
+      "summary": "Focused breadcrumb and generated-page checks passed after the breadcrumb hierarchy update."
     },
     {
       "command": "npm test",

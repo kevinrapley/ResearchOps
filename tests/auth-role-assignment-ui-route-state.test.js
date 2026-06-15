@@ -61,7 +61,10 @@ function assertTopLevelAdminInformationArchitecture() {
 	assert.ok(breadcrumbIndex > -1, 'Expected breadcrumb navigation to exist');
 	assert.ok(mainIndex > -1, 'Expected main landmark to exist');
 	assert.ok(breadcrumbIndex > mainIndex, 'Expected breadcrumb navigation to sit inside main');
-	assert.match(pageSource, />Home</);
+	assert.match(
+		pageSource,
+		/<a class="govuk-breadcrumbs__link" href="\/">Home<\/a>[\s\S]*?<a class="govuk-breadcrumbs__link" href="\/pages\/account\/">Your account<\/a>[\s\S]*?>Team administration</,
+	);
 	assert.match(pageSource, />Team administration</);
 	assert.doesNotMatch(pageSource, /govuk-back-link/);
 	assert.doesNotMatch(pageSource, /Back to projects/);

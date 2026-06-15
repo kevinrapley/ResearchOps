@@ -106,6 +106,10 @@ attribute and label line breaks than the committed generated HTML. The test
 helpers were hardened to normalize copy checks and accept valid generated label
 markup instead of assuming a single serialized shape.
 
+After review of the deployed preview, the breadcrumb was updated to match the
+requested hierarchy: `Home` links to `/`, `Your account` links to
+`/pages/account/`, and `Team administration` remains the current page.
+
 ## Files
 
 Read:
@@ -131,6 +135,7 @@ Modified:
 
 - `public/pages/team/role-assignments/index.html`
 - `scripts/govuk/render-govuk-pages.mjs`
+- `src/govuk/templates/pages/role-assignments.njk`
 - `tests/auth-role-assignment-ui-route-state.test.js`
 
 Generated output:
@@ -161,6 +166,7 @@ Attempted:
 - `npm run build:govuk-pages` - passed and regenerated GOV.UK pages through the
   repository build script and post-build normalisation step.
 - `node --test tests/auth-role-assignment-ui-route-state.test.js tests/auth-role-assignment-error-copy-route-state.test.js tests/visual-walkthrough-role-assignment-route-state.test.js tests/govuk-generated-html-test-source-route-state.test.js tests/govuk-frontend-service-pages-route-state.test.js tests/govuk-frontend-integration-route-state.test.js` - passed.
+- `node --test tests/auth-role-assignment-ui-route-state.test.js tests/govuk-generated-html-test-source-route-state.test.js tests/govuk-breadcrumb-back-link-route-state.test.js` - passed after the breadcrumb hierarchy update.
 - `npm test` - passed after the CI assertion hardening, 220 tests passed.
 - `node -e` JSON parse check for `docs/agent-audit/reasoning/2026/06/15/role-assignments-govuk-template.json` - passed.
 - `npm run trace:coverage` - passed.
