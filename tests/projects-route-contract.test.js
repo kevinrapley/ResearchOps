@@ -48,6 +48,15 @@ function csvResponse(body) {
 	});
 }
 
+function isRawGitHubContentUrl(value) {
+	try {
+		const url = new URL(String(value));
+		return url.protocol === "https:" && url.hostname === "raw.githubusercontent.com";
+	} catch {
+		return false;
+	}
+}
+
 function authenticatedRequest(url) {
 	return new Request(url, {
 		headers: {
@@ -266,9 +275,9 @@ function projectRecords() {
 }
 
 function createMockFetch(calls) {
-	return async (resource) => {
+	return async (resource, options = {}) => {
 		const url = String(resource);
-		calls.push(url);
+		calls.push({ url, options });
 
 		if (url.includes("/Projects/rec")) {
 			const recordId = decodeURIComponent(url.split("/Projects/")[1].split("?")[0]);
@@ -277,8 +286,34 @@ function createMockFetch(calls) {
 			return jsonResponse(record);
 		}
 
+		if (url.endsWith("/Projects") && options.method === "POST") {
+			const body = JSON.parse(String(options.body || "{}"));
+			return jsonResponse({
+				records: [
+					{
+						id: PROJECT_RECORD_IDS[0],
+						createdTime: "2026-06-15T10:00:00.000Z",
+						fields: body.records?.[0]?.fields || {},
+					},
+				],
+			});
+		}
+
 		if (url.includes("/Projects?")) {
 			return jsonResponse({ records: projectRecords() });
+		}
+
+		if (url.endsWith("/Project%20Details") && options.method === "POST") {
+			const body = JSON.parse(String(options.body || "{}"));
+			return jsonResponse({
+				records: [
+					{
+						id: "detailCreatedProject",
+						createdTime: "2026-06-15T10:01:00.000Z",
+						fields: body.records?.[0]?.fields || {},
+					},
+				],
+			});
 		}
 
 		if (url.includes("/Project%20Details?")) {
@@ -359,13 +394,87 @@ async function assertProjectsRouteUsesAirtableProjectsTable() {
 		assert.equal(Object.hasOwn(testProject, "notes"), false);
 
 		assert.equal(
-			calls.some((url) => url.includes("/Projects?")),
+			calls.some(({ url }) => url.includes("/Projects?")),
 			true,
 		);
 		assert.equal(
-			calls.some((url) => url.includes("/Project%20Details?")),
+			calls.some(({ url }) => url.includes("/Project%20Details?")),
 			false,
 		);
+	} finally {
+		globalThis.fetch = originalFetch;
+	}
+}
+
+async function assertAuthenticatedProjectCreateUsesSessionContext() {
+	const calls = [];
+	const originalFetch = globalThis.fetch;
+	globalThis.fetch = createMockFetch(calls);
+
+	try {
+		const response = await worker.fetch(
+			new Request("https://worker.test/api/projects", {
+				method: "POST",
+				headers: {
+					"content-type": "application/json",
+					cookie: `rops_session=${TEST_SESSION_TOKEN}`,
+				},
+				body: JSON.stringify({
+					name: "Third Country National Discovery",
+					description: "Discovery research project",
+					phase: "Discovery",
+					status: "Goal setting & problem defining",
+					objectives: ["Understand the problem space", "Map end-to-end workflows"],
+					user_groups: ["Law enforcement", "Borders and immigration"],
+					stakeholders: [
+						{
+							name: "Pam Thethi",
+							role: "PSG - ILEC - Criminal Records Team",
+							email: "pam.thethi@homeoffice.gov.uk",
+						},
+					],
+					lead_researcher: "Amy Everett",
+					lead_researcher_email: "amy.everett@homeoffice.gov.uk",
+					notes: "Created from the start-project check answers flow",
+				}),
+			}),
+			env,
+			{},
+		);
+		assert.equal(response.status, 201);
+
+		const payload = await response.json();
+		assert.equal(payload.ok, true);
+		assert.notEqual(payload.error, "authentication_required");
+		assert.equal(payload.project.name, "Third Country National Discovery");
+		assert.equal(payload.project["rops:servicePhase"], "Discovery");
+		assert.equal(payload.project["rops:projectStatus"], "Goal setting & problem defining");
+		assert.equal(payload.project.teamName, TEST_TEAM_NAME);
+		assert.equal(payload.project.lead_researcher, "Amy Everett");
+		assert.equal(payload.project.lead_researcher_email, "amy.everett@homeoffice.gov.uk");
+		assert.equal(payload.project.notes, "Created from the start-project check answers flow");
+
+		const projectCreateCall = calls.find(({ url, options }) => url.endsWith("/Projects") && options.method === "POST");
+		assert.ok(projectCreateCall);
+		const projectCreateBody = JSON.parse(projectCreateCall.options.body);
+		const fields = projectCreateBody.records[0].fields;
+		assert.equal(fields.Name, "Third Country National Discovery");
+		assert.equal(fields.Description, "Discovery research project");
+		assert.equal(fields.Phase, "Discovery");
+		assert.equal(fields.Status, "Goal setting & problem defining");
+		assert.equal(fields.Objectives, "Understand the problem space\nMap end-to-end workflows");
+		assert.equal(fields.UserGroups, "Law enforcement, Borders and immigration");
+		assert.equal(fields["Team ID"], TEST_TEAM_ID);
+		assert.equal(fields["Team Name"], TEST_TEAM_NAME);
+		assert.match(fields.Stakeholders, /Pam Thethi/);
+
+		const detailCreateCall = calls.find(({ url, options }) => url.endsWith("/Project%20Details") && options.method === "POST");
+		assert.ok(detailCreateCall);
+		const detailCreateBody = JSON.parse(detailCreateCall.options.body);
+		assert.deepEqual(detailCreateBody.records[0].fields.Project, [PROJECT_RECORD_IDS[0]]);
+		assert.equal(detailCreateBody.records[0].fields["Lead Researcher"], "Amy Everett");
+		assert.equal(detailCreateBody.records[0].fields["Lead Researcher Email"], "amy.everett@homeoffice.gov.uk");
+		assert.equal(detailCreateBody.records[0].fields.Notes, "Created from the start-project check answers flow");
 	} finally {
 		globalThis.fetch = originalFetch;
 	}
@@ -387,11 +496,11 @@ async function assertProjectReadResolvesAirtableRecordId() {
 		assert.equal(project.name, "Test Project 1");
 		assert.equal(project.lead_researcher, "Lead Test");
 		assert.equal(
-			calls.some((url) => url.includes(`/Projects/${PROJECT_RECORD_IDS[2]}`)),
+			calls.some(({ url }) => url.includes(`/Projects/${PROJECT_RECORD_IDS[2]}`)),
 			true,
 		);
 		assert.equal(
-			calls.some((url) => url.includes("/Projects?") && !url.includes("/Project%20Details?")),
+			calls.some(({ url }) => url.includes("/Projects?") && !url.includes("/Project%20Details?")),
 			false,
 		);
 	} finally {
@@ -428,7 +537,7 @@ async function assertProjectsCsvRouteStillWorks() {
 		const body = await response.text();
 		assert.match(body, /LocalId,Name,CreatedAt/);
 		assert.equal(
-			calls.some((url) => url.includes("raw.githubusercontent.com")),
+			calls.some(({ url }) => isRawGitHubContentUrl(url)),
 			true,
 		);
 	} finally {
@@ -444,6 +553,7 @@ function assertLegacyProjectsDirectHandlerIsAbsent() {
 
 await assertProjectsRouteFailsClosedWithoutSession();
 await assertProjectsRouteUsesAirtableProjectsTable();
+await assertAuthenticatedProjectCreateUsesSessionContext();
 await assertProjectReadResolvesAirtableRecordId();
 await assertNonRecordProjectIdIsNotFound();
 await assertProjectsCsvRouteStillWorks();
