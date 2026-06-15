@@ -178,7 +178,11 @@ try {
 	assert.deepEqual(writes[0].body.researchOpsUserTags, ['evidence', 'operating-model']);
 	assert.equal(writes[1].body.text, entries[1].content);
 	assert.deepEqual(writes[1].body.researchOpsUserTags, ['tool-switching']);
-	assert.equal(writes[1].body.y, 372);
+	// Fixed grid: Perceptions column x=120, width 288; the second card sits at
+	// row 1 -> y = COLUMN_START_Y 264 + ROW_PITCH 192 = 456.
+	assert.equal(writes[1].body.x, 120);
+	assert.equal(writes[1].body.width, 288);
+	assert.equal(writes[1].body.y, 456);
 
 	const existingEntries = [entries[0]];
 	const existingWrites = [];

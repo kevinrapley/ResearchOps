@@ -196,7 +196,8 @@ try {
 	assert.equal(stickyWrites[0].body.text, entries[0].content);
 	assert.equal(stickyWrites[0].body.tags, undefined);
 	assert.equal(stickyWrites[0].body.researchOpsUserTags, undefined);
-	assert.equal(stickyWrites[1].body.y, 372);
+	// Fixed grid: second card at row 1 -> y = 264 + 192 = 456.
+	assert.equal(stickyWrites[1].body.y, 456);
 
 	assert.deepEqual(tagCreates.map((tag) => tag.text).sort(), [
 		'evidence',

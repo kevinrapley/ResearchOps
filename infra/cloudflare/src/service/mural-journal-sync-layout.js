@@ -21,6 +21,23 @@ const CATEGORY_KEYS = ["perceptions", "procedures", "decisions", "introspections
 const CREATED_ACTIONS = ["updated-template-widget", "created-template-sticky"];
 const DEFAULT_WIDTH = 260;
 const DEFAULT_HEIGHT = 160;
+// Mural's fixed sticky-note card size and the Reflexive Journal template's
+// column x positions. The journal Mural is a duplicate of a fixed template, so
+// these are stable across projects and far more reliable than inferring the
+// column geometry from board widgets.
+const FIXED_CARD_WIDTH = 288;
+const FIXED_CARD_HEIGHT = 168;
+// The Reflexive Journal template's fixed card grid: each column's x, the first
+// card's y, and the pitch between consecutive cards. The journal Mural is a
+// duplicate of a fixed template, so placing cards on this grid is reliable.
+const COLUMN_X = {
+	perceptions: 120,
+	procedures: 456,
+	decisions: 792,
+	introspections: 1128
+};
+const COLUMN_START_Y = 264;
+const ROW_PITCH = 192;
 const GRID_GAP = 32;
 const PURPOSE_REFLEXIVE = "reflexive_journal";
 const MURAL_TAG_TEXT_LIMIT = 25;
