@@ -34,6 +34,7 @@ const requiredWorkflowSnippets = [
 	'src/govuk/templates/pages/*.njk',
 	'No changed GOV.UK page templates to render.',
 	'No GOV.UK renderer page registration found for:',
+	"const pagePattern = /{\\s*template:\\s*'([^']+)'\\s*,\\s*output:\\s*'([^']+)'/g;",
 	'output_paths',
 	'npm run build:govuk-pages',
 	'if [ "$render_all" = "true" ]; then',
