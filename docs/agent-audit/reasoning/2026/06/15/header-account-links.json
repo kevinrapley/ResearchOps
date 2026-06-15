@@ -186,6 +186,11 @@
       "command": "Preview-environment cache-key follow-up",
       "status": "completed",
       "summary": "Account page cache key bumped to header-account-links-20260615-2 and the generated page was rebuilt so the preview requests the current header account module."
+    },
+    {
+      "command": "Preview-environment runtime follow-up",
+      "status": "completed",
+      "summary": "The x-include loaded and error events now bubble to document-level listeners, and the header partial script uses the versioned header account module URL."
     }
   ],
   "validationPlanned": [],

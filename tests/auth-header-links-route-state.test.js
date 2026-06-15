@@ -26,7 +26,11 @@ function assertSharedHeaderContainsSignedInAccountNavigation() {
 	includes(headerPartial, 'data-auth-header-account hidden', 'shared header partial');
 	includes(headerPartial, 'href="/pages/account/" data-auth-header-user>User name</a>', 'shared header partial');
 	includes(headerPartial, 'data-auth-header-sign-out>Sign out</a>', 'shared header partial');
-	includes(headerPartial, '<script type="module" src="/js/auth-header-links.js"></script>', 'shared header partial');
+	includes(
+		headerPartial,
+		'<script type="module" src="/js/auth-header-links.js?v=header-account-links-20260615-2"></script>',
+		'shared header partial',
+	);
 }
 
 function assertHeaderScriptUsesAccountContextSessionCheck() {
@@ -67,6 +71,8 @@ function assertHeaderAccountLinksAreRightAligned() {
 function assertHeaderPartialBypassesStaleIncludeCache() {
 	includes(layoutScript, 'src.includes("/partials/header.html")', 'shared include loader');
 	includes(layoutScript, 'return "no-store";', 'shared include loader');
+	includes(layoutScript, 'new CustomEvent("x-include:loaded", { bubbles: true', 'shared include loader');
+	includes(layoutScript, 'new CustomEvent("x-include:error", { bubbles: true', 'shared include loader');
 	includes(accountPage, '/components/layout.js?v=header-account-links-20260615-2', 'account page');
 	includes(accountPage, '/js/govuk-frontend-init.js?v=header-account-links-20260615-2', 'account page');
 	includes(accountPage, '<x-include src="/partials/header.html"', 'account page');

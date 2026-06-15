@@ -214,3 +214,12 @@ cache key was bumped to `header-account-links-20260615-2` in the GOV.UK page
 renderer and shared frontend initialiser. `public/pages/account/index.html` was
 regenerated so the main ResearchOps Pages preview receives a concrete public
 HTML change and browsers request the current `/js/auth-header-links.js` module.
+
+## Preview Runtime Follow-Up
+
+The include loader dispatched `x-include:loaded` on the `<x-include>` element
+without bubbling, while the GOV.UK frontend initialiser listened on `document`.
+That meant the fresh versioned header-account import could be missed after the
+header partial rendered. The include events now bubble, and the header partial's
+own module script uses the same cache key so the browser requests the current
+account-link module through both initialisation paths.
