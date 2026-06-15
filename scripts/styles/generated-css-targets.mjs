@@ -65,6 +65,11 @@ export const generatedCssTargets = [
 		source: 'src/styles/outcomes.scss',
 		output: 'public/css/outcomes.css',
 	},
+	{
+		name: 'Role assignment stylesheet',
+		source: 'src/styles/auth-role-assignments.scss',
+		output: 'public/css/auth-role-assignments.css',
+	},
 ];
 
 export const generatedCssPaths = generatedCssTargets.map((target) => target.output);

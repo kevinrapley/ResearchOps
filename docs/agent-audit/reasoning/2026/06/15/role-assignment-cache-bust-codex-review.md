@@ -13,6 +13,11 @@ branch and inspect Codex review comments. PR #401 had one active Codex review
 thread requiring the role-assignment script cache key to be refreshed so cached
 clients do not continue to run the old success-message code.
 
+After local preview of replacement PR #402, the success message was accepted but
+the check-answers layout still wrapped first-column labels poorly. The follow-up
+fix ensures the check-answers summary list uses GOV.UK frontend component layout
+instead of page-specific CSS reimplementing `.govuk-summary-list` as a grid.
+
 ## Branch Trace Decision
 
 The work started on `claude/lucid-ritchie-s7jjmz`, which is not an approved
@@ -107,6 +112,14 @@ URL:
 - `tests/auth-role-assignment-ui-route-state.test.js`
 - `tests/auth-role-assignment-error-copy-route-state.test.js`
 
+For the check-answers layout follow-up:
+
+- Added `src/styles/auth-role-assignments.scss` as the Sass source for the role-assignment route stylesheet.
+- Registered `public/css/auth-role-assignments.css` in `scripts/styles/generated-css-targets.mjs`.
+- Regenerated `public/css/auth-role-assignments.css` from Sass.
+- Removed page-specific `.govuk-summary-list*` layout overrides so the GOV.UK frontend Summary list component owns the table, row, key, value and action layout.
+- Updated `tests/auth-role-assignment-ui-route-state.test.js` to assert the stylesheet is Sass-generated and does not define Summary list layout rules.
+
 Existing unrelated local changes were preserved and not reverted:
 
 - `infra/cloudflare/src/core/auth/passwordless.js`
@@ -123,6 +136,10 @@ Attempted:
 
 - `rg "inline-team-creation-20260513|hide-internal-codes-20260615|auth-role-assignment-page\\.js\\?v=" ...` - passed; only the new version remains in active page/template/test references.
 - `node --import ./tests/helpers/generated-govuk-page-source.mjs --test tests/auth-role-assignment-ui-route-state.test.js tests/auth-role-assignment-error-copy-route-state.test.js` - passed; 2 tests passed.
+- `npm run build:generated-css -- public/css/auth-role-assignments.css` - passed and regenerated the role-assignment route stylesheet from `src/styles/auth-role-assignments.scss`.
+- `npm run generated-css:check` - passed.
+- `node --test tests/sass-migration-route-state.test.js tests/govuk-frontend-integration-route-state.test.js` - passed.
+- Local browser preview on `http://127.0.0.1:4175/pages/team/role-assignments/` - passed; computed Summary list layout reported `table`, `table-row` and `table-cell`, with no grid template columns.
 - `git diff --check` - passed.
 
 Not run:

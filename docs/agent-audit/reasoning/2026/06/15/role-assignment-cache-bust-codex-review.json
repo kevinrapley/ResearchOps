@@ -5,7 +5,7 @@
   "traceRequired": true,
   "traceDecision": "Required because repository-affecting work on branches starting with fix/ must have an auditable trace.",
   "relatedWork": "PR #401 Codex review comment; replacement PR #402",
-  "task": "Move the branch from an unapproved claude/ prefix to a sensible fix/ branch and inspect Codex review comments.",
+  "task": "Move the branch from an unapproved claude/ prefix to a sensible fix/ branch, inspect Codex review comments, and ensure the role-assignment check-answers view uses GOV.UK Summary list layout from Sass/Nunjucks sources.",
   "branchCorrection": {
     "from": "claude/lucid-ritchie-s7jjmz",
     "to": "fix/role-assignment-check-answers",
@@ -92,20 +92,32 @@
     ".agent-operating-model/bundles/cloudflare/prompt.spec.yaml",
     ".agent-operating-model/bundles/cloudflare/prompt.body.xml",
     "src/govuk/templates/pages/role-assignments.njk",
+    "src/styles/auth-role-assignments.scss",
+    "scripts/styles/generated-css-targets.mjs",
     "public/pages/team/role-assignments/index.html",
+    "public/css/auth-role-assignments.css",
     "tests/auth-role-assignment-ui-route-state.test.js",
     "tests/auth-role-assignment-error-copy-route-state.test.js",
     "PR #401 comments and review threads"
   ],
   "filesCreated": [
+    "src/styles/auth-role-assignments.scss",
     "docs/agent-audit/reasoning/2026/06/15/role-assignment-cache-bust-codex-review.md",
     "docs/agent-audit/reasoning/2026/06/15/role-assignment-cache-bust-codex-review.json"
   ],
   "filesModified": [
+    "public/css/auth-role-assignments.css",
     "public/pages/team/role-assignments/index.html",
+    "scripts/styles/generated-css-targets.mjs",
     "src/govuk/templates/pages/role-assignments.njk",
     "tests/auth-role-assignment-ui-route-state.test.js",
     "tests/auth-role-assignment-error-copy-route-state.test.js"
+  ],
+  "followUps": [
+    {
+      "request": "Make certain the check-answers layout is only using GOV.UK component code with Sass and Nunjucks.",
+      "disposition": "Added a Sass source for the role-assignment stylesheet, registered it as a generated CSS target, removed page-specific .govuk-summary-list layout overrides, and asserted that Summary list layout comes from GOV.UK frontend."
+    }
   ],
   "unrelatedLocalChangesPreserved": [
     "infra/cloudflare/src/core/auth/passwordless.js",
@@ -147,6 +159,26 @@
       "command": "node --import ./tests/helpers/generated-govuk-page-source.mjs --test tests/auth-role-assignment-ui-route-state.test.js tests/auth-role-assignment-error-copy-route-state.test.js",
       "status": "passed",
       "summary": "Focused role-assignment route-state tests passed: 2 tests passed."
+    },
+    {
+      "command": "npm run build:generated-css -- public/css/auth-role-assignments.css",
+      "status": "passed",
+      "summary": "Regenerated public/css/auth-role-assignments.css from src/styles/auth-role-assignments.scss."
+    },
+    {
+      "command": "npm run generated-css:check",
+      "status": "passed",
+      "summary": "Generated CSS formatting check passed."
+    },
+    {
+      "command": "node --test tests/sass-migration-route-state.test.js tests/govuk-frontend-integration-route-state.test.js",
+      "status": "passed",
+      "summary": "Sass migration and GOV.UK frontend integration route-state tests passed."
+    },
+    {
+      "command": "Local browser preview at http://127.0.0.1:4175/pages/team/role-assignments/",
+      "status": "passed",
+      "summary": "Computed check-answers Summary list layout used table, table-row and table-cell display values from GOV.UK frontend, with no grid template columns."
     },
     {
       "command": "git diff --check",
