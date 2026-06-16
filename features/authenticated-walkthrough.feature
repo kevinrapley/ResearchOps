@@ -1,3 +1,4 @@
+@walkthrough
 Feature: Authenticated visual walkthrough
 
   Scenario: Sign-in code state is captured

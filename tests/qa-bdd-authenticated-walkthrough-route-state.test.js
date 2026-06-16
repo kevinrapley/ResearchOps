@@ -5,6 +5,8 @@ import test from 'node:test';
 import { visualWalkthroughConfig } from '../visual-walkthrough.config.mjs';
 
 const featureSource = fs.readFileSync('features/authenticated-walkthrough.feature', 'utf8');
+const cucumberConfigSource = fs.readFileSync('cucumber.mjs', 'utf8');
+const packageSource = fs.readFileSync('package.json', 'utf8');
 const stepSource = fs.readFileSync('features/steps/common.steps.js', 'utf8');
 const worldSource = fs.readFileSync('features/support/world.js', 'utf8');
 const visualWalkthroughSource = fs.readFileSync('scripts/visual-walkthrough.mjs', 'utf8');
@@ -13,6 +15,7 @@ const passwordlessSource = fs.readFileSync('infra/cloudflare/src/core/auth/passw
 const participantConsentSource = fs.readFileSync('public/js/participant-consent-page.js', 'utf8');
 
 test('QA BDD walkthrough captures sign-in code and authenticated page states', () => {
+	assert.match(featureSource, /@walkthrough/);
 	assert.match(featureSource, /Sign-in code state is captured/);
 	assert.match(featureSource, /Authenticated application states are captured/);
 	assert.match(stepSource, /I request a ResearchOps sign-in code for the QA walkthrough user/);
@@ -21,10 +24,17 @@ test('QA BDD walkthrough captures sign-in code and authenticated page states', (
 	assert.match(worldSource, /captureEvidenceScreenshot/);
 });
 
+test('Cucumber smoke profile excludes the heavyweight walkthrough feature', () => {
+	assert.match(cucumberConfigSource, /not @walkthrough/);
+	assert.match(cucumberConfigSource, /const walkthroughTags = '@walkthrough'/);
+	assert.match(cucumberConfigSource, /export \{ walkthrough \}/);
+	assert.match(packageSource, /"qa:cucumber:walkthrough": "BDD_CAPTURE_SCREENSHOTS=true cucumber-js -p walkthrough"/);
+});
+
 test('visual walkthrough uses local assets and deterministic authenticated mocks', () => {
 	assert.match(visualWalkthroughSource, /registerLocalAssetRoutes/);
 	assert.match(visualWalkthroughSource, /walkthroughMockRoutes/);
-	assert.match(visualWalkthroughSource, /process\.env\.WALKTHROUGH_LOCAL_ASSETS !== 'false'/);
+	assert.match(visualWalkthroughSource, /process\.env\.WALKTHROUGH_LOCAL_ASSETS === 'true'/);
 	assert.match(helperSource, /operationalMockRoutes/);
 	assert.match(helperSource, /SIGN_IN_EMAIL = 'qa-bdd\.walkthrough@example\.gov\.uk'/);
 });
@@ -55,5 +65,7 @@ test('passwordless QA BDD bypass is env gated and reuses the normal session path
 
 test('participant consent same-origin API URLs are valid during walkthrough capture', () => {
 	assert.match(participantConsentSource, /new URL\(apiUrl\(path\), window\.location\.origin\)/);
+	assert.match(participantConsentSource, /hasStudyContextParams/);
+	assert.match(participantConsentSource, /renderLoadError\(error\)/);
 	assert.doesNotMatch(participantConsentSource, /new URL\(apiUrl\(path\)\)/);
 });

@@ -32,6 +32,9 @@
     "Shared Playwright walkthrough helper module for local assets, deterministic mocks, and sign-in fixtures",
     "Signed-out sign-in and code-requested visual walkthrough states",
     "Authenticated deterministic BDD capture for every registered page state",
+    "Walkthrough Cucumber feature is tagged out of default smoke and available through a dedicated walkthrough profile",
+    "Visual walkthrough local asset routing is opt-in with WALKTHROUGH_LOCAL_ASSETS=true",
+    "Participant-consent resolver errors with study context now render the load-error path",
     "Registry coverage now uses Git-tracked HTML routes so ignored/generated pages cannot create CI-only 404s",
     "Environment-gated QA BDD passwordless bypass for allowlisted email addresses",
     "Participant consent same-origin API URL and missing-context fixes",
@@ -59,6 +62,16 @@
       "command": "BDD_CAPTURE_SCREENSHOTS=true BASE_URL=http://127.0.0.1:8789/ npx cucumber-js -p default --format progress",
       "result": "passed",
       "details": "5 scenarios passed, 18 steps passed"
+    },
+    {
+      "command": "BASE_URL=http://127.0.0.1:8080 npm run qa:cucumber:ci",
+      "result": "passed",
+      "details": "Default smoke profile excluded @walkthrough and ran 3 scenarios, 11 steps"
+    },
+    {
+      "command": "BASE_URL=http://127.0.0.1:8080 npx cucumber-js -p walkthrough --format progress",
+      "result": "passed",
+      "details": "Dedicated walkthrough profile ran 2 scenarios, 7 steps"
     },
     {
       "command": "npm run trace:coverage",

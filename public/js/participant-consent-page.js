@@ -406,6 +406,10 @@ function wireEvents() {
 	});
 }
 
+function hasStudyContextParams(params) {
+	return ["id", "project", "projectId", "pid", "sid"].some(key => params.has(key));
+}
+
 async function init() {
 	clearErrors();
 	wireEvents();
@@ -414,7 +418,11 @@ async function init() {
 	if (!context) {
 		try {
 			context = await resolveStudyContextFromUrl(params);
-		} catch {
+		} catch (error) {
+			if (hasStudyContextParams(params)) {
+				renderLoadError(error);
+				return;
+			}
 			context = { projectId: "", studyId: "", project: null, study: null };
 		}
 	}

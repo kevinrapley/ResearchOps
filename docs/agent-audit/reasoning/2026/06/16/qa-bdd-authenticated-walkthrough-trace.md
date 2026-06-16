@@ -55,6 +55,10 @@ Bundles not selected:
 
 ## Validation Evidence
 
+- Codex review-comment follow-up:
+  - Thread `PRRT_kwDOP3Td2M6KAllW`: tagged the authenticated walkthrough feature as `@walkthrough`, excluded it from the default smoke profile with `not @walkthrough`, and added a dedicated walkthrough Cucumber profile.
+  - Thread `PRRT_kwDOP3Td2M6KAllZ`: changed visual walkthrough local asset routing from default-on to opt-in via `WALKTHROUGH_LOCAL_ASSETS=true`, so CI walkthroughs use the configured `BASE_URL` unless a job explicitly asks for local assets.
+  - Thread `PRRT_kwDOP3Td2M6KAllc`: narrowed the participant-consent no-context fallback so resolver failures on URLs with study context call `renderLoadError(error)` instead of rendering the missing-context state.
 - GitHub Actions follow-up:
   - `bdd-smoke` failed on PR #414 because the BDD capture loop attempted `/pages/repository/index.html`, which is generated locally but not tracked in Git or served by the CI static site.
   - The walkthrough registry was corrected to exclude generated-only repository routes, and the registry coverage test now uses `git ls-files` so ignored/generated HTML cannot make local coverage disagree with CI.
@@ -67,6 +71,11 @@ Bundles not selected:
 - Cucumber walkthrough passed against local server:
   - `BDD_CAPTURE_SCREENSHOTS=true BASE_URL=http://127.0.0.1:8789/ npx cucumber-js -p default --format progress`
   - Result: 5 scenarios passed, 18 steps passed.
+- Review-comment validation passed:
+  - `BASE_URL=http://127.0.0.1:8080 npm run qa:cucumber:ci`
+  - Result: default smoke profile ran 3 scenarios, 11 steps, excluding `@walkthrough`.
+  - `BASE_URL=http://127.0.0.1:8080 npx cucumber-js -p walkthrough --format progress`
+  - Result: dedicated walkthrough profile ran 2 scenarios, 7 steps.
 - Trace coverage passed:
   - `npm run trace:coverage`
 

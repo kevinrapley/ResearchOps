@@ -89,7 +89,7 @@ const startedAt = new Date().toISOString();
 const baseURL = normalizeBaseURL(
 	process.env.BASE_URL || process.env.PAGES_URL || process.env.PREVIEW_URL || DEFAULT_BASE_URL
 );
-const useLocalAssets = process.env.WALKTHROUGH_LOCAL_ASSETS !== 'false';
+const useLocalAssets = process.env.WALKTHROUGH_LOCAL_ASSETS === 'true';
 const captureProfiles = (visualWalkthroughConfig.profiles || DEFAULT_PROFILES).map((profile) => ({
 	...profile,
 	id: slugify(profile.id || profile.title || 'profile'),
