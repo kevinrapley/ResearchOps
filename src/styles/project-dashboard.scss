@@ -15,6 +15,37 @@
 	max-width: 34em;
 }
 
+.rops-daas-brand-panel {
+	display: none;
+}
+
+@media (min-width: 40.0625em) {
+	.rops-daas-brand-panel--visible {
+		align-items: center;
+		background-color: #1a1d35;
+		background-image: url('/images/brands/home-office-digital-triangles.svg');
+		background-position: right bottom;
+		background-repeat: no-repeat;
+		background-size: auto 125%;
+		box-sizing: border-box;
+		display: flex;
+		min-height: 124px;
+		margin-bottom: 1rem;
+		margin-top: 1rem;
+		overflow: hidden;
+		padding: 24px 32px;
+	}
+
+	.rops-daas-brand-panel__logo {
+		display: block;
+		height: auto;
+		max-width: min(264px, 45%);
+		position: relative;
+		width: 264px;
+		z-index: 1;
+	}
+}
+
 .rops-status-strip {
 	display: flex;
 	flex-wrap: wrap;

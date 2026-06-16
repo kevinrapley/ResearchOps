@@ -214,8 +214,26 @@ function projectIdFromUrl(project) {
 	return new URLSearchParams(location.search).get("id") || project?.id || project?.localId || "";
 }
 
+function normaliseBrandKey(value = "") {
+	return String(value || "")
+		.trim()
+		.toLowerCase()
+		.replace(/[^a-z0-9]+/g, "");
+}
+
+function renderProjectBrand(project = {}) {
+	const panel = document.getElementById("daas-brand-panel");
+	if (!panel) return;
+	const isDaaSProject = [project.org, project.teamName, project.team_name, project.team]
+		.map(normaliseBrandKey)
+		.includes("daas");
+	panel.hidden = !isDaaSProject;
+	panel.classList.toggle("rops-daas-brand-panel--visible", isDaaSProject);
+}
+
 function renderProject(project) {
 	const projectId = projectIdFromUrl(project);
+	renderProjectBrand(project);
 	setText("#eyebrow-org", project.org);
 	setText("#project-title", project.name, "Untitled project");
 	setText("#project-subtitle", project.description);

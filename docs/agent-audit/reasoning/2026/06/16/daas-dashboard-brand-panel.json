@@ -1,0 +1,93 @@
+{
+	"date": "2026-06-16",
+	"branch": "feature/daas-dashboard-brand-panel",
+	"traceRequired": true,
+	"repository": "kevinrapley/ResearchOps",
+	"task": "Add a DaaS-specific brand panel to the project dashboard for DaaS projects.",
+	"operatingModelFilesLoaded": [
+		"AGENTS.md",
+		".agent-operating-model/orchestration.xml",
+		".agent-operating-model/bundle-registry.json",
+		".agent-operating-model/task-signal-catalog.json",
+		".agent-operating-model/selection-rules.json",
+		".agent-operating-model/bootstrap-checklist.md",
+		".agent-operating-model/precedence-policy.md",
+		".agent-operating-model/trace-policy.md",
+		".agent-operating-model/trace-layers.md",
+		".agent-operating-model/behavioural-evals.json",
+		".agent-operating-model/github-mutation-policy.md"
+	],
+	"selectedBundles": [
+		".agent-operating-model/bundles/github/",
+		".agent-operating-model/bundles/researchops-developer-control/",
+		".agent-operating-model/bundles/multi-functional-team/",
+		".agent-operating-model/bundles/govuk-design-system/"
+	],
+	"skippedBundles": [
+		".agent-operating-model/bundles/cloudflare/",
+		".agent-operating-model/bundles/openai/",
+		".agent-operating-model/bundles/mcp-agent-tooling/",
+		".agent-operating-model/bundles/airtable-public-api/",
+		".agent-operating-model/bundles/mural-public-api/"
+	],
+	"filesRead": [
+		"AGENTS.md",
+		".agent-operating-model/orchestration.xml",
+		".agent-operating-model/bundle-registry.json",
+		".agent-operating-model/task-signal-catalog.json",
+		".agent-operating-model/selection-rules.json",
+		".agent-operating-model/github-mutation-policy.md",
+		".agent-operating-model/bundles/github/prompt.spec.yaml",
+		".agent-operating-model/bundles/github/prompt.body.xml",
+		".agent-operating-model/bundles/researchops-developer-control/prompt.spec.yaml",
+		".agent-operating-model/bundles/researchops-developer-control/prompt.body.xml",
+		".agent-operating-model/bundles/multi-functional-team/prompt.spec.yaml",
+		".agent-operating-model/bundles/multi-functional-team/prompt.body.xml",
+		".agent-operating-model/bundles/govuk-design-system/prompt.spec.yaml",
+		".agent-operating-model/bundles/govuk-design-system/prompt.body.xml",
+		"src/govuk/templates/pages/project-dashboard.njk",
+		"public/js/project-dashboard.js",
+		"src/styles/project-dashboard.scss",
+		"tests/project-dashboard-route-state.test.js",
+		"docs/agent-audit/reasoning/README.md"
+	],
+	"filesModified": [
+		"public/images/brands/daas-logo.svg",
+		"public/images/brands/home-office-digital-triangles.svg",
+		"src/govuk/templates/pages/project-dashboard.njk",
+		"public/js/project-dashboard.js",
+		"src/styles/project-dashboard.scss",
+		"public/css/project-dashboard.css",
+		"public/pages/project-dashboard/index.html",
+		"tests/project-dashboard-route-state.test.js",
+		"docs/agent-audit/reasoning/2026/06/16/daas-dashboard-brand-panel.md",
+		"docs/agent-audit/reasoning/2026/06/16/daas-dashboard-brand-panel.json"
+	],
+	"decisions": [
+		"Add the DaaS panel to the Nunjucks dashboard template immediately above #eyebrow-org.",
+		"Keep the panel hidden by default and reveal it from project-dashboard.js only when the loaded project team or organisation normalises to daas.",
+		"Use Sass for the visual treatment: #1a1d35 background, 1rem top and bottom margins, bottom-right Home Office Digital triangles background, and a tablet/desktop breakpoint of 40.0625em.",
+		"Keep mobile hidden by leaving the default .rops-daas-brand-panel display as none outside the breakpoint.",
+		"Add cache-busting keys for the changed dashboard JavaScript and stylesheet.",
+		"Add route-state coverage for the Nunjucks template, generated page, controller behaviour, Sass and generated CSS."
+	],
+	"validationAttempted": [
+		"npm ci",
+		"npm run build:project-dashboard",
+		"npm run build:govuk-pages",
+		"node tests/project-dashboard-route-state.test.js",
+		"Browser verification against the local generated dashboard confirmed the panel exists, uses the updated asset keys, and remains hidden by default before project data loads.",
+		"Browser verification against a local DaaS preview using the generated CSS confirmed desktop display as flex, background colour rgb(26, 29, 53), 16px top and bottom margins, triangles background image, and placement above #eyebrow-org.",
+		"Browser verification at 390px width confirmed the visible-state preview still computes to display: none.",
+		"npx prettier -c public/js/project-dashboard.js src/styles/project-dashboard.scss tests/project-dashboard-route-state.test.js docs/agent-audit/reasoning/2026/06/16/daas-dashboard-brand-panel.md docs/agent-audit/reasoning/2026/06/16/daas-dashboard-brand-panel.json",
+		"npm run trace:coverage",
+		"git diff --check",
+		"npm run lint",
+		"npm test -- --ci failed because the current test script passes --ci through to Node, which exits with node: bad option: --ci.",
+		"npm test"
+	],
+	"residualRisks": [
+		"npm run validate was not run during this pass.",
+		"Live DaaS project verification still depends on deployed project data loading the dashboard record as DaaS."
+	]
+}
