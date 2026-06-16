@@ -29,12 +29,16 @@
 	],
 	"filesRead": [
 		"src/styles/researchops-home.scss",
+		"src/govuk/templates/pages/home.njk",
+		"public/index.html",
 		"tests/researchops-home-hero-layout-route-state.test.js",
 		"assets/researchops/researchops-home.css",
 		"public/assets/researchops/researchops-home.css"
 	],
 	"filesModified": [
 		"src/styles/researchops-home.scss",
+		"src/govuk/templates/pages/home.njk",
+		"public/index.html",
 		"assets/researchops/researchops-home.css",
 		"public/assets/researchops/researchops-home.css",
 		"tests/researchops-home-hero-layout-route-state.test.js",
@@ -45,13 +49,15 @@
 		"Treat the Codex review comment as legitimate.",
 		"Set the mobile/default SVG width to 320px with max-width 100%.",
 		"Keep SVG width 100% scoped to the desktop media query.",
-		"Update route-state coverage for both mobile/default and desktop image sizing."
+		"Update route-state coverage for both mobile/default and desktop image sizing.",
+		"Bump the home stylesheet query string to home-masthead-mobile-svg-20260616 so deployed clients request the updated CSS."
 	],
 	"validationAttempted": [
 		"node --test tests/researchops-home-hero-layout-route-state.test.js tests/deploy-asset-paths.test.js",
 		"npx prettier -c src/styles/researchops-home.scss tests/researchops-home-hero-layout-route-state.test.js public/assets/researchops/researchops-home.css assets/researchops/researchops-home.css",
 		"Browser measurements at 360px, 640px and 1280px viewports",
-		"npm test -- --test-reporter=spec"
+		"npm test -- --test-reporter=spec",
+		"npm run build:govuk-pages"
 	],
 	"residualRisks": [
 		"npm run validate was not run during this pass."

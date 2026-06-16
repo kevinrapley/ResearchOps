@@ -12,6 +12,8 @@ assert.match(
 assert.match(homePage, /class="govuk-grid-column-two-thirds researchops-home-hero__content-column"/);
 assert.match(homePage, /class="govuk-grid-column-one-third researchops-home-hero__image-column"/);
 assert.match(homePage, /class="researchops-home-hero__image"/);
+assert.match(homePage, /researchops-home\.css\?v=home-masthead-mobile-svg-20260616/);
+assert.match(homeTemplate, /researchops-home\.css\?v=home-masthead-mobile-svg-20260616/);
 
 assert.match(
 	homeCss,

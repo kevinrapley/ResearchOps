@@ -47,6 +47,8 @@ Address a Codex review finding after the home hero column-width change: prevent 
 ## Files read
 
 - `src/styles/researchops-home.scss`
+- `src/govuk/templates/pages/home.njk`
+- `public/index.html`
 - `tests/researchops-home-hero-layout-route-state.test.js`
 - `assets/researchops/researchops-home.css`
 - `public/assets/researchops/researchops-home.css`
@@ -54,6 +56,8 @@ Address a Codex review finding after the home hero column-width change: prevent 
 ## Files created or modified
 
 - `src/styles/researchops-home.scss`
+- `src/govuk/templates/pages/home.njk`
+- `public/index.html`
 - `assets/researchops/researchops-home.css`
 - `public/assets/researchops/researchops-home.css`
 - `tests/researchops-home-hero-layout-route-state.test.js`
@@ -66,6 +70,7 @@ Address a Codex review finding after the home hero column-width change: prevent 
 - Set the mobile/default SVG width to `320px` with `max-width: 100%`, so the image respects the intended intrinsic width while still fitting narrower screens.
 - Keep `width: 100%` only inside the desktop media query so the SVG fills the 45% desktop image column.
 - Update the route-state test to assert separate mobile/default and desktop image-width contracts.
+- Bump the home stylesheet query string to `home-masthead-mobile-svg-20260616` so clients and CDN edges request the updated CSS rather than a previously cached URL.
 
 ## Validation attempted
 
@@ -73,6 +78,7 @@ Address a Codex review finding after the home hero column-width change: prevent 
 - `npx prettier -c src/styles/researchops-home.scss tests/researchops-home-hero-layout-route-state.test.js public/assets/researchops/researchops-home.css assets/researchops/researchops-home.css` passed.
 - Browser measurements passed: 360px and 640px viewports kept the SVG at `320px`; 1280px viewport kept text at `55%`, image column at `45%`, and SVG filling that column.
 - `npm test -- --test-reporter=spec` passed with 227 tests.
+- After the Codex cache-key comment, `npm run build:govuk-pages` regenerated `public/index.html` from the updated template.
 
 ## Existing local changes
 
