@@ -15,7 +15,7 @@ The walkthrough writes to `reports-site/`:
 - `screenshots/desktop/*.png` — desktop captured page and state evidence
 - `screenshots/mobile/*.png` — mobile captured page and state evidence
 
-The generated report is uploaded as the `visual-walkthrough-site` workflow artifact. On main branch runs, `reports-site/` is committed back to the repository when generated output changes.
+The generated report is uploaded as the `visual-walkthrough-site` workflow artifact. The heavyweight walkthrough is run from the dedicated manual `qa-bdd` workflow dispatch so normal smoke checks stay quick and stable.
 
 ## Registry
 
@@ -219,7 +219,7 @@ npm run qa:visual-walkthrough
 
 The command uses `BASE_URL`, `PAGES_URL` or `PREVIEW_URL` when provided. Otherwise it falls back to `https://researchops.pages.dev/`.
 
-For the authenticated walkthrough, run the dedicated walkthrough profile/job against the deployed preview or production URL. That run is expected to provide the QA auth settings and any required manual-run environment values, including the QA auth bypass and local asset behaviour if you deliberately want a local capture.
+For the authenticated walkthrough, run the dedicated walkthrough profile/job against the deployed preview or production URL. Protected deployed pages need `RESEARCHOPS_QA_BDD_AUTH_CODE` configured as a GitHub Actions secret, and the deployed auth Worker must allow `qa-bdd.walkthrough@example.gov.uk` with the same 6 digit code through its QA BDD bypass settings.
 
 The command runs the same registered page and state catalogue for each configured profile. It then writes one report with a screenshot switcher and profile-specific screenshot directories.
 
@@ -227,7 +227,7 @@ The command runs the same registered page and state catalogue for each configure
 
 The `qa-bdd` workflow still runs the Cucumber smoke suite first.
 
-If smoke passes, the walkthrough job runs the application visual walkthrough. The workflow then:
+When the manual walkthrough job runs, it first completes the smoke suite and then runs the application visual walkthrough. The workflow then:
 
 1. uploads `reports-site/` as an artifact
 2. checks whether the run is allowed to persist to `main`

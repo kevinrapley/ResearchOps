@@ -203,17 +203,21 @@ function repositoryStaticPageEntry(page) {
 }
 
 const repositoryPages = [
-	statefulPage(
-		'repository',
-		'Research repository',
-		'Research repository',
-		'/pages/repository/index.html',
-		'Cloudflare-generated research repository front page.',
-		'Repository front page with published artefacts',
-		'Repository front page captured from the deployed generated page with deterministic repository data.',
-		'/pages/repository/',
-		'Staff need clearer evidence boundaries before accepting recommendations'
-	),
+	{
+		id: 'repository',
+		title: 'Research repository',
+		group: 'Research repository',
+		path: '/pages/repository/index.html',
+		description: 'Cloudflare-generated research repository front page.',
+		defaultState: {
+			id: 'default',
+			title: 'Repository front page with published artefacts',
+			description:
+				'Repository front page captured from the deployed generated page after the server-rendered repository shell is available.',
+			path: '/pages/repository/',
+			actions: [{ type: 'waitForSelector', selector: '[data-repository-page]' }],
+		},
+	},
 	...repositoryStaticPages.map(repositoryStaticPageEntry),
 ];
 

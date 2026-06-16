@@ -1,0 +1,81 @@
+{
+  "traceId": "qa-bdd-manual-walkthrough-auth",
+  "date": "2026-06-16",
+  "branch": "fix/qa-bdd-repository-walkthrough",
+  "task": "Fix post-merge qa-bdd failure by keeping visual walkthrough manual and adding QA auth for protected deployed pages",
+  "operatingModelFiles": [
+    "AGENTS.md",
+    ".agent-operating-model/orchestration.xml",
+    ".agent-operating-model/bundle-registry.json",
+    ".agent-operating-model/task-signal-catalog.json",
+    ".agent-operating-model/selection-rules.json",
+    ".agent-operating-model/precedence-policy.md",
+    ".agent-operating-model/trace-policy.md",
+    ".agent-operating-model/trace-layers.md",
+    ".agent-operating-model/github-mutation-policy.md"
+  ],
+  "selectedBundles": [
+    ".agent-operating-model/bundles/github/",
+    ".agent-operating-model/bundles/researchops-developer-control/",
+    ".agent-operating-model/bundles/multi-functional-team/"
+  ],
+  "evidence": [
+    {
+      "type": "github-actions",
+      "details": "Main qa-bdd walkthrough failed on repository/default desktop and mobile captures after PR #415 merge."
+    },
+    {
+      "type": "live-route-check",
+      "details": "/pages/repository/ and /pages/repository/index.html redirect to sign-in; generated child repository pages remain reachable."
+    },
+    {
+      "type": "configuration-check",
+      "details": "GitHub repository secrets currently include Cloudflare deploy secrets but no RESEARCHOPS_QA_BDD_AUTH_CODE secret."
+    }
+  ],
+  "filesModified": [
+    ".github/workflows/qa-bdd.yml",
+    "docs/qa/visual-walkthrough.md",
+    "infra/cloudflare/wrangler.toml",
+    "scripts/visual-walkthrough.mjs",
+    "tests/qa-bdd-authenticated-walkthrough-route-state.test.js",
+    "visual-walkthrough.config.mjs"
+  ],
+  "filesAdded": [
+    "docs/agent-audit/reasoning/2026/06/16/qa-bdd-manual-walkthrough-auth-trace.md",
+    "docs/agent-audit/reasoning/2026/06/16/qa-bdd-manual-walkthrough-auth-trace.json"
+  ],
+  "decisions": [
+    "Normal main smoke remains fast and public-route only.",
+    "The heavyweight walkthrough now runs through manual workflow dispatch.",
+    "The non-secret Cloudflare Worker enable flag and allowed QA email live in wrangler.toml.",
+    "Protected deployed pages use a real QA auth session when the matching secret and Cloudflare Worker bypass are configured."
+  ],
+  "validation": [
+    {
+      "command": "node --test tests/qa-bdd-authenticated-walkthrough-route-state.test.js tests/visual-walkthrough-registry-coverage.test.js tests/main-qa-ci-route-state.test.js",
+      "result": "passed"
+    },
+    {
+      "command": "npx prettier -c .github/workflows/qa-bdd.yml docs/qa/visual-walkthrough.md scripts/visual-walkthrough.mjs tests/qa-bdd-authenticated-walkthrough-route-state.test.js visual-walkthrough.config.mjs docs/agent-audit/reasoning/2026/06/16/qa-bdd-manual-walkthrough-auth-trace.md docs/agent-audit/reasoning/2026/06/16/qa-bdd-manual-walkthrough-auth-trace.json",
+      "result": "passed"
+    },
+    {
+      "command": "npm run trace:coverage",
+      "result": "passed"
+    },
+    {
+      "command": "npm run lint",
+      "result": "passed with existing warnings and no errors"
+    },
+    {
+      "command": "node --test tests/qa-bdd-authenticated-walkthrough-route-state.test.js",
+      "result": "passed after adding Cloudflare Worker QA BDD vars"
+    },
+    {
+      "command": "npx prettier -c infra/cloudflare/wrangler.toml tests/qa-bdd-authenticated-walkthrough-route-state.test.js",
+      "result": "passed"
+    }
+  ],
+  "residualRisk": "Manual protected-page capture requires RESEARCHOPS_QA_BDD_AUTH_CODE to be configured in GitHub Actions and to match the deployed Cloudflare Worker QA BDD bypass."
+}

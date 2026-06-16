@@ -221,11 +221,7 @@ jobs:
     if: >-
       ${{
         needs.bdd-smoke.result == 'success' &&
-        (
-          github.event_name == 'workflow_dispatch' ||
-          github.ref == 'refs/heads/main' ||
-          github.event.workflow_run.head_branch == 'main'
-        )
+        github.event_name == 'workflow_dispatch'
       }}
     runs-on: ubuntu-24.04
     timeout-minutes: 15
@@ -297,6 +293,9 @@ jobs:
             || echo "BASE_URL did not respond during preflight. Continuing so the visual walkthrough can produce the authoritative result."
 
       - name: Run application visual walkthrough
+        env:
+          RESEARCHOPS_QA_BDD_AUTH_EMAIL: qa-bdd.walkthrough@example.gov.uk
+          RESEARCHOPS_QA_BDD_AUTH_CODE: ${{ secrets.RESEARCHOPS_QA_BDD_AUTH_CODE }}
         run: npm run qa:visual-walkthrough
 
       - name: Sync source-derived acceptance criteria
