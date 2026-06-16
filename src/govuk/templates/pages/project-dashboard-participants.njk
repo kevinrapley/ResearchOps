@@ -7,12 +7,15 @@
 {% from "govuk/components/inset-text/macro.njk" import govukInsetText %}
 {% from "govuk/components/select/macro.njk" import govukSelect %}
 {% from "govuk/components/textarea/macro.njk" import govukTextarea %}
+{% from "macros/daas-brand-panel.njk" import daasBrandPanel %}
 
 {% block head %}
 	<meta property="schema:name" content="Add participant — ResearchOps">
 	<meta property="schema:creator" content="Home Office ResearchOps Platform">
 	<meta property="schema:dateModified" content="2026-06-02">
 	<meta property="dcterms:language" content="en-GB">
+	<link rel="stylesheet" href="/css/daas-brand-panel.css?v=20260616" media="screen">
+	<link rel="modulepreload" href="/js/daas-brand-panel.js?v=20260616">
 	<link rel="modulepreload" href="/js/project-participant-context.js">
 	<link rel="modulepreload" href="/pages/project-dashboard/participants/participants-project.js">
 {% endblock %}
@@ -47,6 +50,8 @@
 			}
 		]
 	}) }}
+
+	{{ daasBrandPanel() }}
 
 	<div class="dashboard-hero">
 		<p id="project-eyebrow" class="govuk-caption-l">Project</p>
@@ -239,6 +244,7 @@
 {% endblock %}
 
 {% block scripts %}
+	<script type="module" src="/js/daas-brand-panel.js?v=20260616"></script>
 	<script type="module" src="/js/project-participant-context.js"></script>
 	<script type="module" src="/pages/project-dashboard/participants/participants-project.js"></script>
 {% endblock %}

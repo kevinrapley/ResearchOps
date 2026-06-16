@@ -5,6 +5,7 @@
 {% from "govuk/components/select/macro.njk" import govukSelect %}
 {% from "govuk/components/summary-list/macro.njk" import govukSummaryList %}
 {% from "govuk/components/textarea/macro.njk" import govukTextarea %}
+{% from "macros/daas-brand-panel.njk" import daasBrandPanel %}
 
 {% set studyPageScriptVersion = "study-record-id-routing-20260518" %}
 
@@ -12,7 +13,9 @@
 	<meta property="schema:name" content="Study synthesis - ResearchOps">
 	<link rel="stylesheet" href="/css/govuk/govuk-forms.css" media="screen">
 	<link rel="stylesheet" href="/css/synthesize.css?v=study-synthesis-20260501-progressive-disclosure" media="screen">
+	<link rel="stylesheet" href="/css/daas-brand-panel.css?v=20260616" media="screen">
 	<link rel="modulepreload" href="/js/study-route-context.js">
+	<link rel="modulepreload" href="/js/daas-brand-panel.js?v=20260616">
 	<link rel="modulepreload" href="/js/synthesis-route-loader.js?v={{ studyPageScriptVersion }}">
 {% endblock %}
 
@@ -26,6 +29,8 @@
 			{ text: "Synthesis" }
 		]
 	}) }}
+
+	{{ daasBrandPanel() }}
 
 	<div id="synthesis-error" class="govuk-error-summary" tabindex="-1" hidden aria-hidden="true" data-module="govuk-error-summary">
 		<div role="alert">
@@ -209,5 +214,6 @@
 {% endblock %}
 
 {% block scripts %}
+	<script type="module" src="/js/daas-brand-panel.js?v=20260616"></script>
 	<script type="module" src="/js/synthesis-route-loader.js?v={{ studyPageScriptVersion }}"></script>
 {% endblock %}

@@ -10,9 +10,11 @@
 		<meta name="sda-auto" content="true" />
 		<link rel="stylesheet" href="/css/coloris.min.css" media="screen" />
 		<link rel="stylesheet" href="/css/home-office-timeline.css" media="screen" />
+		<link rel="stylesheet" href="/css/daas-brand-panel.css?v=20260616" media="screen" />
 		<!--<link rel="stylesheet" href="/css/journals.css?v=1.0.1" media="screen">-->
 		<link rel="stylesheet" href="/css/journal-mural-sync.css" media="screen" />
 		<link rel="modulepreload" href="/js/project-context.js" />
+		<link rel="modulepreload" href="/js/daas-brand-panel.js?v=20260616" />
 		<link rel="modulepreload" href="/js/journal-tabs.js" />
 		<link rel="modulepreload" href="/js/journal-mural-sync-compact.js" />
 		<link rel="modulepreload" href="/components/journal-excerpts.js" />
@@ -41,6 +43,10 @@
 						<li class="govuk-breadcrumbs__list-item" aria-current="page">Journal and analysis</li>
 					</ol>
 				</nav>
+
+				<div class="rops-daas-brand-panel" id="daas-brand-panel" hidden aria-label="DaaS">
+					<img class="rops-daas-brand-panel__logo" src="/images/brands/daas-logo.svg" alt="DaaS" />
+				</div>
 
 				<header class="journal-header">
 					<div>
@@ -489,6 +495,7 @@
 		<x-include src="/partials/footer.html"></x-include>
 
 		<script type="module" src="/js/project-context.js"></script>
+		<script type="module" src="/js/daas-brand-panel.js?v=20260616"></script>
 		<script src="/components/tabs.js"></script>
 		<script src="/lib/coloris.min.js"></script>
 		<script type="module" src="/js/journal-tabs.js"></script>

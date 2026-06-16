@@ -229,6 +229,14 @@ html[data-researchops-brand=home-office] .repository-masthead, html[data-researc
 	border-color: #732282;
 	}
 
+html[data-researchops-brand=home-office] .govuk-tabs__list-item:not(.govuk-tabs__list-item--selected), html[data-researchops-brand=home-office] .govuk-tabs__list-item:not(.govuk-tabs__list-item--selected) .govuk-tabs__tab:not(:focus) {
+	background: #d2bfd8;
+	}
+
+html[data-researchops-brand=home-office] .govuk-tabs__panel {
+	background: #ffffff;
+	}
+
 html[data-researchops-brand=home-office] .govuk-footer {
 	border-top: 10px solid #732282;
 	background: #f0e9f2;

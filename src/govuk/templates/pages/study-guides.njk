@@ -6,6 +6,7 @@
 {% from "govuk/components/input/macro.njk" import govukInput %}
 {% from "govuk/components/notification-banner/macro.njk" import govukNotificationBanner %}
 {% from "govuk/components/textarea/macro.njk" import govukTextarea %}
+{% from "macros/daas-brand-panel.njk" import daasBrandPanel %}
 
 {% set studyPageScriptVersion = "study-guides-delete-confirmation-20260605" %}
 
@@ -14,7 +15,9 @@
 	<link rel="stylesheet" href="/css/govuk/govuk-forms.css" media="screen">
 	<link rel="stylesheet" href="/css/govuk/govuk-tables.css" media="screen">
 	<link rel="stylesheet" href="/css/guides.css" media="screen">
+	<link rel="stylesheet" href="/css/daas-brand-panel.css?v=20260616" media="screen">
 	<link rel="modulepreload" href="/js/study-route-context.js">
+	<link rel="modulepreload" href="/js/daas-brand-panel.js?v=20260616">
 	<link rel="modulepreload" href="/js/study-guides-context.js">
 	<link rel="modulepreload" href="/js/guides-route-loader.js?v={{ studyPageScriptVersion }}">
 	<!-- /components/guides/guides-page.js -->
@@ -30,6 +33,8 @@
 			{ text: "Guides" }
 		]
 	}) }}
+
+	{{ daasBrandPanel() }}
 
 	{{ govukNotificationBanner({
 		titleText: "Important",
@@ -171,5 +176,6 @@
 {% endblock %}
 
 {% block scripts %}
+	<script type="module" src="/js/daas-brand-panel.js?v=20260616"></script>
 	<script type="module" src="/js/guides-route-loader.js?v={{ studyPageScriptVersion }}"></script>
 {% endblock %}

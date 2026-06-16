@@ -21,6 +21,11 @@ includes(workerSource, "function shouldDisableStaticCache(pathname)", "Pages adv
 includes(workerSource, "pathname === '/' || pathname.endsWith('/') || pathname.endsWith('.html')", "Pages advanced worker static cache policy");
 includes(workerSource, "headers.set('cache-control', 'no-store');", "Pages advanced worker static cache policy");
 includes(workerSource, "headers.delete('content-length');", "Pages advanced worker brand routing");
+includes(workerSource, "function protectedPageRedirect(request, env)", "Pages advanced worker protected page preflight");
+includes(workerSource, "apiEndpointTarget(request, env, '/api/me')", "Pages advanced worker protected page preflight");
+includes(workerSource, "cleanPath === '/pages/projects' || cleanPath === '/pages/repository'", "Pages advanced worker protected page preflight");
+includes(workerSource, "return response.ok ? null : signInRedirect(request);", "Pages advanced worker protected page preflight");
+includes(workerSource, "x-researchops-auth-redirect", "Pages advanced worker protected page preflight");
 includes(workerSource, "const PRODUCTION_BRAND_HOSTS = new Map", "Pages advanced worker brand routing");
 includes(workerSource, "['research-operations.com', HOME_OFFICE_BRAND]", "Pages advanced worker brand routing");
 includes(workerSource, "['govuk.research-operations.com', GOVUK_BRAND]", "Pages advanced worker brand routing");
@@ -35,6 +40,20 @@ function assetEnv(headers = {}, body = "asset") {
 			fetch: async () => new Response(body, { headers }),
 		},
 	};
+}
+
+async function withMockedFetch(handler, run) {
+	const originalFetch = globalThis.fetch;
+	globalThis.fetch = handler;
+	try {
+		return await run();
+	} finally {
+		globalThis.fetch = originalFetch;
+	}
+}
+
+function authenticatedFetch() {
+	return new Response(JSON.stringify({ ok: true, authenticated: true }), { status: 200 });
 }
 
 test("Pages advanced worker disables browser caching for static HTML routes", async () => {
@@ -52,38 +71,104 @@ test("Pages advanced worker preserves cache policy for static non-HTML assets", 
 });
 
 test("Pages advanced worker serves the Home Office brand from the production apex host", async () => {
-	const response = await worker.fetch(
-		new Request("https://research-operations.com/pages/projects/"),
-		assetEnv(
-			{ "content-type": "text/html; charset=utf-8", "content-length": "89" },
-			'<!doctype html><html class="govuk-template" lang="en"><head></head><body></body></html>',
-		),
-	);
-	const body = await response.text();
-	assert.equal(response.headers.get("x-researchops-brand"), "home-office");
-	assert.equal(response.headers.has("content-length"), false);
-	assert.match(body, /<html class="govuk-template" lang="en" data-researchops-brand="home-office">/);
-	assert.match(body, /<meta name="researchops-brand" content="home-office">/);
-	assert.match(body, /href="\/css\/brands\/home-office\.css"/);
-	assert.match(body, /href="\/css\/brands\/home-office-buttons\.css"/);
+	await withMockedFetch(authenticatedFetch, async () => {
+		const response = await worker.fetch(
+			new Request("https://research-operations.com/pages/projects/"),
+			assetEnv(
+				{ "content-type": "text/html; charset=utf-8", "content-length": "89" },
+				'<!doctype html><html class="govuk-template" lang="en"><head></head><body></body></html>',
+			),
+		);
+		const body = await response.text();
+		assert.equal(response.headers.get("x-researchops-brand"), "home-office");
+		assert.equal(response.headers.has("content-length"), false);
+		assert.match(body, /<html class="govuk-template" lang="en" data-researchops-brand="home-office">/);
+		assert.match(body, /<meta name="researchops-brand" content="home-office">/);
+		assert.match(body, /href="\/css\/brands\/home-office\.css"/);
+		assert.match(body, /href="\/css\/brands\/home-office-buttons\.css"/);
+	});
 });
 
 test("Pages advanced worker serves the GOV.UK brand from the GOV.UK production subdomain", async () => {
-	const response = await worker.fetch(
-		new Request("https://govuk.research-operations.com/pages/projects/?brand=home-office"),
-		assetEnv({ "content-type": "text/html; charset=utf-8" }, "<!doctype html><html class=\"govuk-template\" lang=\"en\"><head></head><body></body></html>"),
-	);
-	const body = await response.text();
-	assert.equal(response.headers.get("x-researchops-brand"), "govuk");
-	assert.match(body, /<html class="govuk-template" lang="en" data-researchops-brand="govuk">/);
-	assert.match(body, /<meta name="researchops-brand" content="govuk">/);
-	assert.equal(body.includes("/css/brands/home-office.css"), false);
+	await withMockedFetch(authenticatedFetch, async () => {
+		const response = await worker.fetch(
+			new Request("https://govuk.research-operations.com/pages/projects/?brand=home-office"),
+			assetEnv({ "content-type": "text/html; charset=utf-8" }, "<!doctype html><html class=\"govuk-template\" lang=\"en\"><head></head><body></body></html>"),
+		);
+		const body = await response.text();
+		assert.equal(response.headers.get("x-researchops-brand"), "govuk");
+		assert.match(body, /<html class="govuk-template" lang="en" data-researchops-brand="govuk">/);
+		assert.match(body, /<meta name="researchops-brand" content="govuk">/);
+		assert.equal(body.includes("/css/brands/home-office.css"), false);
+	});
 });
 
 test("Pages advanced worker still supports query-string brand testing off production hosts", async () => {
-	const response = await worker.fetch(
-		new Request("https://researchops.pages.dev/pages/projects/?brand=home-office"),
-		assetEnv({ "content-type": "text/html; charset=utf-8" }, "<!doctype html><html class=\"govuk-template\" lang=\"en\"><head></head><body></body></html>"),
-	);
-	assert.equal(response.headers.get("x-researchops-brand"), "home-office");
+	await withMockedFetch(authenticatedFetch, async () => {
+		const response = await worker.fetch(
+			new Request("https://researchops.pages.dev/pages/projects/?brand=home-office"),
+			assetEnv({ "content-type": "text/html; charset=utf-8" }, "<!doctype html><html class=\"govuk-template\" lang=\"en\"><head></head><body></body></html>"),
+		);
+		assert.equal(response.headers.get("x-researchops-brand"), "home-office");
+	});
+});
+
+test("Pages advanced worker redirects unauthenticated Projects page requests to sign in", async () => {
+	await withMockedFetch(async (url) => {
+		assert.equal(url, "https://rops-api.digikev-kevin-rapley.workers.dev/api/me");
+		return new Response(JSON.stringify({ ok: false, error: "authentication_required" }), { status: 401 });
+	}, async () => {
+		const response = await worker.fetch(
+			new Request("https://researchops.pages.dev/pages/projects/?sort=newest"),
+			assetEnv({ "content-type": "text/html; charset=utf-8" }, "<!doctype html><html><head></head><body>Projects</body></html>"),
+		);
+		assert.equal(response.status, 302);
+		assert.equal(response.headers.get("cache-control"), "no-store");
+		assert.equal(response.headers.get("x-researchops-auth-redirect"), "pages-static-preflight");
+		assert.equal(
+			response.headers.get("location"),
+			"https://researchops.pages.dev/pages/account/sign-in/?returnTo=%2Fpages%2Fprojects%2F%3Fsort%3Dnewest",
+		);
+	});
+});
+
+test("Pages advanced worker redirects unauthenticated Repository page requests to sign in", async () => {
+	await withMockedFetch(async (url) => {
+		assert.equal(url, "https://rops-api.digikev-kevin-rapley.workers.dev/api/me");
+		return new Response(JSON.stringify({ ok: false, error: "authentication_required" }), { status: 401 });
+	}, async () => {
+		const response = await worker.fetch(
+			new Request("https://researchops.pages.dev/pages/repository/"),
+			assetEnv({ "content-type": "text/html; charset=utf-8" }, "<!doctype html><html><head></head><body>Repository</body></html>"),
+		);
+		assert.equal(response.status, 302);
+		assert.equal(response.headers.get("location"), "https://researchops.pages.dev/pages/account/sign-in/?returnTo=%2Fpages%2Frepository%2F");
+	});
+});
+
+test("Pages advanced worker redirects protected static page requests when the app auth check fails", async () => {
+	await withMockedFetch(async (url) => {
+		assert.equal(url, "https://rops-api.digikev-kevin-rapley.workers.dev/api/me");
+		return new Response(JSON.stringify({ ok: false, error: "auth_service_unavailable" }), { status: 503 });
+	}, async () => {
+		const response = await worker.fetch(
+			new Request("https://researchops.pages.dev/pages/projects/"),
+			assetEnv({ "content-type": "text/html; charset=utf-8" }, "<!doctype html><html><head></head><body>Projects</body></html>"),
+		);
+		assert.equal(response.status, 302);
+		assert.equal(response.headers.get("x-researchops-auth-redirect"), "pages-static-preflight");
+		assert.equal(response.headers.get("location"), "https://researchops.pages.dev/pages/account/sign-in/?returnTo=%2Fpages%2Fprojects%2F");
+	});
+});
+
+test("Pages advanced worker serves protected static pages after app authentication", async () => {
+	await withMockedFetch(authenticatedFetch, async () => {
+		const response = await worker.fetch(
+			new Request("https://researchops.pages.dev/pages/projects/"),
+			assetEnv({ "content-type": "text/html; charset=utf-8" }, "<!doctype html><html><head></head><body>Projects</body></html>"),
+		);
+		assert.equal(response.status, 200);
+		assert.equal(response.headers.get("x-researchops-brand"), "govuk");
+		assert.equal(await response.text(), '<!doctype html><html data-researchops-brand="govuk"><head>\n\t<meta name="researchops-brand" content="govuk"></head><body>Projects</body></html>');
+	});
 });
