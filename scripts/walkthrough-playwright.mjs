@@ -48,8 +48,12 @@ function contentTypeFor(filePath) {
 	return CONTENT_TYPES.get(path.extname(filePath).toLowerCase()) || 'application/octet-stream';
 }
 
-function serialiseBody(body) {
-	return typeof body === 'string' ? body : JSON.stringify(body ?? {});
+function serialiseBody(body, request) {
+	const resolvedBody = typeof body === 'function' ? body({
+		url: request.url(),
+		method: request.method(),
+	}) : body;
+	return typeof resolvedBody === 'string' ? resolvedBody : JSON.stringify(resolvedBody ?? {});
 }
 
 function matchMockRoute(mockRoute, request) {
@@ -113,7 +117,7 @@ async function registerMockRoutes(page, mockRoutes = []) {
 				status: mockRoute.status ?? 200,
 				contentType: mockRoute.contentType || 'application/json',
 				headers: mockRoute.headers || {},
-				body: serialiseBody(mockRoute.body),
+				body: serialiseBody(mockRoute.body, request),
 			});
 		});
 	}

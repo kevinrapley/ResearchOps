@@ -3,6 +3,7 @@ import fs from 'node:fs';
 import test from 'node:test';
 
 import { visualWalkthroughConfig } from '../visual-walkthrough.config.mjs';
+import { repositoryStaticPages } from '../src/govuk/data/repository-page.mjs';
 
 const featureSource = fs.readFileSync('features/authenticated-walkthrough.feature', 'utf8');
 const cucumberConfigSource = fs.readFileSync('cucumber.mjs', 'utf8');
@@ -36,7 +37,27 @@ test('visual walkthrough uses local assets and deterministic authenticated mocks
 	assert.match(visualWalkthroughSource, /walkthroughMockRoutes/);
 	assert.match(visualWalkthroughSource, /process\.env\.WALKTHROUGH_LOCAL_ASSETS === 'true'/);
 	assert.match(helperSource, /operationalMockRoutes/);
+	assert.match(helperSource, /typeof body === 'function'/);
 	assert.match(helperSource, /SIGN_IN_EMAIL = 'qa-bdd\.walkthrough@example\.gov\.uk'/);
+});
+
+test('visual walkthrough registers Cloudflare-generated repository pages', () => {
+	const registeredPaths = new Set(visualWalkthroughConfig.pages.map((page) => page.path));
+
+	assert.equal(registeredPaths.has('/pages/repository/index.html'), true);
+	for (const page of repositoryStaticPages) {
+		assert.equal(
+			registeredPaths.has(`/pages/repository/${page.slug}/index.html`),
+			true,
+			`Expected repository generated route ${page.slug} to be in the walkthrough registry`,
+		);
+	}
+
+	const serviceAreaPage = visualWalkthroughConfig.pages.find(
+		(page) => page.id === 'repository-service-areas',
+	);
+	assert.match(serviceAreaPage.defaultState.path, /service_area=assisted-digital-support/);
+	assert.match(visualWalkthroughSource, /new URL\(statePath, baseURL\)/);
 });
 
 test('sign-in page has an explicit code-requested visual state', () => {

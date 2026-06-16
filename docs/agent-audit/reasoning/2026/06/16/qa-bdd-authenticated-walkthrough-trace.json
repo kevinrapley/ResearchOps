@@ -36,6 +36,8 @@
     "Visual walkthrough local asset routing is opt-in with WALKTHROUGH_LOCAL_ASSETS=true",
     "Participant-consent resolver errors with study context now render the load-error path",
     "Registry coverage now uses Git-tracked HTML routes so ignored/generated pages cannot create CI-only 404s",
+    "Cloudflare-generated research repository pages are registered from the Nunjucks route source catalogue for deployed manual walkthrough captures",
+    "Deterministic repository API fixtures cover published artefacts, browse filters and curator review queues for walkthrough screenshots",
     "Environment-gated QA BDD passwordless bypass for allowlisted email addresses",
     "Participant consent same-origin API URL and missing-context fixes",
     "Focused regression tests and Cucumber feature coverage"
@@ -44,7 +46,12 @@
     {
       "command": "gh run view 27642304660 --job 81745229987 --log",
       "result": "inspected",
-      "details": "bdd-smoke failed because /pages/repository/index.html was generated locally but not tracked or served in CI"
+      "details": "bdd-smoke failed because /pages/repository/index.html is generated from Nunjucks and was not available in that static CI path"
+    },
+    {
+      "command": "manual-run design decision",
+      "result": "recorded",
+      "details": "Dedicated walkthrough runs should target the deployed BASE_URL/PAGES_URL/PREVIEW_URL so Cloudflare-generated repository pages are captured after deployment"
     },
     {
       "command": "node --test tests/qa-bdd-authenticated-walkthrough-route-state.test.js tests/auth-sign-in-route-state.test.js tests/visual-walkthrough-registry-coverage.test.js tests/visual-walkthrough-role-assignment-route-state.test.js",
@@ -57,6 +64,11 @@
     {
       "command": "WALKTHROUGH_LOCAL_ASSETS=true BASE_URL=http://127.0.0.1:8789/ npm run qa:visual-walkthrough",
       "result": "passed"
+    },
+    {
+      "command": "WALKTHROUGH_LOCAL_ASSETS=true BASE_URL=http://127.0.0.1:8791/ npm run qa:visual-walkthrough",
+      "result": "passed",
+      "details": "Repository front page, browse pages, artefact pages, candidate page and review queue pages captured for desktop and mobile"
     },
     {
       "command": "BDD_CAPTURE_SCREENSHOTS=true BASE_URL=http://127.0.0.1:8789/ npx cucumber-js -p default --format progress",

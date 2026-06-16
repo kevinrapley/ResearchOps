@@ -261,6 +261,227 @@ export const operationalRegistrationRequests = [
 	},
 ];
 
+const operationalRepositoryArtefacts = [
+	{
+		id: 'staff-evidence-boundaries',
+		title: 'Staff need clearer evidence boundaries before accepting recommendations',
+		summary:
+			'Staff need to understand the source, confidence and limits of research evidence before applying recommendations.',
+		href: '/pages/repository/artefacts/staff-evidence-boundaries/',
+		confidence: 'high',
+		evidenceMaturity: 'validated-learning',
+		method: 'interviews',
+		serviceArea: 'assisted-digital-support',
+		userGroup: 'frontline-staff',
+		riskArea: 'evidence-boundaries',
+		reviewDueAt: '2026-08-31',
+		provenance: {
+			method: 'Moderated interviews',
+			sample: 'Assisted digital support discovery',
+		},
+		limits: {
+			limitations: 'Evidence is strongest for staff-facing journeys with clear handoff points.',
+			reuseGuidance: 'Use when shaping recommendation review and check-answers journeys.',
+			doNotUseFor: 'Do not use as evidence for public-facing eligibility decisions.',
+		},
+		tags: [
+			{ text: 'Assisted digital support', classes: 'govuk-tag--blue' },
+			{ text: 'High confidence', classes: 'govuk-tag--green' },
+		],
+	},
+	{
+		id: 'check-answers-review-anxiety',
+		title: 'Check answers pages reduce review anxiety when change links are explicit',
+		summary:
+			'Clear change links help users understand what they can safely amend before submitting research planning details.',
+		href: '/pages/repository/artefacts/check-answers-review-anxiety/',
+		confidence: 'medium',
+		evidenceMaturity: 'reviewed-evidence',
+		method: 'usability-testing',
+		serviceArea: 'research-operations',
+		userGroup: 'researchers',
+		riskArea: 'decision-confidence',
+		reviewDueAt: '2026-09-15',
+		provenance: {
+			method: 'Usability testing',
+			sample: 'Research planning prototype sessions',
+		},
+		limits: {
+			limitations: 'Evidence covers form review journeys, not policy approvals.',
+			reuseGuidance: 'Use for check-answers pages and route-back interactions.',
+			doNotUseFor: 'Do not use as evidence for legal declaration journeys.',
+		},
+		tags: [
+			{ text: 'Check answers', classes: 'govuk-tag--purple' },
+			{ text: 'Reviewed evidence', classes: 'govuk-tag--green' },
+		],
+	},
+];
+
+const operationalRepositoryFilters = [
+	{
+		name: 'service_area',
+		label: 'Service area',
+		items: [
+			{ value: 'assisted-digital-support', label: 'Assisted digital support', count: 1 },
+			{ value: 'research-operations', label: 'Research operations', count: 1 },
+		],
+	},
+	{
+		name: 'user_group',
+		label: 'User group',
+		items: [
+			{ value: 'frontline-staff', label: 'Frontline staff', count: 1 },
+			{ value: 'researchers', label: 'Researchers', count: 1 },
+		],
+	},
+	{
+		name: 'method',
+		label: 'Method',
+		items: [
+			{ value: 'interviews', label: 'Moderated interviews', count: 1 },
+			{ value: 'usability-testing', label: 'Usability testing', count: 1 },
+		],
+	},
+	{
+		name: 'risk_area',
+		label: 'Risk or constraint',
+		items: [
+			{ value: 'evidence-boundaries', label: 'Evidence boundaries', count: 1 },
+			{ value: 'decision-confidence', label: 'Decision confidence', count: 1 },
+		],
+	},
+	{
+		name: 'maturity',
+		label: 'Evidence maturity',
+		items: [
+			{ value: 'validated-learning', label: 'Validated learning', count: 1 },
+			{ value: 'reviewed-evidence', label: 'Reviewed evidence', count: 1 },
+		],
+	},
+];
+
+const operationalRepositoryQueues = [
+	{
+		queue: 'Candidate artefacts',
+		key: 'candidates',
+		label: 'Candidate artefacts',
+		count: '1',
+		href: '/pages/repository/review/candidates/',
+		action: 'Review',
+		current: true,
+	},
+	{
+		queue: 'Due review',
+		key: 'stale',
+		label: 'Due review',
+		count: '1',
+		href: '/pages/repository/review/stale/',
+		action: 'Check',
+		current: false,
+	},
+	{
+		queue: 'Withdrawn artefacts',
+		key: 'withdrawn',
+		label: 'Withdrawn artefacts',
+		count: '0',
+		href: '/pages/repository/review/withdrawn/',
+		action: 'Inspect',
+		current: false,
+	},
+];
+
+function selectedRepositoryFacet(url) {
+	for (const key of ['service_area', 'user_group', 'method', 'risk_area', 'maturity']) {
+		const value = url.searchParams.get(key);
+		if (!value) continue;
+		const filter = operationalRepositoryFilters.find((entry) => entry.name === key);
+		const item = filter?.items.find((entry) => entry.value === value);
+		return { name: key, value, label: item?.label || value };
+	}
+
+	return {};
+}
+
+function repositoryArtefactsFor(url) {
+	const selected = selectedRepositoryFacet(url);
+	if (!selected.value) return operationalRepositoryArtefacts;
+
+	const keyMap = {
+		service_area: 'serviceArea',
+		user_group: 'userGroup',
+		method: 'method',
+		risk_area: 'riskArea',
+		maturity: 'evidenceMaturity',
+	};
+
+	return operationalRepositoryArtefacts.filter(
+		(artefact) => artefact[keyMap[selected.name]] === selected.value
+	);
+}
+
+function operationalRepositoryResponse(requestUrl) {
+	const url = new URL(requestUrl);
+	const artefacts = repositoryArtefactsFor(url);
+
+	return {
+		ok: true,
+		source: 'qa-bdd-walkthrough',
+		artefacts,
+		pagination: {
+			page: 1,
+			limit: Number(url.searchParams.get('limit') || 10),
+			total: artefacts.length,
+		},
+		selected: selectedRepositoryFacet(url),
+		metrics: [
+			{ value: String(operationalRepositoryArtefacts.length), label: 'published artefacts' },
+			{ value: '2', label: 'linked recommendations' },
+			{ value: '1', label: 'due review in 30 days' },
+		],
+		filters: operationalRepositoryFilters,
+		queues: operationalRepositoryQueues,
+		catalogue:
+			url.searchParams.get('hydrate') === 'full'
+				? { artefacts: operationalRepositoryArtefacts }
+				: undefined,
+	};
+}
+
+function operationalRepositoryReviewResponse(queueKey) {
+	const queue =
+		operationalRepositoryQueues.find((entry) => entry.key === queueKey) ||
+		operationalRepositoryQueues[0];
+	const item = {
+		...operationalRepositoryArtefacts[0],
+		id: `${queueKey}-walkthrough-001`,
+		queueReason: queue.label,
+		updatedAt: '2026-06-16T09:30:00.000Z',
+		audit: [
+			{
+				action: 'queued_for_review',
+				actor: 'Repository curator',
+				createdAt: '2026-06-16T09:30:00.000Z',
+				notes: `${queue.label} walkthrough state.`,
+			},
+		],
+	};
+
+	return {
+		ok: true,
+		queue: {
+			...queue,
+			emptyMessage: `No ${queue.label.toLowerCase()} are available.`,
+		},
+		navigation: operationalRepositoryQueues.map((entry) => ({
+			...entry,
+			current: entry.key === queueKey,
+		})),
+		pagination: { page: 1, limit: 10, total: 1 },
+		items: [item],
+	};
+}
+
 export function operationalMockRoutes() {
 	return [
 		{
@@ -364,6 +585,34 @@ export function operationalMockRoutes() {
 				ok: true,
 				sessions: operationalSessions,
 			},
+		},
+		{
+			url: /\/api\/repository\/review\/candidates(?:\?.*)?$/,
+			method: 'GET',
+			body: operationalRepositoryReviewResponse('candidates'),
+		},
+		{
+			url: /\/api\/repository\/review\/stale(?:\?.*)?$/,
+			method: 'GET',
+			body: operationalRepositoryReviewResponse('stale'),
+		},
+		{
+			url: /\/api\/repository\/review\/withdrawn(?:\?.*)?$/,
+			method: 'GET',
+			body: operationalRepositoryReviewResponse('withdrawn'),
+		},
+		{
+			url: /\/api\/repository\/artefacts\/[^/?]+(?:\?.*)?$/,
+			method: 'GET',
+			body: {
+				ok: true,
+				artefact: operationalRepositoryArtefacts[0],
+			},
+		},
+		{
+			url: /\/api\/repository(?:\?.*)?$/,
+			method: 'GET',
+			body: ({ url }) => operationalRepositoryResponse(url),
 		},
 	];
 }

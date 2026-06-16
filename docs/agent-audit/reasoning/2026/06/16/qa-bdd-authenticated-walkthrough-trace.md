@@ -51,6 +51,8 @@ Bundles not selected:
 - Added BDD support for deterministic app state, local asset routing, per-state screenshots, and a longer timeout for the full walkthrough pass.
 - Added an environment-gated QA BDD passwordless bypass that only works when explicitly enabled and the email is allowlisted.
 - Fixed participant consent same-origin API URL construction and missing-context handling so the walkthrough can capture the page without hanging.
+- Registered Cloudflare-generated research repository pages from the Nunjucks route source catalogue so manual walkthrough runs against deployed URLs capture `/pages/repository/**` routes even though generated HTML is not committed.
+- Added deterministic repository API walkthrough fixtures for published artefacts, browse filters and curator review queues so generated repository page captures have stable populated states.
 - Added regression tests for the QA BDD walkthrough wiring, sign-in state, route mocking, QA auth bypass, and participant consent URL construction.
 
 ## Validation Evidence
@@ -61,13 +63,20 @@ Bundles not selected:
   - Thread `PRRT_kwDOP3Td2M6KAllc`: narrowed the participant-consent no-context fallback so resolver failures on URLs with study context call `renderLoadError(error)` instead of rendering the missing-context state.
 - GitHub Actions follow-up:
   - `bdd-smoke` failed on PR #414 because the BDD capture loop attempted `/pages/repository/index.html`, which is generated locally but not tracked in Git or served by the CI static site.
-  - The walkthrough registry was corrected to exclude generated-only repository routes, and the registry coverage test now uses `git ls-files` so ignored/generated HTML cannot make local coverage disagree with CI.
+  - The registry coverage test now uses `git ls-files` so ignored/generated local HTML cannot make the static-file completeness check disagree with CI.
+- User clarification follow-up:
+  - The repository routes are Cloudflare-generated Nunjucks pages available after deployment, not disposable local-only pages.
+  - The visual walkthrough registry now includes those Cloudflare-generated repository routes from `src/govuk/data/repository-page.mjs`, while the registry coverage test still only uses Git-tracked HTML for local static-file completeness checks.
+  - Manual walkthrough runs are expected to target the deployed `BASE_URL`, `PAGES_URL` or `PREVIEW_URL` with QA auth settings supplied by the job.
 - Focused Node tests passed:
   - `node --test tests/qa-bdd-authenticated-walkthrough-route-state.test.js tests/auth-sign-in-route-state.test.js tests/visual-walkthrough-registry-coverage.test.js tests/visual-walkthrough-role-assignment-route-state.test.js`
 - Focused formatting check passed:
   - `npx prettier -c features/steps/common.steps.js features/support/timeouts.js features/support/world.js infra/cloudflare/src/core/auth/passwordless.js public/js/participant-consent-page.js scripts/visual-walkthrough.mjs scripts/walkthrough-playwright.mjs visual-walkthrough.config.mjs visual-walkthrough.operational-fixtures.mjs visual-walkthrough.participant-consent-fixtures.mjs tests/qa-bdd-authenticated-walkthrough-route-state.test.js docs/agent-audit/reasoning/2026/06/16/qa-bdd-authenticated-walkthrough-trace.md docs/agent-audit/reasoning/2026/06/16/qa-bdd-authenticated-walkthrough-trace.json`
 - Visual walkthrough passed against local server:
   - `WALKTHROUGH_LOCAL_ASSETS=true BASE_URL=http://127.0.0.1:8789/ npm run qa:visual-walkthrough`
+- Cloudflare-generated repository page follow-up passed against local generated output:
+  - `WALKTHROUGH_LOCAL_ASSETS=true BASE_URL=http://127.0.0.1:8791/ npm run qa:visual-walkthrough`
+  - Result: repository front page, browse pages, artefact pages, candidate page and review queue pages captured for desktop and mobile.
 - Cucumber walkthrough passed against local server:
   - `BDD_CAPTURE_SCREENSHOTS=true BASE_URL=http://127.0.0.1:8789/ npx cucumber-js -p default --format progress`
   - Result: 5 scenarios passed, 18 steps passed.
@@ -86,4 +95,5 @@ Validation generated `reports-site` screenshot and manifest changes. Those files
 ## Residual Risks
 
 - The QA BDD passwordless bypass depends on runtime environment configuration and remains disabled unless `RESEARCHOPS_QA_BDD_AUTH_ENABLED=true`.
+- The dedicated manual walkthrough job must pass the deployed URL for Cloudflare-generated repository pages; a local static server without generated repository output cannot prove those deployed routes.
 - Full repository validation was not used as a replacement for the targeted walkthrough validation; the PR validation summary records the exact focused checks run.

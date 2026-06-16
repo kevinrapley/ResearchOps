@@ -6,6 +6,7 @@
  */
 
 import { SIGN_IN_EMAIL, signInMockRoutes } from './scripts/walkthrough-playwright.mjs';
+import { repositoryStaticPages } from './src/govuk/data/repository-page.mjs';
 import { operationalPaths } from './visual-walkthrough.operational-fixtures.mjs';
 
 const desktopProfile = {
@@ -171,6 +172,51 @@ const accountSignInPage = {
 	],
 };
 
+function repositoryStaticPageEntry(page) {
+	const pageId = `repository-${page.slug.replaceAll('/', '-')}`;
+	const selectedBrowseValues = {
+		service_area: 'assisted-digital-support',
+		user_group: 'frontline-staff',
+		method: 'interviews',
+		risk_area: 'evidence-boundaries',
+	};
+	const statePath = page.browseType
+		? `/pages/repository/${page.slug}/?${page.browseType}=${selectedBrowseValues[page.browseType]}`
+		: `/pages/repository/${page.slug}/`;
+	const waitForText = page.browseType || page.reviewRoute
+		? 'Staff need clearer evidence boundaries before accepting recommendations'
+		: page.candidateRoute
+			? page.title
+			: page.title;
+
+	return statefulPage(
+		pageId,
+		page.title,
+		'Research repository',
+		`/pages/repository/${page.slug}/index.html`,
+		page.lead || page.body || 'Cloudflare-generated research repository page.',
+		page.title,
+		page.body || page.lead || 'Repository route captured from the deployed generated page.',
+		statePath,
+		waitForText
+	);
+}
+
+const repositoryPages = [
+	statefulPage(
+		'repository',
+		'Research repository',
+		'Research repository',
+		'/pages/repository/index.html',
+		'Cloudflare-generated research repository front page.',
+		'Repository front page with published artefacts',
+		'Repository front page captured from the deployed generated page with deterministic repository data.',
+		'/pages/repository/',
+		'Staff need clearer evidence boundaries before accepting recommendations'
+	),
+	...repositoryStaticPages.map(repositoryStaticPageEntry),
+];
+
 export const visualWalkthroughConfig = {
 	title: 'ResearchOps application visual walkthrough',
 	description: 'Generated evidence of the current application build, covering registered pages and important interaction states.',
@@ -244,6 +290,7 @@ export const visualWalkthroughConfig = {
 		registeredPage('notes', 'Notes', 'Utilities', '/pages/notes/index.html', 'Notes page.'),
 		registeredPage('consent', 'Consent', 'Utilities', '/pages/consent/index.html', 'Consent page.'),
 		registeredPage('sessions', 'Sessions', 'Utilities', '/pages/sessions/index.html', 'Sessions list page.'),
+		...repositoryPages,
 	],
 };
 
