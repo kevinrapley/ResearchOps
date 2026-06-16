@@ -23,6 +23,7 @@ export const operationalPaths = {
 	journals: `/pages/projects/journals/?id=${operationalProjectId}`,
 	study: `/pages/study/?pid=${operationalProjectId}&sid=${operationalStudyId}`,
 	studyGuides: `/pages/study/guides/?pid=${operationalProjectId}&sid=${operationalStudyId}`,
+	studyNoteTakersObservers: `/pages/study/note-takers-observers/?pid=${operationalProjectId}&sid=${operationalStudyId}`,
 	studyParticipants: `/pages/study/participants/?pid=${operationalProjectId}&sid=${operationalStudyId}`,
 	studySession: `/pages/study/session/?pid=${operationalProjectId}&sid=${operationalStudyId}`,
 	studyConsentForms: `/pages/study/consent-forms/?pid=${operationalProjectId}&sid=${operationalStudyId}`,
@@ -84,6 +85,9 @@ export const operationalStudy = {
 	id: operationalStudyId,
 	studyId: 'STUDY-ADS-001',
 	projectId: operationalProjectId,
+	project: operationalProjectId,
+	Project: operationalProjectId,
+	projects: [operationalProjectId],
 	projectName: operationalProject.name,
 	title: 'Assisted digital support interview round 1',
 	Title: 'Assisted digital support interview round 1',
@@ -273,6 +277,14 @@ export function operationalMockRoutes() {
 			},
 		},
 		{
+			url: /\/api\/team-access\/requests(?:\?.*)?$/,
+			method: 'GET',
+			body: {
+				ok: true,
+				requests: [],
+			},
+		},
+		{
 			url: /\/api\/projects(?:\?.*)?$/,
 			method: 'GET',
 			body: {
@@ -291,7 +303,26 @@ export function operationalMockRoutes() {
 			method: 'GET',
 			body: {
 				ok: true,
+				study: operationalStudy,
 				studies: [operationalStudy],
+			},
+		},
+		{
+			url: /\/api\/study-support(?:\?.*)?$/,
+			method: 'GET',
+			body: {
+				ok: true,
+				setup: {
+					decision: 'yes',
+					saved: true,
+				},
+				people: [
+					{
+						name: 'Sam Taylor',
+						role: 'Note taker',
+						email: 'sam.taylor@example.gov.uk',
+					},
+				],
 			},
 		},
 		{

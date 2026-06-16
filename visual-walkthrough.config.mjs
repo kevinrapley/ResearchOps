@@ -5,6 +5,9 @@
  * @summary Registry of application pages and states captured by the visual walkthrough report.
  */
 
+import { SIGN_IN_EMAIL, signInMockRoutes } from './scripts/walkthrough-playwright.mjs';
+import { operationalPaths } from './visual-walkthrough.operational-fixtures.mjs';
+
 const desktopProfile = {
 	id: 'desktop',
 	title: 'Desktop',
@@ -138,6 +141,36 @@ const teamRoleAssignmentsPage = {
 	},
 };
 
+const accountSignInPage = {
+	id: 'account-sign-in',
+	title: 'Sign in to ResearchOps',
+	group: 'Account',
+	path: '/pages/account/sign-in/index.html',
+	description: 'Sign-in and one-time code request page.',
+	authenticated: false,
+	defaultState: {
+		id: 'default',
+		title: 'Email address requested',
+		description: 'Sign-in page before a code has been requested.',
+		mockRoutes: signInMockRoutes(),
+		actions: [{ type: 'waitForText', text: 'Enter your email address to get a sign-in code.' }],
+	},
+	states: [
+		{
+			id: 'code-requested',
+			title: '6 digit code requested',
+			description: 'Sign-in page after the QA walkthrough email address has requested a one-time code.',
+			mockRoutes: signInMockRoutes({ email: SIGN_IN_EMAIL }),
+			actions: [
+				{ type: 'fill', selector: '#sign-in-email', value: SIGN_IN_EMAIL },
+				{ type: 'click', selector: '#email-code-start-form button[type="submit"]' },
+				{ type: 'waitForSelector', selector: '#email-code-verify-form', state: 'visible' },
+				{ type: 'waitForText', text: `We sent a 6 digit code to ${SIGN_IN_EMAIL}` },
+			],
+		},
+	],
+};
+
 export const visualWalkthroughConfig = {
 	title: 'ResearchOps application visual walkthrough',
 	description: 'Generated evidence of the current application build, covering registered pages and important interaction states.',
@@ -165,10 +198,26 @@ export const visualWalkthroughConfig = {
 	},
 	pages: [
 		registeredPage('home', 'Home', 'Core', '/', 'ResearchOps landing page.'),
-		registeredPage('account-sign-in', 'Sign in to ResearchOps', 'Account', '/pages/account/sign-in/index.html', 'Sign-in and one-time code request page.'),
-		statefulPage('account-registration', 'Request a ResearchOps account', 'Account', '/pages/account/register/index.html', 'Public account request page for people who need ResearchOps access.', 'Account request form', 'Registration request page captured before answers are entered.', '/pages/account/register/index.html', 'Request a ResearchOps account'),
+		accountSignInPage,
+		{
+			...statefulPage('account-registration', 'Request a ResearchOps account', 'Account', '/pages/account/register/index.html', 'Public account request page for people who need ResearchOps access.', 'Account request form', 'Registration request page captured before answers are entered.', '/pages/account/register/index.html', 'Request a ResearchOps account'),
+			authenticated: false,
+		},
 		registeredPage('account-team-access', 'Request access to a team', 'Account', '/pages/account/team-access/index.html', 'Request-access form for signed-in users who need team access.'),
-		statefulPage('account-dashboard', 'Your ResearchOps account', 'Account', '/pages/account/index.html', 'Signed-in account dashboard showing active team, roles, permissions and actions.', 'Signed-in account dashboard', 'Account dashboard captured with deterministic Team Admin context.', '/pages/account/index.html', 'Welcome, Team Admin. Here is your account dashboard'),
+		{
+			id: 'account-dashboard',
+			title: 'Your ResearchOps account',
+			group: 'Account',
+			path: '/pages/account/index.html',
+			description: 'Signed-in account dashboard showing active team, roles, permissions and actions.',
+			defaultState: {
+				id: 'default',
+				title: 'Signed-in account dashboard',
+				description: 'Account dashboard captured with deterministic Team Admin context.',
+				path: '/pages/account/index.html',
+				actions: [{ type: 'waitForSelector', selector: '#account-dashboard:not([hidden])' }],
+			},
+		},
 		registeredPage('start-overview', 'Start a research project', 'Core', '/pages/start/overview/index.html', 'Overview page for creating a research project.'),
 		startPage,
 		registeredPage('projects', 'Projects', 'Projects', '/pages/projects/index.html', 'Project list page.'),
@@ -186,23 +235,23 @@ export const visualWalkthroughConfig = {
 		registeredPage('repository-artefact-check-answers-review-anxiety', 'Check answers pages reduce review anxiety when change links are explicit', 'Repository', '/pages/repository/artefacts/check-answers-review-anxiety/index.html', 'Repository artefact detail route.'),
 		registeredPage('repository-artefact-consent-state-workarounds', 'Operational teams rely on local workarounds when consent states are unclear', 'Repository', '/pages/repository/artefacts/consent-state-workarounds/index.html', 'Repository artefact detail route.'),
 		registeredPage('repository-artefact-lightweight-capture-before-tagging', 'Researchers need lightweight capture before structured tagging', 'Repository', '/pages/repository/artefacts/lightweight-capture-before-tagging/index.html', 'Repository artefact detail route.'),
-		statefulPage('project-dashboard', 'Project dashboard', 'Projects', '/pages/project-dashboard/index.html', 'Project dashboard page.', 'Project dashboard with operational project context', 'Dashboard captured with a deterministic project ID.', '/pages/project-dashboard/index.html', 'Assisted Digital Support Discovery'),
-		statefulPage('project-dashboard-add-study', 'Add study', 'Projects', '/pages/study/new/index.html', 'Create a study from the project dashboard action workflow.', 'Add study with parent project context', 'Add-study workflow captured with the parent project ID present.', '/pages/study/new/index.html', 'Add study'),
-		statefulPage('project-dashboard-add-participant', 'Add participant', 'Projects', '/pages/project-dashboard/participants/index.html', 'Add a study-linked participant from the project dashboard action workflow.', 'Add participant with parent context', 'Participant workflow captured with the project ID present.', '/pages/project-dashboard/participants/index.html', 'Add participant'),
-		statefulPage('project-dashboard-import-participants', 'Import participants', 'Projects', '/pages/project-dashboard/participants/import/index.html', 'Import study-linked participants from CSV.', 'Import participants with parent context', 'CSV import workflow captured with the project ID present.', '/pages/project-dashboard/participants/import/index.html', 'Import participants'),
-		statefulPage('outcomes', 'Project outcomes', 'Projects', '/pages/projects/outcomes/index.html', 'Outcomes page for project-level findings and outputs.', 'Project outcomes with project context', 'Outcomes page captured with a deterministic project ID.', '/pages/projects/outcomes/index.html', 'Impact & ROI'),
-		statefulPage('journals', 'Project journals', 'Projects', '/pages/projects/journals/index.html', 'Reflexive journal page.', 'Project journals with project context', 'Reflexive journal page captured with project context.', '/pages/projects/journals/index.html', 'Reflexive Journal & Analysis'),
+		statefulPage('project-dashboard', 'Project dashboard', 'Projects', '/pages/project-dashboard/index.html', 'Project dashboard page.', 'Project dashboard with operational project context', 'Dashboard captured with a deterministic project ID.', operationalPaths.projectDashboard, 'Assisted Digital Support Discovery'),
+		statefulPage('project-dashboard-add-study', 'Add study', 'Projects', '/pages/study/new/index.html', 'Create a study from the project dashboard action workflow.', 'Add study with parent project context', 'Add-study workflow captured with the parent project ID present.', operationalPaths.addStudy, 'Add study'),
+		statefulPage('project-dashboard-add-participant', 'Add participant', 'Projects', '/pages/project-dashboard/participants/index.html', 'Add a study-linked participant from the project dashboard action workflow.', 'Add participant with parent context', 'Participant workflow captured with the project ID present.', operationalPaths.addParticipant, 'Add participant'),
+		statefulPage('project-dashboard-import-participants', 'Import participants', 'Projects', '/pages/project-dashboard/participants/import/index.html', 'Import study-linked participants from CSV.', 'Import participants with parent context', 'CSV import workflow captured with the project ID present.', operationalPaths.importParticipants, 'Import participants'),
+		statefulPage('outcomes', 'Project outcomes', 'Projects', '/pages/projects/outcomes/index.html', 'Outcomes page for project-level findings and outputs.', 'Project outcomes with project context', 'Outcomes page captured with a deterministic project ID.', operationalPaths.outcomes, 'Impact & ROI'),
+		statefulPage('journals', 'Project journals', 'Projects', '/pages/projects/journals/index.html', 'Reflexive journal page.', 'Project journals with project context', 'Reflexive journal page captured with project context.', operationalPaths.journals, 'Reflexive Journal & Analysis'),
 		statefulPage('journal-entry', 'Journal entry', 'Projects', '/pages/journal/entry/index.html', 'Journal entry detail page.', 'Journal entry route', 'Journal entry detail route captured before API hydration.', '/pages/journal/entry/index.html', 'Journal entry'),
 		statefulPage('journal-entry-edit', 'Edit journal entry', 'Projects', '/pages/journal/edit/index.html', 'Journal entry edit page.', 'Journal entry edit route', 'Journal entry edit route captured before API hydration.', '/pages/journal/edit/index.html', 'Edit journal entry'),
-		statefulPage('study', 'Study overview', 'Study', '/pages/study/index.html', 'Study overview and readiness controls.', 'Study overview with readiness context', 'Study overview captured with the canonical Study record ID.', '/pages/study/index.html', 'Assisted digital support interview round 1'),
-		statefulPage('study-guides', 'Discussion guides', 'Study', '/pages/study/guides/index.html', 'Discussion guide list and editor page.', 'Discussion guides with study context', 'Discussion guides page captured with the canonical Study record ID.', '/pages/study/guides/index.html', 'Guides for this study'),
-		statefulPage('study-note-takers-observers', 'Note takers and observers', 'Study', '/pages/study/note-takers-observers/index.html', 'Study support roles setup page.', 'Note takers and observers with study context', 'Support roles setup captured with the canonical Study record ID.', '/pages/study/note-takers-observers/index.html', 'Note takers and observers'),
-		statefulPage('study-participants', 'Participants', 'Study', '/pages/study/participants/index.html', 'Participants page for a study.', 'Study participants with records', 'Participants page captured with the canonical Study record ID.', '/pages/study/participants/index.html', 'Participants'),
-		statefulPage('study-session', 'Study session', 'Study', '/pages/study/session/index.html', 'Session running and note capture page.', 'Study session with study context', 'Session workspace captured with the canonical Study record ID.', '/pages/study/session/index.html', 'Begin a session'),
-		statefulPage('study-consent-forms', 'Study consent forms', 'Study', '/pages/study/consent-forms/index.html', 'Study-specific consent form configuration page.', 'Study consent forms with study context', 'Consent form configuration captured with the canonical Study record ID.', '/pages/study/consent-forms/index.html', 'Consent forms'),
+		statefulPage('study', 'Study overview', 'Study', '/pages/study/index.html', 'Study overview and readiness controls.', 'Study overview with readiness context', 'Study overview captured with the canonical Study record ID.', operationalPaths.study, 'Assisted digital support interview round 1'),
+		statefulPage('study-guides', 'Discussion guides', 'Study', '/pages/study/guides/index.html', 'Discussion guide list and editor page.', 'Discussion guides with study context', 'Discussion guides page captured with the canonical Study record ID.', operationalPaths.studyGuides, 'Guides for this study'),
+		statefulPage('study-note-takers-observers', 'Note takers and observers', 'Study', '/pages/study/note-takers-observers/index.html', 'Study support roles setup page.', 'Note takers and observers with study context', 'Support roles setup captured with the canonical Study record ID.', operationalPaths.studyNoteTakersObservers, 'Note takers and observers'),
+		statefulPage('study-participants', 'Participants', 'Study', '/pages/study/participants/index.html', 'Participants page for a study.', 'Study participants with records', 'Participants page captured with the canonical Study record ID.', operationalPaths.studyParticipants, 'Participants'),
+		statefulPage('study-session', 'Study session', 'Study', '/pages/study/session/index.html', 'Session running and note capture page.', 'Study session with study context', 'Session workspace captured with the canonical Study record ID.', operationalPaths.studySession, 'Begin a session'),
+		statefulPage('study-consent-forms', 'Study consent forms', 'Study', '/pages/study/consent-forms/index.html', 'Study-specific consent form configuration page.', 'Study consent forms with study context', 'Consent form configuration captured with the canonical Study record ID.', operationalPaths.studyConsentForms, 'Consent forms'),
 		registeredPage('study-participant-consent', 'Participant consent', 'Study', '/pages/study/participant-consent/index.html', 'Study-scoped participant consent recording and review page.'),
 		registeredPage('synthesize', 'Study synthesis', 'Study', '/pages/study/synthesis/index.html', 'Study-scoped evidence grouping and theme creation page.'),
-		statefulPage('team-registration-requests', 'Review account requests', 'Team administration', '/pages/team/registration-requests/index.html', 'Team Admin review page for pending account registration requests.', 'Pending account requests', 'Registration request review page captured with a deterministic pending request.', '/pages/team/registration-requests/index.html', 'Pending account requests'),
+		statefulPage('team-registration-requests', 'Review account requests', 'Team administration', '/pages/team/registration-requests/index.html', 'Team Admin review page for pending account registration requests.', 'Pending account requests', 'Registration request review page captured with a deterministic pending request.', operationalPaths.teamRegistrationRequests, 'Pending account requests'),
 		registeredPage('team-access-requests', 'Review team access requests', 'Team administration', '/pages/team/access-requests/index.html', 'Team Admin review page for pending team access requests.'),
 		teamRoleAssignmentsPage,
 		registeredPage('search', 'Search', 'Utilities', '/pages/search/index.html', 'Search page.'),

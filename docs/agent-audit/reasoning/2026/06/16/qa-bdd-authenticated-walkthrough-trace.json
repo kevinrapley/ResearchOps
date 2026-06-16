@@ -1,0 +1,66 @@
+{
+  "date": "2026-06-16",
+  "branch": "fix/qa-bdd-authenticated-walkthrough",
+  "task": "Fix QA BDD walkthrough authentication and authenticated page state capture",
+  "operatingModel": {
+    "loaded": [
+      "AGENTS.md",
+      ".agent-operating-model/orchestration.xml",
+      ".agent-operating-model/bundle-registry.json",
+      ".agent-operating-model/task-signal-catalog.json",
+      ".agent-operating-model/selection-rules.json",
+      ".agent-operating-model/github-mutation-policy.md",
+      ".agent-operating-model/precedence-policy.md"
+    ],
+    "selectedBundles": [
+      ".agent-operating-model/bundles/github/",
+      ".agent-operating-model/bundles/researchops-developer-control/",
+      ".agent-operating-model/bundles/multi-functional-team/",
+      ".agent-operating-model/bundles/govuk-design-system/",
+      ".agent-operating-model/bundles/cloudflare/"
+    ]
+  },
+  "subAgents": [
+    "BranchGuard",
+    "TraceGuard",
+    "RuntimeDev",
+    "TestDev",
+    "RenderGuard",
+    "ReviewGuard"
+  ],
+  "changes": [
+    "Shared Playwright walkthrough helper module for local assets, deterministic mocks, and sign-in fixtures",
+    "Signed-out sign-in and code-requested visual walkthrough states",
+    "Authenticated deterministic BDD capture for every registered page state",
+    "Environment-gated QA BDD passwordless bypass for allowlisted email addresses",
+    "Participant consent same-origin API URL and missing-context fixes",
+    "Focused regression tests and Cucumber feature coverage"
+  ],
+  "validation": [
+    {
+      "command": "node --test tests/qa-bdd-authenticated-walkthrough-route-state.test.js tests/auth-sign-in-route-state.test.js tests/visual-walkthrough-registry-coverage.test.js tests/visual-walkthrough-role-assignment-route-state.test.js",
+      "result": "passed"
+    },
+    {
+      "command": "npx prettier -c features/steps/common.steps.js features/support/timeouts.js features/support/world.js infra/cloudflare/src/core/auth/passwordless.js public/js/participant-consent-page.js scripts/visual-walkthrough.mjs scripts/walkthrough-playwright.mjs visual-walkthrough.config.mjs visual-walkthrough.operational-fixtures.mjs visual-walkthrough.participant-consent-fixtures.mjs tests/qa-bdd-authenticated-walkthrough-route-state.test.js docs/agent-audit/reasoning/2026/06/16/qa-bdd-authenticated-walkthrough-trace.md docs/agent-audit/reasoning/2026/06/16/qa-bdd-authenticated-walkthrough-trace.json",
+      "result": "passed"
+    },
+    {
+      "command": "WALKTHROUGH_LOCAL_ASSETS=true BASE_URL=http://127.0.0.1:8789/ npm run qa:visual-walkthrough",
+      "result": "passed"
+    },
+    {
+      "command": "BDD_CAPTURE_SCREENSHOTS=true BASE_URL=http://127.0.0.1:8789/ npx cucumber-js -p default --format progress",
+      "result": "passed",
+      "details": "5 scenarios passed, 18 steps passed"
+    },
+    {
+      "command": "npm run trace:coverage",
+      "result": "passed"
+    }
+  ],
+  "generatedArtifacts": {
+    "reportsSiteChangesCommitted": false,
+    "reason": "Walkthrough validation screenshots were generated locally and intentionally excluded from the branch."
+  }
+}
