@@ -235,6 +235,6 @@ If smoke passes, the walkthrough job runs the application visual walkthrough. Th
 4. prints a staged diff summary
 5. commits `Update application visual walkthrough report` when files changed
 6. pushes the generated report back to `main`
-7. deploys to `reopsreporting` only on manual runs where `publish_reporting_site` is true
+7. deploys `reports-site/` to `reopsreporting` after every main walkthrough run, unless a manual run explicitly sets `publish_reporting_site` to false
 
 `reports-site/**` is ignored by the push trigger, so report-only commits do not create a workflow loop.

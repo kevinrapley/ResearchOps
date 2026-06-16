@@ -386,8 +386,10 @@ jobs:
         if: >-
           ${{
             steps.detect_site.outputs.present == 'true' &&
-            github.event_name == 'workflow_dispatch' &&
-            inputs.publish_reporting_site == true
+            (
+              github.event_name != 'workflow_dispatch' ||
+              inputs.publish_reporting_site == true
+            )
           }}
         run: npx --yes wrangler@${WRANGLER_VERSION} --version
 
@@ -396,8 +398,10 @@ jobs:
         if: >-
           ${{
             steps.detect_site.outputs.present == 'true' &&
-            github.event_name == 'workflow_dispatch' &&
-            inputs.publish_reporting_site == true
+            (
+              github.event_name != 'workflow_dispatch' ||
+              inputs.publish_reporting_site == true
+            )
           }}
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
@@ -448,8 +452,10 @@ jobs:
         if: >-
           ${{
             steps.detect_site.outputs.present == 'true' &&
-            github.event_name == 'workflow_dispatch' &&
-            inputs.publish_reporting_site == true
+            (
+              github.event_name != 'workflow_dispatch' ||
+              inputs.publish_reporting_site == true
+            )
           }}
         shell: bash
         run: |
@@ -481,6 +487,6 @@ jobs:
           if [ "${{ steps.persist_target.outputs.enabled }}" = "true" ]; then
             echo "The \`reports-site\` directory was persisted to the repository when changes were present." >> "$GITHUB_STEP_SUMMARY"
           fi
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ inputs.publish_reporting_site }}" = "true" ]; then
+          if [ "${{ steps.deploy_reporting_site.outcome }}" = "success" ]; then
             echo "It was also deployed and verified at ${REPORTING_PAGES_URL}." >> "$GITHUB_STEP_SUMMARY"
           fi
