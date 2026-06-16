@@ -75,6 +75,19 @@ Add a DaaS-specific brand panel to the project dashboard for DaaS projects. The 
 - PR #413 unresolved Codex review thread `PRRT_kwDOP3Td2M6J5TAJ`
 - Browser report that `/api/me` returned `503` in the preview with no redirect.
 - `docs/agent-audit/reasoning/README.md`
+- `src/govuk/templates/pages/projects-journals.njk`
+- `src/govuk/templates/pages/project-dashboard-participants.njk`
+- `src/govuk/templates/pages/projects-outcomes.njk`
+- `src/govuk/templates/pages/study.njk`
+- `src/govuk/templates/pages/study-new.njk`
+- `src/govuk/templates/pages/study-consent-forms.njk`
+- `src/govuk/templates/pages/study-participant-consent.njk`
+- `src/govuk/templates/pages/study-participants.njk`
+- `src/govuk/templates/pages/study-note-takers-observers.njk`
+- `src/govuk/templates/pages/study-guides.njk`
+- `src/govuk/templates/pages/study-synthesis.njk`
+- `public/js/study-route-context.js`
+- `scripts/styles/generated-css-targets.mjs`
 
 ## Files created or modified
 
@@ -90,6 +103,34 @@ Add a DaaS-specific brand panel to the project dashboard for DaaS projects. The 
 - `tests/pages-advanced-worker-auth-route-state.test.js`
 - `public/js/project-dashboard.js`
 - `tests/project-dashboard-route-state.test.js`
+- `src/govuk/templates/macros/daas-brand-panel.njk`
+- `src/styles/daas-brand-panel.scss`
+- `public/css/daas-brand-panel.css`
+- `public/js/daas-brand-panel.js`
+- `scripts/styles/generated-css-targets.mjs`
+- `src/govuk/templates/pages/projects-journals.njk`
+- `src/govuk/templates/pages/project-dashboard-participants.njk`
+- `src/govuk/templates/pages/projects-outcomes.njk`
+- `src/govuk/templates/pages/study.njk`
+- `src/govuk/templates/pages/study-new.njk`
+- `src/govuk/templates/pages/study-consent-forms.njk`
+- `src/govuk/templates/pages/study-participant-consent.njk`
+- `src/govuk/templates/pages/study-participants.njk`
+- `src/govuk/templates/pages/study-note-takers-observers.njk`
+- `src/govuk/templates/pages/study-guides.njk`
+- `src/govuk/templates/pages/study-synthesis.njk`
+- `public/pages/projects/journals/index.html`
+- `public/pages/project-dashboard/participants/index.html`
+- `public/pages/projects/outcomes/index.html`
+- `public/pages/study/index.html`
+- `public/pages/study/new/index.html`
+- `public/pages/study/consent-forms/index.html`
+- `public/pages/study/participant-consent/index.html`
+- `public/pages/study/participants/index.html`
+- `public/pages/study/note-takers-observers/index.html`
+- `public/pages/study/guides/index.html`
+- `public/pages/study/synthesis/index.html`
+- `tests/daas-brand-panel-route-state.test.js`
 - `docs/agent-audit/reasoning/2026/06/16/daas-dashboard-brand-panel.md`
 - `docs/agent-audit/reasoning/2026/06/16/daas-dashboard-brand-panel.json`
 
@@ -108,6 +149,9 @@ Add a DaaS-specific brand panel to the project dashboard for DaaS projects. The 
 - Auth preview follow-up: changed the protected static-page preflight to redirect when the `/api/me` app-auth check is any non-OK response, including the reported `503`, so `/pages/projects/` and `/pages/repository/` do not render a broken shell when the app session cannot be confirmed.
 - Brand art follow-up: changed the DaaS panel triangles background to `background-size: 200%` and `background-position: right -12rem bottom -7rem` so the oversized triangles sit partly outside the bottom-right of the panel like the provided Home Office Digital reference image.
 - Brand art follow-up: refined the triangles crop to the requested `background-size: 50% 200%` and `background-position: right -3rem bottom -7rem`.
+- Route persistence follow-up: extracted the DaaS panel markup into a Nunjucks macro and added a dedicated Sass-generated stylesheet so the panel can be maintained across project, study and outcomes routes without copying visual code.
+- Route persistence follow-up: added a shared browser helper for non-dashboard routes that detects DaaS from project/team fields and resolves study pages through `study-route-context.js`.
+- Route persistence follow-up: added the hidden-by-default panel to `/pages/projects/journals/`, `/pages/project-dashboard/participants/`, `/pages/study/*`, and `/pages/projects/outcomes/`, with generated HTML regenerated for each route.
 
 ## Validation attempted
 
@@ -132,6 +176,10 @@ Add a DaaS-specific brand panel to the project dashboard for DaaS projects. The 
 - Auth preview follow-up: `node --test tests/pages-advanced-worker-auth-route-state.test.js` passed with coverage for a `503` `/api/me` response redirecting `/pages/projects/` to sign-in.
 - Brand art follow-up: `npm run build:project-dashboard` regenerated `public/css/project-dashboard.css`, and `node tests/project-dashboard-route-state.test.js` passed with assertions for the 200% background size and negative bottom-right offsets.
 - Brand art follow-up: `npm run build:project-dashboard` regenerated `public/css/project-dashboard.css`, and `node tests/project-dashboard-route-state.test.js` passed with assertions for `background-size: 50% 200%` and `background-position: right -3rem bottom -7rem`.
+- Route persistence follow-up: `npm run build:generated-css && npm run build:govuk-pages` regenerated the shared panel stylesheet and affected static GOV.UK pages.
+- Route persistence follow-up: `node --test tests/daas-brand-panel-route-state.test.js tests/project-dashboard-route-state.test.js tests/participants-page-route-state.test.js` passed.
+- Route persistence follow-up: `npm run generated-css:check && npm run lint && npm test && npm run trace:coverage && git diff --check` passed; lint still reports existing repository warnings and no errors.
+- Route persistence follow-up: local browser smoke test against `http://localhost:4313/pages/projects/journals/?id=recdMo80h1QaNQCBk` and `http://localhost:4313/pages/study/participants/?id=recExampleStudy` confirmed the shared panel, logo, stylesheet and script are present and the panel is hidden by default when project data is unavailable.
 
 ## Existing local changes
 

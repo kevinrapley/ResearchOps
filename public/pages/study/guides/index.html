@@ -10,7 +10,9 @@
 		<link rel="stylesheet" href="/css/govuk/govuk-forms.css" media="screen" />
 		<link rel="stylesheet" href="/css/govuk/govuk-tables.css" media="screen" />
 		<link rel="stylesheet" href="/css/guides.css" media="screen" />
+		<link rel="stylesheet" href="/css/daas-brand-panel.css?v=20260616" media="screen" />
 		<link rel="modulepreload" href="/js/study-route-context.js" />
+		<link rel="modulepreload" href="/js/daas-brand-panel.js?v=20260616" />
 		<link rel="modulepreload" href="/js/study-guides-context.js" />
 		<link rel="modulepreload" href="/js/guides-route-loader.js?v=study-guides-delete-confirmation-20260605" />
 		<!-- /components/guides/guides-page.js -->
@@ -43,6 +45,10 @@
 						<li class="govuk-breadcrumbs__list-item" aria-current="page">Guides</li>
 					</ol>
 				</nav>
+
+				<div class="rops-daas-brand-panel" id="daas-brand-panel" hidden aria-label="DaaS">
+					<img class="rops-daas-brand-panel__logo" src="/images/brands/daas-logo.svg" alt="DaaS" />
+				</div>
 
 				<div
 					class="govuk-notification-banner"
@@ -265,6 +271,7 @@
 		</main>
 		<x-include src="/partials/footer.html"></x-include>
 
+		<script type="module" src="/js/daas-brand-panel.js?v=20260616"></script>
 		<script type="module" src="/js/guides-route-loader.js?v=study-guides-delete-confirmation-20260605"></script>
 	</body>
 </html>

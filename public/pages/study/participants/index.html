@@ -10,7 +10,9 @@
 		<link rel="stylesheet" href="/css/govuk/govuk-forms.css" media="screen" />
 		<link rel="stylesheet" href="/css/govuk/govuk-tables.css" media="screen" />
 		<link rel="stylesheet" href="/css/participants.css" media="screen" />
+		<link rel="stylesheet" href="/css/daas-brand-panel.css?v=20260616" media="screen" />
 		<link rel="modulepreload" href="/js/study-route-context.js" />
+		<link rel="modulepreload" href="/js/daas-brand-panel.js?v=20260616" />
 		<link rel="modulepreload" href="/js/participants-route-loader.js?v=study-record-id-routing-20260518" />
 		<!-- route-state contract: src="/components/participants/participants-page.js" defer -->
 		<!-- route-state contract: src="/pages/study/participants/scheduler.js" defer -->
@@ -66,6 +68,10 @@
 						<li class="govuk-breadcrumbs__list-item" aria-current="page">Participants</li>
 					</ol>
 				</nav>
+
+				<div class="rops-daas-brand-panel" id="daas-brand-panel" hidden aria-label="DaaS">
+					<img class="rops-daas-brand-panel__logo" src="/images/brands/daas-logo.svg" alt="DaaS" />
+				</div>
 
 				<header class="govuk-!-margin-bottom-7">
 					<p id="studyBadge" class="govuk-caption-m">Study</p>
@@ -546,6 +552,7 @@
 		</main>
 		<x-include src="/partials/footer.html"></x-include>
 
+		<script type="module" src="/js/daas-brand-panel.js?v=20260616"></script>
 		<script type="module" src="/js/participants-route-loader.js?v=study-record-id-routing-20260518"></script>
 	</body>
 </html>

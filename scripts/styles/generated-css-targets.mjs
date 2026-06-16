@@ -46,6 +46,11 @@ export const generatedCssTargets = [
 		output: 'public/css/project-dashboard.css',
 	},
 	{
+		name: 'DaaS brand panel stylesheet',
+		source: 'src/styles/daas-brand-panel.scss',
+		output: 'public/css/daas-brand-panel.css',
+	},
+	{
 		name: 'Study page stylesheet',
 		source: 'src/styles/study-page.scss',
 		output: 'public/css/study-page.css',

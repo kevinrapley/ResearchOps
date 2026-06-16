@@ -7,6 +7,7 @@
 {% from "govuk/components/textarea/macro.njk" import govukTextarea %}
 {% from "govuk/components/warning-text/macro.njk" import govukWarningText %}
 {% from "govuk/components/inset-text/macro.njk" import govukInsetText %}
+{% from "macros/daas-brand-panel.njk" import daasBrandPanel %}
 
 {% set supportPageScriptVersion = "study-note-takers-observers-20260606" %}
 
@@ -15,7 +16,9 @@
 	<link rel="stylesheet" href="/css/govuk/govuk-forms.css" media="screen">
 	<link rel="stylesheet" href="/css/govuk/govuk-tables.css" media="screen">
 	<link rel="stylesheet" href="/css/note-takers-observers.css" media="screen">
+	<link rel="stylesheet" href="/css/daas-brand-panel.css?v=20260616" media="screen">
 	<link rel="modulepreload" href="/js/study-route-context.js">
+	<link rel="modulepreload" href="/js/daas-brand-panel.js?v=20260616">
 	<link rel="modulepreload" href="/js/note-takers-observers-route-loader.js?v={{ supportPageScriptVersion }}">
 {% endblock %}
 
@@ -56,6 +59,8 @@
 			{ text: "Note takers and observers" }
 		]
 	}) }}
+
+	{{ daasBrandPanel() }}
 
 	{{ govukErrorSummary({
 		attributes: {
@@ -275,5 +280,6 @@
 {% endblock %}
 
 {% block scripts %}
+	<script type="module" src="/js/daas-brand-panel.js?v=20260616"></script>
 	<script type="module" src="/js/note-takers-observers-route-loader.js?v={{ supportPageScriptVersion }}"></script>
 {% endblock %}

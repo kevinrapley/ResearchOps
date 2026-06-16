@@ -10,6 +10,7 @@ const muralIntegrationSource = fs.readFileSync("public/components/mural-integrat
 const muralStateSource = fs.readFileSync("public/components/project-dashboard-mural-state.js", "utf8");
 const dashboardCssSource = fs.readFileSync("public/css/project-dashboard.css", "utf8");
 const dashboardSassSource = fs.readFileSync("src/styles/project-dashboard.scss", "utf8");
+const daasPanelMacroSource = fs.readFileSync("src/govuk/templates/macros/daas-brand-panel.njk", "utf8");
 const layoutSource = fs.readFileSync("src/govuk/templates/layouts/researchops.njk", "utf8");
 const renderGovukPagesSource = fs.readFileSync("scripts/govuk/render-govuk-pages.mjs", "utf8");
 
@@ -33,9 +34,11 @@ includes(templateSource, "{% from \"govuk/components/button/macro.njk\" import g
 includes(templateSource, "id=\"mural-integration\"", "project dashboard template");
 includes(templateSource, "id=\"journal-link\"", "project dashboard template");
 includes(templateSource, "id=\"outcomes-card-link\"", "project dashboard template");
-includes(templateSource, "id=\"daas-brand-panel\"", "project dashboard template");
-includes(templateSource, "class=\"rops-daas-brand-panel\"", "project dashboard template");
-includes(templateSource, "/images/brands/daas-logo.svg", "project dashboard template");
+includes(templateSource, "{% from \"macros/daas-brand-panel.njk\" import daasBrandPanel %}", "project dashboard template");
+includes(templateSource, "{{ daasBrandPanel() }}", "project dashboard template");
+includes(daasPanelMacroSource, "id=\"daas-brand-panel\"", "DaaS brand panel macro");
+includes(daasPanelMacroSource, "class=\"rops-daas-brand-panel\"", "DaaS brand panel macro");
+includes(daasPanelMacroSource, "/images/brands/daas-logo.svg", "DaaS brand panel macro");
 includes(templateSource, "id=\"kv-project-stage\"", "project dashboard template");
 includes(templateSource, "Loading service stage", "project dashboard template");
 includes(templateSource, "Loading project stage", "project dashboard template");
