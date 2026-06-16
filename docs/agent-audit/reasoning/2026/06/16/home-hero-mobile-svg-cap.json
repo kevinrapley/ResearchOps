@@ -1,0 +1,65 @@
+{
+	"date": "2026-06-16",
+	"branch": "fix/home-hero-mobile-svg",
+	"traceRequired": true,
+	"repository": "kevinrapley/ResearchOps",
+	"task": "Fix the home hero SVG mobile sizing regression raised by Codex review feedback.",
+	"operatingModelFilesLoaded": [
+		"AGENTS.md",
+		".agent-operating-model/orchestration.xml",
+		".agent-operating-model/bundle-registry.json",
+		".agent-operating-model/task-signal-catalog.json",
+		".agent-operating-model/selection-rules.json",
+		".agent-operating-model/precedence-policy.md",
+		".agent-operating-model/trace-policy.md",
+		".agent-operating-model/github-mutation-policy.md"
+	],
+	"selectedBundles": [
+		".agent-operating-model/bundles/github/",
+		".agent-operating-model/bundles/researchops-developer-control/",
+		".agent-operating-model/bundles/multi-functional-team/",
+		".agent-operating-model/bundles/govuk-design-system/"
+	],
+	"skippedBundles": [
+		".agent-operating-model/bundles/cloudflare/",
+		".agent-operating-model/bundles/openai/",
+		".agent-operating-model/bundles/mcp-agent-tooling/",
+		".agent-operating-model/bundles/airtable-public-api/",
+		".agent-operating-model/bundles/mural-public-api/"
+	],
+	"filesRead": [
+		"src/styles/researchops-home.scss",
+		"src/govuk/templates/pages/home.njk",
+		"public/index.html",
+		"tests/researchops-home-hero-layout-route-state.test.js",
+		"assets/researchops/researchops-home.css",
+		"public/assets/researchops/researchops-home.css"
+	],
+	"filesModified": [
+		"src/styles/researchops-home.scss",
+		"src/govuk/templates/pages/home.njk",
+		"public/index.html",
+		"assets/researchops/researchops-home.css",
+		"public/assets/researchops/researchops-home.css",
+		"tests/researchops-home-hero-layout-route-state.test.js",
+		"docs/agent-audit/reasoning/2026/06/16/home-hero-mobile-svg-cap.md",
+		"docs/agent-audit/reasoning/2026/06/16/home-hero-mobile-svg-cap.json"
+	],
+	"decisions": [
+		"Treat the Codex review comment as legitimate.",
+		"Set the mobile/default SVG width to 320px with max-width 100%.",
+		"Keep SVG width 100% scoped to the desktop media query.",
+		"Update route-state coverage for both mobile/default and desktop image sizing.",
+		"Bump the home stylesheet query string to home-masthead-mobile-svg-20260616 so deployed clients request the updated CSS."
+	],
+	"validationAttempted": [
+		"node --test tests/researchops-home-hero-layout-route-state.test.js tests/deploy-asset-paths.test.js",
+		"npx prettier -c src/styles/researchops-home.scss tests/researchops-home-hero-layout-route-state.test.js public/assets/researchops/researchops-home.css assets/researchops/researchops-home.css",
+		"Browser measurements at 360px, 640px and 1280px viewports",
+		"npm test -- --test-reporter=spec",
+		"npm run build:govuk-pages"
+	],
+	"residualRisks": [
+		"npm run validate was not run during this pass."
+	]
+}

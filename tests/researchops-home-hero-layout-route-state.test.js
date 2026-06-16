@@ -12,6 +12,8 @@ assert.match(
 assert.match(homePage, /class="govuk-grid-column-two-thirds researchops-home-hero__content-column"/);
 assert.match(homePage, /class="govuk-grid-column-one-third researchops-home-hero__image-column"/);
 assert.match(homePage, /class="researchops-home-hero__image"/);
+assert.match(homePage, /researchops-home\.css\?v=home-masthead-mobile-svg-20260616/);
+assert.match(homeTemplate, /researchops-home\.css\?v=home-masthead-mobile-svg-20260616/);
 
 assert.match(
 	homeCss,
@@ -19,5 +21,9 @@ assert.match(
 );
 assert.match(
 	homeCss,
-	/\.researchops-home-hero__image \{[\s\S]*?width: 100%;[\s\S]*?max-width: 100%;[\s\S]*?height: auto;/
+	/\.researchops-home-hero__image \{[\s\S]*?width: 320px;[\s\S]*?max-width: 100%;[\s\S]*?height: auto;/
+);
+assert.match(
+	homeCss,
+	/@media \(min-width: 40\.0625em\) \{[\s\S]*?\.researchops-home-hero__image \{[\s\S]*?width: 100%;/
 );
