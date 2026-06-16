@@ -1,0 +1,285 @@
+{
+  "date": "2026-06-15",
+  "traceType": "operational-audit-trace",
+  "branch": "fix/pages-start-nunjucks-sass",
+  "traceRequired": true,
+  "traceDecision": "Required because repository-affecting work on branches starting with fix/ must have an auditable trace.",
+  "relatedWork": "/pages/start/ Nunjucks and Sass source ownership",
+  "task": "Fix /pages/start/ so the page is owned by the repository GOV.UK Nunjucks renderer and generated Sass pipeline.",
+  "selectedBundles": [
+    {
+      "id": "github-diamond",
+      "canonicalPath": ".agent-operating-model/bundles/github/",
+      "selectionBasis": "always-load"
+    },
+    {
+      "id": "researchops-developer-control",
+      "canonicalPath": ".agent-operating-model/bundles/researchops-developer-control/",
+      "selectionBasis": "always-load"
+    },
+    {
+      "id": "multi-functional-team",
+      "canonicalPath": ".agent-operating-model/bundles/multi-functional-team/",
+      "selectionBasis": "always-load"
+    },
+    {
+      "id": "govuk-design-system",
+      "canonicalPath": ".agent-operating-model/bundles/govuk-design-system/",
+      "selectionBasis": "conditional: GOV.UK page template, generated HTML, form markup and Sass"
+    },
+    {
+      "id": "cloudflare",
+      "canonicalPath": ".agent-operating-model/bundles/cloudflare/",
+      "selectionBasis": "conditional: Cloudflare Pages publishes committed public/ generated output"
+    }
+  ],
+  "skippedBundles": [
+    {
+      "id": "openai-platform",
+      "canonicalPath": ".agent-operating-model/bundles/openai/",
+      "reason": "No OpenAI API, model or eval implementation was in scope."
+    },
+    {
+      "id": "mcp-agent-tooling",
+      "canonicalPath": ".agent-operating-model/bundles/mcp-agent-tooling/",
+      "reason": "No MCP server, tool, resource, prompt or consent work was in scope."
+    },
+    {
+      "id": "airtable-public-api",
+      "canonicalPath": ".agent-operating-model/bundles/airtable-public-api/",
+      "reason": "No Airtable API or data integration work was in scope."
+    },
+    {
+      "id": "mural-public-api",
+      "canonicalPath": ".agent-operating-model/bundles/mural-public-api/",
+      "reason": "No Mural API or collaboration integration work was in scope."
+    }
+  ],
+  "precedenceDecisions": [
+    "GitHub Diamond governed branch naming, trace coverage, surgical mutation, validation evidence and PR readiness.",
+    "ResearchOps Developer Control governed repository conventions, generated page ownership and route-state test expectations.",
+    "Multi-Functional Team governed public-sector service assurance and residual-risk framing.",
+    "GOV.UK Design System governed shared frontend layout, form component markup, input width decisions and page affordance checks.",
+    "Cloudflare context governed the decision to keep regenerated public/ output in the change set while the deployment contract publishes committed files."
+  ],
+  "selectedSubAgents": [
+    {
+      "role": "TemplateDev",
+      "agent": "Mendel",
+      "reason": "Nunjucks source ownership and renderer registration"
+    },
+    {
+      "role": "StyleDev",
+      "agent": "Hooke",
+      "reason": "Sass source ownership and generated CSS target coverage"
+    },
+    {
+      "role": "TestDev",
+      "agent": "Franklin",
+      "reason": "Route-state and generated-output contract coverage"
+    },
+    {
+      "role": "RenderGuard",
+      "agent": "Bernoulli",
+      "reason": "Source-to-generated-output drift checks"
+    },
+    {
+      "role": "CheckGuard",
+      "agent": "Pauli",
+      "reason": "Focused validation lane selection and blockers"
+    },
+    {
+      "role": "ReviewGuard",
+      "agent": "Faraday",
+      "reason": "Changed-file plausibility, trace and PR readiness"
+    }
+  ],
+  "filesRead": [
+    "AGENTS.md",
+    ".agent-operating-model/orchestration.xml",
+    ".agent-operating-model/bundle-registry.json",
+    ".agent-operating-model/task-signal-catalog.json",
+    ".agent-operating-model/selection-rules.json",
+    ".agent-operating-model/bootstrap-checklist.md",
+    ".agent-operating-model/precedence-policy.md",
+    ".agent-operating-model/trace-policy.md",
+    ".agent-operating-model/trace-layers.md",
+    ".agent-operating-model/behavioural-evals.json",
+    ".agent-operating-model/github-mutation-policy.md",
+    ".agent-operating-model/bundles/github/prompt.spec.yaml",
+    ".agent-operating-model/bundles/github/prompt.body.xml",
+    ".agent-operating-model/bundles/researchops-developer-control/prompt.spec.yaml",
+    ".agent-operating-model/bundles/researchops-developer-control/prompt.body.xml",
+    ".agent-operating-model/bundles/multi-functional-team/prompt.spec.yaml",
+    ".agent-operating-model/bundles/multi-functional-team/prompt.body.xml",
+    ".agent-operating-model/bundles/govuk-design-system/prompt.spec.yaml",
+    ".agent-operating-model/bundles/govuk-design-system/prompt.body.xml",
+    ".agent-operating-model/bundles/cloudflare/prompt.spec.yaml",
+    ".agent-operating-model/bundles/cloudflare/prompt.body.xml",
+    "/Users/kevin.rapley/.codex/config.toml",
+    "src/govuk/templates/layouts/researchops.njk",
+    "src/govuk/templates/pages/start-overview.njk",
+    "public/pages/start/index.html",
+    "public/css/start.css",
+    "scripts/govuk/render-govuk-pages.mjs",
+    "scripts/styles/generated-css-targets.mjs",
+    "tests/start-page-route-state.test.js",
+    "tests/govuk-forms-application-route-state.test.js",
+    "tests/start-project-step-1-defaults-route-state.test.js",
+    "tests/govuk-pages-render-workflow-state.test.js",
+    "tests/sass-migration-route-state.test.js",
+    "tests/govuk-frontend-integration-route-state.test.js"
+  ],
+  "filesCreated": [
+    "src/govuk/templates/pages/start.njk",
+    "src/styles/start.scss",
+    "docs/agent-audit/reasoning/2026/06/15/pages-start-nunjucks-sass.md",
+    "docs/agent-audit/reasoning/2026/06/15/pages-start-nunjucks-sass.json"
+  ],
+  "filesModified": [
+    ".gitignore",
+    ".prettierignore",
+    "public/css/start.css",
+    "public/pages/start/index.html",
+    "scripts/govuk/render-govuk-pages.mjs",
+    "scripts/styles/generated-css-targets.mjs",
+    "tests/govuk-forms-application-route-state.test.js",
+    "tests/govuk-frontend-integration-route-state.test.js",
+    "tests/govuk-pages-render-workflow-state.test.js",
+    "tests/start-page-route-state.test.js"
+  ],
+  "excludedLocalChanges": [
+    "infra/cloudflare/src/core/auth/passwordless.js",
+    "ResearchOps.sublime-workspace"
+  ],
+  "generatedOutput": [
+    {
+      "path": "public/pages/start/index.html",
+      "source": "src/govuk/templates/pages/start.njk",
+      "reasonCommitted": "Cloudflare Pages currently publishes committed public/ files."
+    },
+    {
+      "path": "public/css/start.css",
+      "source": "src/styles/start.scss",
+      "reasonCommitted": "Route stylesheet is committed generated output and guarded by generated-css checks."
+    }
+  ],
+  "validation": [
+    {
+      "command": "npm run build:generated-css -- public/css/start.css",
+      "status": "passed",
+      "summary": "Generated public/css/start.css from src/styles/start.scss."
+    },
+    {
+      "command": "npm run build:generated-css",
+      "status": "passed",
+      "summary": "Generated all registered CSS targets, including the new start route target."
+    },
+    {
+      "command": "npm run build:govuk-pages",
+      "status": "passed",
+      "summary": "Rendered GOV.UK pages and regenerated public/pages/start/index.html from src/govuk/templates/pages/start.njk."
+    },
+    {
+      "command": "npm run generated-css:check",
+      "status": "passed",
+      "summary": "Generated CSS formatting check passed."
+    },
+    {
+      "command": "node --import ./tests/helpers/generated-govuk-page-source.mjs --test tests/start-page-route-state.test.js tests/govuk-forms-application-route-state.test.js tests/start-project-step-1-defaults-route-state.test.js tests/govuk-pages-render-workflow-state.test.js tests/sass-migration-route-state.test.js tests/govuk-frontend-integration-route-state.test.js",
+      "status": "passed",
+      "summary": "Focused start, GOV.UK renderer and Sass migration route-state tests passed."
+    },
+    {
+      "command": "node -e JSON parse check for docs/agent-audit/reasoning/2026/06/15/pages-start-nunjucks-sass.json",
+      "status": "passed",
+      "summary": "Trace JSON parsed successfully."
+    },
+    {
+      "command": "npm run trace:validate",
+      "status": "passed",
+      "summary": "Trace validation passed."
+    },
+    {
+      "command": "npm run trace:coverage",
+      "status": "passed",
+      "summary": "Trace coverage confirmed for the fix/ branch."
+    },
+    {
+      "command": "git diff --check",
+      "status": "passed",
+      "summary": "No whitespace errors were found."
+    },
+    {
+      "command": "npm run format:check",
+      "status": "passed",
+      "summary": "Repository formatting and generated CSS checks passed after ignoring local Sublime workspace files."
+    },
+    {
+      "command": "npm run lint",
+      "status": "passed",
+      "summary": "Lint passed with existing repository warnings. The generated CSS step produced an out-of-scope Home Office stylesheet diff that was removed from the worktree."
+    },
+    {
+      "command": "npm test",
+      "status": "passed",
+      "summary": "Full local Node test suite passed: 222 tests."
+    },
+    {
+      "command": "npm run build",
+      "status": "passed",
+      "summary": "Built GOV.UK assets, generated CSS and GOV.UK pages."
+    },
+    {
+      "command": "node --test tests/start-page-route-state.test.js tests/govuk-forms-application-route-state.test.js",
+      "status": "passed",
+      "summary": "Direct route-state tests passed against committed generated output."
+    },
+    {
+      "command": "npm run validate",
+      "status": "passed",
+      "summary": "Repository validation completed successfully after route-state assertions were made robust to generated attribute wrapping."
+    },
+    {
+      "command": "Browser smoke check http://127.0.0.1:4173/pages/start/",
+      "status": "passed",
+      "summary": "Confirmed page title, H1, project form, four steps, generated GOV.UK CSS, start route CSS and no legacy forms fragment stylesheet."
+    },
+    {
+      "command": "node --import ./tests/helpers/generated-govuk-page-source.mjs --test tests/start-page-route-state.test.js tests/govuk-forms-application-route-state.test.js tests/start-project-step-1-defaults-route-state.test.js tests/sass-migration-route-state.test.js",
+      "status": "passed",
+      "summary": "Focused start page checks passed after addressing the Codex review comment about the hidden utility."
+    }
+  ],
+  "validationPendingAtUpdate": [],
+  "issuesAndPivots": [
+    {
+      "issue": "Initial Sass source imported GOV.UK Frontend and generated a full GOV.UK stylesheet into public/css/start.css.",
+      "pivot": "Kept start.scss as a narrow route stylesheet because the shared layout already loads /assets/govuk/govuk-frontend.css."
+    },
+    {
+      "issue": "Focused tests initially expected legacy GOV.UK fragment styles on /pages/start/.",
+      "pivot": "Updated tests to assert the new shared layout and full GOV.UK Frontend CSS contract."
+    },
+    {
+      "issue": "Untracked ResearchOps.sublime-workspace was a known formatting and commit hygiene blocker.",
+      "pivot": "Added *.sublime-workspace to .gitignore and .prettierignore so the editor workspace file remains local."
+    },
+    {
+      "issue": "npm run lint runs the full generated CSS build and temporarily reintroduced an unrelated public/css/brands/home-office.css diff.",
+      "pivot": "Removed that out-of-scope generated side-effect from the worktree before staging."
+    },
+    {
+      "issue": "Direct validate checks failed on brittle exact-string assertions after generated HTML wrapped attributes.",
+      "pivot": "Changed the assertions to check ID and class contracts independently."
+    },
+    {
+      "issue": "Codex review noted that the AI assist panels still used the hidden utility after /css/screen.css was removed.",
+      "pivot": "Added a route-local .hidden display rule to src/styles/start.scss, regenerated public/css/start.css and covered it in tests/start-page-route-state.test.js."
+    }
+  ],
+  "residualRisks": [
+    "public/pages/start/index.html has a larger generated diff because the page moved from static HTML to the shared Nunjucks renderer.",
+    "The worktree contains unrelated local edits to infra/cloudflare/src/core/auth/passwordless.js that must not be staged for this PR."
+  ]
+}

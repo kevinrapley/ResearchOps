@@ -58,6 +58,8 @@ assert.equal(
 );
 assert.match(generatedCssTargets, /source: 'src\/styles\/projects\.scss'/);
 assert.match(generatedCssTargets, /output: 'public\/css\/projects\.css'/);
+assert.match(generatedCssTargets, /source: 'src\/styles\/start\.scss'/);
+assert.match(generatedCssTargets, /output: 'public\/css\/start\.css'/);
 assert.match(generatedCssTargets, /source: 'src\/styles\/project-dashboard\.scss'/);
 assert.match(generatedCssTargets, /output: 'public\/css\/project-dashboard\.css'/);
 assert.match(generatedCssTargets, /source: 'src\/styles\/outcomes\.scss'/);

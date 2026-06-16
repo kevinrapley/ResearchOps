@@ -34,6 +34,7 @@ const requiredWorkflowSnippets = [
 	'src/govuk/templates/pages/*.njk',
 	'No changed GOV.UK page templates to render.',
 	'No GOV.UK renderer page registration found for:',
+	"const pagePattern = /{\\s*template:\\s*'([^']+)'\\s*,\\s*output:\\s*'([^']+)'/g;",
 	'output_paths',
 	'npm run build:govuk-pages',
 	'if [ "$render_all" = "true" ]; then',
@@ -82,6 +83,8 @@ assert.equal(
 
 includes(renderer, "output: 'public/pages/projects/journals/index.html'", 'GOV.UK pages renderer');
 includes(renderer, "template: 'pages/projects-journals.njk'", 'GOV.UK pages renderer');
+includes(renderer, "output: 'public/pages/start/index.html'", 'GOV.UK pages renderer');
+includes(renderer, "template: 'pages/start.njk'", 'GOV.UK pages renderer');
 
 for (const snippet of [
 	'Cloudflare Pages currently publishes the committed `public/` directory',

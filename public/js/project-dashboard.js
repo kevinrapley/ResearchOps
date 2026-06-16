@@ -146,7 +146,7 @@ async function loadProjectFromD1List(projectId) {
 	const json = await readJsonResponse(response, "Projects list");
 	const projects = Array.isArray(json.projects) ? json.projects : [];
 	const match = projects.find((project) => projectIdentityMatches(project, projectId));
-	if (!match) throw new Error("Project not found in D1-first project list");
+	if (!match) throw new Error("Project not found in project list");
 	return normaliseProject(match);
 }
 
@@ -160,10 +160,10 @@ async function loadProjectFromRecord(projectId) {
 
 async function loadProject(projectId) {
 	try {
-		return await loadProjectFromD1List(projectId);
-	} catch (d1Error) {
-		console.warn("[project-dashboard] D1-first project load failed; falling back to project record endpoint", d1Error);
-		return loadProjectFromRecord(projectId);
+		return await loadProjectFromRecord(projectId);
+	} catch (recordError) {
+		console.warn("[project-dashboard] Project record load failed; falling back to project list endpoint", recordError);
+		return loadProjectFromD1List(projectId);
 	}
 }
 

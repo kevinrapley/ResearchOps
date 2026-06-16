@@ -31,6 +31,11 @@ export const generatedCssTargets = [
 		output: 'public/css/projects.css',
 	},
 	{
+		name: 'Start research project stylesheet',
+		source: 'src/styles/start.scss',
+		output: 'public/css/start.css',
+	},
+	{
 		name: 'Research repository stylesheet',
 		source: 'src/styles/repository.scss',
 		output: 'public/css/repository.css',
