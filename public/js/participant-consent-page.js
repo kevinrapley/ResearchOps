@@ -117,7 +117,7 @@ async function jsonFetch(url, options = {}) {
 
 async function loadStudyCollection(path, studyId, key) {
 	try {
-		const url = new URL(apiUrl(path));
+		const url = new URL(apiUrl(path), window.location.origin);
 		url.searchParams.set("study", studyId);
 		const body = await jsonFetch(url.toString());
 		return Array.isArray(body?.[key]) ? body[key] : [];
@@ -406,11 +406,26 @@ function wireEvents() {
 	});
 }
 
+function hasStudyContextParams(params) {
+	return ["id", "project", "projectId", "pid", "sid"].some(key => params.has(key));
+}
+
 async function init() {
 	clearErrors();
 	wireEvents();
 	const params = new URLSearchParams(window.location.search);
-	const context = window.__studyRouteContext || await resolveStudyContextFromUrl(params);
+	let context = window.__studyRouteContext || null;
+	if (!context) {
+		try {
+			context = await resolveStudyContextFromUrl(params);
+		} catch (error) {
+			if (hasStudyContextParams(params)) {
+				renderLoadError(error);
+				return;
+			}
+			context = { projectId: "", studyId: "", project: null, study: null };
+		}
+	}
 	state.projectId = context.projectId || "";
 	state.studyId = context.studyId || "";
 	state.project = context.project || null;

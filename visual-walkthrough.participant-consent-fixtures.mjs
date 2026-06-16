@@ -22,6 +22,7 @@ export const participantConsentProject = {
 
 export const participantConsentStudy = {
 	id: participantConsentStudyId,
+	projectId: participantConsentProjectId,
 	title: 'Assisted digital support interview round 1',
 	method: 'Moderated interview',
 	status: 'Planned',
@@ -171,6 +172,8 @@ export function participantConsentMockRoutes({
 			url: studiesRoute,
 			method: 'GET',
 			body: {
+				ok: true,
+				study,
 				studies: [study],
 			},
 		},

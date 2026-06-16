@@ -51,6 +51,28 @@ function codeOf(value) {
 	return code;
 }
 
+function qaBddAuthEnabled(env) {
+	return String(env.RESEARCHOPS_QA_BDD_AUTH_ENABLED || '').toLowerCase() === 'true';
+}
+
+function qaBddAuthCode(env) {
+	const code = String(env.RESEARCHOPS_QA_BDD_AUTH_CODE || '').replace(/\s+/g, '');
+	return /^\d{6}$/.test(code) ? code : '';
+}
+
+function qaBddAllowedEmails(env) {
+	return String(env.RESEARCHOPS_QA_BDD_AUTH_EMAILS || env.RESEARCHOPS_QA_BDD_AUTH_EMAIL || '')
+		.split(',')
+		.map((email) => email.trim().toLowerCase())
+		.filter(Boolean);
+}
+
+function qaBddChallengeBypassEnabled(env, email) {
+	if (!qaBddAuthEnabled(env) || !qaBddAuthCode(env)) return false;
+	const allowedEmails = qaBddAllowedEmails(env);
+	return allowedEmails.length > 0 && allowedEmails.includes(String(email || '').trim().toLowerCase());
+}
+
 function makeCode() {
 	const bytes = new Uint8Array(4);
 	crypto.getRandomValues(bytes);
@@ -193,7 +215,7 @@ async function start(request, env) {
 	`)
 		.bind(challengeId, email, await hash(env, 'code', challengeId, email, code), after(CODE_TTL_SECONDS))
 		.run();
-	const deliveryProvider = await sendCode(env, email, code);
+	const deliveryProvider = qaBddChallengeBypassEnabled(env, email) ? 'qa-bdd' : await sendCode(env, email, code);
 	await db.prepare("UPDATE auth_login_challenges SET delivery_status = 'sent' WHERE id = ?").bind(challengeId).run();
 	await recordAuthEvent(db, request, 'auth.email_code.requested', { email, challengeId, deliveryProvider });
 	return json({ ok: true, challengeId, expiresInSeconds: CODE_TTL_SECONDS, deliveryProvider });
@@ -269,7 +291,8 @@ async function verify(request, env) {
 		.first();
 	assertChallengeCanBeAttempted(challenge);
 	const codeHash = await hash(env, 'code', challenge.id, challenge.email, code);
-	if (codeHash !== challenge.code_hash) {
+	const qaBddCodeAccepted = qaBddChallengeBypassEnabled(env, challenge.email) && code === qaBddAuthCode(env);
+	if (!qaBddCodeAccepted && codeHash !== challenge.code_hash) {
 		await recordFailedAttempt(db, request, challenge);
 		throw new AuthFlowError(400, 'code_invalid', 'The code is not valid.');
 	}

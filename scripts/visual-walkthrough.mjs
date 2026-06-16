@@ -8,12 +8,22 @@
 import { chromium } from 'playwright';
 import fs from 'node:fs';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { visualWalkthroughConfig } from '../visual-walkthrough.config.mjs';
 import {
 	synthesisDefaultState,
 	synthesisVisualStates,
 } from '../visual-walkthrough.synthesis-states.mjs';
+import {
+	participantConsentDefaultState,
+	participantConsentVisualStates,
+} from '../visual-walkthrough.participant-consent-states.mjs';
 import { buildStateAcceptanceGherkin } from './researchops-state-acceptance.mjs';
+import {
+	registerLocalAssetRoutes,
+	registerMockRoutes,
+	walkthroughMockRoutes,
+} from './walkthrough-playwright.mjs';
 
 const OUTPUT_DIR = 'reports-site';
 const SCREENSHOTS_DIR = path.join(OUTPUT_DIR, 'screenshots');
@@ -79,6 +89,7 @@ const startedAt = new Date().toISOString();
 const baseURL = normalizeBaseURL(
 	process.env.BASE_URL || process.env.PAGES_URL || process.env.PREVIEW_URL || DEFAULT_BASE_URL
 );
+const useLocalAssets = process.env.WALKTHROUGH_LOCAL_ASSETS === 'true';
 const captureProfiles = (visualWalkthroughConfig.profiles || DEFAULT_PROFILES).map((profile) => ({
 	...profile,
 	id: slugify(profile.id || profile.title || 'profile'),
@@ -169,6 +180,14 @@ function validateRegistry() {
 }
 
 function pageCaptureConfig(pageConfig) {
+	if (pageConfig.id === 'study-participant-consent') {
+		return {
+			...pageConfig,
+			defaultState: participantConsentDefaultState,
+			states: [...(pageConfig.states || []), ...participantConsentVisualStates],
+		};
+	}
+
 	if (pageConfig.id !== 'synthesize') return pageConfig;
 
 	return {
@@ -238,29 +257,6 @@ async function settlePage(page) {
 	await page.waitForTimeout(200);
 }
 
-async function registerMockRoutes(page, stateConfig) {
-	for (const mockRoute of stateConfig.mockRoutes || []) {
-		await page.route(mockRoute.url, async (route) => {
-			const request = route.request();
-			const requestMethod = request.method().toUpperCase();
-			const expectedMethod = String(mockRoute.method || requestMethod).toUpperCase();
-
-			if (requestMethod !== expectedMethod) {
-				await route.fallback();
-				return;
-			}
-
-			const body = typeof mockRoute.body === 'string' ? mockRoute.body : JSON.stringify(mockRoute.body ?? {});
-			await route.fulfill({
-				status: mockRoute.status ?? 200,
-				contentType: mockRoute.contentType || 'application/json',
-				headers: mockRoute.headers || {},
-				body,
-			});
-		});
-	}
-}
-
 async function runAction(page, action) {
 	const timeout = action.timeout ?? 5000;
 
@@ -294,7 +290,16 @@ async function captureState(browser, pageConfig, stateConfig, profile) {
 
 	try {
 		ensureDir(screenshotDir);
-		await registerMockRoutes(page, stateConfig);
+		if (useLocalAssets) {
+			await registerLocalAssetRoutes(page, {
+				baseURL,
+				publicRoot: visualWalkthroughConfig.publicRoot,
+			});
+		}
+		await registerMockRoutes(page, walkthroughMockRoutes({
+			authenticated: pageConfig.authenticated !== false,
+			extraRoutes: stateConfig.mockRoutes || [],
+		}));
 		const response = await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 30000 });
 		if (!response) throw new Error(`No HTTP response for ${url}`);
 		if (!response.ok()) throw new Error(`HTTP ${response.status()} for ${url}`);
@@ -747,4 +752,15 @@ function writeReport(manifest) {
 	console.log(`[visual-walkthrough] report written to ${INDEX_FILE}`);
 }
 
-await captureReport();
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
+	await captureReport();
+}
+
+export {
+	captureReport,
+	captureState,
+	pageCaptureConfig,
+	registerMockRoutes,
+	runAction,
+	settlePage,
+};

@@ -1,26 +1,20 @@
 import assert from 'node:assert/strict';
-import fs from 'node:fs';
+import { execFileSync } from 'node:child_process';
 import path from 'node:path';
 
 import { visualWalkthroughConfig } from '../visual-walkthrough.config.mjs';
 
-function listHtmlFiles(dir) {
-	const entries = fs.readdirSync(dir, { withFileTypes: true });
-	const files = [];
-
-	for (const entry of entries) {
-		const entryPath = path.join(dir, entry.name);
-
-		if (entry.isDirectory()) {
-			files.push(...listHtmlFiles(entryPath));
+function trackedHtmlFiles(dir) {
+	return execFileSync(
+		'git',
+		['ls-files', `${dir.replace(/\/$/, '')}/**/*.html`, `${dir.replace(/\/$/, '')}/*.html`],
+		{
+			encoding: 'utf8',
 		}
-
-		if (entry.isFile() && entry.name.endsWith('.html')) {
-			files.push(entryPath);
-		}
-	}
-
-	return files;
+	)
+		.split('\n')
+		.map((file) => file.trim())
+		.filter(Boolean);
 }
 
 function routeFromPublicFile(filePath) {
@@ -31,7 +25,7 @@ function routeFromPublicFile(filePath) {
 	return relativePath === 'index.html' ? '/' : `/${relativePath}`;
 }
 
-const publicRoutes = listHtmlFiles(visualWalkthroughConfig.publicRoot)
+const publicRoutes = trackedHtmlFiles(visualWalkthroughConfig.publicRoot)
 	.map(routeFromPublicFile)
 	.sort();
 

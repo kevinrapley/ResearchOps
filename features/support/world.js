@@ -1,6 +1,27 @@
 // features/support/world.js
 import { setWorldConstructor } from '@cucumber/cucumber';
 import assert from 'node:assert/strict';
+import { mkdirSync } from 'node:fs';
+import { join } from 'node:path';
+import {
+	registerLocalAssetRoutes,
+	registerMockRoutes,
+	walkthroughMockRoutes,
+} from '../../scripts/walkthrough-playwright.mjs';
+
+const SCREENSHOTS_DIR = join('reports-site', 'screenshots');
+
+function slugify(value) {
+	return String(value)
+		.toLowerCase()
+		.replace(/[^a-z0-9]+/g, '-')
+		.replace(/^-+|-+$/g, '')
+		.slice(0, 80);
+}
+
+function pad(num) {
+	return String(num).padStart(3, '0');
+}
 
 export class World {
 	/** @type {import('playwright').Browser | undefined} */
@@ -48,6 +69,33 @@ export class World {
 		this.page = await this.context.newPage();
 
 		return this.page;
+	}
+
+	async registerWalkthroughRoutes({ authenticated = true, extraRoutes = [] } = {}) {
+		if (!this.page) return;
+		await registerLocalAssetRoutes(this.page, { baseURL: this.baseURL, publicRoot: 'public' });
+		await registerMockRoutes(this.page, walkthroughMockRoutes({ authenticated, extraRoutes }));
+	}
+
+	async captureEvidenceScreenshot(label) {
+		if (!this.captureScreenshots || !this.page || !this.scenario) return;
+
+		this.stepIndex = (this.stepIndex || 0) + 1;
+		const shotFile = `${this.scenario.slug}__${pad(this.stepIndex)}--${slugify(label)}.png`;
+		const shotPath = join(SCREENSHOTS_DIR, shotFile);
+		mkdirSync(SCREENSHOTS_DIR, { recursive: true });
+		await this.settlePageForEvidence();
+		await this.page.screenshot({
+			path: shotPath,
+			fullPage: true,
+			animations: 'disabled',
+		});
+		this.scenario.steps.push({
+			idx: this.stepIndex,
+			text: label,
+			shotRel: `screenshots/${shotFile}`,
+			status: 'captured',
+		});
 	}
 
 	async settlePageForEvidence() {

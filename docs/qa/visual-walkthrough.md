@@ -23,6 +23,8 @@ The source of truth is `visual-walkthrough.config.mjs`.
 
 Every public HTML application route must have a page entry. The registry test fails if a new public HTML page is added without a matching walkthrough entry.
 
+Cloudflare-generated Nunjucks pages that are not committed as `public/**/*.html` must still be registered when they are served after deployment. The research repository pages are registered from `src/govuk/data/repository-page.mjs` so a manual walkthrough run against `BASE_URL`, `PAGES_URL` or `PREVIEW_URL` captures the deployed generated routes.
+
 The report captures every configured profile in `profiles`. The current contract is:
 
 ```js
@@ -216,6 +218,8 @@ npm run qa:visual-walkthrough
 ```
 
 The command uses `BASE_URL`, `PAGES_URL` or `PREVIEW_URL` when provided. Otherwise it falls back to `https://researchops.pages.dev/`.
+
+For the authenticated walkthrough, run the dedicated walkthrough profile/job against the deployed preview or production URL. That run is expected to provide the QA auth settings and any required manual-run environment values, including the QA auth bypass and local asset behaviour if you deliberately want a local capture.
 
 The command runs the same registered page and state catalogue for each configured profile. It then writes one report with a screenshot switcher and profile-specific screenshot directories.
 
