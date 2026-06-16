@@ -21,10 +21,10 @@
 		".agent-operating-model/bundles/github/",
 		".agent-operating-model/bundles/researchops-developer-control/",
 		".agent-operating-model/bundles/multi-functional-team/",
-		".agent-operating-model/bundles/govuk-design-system/"
+		".agent-operating-model/bundles/govuk-design-system/",
+		".agent-operating-model/bundles/cloudflare/"
 	],
 	"skippedBundles": [
-		".agent-operating-model/bundles/cloudflare/",
 		".agent-operating-model/bundles/openai/",
 		".agent-operating-model/bundles/mcp-agent-tooling/",
 		".agent-operating-model/bundles/airtable-public-api/",
@@ -49,6 +49,10 @@
 		"public/js/project-dashboard.js",
 		"src/styles/project-dashboard.scss",
 		"tests/project-dashboard-route-state.test.js",
+		"public/_worker.js",
+		"public/js/projects-page.js",
+		"public/js/repository-page.js",
+		"tests/pages-advanced-worker-auth-route-state.test.js",
 		"docs/agent-audit/reasoning/README.md"
 	],
 	"filesModified": [
@@ -60,6 +64,8 @@
 		"public/css/project-dashboard.css",
 		"public/pages/project-dashboard/index.html",
 		"tests/project-dashboard-route-state.test.js",
+		"public/_worker.js",
+		"tests/pages-advanced-worker-auth-route-state.test.js",
 		"docs/agent-audit/reasoning/2026/06/16/daas-dashboard-brand-panel.md",
 		"docs/agent-audit/reasoning/2026/06/16/daas-dashboard-brand-panel.json"
 	],
@@ -69,7 +75,9 @@
 		"Use Sass for the visual treatment: #1a1d35 background, 1rem top and bottom margins, bottom-right Home Office Digital triangles background, and a tablet/desktop breakpoint of 40.0625em.",
 		"Keep mobile hidden by leaving the default .rops-daas-brand-panel display as none outside the breakpoint.",
 		"Add cache-busting keys for the changed dashboard JavaScript and stylesheet.",
-		"Add route-state coverage for the Nunjucks template, generated page, controller behaviour, Sass and generated CSS."
+		"Add route-state coverage for the Nunjucks template, generated page, controller behaviour, Sass and generated CSS.",
+		"Follow-up: add a Pages advanced Worker preflight for /pages/projects/ and /pages/repository/ so those static pages call /api/me before rendering and redirect to /pages/account/sign-in/ with returnTo when the app session is missing.",
+		"Follow-up: keep the redirect server-side in the Pages worker rather than broadening client-side error handling, so data outages still render as data errors while unauthenticated sessions redirect before the page body is served."
 	],
 	"validationAttempted": [
 		"npm ci",
@@ -84,7 +92,11 @@
 		"git diff --check",
 		"npm run lint",
 		"npm test -- --ci failed because the current test script passes --ci through to Node, which exits with node: bad option: --ci.",
-		"npm test"
+		"npm test",
+		"Follow-up: curl -i https://feature-daas-dashboard-brand.researchops.pages.dev/api/projects and curl -i https://feature-daas-dashboard-brand.researchops.pages.dev/api/repository?limit=1 showed unauthenticated direct API requests are Cloudflare Access 302s.",
+		"Follow-up: curl -I https://feature-daas-dashboard-brand.researchops.pages.dev/pages/projects/ and curl -I https://feature-daas-dashboard-brand.researchops.pages.dev/pages/repository/ showed direct unauthenticated page requests are Cloudflare Access 302s, while the reported browser state showed an app-auth shell rendering a data error.",
+		"Follow-up: node --test tests/pages-advanced-worker-auth-route-state.test.js",
+		"Follow-up: npm test passed with 230 tests and 0 failures after the protected-page preflight change."
 	],
 	"residualRisks": [
 		"npm run validate was not run during this pass.",

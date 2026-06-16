@@ -31,10 +31,10 @@ Add a DaaS-specific brand panel to the project dashboard for DaaS projects. The 
 - `.agent-operating-model/bundles/researchops-developer-control/`
 - `.agent-operating-model/bundles/multi-functional-team/`
 - `.agent-operating-model/bundles/govuk-design-system/`
+- `.agent-operating-model/bundles/cloudflare/` for the follow-up Pages preview auth-routing fix.
 
 ## Bundles skipped
 
-- `.agent-operating-model/bundles/cloudflare/`: no Worker runtime, deployment binding or Pages middleware behaviour changed.
 - `.agent-operating-model/bundles/openai/`: no OpenAI API, model or AI route behaviour changed.
 - `.agent-operating-model/bundles/mcp-agent-tooling/`: no MCP protocol or agent tooling changed.
 - `.agent-operating-model/bundles/airtable-public-api/`: no Airtable API behaviour changed.
@@ -46,6 +46,7 @@ Add a DaaS-specific brand panel to the project dashboard for DaaS projects. The 
 - ResearchOps Developer Control governed the project dashboard route, generated page output, generated CSS output and existing route-state test style.
 - Multi-Functional Team governed public-sector product assurance and impact on DaaS users.
 - GOV.UK Design System governed the Nunjucks and Sass-only implementation approach and preservation of the existing GOV.UK page structure.
+- Cloudflare governed the follow-up Pages advanced Worker auth preflight for preview and static page routing.
 
 ## Files read
 
@@ -67,6 +68,10 @@ Add a DaaS-specific brand panel to the project dashboard for DaaS projects. The 
 - `public/js/project-dashboard.js`
 - `src/styles/project-dashboard.scss`
 - `tests/project-dashboard-route-state.test.js`
+- `public/_worker.js`
+- `public/js/projects-page.js`
+- `public/js/repository-page.js`
+- `tests/pages-advanced-worker-auth-route-state.test.js`
 - `docs/agent-audit/reasoning/README.md`
 
 ## Files created or modified
@@ -79,6 +84,8 @@ Add a DaaS-specific brand panel to the project dashboard for DaaS projects. The 
 - `public/css/project-dashboard.css`
 - `public/pages/project-dashboard/index.html`
 - `tests/project-dashboard-route-state.test.js`
+- `public/_worker.js`
+- `tests/pages-advanced-worker-auth-route-state.test.js`
 - `docs/agent-audit/reasoning/2026/06/16/daas-dashboard-brand-panel.md`
 - `docs/agent-audit/reasoning/2026/06/16/daas-dashboard-brand-panel.json`
 
@@ -90,6 +97,8 @@ Add a DaaS-specific brand panel to the project dashboard for DaaS projects. The 
 - Kept mobile hidden by leaving the default `.rops-daas-brand-panel` display as `none` outside the breakpoint.
 - Added cache-busting keys for the changed dashboard JavaScript and stylesheet.
 - Added route-state coverage for the Nunjucks template, generated page, controller behaviour, Sass and generated CSS.
+- Follow-up: added a Pages advanced Worker preflight for `/pages/projects/` and `/pages/repository/` so those static pages call `/api/me` before rendering and redirect to `/pages/account/sign-in/` with `returnTo` when the app session is missing.
+- Follow-up: kept the redirect server-side in the Pages worker rather than broadening client-side error handling, so data outages still render as data errors while unauthenticated sessions redirect before the page body is served.
 
 ## Validation attempted
 
@@ -106,6 +115,10 @@ Add a DaaS-specific brand panel to the project dashboard for DaaS projects. The 
 - `npm run lint` passed with existing repository warnings.
 - `npm test -- --ci` failed because the current test script passes `--ci` through to Node, which exits with `node: bad option: --ci`.
 - `npm test` passed with 227 tests and 0 failures.
+- Follow-up: `curl -i https://feature-daas-dashboard-brand.researchops.pages.dev/api/projects` and `curl -i https://feature-daas-dashboard-brand.researchops.pages.dev/api/repository?limit=1` showed unauthenticated direct API requests are Cloudflare Access 302s.
+- Follow-up: `curl -I https://feature-daas-dashboard-brand.researchops.pages.dev/pages/projects/` and `curl -I https://feature-daas-dashboard-brand.researchops.pages.dev/pages/repository/` showed direct unauthenticated page requests are Cloudflare Access 302s, while the reported browser state showed an app-auth shell rendering a data error.
+- Follow-up: `node --test tests/pages-advanced-worker-auth-route-state.test.js` passed after adding protected-page preflight coverage.
+- Follow-up: `npm test` passed with 230 tests and 0 failures after the protected-page preflight change.
 
 ## Existing local changes
 

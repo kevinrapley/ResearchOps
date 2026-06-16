@@ -116,6 +116,53 @@ function jsonResponse(body, status = 200, target = null, extraHeaders = {}) {
 	return new Response(JSON.stringify(body), { status, headers });
 }
 
+function isProtectedPage(pathname) {
+	const cleanPath = pathname.replace(/\/+$/, '');
+	return cleanPath === '/pages/projects' || cleanPath === '/pages/repository';
+}
+
+function signInRedirect(request) {
+	const source = new URL(request.url);
+	const destination = new URL('/pages/account/sign-in/', source.origin);
+	destination.searchParams.set('returnTo', `${source.pathname}${source.search || ''}`);
+	return new Response(null, {
+		status: 302,
+		headers: {
+			location: destination.toString(),
+			'cache-control': 'no-store',
+			'x-researchops-auth-redirect': 'pages-static-preflight',
+		},
+	});
+}
+
+function apiEndpointTarget(request, env, apiPath) {
+	const pageUrl = new URL(request.url);
+	const target = resolveApiTarget(request, env);
+	const base = new URL(target.origin);
+	return {
+		url: new URL(apiPath, base.origin).toString(),
+		origin: base.origin,
+		source: target.source,
+		hostname: pageUrl.hostname,
+		stripAccessHeaders: target.stripAccessHeaders,
+	};
+}
+
+async function protectedPageRedirect(request, env) {
+	const url = new URL(request.url);
+	const method = request.method.toUpperCase();
+	if ((method !== 'GET' && method !== 'HEAD') || !isProtectedPage(url.pathname)) return null;
+
+	const target = apiEndpointTarget(request, env, '/api/me');
+	const response = await fetch(target.url, {
+		method: 'GET',
+		headers: requestHeaders(request, target),
+		redirect: 'manual',
+	});
+
+	return response.status === 401 ? signInRedirect(request) : null;
+}
+
 function shouldDisableStaticCache(pathname) {
 	return pathname === '/' || pathname.endsWith('/') || pathname.endsWith('.html');
 }
@@ -273,6 +320,9 @@ export default {
 				);
 			}
 		}
+
+		const redirect = await protectedPageRedirect(request, env);
+		if (redirect) return redirect;
 
 		return staticAssetResponse(request, env);
 	},
