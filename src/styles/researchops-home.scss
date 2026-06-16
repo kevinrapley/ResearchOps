@@ -126,7 +126,7 @@
 
 .researchops-home-hero__image {
 	display: block;
-	width: 100%;
+	width: 320px;
 	max-width: 100%;
 	height: auto;
 }
@@ -227,6 +227,10 @@
 		width: 45%;
 		padding-right: 0;
 		padding-left: 0;
+	}
+
+	.researchops-home-hero__image {
+		width: 100%;
 	}
 
 	.researchops-highlight-panel,

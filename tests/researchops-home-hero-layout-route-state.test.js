@@ -19,5 +19,9 @@ assert.match(
 );
 assert.match(
 	homeCss,
-	/\.researchops-home-hero__image \{[\s\S]*?width: 100%;[\s\S]*?max-width: 100%;[\s\S]*?height: auto;/
+	/\.researchops-home-hero__image \{[\s\S]*?width: 320px;[\s\S]*?max-width: 100%;[\s\S]*?height: auto;/
+);
+assert.match(
+	homeCss,
+	/@media \(min-width: 40\.0625em\) \{[\s\S]*?\.researchops-home-hero__image \{[\s\S]*?width: 100%;/
 );
