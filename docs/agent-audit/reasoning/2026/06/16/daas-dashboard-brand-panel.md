@@ -72,6 +72,7 @@ Add a DaaS-specific brand panel to the project dashboard for DaaS projects. The 
 - `public/js/projects-page.js`
 - `public/js/repository-page.js`
 - `tests/pages-advanced-worker-auth-route-state.test.js`
+- PR #413 unresolved Codex review thread `PRRT_kwDOP3Td2M6J5TAJ`
 - `docs/agent-audit/reasoning/README.md`
 
 ## Files created or modified
@@ -86,6 +87,8 @@ Add a DaaS-specific brand panel to the project dashboard for DaaS projects. The 
 - `tests/project-dashboard-route-state.test.js`
 - `public/_worker.js`
 - `tests/pages-advanced-worker-auth-route-state.test.js`
+- `public/js/project-dashboard.js`
+- `tests/project-dashboard-route-state.test.js`
 - `docs/agent-audit/reasoning/2026/06/16/daas-dashboard-brand-panel.md`
 - `docs/agent-audit/reasoning/2026/06/16/daas-dashboard-brand-panel.json`
 
@@ -99,6 +102,8 @@ Add a DaaS-specific brand panel to the project dashboard for DaaS projects. The 
 - Added route-state coverage for the Nunjucks template, generated page, controller behaviour, Sass and generated CSS.
 - Follow-up: added a Pages advanced Worker preflight for `/pages/projects/` and `/pages/repository/` so those static pages call `/api/me` before rendering and redirect to `/pages/account/sign-in/` with `returnTo` when the app session is missing.
 - Follow-up: kept the redirect server-side in the Pages worker rather than broadening client-side error handling, so data outages still render as data errors while unauthenticated sessions redirect before the page body is served.
+- Codex review follow-up: accepted the comment that DaaS detection should include multi-team project records, because the API preserves `teamNames` while the dashboard previously checked only singular team fields.
+- Codex review follow-up: preserved `teamNames` during dashboard normalisation and flattened array-valued team fields in `renderProjectBrand()` so DaaS is detected even when it is not the first team.
 
 ## Validation attempted
 
@@ -119,6 +124,7 @@ Add a DaaS-specific brand panel to the project dashboard for DaaS projects. The 
 - Follow-up: `curl -I https://feature-daas-dashboard-brand.researchops.pages.dev/pages/projects/` and `curl -I https://feature-daas-dashboard-brand.researchops.pages.dev/pages/repository/` showed direct unauthenticated page requests are Cloudflare Access 302s, while the reported browser state showed an app-auth shell rendering a data error.
 - Follow-up: `node --test tests/pages-advanced-worker-auth-route-state.test.js` passed after adding protected-page preflight coverage.
 - Follow-up: `npm test` passed with 230 tests and 0 failures after the protected-page preflight change.
+- Codex review follow-up: `node tests/project-dashboard-route-state.test.js` passed after adding multi-team DaaS detection coverage.
 
 ## Existing local changes
 

@@ -107,6 +107,7 @@ function normaliseProject(project = {}) {
 		objectives: normaliseLineList(project.objectives ?? project.Objectives),
 		user_groups: normaliseCommaList(project.user_groups ?? project.UserGroups),
 		stakeholders: normaliseStakeholders(project.stakeholders ?? project.Stakeholders),
+		teamNames: normaliseCommaList(project.teamNames ?? project.team_names ?? project["Team Names"]),
 		lead_researcher: project.lead_researcher || project["Lead Researcher"] || "",
 		lead_researcher_email: project.lead_researcher_email || project["Lead Researcher Email"] || "",
 	};
@@ -221,10 +222,15 @@ function normaliseBrandKey(value = "") {
 		.replace(/[^a-z0-9]+/g, "");
 }
 
+function brandValues(value) {
+	return Array.isArray(value) ? value : [value];
+}
+
 function renderProjectBrand(project = {}) {
 	const panel = document.getElementById("daas-brand-panel");
 	if (!panel) return;
-	const isDaaSProject = [project.org, project.teamName, project.team_name, project.team]
+	const isDaaSProject = [project.org, project.teamName, project.team_name, project.team, project.teamNames, project.team_names, project.teams]
+		.flatMap(brandValues)
 		.map(normaliseBrandKey)
 		.includes("daas");
 	panel.hidden = !isDaaSProject;

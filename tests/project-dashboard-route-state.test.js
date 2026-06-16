@@ -95,6 +95,10 @@ includes(controllerSource, "function renderProject", "project dashboard controll
 includes(controllerSource, "function renderProjectBrand", "project dashboard controller");
 includes(controllerSource, "function normaliseBrandKey", "project dashboard controller");
 includes(controllerSource, "project.teamName", "project dashboard controller");
+includes(controllerSource, "teamNames: normaliseCommaList(project.teamNames ?? project.team_names ?? project[\"Team Names\"])", "project dashboard controller");
+includes(controllerSource, "function brandValues", "project dashboard controller");
+includes(controllerSource, "project.teamNames", "project dashboard controller");
+includes(controllerSource, ".flatMap(brandValues)", "project dashboard controller");
 includes(controllerSource, "rops-daas-brand-panel--visible", "project dashboard controller");
 includes(controllerSource, "function renderStudies", "project dashboard controller");
 includes(controllerSource, "function setTagText", "project dashboard controller");
