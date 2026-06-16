@@ -71,6 +71,7 @@ jobs:
           RESEARCHOPS_AUTH_SECRET: ${{ secrets.RESEARCHOPS_AUTH_SECRET }}
           RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
           RESEARCHOPS_EMAIL_FROM: ${{ secrets.RESEARCHOPS_EMAIL_FROM }}
+          RESEARCHOPS_QA_BDD_AUTH_CODE: ${{ secrets.RESEARCHOPS_QA_BDD_AUTH_CODE }}
           AIRTABLE_BASE_ID: ${{ secrets.AIRTABLE_BASE_ID }}
           AIRTABLE_API_KEY: ${{ secrets.AIRTABLE_API_KEY }}
           MURAL_CLIENT_SECRET: ${{ secrets.MURAL_CLIENT_SECRET }}
@@ -79,6 +80,7 @@ jobs:
           if [ -z "${RESEARCHOPS_AUTH_SECRET}" ]; then missing="${missing} RESEARCHOPS_AUTH_SECRET"; fi
           if [ -z "${RESEND_API_KEY}" ]; then missing="${missing} RESEND_API_KEY"; fi
           if [ -z "${RESEARCHOPS_EMAIL_FROM}" ]; then missing="${missing} RESEARCHOPS_EMAIL_FROM"; fi
+          if [ -z "${RESEARCHOPS_QA_BDD_AUTH_CODE}" ]; then missing="${missing} RESEARCHOPS_QA_BDD_AUTH_CODE"; fi
           if [ -z "${AIRTABLE_BASE_ID}" ]; then missing="${missing} AIRTABLE_BASE_ID"; fi
           if [ -z "${AIRTABLE_API_KEY}" ]; then missing="${missing} AIRTABLE_API_KEY"; fi
           if [ -z "${MURAL_CLIENT_SECRET}" ]; then missing="${missing} MURAL_CLIENT_SECRET"; fi
@@ -133,6 +135,7 @@ jobs:
             RESEARCHOPS_AUTH_SECRET
             RESEND_API_KEY
             RESEARCHOPS_EMAIL_FROM
+            RESEARCHOPS_QA_BDD_AUTH_CODE
             AIRTABLE_BASE_ID
             AIRTABLE_API_KEY
             MURAL_CLIENT_SECRET
@@ -140,6 +143,7 @@ jobs:
           RESEARCHOPS_AUTH_SECRET: ${{ secrets.RESEARCHOPS_AUTH_SECRET }}
           RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
           RESEARCHOPS_EMAIL_FROM: ${{ secrets.RESEARCHOPS_EMAIL_FROM }}
+          RESEARCHOPS_QA_BDD_AUTH_CODE: ${{ secrets.RESEARCHOPS_QA_BDD_AUTH_CODE }}
           AIRTABLE_BASE_ID: ${{ secrets.AIRTABLE_BASE_ID }}
           AIRTABLE_API_KEY: ${{ secrets.AIRTABLE_API_KEY }}
           MURAL_CLIENT_SECRET: ${{ secrets.MURAL_CLIENT_SECRET }}
@@ -170,6 +174,7 @@ jobs:
           RESEARCHOPS_AUTH_SECRET: ${{ secrets.RESEARCHOPS_AUTH_SECRET }}
           RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
           RESEARCHOPS_EMAIL_FROM: ${{ secrets.RESEARCHOPS_EMAIL_FROM }}
+          RESEARCHOPS_QA_BDD_AUTH_CODE: ${{ secrets.RESEARCHOPS_QA_BDD_AUTH_CODE }}
           AIRTABLE_BASE_ID: ${{ secrets.AIRTABLE_BASE_ID }}
           AIRTABLE_API_KEY: ${{ secrets.AIRTABLE_API_KEY }}
           MURAL_CLIENT_SECRET: ${{ secrets.MURAL_CLIENT_SECRET }}
@@ -180,6 +185,7 @@ jobs:
           if [ -z "${RESEARCHOPS_AUTH_SECRET}" ]; then missing="${missing} RESEARCHOPS_AUTH_SECRET"; fi
           if [ -z "${RESEND_API_KEY}" ]; then missing="${missing} RESEND_API_KEY"; fi
           if [ -z "${RESEARCHOPS_EMAIL_FROM}" ]; then missing="${missing} RESEARCHOPS_EMAIL_FROM"; fi
+          if [ -z "${RESEARCHOPS_QA_BDD_AUTH_CODE}" ]; then missing="${missing} RESEARCHOPS_QA_BDD_AUTH_CODE"; fi
           if [ -z "${AIRTABLE_BASE_ID}" ]; then missing="${missing} AIRTABLE_BASE_ID"; fi
           if [ -z "${AIRTABLE_API_KEY}" ]; then missing="${missing} AIRTABLE_API_KEY"; fi
           if [ -z "${MURAL_CLIENT_SECRET}" ]; then missing="${missing} MURAL_CLIENT_SECRET"; fi
@@ -397,6 +403,7 @@ jobs:
             RESEARCHOPS_AUTH_SECRET
             RESEND_API_KEY
             RESEARCHOPS_EMAIL_FROM
+            RESEARCHOPS_QA_BDD_AUTH_CODE
             AIRTABLE_BASE_ID
             AIRTABLE_API_KEY
             MURAL_CLIENT_SECRET
@@ -404,6 +411,7 @@ jobs:
           RESEARCHOPS_AUTH_SECRET: ${{ secrets.RESEARCHOPS_AUTH_SECRET }}
           RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
           RESEARCHOPS_EMAIL_FROM: ${{ secrets.RESEARCHOPS_EMAIL_FROM }}
+          RESEARCHOPS_QA_BDD_AUTH_CODE: ${{ secrets.RESEARCHOPS_QA_BDD_AUTH_CODE }}
           AIRTABLE_BASE_ID: ${{ secrets.AIRTABLE_BASE_ID }}
           AIRTABLE_API_KEY: ${{ secrets.AIRTABLE_API_KEY }}
           MURAL_CLIENT_SECRET: ${{ secrets.MURAL_CLIENT_SECRET }}

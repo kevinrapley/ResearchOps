@@ -15,7 +15,16 @@ const helperSource = fs.readFileSync('scripts/walkthrough-playwright.mjs', 'utf8
 const passwordlessSource = fs.readFileSync('infra/cloudflare/src/core/auth/passwordless.js', 'utf8');
 const participantConsentSource = fs.readFileSync('public/js/participant-consent-page.js', 'utf8');
 const qaBddWorkflowSource = fs.readFileSync('.github/workflows/qa-bdd.yml', 'utf8');
+const deployWorkerWorkflowSource = fs.readFileSync('.github/workflows/deploy-worker.yml', 'utf8');
+const passwordlessPreviewWorkflowSource = fs.readFileSync(
+	'.github/workflows/deploy-passwordless-preview-worker.yml',
+	'utf8',
+);
 const cloudflareWranglerSource = fs.readFileSync('infra/cloudflare/wrangler.toml', 'utf8');
+const passwordlessPreviewWranglerSource = fs.readFileSync(
+	'infra/cloudflare/wrangler.passwordless-preview.toml',
+	'utf8',
+);
 
 test('QA BDD walkthrough captures sign-in code and authenticated page states', () => {
 	assert.match(featureSource, /@walkthrough/);
@@ -112,6 +121,33 @@ test('Cloudflare Worker config enables QA BDD auth without storing the code', ()
 		/RESEARCHOPS_QA_BDD_AUTH_EMAILS = "qa-bdd\.walkthrough@example\.gov\.uk"/,
 	);
 	assert.doesNotMatch(cloudflareWranglerSource, /RESEARCHOPS_QA_BDD_AUTH_CODE/);
+	assert.match(passwordlessPreviewWranglerSource, /RESEARCHOPS_QA_BDD_AUTH_ENABLED = "true"/);
+	assert.match(
+		passwordlessPreviewWranglerSource,
+		/RESEARCHOPS_QA_BDD_AUTH_EMAILS = "qa-bdd\.walkthrough@example\.gov\.uk"/,
+	);
+	assert.doesNotMatch(passwordlessPreviewWranglerSource, /RESEARCHOPS_QA_BDD_AUTH_CODE/);
+});
+
+test('Cloudflare deploy workflows pass the QA BDD auth code secret to Workers', () => {
+	assert.match(
+		deployWorkerWorkflowSource,
+		/RESEARCHOPS_QA_BDD_AUTH_CODE: \$\{\{ secrets\.RESEARCHOPS_QA_BDD_AUTH_CODE \}\}/,
+	);
+	assert.match(deployWorkerWorkflowSource, /missing="\$\{missing\} RESEARCHOPS_QA_BDD_AUTH_CODE"/);
+	assert.match(
+		deployWorkerWorkflowSource,
+		/secrets: \|\n(?: {12}[A-Z0-9_]+\n)* {12}RESEARCHOPS_QA_BDD_AUTH_CODE/,
+	);
+	assert.match(
+		passwordlessPreviewWorkflowSource,
+		/RESEARCHOPS_QA_BDD_AUTH_CODE: \$\{\{ secrets\.RESEARCHOPS_QA_BDD_AUTH_CODE \}\}/,
+	);
+	assert.match(
+		passwordlessPreviewWorkflowSource,
+		/Missing required secret: RESEARCHOPS_QA_BDD_AUTH_CODE/,
+	);
+	assert.match(passwordlessPreviewWorkflowSource, /"RESEARCHOPS_QA_BDD_AUTH_CODE"/);
 });
 
 test('participant consent same-origin API URLs are valid during walkthrough capture', () => {
