@@ -107,6 +107,7 @@ Add a DaaS-specific brand panel to the project dashboard for DaaS projects. The 
 - Codex review follow-up: preserved `teamNames` during dashboard normalisation and flattened array-valued team fields in `renderProjectBrand()` so DaaS is detected even when it is not the first team.
 - Auth preview follow-up: changed the protected static-page preflight to redirect when the `/api/me` app-auth check is any non-OK response, including the reported `503`, so `/pages/projects/` and `/pages/repository/` do not render a broken shell when the app session cannot be confirmed.
 - Brand art follow-up: changed the DaaS panel triangles background to `background-size: 200%` and `background-position: right -12rem bottom -7rem` so the oversized triangles sit partly outside the bottom-right of the panel like the provided Home Office Digital reference image.
+- Brand art follow-up: refined the triangles crop to the requested `background-size: 50% 200%` and `background-position: right -3rem bottom -7rem`.
 
 ## Validation attempted
 
@@ -130,6 +131,7 @@ Add a DaaS-specific brand panel to the project dashboard for DaaS projects. The 
 - Codex review follow-up: `node tests/project-dashboard-route-state.test.js` passed after adding multi-team DaaS detection coverage.
 - Auth preview follow-up: `node --test tests/pages-advanced-worker-auth-route-state.test.js` passed with coverage for a `503` `/api/me` response redirecting `/pages/projects/` to sign-in.
 - Brand art follow-up: `npm run build:project-dashboard` regenerated `public/css/project-dashboard.css`, and `node tests/project-dashboard-route-state.test.js` passed with assertions for the 200% background size and negative bottom-right offsets.
+- Brand art follow-up: `npm run build:project-dashboard` regenerated `public/css/project-dashboard.css`, and `node tests/project-dashboard-route-state.test.js` passed with assertions for `background-size: 50% 200%` and `background-position: right -3rem bottom -7rem`.
 
 ## Existing local changes
 
