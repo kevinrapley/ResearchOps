@@ -1,7 +1,7 @@
 // tests/e2e/smoke.spec.js
 import { test, expect } from '@playwright/test';
 
-const paths = ['/', '/index.html', '/pages/start/index.html', '/pages/projects/index.html'];
+const paths = ['/', '/index.html', '/pages/start/index.html', '/pages/account/sign-in/index.html'];
 
 for (const p of paths) {
 	test(`smoke: GET ${p} should render`, async ({ page, baseURL }) => {
@@ -24,8 +24,8 @@ for (const p of paths) {
 		await expect(page.locator('body')).toBeVisible();
 
 		// Optional: very light content sanity per route
-		if (p === '/pages/projects/index.html') {
-			await expect(page).toHaveTitle(/projects/i);
+		if (p === '/pages/account/sign-in/index.html') {
+			await expect(page).toHaveTitle(/sign in/i);
 		}
 		if (p === '/' || p === '/index.html') {
 			// Expect some hallmark text on the homepage without being brittle.

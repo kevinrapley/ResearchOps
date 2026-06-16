@@ -28,12 +28,12 @@ jobs:
         run: npm ci
 
       - name: Install Playwright browsers
-        run: npx --yes playwright@1.56.1 install --with-deps chromium
+        run: npx playwright install --with-deps chromium
 
       - name: Run Playwright tests
         env:
           NODE_OPTIONS: --max-old-space-size=2048
-        run: npx --yes playwright@1.56.1 test
+        run: npm run test:e2e
 
       - name: Upload Playwright report (HTML)
         if: always()
