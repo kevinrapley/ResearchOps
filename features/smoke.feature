@@ -5,10 +5,10 @@ Feature: Smoke
     When I visit "/"
     Then the page should contain "Research" within 5s
 
-  Scenario: Projects page loads
+  Scenario: Sign-in page loads
     Given the site base URL
-    When I visit "/pages/projects/index.html"
-    Then the page should have a <title> containing "Projects"
+    When I visit "/pages/account/sign-in/index.html"
+    Then the page should have a <title> containing "Sign in"
 
   Scenario: Start page has main landmarks
     Given the site base URL

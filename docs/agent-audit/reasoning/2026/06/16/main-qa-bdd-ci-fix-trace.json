@@ -1,0 +1,75 @@
+{
+  "date": "2026-06-16",
+  "branch": "fix/qa-bdd-main-ci",
+  "task": "Fix main branch QA BDD and Playwright E2E failures after authenticated walkthrough merge",
+  "operatingModel": {
+    "loaded": [
+      "AGENTS.md",
+      ".agent-operating-model/orchestration.xml",
+      ".agent-operating-model/bundle-registry.json",
+      ".agent-operating-model/task-signal-catalog.json",
+      ".agent-operating-model/selection-rules.json",
+      ".agent-operating-model/github-mutation-policy.md",
+      ".agent-operating-model/precedence-policy.md"
+    ],
+    "selectedBundles": [
+      ".agent-operating-model/bundles/github/",
+      ".agent-operating-model/bundles/researchops-developer-control/",
+      ".agent-operating-model/bundles/multi-functional-team/"
+    ],
+    "skippedBundles": [
+      ".agent-operating-model/bundles/govuk-design-system/",
+      ".agent-operating-model/bundles/cloudflare/",
+      ".agent-operating-model/bundles/openai/",
+      ".agent-operating-model/bundles/mcp-agent-tooling/",
+      ".agent-operating-model/bundles/airtable-public-api/",
+      ".agent-operating-model/bundles/mural-public-api/"
+    ]
+  },
+  "failureEvidence": [
+    {
+      "run": 27645142118,
+      "workflow": "qa-bdd",
+      "job": "bdd-smoke",
+      "result": "failed",
+      "details": "Projects smoke scenario hit deployed authenticated realm and received the sign-in page title."
+    },
+    {
+      "run": 27645201722,
+      "workflow": "QA \u2022 Playwright E2E",
+      "job": "e2e",
+      "result": "failed",
+      "details": "Workflow forced playwright@1.56.1 while the repository lockfile installs Playwright 1.60.0."
+    }
+  ],
+  "changes": [
+    "Default Cucumber smoke checks public sign-in instead of protected Projects route.",
+    "Playwright E2E smoke checks public sign-in instead of protected Projects route.",
+    "QA E2E workflow uses repository-installed Playwright commands.",
+    "Focused route-state test covers the main QA CI contract."
+  ],
+  "validation": [
+    {
+      "command": "node --test tests/main-qa-ci-route-state.test.js tests/qa-bdd-authenticated-walkthrough-route-state.test.js",
+      "result": "passed"
+    },
+    {
+      "command": "npx prettier -c .github/workflows/qa-e2e.yml tests/e2e/smoke.spec.js tests/main-qa-ci-route-state.test.js docs/agent-audit/reasoning/2026/06/16/main-qa-bdd-ci-fix-trace.md docs/agent-audit/reasoning/2026/06/16/main-qa-bdd-ci-fix-trace.json",
+      "result": "passed"
+    },
+    {
+      "command": "npm run trace:coverage",
+      "result": "passed"
+    },
+    {
+      "command": "BASE_URL=http://127.0.0.1:8792 npm run qa:cucumber:ci",
+      "result": "passed",
+      "details": "3 scenarios passed, 11 steps passed"
+    },
+    {
+      "command": "BASE_URL=http://127.0.0.1:8792 npm run test:e2e",
+      "result": "passed",
+      "details": "4 tests passed"
+    }
+  ]
+}
