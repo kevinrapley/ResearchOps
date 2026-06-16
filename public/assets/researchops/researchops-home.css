@@ -120,6 +120,17 @@
 	padding: 25px 0 0;
 	}
 
+.researchops-home-hero__content-column, .researchops-home-hero__image-column {
+	box-sizing: border-box;
+	}
+
+.researchops-home-hero__image {
+	display: block;
+	width: 100%;
+	max-width: 100%;
+	height: auto;
+	}
+
 .researchops-home-masthead .govuk-heading-xl, .researchops-home-masthead .govuk-body-l, .researchops-home-masthead .govuk-body {
 	color: #ffffff;
 	}
@@ -206,6 +217,14 @@
 	}
 
 @media (min-width: 40.0625em) {
+	.researchops-home-hero__content-column {
+		width: 55%;
+		}
+	.researchops-home-hero__image-column {
+		width: 45%;
+		padding-right: 0;
+		padding-left: 0;
+		}
 	.researchops-highlight-panel, .researchops-journey-map {
 		padding: 30px;
 		}

@@ -1,0 +1,66 @@
+{
+	"date": "2026-06-16",
+	"branch": "feature/domain-brand-routing",
+	"traceRequired": true,
+	"repository": "kevinrapley/ResearchOps",
+	"task": "Update the ResearchOps home page masthead desktop layout so the hero text column is 55% and the SVG column is 45%.",
+	"operatingModelFilesLoaded": [
+		"AGENTS.md",
+		".agent-operating-model/orchestration.xml",
+		".agent-operating-model/bundle-registry.json",
+		".agent-operating-model/task-signal-catalog.json",
+		".agent-operating-model/selection-rules.json",
+		".agent-operating-model/precedence-policy.md",
+		".agent-operating-model/trace-policy.md",
+		".agent-operating-model/github-mutation-policy.md"
+	],
+	"selectedBundles": [
+		".agent-operating-model/bundles/github/",
+		".agent-operating-model/bundles/researchops-developer-control/",
+		".agent-operating-model/bundles/multi-functional-team/",
+		".agent-operating-model/bundles/govuk-design-system/"
+	],
+	"skippedBundles": [
+		".agent-operating-model/bundles/cloudflare/",
+		".agent-operating-model/bundles/openai/",
+		".agent-operating-model/bundles/mcp-agent-tooling/",
+		".agent-operating-model/bundles/airtable-public-api/",
+		".agent-operating-model/bundles/mural-public-api/"
+	],
+	"filesRead": [
+		"src/govuk/templates/pages/home.njk",
+		"src/styles/researchops-home.scss",
+		"public/index.html",
+		"assets/researchops/researchops-home.css",
+		"public/assets/researchops/researchops-home.css",
+		"tests/deploy-asset-paths.test.js",
+		"scripts/styles/build-generated-css.mjs",
+		"scripts/styles/generated-css-targets.mjs"
+	],
+	"filesModified": [
+		"src/govuk/templates/pages/home.njk",
+		"src/styles/researchops-home.scss",
+		"public/index.html",
+		"assets/researchops/researchops-home.css",
+		"public/assets/researchops/researchops-home.css",
+		"tests/researchops-home-hero-layout-route-state.test.js",
+		"docs/agent-audit/reasoning/2026/06/16/home-hero-desktop-columns.md",
+		"docs/agent-audit/reasoning/2026/06/16/home-hero-desktop-columns.json"
+	],
+	"decisions": [
+		"Add a route-specific content-column class to the home hero text column.",
+		"Override GOV.UK desktop grid widths to 55% and 45% at the existing desktop breakpoint.",
+		"Remove desktop horizontal padding from the image column so the SVG fills the 45% column.",
+		"Keep mobile behaviour unchanged by scoping layout overrides to the desktop media query.",
+		"Regenerate committed home CSS outputs and public/index.html."
+	],
+	"validationAttempted": [
+		"node --test tests/researchops-home-hero-layout-route-state.test.js tests/deploy-asset-paths.test.js",
+		"npx prettier -c src/styles/researchops-home.scss tests/researchops-home-hero-layout-route-state.test.js public/index.html public/assets/researchops/researchops-home.css assets/researchops/researchops-home.css",
+		"Browser measurement at 1280px viewport: text column 55%, image column 45%, SVG fills image column",
+		"npm test -- --test-reporter=spec"
+	],
+	"residualRisks": [
+		"npm run validate was not run during this pass."
+	]
+}
