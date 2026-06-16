@@ -1,0 +1,70 @@
+{
+	"date": "2026-06-16",
+	"branch": "feature/domain-brand-routing",
+	"traceRequired": true,
+	"repository": "kevinrapley/ResearchOps",
+	"task": "Move ResearchOps brand selection from a late query-string switch to hostname-based production brand routing.",
+	"operatingModelFilesLoaded": [
+		"AGENTS.md",
+		".agent-operating-model/orchestration.xml",
+		".agent-operating-model/bundle-registry.json",
+		".agent-operating-model/task-signal-catalog.json",
+		".agent-operating-model/selection-rules.json",
+		".agent-operating-model/bootstrap-checklist.md",
+		".agent-operating-model/precedence-policy.md",
+		".agent-operating-model/trace-policy.md",
+		".agent-operating-model/trace-layers.md",
+		".agent-operating-model/behavioural-evals.json",
+		".agent-operating-model/github-mutation-policy.md"
+	],
+	"selectedBundles": [
+		".agent-operating-model/bundles/github/",
+		".agent-operating-model/bundles/researchops-developer-control/",
+		".agent-operating-model/bundles/multi-functional-team/",
+		".agent-operating-model/bundles/govuk-design-system/",
+		".agent-operating-model/bundles/cloudflare/"
+	],
+	"skippedBundles": [
+		".agent-operating-model/bundles/openai/",
+		".agent-operating-model/bundles/mcp-agent-tooling/",
+		".agent-operating-model/bundles/airtable-public-api/",
+		".agent-operating-model/bundles/mural-public-api/"
+	],
+	"filesRead": [
+		"README.md",
+		"RECENT_LEARNINGS.md",
+		"public/_worker.js",
+		"public/js/brand-variant.js",
+		"public/partials/header.html",
+		"public/partials/html-head.html",
+		"src/govuk/templates/layouts/researchops.njk",
+		"scripts/govuk/render-govuk-pages.mjs",
+		"tests/brand-variant-route-state.test.js",
+		"tests/pages-advanced-worker-auth-route-state.test.js",
+		"tests/govuk-page-chrome-navigation-route-state.test.js",
+		"tests/auth-sign-in-route-state.test.js"
+	],
+	"filesModified": [
+		"public/_worker.js",
+		"public/js/brand-variant.js",
+		"tests/pages-advanced-worker-auth-route-state.test.js",
+		"tests/brand-variant-route-state.test.js",
+		"docs/agent-audit/reasoning/2026/06/16/domain-brand-routing.md",
+		"docs/agent-audit/reasoning/2026/06/16/domain-brand-routing.json"
+	],
+	"decisions": [
+		"Use the Pages advanced Worker to stamp brand metadata into HTML before the browser paints.",
+		"Make research-operations.com and www.research-operations.com resolve to the Home Office brand.",
+		"Make govuk.research-operations.com resolve to the GOV.UK brand.",
+		"Keep query-string brand switching for non-production testing only.",
+		"Preserve existing no-store static HTML cache handling."
+	],
+	"validationAttempted": [
+		"node --test tests/pages-advanced-worker-auth-route-state.test.js tests/brand-variant-route-state.test.js",
+		"npx prettier -c public/_worker.js public/js/brand-variant.js tests/pages-advanced-worker-auth-route-state.test.js tests/brand-variant-route-state.test.js"
+	],
+	"residualRisks": [
+		"Full npm test and npm run validate were not run during this pass.",
+		"Production verification still needs deployment to Cloudflare Pages and live hostname checks."
+	]
+}

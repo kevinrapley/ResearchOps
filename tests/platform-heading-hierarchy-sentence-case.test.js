@@ -23,7 +23,7 @@ function assertHasOneStaticH1(source, label) {
 	return h1s[0];
 }
 
-assert.equal(assertHasOneStaticH1(homePage, 'Home page'), 'ResearchOps demo suite');
+assert.equal(assertHasOneStaticH1(homePage, 'Home page'), 'Home Office Digital ResearchOps');
 assert.equal(homePage.includes('>ResearchOps Demo Suite</h1>'), false);
 
 assert.equal(

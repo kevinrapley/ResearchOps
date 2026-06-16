@@ -1,5 +1,7 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
+import test from "node:test";
+import worker from "../public/_worker.js";
 
 const workerSource = fs.readFileSync("public/_worker.js", "utf8");
 
@@ -15,4 +17,73 @@ includes(workerSource, "stripAccessHeaders: true", "Pages advanced worker");
 includes(workerSource, "headers.delete('cf-access-authenticated-user-email');", "Pages advanced worker");
 includes(workerSource, "headers.delete('cf-access-user-email');", "Pages advanced worker");
 includes(workerSource, "'jwt-only'", "Pages advanced worker");
+includes(workerSource, "function shouldDisableStaticCache(pathname)", "Pages advanced worker static cache policy");
+includes(workerSource, "pathname === '/' || pathname.endsWith('/') || pathname.endsWith('.html')", "Pages advanced worker static cache policy");
+includes(workerSource, "headers.set('cache-control', 'no-store');", "Pages advanced worker static cache policy");
+includes(workerSource, "headers.delete('content-length');", "Pages advanced worker brand routing");
+includes(workerSource, "const PRODUCTION_BRAND_HOSTS = new Map", "Pages advanced worker brand routing");
+includes(workerSource, "['research-operations.com', HOME_OFFICE_BRAND]", "Pages advanced worker brand routing");
+includes(workerSource, "['govuk.research-operations.com', GOVUK_BRAND]", "Pages advanced worker brand routing");
+includes(workerSource, "headers.set('x-researchops-brand', brand);", "Pages advanced worker brand routing");
+includes(workerSource, "injectBrandIntoHtml(await response.text(), brand)", "Pages advanced worker brand routing");
+includes(workerSource, "return staticAssetResponse(request, env);", "Pages advanced worker static cache policy");
 excludes(workerSource, "headers.delete('cf-access-jwt-assertion');", "Pages advanced worker");
+
+function assetEnv(headers = {}, body = "asset") {
+	return {
+		ASSETS: {
+			fetch: async () => new Response(body, { headers }),
+		},
+	};
+}
+
+test("Pages advanced worker disables browser caching for static HTML routes", async () => {
+	const response = await worker.fetch(new Request("https://researchops.pages.dev/"), assetEnv());
+	assert.equal(response.headers.get("cache-control"), "no-store");
+	assert.equal(response.headers.get("x-content-type-options"), "nosniff");
+});
+
+test("Pages advanced worker preserves cache policy for static non-HTML assets", async () => {
+	const response = await worker.fetch(
+		new Request("https://researchops.pages.dev/assets/researchops/researchops-home.css"),
+		assetEnv({ "cache-control": "public, max-age=3600" }),
+	);
+	assert.equal(response.headers.get("cache-control"), "public, max-age=3600");
+});
+
+test("Pages advanced worker serves the Home Office brand from the production apex host", async () => {
+	const response = await worker.fetch(
+		new Request("https://research-operations.com/pages/projects/"),
+		assetEnv(
+			{ "content-type": "text/html; charset=utf-8", "content-length": "89" },
+			'<!doctype html><html class="govuk-template" lang="en"><head></head><body></body></html>',
+		),
+	);
+	const body = await response.text();
+	assert.equal(response.headers.get("x-researchops-brand"), "home-office");
+	assert.equal(response.headers.has("content-length"), false);
+	assert.match(body, /<html class="govuk-template" lang="en" data-researchops-brand="home-office">/);
+	assert.match(body, /<meta name="researchops-brand" content="home-office">/);
+	assert.match(body, /href="\/css\/brands\/home-office\.css"/);
+	assert.match(body, /href="\/css\/brands\/home-office-buttons\.css"/);
+});
+
+test("Pages advanced worker serves the GOV.UK brand from the GOV.UK production subdomain", async () => {
+	const response = await worker.fetch(
+		new Request("https://govuk.research-operations.com/pages/projects/?brand=home-office"),
+		assetEnv({ "content-type": "text/html; charset=utf-8" }, "<!doctype html><html class=\"govuk-template\" lang=\"en\"><head></head><body></body></html>"),
+	);
+	const body = await response.text();
+	assert.equal(response.headers.get("x-researchops-brand"), "govuk");
+	assert.match(body, /<html class="govuk-template" lang="en" data-researchops-brand="govuk">/);
+	assert.match(body, /<meta name="researchops-brand" content="govuk">/);
+	assert.equal(body.includes("/css/brands/home-office.css"), false);
+});
+
+test("Pages advanced worker still supports query-string brand testing off production hosts", async () => {
+	const response = await worker.fetch(
+		new Request("https://researchops.pages.dev/pages/projects/?brand=home-office"),
+		assetEnv({ "content-type": "text/html; charset=utf-8" }, "<!doctype html><html class=\"govuk-template\" lang=\"en\"><head></head><body></body></html>"),
+	);
+	assert.equal(response.headers.get("x-researchops-brand"), "home-office");
+});

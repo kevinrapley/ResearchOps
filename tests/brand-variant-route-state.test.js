@@ -25,6 +25,10 @@ assert.ok(brandScript.includes('home-office'));
 assert.ok(brandScript.includes('govuk'));
 assert.ok(brandScript.includes('researchops-brand'));
 assert.ok(brandScript.includes('researchopsBrand'));
+assert.ok(brandScript.includes('PRODUCTION_BRAND_HOSTS'));
+assert.ok(brandScript.includes("['research-operations.com', HOME_OFFICE_BRAND]"));
+assert.ok(brandScript.includes("['govuk.research-operations.com', GOVUK_BRAND]"));
+assert.ok(brandScript.includes('productionHostnameBrand()'));
 assert.ok(brandScript.includes('researchops-home-office-buttons-brand'));
 assert.ok(brandScript.includes('/css/brands/home-office-buttons.css'));
 
