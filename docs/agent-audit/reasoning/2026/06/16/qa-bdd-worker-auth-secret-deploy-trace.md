@@ -38,6 +38,7 @@ Selected bundles:
 - Added `RESEARCHOPS_QA_BDD_AUTH_CODE` to production Worker deploy secret checks and Wrangler action secret uploads.
 - Added the same secret wiring to the shared preview Worker deploy path in `.github/workflows/deploy-worker.yml`.
 - Added the same secret to the passwordless preview Worker secret bulk upload.
+- Added an early passwordless preview Worker secret check so missing `RESEARCHOPS_QA_BDD_AUTH_CODE` fails before deploy.
 - Enabled the QA BDD auth allow-list vars in `infra/cloudflare/wrangler.passwordless-preview.toml` without storing the secret code in source.
 - Added route-state tests so deploy workflow secret wiring and preview Worker QA auth vars remain covered.
 

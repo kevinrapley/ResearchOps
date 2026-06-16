@@ -143,6 +143,10 @@ test('Cloudflare deploy workflows pass the QA BDD auth code secret to Workers', 
 		passwordlessPreviewWorkflowSource,
 		/RESEARCHOPS_QA_BDD_AUTH_CODE: \$\{\{ secrets\.RESEARCHOPS_QA_BDD_AUTH_CODE \}\}/,
 	);
+	assert.match(
+		passwordlessPreviewWorkflowSource,
+		/Missing required secret: RESEARCHOPS_QA_BDD_AUTH_CODE/,
+	);
 	assert.match(passwordlessPreviewWorkflowSource, /"RESEARCHOPS_QA_BDD_AUTH_CODE"/);
 });
 
