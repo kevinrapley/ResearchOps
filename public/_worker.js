@@ -175,6 +175,7 @@ async function staticAssetResponse(request, env) {
 	const headers = new Headers(response.headers);
 	headers.set('cache-control', 'no-store');
 	headers.set('x-content-type-options', 'nosniff');
+	headers.delete('content-length');
 	const brand = requestBrand(url);
 	headers.set('x-researchops-brand', brand);
 	const body = injectBrandIntoHtml(await response.text(), brand);

@@ -20,6 +20,7 @@ includes(workerSource, "'jwt-only'", "Pages advanced worker");
 includes(workerSource, "function shouldDisableStaticCache(pathname)", "Pages advanced worker static cache policy");
 includes(workerSource, "pathname === '/' || pathname.endsWith('/') || pathname.endsWith('.html')", "Pages advanced worker static cache policy");
 includes(workerSource, "headers.set('cache-control', 'no-store');", "Pages advanced worker static cache policy");
+includes(workerSource, "headers.delete('content-length');", "Pages advanced worker brand routing");
 includes(workerSource, "const PRODUCTION_BRAND_HOSTS = new Map", "Pages advanced worker brand routing");
 includes(workerSource, "['research-operations.com', HOME_OFFICE_BRAND]", "Pages advanced worker brand routing");
 includes(workerSource, "['govuk.research-operations.com', GOVUK_BRAND]", "Pages advanced worker brand routing");
@@ -53,10 +54,14 @@ test("Pages advanced worker preserves cache policy for static non-HTML assets", 
 test("Pages advanced worker serves the Home Office brand from the production apex host", async () => {
 	const response = await worker.fetch(
 		new Request("https://research-operations.com/pages/projects/"),
-		assetEnv({ "content-type": "text/html; charset=utf-8" }, "<!doctype html><html class=\"govuk-template\" lang=\"en\"><head></head><body></body></html>"),
+		assetEnv(
+			{ "content-type": "text/html; charset=utf-8", "content-length": "89" },
+			'<!doctype html><html class="govuk-template" lang="en"><head></head><body></body></html>',
+		),
 	);
 	const body = await response.text();
 	assert.equal(response.headers.get("x-researchops-brand"), "home-office");
+	assert.equal(response.headers.has("content-length"), false);
 	assert.match(body, /<html class="govuk-template" lang="en" data-researchops-brand="home-office">/);
 	assert.match(body, /<meta name="researchops-brand" content="home-office">/);
 	assert.match(body, /href="\/css\/brands\/home-office\.css"/);
