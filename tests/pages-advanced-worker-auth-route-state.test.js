@@ -24,6 +24,7 @@ includes(workerSource, "headers.delete('content-length');", "Pages advanced work
 includes(workerSource, "function protectedPageRedirect(request, env)", "Pages advanced worker protected page preflight");
 includes(workerSource, "apiEndpointTarget(request, env, '/api/me')", "Pages advanced worker protected page preflight");
 includes(workerSource, "cleanPath === '/pages/projects' || cleanPath === '/pages/repository'", "Pages advanced worker protected page preflight");
+includes(workerSource, "return response.ok ? null : signInRedirect(request);", "Pages advanced worker protected page preflight");
 includes(workerSource, "x-researchops-auth-redirect", "Pages advanced worker protected page preflight");
 includes(workerSource, "const PRODUCTION_BRAND_HOSTS = new Map", "Pages advanced worker brand routing");
 includes(workerSource, "['research-operations.com', HOME_OFFICE_BRAND]", "Pages advanced worker brand routing");
@@ -142,6 +143,21 @@ test("Pages advanced worker redirects unauthenticated Repository page requests t
 		);
 		assert.equal(response.status, 302);
 		assert.equal(response.headers.get("location"), "https://researchops.pages.dev/pages/account/sign-in/?returnTo=%2Fpages%2Frepository%2F");
+	});
+});
+
+test("Pages advanced worker redirects protected static page requests when the app auth check fails", async () => {
+	await withMockedFetch(async (url) => {
+		assert.equal(url, "https://rops-api.digikev-kevin-rapley.workers.dev/api/me");
+		return new Response(JSON.stringify({ ok: false, error: "auth_service_unavailable" }), { status: 503 });
+	}, async () => {
+		const response = await worker.fetch(
+			new Request("https://researchops.pages.dev/pages/projects/"),
+			assetEnv({ "content-type": "text/html; charset=utf-8" }, "<!doctype html><html><head></head><body>Projects</body></html>"),
+		);
+		assert.equal(response.status, 302);
+		assert.equal(response.headers.get("x-researchops-auth-redirect"), "pages-static-preflight");
+		assert.equal(response.headers.get("location"), "https://researchops.pages.dev/pages/account/sign-in/?returnTo=%2Fpages%2Fprojects%2F");
 	});
 });
 

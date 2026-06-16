@@ -160,7 +160,7 @@ async function protectedPageRedirect(request, env) {
 		redirect: 'manual',
 	});
 
-	return response.status === 401 ? signInRedirect(request) : null;
+	return response.ok ? null : signInRedirect(request);
 }
 
 function shouldDisableStaticCache(pathname) {

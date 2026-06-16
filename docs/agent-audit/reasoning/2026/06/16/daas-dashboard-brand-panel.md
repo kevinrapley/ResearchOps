@@ -73,6 +73,7 @@ Add a DaaS-specific brand panel to the project dashboard for DaaS projects. The 
 - `public/js/repository-page.js`
 - `tests/pages-advanced-worker-auth-route-state.test.js`
 - PR #413 unresolved Codex review thread `PRRT_kwDOP3Td2M6J5TAJ`
+- Browser report that `/api/me` returned `503` in the preview with no redirect.
 - `docs/agent-audit/reasoning/README.md`
 
 ## Files created or modified
@@ -104,6 +105,7 @@ Add a DaaS-specific brand panel to the project dashboard for DaaS projects. The 
 - Follow-up: kept the redirect server-side in the Pages worker rather than broadening client-side error handling, so data outages still render as data errors while unauthenticated sessions redirect before the page body is served.
 - Codex review follow-up: accepted the comment that DaaS detection should include multi-team project records, because the API preserves `teamNames` while the dashboard previously checked only singular team fields.
 - Codex review follow-up: preserved `teamNames` during dashboard normalisation and flattened array-valued team fields in `renderProjectBrand()` so DaaS is detected even when it is not the first team.
+- Auth preview follow-up: changed the protected static-page preflight to redirect when the `/api/me` app-auth check is any non-OK response, including the reported `503`, so `/pages/projects/` and `/pages/repository/` do not render a broken shell when the app session cannot be confirmed.
 
 ## Validation attempted
 
@@ -125,6 +127,7 @@ Add a DaaS-specific brand panel to the project dashboard for DaaS projects. The 
 - Follow-up: `node --test tests/pages-advanced-worker-auth-route-state.test.js` passed after adding protected-page preflight coverage.
 - Follow-up: `npm test` passed with 230 tests and 0 failures after the protected-page preflight change.
 - Codex review follow-up: `node tests/project-dashboard-route-state.test.js` passed after adding multi-team DaaS detection coverage.
+- Auth preview follow-up: `node --test tests/pages-advanced-worker-auth-route-state.test.js` passed with coverage for a `503` `/api/me` response redirecting `/pages/projects/` to sign-in.
 
 ## Existing local changes
 
