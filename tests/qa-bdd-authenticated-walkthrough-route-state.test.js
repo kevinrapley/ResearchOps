@@ -14,6 +14,7 @@ const visualWalkthroughSource = fs.readFileSync('scripts/visual-walkthrough.mjs'
 const helperSource = fs.readFileSync('scripts/walkthrough-playwright.mjs', 'utf8');
 const passwordlessSource = fs.readFileSync('infra/cloudflare/src/core/auth/passwordless.js', 'utf8');
 const participantConsentSource = fs.readFileSync('public/js/participant-consent-page.js', 'utf8');
+const qaBddWorkflowSource = fs.readFileSync('.github/workflows/qa-bdd.yml', 'utf8');
 
 test('QA BDD walkthrough captures sign-in code and authenticated page states', () => {
 	assert.match(featureSource, /@walkthrough/);
@@ -36,15 +37,34 @@ test('visual walkthrough uses local assets and deterministic authenticated mocks
 	assert.match(visualWalkthroughSource, /registerLocalAssetRoutes/);
 	assert.match(visualWalkthroughSource, /walkthroughMockRoutes/);
 	assert.match(visualWalkthroughSource, /process\.env\.WALKTHROUGH_LOCAL_ASSETS === 'true'/);
+	assert.match(visualWalkthroughSource, /playwrightRequest\.newContext/);
+	assert.match(visualWalkthroughSource, /RESEARCHOPS_QA_BDD_AUTH_CODE/);
+	assert.match(visualWalkthroughSource, /SERVER_PROTECTED_PAGE_IDS = new Set\(\['repository'\]\)/);
 	assert.match(helperSource, /operationalMockRoutes/);
 	assert.match(helperSource, /typeof body === 'function'/);
 	assert.match(helperSource, /SIGN_IN_EMAIL = 'qa-bdd\.walkthrough@example\.gov\.uk'/);
 });
 
+test('visual walkthrough is a manual job with QA auth secret wiring', () => {
+	const walkthroughJobIndex = qaBddWorkflowSource.indexOf('  walkthrough:');
+	const walkthroughJob = qaBddWorkflowSource.slice(walkthroughJobIndex);
+
+	assert.ok(walkthroughJobIndex > -1);
+	assert.match(walkthroughJob, /github\.event_name == 'workflow_dispatch'/);
+	assert.doesNotMatch(walkthroughJob, /github\.ref == 'refs\/heads\/main'/);
+	assert.doesNotMatch(walkthroughJob, /github\.event\.workflow_run\.head_branch == 'main'/);
+	assert.match(walkthroughJob, /RESEARCHOPS_QA_BDD_AUTH_EMAIL: qa-bdd\.walkthrough@example\.gov\.uk/);
+	assert.match(walkthroughJob, /RESEARCHOPS_QA_BDD_AUTH_CODE: \$\{\{ secrets\.RESEARCHOPS_QA_BDD_AUTH_CODE \}\}/);
+});
+
 test('visual walkthrough registers Cloudflare-generated repository pages', () => {
 	const registeredPaths = new Set(visualWalkthroughConfig.pages.map((page) => page.path));
+	const repositoryPage = visualWalkthroughConfig.pages.find((page) => page.id === 'repository');
 
 	assert.equal(registeredPaths.has('/pages/repository/index.html'), true);
+	assert.deepEqual(repositoryPage.defaultState.actions, [
+		{ type: 'waitForSelector', selector: '[data-repository-page]' },
+	]);
 	for (const page of repositoryStaticPages) {
 		assert.equal(
 			registeredPaths.has(`/pages/repository/${page.slug}/index.html`),

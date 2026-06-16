@@ -5,7 +5,7 @@
  * @summary Generate the application visual walkthrough report from a registered page/state catalogue.
  */
 
-import { chromium } from 'playwright';
+import { chromium, request as playwrightRequest } from 'playwright';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -20,6 +20,7 @@ import {
 } from '../visual-walkthrough.participant-consent-states.mjs';
 import { buildStateAcceptanceGherkin } from './researchops-state-acceptance.mjs';
 import {
+	SIGN_IN_EMAIL,
 	registerLocalAssetRoutes,
 	registerMockRoutes,
 	walkthroughMockRoutes,
@@ -90,6 +91,10 @@ const baseURL = normalizeBaseURL(
 	process.env.BASE_URL || process.env.PAGES_URL || process.env.PREVIEW_URL || DEFAULT_BASE_URL
 );
 const useLocalAssets = process.env.WALKTHROUGH_LOCAL_ASSETS === 'true';
+const qaBddAuthEmail = process.env.RESEARCHOPS_QA_BDD_AUTH_EMAIL || SIGN_IN_EMAIL;
+const qaBddAuthCode = String(process.env.RESEARCHOPS_QA_BDD_AUTH_CODE || '').replace(/\s+/g, '');
+const SERVER_PROTECTED_PAGE_IDS = new Set(['repository']);
+let qaBddStorageStatePromise = null;
 const captureProfiles = (visualWalkthroughConfig.profiles || DEFAULT_PROFILES).map((profile) => ({
 	...profile,
 	id: slugify(profile.id || profile.title || 'profile'),
@@ -273,10 +278,70 @@ async function runAction(page, action) {
 	throw new Error(`Unsupported visual walkthrough action type: ${action.type}`);
 }
 
+function needsServerAuth(pageConfig) {
+	const hostname = new URL(baseURL).hostname;
+	const localHostnames = new Set(['localhost', '127.0.0.1', '::1']);
+	return (
+		!useLocalAssets &&
+		!localHostnames.has(hostname) &&
+		pageConfig.authenticated !== false &&
+		SERVER_PROTECTED_PAGE_IDS.has(pageConfig.id)
+	);
+}
+
+function canUseQaBddAuth() {
+	return qaBddAuthEmail && /^\d{6}$/.test(qaBddAuthCode);
+}
+
+async function createQaBddStorageState() {
+	if (!canUseQaBddAuth()) {
+		throw new Error(
+			'Protected visual walkthrough pages require RESEARCHOPS_QA_BDD_AUTH_CODE to match the deployed QA BDD auth bypass code.'
+		);
+	}
+
+	const api = await playwrightRequest.newContext({
+		baseURL,
+		ignoreHTTPSErrors: true,
+	});
+
+	try {
+		const startResponse = await api.post('/api/auth/email/start', {
+			data: { email: qaBddAuthEmail },
+		});
+		const startBody = await startResponse.json().catch(() => ({}));
+		if (!startResponse.ok() || !startBody?.challengeId) {
+			throw new Error(`QA BDD sign-in start failed with HTTP ${startResponse.status()}.`);
+		}
+
+		const verifyResponse = await api.post('/api/auth/email/verify', {
+			data: {
+				challengeId: startBody.challengeId,
+				code: qaBddAuthCode,
+			},
+		});
+		const verifyBody = await verifyResponse.json().catch(() => ({}));
+		if (!verifyResponse.ok() || !verifyBody?.ok) {
+			throw new Error(`QA BDD sign-in verify failed with HTTP ${verifyResponse.status()}.`);
+		}
+
+		return api.storageState();
+	} finally {
+		await api.dispose();
+	}
+}
+
+async function qaBddStorageState() {
+	qaBddStorageStatePromise ||= createQaBddStorageState();
+	return qaBddStorageStatePromise;
+}
+
 async function captureState(browser, pageConfig, stateConfig, profile) {
+	const storageState = needsServerAuth(pageConfig) ? await qaBddStorageState() : undefined;
 	const context = await browser.newContext({
 		ignoreHTTPSErrors: true,
 		reducedMotion: 'reduce',
+		...(storageState ? { storageState } : {}),
 		...profile.contextOptions,
 	});
 	const page = await context.newPage();
