@@ -40,6 +40,7 @@ The selected bundle directories had their registered `prompt.spec.yaml` and `pro
 - Kept the smoke BDD path available for normal main and PR checks.
 - Added QA auth secret wiring to the manual visual walkthrough step.
 - Added server-side QA sign-in support in `scripts/visual-walkthrough.mjs` so protected pages can receive a real session cookie before navigation.
+- Added the non-secret Cloudflare Worker vars `RESEARCHOPS_QA_BDD_AUTH_ENABLED=true` and `RESEARCHOPS_QA_BDD_AUTH_EMAILS=qa-bdd.walkthrough@example.gov.uk` to `infra/cloudflare/wrangler.toml`.
 - Updated the repository front-page visual state to wait for the server-rendered repository shell.
 - Added route-state tests for the manual-job boundary, secret wiring and protected-page sign-in helper.
 - Updated `docs/qa/visual-walkthrough.md` to explain the required GitHub secret and deployed Worker QA bypass alignment.
@@ -57,6 +58,8 @@ Completed after the fix:
 - `npx prettier -c .github/workflows/qa-bdd.yml docs/qa/visual-walkthrough.md scripts/visual-walkthrough.mjs tests/qa-bdd-authenticated-walkthrough-route-state.test.js visual-walkthrough.config.mjs docs/agent-audit/reasoning/2026/06/16/qa-bdd-manual-walkthrough-auth-trace.md docs/agent-audit/reasoning/2026/06/16/qa-bdd-manual-walkthrough-auth-trace.json` passed.
 - `npm run trace:coverage` passed.
 - `npm run lint` passed with existing repository warnings and no errors.
+- Follow-up check after adding the Cloudflare Worker non-secret vars: `node --test tests/qa-bdd-authenticated-walkthrough-route-state.test.js` passed.
+- Follow-up formatting check: `npx prettier -c infra/cloudflare/wrangler.toml tests/qa-bdd-authenticated-walkthrough-route-state.test.js` passed.
 
 GitHub Actions still needs to run on the PR to prove the normal main smoke path no longer runs the heavyweight walkthrough automatically.
 

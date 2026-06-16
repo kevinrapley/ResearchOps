@@ -15,6 +15,7 @@ const helperSource = fs.readFileSync('scripts/walkthrough-playwright.mjs', 'utf8
 const passwordlessSource = fs.readFileSync('infra/cloudflare/src/core/auth/passwordless.js', 'utf8');
 const participantConsentSource = fs.readFileSync('public/js/participant-consent-page.js', 'utf8');
 const qaBddWorkflowSource = fs.readFileSync('.github/workflows/qa-bdd.yml', 'utf8');
+const cloudflareWranglerSource = fs.readFileSync('infra/cloudflare/wrangler.toml', 'utf8');
 
 test('QA BDD walkthrough captures sign-in code and authenticated page states', () => {
 	assert.match(featureSource, /@walkthrough/);
@@ -102,6 +103,15 @@ test('passwordless QA BDD bypass is env gated and reuses the normal session path
 	assert.match(passwordlessSource, /qaBddCodeAccepted/);
 	assert.match(passwordlessSource, /INSERT INTO auth_sessions/);
 	assert.doesNotMatch(passwordlessSource, /qa-bdd\.walkthrough@example\.gov\.uk/);
+});
+
+test('Cloudflare Worker config enables QA BDD auth without storing the code', () => {
+	assert.match(cloudflareWranglerSource, /RESEARCHOPS_QA_BDD_AUTH_ENABLED = "true"/);
+	assert.match(
+		cloudflareWranglerSource,
+		/RESEARCHOPS_QA_BDD_AUTH_EMAILS = "qa-bdd\.walkthrough@example\.gov\.uk"/,
+	);
+	assert.doesNotMatch(cloudflareWranglerSource, /RESEARCHOPS_QA_BDD_AUTH_CODE/);
 });
 
 test('participant consent same-origin API URLs are valid during walkthrough capture', () => {

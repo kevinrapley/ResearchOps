@@ -36,6 +36,7 @@
   "filesModified": [
     ".github/workflows/qa-bdd.yml",
     "docs/qa/visual-walkthrough.md",
+    "infra/cloudflare/wrangler.toml",
     "scripts/visual-walkthrough.mjs",
     "tests/qa-bdd-authenticated-walkthrough-route-state.test.js",
     "visual-walkthrough.config.mjs"
@@ -47,6 +48,7 @@
   "decisions": [
     "Normal main smoke remains fast and public-route only.",
     "The heavyweight walkthrough now runs through manual workflow dispatch.",
+    "The non-secret Cloudflare Worker enable flag and allowed QA email live in wrangler.toml.",
     "Protected deployed pages use a real QA auth session when the matching secret and Cloudflare Worker bypass are configured."
   ],
   "validation": [
@@ -65,6 +67,14 @@
     {
       "command": "npm run lint",
       "result": "passed with existing warnings and no errors"
+    },
+    {
+      "command": "node --test tests/qa-bdd-authenticated-walkthrough-route-state.test.js",
+      "result": "passed after adding Cloudflare Worker QA BDD vars"
+    },
+    {
+      "command": "npx prettier -c infra/cloudflare/wrangler.toml tests/qa-bdd-authenticated-walkthrough-route-state.test.js",
+      "result": "passed"
     }
   ],
   "residualRisk": "Manual protected-page capture requires RESEARCHOPS_QA_BDD_AUTH_CODE to be configured in GitHub Actions and to match the deployed Cloudflare Worker QA BDD bypass."
