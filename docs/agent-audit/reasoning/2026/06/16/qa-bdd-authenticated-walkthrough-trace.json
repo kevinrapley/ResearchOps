@@ -32,11 +32,17 @@
     "Shared Playwright walkthrough helper module for local assets, deterministic mocks, and sign-in fixtures",
     "Signed-out sign-in and code-requested visual walkthrough states",
     "Authenticated deterministic BDD capture for every registered page state",
+    "Registry coverage now uses Git-tracked HTML routes so ignored/generated pages cannot create CI-only 404s",
     "Environment-gated QA BDD passwordless bypass for allowlisted email addresses",
     "Participant consent same-origin API URL and missing-context fixes",
     "Focused regression tests and Cucumber feature coverage"
   ],
   "validation": [
+    {
+      "command": "gh run view 27642304660 --job 81745229987 --log",
+      "result": "inspected",
+      "details": "bdd-smoke failed because /pages/repository/index.html was generated locally but not tracked or served in CI"
+    },
     {
       "command": "node --test tests/qa-bdd-authenticated-walkthrough-route-state.test.js tests/auth-sign-in-route-state.test.js tests/visual-walkthrough-registry-coverage.test.js tests/visual-walkthrough-role-assignment-route-state.test.js",
       "result": "passed"

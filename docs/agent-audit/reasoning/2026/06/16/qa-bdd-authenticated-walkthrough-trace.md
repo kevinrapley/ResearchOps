@@ -55,6 +55,9 @@ Bundles not selected:
 
 ## Validation Evidence
 
+- GitHub Actions follow-up:
+  - `bdd-smoke` failed on PR #414 because the BDD capture loop attempted `/pages/repository/index.html`, which is generated locally but not tracked in Git or served by the CI static site.
+  - The walkthrough registry was corrected to exclude generated-only repository routes, and the registry coverage test now uses `git ls-files` so ignored/generated HTML cannot make local coverage disagree with CI.
 - Focused Node tests passed:
   - `node --test tests/qa-bdd-authenticated-walkthrough-route-state.test.js tests/auth-sign-in-route-state.test.js tests/visual-walkthrough-registry-coverage.test.js tests/visual-walkthrough-role-assignment-route-state.test.js`
 - Focused formatting check passed:
