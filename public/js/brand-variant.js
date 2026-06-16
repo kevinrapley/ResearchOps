@@ -4,6 +4,11 @@ const BRAND_BUTTON_STYLESHEET_ID = 'researchops-home-office-buttons-brand';
 const HOME_OFFICE_BRAND = 'home-office';
 const GOVUK_BRAND = 'govuk';
 const SUPPORTED_BRANDS = new Set([GOVUK_BRAND, HOME_OFFICE_BRAND]);
+const PRODUCTION_BRAND_HOSTS = new Map([
+	['research-operations.com', HOME_OFFICE_BRAND],
+	['www.research-operations.com', HOME_OFFICE_BRAND],
+	['govuk.research-operations.com', GOVUK_BRAND],
+]);
 
 function normaliseBrand(value) {
 	const brand = String(value || '').trim().toLowerCase();
@@ -31,12 +36,20 @@ function metaBrand() {
 	return document.querySelector('meta[name="researchops-brand"]')?.getAttribute('content') || '';
 }
 
+function productionHostnameBrand() {
+	const hostname = String(window.location?.hostname || '').toLowerCase();
+	return PRODUCTION_BRAND_HOSTS.get(hostname) || '';
+}
+
 function hostnameBrand() {
 	const hostname = String(window.location?.hostname || '').toLowerCase();
 	return hostname.includes('home-office') || hostname.includes('homeoffice') ? HOME_OFFICE_BRAND : GOVUK_BRAND;
 }
 
 export function getConfiguredBrand() {
+	const configuredProductionBrand = productionHostnameBrand();
+	if (configuredProductionBrand) return configuredProductionBrand;
+
 	const requested = new URLSearchParams(window.location.search || '').get('brand');
 	if (requested && SUPPORTED_BRANDS.has(requested)) {
 		storeBrand(requested);

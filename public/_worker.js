@@ -1,6 +1,14 @@
 const PREVIEW_API_ORIGIN = 'https://rops-api-passwordless-preview.digikev-kevin-rapley.workers.dev';
 const PRODUCTION_API_ORIGIN = 'https://rops-api.digikev-kevin-rapley.workers.dev';
 const PRODUCTION_PAGES_HOST = 'researchops.pages.dev';
+const HOME_OFFICE_BRAND = 'home-office';
+const GOVUK_BRAND = 'govuk';
+const SUPPORTED_BRANDS = new Set([HOME_OFFICE_BRAND, GOVUK_BRAND]);
+const PRODUCTION_BRAND_HOSTS = new Map([
+	['research-operations.com', HOME_OFFICE_BRAND],
+	['www.research-operations.com', HOME_OFFICE_BRAND],
+	['govuk.research-operations.com', GOVUK_BRAND],
+]);
 
 function isPagesPreviewHost(hostname) {
 	return hostname.endsWith('.researchops.pages.dev') && hostname !== PRODUCTION_PAGES_HOST;
@@ -108,6 +116,75 @@ function jsonResponse(body, status = 200, target = null, extraHeaders = {}) {
 	return new Response(JSON.stringify(body), { status, headers });
 }
 
+function shouldDisableStaticCache(pathname) {
+	return pathname === '/' || pathname.endsWith('/') || pathname.endsWith('.html');
+}
+
+function normaliseBrand(value) {
+	const brand = String(value || '').trim().toLowerCase();
+	return SUPPORTED_BRANDS.has(brand) ? brand : GOVUK_BRAND;
+}
+
+function productionHostBrand(hostname) {
+	return PRODUCTION_BRAND_HOSTS.get(String(hostname || '').toLowerCase()) || null;
+}
+
+function requestBrand(url) {
+	const hostBrand = productionHostBrand(url.hostname);
+	if (hostBrand) return hostBrand;
+	return normaliseBrand(url.searchParams.get('brand'));
+}
+
+function isHtmlResponse(response, pathname) {
+	const contentType = response.headers.get('content-type') || '';
+	return shouldDisableStaticCache(pathname) || contentType.toLowerCase().includes('text/html');
+}
+
+function brandHtmlAttributes(match, brand) {
+	let html = match;
+	if (/\sdata-researchops-brand=/.test(html)) {
+		html = html.replace(/\sdata-researchops-brand=(["'])[^"']*\1/, ` data-researchops-brand="${brand}"`);
+	} else {
+		html = html.replace(/>$/, ` data-researchops-brand="${brand}">`);
+	}
+	return html;
+}
+
+function brandHeadHtml(brand) {
+	const meta = `<meta name="researchops-brand" content="${brand}">`;
+	if (brand !== HOME_OFFICE_BRAND) return meta;
+	return `${meta}
+	<link rel="stylesheet" href="/css/brands/home-office.css" media="screen">
+	<link rel="stylesheet" href="/css/brands/home-office-buttons.css" media="screen">`;
+}
+
+function injectBrandIntoHtml(html, brand) {
+	let next = html.replace(/<html\b[^>]*>/i, (match) => brandHtmlAttributes(match, brand));
+	if (!next.includes('name="researchops-brand"')) {
+		next = next.replace(/<head\b[^>]*>/i, (match) => `${match}
+	${brandHeadHtml(brand)}`);
+	}
+	return next;
+}
+
+async function staticAssetResponse(request, env) {
+	const response = await env.ASSETS.fetch(request);
+	const url = new URL(request.url);
+	if (!isHtmlResponse(response, url.pathname)) return response;
+
+	const headers = new Headers(response.headers);
+	headers.set('cache-control', 'no-store');
+	headers.set('x-content-type-options', 'nosniff');
+	const brand = requestBrand(url);
+	headers.set('x-researchops-brand', brand);
+	const body = injectBrandIntoHtml(await response.text(), brand);
+	return new Response(body, {
+		status: response.status,
+		statusText: response.statusText,
+		headers,
+	});
+}
+
 function isProjectListRequest(request) {
 	const url = new URL(request.url);
 	return request.method.toUpperCase() === 'GET' && url.pathname.replace(/\/+$/, '') === '/api/projects';
@@ -196,6 +273,6 @@ export default {
 			}
 		}
 
-		return env.ASSETS.fetch(request);
+		return staticAssetResponse(request, env);
 	},
 };
