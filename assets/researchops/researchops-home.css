@@ -253,6 +253,33 @@
 	height: 22px;
 	}
 
+.researchops-explainer-transcript {
+	margin-top: 10px;
+	margin-bottom: 0;
+	}
+
+.researchops-explainer-transcript .govuk-details__summary, .researchops-explainer-transcript .govuk-details__summary:visited {
+	color: #ffffff;
+	}
+
+.researchops-explainer-transcript .govuk-details__summary:hover {
+	color: #ffffff;
+	text-decoration-thickness: 3px;
+	}
+
+.researchops-explainer-transcript .govuk-details__summary:focus {
+	color: #0b0c0c;
+	}
+
+.researchops-explainer-transcript .govuk-details__text {
+	border-left-color: rgba(255, 255, 255, 0.6);
+	color: #ffffff;
+	}
+
+.researchops-explainer-transcript .govuk-body-s {
+	color: #ffffff;
+	}
+
 @media (prefers-reduced-motion: reduce) {
 	.researchops-explainer *, .researchops-explainer *::before, .researchops-explainer *::after {
 		animation-duration: 0.001ms !important;
