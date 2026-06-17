@@ -27,6 +27,9 @@ const emphasisCues = [
 	{ part: 'outcomes', at: 72, duration: 8.5, scale: 0.2 }
 ];
 
+const prefersReducedMotion = () =>
+	window.matchMedia?.('(prefers-reduced-motion: reduce)').matches === true;
+
 const prepareSvg = (svg) => {
 	svg.classList.add('researchops-explainer__svg');
 	svg.setAttribute('aria-hidden', 'true');
@@ -156,6 +159,11 @@ const startSvgAnimation = (component) => {
 
 	if (existingFrame) {
 		cancelAnimationFrame(existingFrame);
+	}
+
+	if (prefersReducedMotion()) {
+		animationFrames.delete(component);
+		return;
 	}
 
 	animateSvg(component, performance.now());

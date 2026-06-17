@@ -4,6 +4,7 @@ import fs from 'node:fs';
 const homeTemplate = fs.readFileSync('src/govuk/templates/pages/home.njk', 'utf8');
 const homePage = fs.readFileSync('public/index.html', 'utf8');
 const homeCss = fs.readFileSync('public/assets/researchops/researchops-home.css', 'utf8');
+const explainerScript = fs.readFileSync('public/js/researchops-explainer-animation.js', 'utf8');
 
 assert.match(
 	homeTemplate,
@@ -11,9 +12,13 @@ assert.match(
 );
 assert.match(homePage, /class="govuk-grid-column-two-thirds researchops-home-hero__content-column"/);
 assert.match(homePage, /class="govuk-grid-column-one-third researchops-home-hero__image-column"/);
-assert.match(homePage, /class="researchops-home-hero__image"/);
-assert.match(homePage, /researchops-home\.css\?v=home-masthead-mobile-svg-20260616/);
-assert.match(homeTemplate, /researchops-home\.css\?v=home-masthead-mobile-svg-20260616/);
+assert.match(homePage, /class="researchops-explainer" data-researchops-explainer/);
+assert.match(homePage, /data-svg="\/images\/home-masthead-researchops-illustration\.svg"/);
+assert.match(homePage, /src="\/audio\/researchops-explainer\.m4a"/);
+assert.match(homePage, /Text alternative for audio explainer/);
+assert.match(homePage, /ResearchOps helps public service teams plan, run and reuse user research/);
+assert.match(homePage, /researchops-home\.css\?v=home-explainer-a11y-20260617/);
+assert.match(homeTemplate, /researchops-home\.css\?v=home-explainer-a11y-20260617/);
 
 assert.match(
 	homeCss,
@@ -21,9 +26,11 @@ assert.match(
 );
 assert.match(
 	homeCss,
-	/\.researchops-home-hero__image \{[\s\S]*?width: 320px;[\s\S]*?max-width: 100%;[\s\S]*?height: auto;/
+	/\.researchops-explainer \{[\s\S]*?aspect-ratio: 1700\/950;[\s\S]*?background: #732282;/
 );
 assert.match(
 	homeCss,
-	/@media \(min-width: 40\.0625em\) \{[\s\S]*?\.researchops-home-hero__image \{[\s\S]*?width: 100%;/
+	/\.researchops-explainer-transcript \.govuk-details__summary[\s\S]*?color: #ffffff;/
 );
+assert.match(explainerScript, /prefersReducedMotion/);
+assert.match(explainerScript, /prefers-reduced-motion: reduce/);

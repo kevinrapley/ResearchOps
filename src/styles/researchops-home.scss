@@ -267,6 +267,34 @@
 	height: 22px;
 }
 
+.researchops-explainer-transcript {
+	margin-top: govuk-spacing(2);
+	margin-bottom: 0;
+}
+
+.researchops-explainer-transcript .govuk-details__summary,
+.researchops-explainer-transcript .govuk-details__summary:visited {
+	color: govuk-colour('white');
+}
+
+.researchops-explainer-transcript .govuk-details__summary:hover {
+	color: govuk-colour('white');
+	text-decoration-thickness: 3px;
+}
+
+.researchops-explainer-transcript .govuk-details__summary:focus {
+	color: govuk-colour('black');
+}
+
+.researchops-explainer-transcript .govuk-details__text {
+	border-left-color: rgba(255, 255, 255, 0.6);
+	color: govuk-colour('white');
+}
+
+.researchops-explainer-transcript .govuk-body-s {
+	color: govuk-colour('white');
+}
+
 @media (prefers-reduced-motion: reduce) {
 	.researchops-explainer *,
 	.researchops-explainer *::before,

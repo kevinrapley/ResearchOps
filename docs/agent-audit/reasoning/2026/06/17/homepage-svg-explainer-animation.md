@@ -60,6 +60,7 @@
 - `src/styles/researchops-home.scss`
 - `public/index.html`
 - `public/assets/researchops/researchops-home.css`
+- `tests/researchops-home-hero-layout-route-state.test.js`
 - `docs/agent-audit/reasoning/2026/06/17/homepage-svg-explainer-animation.md`
 - `docs/agent-audit/reasoning/2026/06/17/homepage-svg-explainer-animation.json`
 
@@ -72,13 +73,18 @@
 - Added JavaScript-driven SVG movement tied to the audio play state.
 - Added timed emphasis cues that scale selected SVG groups and bring the active group to the front without shadows.
 - Ensured the play button returns to the laptop-screen position after the narrative ends.
+- Addressed Codex PR review feedback by updating the stale homepage route-state assertions, suppressing the SVG motion loop for reduced-motion users, and adding the user-supplied text alternative for the audio explainer.
 
 ## Validation
 
 - `npm run build:researchops`: passed.
 - `npm run build:govuk-pages`: passed.
 - `npx eslint public/js/researchops-explainer-animation.js`: passed.
+- `npx eslint public/js/researchops-explainer-animation.js tests/researchops-home-hero-layout-route-state.test.js`: passed.
+- `node tests/researchops-home-hero-layout-route-state.test.js`: passed.
+- `npm run trace:coverage`: passed.
 - Local browser verification at `http://127.0.0.1:4173/`: SVG injected, no native video element, 10 SVG groups recognised, audio duration loaded as approximately 77.33 seconds.
+- Local browser verification after PR review fixes at `http://127.0.0.1:4173/`: SVG injected, no native video element, audio source wired to `/audio/researchops-explainer.m4a`, and the text alternative appears on the page.
 
 ## Validation not run
 
