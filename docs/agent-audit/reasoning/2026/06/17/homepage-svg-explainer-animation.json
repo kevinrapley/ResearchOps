@@ -1,0 +1,85 @@
+{
+  "date": "2026-06-17",
+  "branch": "feature/homepage-svg-explainer-animation",
+  "traceRequired": true,
+  "traceReason": "Branch prefix feature/ requires an auditable trace.",
+  "taskSummary": "Replace the homepage masthead static illustration/video experiment with an inline SVG animation controlled by a bespoke play/pause button and the supplied voiceover audio.",
+  "operatingModelFilesLoaded": [
+    "AGENTS.md",
+    ".agent-operating-model/orchestration.xml",
+    ".agent-operating-model/bundle-registry.json",
+    ".agent-operating-model/task-signal-catalog.json",
+    ".agent-operating-model/selection-rules.json",
+    ".agent-operating-model/bootstrap-checklist.md",
+    ".agent-operating-model/precedence-policy.md",
+    ".agent-operating-model/trace-policy.md",
+    ".agent-operating-model/trace-layers.md",
+    ".agent-operating-model/behavioural-evals.json",
+    ".agent-operating-model/github-mutation-policy.md"
+  ],
+  "selectedBundles": [
+    {
+      "id": "github-diamond",
+      "canonicalPath": ".agent-operating-model/bundles/github/"
+    },
+    {
+      "id": "researchops-developer-control",
+      "canonicalPath": ".agent-operating-model/bundles/researchops-developer-control/"
+    },
+    {
+      "id": "multi-functional-team",
+      "canonicalPath": ".agent-operating-model/bundles/multi-functional-team/"
+    },
+    {
+      "id": "govuk-design-system",
+      "canonicalPath": ".agent-operating-model/bundles/govuk-design-system/"
+    }
+  ],
+  "skippedBundles": [
+    "cloudflare",
+    "openai-platform",
+    "mcp-agent-tooling",
+    "airtable-public-api",
+    "mural-public-api"
+  ],
+  "precedenceDecisions": [
+    "GitHub Diamond governed branch prefix, PR hygiene, trace requirement and changed-file scope.",
+    "ResearchOps Developer Control governed homepage source/template and generated asset conventions.",
+    "Multi-Functional Team governed public-sector product assurance defaults.",
+    "GOV.UK Design System governed frontend accessibility, keyboard-operable control and reduced-motion handling."
+  ],
+  "filesCreatedOrModified": [
+    "public/audio/researchops-explainer.m4a",
+    "public/js/researchops-explainer-animation.js",
+    "src/govuk/templates/pages/home.njk",
+    "src/styles/researchops-home.scss",
+    "public/index.html",
+    "public/assets/researchops/researchops-home.css",
+    "docs/agent-audit/reasoning/2026/06/17/homepage-svg-explainer-animation.md",
+    "docs/agent-audit/reasoning/2026/06/17/homepage-svg-explainer-animation.json"
+  ],
+  "validation": [
+    {
+      "command": "npm run build:researchops",
+      "result": "passed"
+    },
+    {
+      "command": "npm run build:govuk-pages",
+      "result": "passed"
+    },
+    {
+      "command": "npx eslint public/js/researchops-explainer-animation.js",
+      "result": "passed"
+    },
+    {
+      "command": "Local browser verification at http://127.0.0.1:4173/",
+      "result": "passed"
+    }
+  ],
+  "validationNotRun": [
+    "Full repository test suite was not run because this is a focused static homepage/UI asset change and the relevant generated CSS, page render and script lint checks were run."
+  ],
+  "residualRisks": [
+    "There is a pre-existing unrelated modified file, infra/cloudflare/src/core/auth/passwordless.js, which is intentionally excluded from this PR."
+  ]
+}

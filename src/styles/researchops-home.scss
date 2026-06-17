@@ -124,11 +124,157 @@
 	box-sizing: border-box;
 }
 
-.researchops-home-hero__image {
+.researchops-explainer {
+	position: relative;
 	display: block;
-	width: 320px;
-	max-width: 100%;
-	height: auto;
+	width: 100%;
+	max-width: 760px;
+	aspect-ratio: 1700 / 950;
+	margin: 0 auto;
+	background: #732282;
+	overflow: visible;
+}
+
+.researchops-explainer__stage {
+	position: absolute;
+	inset: 0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.researchops-explainer__svg,
+.researchops-explainer__fallback-image {
+	display: block;
+	width: 100%;
+	height: 100%;
+	overflow: visible;
+	object-fit: contain;
+}
+
+.researchops-explainer__svg [data-rops-part] {
+	transform-box: fill-box;
+	transform-origin: center;
+}
+
+.researchops-explainer__button {
+	position: absolute;
+	top: 54%;
+	left: 50%;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 62px;
+	height: 62px;
+	border: 4px solid govuk-colour('white');
+	border-radius: 50%;
+	background: #ffdd00;
+	color: govuk-colour('black');
+	box-shadow: 0 8px 0 rgba(11, 12, 12, 0.35);
+	cursor: pointer;
+	transform: translate(-50%, -50%);
+	transition:
+		width 180ms ease,
+		height 180ms ease,
+		inset 180ms ease,
+		transform 180ms ease,
+		box-shadow 180ms ease;
+}
+
+.researchops-explainer__button:focus {
+	outline: 3px solid govuk-colour('white');
+	outline-offset: 4px;
+}
+
+.researchops-explainer__play-icon {
+	position: relative;
+	display: block;
+	width: 0;
+	height: 0;
+	margin-left: 5px;
+	border-top: 13px solid transparent;
+	border-bottom: 13px solid transparent;
+	border-left: 20px solid currentcolor;
+}
+
+.researchops-explainer__button[data-state='pause'] .researchops-explainer__play-icon {
+	width: 26px;
+	height: 30px;
+	margin-left: 0;
+	border: 0;
+}
+
+.researchops-explainer__button[data-state='pause'] .researchops-explainer__play-icon::before,
+.researchops-explainer__button[data-state='pause'] .researchops-explainer__play-icon::after {
+	position: absolute;
+	top: 0;
+	width: 9px;
+	height: 30px;
+	background: currentcolor;
+	content: '';
+}
+
+.researchops-explainer__button[data-state='pause'] .researchops-explainer__play-icon::before {
+	left: 0;
+}
+
+.researchops-explainer__button[data-state='pause'] .researchops-explainer__play-icon::after {
+	right: 0;
+}
+
+.researchops-explainer.has-started .researchops-explainer__button {
+	top: auto;
+	right: 18px;
+	bottom: 18px;
+	left: auto;
+	width: 52px;
+	height: 52px;
+	box-shadow: 0 5px 0 rgba(11, 12, 12, 0.3);
+	transform: none;
+}
+
+.researchops-explainer.is-complete .researchops-explainer__button {
+	top: 54%;
+	right: auto;
+	bottom: auto;
+	left: 50%;
+	width: 62px;
+	height: 62px;
+	box-shadow: 0 8px 0 rgba(11, 12, 12, 0.35);
+	transform: translate(-50%, -50%);
+}
+
+.researchops-explainer.has-started .researchops-explainer__play-icon {
+	border-top-width: 11px;
+	border-bottom-width: 11px;
+	border-left-width: 17px;
+}
+
+.researchops-explainer.has-started
+	.researchops-explainer__button[data-state='pause']
+	.researchops-explainer__play-icon {
+	width: 18px;
+	height: 22px;
+}
+
+.researchops-explainer.has-started
+	.researchops-explainer__button[data-state='pause']
+	.researchops-explainer__play-icon::before,
+.researchops-explainer.has-started
+	.researchops-explainer__button[data-state='pause']
+	.researchops-explainer__play-icon::after {
+	width: 6px;
+	height: 22px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.researchops-explainer *,
+	.researchops-explainer *::before,
+	.researchops-explainer *::after {
+		animation-duration: 0.001ms !important;
+		animation-iteration-count: 1 !important;
+		transition-duration: 0.001ms !important;
+	}
 }
 
 .researchops-home-masthead .govuk-heading-xl,
@@ -227,10 +373,6 @@
 		width: 45%;
 		padding-right: 0;
 		padding-left: 0;
-	}
-
-	.researchops-home-hero__image {
-		width: 100%;
 	}
 
 	.researchops-highlight-panel,

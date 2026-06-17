@@ -11,6 +11,7 @@
 			href="/assets/researchops/researchops-home.css?v=home-masthead-mobile-svg-20260616"
 			media="screen"
 		/>
+		<script type="module" src="/js/researchops-explainer-animation.js" defer></script>
 
 		<script type="module" src="/components/layout.js" defer></script>
 		<script type="module" src="/js/govuk-frontend-init.js" defer></script>
@@ -35,14 +36,29 @@
 								</p>
 							</div>
 							<div class="govuk-grid-column-one-third researchops-home-hero__image-column">
-								<img
-									class="researchops-home-hero__image"
-									src="/images/home-masthead-researchops-illustration.svg"
-									alt=""
-									role="presentation"
-									width="320"
-									height="198"
-								/>
+								<div class="researchops-explainer" data-researchops-explainer>
+									<div
+										class="researchops-explainer__stage"
+										data-researchops-explainer-stage
+										data-svg="/images/home-masthead-researchops-illustration.svg"
+									>
+										<img
+											class="researchops-explainer__fallback-image"
+											src="/images/home-masthead-researchops-illustration.svg"
+											alt=""
+										/>
+									</div>
+									<button
+										class="researchops-explainer__button"
+										type="button"
+										data-researchops-explainer-toggle
+										aria-label="Play ResearchOps explainer"
+										data-state="play"
+									>
+										<span class="researchops-explainer__play-icon" aria-hidden="true"></span>
+									</button>
+									<audio preload="metadata" src="/audio/researchops-explainer.m4a"></audio>
+								</div>
 							</div>
 						</div>
 					</div>
