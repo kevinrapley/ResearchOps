@@ -17,8 +17,8 @@ assert.match(homePage, /data-svg="\/images\/home-masthead-researchops-illustrati
 assert.match(homePage, /src="\/audio\/researchops-explainer\.m4a"/);
 assert.match(homePage, /Text alternative for audio explainer/);
 assert.match(homePage, /ResearchOps helps public service teams plan, run and reuse user research/);
-assert.match(homePage, /researchops-home\.css\?v=home-explainer-a11y-20260617/);
-assert.match(homeTemplate, /researchops-home\.css\?v=home-explainer-a11y-20260617/);
+assert.match(homePage, /researchops-home\.css\?v=home-explainer-no-bg-20260617/);
+assert.match(homeTemplate, /researchops-home\.css\?v=home-explainer-no-bg-20260617/);
 
 assert.match(
 	homeCss,
@@ -26,8 +26,9 @@ assert.match(
 );
 assert.match(
 	homeCss,
-	/\.researchops-explainer \{[\s\S]*?aspect-ratio: 1700\/950;[\s\S]*?background: #732282;/
+	/\.researchops-explainer \{[\s\S]*?aspect-ratio: 1700\/950;[\s\S]*?overflow: visible;/
 );
+assert.doesNotMatch(homeCss, /\.researchops-explainer \{[\s\S]*?background: #732282;/);
 assert.match(
 	homeCss,
 	/\.researchops-explainer-transcript \.govuk-details__summary[\s\S]*?color: #ffffff;/

@@ -60,6 +60,7 @@
 - `src/styles/researchops-home.scss`
 - `public/index.html`
 - `public/assets/researchops/researchops-home.css`
+- `assets/researchops/researchops-home.css`
 - `tests/researchops-home-hero-layout-route-state.test.js`
 - `tests/reports-site-validation.test.js`
 - `docs/agent-audit/reasoning/2026/06/17/homepage-svg-explainer-animation.md`
@@ -76,6 +77,7 @@
 - Ensured the play button returns to the laptop-screen position after the narrative ends.
 - Addressed Codex PR review feedback by updating the stale homepage route-state assertions, suppressing the SVG motion loop for reduced-motion users, and adding the user-supplied text alternative for the audio explainer.
 - Addressed failing PR checks by updating the reports-site validation test to match the current committed reporting-site artefacts: 45 pages, 63 states and 126 captures/screenshots.
+- Removed the explicit `.researchops-explainer` background colour so the component no longer paints its own purple backdrop, and updated the homepage CSS cache key so browsers fetch the regenerated stylesheet.
 
 ## Validation
 
@@ -85,6 +87,9 @@
 - `npx eslint public/js/researchops-explainer-animation.js tests/researchops-home-hero-layout-route-state.test.js`: passed.
 - `node tests/researchops-home-hero-layout-route-state.test.js`: passed.
 - `node tests/reports-site-validation.test.js`: passed.
+- `npx eslint tests/researchops-home-hero-layout-route-state.test.js public/js/researchops-explainer-animation.js`: passed.
+- `npm run generated-css:check`: passed.
+- Local browser verification at `http://127.0.0.1:4173/`: `.researchops-explainer` computed background is `rgba(0, 0, 0, 0)`, inline SVG is present, no native video element, and the page loads `researchops-home.css?v=home-explainer-no-bg-20260617`.
 - `npm test`: passed.
 - `npm run validate`: passed.
 - `npm run audit:security`: passed; advisory development-tooling vulnerabilities remain non-blocking under the repository policy.
