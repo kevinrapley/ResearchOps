@@ -4,7 +4,8 @@
 {% from "govuk/components/tag/macro.njk" import govukTag %}
 
 {% block head %}
-	<link rel="stylesheet" href="/assets/researchops/researchops-home.css?v=home-masthead-mobile-svg-20260616" media="screen">
+	<link rel="stylesheet" href="/assets/researchops/researchops-home.css?v=home-explainer-no-bg-20260617" media="screen">
+	<script type="module" src="/js/researchops-explainer-animation.js" defer></script>
 {% endblock %}
 
 {% block content %}
@@ -18,7 +19,32 @@
 					<p class="govuk-body">Plan, approve, run and reuse user research. Keep a clear record of ethics, evidence, risks and decisions, so teams can see what is known, what is uncertain and what needs to happen next.</p>
 				</div>
 				<div class="govuk-grid-column-one-third researchops-home-hero__image-column">
-					<img class="researchops-home-hero__image" src="/images/home-masthead-researchops-illustration.svg" alt="" role="presentation" width="320" height="198">
+					<div class="researchops-explainer" data-researchops-explainer>
+						<div
+							class="researchops-explainer__stage"
+							data-researchops-explainer-stage
+							data-svg="/images/home-masthead-researchops-illustration.svg"
+						>
+							<img class="researchops-explainer__fallback-image" src="/images/home-masthead-researchops-illustration.svg" alt="">
+						</div>
+						<button class="researchops-explainer__button" type="button" data-researchops-explainer-toggle aria-label="Play ResearchOps explainer" data-state="play">
+							<span class="researchops-explainer__play-icon" aria-hidden="true"></span>
+						</button>
+						<audio preload="metadata" src="/audio/researchops-explainer.m4a"></audio>
+					</div>
+					<details class="govuk-details researchops-explainer-transcript">
+						<summary class="govuk-details__summary">
+							<span class="govuk-details__summary-text">Text alternative for audio explainer</span>
+						</summary>
+						<div class="govuk-details__text">
+							<p class="govuk-body-s">ResearchOps helps public service teams plan, run and reuse user research in one connected place.</p>
+							<p class="govuk-body-s">For research operations staff, it brings structure to the whole research lifecycle: projects, studies, recruitment, sessions, notes, evidence, insights and recommendations. Approvals, ethics, accessibility needs and risks stay visible, so research can move forward with confidence.</p>
+							<p class="govuk-body-s">For researchers, it reduces scattered admin. Everything needed to plan a study, manage sessions and keep evidence linked to findings is held together.</p>
+							<p class="govuk-body-s">For participants, it supports better recruitment, clearer communication and more inclusive research practices.</p>
+							<p class="govuk-body-s">For product teams, it turns research into decisions. They can see what is known, what is uncertain, and what action should happen next.</p>
+							<p class="govuk-body-s govuk-!-margin-bottom-0">ResearchOps creates a clear record from objective to recommendation, helping teams do user research that is organised, accountable and useful.</p>
+						</div>
+					</details>
 				</div>
 			</div>
 		</div>
