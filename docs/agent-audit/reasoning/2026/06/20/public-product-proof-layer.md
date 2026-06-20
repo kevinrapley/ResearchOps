@@ -5,7 +5,7 @@
 - Date: 2026-06-20
 - Branch: `feature/public-product-proof-layer`
 - Trace decision: required because branch prefix is `feature/`
-- Task summary: implement the first public ResearchOps product proof layer before sign-in, strengthen it into a realistic managed walkthrough, then expand each phase to show the decision space and remove redundant next-step links.
+- Task summary: implement the first public ResearchOps product proof layer before sign-in, strengthen it into a realistic managed walkthrough, expand each phase to show the decision space, add real UI media examples, and remove duplicate prototype chrome already supplied by the shared page template.
 
 ## Operating Model Files Loaded
 
@@ -40,7 +40,7 @@
 - GitHub Diamond governed branch naming, trace requirement, PR readiness and mixed-worktree staging.
 - ResearchOps Developer Control governed generated GOV.UK page conventions and route-state coverage.
 - Multi-Functional Team governed public-sector assurance, safe-public-content and user-impact framing.
-- GOV.UK Design System governed page structure, phase banner, task-list presentation, button affordance and accessible status text.
+- GOV.UK Design System governed page structure, shared prototype chrome, task-list presentation, button affordance and accessible status text.
 
 ## Files Read
 
@@ -80,12 +80,13 @@
 ## Implementation Summary
 
 - Added `/pages/product-proof/` as a static generated GOV.UK page.
-- Added a page-level prototype phase banner that remains visible without depending on the shared header include.
+- Removed the page-level prototype phase banner after user screenshot feedback because the shared page template already supplies that chrome.
 - Added an 8-step lifecycle proof from research project setup through decision impact.
 - Follow-up after review feedback: replaced the thin lifecycle list with a managed, realistic walkthrough using mock product screens and a named hypothetical research project.
 - Second follow-up after review feedback: removed redundant `Next:` links between adjacent sections.
 - Added decision-space tables to every phase showing the decision the UI supports, the decision made in the example flow, and available options not selected.
 - Third follow-up after review feedback: added real captured UI screenshots for all 8 lifecycle stages, sourced from existing generated ResearchOps pages.
+- Fourth follow-up after review feedback: removed the duplicate prototype banner from the product proof page so the proof starts directly with product value and lifecycle evidence.
 - Added value framing that explains what ResearchOps replaces: disconnected documents, spreadsheets, slide decks, research boards and message threads.
 - Added a page-specific stylesheet for screenshot presentation and captions.
 - Expanded the study-planning proof to show recruitment, informed consent, ethics and safeguarding, and discussion guide readiness.
@@ -113,6 +114,11 @@
 - Second follow-up RES-7 route-state coverage passed after asserting all 8 decision-space tables and blocking redundant `Next:` links.
 - Third follow-up RES-7 route-state coverage passed after asserting all 8 real UI media assets, captions and value framing.
 - Browser-level image load check passed after scrolling the public proof page and confirming all 8 embedded screenshots load at 1365 by 900 pixels.
+- Fourth follow-up RES-7 route-state coverage passed after asserting that the product proof template does not duplicate the shared prototype banner.
+- Follow-up parseable-file Prettier check passed. Nunjucks templates remain validated through the GOV.UK renderer because this repository's Prettier setup cannot infer a parser for `.njk` files.
+- Follow-up `npm test` passed.
+- Follow-up `npm run lint` passed with 0 errors and existing warnings.
+- Follow-up `npm run trace:coverage` passed.
 
 ## Validation Not Run
 

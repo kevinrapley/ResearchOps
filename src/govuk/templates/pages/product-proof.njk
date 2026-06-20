@@ -2,7 +2,6 @@
 
 {% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
 {% from "govuk/components/button/macro.njk" import govukButton %}
-{% from "govuk/components/phase-banner/macro.njk" import govukPhaseBanner %}
 
 {% block head %}
 	<link rel="stylesheet" href="/css/product-proof.css" media="screen">
@@ -41,13 +40,6 @@
 {% endmacro %}
 
 {% block content %}
-{{ govukPhaseBanner({
-	tag: {
-		text: "PROTOTYPE"
-	},
-	html: 'This is a ResearchOps prototype using static demonstration content. Do not enter real participant data. <a class="govuk-link" href="/pages/account/register/">Request access to give feedback</a>.'
-}) }}
-
 <div class="govuk-width-container" data-product-proof-page data-fixture-source="static-product-proof-fixture">
 	{{ govukBreadcrumbs({
 		items: [

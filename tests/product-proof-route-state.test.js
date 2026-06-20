@@ -63,9 +63,9 @@ assert.equal(
 assert.equal(pageById('product-proof')?.authenticated, false, 'Product proof page should be captured as public');
 
 includes(pageSource, '<h1 class="govuk-heading-xl">ResearchOps Product Proof</h1>', 'product proof page');
-includes(pageSource, 'class="govuk-phase-banner', 'product proof page');
-includes(pageSource, 'PROTOTYPE', 'product proof page');
-includes(pageSource, 'This is a ResearchOps prototype using static demonstration content.', 'product proof page');
+excludes(templateSource, 'govukPhaseBanner', 'product proof template');
+excludes(templateSource, 'Request access to give feedback', 'product proof template');
+excludes(pageSource, 'This is a ResearchOps prototype using static demonstration content.', 'product proof page');
 includes(pageSource, 'href="/css/product-proof.css"', 'product proof page');
 includes(pageSource, 'Why this is better than today', 'product proof value framing');
 includes(pageSource, 'Less lost context', 'product proof value framing');
