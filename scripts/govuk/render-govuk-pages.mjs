@@ -197,6 +197,16 @@ export const govukPages = [
 		},
 	},
 	{
+		template: 'pages/product-proof.njk',
+		output: 'public/pages/product-proof/index.html',
+		context: {
+			pageTitle: 'ResearchOps Product Proof - ResearchOps Demo Suite',
+			serviceName: 'ResearchOps Demo Suite',
+			activeNavigation: '',
+			navigation: accountNavigation,
+		},
+	},
+	{
 		template: 'pages/start.njk',
 		output: 'public/pages/start/index.html',
 		context: {

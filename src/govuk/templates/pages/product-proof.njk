@@ -1,0 +1,165 @@
+{% extends "layouts/researchops.njk" %}
+
+{% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/phase-banner/macro.njk" import govukPhaseBanner %}
+
+{% set lifecycleSteps = [
+	{
+		title: "Set up a research project",
+		text: "Create the shared record for the service phase, ownership, objectives and decision context.",
+		status: "Public proof"
+	},
+	{
+		title: "Plan a study",
+		text: "Turn the project need into a research plan with method, scope and readiness checks.",
+		status: "Public proof"
+	},
+	{
+		title: "Capture evidence",
+		text: "Keep session notes, observations and supporting material connected to the study.",
+		status: "Protected"
+	},
+	{
+		title: "Synthesise findings",
+		text: "Group evidence into findings that remain traceable back to the research activity.",
+		status: "Protected"
+	},
+	{
+		title: "Prepare a repository candidate",
+		text: "Separate reusable learning from raw research material before anything is considered for publication.",
+		status: "Planned"
+	},
+	{
+		title: "Curate and review",
+		text: "Review provenance, limitations, confidence and safe reuse guidance before publication.",
+		status: "Planned"
+	},
+	{
+		title: "Publish reusable evidence",
+		text: "Share evidence that is safe to reuse without exposing participant data or restricted project material.",
+		status: "Planned"
+	},
+	{
+		title: "Track decision impact",
+		text: "Connect recommendations to actions, service changes and measurable outcomes.",
+		status: "Planned"
+	}
+] %}
+
+{% block content %}
+{{ govukPhaseBanner({
+	tag: {
+		text: "PROTOTYPE"
+	},
+	html: 'This is a ResearchOps prototype using static demonstration content. Do not enter real participant data. <a class="govuk-link" href="/pages/account/register/">Request access to give feedback</a>.'
+}) }}
+
+<div class="govuk-width-container" data-product-proof-page>
+	{{ govukBreadcrumbs({
+		items: [
+			{
+				text: "Home",
+				href: "/"
+			}
+		]
+	}) }}
+
+	<header class="govuk-grid-row govuk-!-margin-bottom-7">
+		<div class="govuk-grid-column-two-thirds">
+			<span class="govuk-caption-l">ResearchOps public proof</span>
+			<h1 class="govuk-heading-xl">ResearchOps Product Proof</h1>
+			<p class="govuk-body-l">See how ResearchOps connects project setup, study planning, evidence, repository publication and impact tracking before you sign in.</p>
+			<p class="govuk-body">This page is safe to view publicly. It uses a static fixture and shows the product direction without loading authenticated repository records, raw research notes or participant details.</p>
+		</div>
+	</header>
+
+	<section class="govuk-!-margin-bottom-8" aria-labelledby="product-proof-lifecycle-title">
+		<div class="govuk-grid-row">
+			<div class="govuk-grid-column-two-thirds">
+				<h2 class="govuk-heading-l" id="product-proof-lifecycle-title">How ResearchOps connects research work</h2>
+				<p class="govuk-body">The product journey follows the lifecycle of research work from setup to reuse. Status text is shown in words so the meaning does not depend on colour.</p>
+			</div>
+		</div>
+
+		<ol class="govuk-task-list" aria-labelledby="product-proof-lifecycle-title">
+			{% for step in lifecycleSteps %}
+			<li class="govuk-task-list__item">
+				<div class="govuk-task-list__name-and-hint">
+					<div class="govuk-task-list__name">{{ loop.index }}. {{ step.title }}</div>
+					<div class="govuk-task-list__hint">{{ step.text }}</div>
+				</div>
+				<div class="govuk-task-list__status">
+					<strong class="govuk-tag{% if step.status == 'Protected' %} govuk-tag--blue{% elseif step.status == 'Planned' %} govuk-tag--grey{% endif %}">{{ step.status }}</strong>
+				</div>
+			</li>
+			{% endfor %}
+		</ol>
+	</section>
+
+	<section class="govuk-!-margin-bottom-8" aria-labelledby="product-proof-fixture-title" data-fixture-source="static-product-proof-fixture">
+		<div class="govuk-grid-row">
+			<div class="govuk-grid-column-two-thirds">
+				<h2 class="govuk-heading-l" id="product-proof-fixture-title">Example proof boundary</h2>
+				<p class="govuk-body">This fixture demonstrates the publication boundary without exposing live project data.</p>
+			</div>
+		</div>
+
+		<div class="govuk-summary-card">
+			<div class="govuk-summary-card__title-wrapper">
+				<h3 class="govuk-summary-card__title">Example: Public Services Accessibility Audit</h3>
+			</div>
+			<div class="govuk-summary-card__content">
+				<dl class="govuk-summary-list govuk-summary-list--no-border">
+					<div class="govuk-summary-list__row">
+						<dt class="govuk-summary-list__key">Fixture status</dt>
+						<dd class="govuk-summary-list__value">Static demonstration content only</dd>
+					</div>
+					<div class="govuk-summary-list__row">
+						<dt class="govuk-summary-list__key">Lead researcher</dt>
+						<dd class="govuk-summary-list__value" data-testid="mock-lead-researcher">Jane Doe (Mock Lead)</dd>
+					</div>
+					<div class="govuk-summary-list__row">
+						<dt class="govuk-summary-list__key">Publication boundary</dt>
+						<dd class="govuk-summary-list__value">Raw research material and participant data are restricted to authenticated users.</dd>
+					</div>
+				</dl>
+			</div>
+		</div>
+	</section>
+
+	<section class="govuk-!-margin-bottom-8" aria-labelledby="product-proof-safety-title">
+		<div class="govuk-grid-row">
+			<div class="govuk-grid-column-two-thirds">
+				<h2 class="govuk-heading-l" id="product-proof-safety-title">What this public page does not show</h2>
+				<ul class="govuk-list govuk-list--bullet">
+					<li>raw participant notes, transcripts or contact details</li>
+					<li>unreviewed project material or restricted team context</li>
+					<li>live repository records from authenticated systems</li>
+					<li>background calls to repository, project or collaboration endpoints</li>
+				</ul>
+			</div>
+		</div>
+	</section>
+
+	<section class="govuk-!-margin-bottom-4" aria-labelledby="product-proof-cta-title">
+		<div class="govuk-grid-row">
+			<div class="govuk-grid-column-two-thirds">
+				<h2 class="govuk-heading-l" id="product-proof-cta-title">Use ResearchOps with your team</h2>
+				<p class="govuk-body">Request access if you need to use ResearchOps with a team. Start the journey if you already have access and want to create a research project.</p>
+				<div class="govuk-button-group">
+					{{ govukButton({
+						text: "Request access",
+						href: "/pages/account/register/"
+					}) }}
+					{{ govukButton({
+						text: "Start journey",
+						href: "/pages/start/overview/",
+						classes: "govuk-button--secondary"
+					}) }}
+				</div>
+			</div>
+		</div>
+	</section>
+</div>
+{% endblock %}

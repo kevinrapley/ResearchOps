@@ -146,6 +146,28 @@ test("Pages advanced worker redirects unauthenticated Repository page requests t
 	});
 });
 
+test("Pages advanced worker serves the public product proof page without auth preflight", async () => {
+	let authCheckCalled = false;
+
+	await withMockedFetch(async () => {
+		authCheckCalled = true;
+		throw new Error("Product proof page should not call the auth preflight");
+	}, async () => {
+		const response = await worker.fetch(
+			new Request("https://researchops.pages.dev/pages/product-proof/"),
+			assetEnv(
+				{ "content-type": "text/html; charset=utf-8" },
+				"<!doctype html><html><head></head><body>ResearchOps Product Proof</body></html>",
+			),
+		);
+		const body = await response.text();
+
+		assert.equal(response.status, 200);
+		assert.equal(authCheckCalled, false);
+		assert.match(body, /ResearchOps Product Proof/);
+	});
+});
+
 test("Pages advanced worker redirects protected static page requests when the app auth check fails", async () => {
 	await withMockedFetch(async (url) => {
 		assert.equal(url, "https://rops-api.digikev-kevin-rapley.workers.dev/api/me");
