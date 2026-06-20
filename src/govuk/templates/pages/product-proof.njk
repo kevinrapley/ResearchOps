@@ -4,6 +4,28 @@
 {% from "govuk/components/button/macro.njk" import govukButton %}
 {% from "govuk/components/phase-banner/macro.njk" import govukPhaseBanner %}
 
+{% macro decisionTable(caption, rows) %}
+	<table class="govuk-table" data-product-proof-decision-table>
+		<caption class="govuk-table__caption govuk-table__caption--m">{{ caption }}</caption>
+		<thead class="govuk-table__head">
+			<tr class="govuk-table__row">
+				<th class="govuk-table__header" scope="col">Decision the screen supports</th>
+				<th class="govuk-table__header" scope="col">Decision made in this example</th>
+				<th class="govuk-table__header" scope="col">Options available but not selected</th>
+			</tr>
+		</thead>
+		<tbody class="govuk-table__body">
+			{% for row in rows %}
+				<tr class="govuk-table__row">
+					<th class="govuk-table__header" scope="row">{{ row.decision }}</th>
+					<td class="govuk-table__cell">{{ row.selected }}</td>
+					<td class="govuk-table__cell">{{ row.notSelected }}</td>
+				</tr>
+			{% endfor %}
+		</tbody>
+	</table>
+{% endmacro %}
+
 {% block content %}
 {{ govukPhaseBanner({
 	tag: {
@@ -69,6 +91,7 @@
 	<nav class="govuk-!-margin-bottom-8" aria-labelledby="product-proof-walkthrough-title" data-product-proof-walkthrough>
 		<h2 class="govuk-heading-l" id="product-proof-walkthrough-title">Walk through how the product works</h2>
 		<p class="govuk-body">Use this managed walkthrough to see how each product area creates value. Each step shows a realistic mock screen and the proof point it creates for a research operations team.</p>
+		<p class="govuk-body">The walkthrough also shows choices available in the UI that are not selected in this example, so the public proof reflects the decision work behind the research lifecycle.</p>
 		<ol class="govuk-list govuk-list--number">
 			<li><a class="govuk-link" href="#proof-step-project">Set up a research project</a></li>
 			<li><a class="govuk-link" href="#proof-step-study">Plan a study, recruitment, consent, ethics and guides</a></li>
@@ -121,7 +144,23 @@
 				</ul>
 			</div>
 		</div>
-		<p class="govuk-body"><a class="govuk-link" href="#proof-step-study">Next: plan a study</a></p>
+		{{ decisionTable("Decisions available during project setup", [
+			{
+				decision: "Choose the project shape",
+				selected: "Create a discovery-to-alpha research project for an accessibility audit journey.",
+				notSelected: "Run a policy-only review, start a live-service optimisation project, or defer the work until a beta backlog exists."
+			},
+			{
+				decision: "Set ownership and accountability",
+				selected: "Assign a lead researcher with service owner, policy, accessibility and content stakeholders.",
+				notSelected: "Make the service owner the accountable lead, add a delivery manager as co-owner, or mark governance ownership as unresolved."
+			},
+			{
+				decision: "Define the decision context",
+				selected: "Support a decision about eligibility guidance and the audit upload flow before alpha build.",
+				notSelected: "Focus only on call-centre demand, only on content readability, or hold the decision until more quantitative evidence is available."
+			}
+		]) }}
 	</section>
 
 	<section id="proof-step-study" class="govuk-!-margin-bottom-9" aria-labelledby="proof-step-study-title" data-proof-step="study">
@@ -176,7 +215,28 @@
 				</ul>
 			</div>
 		</div>
-		<p class="govuk-body"><a class="govuk-link" href="#proof-step-evidence">Next: capture evidence</a></p>
+		{{ decisionTable("Decisions available during study planning", [
+			{
+				decision: "Choose the recruitment route",
+				selected: "Recruit 8 participants, including assisted digital users and screen-reader users.",
+				notSelected: "Use a staff-proxy sample, pause recruitment until a specialist panel is available, or add carers and advocates as a separate cohort."
+			},
+			{
+				decision: "Set consent and withdrawal approach",
+				selected: "Use a plain-English script with a clear withdrawal route before and after sessions.",
+				notSelected: "Use recorded verbal consent only, require signed consent for all sessions, or exclude recordings and capture notes only."
+			},
+			{
+				decision: "Assess ethics and safeguarding",
+				selected: "Mark low distress risk while logging accessibility adjustments for review.",
+				notSelected: "Escalate for formal ethics review, add a safeguarding lead to session planning, or remove tasks that may expose sensitive evidence."
+			},
+			{
+				decision: "Choose the guide structure",
+				selected: "Use scenario tasks, probes and observation prompts.",
+				notSelected: "Run open interviews, diary study follow-up, moderated usability sessions with support staff, or a short survey before fieldwork."
+			}
+		]) }}
 	</section>
 
 	<section id="proof-step-evidence" class="govuk-!-margin-bottom-9" aria-labelledby="proof-step-evidence-title" data-proof-step="evidence">
@@ -223,7 +283,23 @@
 				</ul>
 			</div>
 		</div>
-		<p class="govuk-body"><a class="govuk-link" href="#proof-step-synthesis">Next: synthesise findings</a></p>
+		{{ decisionTable("Decisions available during evidence capture", [
+			{
+				decision: "Select the evidence type",
+				selected: "Capture observations, quotes, support needs and upload barriers against each session.",
+				notSelected: "Attach a full transcript, upload screen recordings, mark the note as observation-only, or hold material back pending consent confirmation."
+			},
+			{
+				decision: "Apply consent state",
+				selected: "Record consent before evidence is connected to the study.",
+				notSelected: "Restrict quote reuse, exclude recording reuse, anonymise immediately, or block evidence from synthesis until withdrawal windows pass."
+			},
+			{
+				decision: "Classify sensitivity",
+				selected: "Keep raw notes protected and expose only workflow proof publicly.",
+				notSelected: "Flag special-category data, mark material as team-only, request curator review before synthesis, or delete material after extraction."
+			}
+		]) }}
 	</section>
 
 	<section id="proof-step-synthesis" class="govuk-!-margin-bottom-9" aria-labelledby="proof-step-synthesis-title" data-proof-step="synthesis">
@@ -262,7 +338,23 @@
 				</ul>
 			</div>
 		</div>
-		<p class="govuk-body"><a class="govuk-link" href="#proof-step-candidate">Next: prepare a repository candidate</a></p>
+		{{ decisionTable("Decisions available during synthesis", [
+			{
+				decision: "Group evidence into a theme",
+				selected: "Theme evidence around uncertainty about accepted accessibility evidence formats.",
+				notSelected: "Split into separate content, upload and assisted digital themes, or leave the evidence ungrouped until more sessions complete."
+			},
+			{
+				decision: "Set finding confidence",
+				selected: "Treat the finding as usable with visible evidence links and limits.",
+				notSelected: "Downgrade confidence because of sample size, require another research round, or mark the pattern as project-only."
+			},
+			{
+				decision: "Choose recommendation direction",
+				selected: "Recommend clearer accepted-format guidance before the file picker.",
+				notSelected: "Recommend removing the upload step, changing eligibility policy, adding assisted digital triage first, or running quantitative validation."
+			}
+		]) }}
 	</section>
 
 	<section id="proof-step-candidate" class="govuk-!-margin-bottom-9" aria-labelledby="proof-step-candidate-title" data-proof-step="candidate">
@@ -301,7 +393,23 @@
 				</ul>
 			</div>
 		</div>
-		<p class="govuk-body"><a class="govuk-link" href="#proof-step-review">Next: curate and review</a></p>
+		{{ decisionTable("Decisions available when preparing a repository candidate", [
+			{
+				decision: "Decide what becomes reusable",
+				selected: "Promote the learning about accepted evidence guidance as a repository candidate.",
+				notSelected: "Promote the whole study, publish only a recommendation, keep the finding project-local, or merge it into an existing repository artefact."
+			},
+			{
+				decision: "Set reuse taxonomy",
+				selected: "Tag the candidate for eligibility journeys, document upload and assisted digital support.",
+				notSelected: "Tag for accessibility testing only, policy design only, forms patterns, or service support operations."
+			},
+			{
+				decision: "Apply publication boundary",
+				selected: "Confirm no participant identifiers before review.",
+				notSelected: "Require redaction, restrict to internal reuse, request information assurance review, or reject publication because provenance is incomplete."
+			}
+		]) }}
 	</section>
 
 	<section id="proof-step-review" class="govuk-!-margin-bottom-9" aria-labelledby="proof-step-review-title" data-proof-step="review">
@@ -347,7 +455,23 @@
 				</ul>
 			</div>
 		</div>
-		<p class="govuk-body"><a class="govuk-link" href="#proof-step-publication">Next: publish reusable evidence</a></p>
+		{{ decisionTable("Decisions available during curation and review", [
+			{
+				decision: "Approve or stop publication",
+				selected: "Approve for publication after provenance, limitations and reuse guidance are checked.",
+				notSelected: "Return to researcher, request more evidence, reject as unsafe, or publish only to a restricted team space."
+			},
+			{
+				decision: "Set limitations and confidence",
+				selected: "Record a medium-confidence pattern with small-sample limitations.",
+				notSelected: "Mark low confidence, require quantified validation, mark high confidence for service-wide reuse, or add a stronger limitation about oversampling."
+			},
+			{
+				decision: "Choose reuse guidance",
+				selected: "Allow reuse for upload journeys where users must prove eligibility.",
+				notSelected: "Limit reuse to the original service, include only content-design reuse, or block reuse for policy decisions."
+			}
+		]) }}
 	</section>
 
 	<section id="proof-step-publication" class="govuk-!-margin-bottom-9" aria-labelledby="proof-step-publication-title" data-proof-step="publication">
@@ -386,7 +510,23 @@
 				</ul>
 			</div>
 		</div>
-		<p class="govuk-body"><a class="govuk-link" href="#proof-step-impact">Next: track decision impact</a></p>
+		{{ decisionTable("Decisions available at publication", [
+			{
+				decision: "Choose visibility",
+				selected: "Publish a reusable artefact without raw research material.",
+				notSelected: "Publish internally only, keep in draft, withdraw from search, or restrict visibility to service-area teams."
+			},
+			{
+				decision: "Set reuse conditions",
+				selected: "Allow reuse where services ask users to upload supporting evidence before triage.",
+				notSelected: "Require curator approval before reuse, limit reuse to assisted digital journeys, or mark as background evidence only."
+			},
+			{
+				decision: "Connect related evidence",
+				selected: "Show confidence, limitations and provenance at the point of reuse.",
+				notSelected: "Hide confidence from public view, link only to the recommendation, or require sign-in before provenance can be inspected."
+			}
+		]) }}
 	</section>
 
 	<section id="proof-step-impact" class="govuk-!-margin-bottom-9" aria-labelledby="proof-step-impact-title" data-proof-step="impact">
@@ -428,6 +568,23 @@
 				</ul>
 			</div>
 		</div>
+		{{ decisionTable("Decisions available during impact tracking", [
+			{
+				decision: "Accept, reject or defer the recommendation",
+				selected: "Accept clearer accepted-format guidance into the alpha backlog.",
+				notSelected: "Reject as out of scope, defer until policy changes, run another research round, or create a separate operational-support action."
+			},
+			{
+				decision: "Choose impact measure",
+				selected: "Track repeated upload support calls, which fall by 18% in the pilot.",
+				notSelected: "Track task completion, call duration, complaint volume, failed uploads, or staff confidence with assisted digital scripts."
+			},
+			{
+				decision: "Record delivery follow-through",
+				selected: "Connect the research recommendation to an alpha backlog decision.",
+				notSelected: "Close with no action, assign to content backlog only, escalate to service owner, or reopen because impact evidence is inconclusive."
+			}
+		]) }}
 	</section>
 
 	<section class="govuk-!-margin-bottom-8" aria-labelledby="product-proof-safety-title">

@@ -105,6 +105,10 @@
 						Use this managed walkthrough to see how each product area creates value. Each step shows a realistic mock
 						screen and the proof point it creates for a research operations team.
 					</p>
+					<p class="govuk-body">
+						The walkthrough also shows choices available in the UI that are not selected in this example, so the public
+						proof reflects the decision work behind the research lifecycle.
+					</p>
 					<ol class="govuk-list govuk-list--number">
 						<li><a class="govuk-link" href="#proof-step-project">Set up a research project</a></li>
 						<li>
@@ -168,7 +172,53 @@
 							</ul>
 						</div>
 					</div>
-					<p class="govuk-body"><a class="govuk-link" href="#proof-step-study">Next: plan a study</a></p>
+
+					<table class="govuk-table" data-product-proof-decision-table>
+						<caption class="govuk-table__caption govuk-table__caption--m">
+							Decisions available during project setup
+						</caption>
+						<thead class="govuk-table__head">
+							<tr class="govuk-table__row">
+								<th class="govuk-table__header" scope="col">Decision the screen supports</th>
+								<th class="govuk-table__header" scope="col">Decision made in this example</th>
+								<th class="govuk-table__header" scope="col">Options available but not selected</th>
+							</tr>
+						</thead>
+						<tbody class="govuk-table__body">
+							<tr class="govuk-table__row">
+								<th class="govuk-table__header" scope="row">Choose the project shape</th>
+								<td class="govuk-table__cell">
+									Create a discovery-to-alpha research project for an accessibility audit journey.
+								</td>
+								<td class="govuk-table__cell">
+									Run a policy-only review, start a live-service optimisation project, or defer the work until a beta
+									backlog exists.
+								</td>
+							</tr>
+
+							<tr class="govuk-table__row">
+								<th class="govuk-table__header" scope="row">Set ownership and accountability</th>
+								<td class="govuk-table__cell">
+									Assign a lead researcher with service owner, policy, accessibility and content stakeholders.
+								</td>
+								<td class="govuk-table__cell">
+									Make the service owner the accountable lead, add a delivery manager as co-owner, or mark governance
+									ownership as unresolved.
+								</td>
+							</tr>
+
+							<tr class="govuk-table__row">
+								<th class="govuk-table__header" scope="row">Define the decision context</th>
+								<td class="govuk-table__cell">
+									Support a decision about eligibility guidance and the audit upload flow before alpha build.
+								</td>
+								<td class="govuk-table__cell">
+									Focus only on call-centre demand, only on content readability, or hold the decision until more
+									quantitative evidence is available.
+								</td>
+							</tr>
+						</tbody>
+					</table>
 				</section>
 
 				<section
@@ -244,7 +294,62 @@
 							</ul>
 						</div>
 					</div>
-					<p class="govuk-body"><a class="govuk-link" href="#proof-step-evidence">Next: capture evidence</a></p>
+
+					<table class="govuk-table" data-product-proof-decision-table>
+						<caption class="govuk-table__caption govuk-table__caption--m">
+							Decisions available during study planning
+						</caption>
+						<thead class="govuk-table__head">
+							<tr class="govuk-table__row">
+								<th class="govuk-table__header" scope="col">Decision the screen supports</th>
+								<th class="govuk-table__header" scope="col">Decision made in this example</th>
+								<th class="govuk-table__header" scope="col">Options available but not selected</th>
+							</tr>
+						</thead>
+						<tbody class="govuk-table__body">
+							<tr class="govuk-table__row">
+								<th class="govuk-table__header" scope="row">Choose the recruitment route</th>
+								<td class="govuk-table__cell">
+									Recruit 8 participants, including assisted digital users and screen-reader users.
+								</td>
+								<td class="govuk-table__cell">
+									Use a staff-proxy sample, pause recruitment until a specialist panel is available, or add carers and
+									advocates as a separate cohort.
+								</td>
+							</tr>
+
+							<tr class="govuk-table__row">
+								<th class="govuk-table__header" scope="row">Set consent and withdrawal approach</th>
+								<td class="govuk-table__cell">
+									Use a plain-English script with a clear withdrawal route before and after sessions.
+								</td>
+								<td class="govuk-table__cell">
+									Use recorded verbal consent only, require signed consent for all sessions, or exclude recordings and
+									capture notes only.
+								</td>
+							</tr>
+
+							<tr class="govuk-table__row">
+								<th class="govuk-table__header" scope="row">Assess ethics and safeguarding</th>
+								<td class="govuk-table__cell">
+									Mark low distress risk while logging accessibility adjustments for review.
+								</td>
+								<td class="govuk-table__cell">
+									Escalate for formal ethics review, add a safeguarding lead to session planning, or remove tasks that
+									may expose sensitive evidence.
+								</td>
+							</tr>
+
+							<tr class="govuk-table__row">
+								<th class="govuk-table__header" scope="row">Choose the guide structure</th>
+								<td class="govuk-table__cell">Use scenario tasks, probes and observation prompts.</td>
+								<td class="govuk-table__cell">
+									Run open interviews, diary study follow-up, moderated usability sessions with support staff, or a
+									short survey before fieldwork.
+								</td>
+							</tr>
+						</tbody>
+					</table>
 				</section>
 
 				<section
@@ -296,7 +401,49 @@
 							</ul>
 						</div>
 					</div>
-					<p class="govuk-body"><a class="govuk-link" href="#proof-step-synthesis">Next: synthesise findings</a></p>
+
+					<table class="govuk-table" data-product-proof-decision-table>
+						<caption class="govuk-table__caption govuk-table__caption--m">
+							Decisions available during evidence capture
+						</caption>
+						<thead class="govuk-table__head">
+							<tr class="govuk-table__row">
+								<th class="govuk-table__header" scope="col">Decision the screen supports</th>
+								<th class="govuk-table__header" scope="col">Decision made in this example</th>
+								<th class="govuk-table__header" scope="col">Options available but not selected</th>
+							</tr>
+						</thead>
+						<tbody class="govuk-table__body">
+							<tr class="govuk-table__row">
+								<th class="govuk-table__header" scope="row">Select the evidence type</th>
+								<td class="govuk-table__cell">
+									Capture observations, quotes, support needs and upload barriers against each session.
+								</td>
+								<td class="govuk-table__cell">
+									Attach a full transcript, upload screen recordings, mark the note as observation-only, or hold
+									material back pending consent confirmation.
+								</td>
+							</tr>
+
+							<tr class="govuk-table__row">
+								<th class="govuk-table__header" scope="row">Apply consent state</th>
+								<td class="govuk-table__cell">Record consent before evidence is connected to the study.</td>
+								<td class="govuk-table__cell">
+									Restrict quote reuse, exclude recording reuse, anonymise immediately, or block evidence from synthesis
+									until withdrawal windows pass.
+								</td>
+							</tr>
+
+							<tr class="govuk-table__row">
+								<th class="govuk-table__header" scope="row">Classify sensitivity</th>
+								<td class="govuk-table__cell">Keep raw notes protected and expose only workflow proof publicly.</td>
+								<td class="govuk-table__cell">
+									Flag special-category data, mark material as team-only, request curator review before synthesis, or
+									delete material after extraction.
+								</td>
+							</tr>
+						</tbody>
+					</table>
 				</section>
 
 				<section
@@ -344,9 +491,47 @@
 							</ul>
 						</div>
 					</div>
-					<p class="govuk-body">
-						<a class="govuk-link" href="#proof-step-candidate">Next: prepare a repository candidate</a>
-					</p>
+
+					<table class="govuk-table" data-product-proof-decision-table>
+						<caption class="govuk-table__caption govuk-table__caption--m">Decisions available during synthesis</caption>
+						<thead class="govuk-table__head">
+							<tr class="govuk-table__row">
+								<th class="govuk-table__header" scope="col">Decision the screen supports</th>
+								<th class="govuk-table__header" scope="col">Decision made in this example</th>
+								<th class="govuk-table__header" scope="col">Options available but not selected</th>
+							</tr>
+						</thead>
+						<tbody class="govuk-table__body">
+							<tr class="govuk-table__row">
+								<th class="govuk-table__header" scope="row">Group evidence into a theme</th>
+								<td class="govuk-table__cell">
+									Theme evidence around uncertainty about accepted accessibility evidence formats.
+								</td>
+								<td class="govuk-table__cell">
+									Split into separate content, upload and assisted digital themes, or leave the evidence ungrouped until
+									more sessions complete.
+								</td>
+							</tr>
+
+							<tr class="govuk-table__row">
+								<th class="govuk-table__header" scope="row">Set finding confidence</th>
+								<td class="govuk-table__cell">Treat the finding as usable with visible evidence links and limits.</td>
+								<td class="govuk-table__cell">
+									Downgrade confidence because of sample size, require another research round, or mark the pattern as
+									project-only.
+								</td>
+							</tr>
+
+							<tr class="govuk-table__row">
+								<th class="govuk-table__header" scope="row">Choose recommendation direction</th>
+								<td class="govuk-table__cell">Recommend clearer accepted-format guidance before the file picker.</td>
+								<td class="govuk-table__cell">
+									Recommend removing the upload step, changing eligibility policy, adding assisted digital triage first,
+									or running quantitative validation.
+								</td>
+							</tr>
+						</tbody>
+					</table>
 				</section>
 
 				<section
@@ -396,7 +581,50 @@
 							</ul>
 						</div>
 					</div>
-					<p class="govuk-body"><a class="govuk-link" href="#proof-step-review">Next: curate and review</a></p>
+
+					<table class="govuk-table" data-product-proof-decision-table>
+						<caption class="govuk-table__caption govuk-table__caption--m">
+							Decisions available when preparing a repository candidate
+						</caption>
+						<thead class="govuk-table__head">
+							<tr class="govuk-table__row">
+								<th class="govuk-table__header" scope="col">Decision the screen supports</th>
+								<th class="govuk-table__header" scope="col">Decision made in this example</th>
+								<th class="govuk-table__header" scope="col">Options available but not selected</th>
+							</tr>
+						</thead>
+						<tbody class="govuk-table__body">
+							<tr class="govuk-table__row">
+								<th class="govuk-table__header" scope="row">Decide what becomes reusable</th>
+								<td class="govuk-table__cell">
+									Promote the learning about accepted evidence guidance as a repository candidate.
+								</td>
+								<td class="govuk-table__cell">
+									Promote the whole study, publish only a recommendation, keep the finding project-local, or merge it
+									into an existing repository artefact.
+								</td>
+							</tr>
+
+							<tr class="govuk-table__row">
+								<th class="govuk-table__header" scope="row">Set reuse taxonomy</th>
+								<td class="govuk-table__cell">
+									Tag the candidate for eligibility journeys, document upload and assisted digital support.
+								</td>
+								<td class="govuk-table__cell">
+									Tag for accessibility testing only, policy design only, forms patterns, or service support operations.
+								</td>
+							</tr>
+
+							<tr class="govuk-table__row">
+								<th class="govuk-table__header" scope="row">Apply publication boundary</th>
+								<td class="govuk-table__cell">Confirm no participant identifiers before review.</td>
+								<td class="govuk-table__cell">
+									Require redaction, restrict to internal reuse, request information assurance review, or reject
+									publication because provenance is incomplete.
+								</td>
+							</tr>
+						</tbody>
+					</table>
 				</section>
 
 				<section
@@ -449,9 +677,49 @@
 							</ul>
 						</div>
 					</div>
-					<p class="govuk-body">
-						<a class="govuk-link" href="#proof-step-publication">Next: publish reusable evidence</a>
-					</p>
+
+					<table class="govuk-table" data-product-proof-decision-table>
+						<caption class="govuk-table__caption govuk-table__caption--m">
+							Decisions available during curation and review
+						</caption>
+						<thead class="govuk-table__head">
+							<tr class="govuk-table__row">
+								<th class="govuk-table__header" scope="col">Decision the screen supports</th>
+								<th class="govuk-table__header" scope="col">Decision made in this example</th>
+								<th class="govuk-table__header" scope="col">Options available but not selected</th>
+							</tr>
+						</thead>
+						<tbody class="govuk-table__body">
+							<tr class="govuk-table__row">
+								<th class="govuk-table__header" scope="row">Approve or stop publication</th>
+								<td class="govuk-table__cell">
+									Approve for publication after provenance, limitations and reuse guidance are checked.
+								</td>
+								<td class="govuk-table__cell">
+									Return to researcher, request more evidence, reject as unsafe, or publish only to a restricted team
+									space.
+								</td>
+							</tr>
+
+							<tr class="govuk-table__row">
+								<th class="govuk-table__header" scope="row">Set limitations and confidence</th>
+								<td class="govuk-table__cell">Record a medium-confidence pattern with small-sample limitations.</td>
+								<td class="govuk-table__cell">
+									Mark low confidence, require quantified validation, mark high confidence for service-wide reuse, or
+									add a stronger limitation about oversampling.
+								</td>
+							</tr>
+
+							<tr class="govuk-table__row">
+								<th class="govuk-table__header" scope="row">Choose reuse guidance</th>
+								<td class="govuk-table__cell">Allow reuse for upload journeys where users must prove eligibility.</td>
+								<td class="govuk-table__cell">
+									Limit reuse to the original service, include only content-design reuse, or block reuse for policy
+									decisions.
+								</td>
+							</tr>
+						</tbody>
+					</table>
 				</section>
 
 				<section
@@ -501,7 +769,47 @@
 							</ul>
 						</div>
 					</div>
-					<p class="govuk-body"><a class="govuk-link" href="#proof-step-impact">Next: track decision impact</a></p>
+
+					<table class="govuk-table" data-product-proof-decision-table>
+						<caption class="govuk-table__caption govuk-table__caption--m">Decisions available at publication</caption>
+						<thead class="govuk-table__head">
+							<tr class="govuk-table__row">
+								<th class="govuk-table__header" scope="col">Decision the screen supports</th>
+								<th class="govuk-table__header" scope="col">Decision made in this example</th>
+								<th class="govuk-table__header" scope="col">Options available but not selected</th>
+							</tr>
+						</thead>
+						<tbody class="govuk-table__body">
+							<tr class="govuk-table__row">
+								<th class="govuk-table__header" scope="row">Choose visibility</th>
+								<td class="govuk-table__cell">Publish a reusable artefact without raw research material.</td>
+								<td class="govuk-table__cell">
+									Publish internally only, keep in draft, withdraw from search, or restrict visibility to service-area
+									teams.
+								</td>
+							</tr>
+
+							<tr class="govuk-table__row">
+								<th class="govuk-table__header" scope="row">Set reuse conditions</th>
+								<td class="govuk-table__cell">
+									Allow reuse where services ask users to upload supporting evidence before triage.
+								</td>
+								<td class="govuk-table__cell">
+									Require curator approval before reuse, limit reuse to assisted digital journeys, or mark as background
+									evidence only.
+								</td>
+							</tr>
+
+							<tr class="govuk-table__row">
+								<th class="govuk-table__header" scope="row">Connect related evidence</th>
+								<td class="govuk-table__cell">Show confidence, limitations and provenance at the point of reuse.</td>
+								<td class="govuk-table__cell">
+									Hide confidence from public view, link only to the recommendation, or require sign-in before
+									provenance can be inspected.
+								</td>
+							</tr>
+						</tbody>
+					</table>
 				</section>
 
 				<section
@@ -548,6 +856,47 @@
 							</ul>
 						</div>
 					</div>
+
+					<table class="govuk-table" data-product-proof-decision-table>
+						<caption class="govuk-table__caption govuk-table__caption--m">
+							Decisions available during impact tracking
+						</caption>
+						<thead class="govuk-table__head">
+							<tr class="govuk-table__row">
+								<th class="govuk-table__header" scope="col">Decision the screen supports</th>
+								<th class="govuk-table__header" scope="col">Decision made in this example</th>
+								<th class="govuk-table__header" scope="col">Options available but not selected</th>
+							</tr>
+						</thead>
+						<tbody class="govuk-table__body">
+							<tr class="govuk-table__row">
+								<th class="govuk-table__header" scope="row">Accept, reject or defer the recommendation</th>
+								<td class="govuk-table__cell">Accept clearer accepted-format guidance into the alpha backlog.</td>
+								<td class="govuk-table__cell">
+									Reject as out of scope, defer until policy changes, run another research round, or create a separate
+									operational-support action.
+								</td>
+							</tr>
+
+							<tr class="govuk-table__row">
+								<th class="govuk-table__header" scope="row">Choose impact measure</th>
+								<td class="govuk-table__cell">Track repeated upload support calls, which fall by 18% in the pilot.</td>
+								<td class="govuk-table__cell">
+									Track task completion, call duration, complaint volume, failed uploads, or staff confidence with
+									assisted digital scripts.
+								</td>
+							</tr>
+
+							<tr class="govuk-table__row">
+								<th class="govuk-table__header" scope="row">Record delivery follow-through</th>
+								<td class="govuk-table__cell">Connect the research recommendation to an alpha backlog decision.</td>
+								<td class="govuk-table__cell">
+									Close with no action, assign to content backlog only, escalate to service owner, or reopen because
+									impact evidence is inconclusive.
+								</td>
+							</tr>
+						</tbody>
+					</table>
 				</section>
 
 				<section class="govuk-!-margin-bottom-8" aria-labelledby="product-proof-safety-title">

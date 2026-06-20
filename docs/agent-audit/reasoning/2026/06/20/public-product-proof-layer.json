@@ -3,7 +3,7 @@
   "branch": "feature/public-product-proof-layer",
   "traceRequired": true,
   "traceReason": "feature/ branch prefix",
-  "taskSummary": "Implement the first public ResearchOps product proof layer before sign-in, then strengthen it into a realistic managed walkthrough after review feedback and open a ready-for-review PR.",
+  "taskSummary": "Implement the first public ResearchOps product proof layer before sign-in, strengthen it into a realistic managed walkthrough after review feedback, then expand each phase to show the decision space and remove redundant next-step links.",
   "operatingModelFilesLoaded": [
     "AGENTS.md",
     ".agent-operating-model/orchestration.xml",
@@ -89,6 +89,10 @@
     {
       "command": "node --test tests/product-proof-route-state.test.js tests/visual-walkthrough-registry-coverage.test.js tests/pages-advanced-worker-auth-route-state.test.js",
       "result": "passed after expanding the page into a managed RES-7 walkthrough"
+    },
+    {
+      "command": "node --test tests/product-proof-route-state.test.js tests/visual-walkthrough-registry-coverage.test.js tests/pages-advanced-worker-auth-route-state.test.js",
+      "result": "passed after adding 8 decision-space tables and blocking redundant Next links"
     }
   ],
   "validationNotRun": [

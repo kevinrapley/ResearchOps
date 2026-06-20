@@ -27,6 +27,10 @@ function pageById(id) {
 	return visualWalkthroughConfig.pages.find((page) => page.id === id);
 }
 
+function countOccurrences(source, text) {
+	return source.split(text).length - 1;
+}
+
 const walkthroughSteps = [
 	'Set up a research project',
 	'Plan a study, recruitment, consent, ethics and guides',
@@ -53,6 +57,11 @@ includes(pageSource, 'class="govuk-phase-banner', 'product proof page');
 includes(pageSource, 'PROTOTYPE', 'product proof page');
 includes(pageSource, 'This is a ResearchOps prototype using static demonstration content.', 'product proof page');
 includes(pageSource, 'Walk through how the product works', 'product proof page');
+includes(
+	pageSource,
+	'The walkthrough also shows choices available in the UI that are not selected in this example',
+	'product proof page'
+);
 includes(pageSource, 'Mock screen: project setup', 'product proof page');
 includes(pageSource, 'Mock screen: study readiness', 'product proof page');
 includes(pageSource, 'Mock screen: session evidence board', 'product proof page');
@@ -65,8 +74,38 @@ includes(pageSource, 'Recruitment plan', 'product proof page');
 includes(pageSource, 'Informed consent', 'product proof page');
 includes(pageSource, 'Ethics and safeguarding', 'product proof page');
 includes(pageSource, 'Discussion guide', 'product proof page');
+includes(pageSource, 'Decision the screen supports', 'product proof decision evidence');
+includes(pageSource, 'Decision made in this example', 'product proof decision evidence');
+includes(pageSource, 'Options available but not selected', 'product proof decision evidence');
+includes(pageSource, 'Decisions available during project setup', 'product proof decision evidence');
+includes(pageSource, 'Decisions available during study planning', 'product proof decision evidence');
+includes(pageSource, 'Decisions available during evidence capture', 'product proof decision evidence');
+includes(pageSource, 'Decisions available during synthesis', 'product proof decision evidence');
+includes(
+	pageSource,
+	'Decisions available when preparing a repository candidate',
+	'product proof decision evidence'
+);
+includes(pageSource, 'Decisions available during curation and review', 'product proof decision evidence');
+includes(pageSource, 'Decisions available at publication', 'product proof decision evidence');
+includes(pageSource, 'Decisions available during impact tracking', 'product proof decision evidence');
+includes(pageSource, 'Run a policy-only review', 'product proof unselected decisions');
+includes(pageSource, 'Use a staff-proxy sample', 'product proof unselected decisions');
+includes(pageSource, 'Attach a full transcript', 'product proof unselected decisions');
+includes(pageSource, 'Split into separate content, upload and assisted digital themes', 'product proof unselected decisions');
+includes(pageSource, 'Promote the whole study', 'product proof unselected decisions');
+includes(pageSource, 'Return to researcher', 'product proof unselected decisions');
+includes(pageSource, 'Publish internally only', 'product proof unselected decisions');
+includes(pageSource, 'Reject as out of scope', 'product proof unselected decisions');
 includes(pageSource, 'data-product-proof-page', 'product proof page');
 includes(pageSource, 'data-fixture-source="static-product-proof-fixture"', 'product proof page');
+assert.equal(
+	countOccurrences(pageSource, 'data-product-proof-decision-table'),
+	8,
+	'Product proof page should show decision space for all eight phases'
+);
+excludes(pageSource, 'Next:', 'product proof page');
+excludes(templateSource, 'Next:', 'product proof template');
 includes(pageSource, 'Example: Public Services Accessibility Audit', 'product proof page');
 includes(pageSource, 'data-testid="mock-lead-researcher"', 'product proof page');
 includes(pageSource, 'Jane Doe (Mock Lead)', 'product proof page');
