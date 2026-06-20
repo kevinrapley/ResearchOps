@@ -4,6 +4,10 @@
 {% from "govuk/components/button/macro.njk" import govukButton %}
 {% from "govuk/components/phase-banner/macro.njk" import govukPhaseBanner %}
 
+{% block head %}
+	<link rel="stylesheet" href="/css/product-proof.css" media="screen">
+{% endblock %}
+
 {% macro decisionTable(caption, rows) %}
 	<table class="govuk-table" data-product-proof-decision-table>
 		<caption class="govuk-table__caption govuk-table__caption--m">{{ caption }}</caption>
@@ -24,6 +28,16 @@
 			{% endfor %}
 		</tbody>
 	</table>
+{% endmacro %}
+
+{% macro uiExample(image, caption, alt, sourcePath) %}
+	<figure class="product-proof-ui-example govuk-!-margin-top-6" data-product-proof-media>
+		<img class="product-proof-ui-example__image" src="{{ image }}" alt="{{ alt }}" loading="lazy" width="1365" height="900">
+		<figcaption class="govuk-body-s product-proof-ui-example__caption">
+			<strong>Real UI example:</strong> {{ caption }}
+			<span class="govuk-visually-hidden"> Screenshot source: {{ sourcePath }}.</span>
+		</figcaption>
+	</figure>
 {% endmacro %}
 
 {% block content %}
@@ -88,6 +102,29 @@
 		</div>
 	</section>
 
+	<section class="govuk-!-margin-bottom-8" aria-labelledby="product-proof-value-title" data-product-proof-value-framing>
+		<div class="govuk-grid-row">
+			<div class="govuk-grid-column-two-thirds">
+				<h2 class="govuk-heading-l" id="product-proof-value-title">Why this is better than today&apos;s research admin</h2>
+				<p class="govuk-body">ResearchOps is for teams who are already doing the work, but doing it across disconnected documents, spreadsheets, slide decks, research boards and message threads. The product value is that the decisions, evidence and publication controls stay connected as the work moves from planning to reuse.</p>
+			</div>
+		</div>
+		<ul class="product-proof-value-list">
+			<li class="product-proof-value-list__item">
+				<h3 class="govuk-heading-m">Less lost context</h3>
+				<p class="govuk-body">Project objectives, ownership, study readiness, consent, evidence, synthesis and impact live in one connected journey instead of being reconstructed from folders later.</p>
+			</li>
+			<li class="product-proof-value-list__item">
+				<h3 class="govuk-heading-m">Safer reuse</h3>
+				<p class="govuk-body">Reusable learning is separated from raw research material, then checked for provenance, consent scope, confidence and publication boundaries before it reaches the repository.</p>
+			</li>
+			<li class="product-proof-value-list__item">
+				<h3 class="govuk-heading-m">Clearer decisions</h3>
+				<p class="govuk-body">The platform records what the team chose, what they did not choose, and what changed as a result, so research can be judged by decision impact rather than activity volume.</p>
+			</li>
+		</ul>
+	</section>
+
 	<nav class="govuk-!-margin-bottom-8" aria-labelledby="product-proof-walkthrough-title" data-product-proof-walkthrough>
 		<h2 class="govuk-heading-l" id="product-proof-walkthrough-title">Walk through how the product works</h2>
 		<p class="govuk-body">Use this managed walkthrough to see how each product area creates value. Each step shows a realistic mock screen and the proof point it creates for a research operations team.</p>
@@ -144,6 +181,12 @@
 				</ul>
 			</div>
 		</div>
+		{{ uiExample(
+			"/assets/researchops/product-proof/project-dashboard.png",
+			"the project dashboard brings project context, ownership, reflexive journaling, planning and outcomes into one place.",
+			"Screenshot of the ResearchOps project dashboard showing project details, service stage, project stage and reflexive journal controls.",
+			"/pages/project-dashboard/"
+		) }}
 		{{ decisionTable("Decisions available during project setup", [
 			{
 				decision: "Choose the project shape",
@@ -215,6 +258,12 @@
 				</ul>
 			</div>
 		</div>
+		{{ uiExample(
+			"/assets/researchops/product-proof/study-readiness.png",
+			"the study page shows readiness work across description, participants, discussion guides, consent materials and session workspace.",
+			"Screenshot of the ResearchOps study readiness page showing study details, readiness status and study setup tasks.",
+			"/pages/study/"
+		) }}
 		{{ decisionTable("Decisions available during study planning", [
 			{
 				decision: "Choose the recruitment route",
@@ -283,6 +332,12 @@
 				</ul>
 			</div>
 		</div>
+		{{ uiExample(
+			"/assets/researchops/product-proof/session-workspace.png",
+			"the session workspace gives the team a controlled place to select a participant, check consent and capture notes.",
+			"Screenshot of the ResearchOps session workspace showing participant selection, consent summary, session controls and notes.",
+			"/pages/study/session/"
+		) }}
 		{{ decisionTable("Decisions available during evidence capture", [
 			{
 				decision: "Select the evidence type",
@@ -338,6 +393,12 @@
 				</ul>
 			</div>
 		</div>
+		{{ uiExample(
+			"/assets/researchops/product-proof/synthesis-workspace.png",
+			"the synthesis workspace turns captured evidence into clusters, themes and findings while preserving traceability.",
+			"Screenshot of the ResearchOps synthesis workspace showing the synthesis summary and working cluster groupings.",
+			"/pages/study/synthesis/"
+		) }}
 		{{ decisionTable("Decisions available during synthesis", [
 			{
 				decision: "Group evidence into a theme",
@@ -393,6 +454,12 @@
 				</ul>
 			</div>
 		</div>
+		{{ uiExample(
+			"/assets/researchops/product-proof/repository-candidate.png",
+			"the candidate artefact form separates reusable evidence from raw research before anything can enter the publication queue.",
+			"Screenshot of the ResearchOps create candidate artefact screen showing candidate details, taxonomy fields and reuse metadata controls.",
+			"/pages/repository/review/candidates/new/"
+		) }}
 		{{ decisionTable("Decisions available when preparing a repository candidate", [
 			{
 				decision: "Decide what becomes reusable",
@@ -455,6 +522,12 @@
 				</ul>
 			</div>
 		</div>
+		{{ uiExample(
+			"/assets/researchops/product-proof/review-workbench.png",
+			"the review workbench gives curators a queue, selected record view and publication checks before evidence becomes reusable.",
+			"Screenshot of the ResearchOps candidate artefacts review workbench showing review tabs, queue items and selected record areas.",
+			"/pages/repository/review/candidates/"
+		) }}
 		{{ decisionTable("Decisions available during curation and review", [
 			{
 				decision: "Approve or stop publication",
@@ -510,6 +583,12 @@
 				</ul>
 			</div>
 		</div>
+		{{ uiExample(
+			"/assets/researchops/product-proof/published-artefact.png",
+			"the published artefact page shows reusable learning with confidence, limitations and reuse guidance instead of exposing raw notes.",
+			"Screenshot of a ResearchOps published repository artefact page showing the evidence title, summary and reuse information.",
+			"/pages/repository/artefacts/staff-evidence-boundaries/"
+		) }}
 		{{ decisionTable("Decisions available at publication", [
 			{
 				decision: "Choose visibility",
@@ -568,6 +647,12 @@
 				</ul>
 			</div>
 		</div>
+		{{ uiExample(
+			"/assets/researchops/product-proof/impact-tracker.png",
+			"the impact tracker connects research recommendations to decisions, service changes and measurable outcomes.",
+			"Screenshot of the ResearchOps impact and ROI screen showing impact record fields, type choices, scale choices and recorded impact areas.",
+			"/pages/projects/outcomes/"
+		) }}
 		{{ decisionTable("Decisions available during impact tracking", [
 			{
 				decision: "Accept, reject or defer the recommendation",

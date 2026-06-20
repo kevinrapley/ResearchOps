@@ -6,6 +6,16 @@ const pageSource = fs.readFileSync('public/pages/product-proof/index.html', 'utf
 const homeSource = fs.readFileSync('public/index.html', 'utf8');
 const templateSource = fs.readFileSync('src/govuk/templates/pages/product-proof.njk', 'utf8');
 const rendererSource = fs.readFileSync('scripts/govuk/render-govuk-pages.mjs', 'utf8');
+const mediaPaths = [
+	'public/assets/researchops/product-proof/project-dashboard.png',
+	'public/assets/researchops/product-proof/study-readiness.png',
+	'public/assets/researchops/product-proof/session-workspace.png',
+	'public/assets/researchops/product-proof/synthesis-workspace.png',
+	'public/assets/researchops/product-proof/repository-candidate.png',
+	'public/assets/researchops/product-proof/review-workbench.png',
+	'public/assets/researchops/product-proof/published-artefact.png',
+	'public/assets/researchops/product-proof/impact-tracker.png',
+];
 
 function includes(source, text, label) {
 	assert.equal(source.includes(text), true, `Expected ${label} to include: ${text}`);
@@ -56,6 +66,16 @@ includes(pageSource, '<h1 class="govuk-heading-xl">ResearchOps Product Proof</h1
 includes(pageSource, 'class="govuk-phase-banner', 'product proof page');
 includes(pageSource, 'PROTOTYPE', 'product proof page');
 includes(pageSource, 'This is a ResearchOps prototype using static demonstration content.', 'product proof page');
+includes(pageSource, 'href="/css/product-proof.css"', 'product proof page');
+includes(pageSource, 'Why this is better than today', 'product proof value framing');
+includes(pageSource, 'Less lost context', 'product proof value framing');
+includes(pageSource, 'Safer reuse', 'product proof value framing');
+includes(pageSource, 'Clearer decisions', 'product proof value framing');
+includesText(
+	pageSource,
+	'disconnected documents, spreadsheets, slide decks, research boards and message threads',
+	'product proof value framing'
+);
 includes(pageSource, 'Walk through how the product works', 'product proof page');
 includes(
 	pageSource,
@@ -104,6 +124,22 @@ assert.equal(
 	8,
 	'Product proof page should show decision space for all eight phases'
 );
+assert.equal(
+	countOccurrences(pageSource, 'data-product-proof-media'),
+	8,
+	'Product proof page should show real UI media for all eight phases'
+);
+assert.equal(
+	countOccurrences(pageSource, '<strong>Real UI example:</strong>'),
+	8,
+	'Product proof page should label each screenshot as a real UI example'
+);
+for (const mediaPath of mediaPaths) {
+	const publicPath = mediaPath.replace('public', '');
+	includes(pageSource, `src="${publicPath}"`, 'product proof media');
+	assert.equal(fs.existsSync(mediaPath), true, `Expected media asset to exist: ${mediaPath}`);
+	assert.ok(fs.statSync(mediaPath).size > 10_000, `Expected media asset to contain screenshot data: ${mediaPath}`);
+}
 excludes(pageSource, 'Next:', 'product proof page');
 excludes(templateSource, 'Next:', 'product proof template');
 includes(pageSource, 'Example: Public Services Accessibility Audit', 'product proof page');

@@ -62,6 +62,15 @@
 - `visual-walkthrough.config.mjs`
 - `src/govuk/templates/pages/home.njk`
 - `public/pages/product-proof/index.html`
+- `public/css/product-proof.css`
+- `public/assets/researchops/product-proof/project-dashboard.png`
+- `public/assets/researchops/product-proof/study-readiness.png`
+- `public/assets/researchops/product-proof/session-workspace.png`
+- `public/assets/researchops/product-proof/synthesis-workspace.png`
+- `public/assets/researchops/product-proof/repository-candidate.png`
+- `public/assets/researchops/product-proof/review-workbench.png`
+- `public/assets/researchops/product-proof/published-artefact.png`
+- `public/assets/researchops/product-proof/impact-tracker.png`
 - `public/index.html`
 - `tests/product-proof-route-state.test.js`
 - `tests/pages-advanced-worker-auth-route-state.test.js`
@@ -76,6 +85,9 @@
 - Follow-up after review feedback: replaced the thin lifecycle list with a managed, realistic walkthrough using mock product screens and a named hypothetical research project.
 - Second follow-up after review feedback: removed redundant `Next:` links between adjacent sections.
 - Added decision-space tables to every phase showing the decision the UI supports, the decision made in the example flow, and available options not selected.
+- Third follow-up after review feedback: added real captured UI screenshots for all 8 lifecycle stages, sourced from existing generated ResearchOps pages.
+- Added value framing that explains what ResearchOps replaces: disconnected documents, spreadsheets, slide decks, research boards and message threads.
+- Added a page-specific stylesheet for screenshot presentation and captions.
 - Expanded the study-planning proof to show recruitment, informed consent, ethics and safeguarding, and discussion guide readiness.
 - Expanded the journey to show evidence capture, synthesis, repository-candidate preparation, curation and review, publication of reusable evidence, and decision-impact tracking.
 - Added a clearly labelled static fixture with mock lead, service phase, decision context and publication-boundary copy.
@@ -99,6 +111,8 @@
 - Follow-up Worker route-state coverage passed after confirming the static route was not protected by the Pages Worker.
 - Follow-up RES-7 walkthrough route-state coverage passed after asserting the mock screens for setup, study planning, evidence capture, synthesis, repository candidate, review, publication and impact.
 - Second follow-up RES-7 route-state coverage passed after asserting all 8 decision-space tables and blocking redundant `Next:` links.
+- Third follow-up RES-7 route-state coverage passed after asserting all 8 real UI media assets, captions and value framing.
+- Browser-level image load check passed after scrolling the public proof page and confirming all 8 embedded screenshots load at 1365 by 900 pixels.
 
 ## Validation Not Run
 

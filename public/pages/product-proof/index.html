@@ -6,6 +6,8 @@
 		<title>ResearchOps Product Proof - ResearchOps Demo Suite</title>
 		<link rel="stylesheet" href="/assets/govuk/govuk-frontend.css" media="screen" />
 
+		<link rel="stylesheet" href="/css/product-proof.css" media="screen" />
+
 		<script type="module" src="/components/layout.js" defer></script>
 		<script type="module" src="/js/govuk-frontend-init.js" defer></script>
 	</head>
@@ -95,6 +97,48 @@
 					</div>
 				</section>
 
+				<section
+					class="govuk-!-margin-bottom-8"
+					aria-labelledby="product-proof-value-title"
+					data-product-proof-value-framing
+				>
+					<div class="govuk-grid-row">
+						<div class="govuk-grid-column-two-thirds">
+							<h2 class="govuk-heading-l" id="product-proof-value-title">
+								Why this is better than today&apos;s research admin
+							</h2>
+							<p class="govuk-body">
+								ResearchOps is for teams who are already doing the work, but doing it across disconnected documents,
+								spreadsheets, slide decks, research boards and message threads. The product value is that the decisions,
+								evidence and publication controls stay connected as the work moves from planning to reuse.
+							</p>
+						</div>
+					</div>
+					<ul class="product-proof-value-list">
+						<li class="product-proof-value-list__item">
+							<h3 class="govuk-heading-m">Less lost context</h3>
+							<p class="govuk-body">
+								Project objectives, ownership, study readiness, consent, evidence, synthesis and impact live in one
+								connected journey instead of being reconstructed from folders later.
+							</p>
+						</li>
+						<li class="product-proof-value-list__item">
+							<h3 class="govuk-heading-m">Safer reuse</h3>
+							<p class="govuk-body">
+								Reusable learning is separated from raw research material, then checked for provenance, consent scope,
+								confidence and publication boundaries before it reaches the repository.
+							</p>
+						</li>
+						<li class="product-proof-value-list__item">
+							<h3 class="govuk-heading-m">Clearer decisions</h3>
+							<p class="govuk-body">
+								The platform records what the team chose, what they did not choose, and what changed as a result, so
+								research can be judged by decision impact rather than activity volume.
+							</p>
+						</li>
+					</ul>
+				</section>
+
 				<nav
 					class="govuk-!-margin-bottom-8"
 					aria-labelledby="product-proof-walkthrough-title"
@@ -172,6 +216,23 @@
 							</ul>
 						</div>
 					</div>
+
+					<figure class="product-proof-ui-example govuk-!-margin-top-6" data-product-proof-media>
+						<img
+							class="product-proof-ui-example__image"
+							src="/assets/researchops/product-proof/project-dashboard.png"
+							alt="Screenshot of the ResearchOps project dashboard showing project details, service stage, project stage and reflexive journal controls."
+							loading="lazy"
+							width="1365"
+							height="900"
+						/>
+						<figcaption class="govuk-body-s product-proof-ui-example__caption">
+							<strong>Real UI example:</strong>
+							the project dashboard brings project context, ownership, reflexive journaling, planning and outcomes into
+							one place.
+							<span class="govuk-visually-hidden">Screenshot source: /pages/project-dashboard/.</span>
+						</figcaption>
+					</figure>
 
 					<table class="govuk-table" data-product-proof-decision-table>
 						<caption class="govuk-table__caption govuk-table__caption--m">
@@ -295,6 +356,23 @@
 						</div>
 					</div>
 
+					<figure class="product-proof-ui-example govuk-!-margin-top-6" data-product-proof-media>
+						<img
+							class="product-proof-ui-example__image"
+							src="/assets/researchops/product-proof/study-readiness.png"
+							alt="Screenshot of the ResearchOps study readiness page showing study details, readiness status and study setup tasks."
+							loading="lazy"
+							width="1365"
+							height="900"
+						/>
+						<figcaption class="govuk-body-s product-proof-ui-example__caption">
+							<strong>Real UI example:</strong>
+							the study page shows readiness work across description, participants, discussion guides, consent materials
+							and session workspace.
+							<span class="govuk-visually-hidden">Screenshot source: /pages/study/.</span>
+						</figcaption>
+					</figure>
+
 					<table class="govuk-table" data-product-proof-decision-table>
 						<caption class="govuk-table__caption govuk-table__caption--m">
 							Decisions available during study planning
@@ -402,6 +480,23 @@
 						</div>
 					</div>
 
+					<figure class="product-proof-ui-example govuk-!-margin-top-6" data-product-proof-media>
+						<img
+							class="product-proof-ui-example__image"
+							src="/assets/researchops/product-proof/session-workspace.png"
+							alt="Screenshot of the ResearchOps session workspace showing participant selection, consent summary, session controls and notes."
+							loading="lazy"
+							width="1365"
+							height="900"
+						/>
+						<figcaption class="govuk-body-s product-proof-ui-example__caption">
+							<strong>Real UI example:</strong>
+							the session workspace gives the team a controlled place to select a participant, check consent and capture
+							notes.
+							<span class="govuk-visually-hidden">Screenshot source: /pages/study/session/.</span>
+						</figcaption>
+					</figure>
+
 					<table class="govuk-table" data-product-proof-decision-table>
 						<caption class="govuk-table__caption govuk-table__caption--m">
 							Decisions available during evidence capture
@@ -492,6 +587,23 @@
 						</div>
 					</div>
 
+					<figure class="product-proof-ui-example govuk-!-margin-top-6" data-product-proof-media>
+						<img
+							class="product-proof-ui-example__image"
+							src="/assets/researchops/product-proof/synthesis-workspace.png"
+							alt="Screenshot of the ResearchOps synthesis workspace showing the synthesis summary and working cluster groupings."
+							loading="lazy"
+							width="1365"
+							height="900"
+						/>
+						<figcaption class="govuk-body-s product-proof-ui-example__caption">
+							<strong>Real UI example:</strong>
+							the synthesis workspace turns captured evidence into clusters, themes and findings while preserving
+							traceability.
+							<span class="govuk-visually-hidden">Screenshot source: /pages/study/synthesis/.</span>
+						</figcaption>
+					</figure>
+
 					<table class="govuk-table" data-product-proof-decision-table>
 						<caption class="govuk-table__caption govuk-table__caption--m">Decisions available during synthesis</caption>
 						<thead class="govuk-table__head">
@@ -581,6 +693,23 @@
 							</ul>
 						</div>
 					</div>
+
+					<figure class="product-proof-ui-example govuk-!-margin-top-6" data-product-proof-media>
+						<img
+							class="product-proof-ui-example__image"
+							src="/assets/researchops/product-proof/repository-candidate.png"
+							alt="Screenshot of the ResearchOps create candidate artefact screen showing candidate details, taxonomy fields and reuse metadata controls."
+							loading="lazy"
+							width="1365"
+							height="900"
+						/>
+						<figcaption class="govuk-body-s product-proof-ui-example__caption">
+							<strong>Real UI example:</strong>
+							the candidate artefact form separates reusable evidence from raw research before anything can enter the
+							publication queue.
+							<span class="govuk-visually-hidden">Screenshot source: /pages/repository/review/candidates/new/.</span>
+						</figcaption>
+					</figure>
 
 					<table class="govuk-table" data-product-proof-decision-table>
 						<caption class="govuk-table__caption govuk-table__caption--m">
@@ -678,6 +807,23 @@
 						</div>
 					</div>
 
+					<figure class="product-proof-ui-example govuk-!-margin-top-6" data-product-proof-media>
+						<img
+							class="product-proof-ui-example__image"
+							src="/assets/researchops/product-proof/review-workbench.png"
+							alt="Screenshot of the ResearchOps candidate artefacts review workbench showing review tabs, queue items and selected record areas."
+							loading="lazy"
+							width="1365"
+							height="900"
+						/>
+						<figcaption class="govuk-body-s product-proof-ui-example__caption">
+							<strong>Real UI example:</strong>
+							the review workbench gives curators a queue, selected record view and publication checks before evidence
+							becomes reusable.
+							<span class="govuk-visually-hidden">Screenshot source: /pages/repository/review/candidates/.</span>
+						</figcaption>
+					</figure>
+
 					<table class="govuk-table" data-product-proof-decision-table>
 						<caption class="govuk-table__caption govuk-table__caption--m">
 							Decisions available during curation and review
@@ -770,6 +916,25 @@
 						</div>
 					</div>
 
+					<figure class="product-proof-ui-example govuk-!-margin-top-6" data-product-proof-media>
+						<img
+							class="product-proof-ui-example__image"
+							src="/assets/researchops/product-proof/published-artefact.png"
+							alt="Screenshot of a ResearchOps published repository artefact page showing the evidence title, summary and reuse information."
+							loading="lazy"
+							width="1365"
+							height="900"
+						/>
+						<figcaption class="govuk-body-s product-proof-ui-example__caption">
+							<strong>Real UI example:</strong>
+							the published artefact page shows reusable learning with confidence, limitations and reuse guidance
+							instead of exposing raw notes.
+							<span class="govuk-visually-hidden">
+								Screenshot source: /pages/repository/artefacts/staff-evidence-boundaries/.
+							</span>
+						</figcaption>
+					</figure>
+
 					<table class="govuk-table" data-product-proof-decision-table>
 						<caption class="govuk-table__caption govuk-table__caption--m">Decisions available at publication</caption>
 						<thead class="govuk-table__head">
@@ -856,6 +1021,23 @@
 							</ul>
 						</div>
 					</div>
+
+					<figure class="product-proof-ui-example govuk-!-margin-top-6" data-product-proof-media>
+						<img
+							class="product-proof-ui-example__image"
+							src="/assets/researchops/product-proof/impact-tracker.png"
+							alt="Screenshot of the ResearchOps impact and ROI screen showing impact record fields, type choices, scale choices and recorded impact areas."
+							loading="lazy"
+							width="1365"
+							height="900"
+						/>
+						<figcaption class="govuk-body-s product-proof-ui-example__caption">
+							<strong>Real UI example:</strong>
+							the impact tracker connects research recommendations to decisions, service changes and measurable
+							outcomes.
+							<span class="govuk-visually-hidden">Screenshot source: /pages/projects/outcomes/.</span>
+						</figcaption>
+					</figure>
 
 					<table class="govuk-table" data-product-proof-decision-table>
 						<caption class="govuk-table__caption govuk-table__caption--m">
