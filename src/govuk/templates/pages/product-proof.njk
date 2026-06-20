@@ -4,49 +4,6 @@
 {% from "govuk/components/button/macro.njk" import govukButton %}
 {% from "govuk/components/phase-banner/macro.njk" import govukPhaseBanner %}
 
-{% set lifecycleSteps = [
-	{
-		title: "Set up a research project",
-		text: "Create the shared record for the service phase, ownership, objectives and decision context.",
-		status: "Public proof"
-	},
-	{
-		title: "Plan a study",
-		text: "Turn the project need into a research plan with method, scope and readiness checks.",
-		status: "Public proof"
-	},
-	{
-		title: "Capture evidence",
-		text: "Keep session notes, observations and supporting material connected to the study.",
-		status: "Protected"
-	},
-	{
-		title: "Synthesise findings",
-		text: "Group evidence into findings that remain traceable back to the research activity.",
-		status: "Protected"
-	},
-	{
-		title: "Prepare a repository candidate",
-		text: "Separate reusable learning from raw research material before anything is considered for publication.",
-		status: "Planned"
-	},
-	{
-		title: "Curate and review",
-		text: "Review provenance, limitations, confidence and safe reuse guidance before publication.",
-		status: "Planned"
-	},
-	{
-		title: "Publish reusable evidence",
-		text: "Share evidence that is safe to reuse without exposing participant data or restricted project material.",
-		status: "Planned"
-	},
-	{
-		title: "Track decision impact",
-		text: "Connect recommendations to actions, service changes and measurable outcomes.",
-		status: "Planned"
-	}
-] %}
-
 {% block content %}
 {{ govukPhaseBanner({
 	tag: {
@@ -55,7 +12,7 @@
 	html: 'This is a ResearchOps prototype using static demonstration content. Do not enter real participant data. <a class="govuk-link" href="/pages/account/register/">Request access to give feedback</a>.'
 }) }}
 
-<div class="govuk-width-container" data-product-proof-page>
+<div class="govuk-width-container" data-product-proof-page data-fixture-source="static-product-proof-fixture">
 	{{ govukBreadcrumbs({
 		items: [
 			{
@@ -69,39 +26,16 @@
 		<div class="govuk-grid-column-two-thirds">
 			<span class="govuk-caption-l">ResearchOps public proof</span>
 			<h1 class="govuk-heading-xl">ResearchOps Product Proof</h1>
-			<p class="govuk-body-l">See how ResearchOps connects project setup, study planning, evidence, repository publication and impact tracking before you sign in.</p>
-			<p class="govuk-body">This page is safe to view publicly. It uses a static fixture and shows the product direction without loading authenticated repository records, raw research notes or participant details.</p>
+			<p class="govuk-body-l">Walk through a realistic research project from setup to decision impact before you sign in.</p>
+			<p class="govuk-body">This public walkthrough uses a static mock project called <strong>Example: Public Services Accessibility Audit</strong>. It shows the product value without loading live project records, raw notes, participant contact details or restricted team material.</p>
 		</div>
 	</header>
 
-	<section class="govuk-!-margin-bottom-8" aria-labelledby="product-proof-lifecycle-title">
+	<section class="govuk-!-margin-bottom-8" aria-labelledby="product-proof-case-title">
 		<div class="govuk-grid-row">
 			<div class="govuk-grid-column-two-thirds">
-				<h2 class="govuk-heading-l" id="product-proof-lifecycle-title">How ResearchOps connects research work</h2>
-				<p class="govuk-body">The product journey follows the lifecycle of research work from setup to reuse. Status text is shown in words so the meaning does not depend on colour.</p>
-			</div>
-		</div>
-
-		<ol class="govuk-task-list" aria-labelledby="product-proof-lifecycle-title">
-			{% for step in lifecycleSteps %}
-			<li class="govuk-task-list__item">
-				<div class="govuk-task-list__name-and-hint">
-					<div class="govuk-task-list__name">{{ loop.index }}. {{ step.title }}</div>
-					<div class="govuk-task-list__hint">{{ step.text }}</div>
-				</div>
-				<div class="govuk-task-list__status">
-					<strong class="govuk-tag{% if step.status == 'Protected' %} govuk-tag--blue{% elseif step.status == 'Planned' %} govuk-tag--grey{% endif %}">{{ step.status }}</strong>
-				</div>
-			</li>
-			{% endfor %}
-		</ol>
-	</section>
-
-	<section class="govuk-!-margin-bottom-8" aria-labelledby="product-proof-fixture-title" data-fixture-source="static-product-proof-fixture">
-		<div class="govuk-grid-row">
-			<div class="govuk-grid-column-two-thirds">
-				<h2 class="govuk-heading-l" id="product-proof-fixture-title">Example proof boundary</h2>
-				<p class="govuk-body">This fixture demonstrates the publication boundary without exposing live project data.</p>
+				<h2 class="govuk-heading-l" id="product-proof-case-title">The demonstration project</h2>
+				<p class="govuk-body">A service team needs to understand why people using assisted digital support are abandoning an accessibility audit journey. ResearchOps keeps the plan, safeguards, evidence, reusable learning and delivery decisions connected.</p>
 			</div>
 		</div>
 
@@ -112,12 +46,16 @@
 			<div class="govuk-summary-card__content">
 				<dl class="govuk-summary-list govuk-summary-list--no-border">
 					<div class="govuk-summary-list__row">
-						<dt class="govuk-summary-list__key">Fixture status</dt>
-						<dd class="govuk-summary-list__value">Static demonstration content only</dd>
-					</div>
-					<div class="govuk-summary-list__row">
 						<dt class="govuk-summary-list__key">Lead researcher</dt>
 						<dd class="govuk-summary-list__value" data-testid="mock-lead-researcher">Jane Doe (Mock Lead)</dd>
+					</div>
+					<div class="govuk-summary-list__row">
+						<dt class="govuk-summary-list__key">Service phase</dt>
+						<dd class="govuk-summary-list__value">Discovery to alpha handover</dd>
+					</div>
+					<div class="govuk-summary-list__row">
+						<dt class="govuk-summary-list__key">Decision to support</dt>
+						<dd class="govuk-summary-list__value">Whether to change eligibility guidance and the audit upload flow before alpha build.</dd>
 					</div>
 					<div class="govuk-summary-list__row">
 						<dt class="govuk-summary-list__key">Publication boundary</dt>
@@ -128,10 +66,374 @@
 		</div>
 	</section>
 
+	<nav class="govuk-!-margin-bottom-8" aria-labelledby="product-proof-walkthrough-title" data-product-proof-walkthrough>
+		<h2 class="govuk-heading-l" id="product-proof-walkthrough-title">Walk through how the product works</h2>
+		<p class="govuk-body">Use this managed walkthrough to see how each product area creates value. Each step shows a realistic mock screen and the proof point it creates for a research operations team.</p>
+		<ol class="govuk-list govuk-list--number">
+			<li><a class="govuk-link" href="#proof-step-project">Set up a research project</a></li>
+			<li><a class="govuk-link" href="#proof-step-study">Plan a study, recruitment, consent, ethics and guides</a></li>
+			<li><a class="govuk-link" href="#proof-step-evidence">Capture evidence from sessions</a></li>
+			<li><a class="govuk-link" href="#proof-step-synthesis">Synthesise findings</a></li>
+			<li><a class="govuk-link" href="#proof-step-candidate">Prepare a repository candidate</a></li>
+			<li><a class="govuk-link" href="#proof-step-review">Curate and review</a></li>
+			<li><a class="govuk-link" href="#proof-step-publication">Publish reusable evidence</a></li>
+			<li><a class="govuk-link" href="#proof-step-impact">Track decision impact</a></li>
+		</ol>
+	</nav>
+
+	<section id="proof-step-project" class="govuk-!-margin-bottom-9" aria-labelledby="proof-step-project-title" data-proof-step="project">
+		<span class="govuk-caption-l">Step 1 of 8</span>
+		<h2 class="govuk-heading-l" id="proof-step-project-title">Set up a research project</h2>
+		<div class="govuk-grid-row">
+			<div class="govuk-grid-column-one-half">
+				<div class="govuk-summary-card">
+					<div class="govuk-summary-card__title-wrapper">
+						<h3 class="govuk-summary-card__title">Mock screen: project setup</h3>
+					</div>
+					<div class="govuk-summary-card__content">
+						<dl class="govuk-summary-list govuk-summary-list--no-border">
+							<div class="govuk-summary-list__row">
+								<dt class="govuk-summary-list__key">Project name</dt>
+								<dd class="govuk-summary-list__value">Public Services Accessibility Audit</dd>
+							</div>
+							<div class="govuk-summary-list__row">
+								<dt class="govuk-summary-list__key">Objective</dt>
+								<dd class="govuk-summary-list__value">Understand where users lose confidence when proving accessibility needs.</dd>
+							</div>
+							<div class="govuk-summary-list__row">
+								<dt class="govuk-summary-list__key">Stakeholders</dt>
+								<dd class="govuk-summary-list__value">Service owner, policy lead, accessibility specialist, content designer.</dd>
+							</div>
+							<div class="govuk-summary-list__row">
+								<dt class="govuk-summary-list__key">Status</dt>
+								<dd class="govuk-summary-list__value"><strong class="govuk-tag">Ready to plan study</strong></dd>
+							</div>
+						</dl>
+					</div>
+				</div>
+			</div>
+			<div class="govuk-grid-column-one-half">
+				<h3 class="govuk-heading-m">What this proves</h3>
+				<ul class="govuk-list govuk-list--bullet">
+					<li>research starts from a clear decision context, not a loose folder of notes</li>
+					<li>service phase, ownership and objectives are visible from the beginning</li>
+					<li>later studies, findings, recommendations and impact can all point back to the original need</li>
+				</ul>
+			</div>
+		</div>
+		<p class="govuk-body"><a class="govuk-link" href="#proof-step-study">Next: plan a study</a></p>
+	</section>
+
+	<section id="proof-step-study" class="govuk-!-margin-bottom-9" aria-labelledby="proof-step-study-title" data-proof-step="study">
+		<span class="govuk-caption-l">Step 2 of 8</span>
+		<h2 class="govuk-heading-l" id="proof-step-study-title">Plan a study, recruitment, consent, ethics and guides</h2>
+		<div class="govuk-grid-row">
+			<div class="govuk-grid-column-one-half">
+				<div class="govuk-summary-card">
+					<div class="govuk-summary-card__title-wrapper">
+						<h3 class="govuk-summary-card__title">Mock screen: study readiness</h3>
+					</div>
+					<div class="govuk-summary-card__content">
+						<ul class="govuk-task-list">
+							<li class="govuk-task-list__item">
+								<div class="govuk-task-list__name-and-hint">
+									<div class="govuk-task-list__name">Recruitment plan</div>
+									<div class="govuk-task-list__hint">8 participants, including assisted digital users and screen-reader users.</div>
+								</div>
+								<div class="govuk-task-list__status"><strong class="govuk-tag govuk-tag--green">Ready</strong></div>
+							</li>
+							<li class="govuk-task-list__item">
+								<div class="govuk-task-list__name-and-hint">
+									<div class="govuk-task-list__name">Informed consent</div>
+									<div class="govuk-task-list__hint">Plain-English consent script and withdrawal route prepared.</div>
+								</div>
+								<div class="govuk-task-list__status"><strong class="govuk-tag govuk-tag--green">Ready</strong></div>
+							</li>
+							<li class="govuk-task-list__item">
+								<div class="govuk-task-list__name-and-hint">
+									<div class="govuk-task-list__name">Ethics and safeguarding</div>
+									<div class="govuk-task-list__hint">Low distress risk; accessibility adjustments logged.</div>
+								</div>
+								<div class="govuk-task-list__status"><strong class="govuk-tag govuk-tag--yellow">Review</strong></div>
+							</li>
+							<li class="govuk-task-list__item">
+								<div class="govuk-task-list__name-and-hint">
+									<div class="govuk-task-list__name">Discussion guide</div>
+									<div class="govuk-task-list__hint">Scenario tasks, probes and observation prompts drafted.</div>
+								</div>
+								<div class="govuk-task-list__status"><strong class="govuk-tag govuk-tag--green">Ready</strong></div>
+							</li>
+						</ul>
+					</div>
+				</div>
+			</div>
+			<div class="govuk-grid-column-one-half">
+				<h3 class="govuk-heading-m">What this proves</h3>
+				<ul class="govuk-list govuk-list--bullet">
+					<li>recruitment, informed consent, ethics and discussion guides are managed as visible readiness work</li>
+					<li>the study cannot drift into fieldwork without showing what still needs review</li>
+					<li>inclusive research decisions are recorded before participants are contacted</li>
+				</ul>
+			</div>
+		</div>
+		<p class="govuk-body"><a class="govuk-link" href="#proof-step-evidence">Next: capture evidence</a></p>
+	</section>
+
+	<section id="proof-step-evidence" class="govuk-!-margin-bottom-9" aria-labelledby="proof-step-evidence-title" data-proof-step="evidence">
+		<span class="govuk-caption-l">Step 3 of 8</span>
+		<h2 class="govuk-heading-l" id="proof-step-evidence-title">Capture evidence from sessions</h2>
+		<div class="govuk-grid-row">
+			<div class="govuk-grid-column-one-half">
+				<div class="govuk-summary-card">
+					<div class="govuk-summary-card__title-wrapper">
+						<h3 class="govuk-summary-card__title">Mock screen: session evidence board</h3>
+					</div>
+					<div class="govuk-summary-card__content">
+						<table class="govuk-table">
+							<caption class="govuk-table__caption govuk-table__caption--s">Session capture summary</caption>
+							<thead class="govuk-table__head">
+								<tr class="govuk-table__row">
+									<th class="govuk-table__header" scope="col">Session</th>
+									<th class="govuk-table__header" scope="col">Consent</th>
+									<th class="govuk-table__header" scope="col">Evidence</th>
+								</tr>
+							</thead>
+							<tbody class="govuk-table__body">
+								<tr class="govuk-table__row">
+									<th class="govuk-table__header" scope="row">P-104</th>
+									<td class="govuk-table__cell">Recorded</td>
+									<td class="govuk-table__cell">5 observations, 2 quotes, 1 support need</td>
+								</tr>
+								<tr class="govuk-table__row">
+									<th class="govuk-table__header" scope="row">P-109</th>
+									<td class="govuk-table__cell">Recorded</td>
+									<td class="govuk-table__cell">4 observations, 1 quote, upload barrier tagged</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+				</div>
+			</div>
+			<div class="govuk-grid-column-one-half">
+				<h3 class="govuk-heading-m">What this proves</h3>
+				<ul class="govuk-list govuk-list--bullet">
+					<li>evidence is captured against the study and consent state</li>
+					<li>raw notes remain protected while public proof can still show the workflow</li>
+					<li>observations are structured early enough to support synthesis later</li>
+				</ul>
+			</div>
+		</div>
+		<p class="govuk-body"><a class="govuk-link" href="#proof-step-synthesis">Next: synthesise findings</a></p>
+	</section>
+
+	<section id="proof-step-synthesis" class="govuk-!-margin-bottom-9" aria-labelledby="proof-step-synthesis-title" data-proof-step="synthesis">
+		<span class="govuk-caption-l">Step 4 of 8</span>
+		<h2 class="govuk-heading-l" id="proof-step-synthesis-title">Synthesise findings</h2>
+		<div class="govuk-grid-row">
+			<div class="govuk-grid-column-one-half">
+				<div class="govuk-summary-card">
+					<div class="govuk-summary-card__title-wrapper">
+						<h3 class="govuk-summary-card__title">Mock screen: synthesis workspace</h3>
+					</div>
+					<div class="govuk-summary-card__content">
+						<dl class="govuk-summary-list govuk-summary-list--no-border">
+							<div class="govuk-summary-list__row">
+								<dt class="govuk-summary-list__key">Theme</dt>
+								<dd class="govuk-summary-list__value">Users cannot tell which evidence format will be accepted.</dd>
+							</div>
+							<div class="govuk-summary-list__row">
+								<dt class="govuk-summary-list__key">Finding</dt>
+								<dd class="govuk-summary-list__value">Unclear upload guidance increases assisted digital calls and repeated submissions.</dd>
+							</div>
+							<div class="govuk-summary-list__row">
+								<dt class="govuk-summary-list__key">Evidence links</dt>
+								<dd class="govuk-summary-list__value">9 observations, 3 quotes, 2 failed upload attempts.</dd>
+							</div>
+						</dl>
+					</div>
+				</div>
+			</div>
+			<div class="govuk-grid-column-one-half">
+				<h3 class="govuk-heading-m">What this proves</h3>
+				<ul class="govuk-list govuk-list--bullet">
+					<li>findings retain a visible evidence basis</li>
+					<li>themes, findings and recommendations do not become detached from research sessions</li>
+					<li>teams can see the strength and limits of what was learned</li>
+				</ul>
+			</div>
+		</div>
+		<p class="govuk-body"><a class="govuk-link" href="#proof-step-candidate">Next: prepare a repository candidate</a></p>
+	</section>
+
+	<section id="proof-step-candidate" class="govuk-!-margin-bottom-9" aria-labelledby="proof-step-candidate-title" data-proof-step="candidate">
+		<span class="govuk-caption-l">Step 5 of 8</span>
+		<h2 class="govuk-heading-l" id="proof-step-candidate-title">Prepare a repository candidate</h2>
+		<div class="govuk-grid-row">
+			<div class="govuk-grid-column-one-half">
+				<div class="govuk-summary-card">
+					<div class="govuk-summary-card__title-wrapper">
+						<h3 class="govuk-summary-card__title">Mock screen: repository candidate</h3>
+					</div>
+					<div class="govuk-summary-card__content">
+						<dl class="govuk-summary-list govuk-summary-list--no-border">
+							<div class="govuk-summary-list__row">
+								<dt class="govuk-summary-list__key">Candidate title</dt>
+								<dd class="govuk-summary-list__value">Upload guidance must explain accepted accessibility evidence before the file picker.</dd>
+							</div>
+							<div class="govuk-summary-list__row">
+								<dt class="govuk-summary-list__key">Reusable for</dt>
+								<dd class="govuk-summary-list__value">Eligibility journeys, document upload, assisted digital support.</dd>
+							</div>
+							<div class="govuk-summary-list__row">
+								<dt class="govuk-summary-list__key">Safety check</dt>
+								<dd class="govuk-summary-list__value"><strong class="govuk-tag govuk-tag--green">No participant identifiers</strong></dd>
+							</div>
+						</dl>
+					</div>
+				</div>
+			</div>
+			<div class="govuk-grid-column-one-half">
+				<h3 class="govuk-heading-m">What this proves</h3>
+				<ul class="govuk-list govuk-list--bullet">
+					<li>reusable learning is prepared separately from raw evidence</li>
+					<li>publication starts with provenance, safety and reuse context</li>
+					<li>teams can decide what should be reused beyond the original project</li>
+				</ul>
+			</div>
+		</div>
+		<p class="govuk-body"><a class="govuk-link" href="#proof-step-review">Next: curate and review</a></p>
+	</section>
+
+	<section id="proof-step-review" class="govuk-!-margin-bottom-9" aria-labelledby="proof-step-review-title" data-proof-step="review">
+		<span class="govuk-caption-l">Step 6 of 8</span>
+		<h2 class="govuk-heading-l" id="proof-step-review-title">Curate and review</h2>
+		<div class="govuk-grid-row">
+			<div class="govuk-grid-column-one-half">
+				<div class="govuk-summary-card">
+					<div class="govuk-summary-card__title-wrapper">
+						<h3 class="govuk-summary-card__title">Mock screen: curator review</h3>
+					</div>
+					<div class="govuk-summary-card__content">
+						<table class="govuk-table">
+							<caption class="govuk-table__caption govuk-table__caption--s">Review checks</caption>
+							<tbody class="govuk-table__body">
+								<tr class="govuk-table__row">
+									<th class="govuk-table__header" scope="row">Provenance</th>
+									<td class="govuk-table__cell">Study, sessions and finding linked</td>
+								</tr>
+								<tr class="govuk-table__row">
+									<th class="govuk-table__header" scope="row">Limitations</th>
+									<td class="govuk-table__cell">Small sample; accessibility needs oversampled by design</td>
+								</tr>
+								<tr class="govuk-table__row">
+									<th class="govuk-table__header" scope="row">Reuse guidance</th>
+									<td class="govuk-table__cell">Use for upload journeys where users must prove eligibility</td>
+								</tr>
+								<tr class="govuk-table__row">
+									<th class="govuk-table__header" scope="row">Review status</th>
+									<td class="govuk-table__cell"><strong class="govuk-tag govuk-tag--green">Approved for publication</strong></td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+				</div>
+			</div>
+			<div class="govuk-grid-column-one-half">
+				<h3 class="govuk-heading-m">What this proves</h3>
+				<ul class="govuk-list govuk-list--bullet">
+					<li>publication is governed rather than automatic</li>
+					<li>limitations and confidence travel with the finding</li>
+					<li>curators can stop unsafe or weak evidence before it becomes reusable</li>
+				</ul>
+			</div>
+		</div>
+		<p class="govuk-body"><a class="govuk-link" href="#proof-step-publication">Next: publish reusable evidence</a></p>
+	</section>
+
+	<section id="proof-step-publication" class="govuk-!-margin-bottom-9" aria-labelledby="proof-step-publication-title" data-proof-step="publication">
+		<span class="govuk-caption-l">Step 7 of 8</span>
+		<h2 class="govuk-heading-l" id="proof-step-publication-title">Publish reusable evidence</h2>
+		<div class="govuk-grid-row">
+			<div class="govuk-grid-column-one-half">
+				<div class="govuk-summary-card">
+					<div class="govuk-summary-card__title-wrapper">
+						<h3 class="govuk-summary-card__title">Mock screen: published repository artefact</h3>
+					</div>
+					<div class="govuk-summary-card__content">
+						<dl class="govuk-summary-list govuk-summary-list--no-border">
+							<div class="govuk-summary-list__row">
+								<dt class="govuk-summary-list__key">Published title</dt>
+								<dd class="govuk-summary-list__value">Accepted evidence guidance reduces repeated assisted digital contact.</dd>
+							</div>
+							<div class="govuk-summary-list__row">
+								<dt class="govuk-summary-list__key">Confidence</dt>
+								<dd class="govuk-summary-list__value">Medium: consistent pattern across 2 rounds, limited sample size.</dd>
+							</div>
+							<div class="govuk-summary-list__row">
+								<dt class="govuk-summary-list__key">Reuse note</dt>
+								<dd class="govuk-summary-list__value">Apply when services ask users to upload supporting evidence before triage.</dd>
+							</div>
+						</dl>
+					</div>
+				</div>
+			</div>
+			<div class="govuk-grid-column-one-half">
+				<h3 class="govuk-heading-m">What this proves</h3>
+				<ul class="govuk-list govuk-list--bullet">
+					<li>other teams can reuse learning without seeing raw research material</li>
+					<li>confidence and limitations remain visible at the point of reuse</li>
+					<li>the repository becomes an accountable product surface, not a document dump</li>
+				</ul>
+			</div>
+		</div>
+		<p class="govuk-body"><a class="govuk-link" href="#proof-step-impact">Next: track decision impact</a></p>
+	</section>
+
+	<section id="proof-step-impact" class="govuk-!-margin-bottom-9" aria-labelledby="proof-step-impact-title" data-proof-step="impact">
+		<span class="govuk-caption-l">Step 8 of 8</span>
+		<h2 class="govuk-heading-l" id="proof-step-impact-title">Track decision impact</h2>
+		<div class="govuk-grid-row">
+			<div class="govuk-grid-column-one-half">
+				<div class="govuk-summary-card">
+					<div class="govuk-summary-card__title-wrapper">
+						<h3 class="govuk-summary-card__title">Mock screen: decision impact tracker</h3>
+					</div>
+					<div class="govuk-summary-card__content">
+						<table class="govuk-table">
+							<caption class="govuk-table__caption govuk-table__caption--s">Impact evidence</caption>
+							<thead class="govuk-table__head">
+								<tr class="govuk-table__row">
+									<th class="govuk-table__header" scope="col">Recommendation</th>
+									<th class="govuk-table__header" scope="col">Decision</th>
+									<th class="govuk-table__header" scope="col">Outcome</th>
+								</tr>
+							</thead>
+							<tbody class="govuk-table__body">
+								<tr class="govuk-table__row">
+									<th class="govuk-table__header" scope="row">Show accepted formats before upload</th>
+									<td class="govuk-table__cell">Accepted for alpha backlog</td>
+									<td class="govuk-table__cell">Repeated upload support calls down 18% in pilot</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+				</div>
+			</div>
+			<div class="govuk-grid-column-one-half">
+				<h3 class="govuk-heading-m">What this proves</h3>
+				<ul class="govuk-list govuk-list--bullet">
+					<li>research recommendations can be followed through to delivery decisions</li>
+					<li>impact is recorded against outcomes, not only activity</li>
+					<li>leadership can see which research changed the service</li>
+				</ul>
+			</div>
+		</div>
+	</section>
+
 	<section class="govuk-!-margin-bottom-8" aria-labelledby="product-proof-safety-title">
 		<div class="govuk-grid-row">
 			<div class="govuk-grid-column-two-thirds">
-				<h2 class="govuk-heading-l" id="product-proof-safety-title">What this public page does not show</h2>
+				<h2 class="govuk-heading-l" id="product-proof-safety-title">What this public walkthrough does not show</h2>
 				<ul class="govuk-list govuk-list--bullet">
 					<li>raw participant notes, transcripts or contact details</li>
 					<li>unreviewed project material or restricted team context</li>

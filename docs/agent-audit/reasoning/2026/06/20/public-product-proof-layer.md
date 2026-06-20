@@ -73,12 +73,15 @@
 - Added `/pages/product-proof/` as a static generated GOV.UK page.
 - Added a page-level prototype phase banner that remains visible without depending on the shared header include.
 - Added an 8-step lifecycle proof from research project setup through decision impact.
-- Added a clearly labelled static fixture with mock lead and publication-boundary copy.
+- Follow-up after review feedback: replaced the thin lifecycle list with a managed, realistic walkthrough using mock product screens and a named hypothetical research project.
+- Expanded the study-planning proof to show recruitment, informed consent, ethics and safeguarding, and discussion guide readiness.
+- Expanded the journey to show evidence capture, synthesis, repository-candidate preparation, curation and review, publication of reusable evidence, and decision-impact tracking.
+- Added a clearly labelled static fixture with mock lead, service phase, decision context and publication-boundary copy.
 - Added a safety section stating what the public page does not expose.
 - Added request-access and start-journey calls to action.
 - Added a homepage entry point to the proof page.
 - Registered the page with the GOV.UK renderer and visual walkthrough config.
-- Added route-state assertions for public availability, fixture rendering, no repository/API endpoints, visual registry coverage and homepage discovery.
+- Added route-state assertions for public availability, fixture rendering, full walkthrough coverage, no repository/API endpoints, visual registry coverage and homepage discovery.
 - Added a Worker route-state assertion that `/pages/product-proof/` is served without the authenticated static-page preflight.
 
 ## Validation
@@ -92,6 +95,7 @@
 - `npm test` passed: 245 tests passed.
 - `npm run lint` passed with 0 errors and existing warnings.
 - Follow-up Worker route-state coverage passed after confirming the static route was not protected by the Pages Worker.
+- Follow-up RES-7 walkthrough route-state coverage passed after asserting the mock screens for setup, study planning, evidence capture, synthesis, repository candidate, review, publication and impact.
 
 ## Validation Not Run
 

@@ -27,9 +27,9 @@ function pageById(id) {
 	return visualWalkthroughConfig.pages.find((page) => page.id === id);
 }
 
-const lifecycleSteps = [
+const walkthroughSteps = [
 	'Set up a research project',
-	'Plan a study',
+	'Plan a study, recruitment, consent, ethics and guides',
 	'Capture evidence',
 	'Synthesise findings',
 	'Prepare a repository candidate',
@@ -52,8 +52,19 @@ includes(pageSource, '<h1 class="govuk-heading-xl">ResearchOps Product Proof</h1
 includes(pageSource, 'class="govuk-phase-banner', 'product proof page');
 includes(pageSource, 'PROTOTYPE', 'product proof page');
 includes(pageSource, 'This is a ResearchOps prototype using static demonstration content.', 'product proof page');
-includes(pageSource, 'How ResearchOps connects research work', 'product proof page');
-includesText(pageSource, 'Status text is shown in words so the meaning does not depend on colour.', 'product proof page');
+includes(pageSource, 'Walk through how the product works', 'product proof page');
+includes(pageSource, 'Mock screen: project setup', 'product proof page');
+includes(pageSource, 'Mock screen: study readiness', 'product proof page');
+includes(pageSource, 'Mock screen: session evidence board', 'product proof page');
+includes(pageSource, 'Mock screen: synthesis workspace', 'product proof page');
+includes(pageSource, 'Mock screen: repository candidate', 'product proof page');
+includes(pageSource, 'Mock screen: curator review', 'product proof page');
+includes(pageSource, 'Mock screen: published repository artefact', 'product proof page');
+includes(pageSource, 'Mock screen: decision impact tracker', 'product proof page');
+includes(pageSource, 'Recruitment plan', 'product proof page');
+includes(pageSource, 'Informed consent', 'product proof page');
+includes(pageSource, 'Ethics and safeguarding', 'product proof page');
+includes(pageSource, 'Discussion guide', 'product proof page');
 includes(pageSource, 'data-product-proof-page', 'product proof page');
 includes(pageSource, 'data-fixture-source="static-product-proof-fixture"', 'product proof page');
 includes(pageSource, 'Example: Public Services Accessibility Audit', 'product proof page');
@@ -70,9 +81,22 @@ includes(pageSource, 'href="/pages/start/overview/"', 'product proof page');
 includes(homeSource, 'href="/pages/product-proof/"', 'home page public proof entry point');
 includes(homeSource, 'See how ResearchOps works', 'home page public proof entry point');
 
-for (const step of lifecycleSteps) {
+for (const step of walkthroughSteps) {
 	includes(pageSource, step, 'product proof lifecycle');
 	includes(templateSource, step, 'product proof template lifecycle');
+}
+
+for (const proofStep of [
+	'data-proof-step="project"',
+	'data-proof-step="study"',
+	'data-proof-step="evidence"',
+	'data-proof-step="synthesis"',
+	'data-proof-step="candidate"',
+	'data-proof-step="review"',
+	'data-proof-step="publication"',
+	'data-proof-step="impact"',
+]) {
+	includes(pageSource, proofStep, 'product proof managed step-through');
 }
 
 for (const forbidden of [

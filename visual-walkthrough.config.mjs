@@ -262,7 +262,7 @@ export const visualWalkthroughConfig = {
 				title: 'Lifecycle proof before sign-in',
 				description: 'Public product proof page captured without authenticated data.',
 				path: '/pages/product-proof/index.html',
-				actions: [{ type: 'waitForText', text: 'How ResearchOps connects research work' }],
+				actions: [{ type: 'waitForText', text: 'Walk through how the product works' }],
 			},
 		},
 		accountSignInPage,
