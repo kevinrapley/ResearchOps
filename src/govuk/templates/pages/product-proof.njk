@@ -1,0 +1,701 @@
+{% extends "layouts/researchops.njk" %}
+
+{% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+
+{% block head %}
+	<link rel="stylesheet" href="/css/product-proof.css" media="screen">
+{% endblock %}
+
+{% macro decisionTable(caption, rows) %}
+	<table class="govuk-table" data-product-proof-decision-table>
+		<caption class="govuk-table__caption govuk-table__caption--m">{{ caption }}</caption>
+		<thead class="govuk-table__head">
+			<tr class="govuk-table__row">
+				<th class="govuk-table__header" scope="col">Decision the screen supports</th>
+				<th class="govuk-table__header" scope="col">Decision made in this example</th>
+				<th class="govuk-table__header" scope="col">Options available but not selected</th>
+			</tr>
+		</thead>
+		<tbody class="govuk-table__body">
+			{% for row in rows %}
+				<tr class="govuk-table__row">
+					<th class="govuk-table__header" scope="row">{{ row.decision }}</th>
+					<td class="govuk-table__cell">{{ row.selected }}</td>
+					<td class="govuk-table__cell">{{ row.notSelected }}</td>
+				</tr>
+			{% endfor %}
+		</tbody>
+	</table>
+{% endmacro %}
+
+{% macro uiExample(image, caption, alt, sourcePath) %}
+	<figure class="product-proof-ui-example govuk-!-margin-top-6" data-product-proof-media>
+		<img class="product-proof-ui-example__image" src="{{ image }}" alt="{{ alt }}" loading="lazy" width="1365" height="900">
+		<figcaption class="govuk-body-s product-proof-ui-example__caption">
+			<strong>Real UI example:</strong> {{ caption }}
+			<span class="govuk-visually-hidden"> Screenshot source: {{ sourcePath }}.</span>
+		</figcaption>
+	</figure>
+{% endmacro %}
+
+{% block content %}
+<div class="govuk-width-container" data-product-proof-page data-fixture-source="static-product-proof-fixture">
+	{{ govukBreadcrumbs({
+		items: [
+			{
+				text: "Home",
+				href: "/"
+			}
+		]
+	}) }}
+
+	<header class="govuk-grid-row govuk-!-margin-bottom-7">
+		<div class="govuk-grid-column-two-thirds">
+			<span class="govuk-caption-l">ResearchOps public proof</span>
+			<h1 class="govuk-heading-xl">ResearchOps Product Proof</h1>
+			<p class="govuk-body-l">Walk through a realistic research project from setup to decision impact before you sign in.</p>
+			<p class="govuk-body">This public walkthrough uses a static mock project called <strong>Example: Public Services Accessibility Audit</strong>. It shows the product value without loading live project records, raw notes, participant contact details or restricted team material.</p>
+		</div>
+	</header>
+
+	<section class="govuk-!-margin-bottom-8" aria-labelledby="product-proof-case-title">
+		<div class="govuk-grid-row">
+			<div class="govuk-grid-column-two-thirds">
+				<h2 class="govuk-heading-l" id="product-proof-case-title">The demonstration project</h2>
+				<p class="govuk-body">A service team needs to understand why people using assisted digital support are abandoning an accessibility audit journey. ResearchOps keeps the plan, safeguards, evidence, reusable learning and delivery decisions connected.</p>
+			</div>
+		</div>
+
+		<div class="govuk-summary-card">
+			<div class="govuk-summary-card__title-wrapper">
+				<h3 class="govuk-summary-card__title">Example: Public Services Accessibility Audit</h3>
+			</div>
+			<div class="govuk-summary-card__content">
+				<dl class="govuk-summary-list govuk-summary-list--no-border">
+					<div class="govuk-summary-list__row">
+						<dt class="govuk-summary-list__key">Lead researcher</dt>
+						<dd class="govuk-summary-list__value" data-testid="mock-lead-researcher">Jane Doe (Mock Lead)</dd>
+					</div>
+					<div class="govuk-summary-list__row">
+						<dt class="govuk-summary-list__key">Service phase</dt>
+						<dd class="govuk-summary-list__value">Discovery to alpha handover</dd>
+					</div>
+					<div class="govuk-summary-list__row">
+						<dt class="govuk-summary-list__key">Decision to support</dt>
+						<dd class="govuk-summary-list__value">Whether to change eligibility guidance and the audit upload flow before alpha build.</dd>
+					</div>
+					<div class="govuk-summary-list__row">
+						<dt class="govuk-summary-list__key">Publication boundary</dt>
+						<dd class="govuk-summary-list__value">Raw research material and participant data are restricted to authenticated users.</dd>
+					</div>
+				</dl>
+			</div>
+		</div>
+	</section>
+
+	<section class="govuk-!-margin-bottom-8" aria-labelledby="product-proof-value-title" data-product-proof-value-framing>
+		<div class="govuk-grid-row">
+			<div class="govuk-grid-column-two-thirds">
+				<h2 class="govuk-heading-l" id="product-proof-value-title">Why this is better than today&apos;s research admin</h2>
+				<p class="govuk-body">ResearchOps is for teams who are already doing the work, but doing it across disconnected documents, spreadsheets, slide decks, research boards and message threads. The product value is that the decisions, evidence and publication controls stay connected as the work moves from planning to reuse.</p>
+			</div>
+		</div>
+		<ul class="product-proof-value-list">
+			<li class="product-proof-value-list__item">
+				<h3 class="govuk-heading-m">Less lost context</h3>
+				<p class="govuk-body">Project objectives, ownership, study readiness, consent, evidence, synthesis and impact live in one connected journey instead of being reconstructed from folders later.</p>
+			</li>
+			<li class="product-proof-value-list__item">
+				<h3 class="govuk-heading-m">Safer reuse</h3>
+				<p class="govuk-body">Reusable learning is separated from raw research material, then checked for provenance, consent scope, confidence and publication boundaries before it reaches the repository.</p>
+			</li>
+			<li class="product-proof-value-list__item">
+				<h3 class="govuk-heading-m">Clearer decisions</h3>
+				<p class="govuk-body">The platform records what the team chose, what they did not choose, and what changed as a result, so research can be judged by decision impact rather than activity volume.</p>
+			</li>
+		</ul>
+	</section>
+
+	<nav class="govuk-!-margin-bottom-8" aria-labelledby="product-proof-walkthrough-title" data-product-proof-walkthrough>
+		<h2 class="govuk-heading-l" id="product-proof-walkthrough-title">Walk through how the product works</h2>
+		<p class="govuk-body">Use this managed walkthrough to see how each product area creates value. Each step shows a realistic mock screen and the proof point it creates for a research operations team.</p>
+		<p class="govuk-body">The walkthrough also shows choices available in the UI that are not selected in this example, so the public proof reflects the decision work behind the research lifecycle.</p>
+		<ol class="govuk-list govuk-list--number">
+			<li><a class="govuk-link" href="#proof-step-project">Set up a research project</a></li>
+			<li><a class="govuk-link" href="#proof-step-study">Plan a study, recruitment, consent, ethics and guides</a></li>
+			<li><a class="govuk-link" href="#proof-step-evidence">Capture evidence from sessions</a></li>
+			<li><a class="govuk-link" href="#proof-step-synthesis">Synthesise findings</a></li>
+			<li><a class="govuk-link" href="#proof-step-candidate">Prepare a repository candidate</a></li>
+			<li><a class="govuk-link" href="#proof-step-review">Curate and review</a></li>
+			<li><a class="govuk-link" href="#proof-step-publication">Publish reusable evidence</a></li>
+			<li><a class="govuk-link" href="#proof-step-impact">Track decision impact</a></li>
+		</ol>
+	</nav>
+
+	<section id="proof-step-project" class="govuk-!-margin-bottom-9" aria-labelledby="proof-step-project-title" data-proof-step="project">
+		<span class="govuk-caption-l">Step 1 of 8</span>
+		<h2 class="govuk-heading-l" id="proof-step-project-title">Set up a research project</h2>
+		<div class="govuk-grid-row">
+			<div class="govuk-grid-column-one-half">
+				<div class="govuk-summary-card">
+					<div class="govuk-summary-card__title-wrapper">
+						<h3 class="govuk-summary-card__title">Mock screen: project setup</h3>
+					</div>
+					<div class="govuk-summary-card__content">
+						<dl class="govuk-summary-list govuk-summary-list--no-border">
+							<div class="govuk-summary-list__row">
+								<dt class="govuk-summary-list__key">Project name</dt>
+								<dd class="govuk-summary-list__value">Public Services Accessibility Audit</dd>
+							</div>
+							<div class="govuk-summary-list__row">
+								<dt class="govuk-summary-list__key">Objective</dt>
+								<dd class="govuk-summary-list__value">Understand where users lose confidence when proving accessibility needs.</dd>
+							</div>
+							<div class="govuk-summary-list__row">
+								<dt class="govuk-summary-list__key">Stakeholders</dt>
+								<dd class="govuk-summary-list__value">Service owner, policy lead, accessibility specialist, content designer.</dd>
+							</div>
+							<div class="govuk-summary-list__row">
+								<dt class="govuk-summary-list__key">Status</dt>
+								<dd class="govuk-summary-list__value"><strong class="govuk-tag">Ready to plan study</strong></dd>
+							</div>
+						</dl>
+					</div>
+				</div>
+			</div>
+			<div class="govuk-grid-column-one-half">
+				<h3 class="govuk-heading-m">What this proves</h3>
+				<ul class="govuk-list govuk-list--bullet">
+					<li>research starts from a clear decision context, not a loose folder of notes</li>
+					<li>service phase, ownership and objectives are visible from the beginning</li>
+					<li>later studies, findings, recommendations and impact can all point back to the original need</li>
+				</ul>
+			</div>
+		</div>
+		{{ uiExample(
+			"/assets/researchops/product-proof/project-dashboard.png",
+			"the project dashboard brings project context, ownership, reflexive journaling, planning and outcomes into one place.",
+			"Screenshot of the ResearchOps project dashboard showing project details, service stage, project stage and reflexive journal controls.",
+			"/pages/project-dashboard/"
+		) }}
+		{{ decisionTable("Decisions available during project setup", [
+			{
+				decision: "Choose the project shape",
+				selected: "Create a discovery-to-alpha research project for an accessibility audit journey.",
+				notSelected: "Run a policy-only review, start a live-service optimisation project, or defer the work until a beta backlog exists."
+			},
+			{
+				decision: "Set ownership and accountability",
+				selected: "Assign a lead researcher with service owner, policy, accessibility and content stakeholders.",
+				notSelected: "Make the service owner the accountable lead, add a delivery manager as co-owner, or mark governance ownership as unresolved."
+			},
+			{
+				decision: "Define the decision context",
+				selected: "Support a decision about eligibility guidance and the audit upload flow before alpha build.",
+				notSelected: "Focus only on call-centre demand, only on content readability, or hold the decision until more quantitative evidence is available."
+			}
+		]) }}
+	</section>
+
+	<section id="proof-step-study" class="govuk-!-margin-bottom-9" aria-labelledby="proof-step-study-title" data-proof-step="study">
+		<span class="govuk-caption-l">Step 2 of 8</span>
+		<h2 class="govuk-heading-l" id="proof-step-study-title">Plan a study, recruitment, consent, ethics and guides</h2>
+		<div class="govuk-grid-row">
+			<div class="govuk-grid-column-one-half">
+				<div class="govuk-summary-card">
+					<div class="govuk-summary-card__title-wrapper">
+						<h3 class="govuk-summary-card__title">Mock screen: study readiness</h3>
+					</div>
+					<div class="govuk-summary-card__content">
+						<ul class="govuk-task-list">
+							<li class="govuk-task-list__item">
+								<div class="govuk-task-list__name-and-hint">
+									<div class="govuk-task-list__name">Recruitment plan</div>
+									<div class="govuk-task-list__hint">8 participants, including assisted digital users and screen-reader users.</div>
+								</div>
+								<div class="govuk-task-list__status"><strong class="govuk-tag govuk-tag--green">Ready</strong></div>
+							</li>
+							<li class="govuk-task-list__item">
+								<div class="govuk-task-list__name-and-hint">
+									<div class="govuk-task-list__name">Informed consent</div>
+									<div class="govuk-task-list__hint">Plain-English consent script and withdrawal route prepared.</div>
+								</div>
+								<div class="govuk-task-list__status"><strong class="govuk-tag govuk-tag--green">Ready</strong></div>
+							</li>
+							<li class="govuk-task-list__item">
+								<div class="govuk-task-list__name-and-hint">
+									<div class="govuk-task-list__name">Ethics and safeguarding</div>
+									<div class="govuk-task-list__hint">Low distress risk; accessibility adjustments logged.</div>
+								</div>
+								<div class="govuk-task-list__status"><strong class="govuk-tag govuk-tag--yellow">Review</strong></div>
+							</li>
+							<li class="govuk-task-list__item">
+								<div class="govuk-task-list__name-and-hint">
+									<div class="govuk-task-list__name">Discussion guide</div>
+									<div class="govuk-task-list__hint">Scenario tasks, probes and observation prompts drafted.</div>
+								</div>
+								<div class="govuk-task-list__status"><strong class="govuk-tag govuk-tag--green">Ready</strong></div>
+							</li>
+						</ul>
+					</div>
+				</div>
+			</div>
+			<div class="govuk-grid-column-one-half">
+				<h3 class="govuk-heading-m">What this proves</h3>
+				<ul class="govuk-list govuk-list--bullet">
+					<li>recruitment, informed consent, ethics and discussion guides are managed as visible readiness work</li>
+					<li>the study cannot drift into fieldwork without showing what still needs review</li>
+					<li>inclusive research decisions are recorded before participants are contacted</li>
+				</ul>
+			</div>
+		</div>
+		{{ uiExample(
+			"/assets/researchops/product-proof/study-readiness.png",
+			"the study page shows readiness work across description, participants, discussion guides, consent materials and session workspace.",
+			"Screenshot of the ResearchOps study readiness page showing study details, readiness status and study setup tasks.",
+			"/pages/study/"
+		) }}
+		{{ decisionTable("Decisions available during study planning", [
+			{
+				decision: "Choose the recruitment route",
+				selected: "Recruit 8 participants, including assisted digital users and screen-reader users.",
+				notSelected: "Use a staff-proxy sample, pause recruitment until a specialist panel is available, or add carers and advocates as a separate cohort."
+			},
+			{
+				decision: "Set consent and withdrawal approach",
+				selected: "Use a plain-English script with a clear withdrawal route before and after sessions.",
+				notSelected: "Use recorded verbal consent only, require signed consent for all sessions, or exclude recordings and capture notes only."
+			},
+			{
+				decision: "Assess ethics and safeguarding",
+				selected: "Mark low distress risk while logging accessibility adjustments for review.",
+				notSelected: "Escalate for formal ethics review, add a safeguarding lead to session planning, or remove tasks that may expose sensitive evidence."
+			},
+			{
+				decision: "Choose the guide structure",
+				selected: "Use scenario tasks, probes and observation prompts.",
+				notSelected: "Run open interviews, diary study follow-up, moderated usability sessions with support staff, or a short survey before fieldwork."
+			}
+		]) }}
+	</section>
+
+	<section id="proof-step-evidence" class="govuk-!-margin-bottom-9" aria-labelledby="proof-step-evidence-title" data-proof-step="evidence">
+		<span class="govuk-caption-l">Step 3 of 8</span>
+		<h2 class="govuk-heading-l" id="proof-step-evidence-title">Capture evidence from sessions</h2>
+		<div class="govuk-grid-row">
+			<div class="govuk-grid-column-one-half">
+				<div class="govuk-summary-card">
+					<div class="govuk-summary-card__title-wrapper">
+						<h3 class="govuk-summary-card__title">Mock screen: session evidence board</h3>
+					</div>
+					<div class="govuk-summary-card__content">
+						<table class="govuk-table">
+							<caption class="govuk-table__caption govuk-table__caption--s">Session capture summary</caption>
+							<thead class="govuk-table__head">
+								<tr class="govuk-table__row">
+									<th class="govuk-table__header" scope="col">Session</th>
+									<th class="govuk-table__header" scope="col">Consent</th>
+									<th class="govuk-table__header" scope="col">Evidence</th>
+								</tr>
+							</thead>
+							<tbody class="govuk-table__body">
+								<tr class="govuk-table__row">
+									<th class="govuk-table__header" scope="row">P-104</th>
+									<td class="govuk-table__cell">Recorded</td>
+									<td class="govuk-table__cell">5 observations, 2 quotes, 1 support need</td>
+								</tr>
+								<tr class="govuk-table__row">
+									<th class="govuk-table__header" scope="row">P-109</th>
+									<td class="govuk-table__cell">Recorded</td>
+									<td class="govuk-table__cell">4 observations, 1 quote, upload barrier tagged</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+				</div>
+			</div>
+			<div class="govuk-grid-column-one-half">
+				<h3 class="govuk-heading-m">What this proves</h3>
+				<ul class="govuk-list govuk-list--bullet">
+					<li>evidence is captured against the study and consent state</li>
+					<li>raw notes remain protected while public proof can still show the workflow</li>
+					<li>observations are structured early enough to support synthesis later</li>
+				</ul>
+			</div>
+		</div>
+		{{ uiExample(
+			"/assets/researchops/product-proof/session-workspace.png",
+			"the session workspace gives the team a controlled place to select a participant, check consent and capture notes.",
+			"Screenshot of the ResearchOps session workspace showing participant selection, consent summary, session controls and notes.",
+			"/pages/study/session/"
+		) }}
+		{{ decisionTable("Decisions available during evidence capture", [
+			{
+				decision: "Select the evidence type",
+				selected: "Capture observations, quotes, support needs and upload barriers against each session.",
+				notSelected: "Attach a full transcript, upload screen recordings, mark the note as observation-only, or hold material back pending consent confirmation."
+			},
+			{
+				decision: "Apply consent state",
+				selected: "Record consent before evidence is connected to the study.",
+				notSelected: "Restrict quote reuse, exclude recording reuse, anonymise immediately, or block evidence from synthesis until withdrawal windows pass."
+			},
+			{
+				decision: "Classify sensitivity",
+				selected: "Keep raw notes protected and expose only workflow proof publicly.",
+				notSelected: "Flag special-category data, mark material as team-only, request curator review before synthesis, or delete material after extraction."
+			}
+		]) }}
+	</section>
+
+	<section id="proof-step-synthesis" class="govuk-!-margin-bottom-9" aria-labelledby="proof-step-synthesis-title" data-proof-step="synthesis">
+		<span class="govuk-caption-l">Step 4 of 8</span>
+		<h2 class="govuk-heading-l" id="proof-step-synthesis-title">Synthesise findings</h2>
+		<div class="govuk-grid-row">
+			<div class="govuk-grid-column-one-half">
+				<div class="govuk-summary-card">
+					<div class="govuk-summary-card__title-wrapper">
+						<h3 class="govuk-summary-card__title">Mock screen: synthesis workspace</h3>
+					</div>
+					<div class="govuk-summary-card__content">
+						<dl class="govuk-summary-list govuk-summary-list--no-border">
+							<div class="govuk-summary-list__row">
+								<dt class="govuk-summary-list__key">Theme</dt>
+								<dd class="govuk-summary-list__value">Users cannot tell which evidence format will be accepted.</dd>
+							</div>
+							<div class="govuk-summary-list__row">
+								<dt class="govuk-summary-list__key">Finding</dt>
+								<dd class="govuk-summary-list__value">Unclear upload guidance increases assisted digital calls and repeated submissions.</dd>
+							</div>
+							<div class="govuk-summary-list__row">
+								<dt class="govuk-summary-list__key">Evidence links</dt>
+								<dd class="govuk-summary-list__value">9 observations, 3 quotes, 2 failed upload attempts.</dd>
+							</div>
+						</dl>
+					</div>
+				</div>
+			</div>
+			<div class="govuk-grid-column-one-half">
+				<h3 class="govuk-heading-m">What this proves</h3>
+				<ul class="govuk-list govuk-list--bullet">
+					<li>findings retain a visible evidence basis</li>
+					<li>themes, findings and recommendations do not become detached from research sessions</li>
+					<li>teams can see the strength and limits of what was learned</li>
+				</ul>
+			</div>
+		</div>
+		{{ uiExample(
+			"/assets/researchops/product-proof/synthesis-workspace.png",
+			"the synthesis workspace turns captured evidence into clusters, themes and findings while preserving traceability.",
+			"Screenshot of the ResearchOps synthesis workspace showing the synthesis summary and working cluster groupings.",
+			"/pages/study/synthesis/"
+		) }}
+		{{ decisionTable("Decisions available during synthesis", [
+			{
+				decision: "Group evidence into a theme",
+				selected: "Theme evidence around uncertainty about accepted accessibility evidence formats.",
+				notSelected: "Split into separate content, upload and assisted digital themes, or leave the evidence ungrouped until more sessions complete."
+			},
+			{
+				decision: "Set finding confidence",
+				selected: "Treat the finding as usable with visible evidence links and limits.",
+				notSelected: "Downgrade confidence because of sample size, require another research round, or mark the pattern as project-only."
+			},
+			{
+				decision: "Choose recommendation direction",
+				selected: "Recommend clearer accepted-format guidance before the file picker.",
+				notSelected: "Recommend removing the upload step, changing eligibility policy, adding assisted digital triage first, or running quantitative validation."
+			}
+		]) }}
+	</section>
+
+	<section id="proof-step-candidate" class="govuk-!-margin-bottom-9" aria-labelledby="proof-step-candidate-title" data-proof-step="candidate">
+		<span class="govuk-caption-l">Step 5 of 8</span>
+		<h2 class="govuk-heading-l" id="proof-step-candidate-title">Prepare a repository candidate</h2>
+		<div class="govuk-grid-row">
+			<div class="govuk-grid-column-one-half">
+				<div class="govuk-summary-card">
+					<div class="govuk-summary-card__title-wrapper">
+						<h3 class="govuk-summary-card__title">Mock screen: repository candidate</h3>
+					</div>
+					<div class="govuk-summary-card__content">
+						<dl class="govuk-summary-list govuk-summary-list--no-border">
+							<div class="govuk-summary-list__row">
+								<dt class="govuk-summary-list__key">Candidate title</dt>
+								<dd class="govuk-summary-list__value">Upload guidance must explain accepted accessibility evidence before the file picker.</dd>
+							</div>
+							<div class="govuk-summary-list__row">
+								<dt class="govuk-summary-list__key">Reusable for</dt>
+								<dd class="govuk-summary-list__value">Eligibility journeys, document upload, assisted digital support.</dd>
+							</div>
+							<div class="govuk-summary-list__row">
+								<dt class="govuk-summary-list__key">Safety check</dt>
+								<dd class="govuk-summary-list__value"><strong class="govuk-tag govuk-tag--green">No participant identifiers</strong></dd>
+							</div>
+						</dl>
+					</div>
+				</div>
+			</div>
+			<div class="govuk-grid-column-one-half">
+				<h3 class="govuk-heading-m">What this proves</h3>
+				<ul class="govuk-list govuk-list--bullet">
+					<li>reusable learning is prepared separately from raw evidence</li>
+					<li>publication starts with provenance, safety and reuse context</li>
+					<li>teams can decide what should be reused beyond the original project</li>
+				</ul>
+			</div>
+		</div>
+		{{ uiExample(
+			"/assets/researchops/product-proof/repository-candidate.png",
+			"the candidate artefact form separates reusable evidence from raw research before anything can enter the publication queue.",
+			"Screenshot of the ResearchOps create candidate artefact screen showing candidate details, taxonomy fields and reuse metadata controls.",
+			"/pages/repository/review/candidates/new/"
+		) }}
+		{{ decisionTable("Decisions available when preparing a repository candidate", [
+			{
+				decision: "Decide what becomes reusable",
+				selected: "Promote the learning about accepted evidence guidance as a repository candidate.",
+				notSelected: "Promote the whole study, publish only a recommendation, keep the finding project-local, or merge it into an existing repository artefact."
+			},
+			{
+				decision: "Set reuse taxonomy",
+				selected: "Tag the candidate for eligibility journeys, document upload and assisted digital support.",
+				notSelected: "Tag for accessibility testing only, policy design only, forms patterns, or service support operations."
+			},
+			{
+				decision: "Apply publication boundary",
+				selected: "Confirm no participant identifiers before review.",
+				notSelected: "Require redaction, restrict to internal reuse, request information assurance review, or reject publication because provenance is incomplete."
+			}
+		]) }}
+	</section>
+
+	<section id="proof-step-review" class="govuk-!-margin-bottom-9" aria-labelledby="proof-step-review-title" data-proof-step="review">
+		<span class="govuk-caption-l">Step 6 of 8</span>
+		<h2 class="govuk-heading-l" id="proof-step-review-title">Curate and review</h2>
+		<div class="govuk-grid-row">
+			<div class="govuk-grid-column-one-half">
+				<div class="govuk-summary-card">
+					<div class="govuk-summary-card__title-wrapper">
+						<h3 class="govuk-summary-card__title">Mock screen: curator review</h3>
+					</div>
+					<div class="govuk-summary-card__content">
+						<table class="govuk-table">
+							<caption class="govuk-table__caption govuk-table__caption--s">Review checks</caption>
+							<tbody class="govuk-table__body">
+								<tr class="govuk-table__row">
+									<th class="govuk-table__header" scope="row">Provenance</th>
+									<td class="govuk-table__cell">Study, sessions and finding linked</td>
+								</tr>
+								<tr class="govuk-table__row">
+									<th class="govuk-table__header" scope="row">Limitations</th>
+									<td class="govuk-table__cell">Small sample; accessibility needs oversampled by design</td>
+								</tr>
+								<tr class="govuk-table__row">
+									<th class="govuk-table__header" scope="row">Reuse guidance</th>
+									<td class="govuk-table__cell">Use for upload journeys where users must prove eligibility</td>
+								</tr>
+								<tr class="govuk-table__row">
+									<th class="govuk-table__header" scope="row">Review status</th>
+									<td class="govuk-table__cell"><strong class="govuk-tag govuk-tag--green">Approved for publication</strong></td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+				</div>
+			</div>
+			<div class="govuk-grid-column-one-half">
+				<h3 class="govuk-heading-m">What this proves</h3>
+				<ul class="govuk-list govuk-list--bullet">
+					<li>publication is governed rather than automatic</li>
+					<li>limitations and confidence travel with the finding</li>
+					<li>curators can stop unsafe or weak evidence before it becomes reusable</li>
+				</ul>
+			</div>
+		</div>
+		{{ uiExample(
+			"/assets/researchops/product-proof/review-workbench.png",
+			"the review workbench gives curators a queue, selected record view and publication checks before evidence becomes reusable.",
+			"Screenshot of the ResearchOps candidate artefacts review workbench showing review tabs, queue items and selected record areas.",
+			"/pages/repository/review/candidates/"
+		) }}
+		{{ decisionTable("Decisions available during curation and review", [
+			{
+				decision: "Approve or stop publication",
+				selected: "Approve for publication after provenance, limitations and reuse guidance are checked.",
+				notSelected: "Return to researcher, request more evidence, reject as unsafe, or publish only to a restricted team space."
+			},
+			{
+				decision: "Set limitations and confidence",
+				selected: "Record a medium-confidence pattern with small-sample limitations.",
+				notSelected: "Mark low confidence, require quantified validation, mark high confidence for service-wide reuse, or add a stronger limitation about oversampling."
+			},
+			{
+				decision: "Choose reuse guidance",
+				selected: "Allow reuse for upload journeys where users must prove eligibility.",
+				notSelected: "Limit reuse to the original service, include only content-design reuse, or block reuse for policy decisions."
+			}
+		]) }}
+	</section>
+
+	<section id="proof-step-publication" class="govuk-!-margin-bottom-9" aria-labelledby="proof-step-publication-title" data-proof-step="publication">
+		<span class="govuk-caption-l">Step 7 of 8</span>
+		<h2 class="govuk-heading-l" id="proof-step-publication-title">Publish reusable evidence</h2>
+		<div class="govuk-grid-row">
+			<div class="govuk-grid-column-one-half">
+				<div class="govuk-summary-card">
+					<div class="govuk-summary-card__title-wrapper">
+						<h3 class="govuk-summary-card__title">Mock screen: published repository artefact</h3>
+					</div>
+					<div class="govuk-summary-card__content">
+						<dl class="govuk-summary-list govuk-summary-list--no-border">
+							<div class="govuk-summary-list__row">
+								<dt class="govuk-summary-list__key">Published title</dt>
+								<dd class="govuk-summary-list__value">Accepted evidence guidance reduces repeated assisted digital contact.</dd>
+							</div>
+							<div class="govuk-summary-list__row">
+								<dt class="govuk-summary-list__key">Confidence</dt>
+								<dd class="govuk-summary-list__value">Medium: consistent pattern across 2 rounds, limited sample size.</dd>
+							</div>
+							<div class="govuk-summary-list__row">
+								<dt class="govuk-summary-list__key">Reuse note</dt>
+								<dd class="govuk-summary-list__value">Apply when services ask users to upload supporting evidence before triage.</dd>
+							</div>
+						</dl>
+					</div>
+				</div>
+			</div>
+			<div class="govuk-grid-column-one-half">
+				<h3 class="govuk-heading-m">What this proves</h3>
+				<ul class="govuk-list govuk-list--bullet">
+					<li>other teams can reuse learning without seeing raw research material</li>
+					<li>confidence and limitations remain visible at the point of reuse</li>
+					<li>the repository becomes an accountable product surface, not a document dump</li>
+				</ul>
+			</div>
+		</div>
+		{{ uiExample(
+			"/assets/researchops/product-proof/published-artefact.png",
+			"the published artefact page shows reusable learning with confidence, limitations and reuse guidance instead of exposing raw notes.",
+			"Screenshot of a ResearchOps published repository artefact page showing the evidence title, summary and reuse information.",
+			"/pages/repository/artefacts/staff-evidence-boundaries/"
+		) }}
+		{{ decisionTable("Decisions available at publication", [
+			{
+				decision: "Choose visibility",
+				selected: "Publish a reusable artefact without raw research material.",
+				notSelected: "Publish internally only, keep in draft, withdraw from search, or restrict visibility to service-area teams."
+			},
+			{
+				decision: "Set reuse conditions",
+				selected: "Allow reuse where services ask users to upload supporting evidence before triage.",
+				notSelected: "Require curator approval before reuse, limit reuse to assisted digital journeys, or mark as background evidence only."
+			},
+			{
+				decision: "Connect related evidence",
+				selected: "Show confidence, limitations and provenance at the point of reuse.",
+				notSelected: "Hide confidence from public view, link only to the recommendation, or require sign-in before provenance can be inspected."
+			}
+		]) }}
+	</section>
+
+	<section id="proof-step-impact" class="govuk-!-margin-bottom-9" aria-labelledby="proof-step-impact-title" data-proof-step="impact">
+		<span class="govuk-caption-l">Step 8 of 8</span>
+		<h2 class="govuk-heading-l" id="proof-step-impact-title">Track decision impact</h2>
+		<div class="govuk-grid-row">
+			<div class="govuk-grid-column-one-half">
+				<div class="govuk-summary-card">
+					<div class="govuk-summary-card__title-wrapper">
+						<h3 class="govuk-summary-card__title">Mock screen: decision impact tracker</h3>
+					</div>
+					<div class="govuk-summary-card__content">
+						<table class="govuk-table">
+							<caption class="govuk-table__caption govuk-table__caption--s">Impact evidence</caption>
+							<thead class="govuk-table__head">
+								<tr class="govuk-table__row">
+									<th class="govuk-table__header" scope="col">Recommendation</th>
+									<th class="govuk-table__header" scope="col">Decision</th>
+									<th class="govuk-table__header" scope="col">Outcome</th>
+								</tr>
+							</thead>
+							<tbody class="govuk-table__body">
+								<tr class="govuk-table__row">
+									<th class="govuk-table__header" scope="row">Show accepted formats before upload</th>
+									<td class="govuk-table__cell">Accepted for alpha backlog</td>
+									<td class="govuk-table__cell">Repeated upload support calls down 18% in pilot</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+				</div>
+			</div>
+			<div class="govuk-grid-column-one-half">
+				<h3 class="govuk-heading-m">What this proves</h3>
+				<ul class="govuk-list govuk-list--bullet">
+					<li>research recommendations can be followed through to delivery decisions</li>
+					<li>impact is recorded against outcomes, not only activity</li>
+					<li>leadership can see which research changed the service</li>
+				</ul>
+			</div>
+		</div>
+		{{ uiExample(
+			"/assets/researchops/product-proof/impact-tracker.png",
+			"the impact tracker connects research recommendations to decisions, service changes and measurable outcomes.",
+			"Screenshot of the ResearchOps impact and ROI screen showing impact record fields, type choices, scale choices and recorded impact areas.",
+			"/pages/projects/outcomes/"
+		) }}
+		{{ decisionTable("Decisions available during impact tracking", [
+			{
+				decision: "Accept, reject or defer the recommendation",
+				selected: "Accept clearer accepted-format guidance into the alpha backlog.",
+				notSelected: "Reject as out of scope, defer until policy changes, run another research round, or create a separate operational-support action."
+			},
+			{
+				decision: "Choose impact measure",
+				selected: "Track repeated upload support calls, which fall by 18% in the pilot.",
+				notSelected: "Track task completion, call duration, complaint volume, failed uploads, or staff confidence with assisted digital scripts."
+			},
+			{
+				decision: "Record delivery follow-through",
+				selected: "Connect the research recommendation to an alpha backlog decision.",
+				notSelected: "Close with no action, assign to content backlog only, escalate to service owner, or reopen because impact evidence is inconclusive."
+			}
+		]) }}
+	</section>
+
+	<section class="govuk-!-margin-bottom-8" aria-labelledby="product-proof-safety-title">
+		<div class="govuk-grid-row">
+			<div class="govuk-grid-column-two-thirds">
+				<h2 class="govuk-heading-l" id="product-proof-safety-title">What this public walkthrough does not show</h2>
+				<ul class="govuk-list govuk-list--bullet">
+					<li>raw participant notes, transcripts or contact details</li>
+					<li>unreviewed project material or restricted team context</li>
+					<li>live repository records from authenticated systems</li>
+					<li>background calls to repository, project or collaboration endpoints</li>
+				</ul>
+			</div>
+		</div>
+	</section>
+
+	<section class="govuk-!-margin-bottom-4" aria-labelledby="product-proof-cta-title">
+		<div class="govuk-grid-row">
+			<div class="govuk-grid-column-two-thirds">
+				<h2 class="govuk-heading-l" id="product-proof-cta-title">Use ResearchOps with your team</h2>
+				<p class="govuk-body">Request access if you need to use ResearchOps with a team. Start the journey if you already have access and want to create a research project.</p>
+				<div class="govuk-button-group">
+					{{ govukButton({
+						text: "Request access",
+						href: "/pages/account/register/"
+					}) }}
+					{{ govukButton({
+						text: "Start journey",
+						href: "/pages/start/overview/",
+						classes: "govuk-button--secondary"
+					}) }}
+				</div>
+			</div>
+		</div>
+	</section>
+</div>
+{% endblock %}

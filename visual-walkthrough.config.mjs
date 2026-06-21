@@ -248,6 +248,23 @@ export const visualWalkthroughConfig = {
 	},
 	pages: [
 		registeredPage('home', 'Home', 'Core', '/', 'ResearchOps landing page.'),
+		{
+			...registeredPage(
+				'product-proof',
+				'ResearchOps Product Proof',
+				'Core',
+				'/pages/product-proof/index.html',
+				'Public static proof page showing the ResearchOps lifecycle before sign-in.'
+			),
+			authenticated: false,
+			defaultState: {
+				id: 'default',
+				title: 'Lifecycle proof before sign-in',
+				description: 'Public product proof page captured without authenticated data.',
+				path: '/pages/product-proof/index.html',
+				actions: [{ type: 'waitForText', text: 'Walk through how the product works' }],
+			},
+		},
 		accountSignInPage,
 		{
 			...statefulPage('account-registration', 'Request a ResearchOps account', 'Account', '/pages/account/register/index.html', 'Public account request page for people who need ResearchOps access.', 'Account request form', 'Registration request page captured before answers are entered.', '/pages/account/register/index.html', 'Request a ResearchOps account'),

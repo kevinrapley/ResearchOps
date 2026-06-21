@@ -1,0 +1,145 @@
+{
+  "date": "2026-06-20",
+  "branch": "feature/public-product-proof-layer",
+  "traceRequired": true,
+  "traceReason": "feature/ branch prefix",
+  "taskSummary": "Implement the first public ResearchOps product proof layer before sign-in, strengthen it into a realistic managed walkthrough after review feedback, expand each phase to show the decision space, remove redundant next-step links, add real UI media examples for every stage, and remove duplicate prototype chrome already supplied by the shared page template.",
+  "operatingModelFilesLoaded": [
+    "AGENTS.md",
+    ".agent-operating-model/orchestration.xml",
+    ".agent-operating-model/bundle-registry.json",
+    ".agent-operating-model/task-signal-catalog.json",
+    ".agent-operating-model/selection-rules.json",
+    ".agent-operating-model/bootstrap-checklist.md",
+    ".agent-operating-model/precedence-policy.md",
+    ".agent-operating-model/trace-policy.md",
+    ".agent-operating-model/trace-layers.md",
+    ".agent-operating-model/github-mutation-policy.md"
+  ],
+  "selectedBundles": [
+    {
+      "id": "github-diamond",
+      "path": ".agent-operating-model/bundles/github/"
+    },
+    {
+      "id": "researchops-developer-control",
+      "path": ".agent-operating-model/bundles/researchops-developer-control/"
+    },
+    {
+      "id": "multi-functional-team",
+      "path": ".agent-operating-model/bundles/multi-functional-team/"
+    },
+    {
+      "id": "govuk-design-system",
+      "path": ".agent-operating-model/bundles/govuk-design-system/"
+    }
+  ],
+  "skippedBundles": [
+    "cloudflare",
+    "openai-platform",
+    "mcp-agent-tooling",
+    "airtable-public-api",
+    "mural-public-api"
+  ],
+  "filesCreatedOrModified": [
+    "src/govuk/templates/pages/product-proof.njk",
+    "scripts/govuk/render-govuk-pages.mjs",
+    "visual-walkthrough.config.mjs",
+    "src/govuk/templates/pages/home.njk",
+    "public/pages/product-proof/index.html",
+    "public/css/product-proof.css",
+    "public/assets/researchops/product-proof/project-dashboard.png",
+    "public/assets/researchops/product-proof/study-readiness.png",
+    "public/assets/researchops/product-proof/session-workspace.png",
+    "public/assets/researchops/product-proof/synthesis-workspace.png",
+    "public/assets/researchops/product-proof/repository-candidate.png",
+    "public/assets/researchops/product-proof/review-workbench.png",
+    "public/assets/researchops/product-proof/published-artefact.png",
+    "public/assets/researchops/product-proof/impact-tracker.png",
+    "public/index.html",
+    "tests/product-proof-route-state.test.js",
+    "tests/pages-advanced-worker-auth-route-state.test.js",
+    "docs/agent-audit/reasoning/2026/06/20/public-product-proof-layer.md",
+    "docs/agent-audit/reasoning/2026/06/20/public-product-proof-layer.json"
+  ],
+  "validation": [
+    {
+      "command": "npm run build:govuk-pages",
+      "result": "passed"
+    },
+    {
+      "command": "node --test tests/product-proof-route-state.test.js tests/govuk-pages-render-workflow-state.test.js tests/visual-walkthrough-registry-coverage.test.js tests/start-project-overview-page.test.js tests/researchops-home-acceptance-sync.test.js",
+      "result": "passed after normalising a whitespace-sensitive assertion"
+    },
+    {
+      "command": "npx prettier -c scripts/govuk/render-govuk-pages.mjs visual-walkthrough.config.mjs tests/product-proof-route-state.test.js docs/agent-audit/reasoning/2026/06/20/public-product-proof-layer.md docs/agent-audit/reasoning/2026/06/20/public-product-proof-layer.json public/index.html public/pages/product-proof/index.html",
+      "result": "passed"
+    },
+    {
+      "command": "npm run trace:coverage",
+      "result": "passed"
+    },
+    {
+      "command": "npm test -- --ci",
+      "result": "not run; Node rejected unsupported --ci option"
+    },
+    {
+      "command": "npm test",
+      "result": "passed: 245 tests"
+    },
+    {
+      "command": "npm run lint",
+      "result": "passed with 0 errors and existing warnings"
+    },
+    {
+      "command": "node --test tests/pages-advanced-worker-auth-route-state.test.js tests/product-proof-route-state.test.js",
+      "result": "passed"
+    },
+    {
+      "command": "node --test tests/product-proof-route-state.test.js tests/visual-walkthrough-registry-coverage.test.js tests/pages-advanced-worker-auth-route-state.test.js",
+      "result": "passed after expanding the page into a managed RES-7 walkthrough"
+    },
+    {
+      "command": "node --test tests/product-proof-route-state.test.js tests/visual-walkthrough-registry-coverage.test.js tests/pages-advanced-worker-auth-route-state.test.js",
+      "result": "passed after adding 8 decision-space tables and blocking redundant Next links"
+    },
+    {
+      "command": "node --test tests/product-proof-route-state.test.js tests/visual-walkthrough-registry-coverage.test.js tests/pages-advanced-worker-auth-route-state.test.js",
+      "result": "passed after adding 8 real UI media assets and value framing"
+    },
+    {
+      "command": "Browser image-load sanity check for /pages/product-proof/",
+      "result": "passed after scrolling through the page and confirming 8 embedded screenshots load at 1365 by 900 pixels"
+    },
+    {
+      "command": "node --test tests/product-proof-route-state.test.js tests/visual-walkthrough-registry-coverage.test.js tests/pages-advanced-worker-auth-route-state.test.js",
+      "result": "passed after asserting that the product proof template does not duplicate the shared prototype banner"
+    },
+    {
+      "command": "npx prettier -c tests/product-proof-route-state.test.js docs/agent-audit/reasoning/2026/06/20/public-product-proof-layer.md docs/agent-audit/reasoning/2026/06/20/public-product-proof-layer.json public/pages/product-proof/index.html",
+      "result": "passed"
+    },
+    {
+      "command": "npm test",
+      "result": "passed"
+    },
+    {
+      "command": "npm run lint",
+      "result": "passed with 0 errors and existing warnings"
+    },
+    {
+      "command": "npm run trace:coverage",
+      "result": "passed"
+    }
+  ],
+  "validationNotRun": [
+    {
+      "check": "Playwright browser walkthrough",
+      "reason": "Static generated page change is covered by renderer, route-state and visual registry tests."
+    }
+  ],
+  "residualRisks": [
+    "Unrelated local modification in infra/cloudflare/src/core/auth/passwordless.js remains unstaged.",
+    "Future RES-7 proof slices for candidate artefact, published artefact, impact and access governance remain follow-up work."
+  ]
+}
