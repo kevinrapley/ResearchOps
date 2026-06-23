@@ -71,6 +71,7 @@
 
 .rops-dashboard-sidebar {
 	align-content: start;
+	align-self: start;
 	display: grid;
 	gap: 20px;
 }
@@ -94,7 +95,7 @@
 		grid-template-columns: minmax(0, 1fr) minmax(0, 3fr);
 	}
 
-	.rops-project-areas-nav {
+	.rops-dashboard-sidebar {
 		position: sticky;
 		top: 1rem;
 	}
