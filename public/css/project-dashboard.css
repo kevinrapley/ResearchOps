@@ -60,6 +60,20 @@
 	grid-template-columns: 1fr;
 	}
 
+.rops-dashboard-layout {
+	display: grid;
+	gap: 20px;
+	grid-template-columns: 1fr;
+	}
+
+.rops-dashboard-layout > * {
+	min-width: 0;
+	}
+
+.rops-project-areas-nav {
+	align-self: start;
+	}
+
 .rops-two-column {
 	display: grid;
 	gap: 20px;
@@ -71,6 +85,9 @@
 	}
 
 @media (min-width: 48.0625em) {
+	.rops-dashboard-layout {
+		grid-template-columns: minmax(0, 1fr) minmax(0, 3fr);
+		}
 	.rops-two-column {
 		grid-template-columns: 1fr 1fr;
 		}

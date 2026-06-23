@@ -42,111 +42,10 @@
 		]
 	}) }}
 
-	<header class="rops-dashboard-header" typeof="schema:ResearchProject" resource="#project">
-		{{ daasBrandPanel() }}
-		<span id="eyebrow-org" class="govuk-caption-l" property="schema:sourceOrganization"></span>
-		<h1 id="project-title" class="govuk-heading-xl" property="schema:name">Project dashboard</h1>
-		<p id="project-subtitle" class="govuk-body-l rops-dashboard-description" property="schema:description">Use this dashboard to manage project context, research planning, reflexive journaling and research outcomes.</p>
-		<div class="rops-status-strip" aria-label="Project status">
-			<strong class="govuk-tag govuk-tag--blue" id="project-service-stage-tag">Loading service stage</strong>
-			<strong class="govuk-tag govuk-tag--purple" id="project-stage-tag">Loading project stage</strong>
-			<strong class="govuk-tag govuk-tag--grey" id="mural-summary-tag">Mural optional</strong>
-		</div>
-	</header>
+	{{ daasBrandPanel() }}
 
-	<section class="govuk-summary-card" id="project-details">
-		<div class="govuk-summary-card__title-wrapper">
-			<h2 class="govuk-summary-card__title">Project details</h2>
-		</div>
-		<div class="govuk-summary-card__content">
-			<dl class="govuk-summary-list">
-				<div class="govuk-summary-list__row">
-					<dt class="govuk-summary-list__key">Service stage</dt>
-					<dd class="govuk-summary-list__value" id="kv-service-stage" property="schema:phase">–</dd>
-				</div>
-				<div class="govuk-summary-list__row">
-					<dt class="govuk-summary-list__key">Project stage</dt>
-					<dd class="govuk-summary-list__value" id="kv-project-stage" property="schema:projectStatus">–</dd>
-				</div>
-				<div class="govuk-summary-list__row">
-					<dt class="govuk-summary-list__key">Client name</dt>
-					<dd class="govuk-summary-list__value" id="kv-client-name" property="schema:client">–</dd>
-				</div>
-				<div class="govuk-summary-list__row">
-					<dt class="govuk-summary-list__key">Lead researcher</dt>
-					<dd class="govuk-summary-list__value" id="kv-lead-researcher" property="schema:author" typeof="schema:Person">–</dd>
-				</div>
-				<div class="govuk-summary-list__row">
-					<dt class="govuk-summary-list__key">Lead researcher email</dt>
-					<dd class="govuk-summary-list__value"><a class="govuk-link" id="kv-lead-email" property="schema:email" href="mailto:">–</a></dd>
-				</div>
-			</dl>
-		</div>
-	</section>
-
-	<div class="rops-dashboard-grid">
-		<section class="govuk-summary-card" id="reflexive-journal">
-			<div class="govuk-summary-card__title-wrapper">
-				<h2 class="govuk-summary-card__title">Reflexive journal</h2>
-				<ul class="govuk-summary-card__actions">
-					<li class="govuk-summary-card__action">
-						<a class="govuk-link" href="/pages/projects/journals/?id=" id="journal-link" property="schema:relatedLink">Open journal</a>
-					</li>
-				</ul>
-			</div>
-			<div class="govuk-summary-card__content">
-				<div class="rops-link-panel">
-					<h3 class="govuk-heading-s">ResearchOps journal</h3>
-					<p class="govuk-body">Record assumptions, decisions, risks and reflections for this project in ResearchOps.</p>
-					{{ govukButton({
-						text: "Open reflexive journal",
-						href: "/pages/projects/journals/?id=",
-						attributes: {
-							id: "journal-button-link"
-						}
-					}) }}
-				</div>
-
-				<div id="mural-integration">
-					<h3 class="govuk-heading-s">Mural board for visual journaling</h3>
-					<p class="govuk-body">Use Mural only if the team wants a linked visual board. The ResearchOps journal remains the system record.</p>
-					<p id="mural-status" class="rops-mural-status" aria-live="polite" aria-atomic="true">
-						<span class="pill pill--neutral">Mural is optional for visual journaling</span>
-					</p>
-					<dl class="govuk-summary-list">
-						<div class="govuk-summary-list__row">
-							<dt class="govuk-summary-list__key">Mural account</dt>
-							<dd class="govuk-summary-list__value"><strong class="govuk-tag govuk-tag--grey" id="mural-account-state">Connect if needed</strong></dd>
-						</div>
-						<div class="govuk-summary-list__row">
-							<dt class="govuk-summary-list__key">Mural board</dt>
-							<dd class="govuk-summary-list__value"><strong class="govuk-tag govuk-tag--grey" id="mural-board-state">Create or open manually</strong></dd>
-						</div>
-					</dl>
-					<div class="govuk-button-group rops-mural-actions">
-						{{ govukButton({
-							text: "Connect Mural",
-							type: "button",
-							classes: "govuk-button--secondary",
-							attributes: {
-								id: "mural-connect"
-							}
-						}) }}
-						{{ govukButton({
-							text: "Create Mural board",
-							type: "button",
-							classes: "govuk-button--secondary",
-							disabled: true,
-							attributes: {
-								id: "mural-setup"
-							}
-						}) }}
-					</div>
-				</div>
-			</div>
-		</section>
-
-		<nav class="govuk-summary-card" typeof="schema:SiteNavigationElement" aria-labelledby="project-areas-title">
+	<div class="rops-dashboard-layout">
+		<nav class="govuk-summary-card rops-project-areas-nav" typeof="schema:SiteNavigationElement" aria-labelledby="project-areas-title">
 			<div class="govuk-summary-card__title-wrapper">
 				<h2 class="govuk-summary-card__title" id="project-areas-title">Project areas</h2>
 			</div>
@@ -160,7 +59,111 @@
 			</div>
 		</nav>
 
-		<section id="stakeholders" class="govuk-summary-card">
+		<div class="rops-dashboard-content">
+			<header class="rops-dashboard-header" typeof="schema:ResearchProject" resource="#project">
+				<span id="eyebrow-org" class="govuk-caption-l" property="schema:sourceOrganization"></span>
+				<h1 id="project-title" class="govuk-heading-xl" property="schema:name">Project dashboard</h1>
+				<p id="project-subtitle" class="govuk-body-l rops-dashboard-description" property="schema:description">Use this dashboard to manage project context, research planning, reflexive journaling and research outcomes.</p>
+				<div class="rops-status-strip" aria-label="Project status">
+					<strong class="govuk-tag govuk-tag--blue" id="project-service-stage-tag">Loading service stage</strong>
+					<strong class="govuk-tag govuk-tag--purple" id="project-stage-tag">Loading project stage</strong>
+					<strong class="govuk-tag govuk-tag--grey" id="mural-summary-tag">Mural optional</strong>
+				</div>
+			</header>
+
+			<section class="govuk-summary-card" id="project-details">
+				<div class="govuk-summary-card__title-wrapper">
+					<h2 class="govuk-summary-card__title">Project details</h2>
+				</div>
+				<div class="govuk-summary-card__content">
+					<dl class="govuk-summary-list">
+						<div class="govuk-summary-list__row">
+							<dt class="govuk-summary-list__key">Service stage</dt>
+							<dd class="govuk-summary-list__value" id="kv-service-stage" property="schema:phase">–</dd>
+						</div>
+						<div class="govuk-summary-list__row">
+							<dt class="govuk-summary-list__key">Project stage</dt>
+							<dd class="govuk-summary-list__value" id="kv-project-stage" property="schema:projectStatus">–</dd>
+						</div>
+						<div class="govuk-summary-list__row">
+							<dt class="govuk-summary-list__key">Client name</dt>
+							<dd class="govuk-summary-list__value" id="kv-client-name" property="schema:client">–</dd>
+						</div>
+						<div class="govuk-summary-list__row">
+							<dt class="govuk-summary-list__key">Lead researcher</dt>
+							<dd class="govuk-summary-list__value" id="kv-lead-researcher" property="schema:author" typeof="schema:Person">–</dd>
+						</div>
+						<div class="govuk-summary-list__row">
+							<dt class="govuk-summary-list__key">Lead researcher email</dt>
+							<dd class="govuk-summary-list__value"><a class="govuk-link" id="kv-lead-email" property="schema:email" href="mailto:">–</a></dd>
+						</div>
+					</dl>
+				</div>
+			</section>
+
+			<div class="rops-dashboard-grid">
+				<section class="govuk-summary-card" id="reflexive-journal">
+					<div class="govuk-summary-card__title-wrapper">
+						<h2 class="govuk-summary-card__title">Reflexive journal</h2>
+						<ul class="govuk-summary-card__actions">
+							<li class="govuk-summary-card__action">
+								<a class="govuk-link" href="/pages/projects/journals/?id=" id="journal-link" property="schema:relatedLink">Open journal</a>
+							</li>
+						</ul>
+					</div>
+					<div class="govuk-summary-card__content">
+						<div class="rops-link-panel">
+							<h3 class="govuk-heading-s">ResearchOps journal</h3>
+							<p class="govuk-body">Record assumptions, decisions, risks and reflections for this project in ResearchOps.</p>
+							{{ govukButton({
+								text: "Open reflexive journal",
+								href: "/pages/projects/journals/?id=",
+								attributes: {
+									id: "journal-button-link"
+								}
+							}) }}
+						</div>
+
+						<div id="mural-integration">
+							<h3 class="govuk-heading-s">Mural board for visual journaling</h3>
+							<p class="govuk-body">Use Mural only if the team wants a linked visual board. The ResearchOps journal remains the system record.</p>
+							<p id="mural-status" class="rops-mural-status" aria-live="polite" aria-atomic="true">
+								<span class="pill pill--neutral">Mural is optional for visual journaling</span>
+							</p>
+							<dl class="govuk-summary-list">
+								<div class="govuk-summary-list__row">
+									<dt class="govuk-summary-list__key">Mural account</dt>
+									<dd class="govuk-summary-list__value"><strong class="govuk-tag govuk-tag--grey" id="mural-account-state">Connect if needed</strong></dd>
+								</div>
+								<div class="govuk-summary-list__row">
+									<dt class="govuk-summary-list__key">Mural board</dt>
+									<dd class="govuk-summary-list__value"><strong class="govuk-tag govuk-tag--grey" id="mural-board-state">Create or open manually</strong></dd>
+								</div>
+							</dl>
+							<div class="govuk-button-group rops-mural-actions">
+								{{ govukButton({
+									text: "Connect Mural",
+									type: "button",
+									classes: "govuk-button--secondary",
+									attributes: {
+										id: "mural-connect"
+									}
+								}) }}
+								{{ govukButton({
+									text: "Create Mural board",
+									type: "button",
+									classes: "govuk-button--secondary",
+									disabled: true,
+									attributes: {
+										id: "mural-setup"
+									}
+								}) }}
+							</div>
+						</div>
+					</div>
+				</section>
+
+				<section id="stakeholders" class="govuk-summary-card">
 			<div class="govuk-summary-card__title-wrapper">
 				<h2 class="govuk-summary-card__title">Stakeholder management</h2>
 			</div>
@@ -330,6 +333,8 @@
 				</div>
 			</div>
 		</section>
+		</div>
+		</div>
 	</div>
 </div>
 {% endblock %}

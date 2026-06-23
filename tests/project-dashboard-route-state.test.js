@@ -36,6 +36,20 @@ includes(templateSource, "id=\"journal-link\"", "project dashboard template");
 includes(templateSource, "id=\"outcomes-card-link\"", "project dashboard template");
 includes(templateSource, "{% from \"macros/daas-brand-panel.njk\" import daasBrandPanel %}", "project dashboard template");
 includes(templateSource, "{{ daasBrandPanel() }}", "project dashboard template");
+includes(templateSource, "class=\"rops-dashboard-layout\"", "project dashboard template");
+includes(templateSource, "class=\"govuk-summary-card rops-project-areas-nav\"", "project dashboard template");
+includes(templateSource, "class=\"rops-dashboard-content\"", "project dashboard template");
+assert.equal(
+	templateSource.indexOf("{{ daasBrandPanel() }}") < templateSource.indexOf("class=\"rops-dashboard-layout\""),
+	true,
+	"Expected DaaS brand panel to render before the dashboard layout",
+);
+assert.equal(
+	templateSource.indexOf("class=\"govuk-summary-card rops-project-areas-nav\"") <
+		templateSource.indexOf("class=\"rops-dashboard-content\""),
+	true,
+	"Expected project areas navigation to render before dashboard content",
+);
 includes(daasPanelMacroSource, "id=\"daas-brand-panel\"", "DaaS brand panel macro");
 includes(daasPanelMacroSource, "class=\"rops-daas-brand-panel\"", "DaaS brand panel macro");
 includes(daasPanelMacroSource, "/images/brands/daas-logo.svg", "DaaS brand panel macro");
@@ -73,6 +87,20 @@ includes(pageSource, "id=\"project-title\"", "project dashboard page");
 includes(pageSource, "id=\"breadcrumb-project\"", "project dashboard page");
 includes(pageSource, "id=\"daas-brand-panel\"", "project dashboard page");
 includes(pageSource, "class=\"rops-daas-brand-panel\"", "project dashboard page");
+includes(pageSource, "class=\"rops-dashboard-layout\"", "project dashboard page");
+includes(pageSource, "class=\"govuk-summary-card rops-project-areas-nav\"", "project dashboard page");
+includes(pageSource, "class=\"rops-dashboard-content\"", "project dashboard page");
+assert.equal(
+	pageSource.indexOf("id=\"daas-brand-panel\"") < pageSource.indexOf("class=\"rops-dashboard-layout\""),
+	true,
+	"Expected DaaS brand panel to stay before the dashboard layout",
+);
+assert.equal(
+	pageSource.indexOf("class=\"govuk-summary-card rops-project-areas-nav\"") <
+		pageSource.indexOf("class=\"rops-dashboard-content\""),
+	true,
+	"Expected project areas navigation to render before dashboard content",
+);
 includes(pageSource, "/images/brands/daas-logo.svg", "project dashboard page");
 includes(pageSource, "project-dashboard.js?v=project-dashboard-daas-brand-20260616", "project dashboard page");
 includes(pageSource, "project-dashboard.css?v=project-dashboard-daas-brand-20260616", "project dashboard page");
@@ -193,6 +221,9 @@ excludes(muralStateSource, "syncDashboardPresentation", "Project Dashboard Mural
 
 includes(dashboardSassSource, ".rops-dashboard-header", "project dashboard Sass source");
 includes(dashboardSassSource, ".rops-daas-brand-panel", "project dashboard Sass source");
+includes(dashboardSassSource, ".rops-dashboard-layout", "project dashboard Sass source");
+includes(dashboardSassSource, ".rops-project-areas-nav", "project dashboard Sass source");
+includes(dashboardSassSource, "grid-template-columns: minmax(0, 1fr) minmax(0, 3fr);", "project dashboard Sass source");
 includes(dashboardSassSource, "@media (min-width: 40.0625em)", "project dashboard Sass source");
 includes(dashboardSassSource, "#1a1d35", "project dashboard Sass source");
 includes(dashboardSassSource, "home-office-digital-triangles.svg", "project dashboard Sass source");
@@ -208,6 +239,9 @@ includes(dashboardSassSource, "text-overflow: ellipsis;", "project dashboard Sas
 includes(dashboardSassSource, "/* transparency begins in the cascade */", "project dashboard Sass source");
 includes(dashboardCssSource, ".rops-dashboard-header", "project dashboard stylesheet");
 includes(dashboardCssSource, ".rops-daas-brand-panel", "project dashboard stylesheet");
+includes(dashboardCssSource, ".rops-dashboard-layout", "project dashboard stylesheet");
+includes(dashboardCssSource, ".rops-project-areas-nav", "project dashboard stylesheet");
+includes(dashboardCssSource, "grid-template-columns: minmax(0, 1fr) minmax(0, 3fr);", "project dashboard stylesheet");
 includes(dashboardCssSource, "@media (min-width: 40.0625em)", "project dashboard stylesheet");
 includes(dashboardCssSource, "#1a1d35", "project dashboard stylesheet");
 includes(dashboardCssSource, "home-office-digital-triangles.svg", "project dashboard stylesheet");
