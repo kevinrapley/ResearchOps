@@ -10,6 +10,8 @@ Follow-up: move the `Reflexive journal` panel into the left column underneath th
 
 Follow-up: make the left sidebar sticky as a group so the `Project areas` navigation and `Reflexive journal` panel remain in view together.
 
+Follow-up: reduce the visible gap between `Project areas` and `Reflexive journal` so it matches the other dashboard panel gaps.
+
 ## Run metadata
 
 - Date: 2026-06-23
@@ -91,6 +93,7 @@ Follow-up: make the left sidebar sticky as a group so the `Project areas` naviga
 - Moved the existing `Reflexive journal` markup out of the main dashboard content grid without changing its IDs, links or Mural integration hooks.
 - Moved the sticky positioning from `.rops-project-areas-nav` to `.rops-dashboard-sidebar` so the left column sticks as one stack.
 - Added `align-self: start` to `.rops-dashboard-sidebar` so the sticky grid item uses the sidebar stack height instead of stretching to the full content column height.
+- Reset direct `.govuk-summary-card` bottom margins inside `.rops-dashboard-sidebar` so the sidebar grid gap defines the visible spacing between the nav and journal panels.
 - Preserved existing dashboard cards, links, IDs and JavaScript hooks.
 
 ## Validation attempted
@@ -99,7 +102,7 @@ Follow-up: make the left sidebar sticky as a group so the `Project areas` naviga
 - `node --test tests/project-dashboard-route-state.test.js` passed.
 - `npm run format:check` passed.
 - `npm run lint` passed with existing repository warnings and no errors.
-- Browser layout, sticky sidebar and left-column journal placement check with Playwright passed at 1280px desktop and 390px mobile widths.
+- Browser layout, sticky sidebar, left-column journal placement and 20px nav-to-journal panel gap check with Playwright passed at 1280px desktop and 390px mobile widths.
 - `npm test -- --ci` could not run because the current script passes `--ci` through to Node, which exits with `node: bad option: --ci`.
 - `npm test` passed with 245 tests and 0 failures.
 - `npm run validate` passed.

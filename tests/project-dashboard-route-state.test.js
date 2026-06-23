@@ -251,6 +251,8 @@ includes(dashboardSassSource, ".rops-dashboard-sidebar", "project dashboard Sass
 includes(dashboardSassSource, ".rops-project-areas-nav", "project dashboard Sass source");
 includes(dashboardSassSource, "grid-template-columns: minmax(0, 1fr) minmax(0, 3fr);", "project dashboard Sass source");
 includes(dashboardSassSource, "align-self: start;", "project dashboard Sass source");
+includes(dashboardSassSource, ".rops-dashboard-sidebar > .govuk-summary-card", "project dashboard Sass source");
+includes(dashboardSassSource, "margin-bottom: 0;", "project dashboard Sass source");
 includes(dashboardSassSource, ".rops-dashboard-sidebar {\n\t\tposition: sticky;", "project dashboard Sass source");
 includes(dashboardSassSource, "position: sticky;", "project dashboard Sass source");
 includes(dashboardSassSource, "top: 1rem;", "project dashboard Sass source");
@@ -274,6 +276,8 @@ includes(dashboardCssSource, ".rops-dashboard-sidebar", "project dashboard style
 includes(dashboardCssSource, ".rops-project-areas-nav", "project dashboard stylesheet");
 includes(dashboardCssSource, "grid-template-columns: minmax(0, 1fr) minmax(0, 3fr);", "project dashboard stylesheet");
 includes(dashboardCssSource, "align-self: start;", "project dashboard stylesheet");
+includes(dashboardCssSource, ".rops-dashboard-sidebar > .govuk-summary-card", "project dashboard stylesheet");
+includes(dashboardCssSource, "margin-bottom: 0;", "project dashboard stylesheet");
 includes(dashboardCssSource, ".rops-dashboard-sidebar {\n\t\tposition: sticky;", "project dashboard stylesheet");
 includes(dashboardCssSource, "position: sticky;", "project dashboard stylesheet");
 includes(dashboardCssSource, "top: 1rem;", "project dashboard stylesheet");
