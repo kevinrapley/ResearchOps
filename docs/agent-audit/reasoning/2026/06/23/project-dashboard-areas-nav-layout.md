@@ -12,6 +12,8 @@ Follow-up: make the left sidebar sticky as a group so the `Project areas` naviga
 
 Follow-up: reduce the visible gap between `Project areas` and `Reflexive journal` so it matches the other dashboard panel gaps.
 
+Follow-up: make the sidebar with `Project areas` and `Reflexive journal` one third width and the main content column two thirds width within the GOV.UK width container.
+
 ## Run metadata
 
 - Date: 2026-06-23
@@ -86,7 +88,7 @@ Follow-up: reduce the visible gap between `Project areas` and `Reflexive journal
 - Added `.rops-dashboard-layout` around the project-area nav and the rest of the dashboard content.
 - Kept the navigation as a semantic `nav` with `aria-labelledby="project-areas-title"`.
 - Added `.rops-project-areas-nav` for the left column and `.rops-dashboard-content` for the right column.
-- Used a responsive CSS grid that stays single-column by default and becomes `minmax(0, 1fr) minmax(0, 3fr)` from the existing desktop breakpoint.
+- Used a responsive CSS grid that stays single-column by default and becomes `minmax(0, 1fr) minmax(0, 2fr)` from the existing desktop breakpoint.
 - Kept sticky behaviour desktop-only from the dashboard layout breakpoint.
 - Used `top: 1rem` for the sticky offset, matching the DaaS brand panel bottom spacing.
 - Added `.rops-dashboard-sidebar` to stack the `Project areas` navigation and `Reflexive journal` panel in the left column.
@@ -94,6 +96,7 @@ Follow-up: reduce the visible gap between `Project areas` and `Reflexive journal
 - Moved the sticky positioning from `.rops-project-areas-nav` to `.rops-dashboard-sidebar` so the left column sticks as one stack.
 - Added `align-self: start` to `.rops-dashboard-sidebar` so the sticky grid item uses the sidebar stack height instead of stretching to the full content column height.
 - Reset direct `.govuk-summary-card` bottom margins inside `.rops-dashboard-sidebar` so the sidebar grid gap defines the visible spacing between the nav and journal panels.
+- Adjusted the desktop dashboard grid from a one-quarter/three-quarter split to a one-third/two-thirds split while keeping the DaaS brand panel outside the two-column area.
 - Preserved existing dashboard cards, links, IDs and JavaScript hooks.
 
 ## Validation attempted
@@ -103,6 +106,7 @@ Follow-up: reduce the visible gap between `Project areas` and `Reflexive journal
 - `npm run format:check` passed.
 - `npm run lint` passed with existing repository warnings and no errors.
 - Browser layout, sticky sidebar, left-column journal placement and 20px nav-to-journal panel gap check with Playwright passed at 1280px desktop and 390px mobile widths.
+- Browser layout ratio check with Playwright passed at 1280px desktop width, confirming the sidebar is one third and the main content column is two thirds of the dashboard grid.
 - `npm test -- --ci` could not run because the current script passes `--ci` through to Node, which exits with `node: bad option: --ci`.
 - `npm test` passed with 245 tests and 0 failures.
 - `npm run validate` passed.

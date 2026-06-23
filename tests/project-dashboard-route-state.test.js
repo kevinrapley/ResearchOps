@@ -249,7 +249,7 @@ includes(dashboardSassSource, ".rops-daas-brand-panel", "project dashboard Sass 
 includes(dashboardSassSource, ".rops-dashboard-layout", "project dashboard Sass source");
 includes(dashboardSassSource, ".rops-dashboard-sidebar", "project dashboard Sass source");
 includes(dashboardSassSource, ".rops-project-areas-nav", "project dashboard Sass source");
-includes(dashboardSassSource, "grid-template-columns: minmax(0, 1fr) minmax(0, 3fr);", "project dashboard Sass source");
+includes(dashboardSassSource, "grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);", "project dashboard Sass source");
 includes(dashboardSassSource, "align-self: start;", "project dashboard Sass source");
 includes(dashboardSassSource, ".rops-dashboard-sidebar > .govuk-summary-card", "project dashboard Sass source");
 includes(dashboardSassSource, "margin-bottom: 0;", "project dashboard Sass source");
@@ -274,7 +274,7 @@ includes(dashboardCssSource, ".rops-daas-brand-panel", "project dashboard styles
 includes(dashboardCssSource, ".rops-dashboard-layout", "project dashboard stylesheet");
 includes(dashboardCssSource, ".rops-dashboard-sidebar", "project dashboard stylesheet");
 includes(dashboardCssSource, ".rops-project-areas-nav", "project dashboard stylesheet");
-includes(dashboardCssSource, "grid-template-columns: minmax(0, 1fr) minmax(0, 3fr);", "project dashboard stylesheet");
+includes(dashboardCssSource, "grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);", "project dashboard stylesheet");
 includes(dashboardCssSource, "align-self: start;", "project dashboard stylesheet");
 includes(dashboardCssSource, ".rops-dashboard-sidebar > .govuk-summary-card", "project dashboard stylesheet");
 includes(dashboardCssSource, "margin-bottom: 0;", "project dashboard stylesheet");
