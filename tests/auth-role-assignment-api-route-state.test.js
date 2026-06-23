@@ -5,6 +5,7 @@ const workerSource = fs.readFileSync('infra/cloudflare/src/worker.js', 'utf8');
 const handlerSource = fs.readFileSync('infra/cloudflare/src/core/auth/role-assignments-scoped.js', 'utf8');
 const accessScopedSource = fs.readFileSync('infra/cloudflare/src/core/auth/access-scoped.js', 'utf8');
 const migrationSource = fs.readFileSync('infra/cloudflare/migrations/0002_auth_role_assignment_route.sql', 'utf8');
+const homeOfficeRoleScopeMigration = fs.readFileSync('infra/cloudflare/migrations/0022_home_office_role_scope.sql', 'utf8');
 
 function assertWorkerWiresScopedRoleAssignmentRoute() {
 	assert.match(workerSource, /handleRoleAssignmentsRoute/);
@@ -31,12 +32,9 @@ function assertAccessContextSeparatesMembershipFromAdministration() {
 	assert.match(accessScopedSource, /FROM auth_team_memberships m/);
 	assert.match(accessScopedSource, /m\.membership_status = 'active'/);
 	assert.match(accessScopedSource, /t\.team_status = 'active'/);
-	assert.match(accessScopedSource, /async function listRoleAssignmentTeams\(db, userId\)/);
-	assert.match(accessScopedSource, /FROM auth_role_assignments ra/);
-	assert.match(accessScopedSource, /'role_assignment' AS membershipSource/);
-	assert.match(accessScopedSource, /function combineTeamSources\(membershipTeams, roleAssignmentTeams\)/);
-	assert.match(accessScopedSource, /const roleAssignmentTeams = await listRoleAssignmentTeams\(db, userId\)/);
-	assert.match(accessScopedSource, /const teams = combineTeamSources\(membershipTeams, roleAssignmentTeams\)/);
+	assert.doesNotMatch(accessScopedSource, /async function listRoleAssignmentTeams\(db, userId\)/);
+	assert.doesNotMatch(accessScopedSource, /'role_assignment' AS membershipSource/);
+	assert.doesNotMatch(accessScopedSource, /function combineTeamSources\(membershipTeams, roleAssignmentTeams\)/);
 	assert.match(accessScopedSource, /async function buildMemberTeams\(db, userId\)/);
 	assert.match(accessScopedSource, /const memberTeams = await buildMemberTeams\(db, baseContext\?\.user\?\.id\)/);
 	assert.doesNotMatch(accessScopedSource, /buildMemberTeams\(db, baseContext\?\.user\?\.id, baseContext\.teams/);
@@ -101,8 +99,11 @@ function assertHandlerSupportsInlineTeamCreation() {
 
 function assertHandlerScopesAssignmentsToSelectedTeam() {
 	assert.match(handlerSource, /const team = await resolveAssignmentTeam\(db, request, context, body\);/);
-	assert.match(handlerSource, /scope_type = 'team'/);
-	assert.match(handlerSource, /scope_id = \?/);
+	assert.match(handlerSource, /const HOME_OFFICE_SCOPE_TYPE = 'organisation'/);
+	assert.match(handlerSource, /const HOME_OFFICE_SCOPE_ID = 'home_office'/);
+	assert.match(handlerSource, /function roleScopeFor\(role, teamId\)/);
+	assert.match(handlerSource, /role\.role_key === 'team_admin'/);
+	assert.match(handlerSource, /return \{ type: HOME_OFFICE_SCOPE_TYPE, id: HOME_OFFICE_SCOPE_ID \}/);
 	assert.match(handlerSource, /readTeamMembership/);
 	assert.match(handlerSource, /prepareMembershipStatement/);
 	assert.match(handlerSource, /INSERT INTO auth_team_memberships/);
@@ -171,7 +172,8 @@ function assertHandlerWritesMembershipAssignmentAndAuditEventAtomically() {
 
 function assertHandlerReturnsSelectedTeam() {
 	assert.match(handlerSource, /team: \{ id: result\.team\.id, name: result\.team\.name, created: result\.team\.created === true \}/);
-	assert.match(handlerSource, /scopeId: result\.team\.id/);
+	assert.match(handlerSource, /scopeType: result\.assignmentResult\.roleScope\.type/);
+	assert.match(handlerSource, /scopeId: result\.assignmentResult\.roleScope\.id/);
 }
 
 function assertRouteStatusMigrationExists() {
@@ -180,6 +182,17 @@ function assertRouteStatusMigrationExists() {
 	assert.match(migrationSource, /method = 'POST'/);
 	assert.match(migrationSource, /route_pattern = '\/api\/auth\/role-assignments'/);
 	assert.match(migrationSource, /required_permissions_json = '\["role.assign"\]'/);
+}
+
+function assertHomeOfficeRoleScopeMigrationExists() {
+	assert.match(homeOfficeRoleScopeMigration, /scope_type IN \('organisation', 'team', 'project', 'study'\)/);
+	assert.match(homeOfficeRoleScopeMigration, /'organisation'/);
+	assert.match(homeOfficeRoleScopeMigration, /'home_office'/);
+	assert.match(homeOfficeRoleScopeMigration, /role_research_lead/);
+	assert.match(homeOfficeRoleScopeMigration, /role_safeguarding_lead/);
+	assert.match(homeOfficeRoleScopeMigration, /scope_type = 'team'/);
+	assert.match(homeOfficeRoleScopeMigration, /assignment_status = 'revoked'/);
+	assert.match(homeOfficeRoleScopeMigration, /Team Admin remains team-scoped/);
 }
 
 assertWorkerWiresScopedRoleAssignmentRoute();
@@ -197,3 +210,4 @@ assertHandlerRequiresSensitiveRoleConfirmation();
 assertHandlerWritesMembershipAssignmentAndAuditEventAtomically();
 assertHandlerReturnsSelectedTeam();
 assertRouteStatusMigrationExists();
+assertHomeOfficeRoleScopeMigrationExists();

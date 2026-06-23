@@ -1,0 +1,89 @@
+{
+  "traceId": "atrace-20260623-home-office-role-scope",
+  "date": "2026-06-23",
+  "branch": "fix/home-office-role-scope",
+  "traceRequired": true,
+  "traceReason": "repository-affecting work on a fix/ branch",
+  "taskSummary": "Separate ResearchOps research roles from team identity so Home Office roles are independent of team memberships.",
+  "operatingModelFilesLoaded": [
+    "AGENTS.md",
+    ".agent-operating-model/orchestration.xml",
+    ".agent-operating-model/bundle-registry.json",
+    ".agent-operating-model/task-signal-catalog.json",
+    ".agent-operating-model/selection-rules.json",
+    ".agent-operating-model/bootstrap-checklist.md",
+    ".agent-operating-model/precedence-policy.md",
+    ".agent-operating-model/trace-policy.md",
+    ".agent-operating-model/trace-layers.md",
+    ".agent-operating-model/behavioural-evals.json"
+  ],
+  "selectedBundles": [
+    {
+      "id": "github-diamond",
+      "canonicalPath": ".agent-operating-model/bundles/github/"
+    },
+    {
+      "id": "researchops-developer-control",
+      "canonicalPath": ".agent-operating-model/bundles/researchops-developer-control/"
+    },
+    {
+      "id": "multi-functional-team",
+      "canonicalPath": ".agent-operating-model/bundles/multi-functional-team/"
+    },
+    {
+      "id": "govuk-design-system",
+      "canonicalPath": ".agent-operating-model/bundles/govuk-design-system/"
+    },
+    {
+      "id": "cloudflare",
+      "canonicalPath": ".agent-operating-model/bundles/cloudflare/"
+    }
+  ],
+  "skippedBundles": [
+    "openai-platform",
+    "mcp-agent-tooling",
+    "airtable-public-api",
+    "mural-public-api"
+  ],
+  "precedenceDecisions": [
+    "GitHub Diamond governed branch and validation discipline.",
+    "ResearchOps Developer Control governed auth/runtime boundaries.",
+    "Multi-Functional Team governed user-facing clarity around teams and roles.",
+    "GOV.UK Design System governed account-page content and component preservation.",
+    "Cloudflare governed D1 migration and Worker runtime handling."
+  ],
+  "filesModifiedOrCreated": [
+    "docs/deployment/d1-migration-ordering.md",
+    "docs/agent-audit/reasoning/2026/06/23/home-office-role-scope.md",
+    "docs/agent-audit/reasoning/2026/06/23/home-office-role-scope.json",
+    "infra/cloudflare/migrations/0001_auth_foundation.sql",
+    "infra/cloudflare/migrations/0022_home_office_role_scope.sql",
+    "infra/cloudflare/src/core/auth/access-scoped.js",
+    "infra/cloudflare/src/core/auth/access.js",
+    "infra/cloudflare/src/core/auth/passwordless.js",
+    "infra/cloudflare/src/core/auth/role-assignments-scoped.js",
+    "public/js/auth-account-page.js",
+    "public/pages/account/index.html",
+    "src/govuk/templates/pages/account.njk",
+    "tests/auth-account-dashboard-route-state.test.js",
+    "tests/auth-active-team-selection-route-state.test.js",
+    "tests/auth-foundation-route-state.test.js",
+    "tests/auth-role-assignment-api-route-state.test.js",
+    "tests/auth-sign-in-route-state.test.js",
+    "tests/projects-route-contract.test.js"
+  ],
+  "validation": [
+    "node --check for changed auth and account JavaScript files: passed",
+    "npm run build:govuk-pages: passed",
+    "focused auth/account route-state and contract tests: passed",
+    "full main SQLite migration chain through 0022_home_office_role_scope.sql: passed",
+    "npm test: passed, 245 tests",
+    "npm run lint: passed with existing warnings",
+    "npm run trace:coverage: passed",
+    "git diff --check: passed"
+  ],
+  "residualRisks": [
+    "Live Cloudflare D1 was not mutated in this task; migration must be applied through the normal migration route.",
+    "Historical audit/product docs still contain earlier team-scoped role discussion as historical context."
+  ]
+}

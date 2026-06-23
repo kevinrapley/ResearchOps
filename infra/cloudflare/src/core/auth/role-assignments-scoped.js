@@ -8,6 +8,8 @@ const JSON_HEADERS = {
 };
 
 const CREATE_TEAM_ACTION = 'create';
+const HOME_OFFICE_SCOPE_TYPE = 'organisation';
+const HOME_OFFICE_SCOPE_ID = 'home_office';
 
 class RoleAssignmentError extends Error {
 	constructor(status, code, message) {
@@ -54,8 +56,8 @@ function stableHash(value) {
 	return (hash >>> 0).toString(16).padStart(8, '0');
 }
 
-function stableAssignmentId(userId, roleId, teamId) {
-	return `asn_${stableHash(`${userId}:${roleId}:${teamId}`)}`;
+function stableAssignmentId(userId, roleId, scopeType, scopeId) {
+	return `asn_${stableHash(`${userId}:${roleId}:${scopeType}:${scopeId}`)}`;
 }
 
 function stableMembershipId(userId, teamId) {
@@ -235,15 +237,23 @@ async function readTeamMembership(db, targetUserId, teamId) {
 		.first();
 }
 
-async function readAssignment(db, targetUserId, roleId, teamId) {
+function roleScopeFor(role, teamId) {
+	if (role.role_key === 'team_admin') {
+		return { type: 'team', id: teamId };
+	}
+	return { type: HOME_OFFICE_SCOPE_TYPE, id: HOME_OFFICE_SCOPE_ID };
+}
+
+async function readAssignment(db, targetUserId, role, teamId) {
+	const scope = roleScopeFor(role, teamId);
 	return db
 		.prepare(`
 			SELECT id, assignment_status, requested_reason, approved_by_user_id, approved_at, expires_at
 			FROM auth_role_assignments
-			WHERE user_id = ? AND role_id = ? AND scope_type = 'team' AND scope_id = ?
+			WHERE user_id = ? AND role_id = ? AND scope_type = ? AND scope_id = ?
 			LIMIT 1
 		`)
-		.bind(targetUserId, roleId, teamId)
+		.bind(targetUserId, role.id, scope.type, scope.id)
 		.first();
 }
 
@@ -278,12 +288,13 @@ function prepareActivateUserStatement(db, targetUser) {
 		.bind(targetUser.id);
 }
 
-function prepareRoleAssignmentStatement(db, assignmentId, actorUserId, targetUserId, roleId, teamId, requestedReason, expiresAt) {
+function prepareRoleAssignmentStatement(db, assignmentId, actorUserId, targetUserId, role, teamId, requestedReason, expiresAt) {
+	const scope = roleScopeFor(role, teamId);
 	return db
 		.prepare(`
 			INSERT INTO auth_role_assignments
 				(id, user_id, role_id, scope_type, scope_id, assignment_status, requested_reason, approved_by_user_id, approved_at, expires_at)
-			VALUES (?, ?, ?, 'team', ?, 'active', ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ', 'now'), ?)
+			VALUES (?, ?, ?, ?, ?, 'active', ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ', 'now'), ?)
 			ON CONFLICT(user_id, role_id, scope_type, scope_id) DO UPDATE SET
 				assignment_status = 'active',
 				requested_reason = excluded.requested_reason,
@@ -292,11 +303,12 @@ function prepareRoleAssignmentStatement(db, assignmentId, actorUserId, targetUse
 				expires_at = excluded.expires_at,
 				updated_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now')
 		`)
-		.bind(assignmentId, targetUserId, roleId, teamId, requestedReason, actorUserId, expiresAt);
+		.bind(assignmentId, targetUserId, role.id, scope.type, scope.id, requestedReason, actorUserId, expiresAt);
 }
 
 function prepareAuditStatement(db, request, context, targetUser, role, team, requestedReason, assignmentId, membershipActivated, accountActivated) {
 	const url = new URL(request.url);
+	const scope = roleScopeFor(role, team.id);
 	return db
 		.prepare(`
 			INSERT INTO auth_audit_events
@@ -307,7 +319,9 @@ function prepareAuditStatement(db, request, context, targetUser, role, team, req
 				'requested_reason', ?,
 				'team_membership_activated', ?,
 				'account_activated', ?,
-				'team_created', ?
+				'team_created', ?,
+				'role_scope_type', ?,
+				'role_scope_id', ?
 			))
 		`)
 		.bind(
@@ -323,6 +337,8 @@ function prepareAuditStatement(db, request, context, targetUser, role, team, req
 			membershipActivated ? 1 : 0,
 			accountActivated ? 1 : 0,
 			team.created ? 1 : 0,
+			scope.type,
+			scope.id,
 		);
 }
 
@@ -352,10 +368,10 @@ async function buildNewAssignmentTeam(db, request, context, body) {
 		prepareMembershipStatement(db, context.user.id, team.id),
 		prepareRoleAssignmentStatement(
 			db,
-			stableAssignmentId(context.user.id, teamAdminRole.id, team.id),
+			stableAssignmentId(context.user.id, teamAdminRole.id, 'team', team.id),
 			context.user.id,
 			context.user.id,
-			teamAdminRole.id,
+			teamAdminRole,
 			team.id,
 			adminReason,
 			null,
@@ -384,19 +400,20 @@ async function writeAssignmentWithAudit(db, request, context, targetUser, role, 
 	if (typeof db.batch !== 'function') {
 		throw new RoleAssignmentError(503, 'role_assignment_transaction_unavailable', 'Role assignment writes cannot be made safely right now.');
 	}
-	const existingAssignment = team.created ? null : await readAssignment(db, targetUser.id, role.id, team.id);
-	const assignmentId = existingAssignment?.id || stableAssignmentId(targetUser.id, role.id, team.id);
+	const roleScope = roleScopeFor(role, team.id);
+	const existingAssignment = team.created ? null : await readAssignment(db, targetUser.id, role, team.id);
+	const assignmentId = existingAssignment?.id || stableAssignmentId(targetUser.id, role.id, roleScope.type, roleScope.id);
 	const accountActivated = targetUser.account_status === 'pending';
 	const membershipActivated = !membership || membership.membership_status !== 'active';
 	const statements = [...(team.preAssignmentStatements || [])];
 	if (accountActivated) statements.push(prepareActivateUserStatement(db, targetUser));
 	if (membershipActivated) statements.push(prepareMembershipStatement(db, targetUser.id, team.id));
 	statements.push(
-		prepareRoleAssignmentStatement(db, assignmentId, context.user.id, targetUser.id, role.id, team.id, requestedReason, expiresAt),
+		prepareRoleAssignmentStatement(db, assignmentId, context.user.id, targetUser.id, role, team.id, requestedReason, expiresAt),
 		prepareAuditStatement(db, request, context, targetUser, role, team, requestedReason, assignmentId, membershipActivated, accountActivated),
 	);
 	await db.batch(statements);
-	return { assignment: await readAssignment(db, targetUser.id, role.id, team.id), accountActivated, membershipActivated };
+	return { assignment: await readAssignment(db, targetUser.id, role, team.id), accountActivated, membershipActivated, roleScope };
 }
 
 async function assignRole(request, env, context, body) {
@@ -436,8 +453,8 @@ export async function handleRoleAssignmentsRoute(request, env) {
 				assignment: {
 					id: result.assignmentResult.assignment.id,
 					status: result.assignmentResult.assignment.assignment_status,
-					scopeType: 'team',
-					scopeId: result.team.id,
+					scopeType: result.assignmentResult.roleScope.type,
+					scopeId: result.assignmentResult.roleScope.id,
 					expiresAt: result.assignmentResult.assignment.expires_at,
 				},
 				teamMembership: {
