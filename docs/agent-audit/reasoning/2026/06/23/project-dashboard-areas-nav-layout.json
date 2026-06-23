@@ -3,7 +3,7 @@
   "branch": "fix/project-dashboard-areas-nav-layout",
   "traceRequired": true,
   "repository": "kevinrapley/ResearchOps",
-  "task": "Move the Project Dashboard Project areas navigation into a left column after the full-width DaaS brand panel, make that navigation sticky after scrolling beyond it, move the Reflexive journal panel into the left column underneath the Project areas navigation, make the left sidebar sticky as a group, reduce the visible gap between the nav and journal panels to match other dashboard panel gaps, make the sidebar one third width and the main content column two thirds width, add an 8px bottom margin to the button at the bottom of the rops-link-panel, remove the #mural-status paragraph element, keep the Connect Mural button in the HTML but hide it from the UI while Mural is connected or the disabled default state is active, fix the rendered disabled Connect Mural button still being visible, make the lower main-column panel gaps match the gap between Project details and Stakeholder management, and move Objectives into a separate Project Objectives panel beneath Stakeholder management.",
+  "task": "Move the Project Dashboard Project areas navigation into a left column after the full-width DaaS brand panel, make that navigation sticky after scrolling beyond it, move the Reflexive journal panel into the left column underneath the Project areas navigation, make the left sidebar sticky as a group, reduce the visible gap between the nav and journal panels to match other dashboard panel gaps, make the sidebar one third width and the main content column two thirds width, add an 8px bottom margin to the button at the bottom of the rops-link-panel, remove the #mural-status paragraph element, keep the Connect Mural button in the HTML but hide it from the UI while Mural is connected or the disabled default state is active, fix the rendered disabled Connect Mural button still being visible, make the lower main-column panel gaps match the gap between Project details and Stakeholder management, move Objectives into a separate Project Objectives panel beneath Stakeholder management, and treat a no-studies studies_unavailable response in Research outcomes as a normal empty state instead of surfacing a system-style failure message.",
   "operatingModelFilesLoaded": [
     "AGENTS.md",
     ".agent-operating-model/orchestration.xml",
@@ -46,6 +46,9 @@
     "public/components/mural-integration.js",
     "tests/project-dashboard-route-state.test.js",
     "tests/mural-ui-route-state.test.js",
+    "public/js/project-dashboard.js",
+    "tests/studies-route-contract.test.js",
+    "infra/cloudflare/src/service/studies.js",
     "package.json"
   ],
   "filesModified": [
@@ -53,6 +56,7 @@
     "src/styles/project-dashboard.scss",
     "public/css/project-dashboard.css",
     "public/pages/project-dashboard/index.html",
+    "public/js/project-dashboard.js",
     "tests/project-dashboard-route-state.test.js",
     "tests/mural-ui-route-state.test.js",
     "docs/agent-audit/reasoning/2026/06/23/project-dashboard-areas-nav-layout.md",
@@ -86,7 +90,10 @@
     "Set the main dashboard grid gap to 30px and reset direct summary-card bottom margins in that grid so Stakeholder management, Research planning and Research outcomes gaps match the measured Project details to Stakeholder management gap.",
     "Moved the existing objectives list, add-objective button and add-objective form into a new Project Objectives summary-card immediately after Stakeholder management.",
     "Added a Project Objectives link to the Project areas navigation.",
-    "Preserved existing dashboard cards, links, IDs and JavaScript hooks."
+    "Preserved existing dashboard cards, links, IDs and JavaScript hooks.",
+    "Changed the dashboard studies loader so the known studies_unavailable response maps to an empty studies array and renders No studies have been created for this project yet.",
+    "Removed the user-facing Could not load studies, Study records could not be loaded for this project. and study technical-detail copy from the Research outcomes panel.",
+    "Kept genuine study load failures visible as a non-technical retry message."
   ],
   "validationAttempted": [
     "npm run build:project-dashboard && npm run build:govuk-pages passed",
@@ -106,9 +113,15 @@
     "Route-state checks confirm Project Objectives renders after Stakeholder management and before Research planning, with the existing objectives DOM hooks preserved",
     "npm test -- --ci could not run because the current script passes --ci through to Node, which exits with node: bad option: --ci",
     "npm test passed with 245 tests and 0 failures",
-    "npm run validate passed"
+    "npm run validate passed",
+    "node --test tests/project-dashboard-route-state.test.js tests/studies-route-contract.test.js passed after the no-studies empty-state change",
+    "npm run format:check passed after generated CSS was rebuilt by the lint script",
+    "npm run lint passed after the no-studies empty-state change with existing repository warnings and no errors",
+    "npm test passed after the no-studies empty-state change with 245 tests and 0 failures",
+    "npm run validate passed after the no-studies empty-state change"
   ],
   "residualRisks": [
-    "Final deployed appearance still depends on the generated static assets being served without stale cache."
+    "Final deployed appearance still depends on the generated static assets being served without stale cache.",
+    "Genuine study API outages now use generic user-facing copy on the dashboard; detailed diagnosis remains available in logs and API responses rather than in the Research outcomes panel."
   ]
 }

@@ -26,6 +26,8 @@ Follow-up: make the gaps between `Stakeholder management`, `Research planning` a
 
 Follow-up: move `Objectives` out of the `Stakeholder management` panel into a separate `Project Objectives` panel directly beneath it.
 
+Follow-up: in the `Research outcomes` panel, treat a no-studies `studies_unavailable` response as a normal empty state instead of surfacing a system-style failure message to users.
+
 ## Run metadata
 
 - Date: 2026-06-23
@@ -80,6 +82,9 @@ Follow-up: move `Objectives` out of the `Stakeholder management` panel into a se
 - `public/components/mural-integration.js`
 - `tests/project-dashboard-route-state.test.js`
 - `tests/mural-ui-route-state.test.js`
+- `public/js/project-dashboard.js`
+- `tests/studies-route-contract.test.js`
+- `infra/cloudflare/src/service/studies.js`
 - `package.json`
 
 ## Files created or modified
@@ -90,6 +95,7 @@ Follow-up: move `Objectives` out of the `Stakeholder management` panel into a se
 - `public/pages/project-dashboard/index.html`
 - `tests/project-dashboard-route-state.test.js`
 - `tests/mural-ui-route-state.test.js`
+- `public/js/project-dashboard.js`
 - `docs/agent-audit/reasoning/2026/06/23/project-dashboard-areas-nav-layout.md`
 - `docs/agent-audit/reasoning/2026/06/23/project-dashboard-areas-nav-layout.json`
 
@@ -122,6 +128,9 @@ Follow-up: move `Objectives` out of the `Stakeholder management` panel into a se
 - Moved the existing objectives list, add-objective button and add-objective form into a new `Project Objectives` summary-card immediately after `Stakeholder management`.
 - Added a `Project Objectives` link to the `Project areas` navigation.
 - Preserved existing dashboard cards, links, IDs and JavaScript hooks.
+- Changed the dashboard studies loader so the known `studies_unavailable` response maps to an empty studies array and renders `No studies have been created for this project yet.`
+- Removed the user-facing `Could not load studies`, `Study records could not be loaded for this project.` and study technical-detail copy from the Research outcomes panel.
+- Kept genuine study load failures visible as a non-technical retry message.
 
 ## Validation attempted
 
@@ -143,7 +152,13 @@ Follow-up: move `Objectives` out of the `Stakeholder management` panel into a se
 - `npm test -- --ci` could not run because the current script passes `--ci` through to Node, which exits with `node: bad option: --ci`.
 - `npm test` passed with 245 tests and 0 failures.
 - `npm run validate` passed.
+- `node --test tests/project-dashboard-route-state.test.js tests/studies-route-contract.test.js` passed after the no-studies empty-state change.
+- `npm run format:check` passed after generated CSS was rebuilt by the lint script.
+- `npm run lint` passed after the no-studies empty-state change with existing repository warnings and no errors.
+- `npm test` passed after the no-studies empty-state change with 245 tests and 0 failures.
+- `npm run validate` passed after the no-studies empty-state change.
 
 ## Residual risks
 
 - Final deployed appearance still depends on the generated static assets being served without stale cache.
+- Genuine study API outages now use generic user-facing copy on the dashboard; detailed diagnosis remains available in logs and API responses rather than in the Research outcomes panel.

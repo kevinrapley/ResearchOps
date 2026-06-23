@@ -173,7 +173,13 @@ async function loadStudies(projectId) {
 		cache: "no-store",
 		credentials: "include",
 	}, 15000);
-	const json = await readJsonResponse(response, "Studies");
+	let json;
+	try {
+		json = await readJsonResponse(response, "Studies");
+	} catch (error) {
+		if (isStudiesUnavailableError(error)) return [];
+		throw error;
+	}
 	return (json.studies || []).map((study) => ({
 		id: study.id || "",
 		method: study.method || "",
@@ -198,6 +204,10 @@ async function loadParticipantsForStudy(study) {
 		studyId: study.id,
 		studyTitle,
 	}));
+}
+
+function isStudiesUnavailableError(error) {
+	return String(error?.upstreamBody?.error || error?.message || "").trim() === "studies_unavailable";
 }
 
 async function loadParticipantsForStudies(studies = []) {
@@ -323,7 +333,7 @@ function renderStudies(project, studies) {
 	const list = document.getElementById("studies-list");
 	if (!list) return;
 	if (!studies.length) {
-		list.innerHTML = "<li>No studies yet.</li>";
+		renderNoStudiesMessage(list);
 		return;
 	}
 	const projectId = projectIdFromUrl(project);
@@ -339,6 +349,10 @@ ${description ? `<p class="govuk-body-s rops-study-description">${escapeHtml(des
 ${status ? `<strong class="govuk-tag ${studyStatusTagClass(status)}">${escapeHtml(status)}</strong>` : ""}
 </li>`;
 	}).join("");
+}
+
+function renderNoStudiesMessage(list) {
+	list.innerHTML = "<li>No studies have been created for this project yet.</li>";
 }
 
 function participantPlanningPanel() {
@@ -392,8 +406,11 @@ function renderParticipantsLoadError(project, error) {
 function renderStudiesLoadError(error) {
 	const list = document.getElementById("studies-list");
 	if (!list) return;
-	const reason = String(error?.message || error || "Unknown error").trim();
-	list.innerHTML = `<li role="alert"><strong>Could not load studies</strong><br><span>Study records could not be loaded for this project.</span><br><span><strong>Technical detail:</strong> <code>${escapeHtml(reason)}</code></span></li>`;
+	if (isStudiesUnavailableError(error)) {
+		renderNoStudiesMessage(list);
+		return;
+	}
+	list.innerHTML = '<li role="alert"><strong>Studies are not available right now</strong><br><span>Try refreshing this page or opening research outcomes.</span></li>';
 }
 
 function togglePanel(toggle, panel, forceOpen = null) {

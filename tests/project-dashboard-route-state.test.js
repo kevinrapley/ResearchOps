@@ -204,6 +204,9 @@ includes(controllerSource, "project.teamNames", "project dashboard controller");
 includes(controllerSource, ".flatMap(brandValues)", "project dashboard controller");
 includes(controllerSource, "rops-daas-brand-panel--visible", "project dashboard controller");
 includes(controllerSource, "function renderStudies", "project dashboard controller");
+includes(controllerSource, "function isStudiesUnavailableError", "project dashboard controller");
+includes(controllerSource, "if (isStudiesUnavailableError(error)) return [];", "project dashboard controller");
+includes(controllerSource, "No studies have been created for this project yet.", "project dashboard controller");
 includes(controllerSource, "function setTagText", "project dashboard controller");
 includes(controllerSource, "project[\"Service stage\"]", "project dashboard controller");
 includes(controllerSource, "project[\"Project stage\"]", "project dashboard controller");
@@ -212,6 +215,8 @@ includes(controllerSource, "setTagText(\"project-stage-tag\", project.status", "
 includes(controllerSource, "method: \"PATCH\"", "project dashboard controller");
 includes(controllerSource, "credentials: \"include\"", "project dashboard controller");
 includes(controllerSource, "class=\"govuk-link govuk-!-font-weight-bold\"", "project dashboard controller");
+excludes(controllerSource, "Could not load studies", "project dashboard controller");
+excludes(controllerSource, "Study records could not be loaded for this project.", "project dashboard controller");
 excludes(controllerSource, "Service stage not recorded", "project dashboard controller");
 excludes(controllerSource, "Project stage not recorded", "project dashboard controller");
 excludes(controllerSource, "rops-api.digikev-kevin-rapley.workers.dev", "project dashboard controller");
