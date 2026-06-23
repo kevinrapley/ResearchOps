@@ -77,12 +77,20 @@ function hydrateAccountLinks(root = document) {
 function renderSignedInUser(elements, context) {
 	const name = displayName(context).trim();
 	if (!name) {
-		setVisible(elements.accountNav, false);
+		renderSignedOutUser(elements);
 		return;
 	}
 
 	elements.userLink.textContent = name;
 	elements.userLink.setAttribute('href', CONFIG.ACCOUNT_URL);
+	setVisible(elements.signOutLink, true);
+	setVisible(elements.accountNav, true);
+}
+
+function renderSignedOutUser(elements) {
+	elements.userLink.textContent = 'Sign in';
+	elements.userLink.setAttribute('href', CONFIG.SIGN_IN_URL);
+	setVisible(elements.signOutLink, false);
 	setVisible(elements.accountNav, true);
 }
 
@@ -107,10 +115,13 @@ async function init(root = document) {
 
 	try {
 		const response = await fetchJson('/api/me');
-		if (!response.ok || !response.data?.ok) return;
+		if (!response.ok || !response.data?.ok) {
+			renderSignedOutUser(elements);
+			return;
+		}
 		renderSignedInUser(elements, response.data);
 	} catch {
-		setVisible(elements.accountNav, false);
+		renderSignedOutUser(elements);
 	}
 }
 
@@ -140,6 +151,7 @@ window.__ropsAuthHeaderLinks = Object.freeze({
 	hydrateAccountLinks,
 	initAuthHeaderLinks,
 	renderSignedInUser,
+	renderSignedOutUser,
 });
 
 export { initAuthHeaderLinks };
