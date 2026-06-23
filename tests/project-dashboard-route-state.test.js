@@ -71,6 +71,18 @@ assert.equal(
 	"Expected DaaS brand panel to render before the dashboard layout",
 );
 assert.equal(
+	templateSource.indexOf("class=\"rops-dashboard-header\"") <
+		templateSource.indexOf("class=\"rops-dashboard-sidebar\""),
+	true,
+	"Expected dashboard header to render before the sidebar in source order",
+);
+assert.equal(
+	templateSource.indexOf("id=\"project-title\"") <
+		templateSource.indexOf("class=\"govuk-summary-card rops-project-areas-nav\""),
+	true,
+	"Expected project title to render before the project areas navigation",
+);
+assert.equal(
 	templateSource.indexOf("class=\"rops-dashboard-sidebar\"") <
 		templateSource.indexOf("class=\"rops-dashboard-content\""),
 	true,
@@ -173,6 +185,17 @@ assert.equal(
 	pageSource.indexOf("id=\"daas-brand-panel\"") < pageSource.indexOf("class=\"rops-dashboard-layout\""),
 	true,
 	"Expected DaaS brand panel to stay before the dashboard layout",
+);
+assert.equal(
+	pageSource.indexOf("class=\"rops-dashboard-header\"") < pageSource.indexOf("class=\"rops-dashboard-sidebar\""),
+	true,
+	"Expected rendered dashboard header to come before the sidebar in source order",
+);
+assert.equal(
+	pageSource.indexOf("id=\"project-title\"") <
+		pageSource.indexOf("class=\"govuk-summary-card rops-project-areas-nav\""),
+	true,
+	"Expected rendered project title to come before the project areas navigation",
 );
 assert.equal(
 	pageSource.indexOf("class=\"rops-dashboard-sidebar\"") < pageSource.indexOf("class=\"rops-dashboard-content\""),
@@ -338,11 +361,18 @@ includes(dashboardSassSource, ".rops-dashboard-sidebar", "project dashboard Sass
 includes(dashboardSassSource, ".rops-project-areas-nav", "project dashboard Sass source");
 includes(dashboardSassSource, ".rops-dashboard-grid > .govuk-summary-card", "project dashboard Sass source");
 includes(dashboardSassSource, ".rops-dashboard-grid {\n\tdisplay: grid;\n\tgap: 30px;", "project dashboard Sass source");
+includes(dashboardSassSource, "column-gap: 20px;", "project dashboard Sass source");
+includes(dashboardSassSource, "row-gap: 30px;", "project dashboard Sass source");
 includes(dashboardSassSource, "grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);", "project dashboard Sass source");
+includes(dashboardSassSource, ".rops-dashboard-header {\n\t\tgrid-column: 2;\n\t\tgrid-row: 1;", "project dashboard Sass source");
 includes(dashboardSassSource, "align-self: start;", "project dashboard Sass source");
+includes(dashboardSassSource, "grid-row: 1 / span 2;", "project dashboard Sass source");
+includes(dashboardSassSource, ".rops-dashboard-content {\n\t\tgrid-column: 2;\n\t\tgrid-row: 2;", "project dashboard Sass source");
 includes(dashboardSassSource, ".rops-dashboard-sidebar > .govuk-summary-card", "project dashboard Sass source");
 includes(dashboardSassSource, "margin-bottom: 0;", "project dashboard Sass source");
 includes(dashboardSassSource, ".govuk-summary-card:not(.rops-project-areas-nav) .govuk-summary-card__content.govuk-body-s", "project dashboard Sass source");
+includes(dashboardSassSource, ".govuk-body,", "project dashboard Sass source");
+includes(dashboardSassSource, "dl.govuk-body-s {\n\tfont-size: inherit;\n\tline-height: inherit;", "project dashboard Sass source");
 includes(dashboardSassSource, ".govuk-summary-card:not(.rops-project-areas-nav) dl.govuk-body-s", "project dashboard Sass source");
 includes(dashboardSassSource, ".govuk-summary-list__value", "project dashboard Sass source");
 includes(dashboardSassSource, ".rops-link-panel .govuk-button", "project dashboard Sass source");
@@ -350,7 +380,7 @@ includes(dashboardSassSource, "margin-bottom: 8px;", "project dashboard Sass sou
 includes(dashboardSassSource, "#mural-connect[hidden]", "project dashboard Sass source");
 includes(dashboardSassSource, "display: none;", "project dashboard Sass source");
 excludes(dashboardSassSource, ".rops-mural-status", "project dashboard Sass source");
-includes(dashboardSassSource, ".rops-dashboard-sidebar {\n\t\tposition: sticky;", "project dashboard Sass source");
+includes(dashboardSassSource, ".rops-dashboard-sidebar {\n\t\tgrid-column: 1;", "project dashboard Sass source");
 includes(dashboardSassSource, "position: sticky;", "project dashboard Sass source");
 includes(dashboardSassSource, "top: 1rem;", "project dashboard Sass source");
 includes(dashboardSassSource, "@media (min-width: 40.0625em)", "project dashboard Sass source");
@@ -373,11 +403,22 @@ includes(dashboardCssSource, ".rops-dashboard-sidebar", "project dashboard style
 includes(dashboardCssSource, ".rops-project-areas-nav", "project dashboard stylesheet");
 includes(dashboardCssSource, ".rops-dashboard-grid > .govuk-summary-card", "project dashboard stylesheet");
 includes(dashboardCssSource, ".rops-dashboard-grid {\n\tdisplay: grid;\n\tgap: 30px;", "project dashboard stylesheet");
+includes(dashboardCssSource, "column-gap: 20px;", "project dashboard stylesheet");
+includes(dashboardCssSource, "row-gap: 30px;", "project dashboard stylesheet");
 includes(dashboardCssSource, "grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);", "project dashboard stylesheet");
+includes(dashboardCssSource, ".rops-dashboard-header {\n\t\tgrid-column: 2;\n\t\tgrid-row: 1;", "project dashboard stylesheet");
 includes(dashboardCssSource, "align-self: start;", "project dashboard stylesheet");
+includes(dashboardCssSource, "grid-row: 1/span 2;", "project dashboard stylesheet");
+includes(dashboardCssSource, ".rops-dashboard-content {\n\t\tgrid-column: 2;\n\t\tgrid-row: 2;", "project dashboard stylesheet");
 includes(dashboardCssSource, ".rops-dashboard-sidebar > .govuk-summary-card", "project dashboard stylesheet");
 includes(dashboardCssSource, "margin-bottom: 0;", "project dashboard stylesheet");
 includes(dashboardCssSource, ".govuk-summary-card:not(.rops-project-areas-nav) .govuk-summary-card__content.govuk-body-s", "project dashboard stylesheet");
+includes(dashboardCssSource, ".govuk-summary-card:not(.rops-project-areas-nav) .govuk-summary-card__content.govuk-body-s .govuk-body", "project dashboard stylesheet");
+includes(
+	dashboardCssSource,
+	".govuk-summary-card:not(.rops-project-areas-nav) .govuk-summary-card__content.govuk-body-s dl.govuk-body-s",
+	"project dashboard stylesheet",
+);
 includes(dashboardCssSource, ".govuk-summary-card:not(.rops-project-areas-nav) dl.govuk-body-s", "project dashboard stylesheet");
 includes(dashboardCssSource, ".govuk-summary-list__value", "project dashboard stylesheet");
 includes(dashboardCssSource, ".rops-link-panel .govuk-button", "project dashboard stylesheet");
@@ -385,7 +426,7 @@ includes(dashboardCssSource, "margin-bottom: 8px;", "project dashboard styleshee
 includes(dashboardCssSource, "#mural-connect[hidden]", "project dashboard stylesheet");
 includes(dashboardCssSource, "display: none;", "project dashboard stylesheet");
 excludes(dashboardCssSource, ".rops-mural-status", "project dashboard stylesheet");
-includes(dashboardCssSource, ".rops-dashboard-sidebar {\n\t\tposition: sticky;", "project dashboard stylesheet");
+includes(dashboardCssSource, ".rops-dashboard-sidebar {\n\t\tgrid-column: 1;", "project dashboard stylesheet");
 includes(dashboardCssSource, "position: sticky;", "project dashboard stylesheet");
 includes(dashboardCssSource, "top: 1rem;", "project dashboard stylesheet");
 includes(dashboardCssSource, "@media (min-width: 40.0625em)", "project dashboard stylesheet");

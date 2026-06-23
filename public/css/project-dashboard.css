@@ -10,7 +10,7 @@
    ============================================================================ */
 
 .rops-dashboard-header {
-	margin-bottom: 30px;
+	margin-bottom: 0;
 	}
 
 .rops-dashboard-description {
@@ -65,9 +65,10 @@
 	}
 
 .rops-dashboard-layout {
+	column-gap: 20px;
 	display: grid;
-	gap: 20px;
 	grid-template-columns: 1fr;
+	row-gap: 30px;
 	}
 
 .rops-dashboard-layout > * {
@@ -89,7 +90,12 @@
 	align-self: start;
 	}
 
-.govuk-summary-card:not(.rops-project-areas-nav) .govuk-summary-card__content.govuk-body-s .govuk-list, .govuk-summary-card:not(.rops-project-areas-nav) .govuk-summary-card__content.govuk-body-s .govuk-label, .govuk-summary-card:not(.rops-project-areas-nav) .govuk-summary-card__content.govuk-body-s .govuk-hint {
+.govuk-summary-card:not(.rops-project-areas-nav) .govuk-summary-card__content.govuk-body-s .govuk-body, .govuk-summary-card:not(.rops-project-areas-nav) .govuk-summary-card__content.govuk-body-s .govuk-list, .govuk-summary-card:not(.rops-project-areas-nav) .govuk-summary-card__content.govuk-body-s .govuk-label, .govuk-summary-card:not(.rops-project-areas-nav) .govuk-summary-card__content.govuk-body-s .govuk-hint {
+	font-size: inherit;
+	line-height: inherit;
+	}
+
+.govuk-summary-card:not(.rops-project-areas-nav) .govuk-summary-card__content.govuk-body-s dl.govuk-body-s {
 	font-size: inherit;
 	line-height: inherit;
 	}
@@ -113,9 +119,19 @@
 	.rops-dashboard-layout {
 		grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
 		}
+	.rops-dashboard-header {
+		grid-column: 2;
+		grid-row: 1;
+		}
 	.rops-dashboard-sidebar {
+		grid-column: 1;
+		grid-row: 1/span 2;
 		position: sticky;
 		top: 1rem;
+		}
+	.rops-dashboard-content {
+		grid-column: 2;
+		grid-row: 2;
 		}
 	.rops-two-column {
 		grid-template-columns: 1fr 1fr;

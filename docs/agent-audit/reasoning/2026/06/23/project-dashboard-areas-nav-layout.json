@@ -3,7 +3,7 @@
   "branch": "fix/project-dashboard-areas-nav-layout",
   "traceRequired": true,
   "repository": "kevinrapley/ResearchOps",
-  "task": "Move the Project Dashboard Project areas navigation into a left column after the full-width DaaS brand panel, make that navigation sticky after scrolling beyond it, move the Reflexive journal panel into the left column underneath the Project areas navigation, make the left sidebar sticky as a group, reduce the visible gap between the nav and journal panels to match other dashboard panel gaps, make the sidebar one third width and the main content column two thirds width, add an 8px bottom margin to the button at the bottom of the rops-link-panel, remove the #mural-status paragraph element, keep the Connect Mural button in the HTML but hide it from the UI while Mural is connected or the disabled default state is active, fix the rendered disabled Connect Mural button still being visible, make the lower main-column panel gaps match the gap between Project details and Stakeholder management, move Objectives into a separate Project Objectives panel beneath Stakeholder management, treat a no-studies studies_unavailable response in Research outcomes as a normal empty state instead of surfacing a system-style failure message, and apply govuk-body-s to non-navigation panel content with dl.govuk-body-s summary lists.",
+  "task": "Move the Project Dashboard Project areas navigation into a left column after the full-width DaaS brand panel, make that navigation sticky after scrolling beyond it, move the Reflexive journal panel into the left column underneath the Project areas navigation, make the left sidebar sticky as a group, reduce the visible gap between the nav and journal panels to match other dashboard panel gaps, make the sidebar one third width and the main content column two thirds width, add an 8px bottom margin to the button at the bottom of the rops-link-panel, remove the #mural-status paragraph element, keep the Connect Mural button in the HTML but hide it from the UI while Mural is connected or the disabled default state is active, fix the rendered disabled Connect Mural button still being visible, make the lower main-column panel gaps match the gap between Project details and Stakeholder management, move Objectives into a separate Project Objectives panel beneath Stakeholder management, treat a no-studies studies_unavailable response in Research outcomes as a normal empty state instead of surfacing a system-style failure message, apply govuk-body-s to non-navigation panel content with dl.govuk-body-s summary lists, address PR review feedback by keeping the dashboard header and h1 before the Project areas navigation in DOM order while preserving the desktop layout, and fix the Project details summary-list cascade so dl.govuk-body-s, dt and dd compute to the expected smaller GOV.UK body size.",
   "operatingModelFilesLoaded": [
     "AGENTS.md",
     ".agent-operating-model/orchestration.xml",
@@ -49,7 +49,9 @@
     "public/js/project-dashboard.js",
     "tests/studies-route-contract.test.js",
     "infra/cloudflare/src/service/studies.js",
-    "package.json"
+    "package.json",
+    "GitHub PR #423 review thread PRRT_kwDOP3Td2M6LkMtl",
+    "public/assets/govuk/govuk-frontend.css"
   ],
   "filesModified": [
     "src/govuk/templates/pages/project-dashboard.njk",
@@ -96,7 +98,14 @@
     "Kept genuine study load failures visible as a non-technical retry message.",
     "Added govuk-body-s to every non-navigation dashboard panel content wrapper, leaving the Project areas navigation at its existing size.",
     "Added govuk-body-s directly to the Mural and Project details dl.govuk-summary-list elements so their dt and dd content inherit from the list.",
-    "Added scoped dashboard Sass so lists, labels, hints, summary-list keys and summary-list values inherit the smaller typography inside non-navigation panel content."
+    "Added scoped dashboard Sass so lists, labels, hints, summary-list keys and summary-list values inherit the smaller typography inside non-navigation panel content.",
+    "Classified the PR review comment about source order as useful because the single-column/mobile reading order placed the Project areas navigation before the dashboard heading.",
+    "Moved .rops-dashboard-header before .rops-dashboard-sidebar in the template and generated page so keyboard and screen-reader users encounter the project heading before the section navigation.",
+    "Placed .rops-dashboard-header and .rops-dashboard-content in the right grid column on desktop so the visual two-column layout is preserved despite the improved DOM order.",
+    "Replaced the dashboard layout shorthand gap with column-gap and row-gap so desktop column spacing and vertical panel spacing remain explicit after the grid placement change.",
+    "Added route-state assertions for the header-before-sidebar and project-title-before-project-areas-nav DOM order in both source and generated HTML.",
+    "Fixed the Project details summary-list typography cascade by making non-navigation panel dl.govuk-body-s elements inherit from the govuk-body-s panel content wrapper before their keys and values inherit from the dl.",
+    "Added .govuk-body to the non-navigation panel typography inheritance rule so medium body paragraphs inside smaller panel content do not override the intended panel text size."
   ],
   "validationAttempted": [
     "npm run build:project-dashboard && npm run build:govuk-pages passed",
@@ -129,7 +138,16 @@
     "node --test tests/project-dashboard-route-state.test.js tests/govuk-design-system-baseline-route-state.test.js tests/govuk-tables-summary-lists-application-route-state.test.js passed after updating the broader summary-list contracts",
     "npm run lint passed after the panel typography change with existing repository warnings and no errors",
     "npm test passed after the panel typography change with 245 tests and 0 failures",
-    "npm run validate passed after the panel typography change"
+    "npm run validate passed after the panel typography change",
+    "npm run build:generated-css && npm run build:govuk-pages passed after the review source-order and Project details summary-list typography fixes",
+    "node --test tests/project-dashboard-route-state.test.js tests/govuk-design-system-baseline-route-state.test.js tests/govuk-tables-summary-lists-application-route-state.test.js passed after the review source-order and Project details summary-list typography fixes",
+    "Browser computed-style check confirmed the Project details dl, summary-list keys and summary-list values compute to 16px font size and 20px line height, while the Project areas navigation remains at 19px",
+    "Browser layout check confirmed the dashboard header precedes the Project areas navigation in DOM/mobile order and remains aligned with the main content column on desktop",
+    "npm run format:check passed after formatting the dashboard Sass",
+    "npm run lint passed after the review source-order and Project details summary-list typography fixes with existing repository warnings and no errors",
+    "npm test passed after the review source-order and Project details summary-list typography fixes with 245 tests and 0 failures",
+    "npm run validate passed after the review source-order and Project details summary-list typography fixes",
+    "Final browser computed-style check after validation rebuilt assets confirmed the Project details summary-list key still computes to 16px font size and 20px line height, and the dashboard header still precedes the Project areas navigation in DOM order"
   ],
   "residualRisks": [
     "Final deployed appearance still depends on the generated static assets being served without stale cache.",

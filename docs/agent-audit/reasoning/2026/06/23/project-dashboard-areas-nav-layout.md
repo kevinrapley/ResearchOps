@@ -30,6 +30,10 @@ Follow-up: in the `Research outcomes` panel, treat a no-studies `studies_unavail
 
 Follow-up: apply `govuk-body-s` to Project Dashboard panel content, excluding the `Project areas` navigation, and use `dl.govuk-body-s` so summary-list keys and values inherit the smaller body size.
 
+Follow-up: address PR review feedback by keeping the dashboard header and `<h1>` before the `Project areas` navigation in DOM order, while preserving the desktop two-column visual layout with CSS grid placement.
+
+Follow-up: fix the Project details summary list cascade so `dl.govuk-body-s`, `dt` and `dd` compute to the expected smaller GOV.UK body size.
+
 ## Run metadata
 
 - Date: 2026-06-23
@@ -88,6 +92,8 @@ Follow-up: apply `govuk-body-s` to Project Dashboard panel content, excluding th
 - `tests/studies-route-contract.test.js`
 - `infra/cloudflare/src/service/studies.js`
 - `package.json`
+- GitHub PR #423 review thread `PRRT_kwDOP3Td2M6LkMtl`
+- `public/assets/govuk/govuk-frontend.css`
 
 ## Files created or modified
 
@@ -136,6 +142,13 @@ Follow-up: apply `govuk-body-s` to Project Dashboard panel content, excluding th
 - Added `govuk-body-s` to every non-navigation dashboard panel content wrapper, leaving the `Project areas` navigation at its existing size.
 - Added `govuk-body-s` directly to the Mural and Project details `dl.govuk-summary-list` elements so their `dt` and `dd` content inherit from the list.
 - Added scoped dashboard Sass so lists, labels, hints, summary-list keys and summary-list values inherit the smaller typography inside non-navigation panel content.
+- Classified the PR review comment about source order as useful because the single-column/mobile reading order placed the `Project areas` navigation before the dashboard heading.
+- Moved `.rops-dashboard-header` before `.rops-dashboard-sidebar` in the template and generated page so keyboard and screen-reader users encounter the project heading before the section navigation.
+- Placed `.rops-dashboard-header` and `.rops-dashboard-content` in the right grid column on desktop so the visual two-column layout is preserved despite the improved DOM order.
+- Replaced the dashboard layout shorthand `gap` with `column-gap` and `row-gap` so desktop column spacing and vertical panel spacing remain explicit after the grid placement change.
+- Added route-state assertions for the header-before-sidebar and project-title-before-project-areas-nav DOM order in both source and generated HTML.
+- Fixed the Project details summary-list typography cascade by making non-navigation panel `dl.govuk-body-s` elements inherit from the `govuk-body-s` panel content wrapper before their keys and values inherit from the `dl`.
+- Added `.govuk-body` to the non-navigation panel typography inheritance rule so medium body paragraphs inside smaller panel content do not override the intended panel text size.
 
 ## Validation attempted
 
@@ -170,6 +183,15 @@ Follow-up: apply `govuk-body-s` to Project Dashboard panel content, excluding th
 - `npm run lint` passed after the panel typography change with existing repository warnings and no errors.
 - `npm test` passed after the panel typography change with 245 tests and 0 failures.
 - `npm run validate` passed after the panel typography change.
+- `npm run build:generated-css && npm run build:govuk-pages` passed after the review source-order and Project details summary-list typography fixes.
+- `node --test tests/project-dashboard-route-state.test.js tests/govuk-design-system-baseline-route-state.test.js tests/govuk-tables-summary-lists-application-route-state.test.js` passed after the review source-order and Project details summary-list typography fixes.
+- Browser computed-style check confirmed the Project details `dl`, summary-list keys and summary-list values compute to `16px` font size and `20px` line height, while the `Project areas` navigation remains at `19px`.
+- Browser layout check confirmed the dashboard header precedes the `Project areas` navigation in DOM/mobile order and remains aligned with the main content column on desktop.
+- `npm run format:check` passed after formatting the dashboard Sass.
+- `npm run lint` passed after the review source-order and Project details summary-list typography fixes with existing repository warnings and no errors.
+- `npm test` passed after the review source-order and Project details summary-list typography fixes with 245 tests and 0 failures.
+- `npm run validate` passed after the review source-order and Project details summary-list typography fixes.
+- Final browser computed-style check after validation rebuilt assets confirmed the Project details summary-list key still computes to `16px` font size and `20px` line height, and the dashboard header still precedes the `Project areas` navigation in DOM order.
 
 ## Residual risks
 

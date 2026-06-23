@@ -55,6 +55,20 @@
 				</div>
 
 				<div class="rops-dashboard-layout">
+					<header class="rops-dashboard-header" typeof="schema:ResearchProject" resource="#project">
+						<span id="eyebrow-org" class="govuk-caption-l" property="schema:sourceOrganization"></span>
+						<h1 id="project-title" class="govuk-heading-xl" property="schema:name">Project dashboard</h1>
+						<p id="project-subtitle" class="govuk-body-l rops-dashboard-description" property="schema:description">
+							Use this dashboard to manage project context, research planning, reflexive journaling and research
+							outcomes.
+						</p>
+						<div class="rops-status-strip" aria-label="Project status">
+							<strong class="govuk-tag govuk-tag--blue" id="project-service-stage-tag">Loading service stage</strong>
+							<strong class="govuk-tag govuk-tag--purple" id="project-stage-tag">Loading project stage</strong>
+							<strong class="govuk-tag govuk-tag--grey" id="mural-summary-tag">Mural optional</strong>
+						</div>
+					</header>
+
 					<div class="rops-dashboard-sidebar">
 						<nav
 							class="govuk-summary-card rops-project-areas-nav"
@@ -169,20 +183,6 @@
 					</div>
 
 					<div class="rops-dashboard-content">
-						<header class="rops-dashboard-header" typeof="schema:ResearchProject" resource="#project">
-							<span id="eyebrow-org" class="govuk-caption-l" property="schema:sourceOrganization"></span>
-							<h1 id="project-title" class="govuk-heading-xl" property="schema:name">Project dashboard</h1>
-							<p id="project-subtitle" class="govuk-body-l rops-dashboard-description" property="schema:description">
-								Use this dashboard to manage project context, research planning, reflexive journaling and research
-								outcomes.
-							</p>
-							<div class="rops-status-strip" aria-label="Project status">
-								<strong class="govuk-tag govuk-tag--blue" id="project-service-stage-tag">Loading service stage</strong>
-								<strong class="govuk-tag govuk-tag--purple" id="project-stage-tag">Loading project stage</strong>
-								<strong class="govuk-tag govuk-tag--grey" id="mural-summary-tag">Mural optional</strong>
-							</div>
-						</header>
-
 						<section class="govuk-summary-card" id="project-details">
 							<div class="govuk-summary-card__title-wrapper">
 								<h2 class="govuk-summary-card__title">Project details</h2>
