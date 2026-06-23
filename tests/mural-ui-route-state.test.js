@@ -32,6 +32,8 @@ includes("function setSetupAsCreate(projectId, projectName)");
 includes("function setSetupAsOpen(projectId, boardUrl)");
 includes("function observeProjectMeta()");
 includes("function hideConnectButton()");
+includes("function disableAll()");
+includes("function disableAll() {\n\t\thideConnectButton();");
 includes("function setGovukTag(el, text, modifier = \"govuk-tag--grey\")");
 includes("function setOpenLinkState(enabled, boardUrl = \"\")");
 includes("jsonFetch(addDebug(`${API_ORIGIN}/api/health`)).catch(() => {});");

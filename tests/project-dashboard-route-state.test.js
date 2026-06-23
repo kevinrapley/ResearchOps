@@ -32,6 +32,8 @@ excludes(layoutSource, "fallbackFooterHtml", "GOV.UK layout");
 
 includes(templateSource, "{% from \"govuk/components/button/macro.njk\" import govukButton %}", "project dashboard template");
 includes(templateSource, "id=\"mural-integration\"", "project dashboard template");
+excludes(templateSource, "id=\"mural-status\"", "project dashboard template");
+excludes(templateSource, "class=\"rops-mural-status\"", "project dashboard template");
 includes(templateSource, "id=\"journal-link\"", "project dashboard template");
 includes(templateSource, "id=\"outcomes-card-link\"", "project dashboard template");
 includes(templateSource, "{% from \"macros/daas-brand-panel.njk\" import daasBrandPanel %}", "project dashboard template");
@@ -99,6 +101,8 @@ includes(pageSource, "class=\"govuk-summary-list\"", "project dashboard page");
 includes(pageSource, "id=\"project-title\"", "project dashboard page");
 includes(pageSource, "id=\"breadcrumb-project\"", "project dashboard page");
 includes(pageSource, "id=\"daas-brand-panel\"", "project dashboard page");
+excludes(pageSource, "id=\"mural-status\"", "project dashboard page");
+excludes(pageSource, "class=\"rops-mural-status\"", "project dashboard page");
 includes(pageSource, "class=\"rops-daas-brand-panel\"", "project dashboard page");
 includes(pageSource, "class=\"rops-dashboard-layout\"", "project dashboard page");
 includes(pageSource, "class=\"rops-dashboard-sidebar\"", "project dashboard page");
@@ -213,6 +217,8 @@ includes(muralIntegrationSource, "function setSetupAsCreate(projectId, projectNa
 includes(muralIntegrationSource, "function setSetupAsOpen(projectId, boardUrl)", "Mural integration component");
 includes(muralIntegrationSource, "function observeProjectMeta()", "Mural integration component");
 includes(muralIntegrationSource, "function hideConnectButton()", "Mural integration component");
+includes(muralIntegrationSource, "function disableAll()", "Mural integration component");
+includes(muralIntegrationSource, "function disableAll() {\n\t\thideConnectButton();", "Mural integration component");
 includes(muralIntegrationSource, "function setGovukTag(el, text, modifier = \"govuk-tag--grey\")", "Mural integration component");
 includes(muralIntegrationSource, "function setOpenLinkState(enabled, boardUrl = \"\")", "Mural integration component");
 includes(muralIntegrationSource, "jsonFetch(addDebug(`${API_ORIGIN}/api/health`)).catch(() => {});", "Mural integration component");
@@ -253,6 +259,9 @@ includes(dashboardSassSource, "grid-template-columns: minmax(0, 1fr) minmax(0, 2
 includes(dashboardSassSource, "align-self: start;", "project dashboard Sass source");
 includes(dashboardSassSource, ".rops-dashboard-sidebar > .govuk-summary-card", "project dashboard Sass source");
 includes(dashboardSassSource, "margin-bottom: 0;", "project dashboard Sass source");
+includes(dashboardSassSource, ".rops-link-panel .govuk-button", "project dashboard Sass source");
+includes(dashboardSassSource, "margin-bottom: 8px;", "project dashboard Sass source");
+excludes(dashboardSassSource, ".rops-mural-status", "project dashboard Sass source");
 includes(dashboardSassSource, ".rops-dashboard-sidebar {\n\t\tposition: sticky;", "project dashboard Sass source");
 includes(dashboardSassSource, "position: sticky;", "project dashboard Sass source");
 includes(dashboardSassSource, "top: 1rem;", "project dashboard Sass source");
@@ -278,6 +287,9 @@ includes(dashboardCssSource, "grid-template-columns: minmax(0, 1fr) minmax(0, 2f
 includes(dashboardCssSource, "align-self: start;", "project dashboard stylesheet");
 includes(dashboardCssSource, ".rops-dashboard-sidebar > .govuk-summary-card", "project dashboard stylesheet");
 includes(dashboardCssSource, "margin-bottom: 0;", "project dashboard stylesheet");
+includes(dashboardCssSource, ".rops-link-panel .govuk-button", "project dashboard stylesheet");
+includes(dashboardCssSource, "margin-bottom: 8px;", "project dashboard stylesheet");
+excludes(dashboardCssSource, ".rops-mural-status", "project dashboard stylesheet");
 includes(dashboardCssSource, ".rops-dashboard-sidebar {\n\t\tposition: sticky;", "project dashboard stylesheet");
 includes(dashboardCssSource, "position: sticky;", "project dashboard stylesheet");
 includes(dashboardCssSource, "top: 1rem;", "project dashboard stylesheet");

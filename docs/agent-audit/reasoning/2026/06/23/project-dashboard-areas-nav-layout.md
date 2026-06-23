@@ -14,6 +14,12 @@ Follow-up: reduce the visible gap between `Project areas` and `Reflexive journal
 
 Follow-up: make the sidebar with `Project areas` and `Reflexive journal` one third width and the main content column two thirds width within the GOV.UK width container.
 
+Follow-up: add an 8px bottom margin to the button at the bottom of the `rops-link-panel`.
+
+Follow-up: remove the `#mural-status` paragraph element from the Mural board panel.
+
+Follow-up: keep the `Connect Mural` button in the HTML but hide it from the UI while Mural is connected or the disabled default state is active.
+
 ## Run metadata
 
 - Date: 2026-06-23
@@ -97,6 +103,9 @@ Follow-up: make the sidebar with `Project areas` and `Reflexive journal` one thi
 - Added `align-self: start` to `.rops-dashboard-sidebar` so the sticky grid item uses the sidebar stack height instead of stretching to the full content column height.
 - Reset direct `.govuk-summary-card` bottom margins inside `.rops-dashboard-sidebar` so the sidebar grid gap defines the visible spacing between the nav and journal panels.
 - Adjusted the desktop dashboard grid from a one-quarter/three-quarter split to a one-third/two-thirds split while keeping the DaaS brand panel outside the two-column area.
+- Added a scoped `.rops-link-panel .govuk-button` rule so the journal button keeps an 8px bottom margin inside the link panel.
+- Removed the `#mural-status` paragraph from the dashboard template and deleted its now-unused `.rops-mural-status` stylesheet rule.
+- Changed the Mural integration disabled/default state to hide the existing `#mural-connect` button until a disconnected or recoverable-error path shows it.
 - Preserved existing dashboard cards, links, IDs and JavaScript hooks.
 
 ## Validation attempted
@@ -107,6 +116,9 @@ Follow-up: make the sidebar with `Project areas` and `Reflexive journal` one thi
 - `npm run lint` passed with existing repository warnings and no errors.
 - Browser layout, sticky sidebar, left-column journal placement and 20px nav-to-journal panel gap check with Playwright passed at 1280px desktop and 390px mobile widths.
 - Browser layout ratio check with Playwright passed at 1280px desktop width, confirming the sidebar is one third and the main content column is two thirds of the dashboard grid.
+- Route-state checks confirm the `rops-link-panel` button bottom margin rule is present in both Sass and generated CSS.
+- Route-state checks confirm the `#mural-status` paragraph and `.rops-mural-status` style no longer render.
+- Route-state checks confirm the Mural disabled/default state hides the existing Connect Mural button.
 - `npm test -- --ci` could not run because the current script passes `--ci` through to Node, which exits with `node: bad option: --ci`.
 - `npm test` passed with 245 tests and 0 failures.
 - `npm run validate` passed.

@@ -183,7 +183,7 @@
 	};
 
 	function disableAll() {
-		showConnectButton();
+		hideConnectButton();
 		if (els.btnSetup) els.btnSetup.disabled = true;
 		setOpenLinkState(false);
 	}
