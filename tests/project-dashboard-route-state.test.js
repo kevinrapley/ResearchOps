@@ -83,6 +83,26 @@ includes(templateSource, "href: \"/pages/project-dashboard/?id=\"", "project das
 includes(templateSource, "rops-planning-grid", "project dashboard template");
 includes(templateSource, "id: \"add-stakeholder-toggle\"", "project dashboard template");
 includes(templateSource, "\"aria-controls\": \"add-stakeholder-panel\"", "project dashboard template");
+includes(templateSource, "href=\"#project-objectives\"", "project dashboard template");
+includes(templateSource, "id=\"project-objectives\"", "project dashboard template");
+includes(templateSource, "Project Objectives", "project dashboard template");
+includes(templateSource, "id=\"objectives-list\"", "project dashboard template");
+includes(templateSource, "id: \"add-objective-toggle\"", "project dashboard template");
+assert.equal(
+	templateSource.indexOf("id=\"stakeholders\"") < templateSource.indexOf("id=\"project-objectives\""),
+	true,
+	"Expected Project Objectives to render after Stakeholder management",
+);
+assert.equal(
+	templateSource.indexOf("id=\"project-objectives\"") < templateSource.indexOf("id=\"planning\""),
+	true,
+	"Expected Project Objectives to render before Research planning",
+);
+assert.equal(
+	templateSource.indexOf("id=\"stakeholders\"") < templateSource.indexOf("id=\"objectives-list\""),
+	true,
+	"Expected objectives list to render outside the Stakeholder management card",
+);
 excludes(templateSource, "rops-summary-card-button", "project dashboard template");
 excludes(templateSource, "id=\"mural-open\"", "project dashboard template");
 excludes(templateSource, "Service stage not recorded", "project dashboard template");
@@ -111,6 +131,11 @@ includes(pageSource, "class=\"govuk-summary-card rops-project-areas-nav\"", "pro
 includes(pageSource, "class=\"rops-dashboard-content\"", "project dashboard page");
 includes(pageSource, "id=\"mural-connect\"", "project dashboard page");
 includes(pageSource, "hidden", "project dashboard page");
+includes(pageSource, "href=\"#project-objectives\"", "project dashboard page");
+includes(pageSource, "id=\"project-objectives\"", "project dashboard page");
+includes(pageSource, "Project Objectives", "project dashboard page");
+includes(pageSource, "id=\"objectives-list\"", "project dashboard page");
+includes(pageSource, "id=\"add-objective-toggle\"", "project dashboard page");
 assert.equal(
 	pageSource.indexOf("id=\"daas-brand-panel\"") < pageSource.indexOf("class=\"rops-dashboard-layout\""),
 	true,
@@ -132,6 +157,21 @@ assert.equal(
 		pageSource.indexOf("class=\"rops-dashboard-content\""),
 	true,
 	"Expected reflexive journal panel to render in the sidebar before dashboard content",
+);
+assert.equal(
+	pageSource.indexOf("id=\"stakeholders\"") < pageSource.indexOf("id=\"project-objectives\""),
+	true,
+	"Expected Project Objectives to render after Stakeholder management",
+);
+assert.equal(
+	pageSource.indexOf("id=\"project-objectives\"") < pageSource.indexOf("id=\"planning\""),
+	true,
+	"Expected Project Objectives to render before Research planning",
+);
+assert.equal(
+	pageSource.indexOf("id=\"stakeholders\"") < pageSource.indexOf("id=\"objectives-list\""),
+	true,
+	"Expected objectives list to render outside the Stakeholder management card",
 );
 includes(pageSource, "/images/brands/daas-logo.svg", "project dashboard page");
 includes(pageSource, "project-dashboard.js?v=project-dashboard-daas-brand-20260616", "project dashboard page");

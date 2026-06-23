@@ -68,6 +68,7 @@
 								<ul class="govuk-list govuk-list--spaced rops-compact-list">
 									<li><a class="govuk-link" href="#reflexive-journal">Reflexive journal</a></li>
 									<li><a class="govuk-link" href="#stakeholders">Stakeholder management</a></li>
+									<li><a class="govuk-link" href="#project-objectives">Project Objectives</a></li>
 									<li><a class="govuk-link" href="#planning">Research planning</a></li>
 									<li>
 										<a
@@ -227,134 +228,131 @@
 									<h2 class="govuk-summary-card__title">Stakeholder management</h2>
 								</div>
 								<div class="govuk-summary-card__content">
-									<div class="rops-two-column">
-										<div>
-											<h3 class="govuk-heading-s">Stakeholders</h3>
-											<ul class="govuk-list govuk-list--spaced rops-divided-list" id="stakeholders-list">
-												<li>No stakeholders yet.</li>
-											</ul>
+									<h3 class="govuk-heading-s">Stakeholders</h3>
+									<ul class="govuk-list govuk-list--spaced rops-divided-list" id="stakeholders-list">
+										<li>No stakeholders yet.</li>
+									</ul>
 
-											<button
-												type="button"
-												class="govuk-button govuk-button--secondary"
-												data-module="govuk-button"
-												id="add-stakeholder-toggle"
-												aria-expanded="false"
-												aria-controls="add-stakeholder-panel"
-											>
-												Add stakeholder
-											</button>
+									<button
+										type="button"
+										class="govuk-button govuk-button--secondary"
+										data-module="govuk-button"
+										id="add-stakeholder-toggle"
+										aria-expanded="false"
+										aria-controls="add-stakeholder-panel"
+									>
+										Add stakeholder
+									</button>
 
-											<div id="add-stakeholder-panel" class="dashboard-action-panel" hidden>
-												<form id="add-stakeholder-form" novalidate>
-													<h4 class="govuk-heading-s">Add stakeholder</h4>
-													<div id="add-stakeholder-status" class="dashboard-action-status" aria-live="polite"></div>
-													<div class="govuk-form-group">
-														<label class="govuk-label" for="stakeholder-name">Name</label>
-														<input
-															class="govuk-input govuk-!-width-two-thirds"
-															id="stakeholder-name"
-															name="name"
-															autocomplete="name"
-															required
-														/>
-													</div>
-													<div class="govuk-form-group">
-														<label class="govuk-label" for="stakeholder-role">Role</label>
-														<input
-															class="govuk-input govuk-!-width-two-thirds"
-															id="stakeholder-role"
-															name="role"
-															autocomplete="organization-title"
-															required
-														/>
-													</div>
-													<div class="govuk-form-group">
-														<label class="govuk-label" for="stakeholder-email">Work email</label>
-														<div id="stakeholder-email-hint" class="govuk-hint">
-															Only add staff contact details where needed for project ownership or coordination.
-														</div>
-														<input
-															class="govuk-input govuk-!-width-two-thirds"
-															id="stakeholder-email"
-															name="email"
-															type="email"
-															autocomplete="email"
-															aria-describedby="stakeholder-email-hint"
-														/>
-													</div>
-													<div class="govuk-button-group">
-														<button type="submit" class="govuk-button" data-module="govuk-button">
-															Save stakeholder
-														</button>
-
-														<button
-															type="button"
-															class="govuk-button govuk-button--secondary"
-															data-module="govuk-button"
-															data-close-panel="add-stakeholder-panel"
-															data-toggle="add-stakeholder-toggle"
-														>
-															Cancel
-														</button>
-													</div>
-												</form>
+									<div id="add-stakeholder-panel" class="dashboard-action-panel" hidden>
+										<form id="add-stakeholder-form" novalidate>
+											<h4 class="govuk-heading-s">Add stakeholder</h4>
+											<div id="add-stakeholder-status" class="dashboard-action-status" aria-live="polite"></div>
+											<div class="govuk-form-group">
+												<label class="govuk-label" for="stakeholder-name">Name</label>
+												<input
+													class="govuk-input govuk-!-width-two-thirds"
+													id="stakeholder-name"
+													name="name"
+													autocomplete="name"
+													required
+												/>
 											</div>
-										</div>
-										<div>
-											<h3 class="govuk-heading-s">Objectives</h3>
-											<ul class="govuk-list govuk-list--spaced rops-divided-list" id="objectives-list">
-												<li>No objectives yet.</li>
-											</ul>
-
-											<button
-												type="button"
-												class="govuk-button govuk-button--secondary"
-												data-module="govuk-button"
-												id="add-objective-toggle"
-												aria-expanded="false"
-												aria-controls="add-objective-panel"
-											>
-												Add objective
-											</button>
-
-											<div id="add-objective-panel" class="dashboard-action-panel" hidden>
-												<form id="add-objective-form" novalidate>
-													<h4 class="govuk-heading-s">Add objective</h4>
-													<div id="add-objective-status" class="dashboard-action-status" aria-live="polite"></div>
-													<div class="govuk-form-group">
-														<label class="govuk-label" for="objective-text">Research objective</label>
-														<div id="objective-text-hint" class="govuk-hint">
-															Keep objectives action-oriented and linked to decisions the team needs to make. Do not
-															include participant personal data.
-														</div>
-														<textarea
-															class="govuk-textarea"
-															id="objective-text"
-															name="objective"
-															rows="4"
-															required
-															aria-describedby="objective-text-hint"
-														></textarea>
-													</div>
-													<div class="govuk-button-group">
-														<button type="submit" class="govuk-button" data-module="govuk-button">
-															Save objective
-														</button>
-
-														<button
-															type="button"
-															class="govuk-button govuk-button--secondary"
-															data-module="govuk-button"
-															data-close-panel="add-objective-panel"
-															data-toggle="add-objective-toggle"
-														>
-															Cancel
-														</button>
-													</div>
-												</form>
+											<div class="govuk-form-group">
+												<label class="govuk-label" for="stakeholder-role">Role</label>
+												<input
+													class="govuk-input govuk-!-width-two-thirds"
+													id="stakeholder-role"
+													name="role"
+													autocomplete="organization-title"
+													required
+												/>
 											</div>
-										</div>
+											<div class="govuk-form-group">
+												<label class="govuk-label" for="stakeholder-email">Work email</label>
+												<div id="stakeholder-email-hint" class="govuk-hint">
+													Only add staff contact details where needed for project ownership or coordination.
+												</div>
+												<input
+													class="govuk-input govuk-!-width-two-thirds"
+													id="stakeholder-email"
+													name="email"
+													type="email"
+													autocomplete="email"
+													aria-describedby="stakeholder-email-hint"
+												/>
+											</div>
+											<div class="govuk-button-group">
+												<button type="submit" class="govuk-button" data-module="govuk-button">Save stakeholder</button>
+
+												<button
+													type="button"
+													class="govuk-button govuk-button--secondary"
+													data-module="govuk-button"
+													data-close-panel="add-stakeholder-panel"
+													data-toggle="add-stakeholder-toggle"
+												>
+													Cancel
+												</button>
+											</div>
+										</form>
+									</div>
+								</div>
+							</section>
+
+							<section id="project-objectives" class="govuk-summary-card">
+								<div class="govuk-summary-card__title-wrapper">
+									<h2 class="govuk-summary-card__title">Project Objectives</h2>
+								</div>
+								<div class="govuk-summary-card__content">
+									<ul class="govuk-list govuk-list--spaced rops-divided-list" id="objectives-list">
+										<li>No objectives yet.</li>
+									</ul>
+
+									<button
+										type="button"
+										class="govuk-button govuk-button--secondary"
+										data-module="govuk-button"
+										id="add-objective-toggle"
+										aria-expanded="false"
+										aria-controls="add-objective-panel"
+									>
+										Add objective
+									</button>
+
+									<div id="add-objective-panel" class="dashboard-action-panel" hidden>
+										<form id="add-objective-form" novalidate>
+											<h3 class="govuk-heading-s">Add objective</h3>
+											<div id="add-objective-status" class="dashboard-action-status" aria-live="polite"></div>
+											<div class="govuk-form-group">
+												<label class="govuk-label" for="objective-text">Research objective</label>
+												<div id="objective-text-hint" class="govuk-hint">
+													Keep objectives action-oriented and linked to decisions the team needs to make. Do not include
+													participant personal data.
+												</div>
+												<textarea
+													class="govuk-textarea"
+													id="objective-text"
+													name="objective"
+													rows="4"
+													required
+													aria-describedby="objective-text-hint"
+												></textarea>
+											</div>
+											<div class="govuk-button-group">
+												<button type="submit" class="govuk-button" data-module="govuk-button">Save objective</button>
+
+												<button
+													type="button"
+													class="govuk-button govuk-button--secondary"
+													data-module="govuk-button"
+													data-close-panel="add-objective-panel"
+													data-toggle="add-objective-toggle"
+												>
+													Cancel
+												</button>
+											</div>
+										</form>
 									</div>
 								</div>
 							</section>

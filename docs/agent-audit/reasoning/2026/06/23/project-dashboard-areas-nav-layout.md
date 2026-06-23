@@ -24,6 +24,8 @@ Follow-up: fix the rendered disabled `Connect Mural` button still being visible 
 
 Follow-up: make the gaps between `Stakeholder management`, `Research planning` and `Research outcomes` match the gap between `Project details` and `Stakeholder management`.
 
+Follow-up: move `Objectives` out of the `Stakeholder management` panel into a separate `Project Objectives` panel directly beneath it.
+
 ## Run metadata
 
 - Date: 2026-06-23
@@ -117,6 +119,8 @@ Follow-up: make the gaps between `Stakeholder management`, `Research planning` a
 - Added an initial `hidden` attribute to the rendered `#mural-connect` button so it is not visible before the Mural state script completes.
 - Added a scoped `#mural-connect[hidden] { display: none; }` rule because GOV.UK button styling otherwise gave the hidden button visible dimensions.
 - Set the main dashboard grid gap to 30px and reset direct summary-card bottom margins in that grid so `Stakeholder management`, `Research planning` and `Research outcomes` gaps match the measured `Project details` to `Stakeholder management` gap.
+- Moved the existing objectives list, add-objective button and add-objective form into a new `Project Objectives` summary-card immediately after `Stakeholder management`.
+- Added a `Project Objectives` link to the `Project areas` navigation.
 - Preserved existing dashboard cards, links, IDs and JavaScript hooks.
 
 ## Validation attempted
@@ -133,6 +137,9 @@ Follow-up: make the gaps between `Stakeholder management`, `Research planning` a
 - Browser connected-state check confirmed the existing `#mural-connect` button remains in the DOM while hidden, disabled, `display: none`, and measuring 0px by 0px.
 - Browser disconnected-state check confirmed the same `#mural-connect` button becomes visible and enabled when Mural verification returns a disconnected response.
 - Browser spacing check confirmed `Project details` to `Stakeholder management`, `Stakeholder management` to `Research planning`, and `Research planning` to `Research outcomes` each measure 30px.
+- `npm run build:govuk-pages` passed after moving objectives into their own panel.
+- `node --test tests/project-dashboard-route-state.test.js tests/platform-heading-hierarchy-sentence-case.test.js` passed.
+- Route-state checks confirm `Project Objectives` renders after `Stakeholder management` and before `Research planning`, with the existing objectives DOM hooks preserved.
 - `npm test -- --ci` could not run because the current script passes `--ci` through to Node, which exits with `node: bad option: --ci`.
 - `npm test` passed with 245 tests and 0 failures.
 - `npm run validate` passed.
