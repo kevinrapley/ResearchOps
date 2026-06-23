@@ -88,6 +88,10 @@
 	.rops-dashboard-layout {
 		grid-template-columns: minmax(0, 1fr) minmax(0, 3fr);
 		}
+	.rops-project-areas-nav {
+		position: sticky;
+		top: 1rem;
+		}
 	.rops-two-column {
 		grid-template-columns: 1fr 1fr;
 		}

@@ -4,6 +4,8 @@
 
 Move the Project Dashboard `Project areas` navigation into a left column that takes one quarter of the desktop width, with the remaining dashboard content in a three-quarter column to the right. Keep the DaaS brand panel full width before the two-column dashboard layout.
 
+Follow-up: make the `Project areas` navigation sticky after users scroll beyond it, with the same visible top spacing as the space between the navigation panel and the DaaS brand panel.
+
 ## Run metadata
 
 - Date: 2026-06-23
@@ -79,6 +81,8 @@ Move the Project Dashboard `Project areas` navigation into a left column that ta
 - Kept the navigation as a semantic `nav` with `aria-labelledby="project-areas-title"`.
 - Added `.rops-project-areas-nav` for the left column and `.rops-dashboard-content` for the right column.
 - Used a responsive CSS grid that stays single-column by default and becomes `minmax(0, 1fr) minmax(0, 3fr)` from the existing desktop breakpoint.
+- Made `.rops-project-areas-nav` sticky only from the desktop layout breakpoint.
+- Used `top: 1rem` for the sticky offset, matching the DaaS brand panel bottom spacing.
 - Preserved existing dashboard cards, links, IDs and JavaScript hooks.
 
 ## Validation attempted
@@ -87,7 +91,7 @@ Move the Project Dashboard `Project areas` navigation into a left column that ta
 - `node --test tests/project-dashboard-route-state.test.js` passed.
 - `npm run format:check` passed.
 - `npm run lint` passed with existing repository warnings and no errors.
-- Browser layout check with Playwright passed at 1280px desktop and 390px mobile widths.
+- Browser layout and sticky navigation check with Playwright passed at 1280px desktop and 390px mobile widths.
 - `npm test -- --ci` could not run because the current script passes `--ci` through to Node, which exits with `node: bad option: --ci`.
 - `npm test` passed with 245 tests and 0 failures.
 - `npm run validate` passed.

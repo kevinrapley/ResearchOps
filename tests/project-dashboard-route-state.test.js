@@ -224,6 +224,8 @@ includes(dashboardSassSource, ".rops-daas-brand-panel", "project dashboard Sass 
 includes(dashboardSassSource, ".rops-dashboard-layout", "project dashboard Sass source");
 includes(dashboardSassSource, ".rops-project-areas-nav", "project dashboard Sass source");
 includes(dashboardSassSource, "grid-template-columns: minmax(0, 1fr) minmax(0, 3fr);", "project dashboard Sass source");
+includes(dashboardSassSource, "position: sticky;", "project dashboard Sass source");
+includes(dashboardSassSource, "top: 1rem;", "project dashboard Sass source");
 includes(dashboardSassSource, "@media (min-width: 40.0625em)", "project dashboard Sass source");
 includes(dashboardSassSource, "#1a1d35", "project dashboard Sass source");
 includes(dashboardSassSource, "home-office-digital-triangles.svg", "project dashboard Sass source");
@@ -242,6 +244,8 @@ includes(dashboardCssSource, ".rops-daas-brand-panel", "project dashboard styles
 includes(dashboardCssSource, ".rops-dashboard-layout", "project dashboard stylesheet");
 includes(dashboardCssSource, ".rops-project-areas-nav", "project dashboard stylesheet");
 includes(dashboardCssSource, "grid-template-columns: minmax(0, 1fr) minmax(0, 3fr);", "project dashboard stylesheet");
+includes(dashboardCssSource, "position: sticky;", "project dashboard stylesheet");
+includes(dashboardCssSource, "top: 1rem;", "project dashboard stylesheet");
 includes(dashboardCssSource, "@media (min-width: 40.0625em)", "project dashboard stylesheet");
 includes(dashboardCssSource, "#1a1d35", "project dashboard stylesheet");
 includes(dashboardCssSource, "home-office-digital-triangles.svg", "project dashboard stylesheet");
