@@ -88,6 +88,23 @@
 	align-self: start;
 }
 
+.govuk-summary-card:not(.rops-project-areas-nav) .govuk-summary-card__content.govuk-body-s {
+	.govuk-list,
+	.govuk-label,
+	.govuk-hint {
+		font-size: inherit;
+		line-height: inherit;
+	}
+}
+
+.govuk-summary-card:not(.rops-project-areas-nav) dl.govuk-body-s {
+	.govuk-summary-list__key,
+	.govuk-summary-list__value {
+		font-size: inherit;
+		line-height: inherit;
+	}
+}
+
 .rops-two-column {
 	display: grid;
 	gap: 20px;

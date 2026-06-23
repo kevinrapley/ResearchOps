@@ -22,6 +22,17 @@ function excludes(source, text, label) {
 	assert.equal(source.includes(text), false, `Expected ${label} not to include: ${text}`);
 }
 
+function countOccurrences(source, text) {
+	return source.split(text).length - 1;
+}
+
+function projectAreasNavSource(source) {
+	const start = source.indexOf("class=\"govuk-summary-card rops-project-areas-nav\"");
+	if (start === -1) return "";
+	const end = source.indexOf("</nav>", start);
+	return source.slice(start, end);
+}
+
 includes(renderGovukPagesSource, "template: 'pages/project-dashboard.njk'", "GOV.UK page renderer");
 includes(renderGovukPagesSource, "output: 'public/pages/project-dashboard/index.html'", "GOV.UK page renderer");
 
@@ -43,6 +54,17 @@ includes(templateSource, "class=\"rops-dashboard-layout\"", "project dashboard t
 includes(templateSource, "class=\"rops-dashboard-sidebar\"", "project dashboard template");
 includes(templateSource, "class=\"govuk-summary-card rops-project-areas-nav\"", "project dashboard template");
 includes(templateSource, "class=\"rops-dashboard-content\"", "project dashboard template");
+assert.equal(
+	countOccurrences(templateSource, "class=\"govuk-summary-card__content govuk-body-s\""),
+	6,
+	"Expected non-navigation dashboard panels to use govuk-body-s content wrappers",
+);
+assert.equal(
+	countOccurrences(templateSource, "class=\"govuk-summary-list govuk-body-s\""),
+	2,
+	"Expected dashboard summary lists to use dl.govuk-body-s",
+);
+excludes(projectAreasNavSource(templateSource), "govuk-summary-card__content govuk-body-s", "project areas navigation template");
 assert.equal(
 	templateSource.indexOf("{{ daasBrandPanel() }}") < templateSource.indexOf("class=\"rops-dashboard-layout\""),
 	true,
@@ -118,7 +140,7 @@ includes(pageSource, "href=\"/assets/govuk/govuk-frontend.css\"", "project dashb
 includes(pageSource, "<x-include src=\"/partials/header.html\"", "project dashboard page");
 includes(pageSource, "<x-include src=\"/partials/footer.html\"", "project dashboard page");
 includes(pageSource, "class=\"govuk-summary-card\"", "project dashboard page");
-includes(pageSource, "class=\"govuk-summary-list\"", "project dashboard page");
+includes(pageSource, "class=\"govuk-summary-list govuk-body-s\"", "project dashboard page");
 includes(pageSource, "id=\"project-title\"", "project dashboard page");
 includes(pageSource, "id=\"breadcrumb-project\"", "project dashboard page");
 includes(pageSource, "id=\"daas-brand-panel\"", "project dashboard page");
@@ -129,6 +151,17 @@ includes(pageSource, "class=\"rops-dashboard-layout\"", "project dashboard page"
 includes(pageSource, "class=\"rops-dashboard-sidebar\"", "project dashboard page");
 includes(pageSource, "class=\"govuk-summary-card rops-project-areas-nav\"", "project dashboard page");
 includes(pageSource, "class=\"rops-dashboard-content\"", "project dashboard page");
+assert.equal(
+	countOccurrences(pageSource, "class=\"govuk-summary-card__content govuk-body-s\""),
+	6,
+	"Expected rendered non-navigation dashboard panels to use govuk-body-s content wrappers",
+);
+assert.equal(
+	countOccurrences(pageSource, "class=\"govuk-summary-list govuk-body-s\""),
+	2,
+	"Expected rendered dashboard summary lists to use dl.govuk-body-s",
+);
+excludes(projectAreasNavSource(pageSource), "govuk-summary-card__content govuk-body-s", "rendered project areas navigation");
 includes(pageSource, "id=\"mural-connect\"", "project dashboard page");
 includes(pageSource, "hidden", "project dashboard page");
 includes(pageSource, "href=\"#project-objectives\"", "project dashboard page");
@@ -309,6 +342,9 @@ includes(dashboardSassSource, "grid-template-columns: minmax(0, 1fr) minmax(0, 2
 includes(dashboardSassSource, "align-self: start;", "project dashboard Sass source");
 includes(dashboardSassSource, ".rops-dashboard-sidebar > .govuk-summary-card", "project dashboard Sass source");
 includes(dashboardSassSource, "margin-bottom: 0;", "project dashboard Sass source");
+includes(dashboardSassSource, ".govuk-summary-card:not(.rops-project-areas-nav) .govuk-summary-card__content.govuk-body-s", "project dashboard Sass source");
+includes(dashboardSassSource, ".govuk-summary-card:not(.rops-project-areas-nav) dl.govuk-body-s", "project dashboard Sass source");
+includes(dashboardSassSource, ".govuk-summary-list__value", "project dashboard Sass source");
 includes(dashboardSassSource, ".rops-link-panel .govuk-button", "project dashboard Sass source");
 includes(dashboardSassSource, "margin-bottom: 8px;", "project dashboard Sass source");
 includes(dashboardSassSource, "#mural-connect[hidden]", "project dashboard Sass source");
@@ -341,6 +377,9 @@ includes(dashboardCssSource, "grid-template-columns: minmax(0, 1fr) minmax(0, 2f
 includes(dashboardCssSource, "align-self: start;", "project dashboard stylesheet");
 includes(dashboardCssSource, ".rops-dashboard-sidebar > .govuk-summary-card", "project dashboard stylesheet");
 includes(dashboardCssSource, "margin-bottom: 0;", "project dashboard stylesheet");
+includes(dashboardCssSource, ".govuk-summary-card:not(.rops-project-areas-nav) .govuk-summary-card__content.govuk-body-s", "project dashboard stylesheet");
+includes(dashboardCssSource, ".govuk-summary-card:not(.rops-project-areas-nav) dl.govuk-body-s", "project dashboard stylesheet");
+includes(dashboardCssSource, ".govuk-summary-list__value", "project dashboard stylesheet");
 includes(dashboardCssSource, ".rops-link-panel .govuk-button", "project dashboard stylesheet");
 includes(dashboardCssSource, "margin-bottom: 8px;", "project dashboard stylesheet");
 includes(dashboardCssSource, "#mural-connect[hidden]", "project dashboard stylesheet");

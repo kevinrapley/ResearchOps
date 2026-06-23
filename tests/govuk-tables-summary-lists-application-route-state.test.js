@@ -33,7 +33,7 @@ includes(tableCssSource, ".govuk-summary-list__key", "GOV.UK table stylesheet");
 includes(tableCssSource, ".govuk-summary-list__value", "GOV.UK table stylesheet");
 
 includes(dashboardPageSource, "href=\"/assets/govuk/govuk-frontend.css\"", "project dashboard page");
-includes(dashboardPageSource, "<dl class=\"govuk-summary-list\">", "project dashboard page");
+includes(dashboardPageSource, "<dl class=\"govuk-summary-list govuk-body-s\">", "project dashboard page");
 includes(dashboardPageSource, "class=\"govuk-summary-list__key\"", "project dashboard page");
 includes(dashboardPageSource, "class=\"govuk-summary-list__value\" id=\"kv-service-stage\"", "project dashboard page");
 includes(dashboardPageSource, "id=\"kv-lead-email\"", "project dashboard page");

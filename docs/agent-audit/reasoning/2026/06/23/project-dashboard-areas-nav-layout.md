@@ -28,6 +28,8 @@ Follow-up: move `Objectives` out of the `Stakeholder management` panel into a se
 
 Follow-up: in the `Research outcomes` panel, treat a no-studies `studies_unavailable` response as a normal empty state instead of surfacing a system-style failure message to users.
 
+Follow-up: apply `govuk-body-s` to Project Dashboard panel content, excluding the `Project areas` navigation, and use `dl.govuk-body-s` so summary-list keys and values inherit the smaller body size.
+
 ## Run metadata
 
 - Date: 2026-06-23
@@ -131,6 +133,9 @@ Follow-up: in the `Research outcomes` panel, treat a no-studies `studies_unavail
 - Changed the dashboard studies loader so the known `studies_unavailable` response maps to an empty studies array and renders `No studies have been created for this project yet.`
 - Removed the user-facing `Could not load studies`, `Study records could not be loaded for this project.` and study technical-detail copy from the Research outcomes panel.
 - Kept genuine study load failures visible as a non-technical retry message.
+- Added `govuk-body-s` to every non-navigation dashboard panel content wrapper, leaving the `Project areas` navigation at its existing size.
+- Added `govuk-body-s` directly to the Mural and Project details `dl.govuk-summary-list` elements so their `dt` and `dd` content inherit from the list.
+- Added scoped dashboard Sass so lists, labels, hints, summary-list keys and summary-list values inherit the smaller typography inside non-navigation panel content.
 
 ## Validation attempted
 
@@ -157,6 +162,14 @@ Follow-up: in the `Research outcomes` panel, treat a no-studies `studies_unavail
 - `npm run lint` passed after the no-studies empty-state change with existing repository warnings and no errors.
 - `npm test` passed after the no-studies empty-state change with 245 tests and 0 failures.
 - `npm run validate` passed after the no-studies empty-state change.
+- `npm run build:generated-css` and `npm run build:govuk-pages` passed after the panel typography change.
+- `node --test tests/project-dashboard-route-state.test.js` passed after the panel typography change.
+- Initial full validation exposed two broader GOV.UK route-state assertions that still expected a bare `govuk-summary-list` class.
+- Updated those broader route-state assertions to expect `govuk-summary-list govuk-body-s`.
+- `node --test tests/project-dashboard-route-state.test.js tests/govuk-design-system-baseline-route-state.test.js tests/govuk-tables-summary-lists-application-route-state.test.js` passed after updating the broader summary-list contracts.
+- `npm run lint` passed after the panel typography change with existing repository warnings and no errors.
+- `npm test` passed after the panel typography change with 245 tests and 0 failures.
+- `npm run validate` passed after the panel typography change.
 
 ## Residual risks
 

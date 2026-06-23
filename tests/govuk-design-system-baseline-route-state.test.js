@@ -112,7 +112,7 @@ excludes(projectsPage, "/css/govuk/govuk-frontend-v6.css", "Projects page");
 
 includes(dashboardPage, "/assets/govuk/govuk-frontend.css", "project dashboard page");
 includes(dashboardPage, "class=\"govuk-summary-card\"", "project dashboard page");
-includes(dashboardPage, "class=\"govuk-summary-list\"", "project dashboard page");
+includes(dashboardPage, "class=\"govuk-summary-list govuk-body-s\"", "project dashboard page");
 includes(dashboardPage, "id=\"mural-integration\"", "project dashboard page");
 includes(dashboardPage, "id=\"studies-list\"", "project dashboard page");
 excludes(dashboardPage, "class=\"section\"", "project dashboard page");
