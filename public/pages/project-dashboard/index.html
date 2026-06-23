@@ -50,176 +50,184 @@
 					</ol>
 				</nav>
 
-				<header class="rops-dashboard-header" typeof="schema:ResearchProject" resource="#project">
-					<div class="rops-daas-brand-panel" id="daas-brand-panel" hidden aria-label="DaaS">
-						<img class="rops-daas-brand-panel__logo" src="/images/brands/daas-logo.svg" alt="DaaS" />
-					</div>
+				<div class="rops-daas-brand-panel" id="daas-brand-panel" hidden aria-label="DaaS">
+					<img class="rops-daas-brand-panel__logo" src="/images/brands/daas-logo.svg" alt="DaaS" />
+				</div>
 
-					<span id="eyebrow-org" class="govuk-caption-l" property="schema:sourceOrganization"></span>
-					<h1 id="project-title" class="govuk-heading-xl" property="schema:name">Project dashboard</h1>
-					<p id="project-subtitle" class="govuk-body-l rops-dashboard-description" property="schema:description">
-						Use this dashboard to manage project context, research planning, reflexive journaling and research outcomes.
-					</p>
-					<div class="rops-status-strip" aria-label="Project status">
-						<strong class="govuk-tag govuk-tag--blue" id="project-service-stage-tag">Loading service stage</strong>
-						<strong class="govuk-tag govuk-tag--purple" id="project-stage-tag">Loading project stage</strong>
-						<strong class="govuk-tag govuk-tag--grey" id="mural-summary-tag">Mural optional</strong>
-					</div>
-				</header>
-
-				<section class="govuk-summary-card" id="project-details">
-					<div class="govuk-summary-card__title-wrapper">
-						<h2 class="govuk-summary-card__title">Project details</h2>
-					</div>
-					<div class="govuk-summary-card__content">
-						<dl class="govuk-summary-list">
-							<div class="govuk-summary-list__row">
-								<dt class="govuk-summary-list__key">Service stage</dt>
-								<dd class="govuk-summary-list__value" id="kv-service-stage" property="schema:phase">–</dd>
-							</div>
-							<div class="govuk-summary-list__row">
-								<dt class="govuk-summary-list__key">Project stage</dt>
-								<dd class="govuk-summary-list__value" id="kv-project-stage" property="schema:projectStatus">–</dd>
-							</div>
-							<div class="govuk-summary-list__row">
-								<dt class="govuk-summary-list__key">Client name</dt>
-								<dd class="govuk-summary-list__value" id="kv-client-name" property="schema:client">–</dd>
-							</div>
-							<div class="govuk-summary-list__row">
-								<dt class="govuk-summary-list__key">Lead researcher</dt>
-								<dd
-									class="govuk-summary-list__value"
-									id="kv-lead-researcher"
-									property="schema:author"
-									typeof="schema:Person"
-								>
-									–
-								</dd>
-							</div>
-							<div class="govuk-summary-list__row">
-								<dt class="govuk-summary-list__key">Lead researcher email</dt>
-								<dd class="govuk-summary-list__value">
-									<a class="govuk-link" id="kv-lead-email" property="schema:email" href="mailto:">–</a>
-								</dd>
-							</div>
-						</dl>
-					</div>
-				</section>
-
-				<div class="rops-dashboard-grid">
-					<section class="govuk-summary-card" id="reflexive-journal">
-						<div class="govuk-summary-card__title-wrapper">
-							<h2 class="govuk-summary-card__title">Reflexive journal</h2>
-							<ul class="govuk-summary-card__actions">
-								<li class="govuk-summary-card__action">
-									<a
-										class="govuk-link"
-										href="/pages/projects/journals/?id="
-										id="journal-link"
-										property="schema:relatedLink"
-									>
-										Open journal
-									</a>
-								</li>
-							</ul>
+				<div class="rops-dashboard-layout">
+					<header class="rops-dashboard-header" typeof="schema:ResearchProject" resource="#project">
+						<span id="eyebrow-org" class="govuk-caption-l" property="schema:sourceOrganization"></span>
+						<h1 id="project-title" class="govuk-heading-xl" property="schema:name">Project dashboard</h1>
+						<p id="project-subtitle" class="govuk-body-l rops-dashboard-description" property="schema:description">
+							Use this dashboard to manage project context, research planning, reflexive journaling and research
+							outcomes.
+						</p>
+						<div class="rops-status-strip" aria-label="Project status">
+							<strong class="govuk-tag govuk-tag--blue" id="project-service-stage-tag">Loading service stage</strong>
+							<strong class="govuk-tag govuk-tag--purple" id="project-stage-tag">Loading project stage</strong>
+							<strong class="govuk-tag govuk-tag--grey" id="mural-summary-tag">Mural optional</strong>
 						</div>
-						<div class="govuk-summary-card__content">
-							<div class="rops-link-panel">
-								<h3 class="govuk-heading-s">ResearchOps journal</h3>
-								<p class="govuk-body">
-									Record assumptions, decisions, risks and reflections for this project in ResearchOps.
-								</p>
+					</header>
 
-								<a
-									href="/pages/projects/journals/?id="
-									role="button"
-									draggable="false"
-									class="govuk-button"
-									data-module="govuk-button"
-									id="journal-button-link"
-								>
-									Open reflexive journal
-								</a>
+					<div class="rops-dashboard-sidebar">
+						<nav
+							class="govuk-summary-card rops-project-areas-nav"
+							typeof="schema:SiteNavigationElement"
+							aria-labelledby="project-areas-title"
+						>
+							<div class="govuk-summary-card__title-wrapper">
+								<h2 class="govuk-summary-card__title" id="project-areas-title">Project areas</h2>
 							</div>
+							<div class="govuk-summary-card__content">
+								<ul class="govuk-list govuk-list--spaced rops-compact-list">
+									<li><a class="govuk-link" href="#reflexive-journal">Reflexive journal</a></li>
+									<li><a class="govuk-link" href="#stakeholders">Stakeholder management</a></li>
+									<li><a class="govuk-link" href="#project-objectives">Project Objectives</a></li>
+									<li><a class="govuk-link" href="#planning">Research planning</a></li>
+									<li>
+										<a
+											class="govuk-link"
+											href="/pages/projects/outcomes/?id="
+											id="outcomes-link"
+											property="schema:relatedLink"
+										>
+											Research outcomes
+										</a>
+									</li>
+								</ul>
+							</div>
+						</nav>
 
-							<div id="mural-integration">
-								<h3 class="govuk-heading-s">Mural board for visual journaling</h3>
-								<p class="govuk-body">
-									Use Mural only if the team wants a linked visual board. The ResearchOps journal remains the system
-									record.
-								</p>
-								<p id="mural-status" class="rops-mural-status" aria-live="polite" aria-atomic="true">
-									<span class="pill pill--neutral">Mural is optional for visual journaling</span>
-								</p>
-								<dl class="govuk-summary-list">
+						<section class="govuk-summary-card" id="reflexive-journal">
+							<div class="govuk-summary-card__title-wrapper">
+								<h2 class="govuk-summary-card__title">Reflexive journal</h2>
+								<ul class="govuk-summary-card__actions">
+									<li class="govuk-summary-card__action">
+										<a
+											class="govuk-link"
+											href="/pages/projects/journals/?id="
+											id="journal-link"
+											property="schema:relatedLink"
+										>
+											Open journal
+										</a>
+									</li>
+								</ul>
+							</div>
+							<div class="govuk-summary-card__content govuk-body-s">
+								<div class="rops-link-panel">
+									<h3 class="govuk-heading-s">ResearchOps journal</h3>
+									<p class="govuk-body">
+										Record assumptions, decisions, risks and reflections for this project in ResearchOps.
+									</p>
+
+									<a
+										href="/pages/projects/journals/?id="
+										role="button"
+										draggable="false"
+										class="govuk-button"
+										data-module="govuk-button"
+										id="journal-button-link"
+									>
+										Open reflexive journal
+									</a>
+								</div>
+
+								<div id="mural-integration">
+									<h3 class="govuk-heading-s">Mural board for visual journaling</h3>
+									<p class="govuk-body">
+										Use Mural only if the team wants a linked visual board. The ResearchOps journal remains the system
+										record.
+									</p>
+									<dl class="govuk-summary-list govuk-body-s">
+										<div class="govuk-summary-list__row">
+											<dt class="govuk-summary-list__key">Mural account</dt>
+											<dd class="govuk-summary-list__value">
+												<strong class="govuk-tag govuk-tag--grey" id="mural-account-state">Connect if needed</strong>
+											</dd>
+										</div>
+										<div class="govuk-summary-list__row">
+											<dt class="govuk-summary-list__key">Mural board</dt>
+											<dd class="govuk-summary-list__value">
+												<strong class="govuk-tag govuk-tag--grey" id="mural-board-state">
+													Create or open manually
+												</strong>
+											</dd>
+										</div>
+									</dl>
+									<div class="govuk-button-group rops-mural-actions">
+										<button
+											type="button"
+											class="govuk-button govuk-button--secondary"
+											data-module="govuk-button"
+											id="mural-connect"
+											hidden="hidden"
+										>
+											Connect Mural
+										</button>
+
+										<button
+											type="button"
+											disabled
+											aria-disabled="true"
+											class="govuk-button govuk-button--secondary"
+											data-module="govuk-button"
+											id="mural-setup"
+										>
+											Create Mural board
+										</button>
+									</div>
+								</div>
+							</div>
+						</section>
+					</div>
+
+					<div class="rops-dashboard-content">
+						<section class="govuk-summary-card" id="project-details">
+							<div class="govuk-summary-card__title-wrapper">
+								<h2 class="govuk-summary-card__title">Project details</h2>
+							</div>
+							<div class="govuk-summary-card__content govuk-body-s">
+								<dl class="govuk-summary-list govuk-body-s">
 									<div class="govuk-summary-list__row">
-										<dt class="govuk-summary-list__key">Mural account</dt>
-										<dd class="govuk-summary-list__value">
-											<strong class="govuk-tag govuk-tag--grey" id="mural-account-state">Connect if needed</strong>
+										<dt class="govuk-summary-list__key">Service stage</dt>
+										<dd class="govuk-summary-list__value" id="kv-service-stage" property="schema:phase">–</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Project stage</dt>
+										<dd class="govuk-summary-list__value" id="kv-project-stage" property="schema:projectStatus">–</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Client name</dt>
+										<dd class="govuk-summary-list__value" id="kv-client-name" property="schema:client">–</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Lead researcher</dt>
+										<dd
+											class="govuk-summary-list__value"
+											id="kv-lead-researcher"
+											property="schema:author"
+											typeof="schema:Person"
+										>
+											–
 										</dd>
 									</div>
 									<div class="govuk-summary-list__row">
-										<dt class="govuk-summary-list__key">Mural board</dt>
+										<dt class="govuk-summary-list__key">Lead researcher email</dt>
 										<dd class="govuk-summary-list__value">
-											<strong class="govuk-tag govuk-tag--grey" id="mural-board-state">Create or open manually</strong>
+											<a class="govuk-link" id="kv-lead-email" property="schema:email" href="mailto:">–</a>
 										</dd>
 									</div>
 								</dl>
-								<div class="govuk-button-group rops-mural-actions">
-									<button
-										type="button"
-										class="govuk-button govuk-button--secondary"
-										data-module="govuk-button"
-										id="mural-connect"
-									>
-										Connect Mural
-									</button>
-
-									<button
-										type="button"
-										disabled
-										aria-disabled="true"
-										class="govuk-button govuk-button--secondary"
-										data-module="govuk-button"
-										id="mural-setup"
-									>
-										Create Mural board
-									</button>
-								</div>
 							</div>
-						</div>
-					</section>
+						</section>
 
-					<nav class="govuk-summary-card" typeof="schema:SiteNavigationElement" aria-labelledby="project-areas-title">
-						<div class="govuk-summary-card__title-wrapper">
-							<h2 class="govuk-summary-card__title" id="project-areas-title">Project areas</h2>
-						</div>
-						<div class="govuk-summary-card__content">
-							<ul class="govuk-list govuk-list--spaced rops-compact-list">
-								<li><a class="govuk-link" href="#reflexive-journal">Reflexive journal</a></li>
-								<li><a class="govuk-link" href="#stakeholders">Stakeholder management</a></li>
-								<li><a class="govuk-link" href="#planning">Research planning</a></li>
-								<li>
-									<a
-										class="govuk-link"
-										href="/pages/projects/outcomes/?id="
-										id="outcomes-link"
-										property="schema:relatedLink"
-									>
-										Research outcomes
-									</a>
-								</li>
-							</ul>
-						</div>
-					</nav>
-
-					<section id="stakeholders" class="govuk-summary-card">
-						<div class="govuk-summary-card__title-wrapper">
-							<h2 class="govuk-summary-card__title">Stakeholder management</h2>
-						</div>
-						<div class="govuk-summary-card__content">
-							<div class="rops-two-column">
-								<div>
+						<div class="rops-dashboard-grid">
+							<section id="stakeholders" class="govuk-summary-card">
+								<div class="govuk-summary-card__title-wrapper">
+									<h2 class="govuk-summary-card__title">Stakeholder management</h2>
+								</div>
+								<div class="govuk-summary-card__content govuk-body-s">
 									<h3 class="govuk-heading-s">Stakeholders</h3>
 									<ul class="govuk-list govuk-list--spaced rops-divided-list" id="stakeholders-list">
 										<li>No stakeholders yet.</li>
@@ -290,11 +298,16 @@
 										</form>
 									</div>
 								</div>
-								<div>
-									<h3 class="govuk-heading-s">Objectives</h3>
-									<ul class="govuk-list govuk-list--spaced rops-divided-list" id="objectives-list">
-										<li>No objectives yet.</li>
-									</ul>
+							</section>
+
+							<section id="project-objectives" class="govuk-summary-card">
+								<div class="govuk-summary-card__title-wrapper">
+									<h2 class="govuk-summary-card__title">Project Objectives</h2>
+								</div>
+								<div class="govuk-summary-card__content govuk-body-s">
+									<div class="rops-objectives-list" id="objectives-list">
+										<p class="govuk-body-s">No objectives yet.</p>
+									</div>
 
 									<button
 										type="button"
@@ -309,7 +322,7 @@
 
 									<div id="add-objective-panel" class="dashboard-action-panel" hidden>
 										<form id="add-objective-form" novalidate>
-											<h4 class="govuk-heading-s">Add objective</h4>
+											<h3 class="govuk-heading-s">Add objective</h3>
 											<div id="add-objective-status" class="dashboard-action-status" aria-live="polite"></div>
 											<div class="govuk-form-group">
 												<label class="govuk-label" for="objective-text">Research objective</label>
@@ -342,147 +355,151 @@
 										</form>
 									</div>
 								</div>
-							</div>
-						</div>
-					</section>
+							</section>
 
-					<section id="planning" class="govuk-summary-card">
-						<div class="govuk-summary-card__title-wrapper">
-							<h2 class="govuk-summary-card__title">Research planning</h2>
-						</div>
-						<div class="govuk-summary-card__content">
-							<div class="rops-two-column rops-planning-grid">
-								<div>
-									<h3 class="govuk-heading-s">User groups</h3>
-									<ul class="govuk-list govuk-list--spaced rops-divided-list" id="user-groups-list">
-										<li>No user groups yet.</li>
-									</ul>
+							<section id="planning" class="govuk-summary-card">
+								<div class="govuk-summary-card__title-wrapper">
+									<h2 class="govuk-summary-card__title">Research planning</h2>
+								</div>
+								<div class="govuk-summary-card__content govuk-body-s">
+									<div class="rops-two-column rops-planning-grid">
+										<div>
+											<h3 class="govuk-heading-s">User groups</h3>
+											<ul class="govuk-list govuk-list--spaced rops-divided-list" id="user-groups-list">
+												<li>No user groups yet.</li>
+											</ul>
 
-									<button
-										type="button"
-										class="govuk-button govuk-button--secondary"
-										data-module="govuk-button"
-										id="add-user-group-toggle"
-										aria-expanded="false"
-										aria-controls="add-user-group-panel"
-									>
-										Add user group
-									</button>
+											<button
+												type="button"
+												class="govuk-button govuk-button--secondary"
+												data-module="govuk-button"
+												id="add-user-group-toggle"
+												aria-expanded="false"
+												aria-controls="add-user-group-panel"
+											>
+												Add user group
+											</button>
 
-									<div id="add-user-group-panel" class="dashboard-action-panel" hidden>
-										<form id="add-user-group-form" novalidate>
-											<h4 class="govuk-heading-s">Add user group</h4>
-											<div id="add-user-group-status" class="dashboard-action-status" aria-live="polite"></div>
-											<div class="govuk-form-group">
-												<label class="govuk-label" for="user-group-name">User group</label>
-												<input
-													class="govuk-input govuk-!-width-two-thirds"
-													id="user-group-name"
-													name="user-group"
-													required
-												/>
+											<div id="add-user-group-panel" class="dashboard-action-panel" hidden>
+												<form id="add-user-group-form" novalidate>
+													<h4 class="govuk-heading-s">Add user group</h4>
+													<div id="add-user-group-status" class="dashboard-action-status" aria-live="polite"></div>
+													<div class="govuk-form-group">
+														<label class="govuk-label" for="user-group-name">User group</label>
+														<input
+															class="govuk-input govuk-!-width-two-thirds"
+															id="user-group-name"
+															name="user-group"
+															required
+														/>
+													</div>
+													<div class="govuk-button-group">
+														<button type="submit" class="govuk-button" data-module="govuk-button">
+															Save user group
+														</button>
+
+														<button
+															type="button"
+															class="govuk-button govuk-button--secondary"
+															data-module="govuk-button"
+															data-close-panel="add-user-group-panel"
+															data-toggle="add-user-group-toggle"
+														>
+															Cancel
+														</button>
+													</div>
+												</form>
 											</div>
+										</div>
+										<div id="participants-dashboard-panel">
+											<h3 class="govuk-heading-s">Participants</h3>
+											<p class="govuk-body-s" id="participants-summary-status">Loading participants…</p>
+											<p class="govuk-body-s">
+												Participants are managed through study-specific workflows so consent, scheduling and
+												safeguarding states stay traceable.
+											</p>
 											<div class="govuk-button-group">
-												<button type="submit" class="govuk-button" data-module="govuk-button">Save user group</button>
-
-												<button
-													type="button"
+												<a
+													href="/pages/project-dashboard/participants/?id="
+													role="button"
+													draggable="false"
 													class="govuk-button govuk-button--secondary"
 													data-module="govuk-button"
-													data-close-panel="add-user-group-panel"
-													data-toggle="add-user-group-toggle"
+													id="add-participant-link"
 												>
-													Cancel
-												</button>
+													Add participant
+												</a>
+
+												<a
+													href="/pages/project-dashboard/participants/import/?id="
+													role="button"
+													draggable="false"
+													class="govuk-button govuk-button--secondary"
+													data-module="govuk-button"
+													id="import-participants-link"
+												>
+													Bulk upload participants via CSV
+												</a>
 											</div>
-										</form>
+										</div>
 									</div>
 								</div>
-								<div id="participants-dashboard-panel">
-									<h3 class="govuk-heading-s">Participants</h3>
-									<p class="govuk-body-s" id="participants-summary-status">Loading participants…</p>
-									<p class="govuk-body-s">
-										Participants are managed through study-specific workflows so consent, scheduling and safeguarding
-										states stay traceable.
-									</p>
-									<div class="govuk-button-group">
-										<a
-											href="/pages/project-dashboard/participants/?id="
-											role="button"
-											draggable="false"
-											class="govuk-button govuk-button--secondary"
-											data-module="govuk-button"
-											id="add-participant-link"
-										>
-											Add participant
-										</a>
+							</section>
 
-										<a
-											href="/pages/project-dashboard/participants/import/?id="
-											role="button"
-											draggable="false"
-											class="govuk-button govuk-button--secondary"
-											data-module="govuk-button"
-											id="import-participants-link"
-										>
-											Bulk upload participants via CSV
-										</a>
-									</div>
-								</div>
-							</div>
-						</div>
-					</section>
-
-					<section id="outcomes" class="govuk-summary-card">
-						<div class="govuk-summary-card__title-wrapper">
-							<h2 class="govuk-summary-card__title">Research outcomes</h2>
-							<ul class="govuk-summary-card__actions">
-								<li class="govuk-summary-card__action">
-									<a class="govuk-link" id="outcomes-card-link" href="/pages/projects/outcomes/?id=">Open outcomes</a>
-								</li>
-							</ul>
-						</div>
-						<div class="govuk-summary-card__content">
-							<div class="rops-two-column">
-								<div>
-									<h3 class="govuk-heading-s">Studies</h3>
-									<ul class="govuk-list govuk-list--spaced rops-study-list" id="studies-list">
-										<li>Loading studies…</li>
+							<section id="outcomes" class="govuk-summary-card">
+								<div class="govuk-summary-card__title-wrapper">
+									<h2 class="govuk-summary-card__title">Research outcomes</h2>
+									<ul class="govuk-summary-card__actions">
+										<li class="govuk-summary-card__action">
+											<a class="govuk-link" id="outcomes-card-link" href="/pages/projects/outcomes/?id=">
+												Open outcomes
+											</a>
+										</li>
 									</ul>
-
-									<a
-										href="/pages/study/new/?id="
-										role="button"
-										draggable="false"
-										class="govuk-button govuk-button--secondary"
-										data-module="govuk-button"
-										id="add-study-link"
-									>
-										Add study
-									</a>
 								</div>
-								<div>
-									<h3 class="govuk-heading-s">Insights</h3>
-									<p class="govuk-body-s">No insights yet.</p>
-									<p class="govuk-body-s">
-										Insights and impact records are managed from the outcomes workflow so they remain linked to evidence
-										and decisions.
-									</p>
+								<div class="govuk-summary-card__content govuk-body-s">
+									<div class="rops-two-column">
+										<div>
+											<h3 class="govuk-heading-s">Studies</h3>
+											<ul class="govuk-list govuk-list--spaced rops-study-list" id="studies-list">
+												<li>Loading studies…</li>
+											</ul>
 
-									<a
-										href="/pages/projects/outcomes/?id=#impact-form"
-										role="button"
-										draggable="false"
-										class="govuk-button govuk-button--secondary"
-										data-module="govuk-button"
-										id="add-insight-link"
-									>
-										Add insight
-									</a>
+											<a
+												href="/pages/study/new/?id="
+												role="button"
+												draggable="false"
+												class="govuk-button govuk-button--secondary"
+												data-module="govuk-button"
+												id="add-study-link"
+											>
+												Add study
+											</a>
+										</div>
+										<div>
+											<h3 class="govuk-heading-s">Insights</h3>
+											<p class="govuk-body-s">No insights yet.</p>
+											<p class="govuk-body-s">
+												Insights and impact records are managed from the outcomes workflow so they remain linked to
+												evidence and decisions.
+											</p>
+
+											<a
+												href="/pages/projects/outcomes/?id=#impact-form"
+												role="button"
+												draggable="false"
+												class="govuk-button govuk-button--secondary"
+												data-module="govuk-button"
+												id="add-insight-link"
+											>
+												Add insight
+											</a>
+										</div>
+									</div>
 								</div>
-							</div>
+							</section>
 						</div>
-					</section>
+					</div>
 				</div>
 			</div>
 		</main>

@@ -173,7 +173,13 @@ async function loadStudies(projectId) {
 		cache: "no-store",
 		credentials: "include",
 	}, 15000);
-	const json = await readJsonResponse(response, "Studies");
+	let json;
+	try {
+		json = await readJsonResponse(response, "Studies");
+	} catch (error) {
+		if (isStudiesUnavailableError(error)) return [];
+		throw error;
+	}
 	return (json.studies || []).map((study) => ({
 		id: study.id || "",
 		method: study.method || "",
@@ -198,6 +204,10 @@ async function loadParticipantsForStudy(study) {
 		studyId: study.id,
 		studyTitle,
 	}));
+}
+
+function isStudiesUnavailableError(error) {
+	return String(error?.upstreamBody?.error || error?.message || "").trim() === "studies_unavailable";
 }
 
 async function loadParticipantsForStudies(studies = []) {
@@ -302,7 +312,45 @@ function renderStakeholders(stakeholders = []) {
 function renderObjectives(objectives = []) {
 	const list = document.getElementById("objectives-list");
 	if (!list) return;
-	list.innerHTML = objectives.length ? objectives.map((objective) => `<li>${escapeHtml(objective)}</li>`).join("") : "<li>No objectives yet.</li>";
+	const parsedObjectives = parseObjectiveMarkdownList(objectives);
+	list.innerHTML = parsedObjectives.length ? objectiveListHtml(parsedObjectives) : '<p class="govuk-body-s">No objectives yet.</p>';
+}
+
+function parseObjectiveMarkdownList(objectives = []) {
+	const lines = objectiveLines(objectives);
+	const items = [];
+	let currentItem = null;
+	for (const line of lines) {
+		const numberedMatch = line.match(/^\d+[.)]\s+(.+)$/);
+		const bulletMatch = line.match(/^[-*+]\s+(.+)$/);
+		if (numberedMatch) {
+			currentItem = { text: numberedMatch[1].trim(), children: [] };
+			items.push(currentItem);
+		} else if (bulletMatch && currentItem) {
+			currentItem.children.push(bulletMatch[1].trim());
+		} else {
+			currentItem = { text: (bulletMatch?.[1] || line).trim(), children: [] };
+			items.push(currentItem);
+		}
+	}
+	return items.filter((item) => item.text);
+}
+
+function objectiveLines(objectives = []) {
+	return (Array.isArray(objectives) ? objectives : [objectives])
+		.flatMap((objective) => String(objective || "").split(/\r?\n/))
+		.map((line) => line.trim())
+		.filter(Boolean);
+}
+
+function objectiveListHtml(objectives = []) {
+	const items = objectives.map((objective) => {
+		const children = objective.children.length
+			? `<ul class="govuk-list govuk-list--bullet rops-objective-list__sublist">${objective.children.map((child) => `<li>${escapeHtml(child)}</li>`).join("")}</ul>`
+			: "";
+		return `<li><span class="rops-objective-list__title">${escapeHtml(objective.text)}</span>${children}</li>`;
+	});
+	return `<ol class="govuk-list govuk-list--number rops-objective-list">${items.join("")}</ol>`;
 }
 
 function renderUserGroups(userGroups = []) {
@@ -323,7 +371,7 @@ function renderStudies(project, studies) {
 	const list = document.getElementById("studies-list");
 	if (!list) return;
 	if (!studies.length) {
-		list.innerHTML = "<li>No studies yet.</li>";
+		renderNoStudiesMessage(list);
 		return;
 	}
 	const projectId = projectIdFromUrl(project);
@@ -339,6 +387,10 @@ ${description ? `<p class="govuk-body-s rops-study-description">${escapeHtml(des
 ${status ? `<strong class="govuk-tag ${studyStatusTagClass(status)}">${escapeHtml(status)}</strong>` : ""}
 </li>`;
 	}).join("");
+}
+
+function renderNoStudiesMessage(list) {
+	list.innerHTML = "<li>No studies have been created for this project yet.</li>";
 }
 
 function participantPlanningPanel() {
@@ -392,8 +444,11 @@ function renderParticipantsLoadError(project, error) {
 function renderStudiesLoadError(error) {
 	const list = document.getElementById("studies-list");
 	if (!list) return;
-	const reason = String(error?.message || error || "Unknown error").trim();
-	list.innerHTML = `<li role="alert"><strong>Could not load studies</strong><br><span>Study records could not be loaded for this project.</span><br><span><strong>Technical detail:</strong> <code>${escapeHtml(reason)}</code></span></li>`;
+	if (isStudiesUnavailableError(error)) {
+		renderNoStudiesMessage(list);
+		return;
+	}
+	list.innerHTML = '<li role="alert"><strong>Studies are not available right now</strong><br><span>Try refreshing this page or opening research outcomes.</span></li>';
 }
 
 function togglePanel(toggle, panel, forceOpen = null) {
