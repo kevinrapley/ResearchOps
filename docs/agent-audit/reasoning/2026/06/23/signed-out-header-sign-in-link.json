@@ -1,0 +1,98 @@
+{
+  "traceId": "atrace-20260623-signed-out-header-sign-in-link",
+  "date": "2026-06-23",
+  "branch": "fix/signed-out-header-sign-in-link",
+  "traceRequired": true,
+  "traceReason": "repository-affecting work on a fix/ branch",
+  "taskSummary": "Show a Sign in link in the shared header when the user is not logged in, replacing the username and Sign out links.",
+  "operatingModelFilesLoaded": [
+    "AGENTS.md",
+    ".agent-operating-model/orchestration.xml",
+    ".agent-operating-model/bundle-registry.json",
+    ".agent-operating-model/task-signal-catalog.json",
+    ".agent-operating-model/selection-rules.json",
+    ".agent-operating-model/bootstrap-checklist.md",
+    ".agent-operating-model/precedence-policy.md",
+    ".agent-operating-model/trace-policy.md",
+    ".agent-operating-model/trace-layers.md",
+    ".agent-operating-model/behavioural-evals.json",
+    ".agent-operating-model/github-mutation-policy.md"
+  ],
+  "selectedBundles": [
+    {
+      "id": "github-diamond",
+      "canonicalPath": ".agent-operating-model/bundles/github/"
+    },
+    {
+      "id": "researchops-developer-control",
+      "canonicalPath": ".agent-operating-model/bundles/researchops-developer-control/"
+    },
+    {
+      "id": "multi-functional-team",
+      "canonicalPath": ".agent-operating-model/bundles/multi-functional-team/"
+    },
+    {
+      "id": "govuk-design-system",
+      "canonicalPath": ".agent-operating-model/bundles/govuk-design-system/"
+    }
+  ],
+  "skippedBundles": [
+    "cloudflare",
+    "openai-platform",
+    "mcp-agent-tooling",
+    "airtable-public-api",
+    "mural-public-api"
+  ],
+  "precedenceDecisions": [
+    "GitHub Diamond governed branch, trace and validation discipline.",
+    "ResearchOps Developer Control governed service-specific auth header behaviour.",
+    "Multi-Functional Team governed user-facing clarity for signed-out account state.",
+    "GOV.UK Design System governed header/navigation accessibility and link clarity."
+  ],
+  "filesRead": [
+    "README.md",
+    ".github/CODEOWNERS",
+    ".github/pull_request_template.md",
+    ".github/workflows/ci.yml",
+    ".github/workflows/validate.yml",
+    ".github/workflows/render-govuk-pages.yml",
+    "package.json",
+    "package-lock.json",
+    "RECENT_LEARNINGS.md",
+    "public/partials/header.html",
+    "public/js/auth-header-links.js",
+    "public/js/govuk-frontend-init.js",
+    "scripts/govuk/render-govuk-pages.mjs",
+    "tests/auth-header-links-route-state.test.js",
+    "tests/auth-story-1-acceptance-route-state.test.js"
+  ],
+  "filesModifiedOrCreated": [
+    "docs/agent-audit/reasoning/2026/06/23/signed-out-header-sign-in-link.md",
+    "docs/agent-audit/reasoning/2026/06/23/signed-out-header-sign-in-link.json",
+    "public/js/auth-header-links.js",
+    "public/js/govuk-frontend-init.js",
+    "public/pages/account/index.html",
+    "public/partials/header.html",
+    "scripts/govuk/render-govuk-pages.mjs",
+    "tests/auth-header-links-route-state.test.js"
+  ],
+  "validation": [
+    "npm run agent:model -- task text: passed",
+    "npm test -- tests/auth-header-links-route-state.test.js: passed",
+    "npm test -- tests/auth-header-links-route-state.test.js tests/auth-story-1-acceptance-route-state.test.js: passed, 2 tests",
+    "npx prettier -c touched files: passed",
+    "npm run build:govuk-pages: passed",
+    "browser check with /api/me returning 401: passed",
+    "npm run lint: passed with existing repository warnings and no errors",
+    "npm test: passed, 245 tests",
+    "npm run trace:coverage -- --date 2026-06-23: passed",
+    "git diff --check: passed"
+  ],
+  "validationNotRun": [
+    "Live Cloudflare deployment verification was not run because this change only updates static header markup and client-side header state handling."
+  ],
+  "residualRisks": [
+    "The signed-out browser check used a local static server and mocked unauthenticated /api/me response.",
+    "Existing repository-wide lint warnings remain outside this change."
+  ]
+}
