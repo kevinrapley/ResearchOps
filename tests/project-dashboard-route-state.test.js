@@ -37,6 +37,7 @@ includes(templateSource, "id=\"outcomes-card-link\"", "project dashboard templat
 includes(templateSource, "{% from \"macros/daas-brand-panel.njk\" import daasBrandPanel %}", "project dashboard template");
 includes(templateSource, "{{ daasBrandPanel() }}", "project dashboard template");
 includes(templateSource, "class=\"rops-dashboard-layout\"", "project dashboard template");
+includes(templateSource, "class=\"rops-dashboard-sidebar\"", "project dashboard template");
 includes(templateSource, "class=\"govuk-summary-card rops-project-areas-nav\"", "project dashboard template");
 includes(templateSource, "class=\"rops-dashboard-content\"", "project dashboard template");
 assert.equal(
@@ -45,10 +46,22 @@ assert.equal(
 	"Expected DaaS brand panel to render before the dashboard layout",
 );
 assert.equal(
-	templateSource.indexOf("class=\"govuk-summary-card rops-project-areas-nav\"") <
+	templateSource.indexOf("class=\"rops-dashboard-sidebar\"") <
 		templateSource.indexOf("class=\"rops-dashboard-content\""),
 	true,
-	"Expected project areas navigation to render before dashboard content",
+	"Expected dashboard sidebar to render before dashboard content",
+);
+assert.equal(
+	templateSource.indexOf("class=\"govuk-summary-card rops-project-areas-nav\"") <
+		templateSource.indexOf("<section class=\"govuk-summary-card\" id=\"reflexive-journal\">"),
+	true,
+	"Expected project areas navigation to render before the reflexive journal panel",
+);
+assert.equal(
+	templateSource.indexOf("<section class=\"govuk-summary-card\" id=\"reflexive-journal\">") <
+		templateSource.indexOf("class=\"rops-dashboard-content\""),
+	true,
+	"Expected reflexive journal panel to render in the sidebar before dashboard content",
 );
 includes(daasPanelMacroSource, "id=\"daas-brand-panel\"", "DaaS brand panel macro");
 includes(daasPanelMacroSource, "class=\"rops-daas-brand-panel\"", "DaaS brand panel macro");
@@ -88,6 +101,7 @@ includes(pageSource, "id=\"breadcrumb-project\"", "project dashboard page");
 includes(pageSource, "id=\"daas-brand-panel\"", "project dashboard page");
 includes(pageSource, "class=\"rops-daas-brand-panel\"", "project dashboard page");
 includes(pageSource, "class=\"rops-dashboard-layout\"", "project dashboard page");
+includes(pageSource, "class=\"rops-dashboard-sidebar\"", "project dashboard page");
 includes(pageSource, "class=\"govuk-summary-card rops-project-areas-nav\"", "project dashboard page");
 includes(pageSource, "class=\"rops-dashboard-content\"", "project dashboard page");
 assert.equal(
@@ -96,10 +110,21 @@ assert.equal(
 	"Expected DaaS brand panel to stay before the dashboard layout",
 );
 assert.equal(
+	pageSource.indexOf("class=\"rops-dashboard-sidebar\"") < pageSource.indexOf("class=\"rops-dashboard-content\""),
+	true,
+	"Expected dashboard sidebar to render before dashboard content",
+);
+assert.equal(
 	pageSource.indexOf("class=\"govuk-summary-card rops-project-areas-nav\"") <
+		pageSource.indexOf("<section class=\"govuk-summary-card\" id=\"reflexive-journal\">"),
+	true,
+	"Expected project areas navigation to render before the reflexive journal panel",
+);
+assert.equal(
+	pageSource.indexOf("<section class=\"govuk-summary-card\" id=\"reflexive-journal\">") <
 		pageSource.indexOf("class=\"rops-dashboard-content\""),
 	true,
-	"Expected project areas navigation to render before dashboard content",
+	"Expected reflexive journal panel to render in the sidebar before dashboard content",
 );
 includes(pageSource, "/images/brands/daas-logo.svg", "project dashboard page");
 includes(pageSource, "project-dashboard.js?v=project-dashboard-daas-brand-20260616", "project dashboard page");
@@ -222,6 +247,7 @@ excludes(muralStateSource, "syncDashboardPresentation", "Project Dashboard Mural
 includes(dashboardSassSource, ".rops-dashboard-header", "project dashboard Sass source");
 includes(dashboardSassSource, ".rops-daas-brand-panel", "project dashboard Sass source");
 includes(dashboardSassSource, ".rops-dashboard-layout", "project dashboard Sass source");
+includes(dashboardSassSource, ".rops-dashboard-sidebar", "project dashboard Sass source");
 includes(dashboardSassSource, ".rops-project-areas-nav", "project dashboard Sass source");
 includes(dashboardSassSource, "grid-template-columns: minmax(0, 1fr) minmax(0, 3fr);", "project dashboard Sass source");
 includes(dashboardSassSource, "position: sticky;", "project dashboard Sass source");
@@ -242,6 +268,7 @@ includes(dashboardSassSource, "/* transparency begins in the cascade */", "proje
 includes(dashboardCssSource, ".rops-dashboard-header", "project dashboard stylesheet");
 includes(dashboardCssSource, ".rops-daas-brand-panel", "project dashboard stylesheet");
 includes(dashboardCssSource, ".rops-dashboard-layout", "project dashboard stylesheet");
+includes(dashboardCssSource, ".rops-dashboard-sidebar", "project dashboard stylesheet");
 includes(dashboardCssSource, ".rops-project-areas-nav", "project dashboard stylesheet");
 includes(dashboardCssSource, "grid-template-columns: minmax(0, 1fr) minmax(0, 3fr);", "project dashboard stylesheet");
 includes(dashboardCssSource, "position: sticky;", "project dashboard stylesheet");

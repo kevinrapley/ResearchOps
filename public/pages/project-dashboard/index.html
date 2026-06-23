@@ -55,32 +55,119 @@
 				</div>
 
 				<div class="rops-dashboard-layout">
-					<nav
-						class="govuk-summary-card rops-project-areas-nav"
-						typeof="schema:SiteNavigationElement"
-						aria-labelledby="project-areas-title"
-					>
-						<div class="govuk-summary-card__title-wrapper">
-							<h2 class="govuk-summary-card__title" id="project-areas-title">Project areas</h2>
-						</div>
-						<div class="govuk-summary-card__content">
-							<ul class="govuk-list govuk-list--spaced rops-compact-list">
-								<li><a class="govuk-link" href="#reflexive-journal">Reflexive journal</a></li>
-								<li><a class="govuk-link" href="#stakeholders">Stakeholder management</a></li>
-								<li><a class="govuk-link" href="#planning">Research planning</a></li>
-								<li>
+					<div class="rops-dashboard-sidebar">
+						<nav
+							class="govuk-summary-card rops-project-areas-nav"
+							typeof="schema:SiteNavigationElement"
+							aria-labelledby="project-areas-title"
+						>
+							<div class="govuk-summary-card__title-wrapper">
+								<h2 class="govuk-summary-card__title" id="project-areas-title">Project areas</h2>
+							</div>
+							<div class="govuk-summary-card__content">
+								<ul class="govuk-list govuk-list--spaced rops-compact-list">
+									<li><a class="govuk-link" href="#reflexive-journal">Reflexive journal</a></li>
+									<li><a class="govuk-link" href="#stakeholders">Stakeholder management</a></li>
+									<li><a class="govuk-link" href="#planning">Research planning</a></li>
+									<li>
+										<a
+											class="govuk-link"
+											href="/pages/projects/outcomes/?id="
+											id="outcomes-link"
+											property="schema:relatedLink"
+										>
+											Research outcomes
+										</a>
+									</li>
+								</ul>
+							</div>
+						</nav>
+
+						<section class="govuk-summary-card" id="reflexive-journal">
+							<div class="govuk-summary-card__title-wrapper">
+								<h2 class="govuk-summary-card__title">Reflexive journal</h2>
+								<ul class="govuk-summary-card__actions">
+									<li class="govuk-summary-card__action">
+										<a
+											class="govuk-link"
+											href="/pages/projects/journals/?id="
+											id="journal-link"
+											property="schema:relatedLink"
+										>
+											Open journal
+										</a>
+									</li>
+								</ul>
+							</div>
+							<div class="govuk-summary-card__content">
+								<div class="rops-link-panel">
+									<h3 class="govuk-heading-s">ResearchOps journal</h3>
+									<p class="govuk-body">
+										Record assumptions, decisions, risks and reflections for this project in ResearchOps.
+									</p>
+
 									<a
-										class="govuk-link"
-										href="/pages/projects/outcomes/?id="
-										id="outcomes-link"
-										property="schema:relatedLink"
+										href="/pages/projects/journals/?id="
+										role="button"
+										draggable="false"
+										class="govuk-button"
+										data-module="govuk-button"
+										id="journal-button-link"
 									>
-										Research outcomes
+										Open reflexive journal
 									</a>
-								</li>
-							</ul>
-						</div>
-					</nav>
+								</div>
+
+								<div id="mural-integration">
+									<h3 class="govuk-heading-s">Mural board for visual journaling</h3>
+									<p class="govuk-body">
+										Use Mural only if the team wants a linked visual board. The ResearchOps journal remains the system
+										record.
+									</p>
+									<p id="mural-status" class="rops-mural-status" aria-live="polite" aria-atomic="true">
+										<span class="pill pill--neutral">Mural is optional for visual journaling</span>
+									</p>
+									<dl class="govuk-summary-list">
+										<div class="govuk-summary-list__row">
+											<dt class="govuk-summary-list__key">Mural account</dt>
+											<dd class="govuk-summary-list__value">
+												<strong class="govuk-tag govuk-tag--grey" id="mural-account-state">Connect if needed</strong>
+											</dd>
+										</div>
+										<div class="govuk-summary-list__row">
+											<dt class="govuk-summary-list__key">Mural board</dt>
+											<dd class="govuk-summary-list__value">
+												<strong class="govuk-tag govuk-tag--grey" id="mural-board-state">
+													Create or open manually
+												</strong>
+											</dd>
+										</div>
+									</dl>
+									<div class="govuk-button-group rops-mural-actions">
+										<button
+											type="button"
+											class="govuk-button govuk-button--secondary"
+											data-module="govuk-button"
+											id="mural-connect"
+										>
+											Connect Mural
+										</button>
+
+										<button
+											type="button"
+											disabled
+											aria-disabled="true"
+											class="govuk-button govuk-button--secondary"
+											data-module="govuk-button"
+											id="mural-setup"
+										>
+											Create Mural board
+										</button>
+									</div>
+								</div>
+							</div>
+						</section>
+					</div>
 
 					<div class="rops-dashboard-content">
 						<header class="rops-dashboard-header" typeof="schema:ResearchProject" resource="#project">
@@ -137,91 +224,6 @@
 						</section>
 
 						<div class="rops-dashboard-grid">
-							<section class="govuk-summary-card" id="reflexive-journal">
-								<div class="govuk-summary-card__title-wrapper">
-									<h2 class="govuk-summary-card__title">Reflexive journal</h2>
-									<ul class="govuk-summary-card__actions">
-										<li class="govuk-summary-card__action">
-											<a
-												class="govuk-link"
-												href="/pages/projects/journals/?id="
-												id="journal-link"
-												property="schema:relatedLink"
-											>
-												Open journal
-											</a>
-										</li>
-									</ul>
-								</div>
-								<div class="govuk-summary-card__content">
-									<div class="rops-link-panel">
-										<h3 class="govuk-heading-s">ResearchOps journal</h3>
-										<p class="govuk-body">
-											Record assumptions, decisions, risks and reflections for this project in ResearchOps.
-										</p>
-
-										<a
-											href="/pages/projects/journals/?id="
-											role="button"
-											draggable="false"
-											class="govuk-button"
-											data-module="govuk-button"
-											id="journal-button-link"
-										>
-											Open reflexive journal
-										</a>
-									</div>
-
-									<div id="mural-integration">
-										<h3 class="govuk-heading-s">Mural board for visual journaling</h3>
-										<p class="govuk-body">
-											Use Mural only if the team wants a linked visual board. The ResearchOps journal remains the system
-											record.
-										</p>
-										<p id="mural-status" class="rops-mural-status" aria-live="polite" aria-atomic="true">
-											<span class="pill pill--neutral">Mural is optional for visual journaling</span>
-										</p>
-										<dl class="govuk-summary-list">
-											<div class="govuk-summary-list__row">
-												<dt class="govuk-summary-list__key">Mural account</dt>
-												<dd class="govuk-summary-list__value">
-													<strong class="govuk-tag govuk-tag--grey" id="mural-account-state">Connect if needed</strong>
-												</dd>
-											</div>
-											<div class="govuk-summary-list__row">
-												<dt class="govuk-summary-list__key">Mural board</dt>
-												<dd class="govuk-summary-list__value">
-													<strong class="govuk-tag govuk-tag--grey" id="mural-board-state">
-														Create or open manually
-													</strong>
-												</dd>
-											</div>
-										</dl>
-										<div class="govuk-button-group rops-mural-actions">
-											<button
-												type="button"
-												class="govuk-button govuk-button--secondary"
-												data-module="govuk-button"
-												id="mural-connect"
-											>
-												Connect Mural
-											</button>
-
-											<button
-												type="button"
-												disabled
-												aria-disabled="true"
-												class="govuk-button govuk-button--secondary"
-												data-module="govuk-button"
-												id="mural-setup"
-											>
-												Create Mural board
-											</button>
-										</div>
-									</div>
-								</div>
-							</section>
-
 							<section id="stakeholders" class="govuk-summary-card">
 								<div class="govuk-summary-card__title-wrapper">
 									<h2 class="govuk-summary-card__title">Stakeholder management</h2>

@@ -70,6 +70,12 @@
 	min-width: 0;
 	}
 
+.rops-dashboard-sidebar {
+	align-content: start;
+	display: grid;
+	gap: 20px;
+	}
+
 .rops-project-areas-nav {
 	align-self: start;
 	}

@@ -6,6 +6,8 @@ Move the Project Dashboard `Project areas` navigation into a left column that ta
 
 Follow-up: make the `Project areas` navigation sticky after users scroll beyond it, with the same visible top spacing as the space between the navigation panel and the DaaS brand panel.
 
+Follow-up: move the `Reflexive journal` panel into the left column underneath the `Project areas` navigation.
+
 ## Run metadata
 
 - Date: 2026-06-23
@@ -83,6 +85,8 @@ Follow-up: make the `Project areas` navigation sticky after users scroll beyond 
 - Used a responsive CSS grid that stays single-column by default and becomes `minmax(0, 1fr) minmax(0, 3fr)` from the existing desktop breakpoint.
 - Made `.rops-project-areas-nav` sticky only from the desktop layout breakpoint.
 - Used `top: 1rem` for the sticky offset, matching the DaaS brand panel bottom spacing.
+- Added `.rops-dashboard-sidebar` to stack the `Project areas` navigation and `Reflexive journal` panel in the left column.
+- Moved the existing `Reflexive journal` markup out of the main dashboard content grid without changing its IDs, links or Mural integration hooks.
 - Preserved existing dashboard cards, links, IDs and JavaScript hooks.
 
 ## Validation attempted
@@ -91,7 +95,7 @@ Follow-up: make the `Project areas` navigation sticky after users scroll beyond 
 - `node --test tests/project-dashboard-route-state.test.js` passed.
 - `npm run format:check` passed.
 - `npm run lint` passed with existing repository warnings and no errors.
-- Browser layout and sticky navigation check with Playwright passed at 1280px desktop and 390px mobile widths.
+- Browser layout, sticky navigation and left-column journal placement check with Playwright passed at 1280px desktop and 390px mobile widths.
 - `npm test -- --ci` could not run because the current script passes `--ci` through to Node, which exits with `node: bad option: --ci`.
 - `npm test` passed with 245 tests and 0 failures.
 - `npm run validate` passed.
