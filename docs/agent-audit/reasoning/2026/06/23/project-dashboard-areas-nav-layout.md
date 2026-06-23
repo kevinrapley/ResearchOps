@@ -20,6 +20,10 @@ Follow-up: remove the `#mural-status` paragraph element from the Mural board pan
 
 Follow-up: keep the `Connect Mural` button in the HTML but hide it from the UI while Mural is connected or the disabled default state is active.
 
+Follow-up: fix the rendered disabled `Connect Mural` button still being visible by making the initial hidden state effective against GOV.UK button styling.
+
+Follow-up: make the gaps between `Stakeholder management`, `Research planning` and `Research outcomes` match the gap between `Project details` and `Stakeholder management`.
+
 ## Run metadata
 
 - Date: 2026-06-23
@@ -47,6 +51,7 @@ Follow-up: keep the `Connect Mural` button in the HTML but hide it from the UI w
 - `.agent-operating-model/bundles/researchops-developer-control/`
 - `.agent-operating-model/bundles/multi-functional-team/`
 - `.agent-operating-model/bundles/govuk-design-system/`
+- `.agent-operating-model/bundles/mural-public-api/`
 
 ## Bundles skipped
 
@@ -54,7 +59,6 @@ Follow-up: keep the `Connect Mural` button in the HTML but hide it from the UI w
 - `.agent-operating-model/bundles/openai/`: no OpenAI API, model or AI route behaviour changed.
 - `.agent-operating-model/bundles/mcp-agent-tooling/`: no MCP protocol or agent tooling changed.
 - `.agent-operating-model/bundles/airtable-public-api/`: no Airtable API behaviour changed.
-- `.agent-operating-model/bundles/mural-public-api/`: no Mural API behaviour changed.
 
 ## Precedence decisions
 
@@ -62,6 +66,7 @@ Follow-up: keep the `Connect Mural` button in the HTML but hide it from the UI w
 - ResearchOps Developer Control governed the project dashboard route, generated GOV.UK page output, generated CSS output and route-state test style.
 - Multi-Functional Team governed public-sector product assurance and the need to keep the project hub usable for researchers and product team members.
 - GOV.UK Design System governed preserving semantic navigation, GOV.UK summary-card structure and responsive behaviour.
+- Mural Public API governed keeping Mural integration state bounded to presentation behaviour without changing endpoint contracts, scopes or OAuth flow.
 - No instruction conflicts were found.
 
 ## Files read
@@ -70,7 +75,9 @@ Follow-up: keep the `Connect Mural` button in the HTML but hide it from the UI w
 - `src/styles/project-dashboard.scss`
 - `public/pages/project-dashboard/index.html`
 - `public/css/project-dashboard.css`
+- `public/components/mural-integration.js`
 - `tests/project-dashboard-route-state.test.js`
+- `tests/mural-ui-route-state.test.js`
 - `package.json`
 
 ## Files created or modified
@@ -80,6 +87,7 @@ Follow-up: keep the `Connect Mural` button in the HTML but hide it from the UI w
 - `public/css/project-dashboard.css`
 - `public/pages/project-dashboard/index.html`
 - `tests/project-dashboard-route-state.test.js`
+- `tests/mural-ui-route-state.test.js`
 - `docs/agent-audit/reasoning/2026/06/23/project-dashboard-areas-nav-layout.md`
 - `docs/agent-audit/reasoning/2026/06/23/project-dashboard-areas-nav-layout.json`
 
@@ -106,12 +114,15 @@ Follow-up: keep the `Connect Mural` button in the HTML but hide it from the UI w
 - Added a scoped `.rops-link-panel .govuk-button` rule so the journal button keeps an 8px bottom margin inside the link panel.
 - Removed the `#mural-status` paragraph from the dashboard template and deleted its now-unused `.rops-mural-status` stylesheet rule.
 - Changed the Mural integration disabled/default state to hide the existing `#mural-connect` button until a disconnected or recoverable-error path shows it.
+- Added an initial `hidden` attribute to the rendered `#mural-connect` button so it is not visible before the Mural state script completes.
+- Added a scoped `#mural-connect[hidden] { display: none; }` rule because GOV.UK button styling otherwise gave the hidden button visible dimensions.
+- Set the main dashboard grid gap to 30px and reset direct summary-card bottom margins in that grid so `Stakeholder management`, `Research planning` and `Research outcomes` gaps match the measured `Project details` to `Stakeholder management` gap.
 - Preserved existing dashboard cards, links, IDs and JavaScript hooks.
 
 ## Validation attempted
 
 - `npm run build:project-dashboard && npm run build:govuk-pages` passed.
-- `node --test tests/project-dashboard-route-state.test.js` passed.
+- `node --test tests/project-dashboard-route-state.test.js tests/mural-ui-route-state.test.js` passed.
 - `npm run format:check` passed.
 - `npm run lint` passed with existing repository warnings and no errors.
 - Browser layout, sticky sidebar, left-column journal placement and 20px nav-to-journal panel gap check with Playwright passed at 1280px desktop and 390px mobile widths.
@@ -119,6 +130,9 @@ Follow-up: keep the `Connect Mural` button in the HTML but hide it from the UI w
 - Route-state checks confirm the `rops-link-panel` button bottom margin rule is present in both Sass and generated CSS.
 - Route-state checks confirm the `#mural-status` paragraph and `.rops-mural-status` style no longer render.
 - Route-state checks confirm the Mural disabled/default state hides the existing Connect Mural button.
+- Browser connected-state check confirmed the existing `#mural-connect` button remains in the DOM while hidden, disabled, `display: none`, and measuring 0px by 0px.
+- Browser disconnected-state check confirmed the same `#mural-connect` button becomes visible and enabled when Mural verification returns a disconnected response.
+- Browser spacing check confirmed `Project details` to `Stakeholder management`, `Stakeholder management` to `Research planning`, and `Research planning` to `Research outcomes` each measure 30px.
 - `npm test -- --ci` could not run because the current script passes `--ci` through to Node, which exits with `node: bad option: --ci`.
 - `npm test` passed with 245 tests and 0 failures.
 - `npm run validate` passed.

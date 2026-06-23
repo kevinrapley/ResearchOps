@@ -3,7 +3,7 @@
   "branch": "fix/project-dashboard-areas-nav-layout",
   "traceRequired": true,
   "repository": "kevinrapley/ResearchOps",
-  "task": "Move the Project Dashboard Project areas navigation into a left column after the full-width DaaS brand panel, make that navigation sticky after scrolling beyond it, move the Reflexive journal panel into the left column underneath the Project areas navigation, make the left sidebar sticky as a group, reduce the visible gap between the nav and journal panels to match other dashboard panel gaps, make the sidebar one third width and the main content column two thirds width, add an 8px bottom margin to the button at the bottom of the rops-link-panel, remove the #mural-status paragraph element, then keep the Connect Mural button in the HTML but hide it from the UI while Mural is connected or the disabled default state is active.",
+  "task": "Move the Project Dashboard Project areas navigation into a left column after the full-width DaaS brand panel, make that navigation sticky after scrolling beyond it, move the Reflexive journal panel into the left column underneath the Project areas navigation, make the left sidebar sticky as a group, reduce the visible gap between the nav and journal panels to match other dashboard panel gaps, make the sidebar one third width and the main content column two thirds width, add an 8px bottom margin to the button at the bottom of the rops-link-panel, remove the #mural-status paragraph element, keep the Connect Mural button in the HTML but hide it from the UI while Mural is connected or the disabled default state is active, fix the rendered disabled Connect Mural button still being visible, and make the lower main-column panel gaps match the gap between Project details and Stakeholder management.",
   "operatingModelFilesLoaded": [
     "AGENTS.md",
     ".agent-operating-model/orchestration.xml",
@@ -21,20 +21,21 @@
     ".agent-operating-model/bundles/github/",
     ".agent-operating-model/bundles/researchops-developer-control/",
     ".agent-operating-model/bundles/multi-functional-team/",
-    ".agent-operating-model/bundles/govuk-design-system/"
+    ".agent-operating-model/bundles/govuk-design-system/",
+    ".agent-operating-model/bundles/mural-public-api/"
   ],
   "skippedBundles": [
     ".agent-operating-model/bundles/cloudflare/",
     ".agent-operating-model/bundles/openai/",
     ".agent-operating-model/bundles/mcp-agent-tooling/",
-    ".agent-operating-model/bundles/airtable-public-api/",
-    ".agent-operating-model/bundles/mural-public-api/"
+    ".agent-operating-model/bundles/airtable-public-api/"
   ],
   "precedenceDecisions": [
     "GitHub Diamond governed branch naming, trace requirement, surgical mutation, changed-file review and PR readiness.",
     "ResearchOps Developer Control governed the project dashboard route, generated GOV.UK page output, generated CSS output and route-state test style.",
     "Multi-Functional Team governed public-sector product assurance and the need to keep the project hub usable for researchers and product team members.",
     "GOV.UK Design System governed preserving semantic navigation, GOV.UK summary-card structure and responsive behaviour.",
+    "Mural Public API governed keeping Mural integration state bounded to presentation behaviour without changing endpoint contracts, scopes or OAuth flow.",
     "No instruction conflicts were found."
   ],
   "filesRead": [
@@ -42,7 +43,9 @@
     "src/styles/project-dashboard.scss",
     "public/pages/project-dashboard/index.html",
     "public/css/project-dashboard.css",
+    "public/components/mural-integration.js",
     "tests/project-dashboard-route-state.test.js",
+    "tests/mural-ui-route-state.test.js",
     "package.json"
   ],
   "filesModified": [
@@ -51,6 +54,7 @@
     "public/css/project-dashboard.css",
     "public/pages/project-dashboard/index.html",
     "tests/project-dashboard-route-state.test.js",
+    "tests/mural-ui-route-state.test.js",
     "docs/agent-audit/reasoning/2026/06/23/project-dashboard-areas-nav-layout.md",
     "docs/agent-audit/reasoning/2026/06/23/project-dashboard-areas-nav-layout.json"
   ],
@@ -77,11 +81,14 @@
     "Added a scoped .rops-link-panel .govuk-button rule so the journal button keeps an 8px bottom margin inside the link panel.",
     "Removed the #mural-status paragraph from the dashboard template and deleted its now-unused .rops-mural-status stylesheet rule.",
     "Changed the Mural integration disabled/default state to hide the existing #mural-connect button until a disconnected or recoverable-error path shows it.",
+    "Added an initial hidden attribute to the rendered #mural-connect button so it is not visible before the Mural state script completes.",
+    "Added a scoped #mural-connect[hidden] { display: none; } rule because GOV.UK button styling otherwise gave the hidden button visible dimensions.",
+    "Set the main dashboard grid gap to 30px and reset direct summary-card bottom margins in that grid so Stakeholder management, Research planning and Research outcomes gaps match the measured Project details to Stakeholder management gap.",
     "Preserved existing dashboard cards, links, IDs and JavaScript hooks."
   ],
   "validationAttempted": [
     "npm run build:project-dashboard && npm run build:govuk-pages passed",
-    "node --test tests/project-dashboard-route-state.test.js passed",
+    "node --test tests/project-dashboard-route-state.test.js tests/mural-ui-route-state.test.js passed",
     "npm run format:check passed",
     "npm run lint passed with existing repository warnings and no errors",
     "Browser layout, sticky sidebar, left-column journal placement and 20px nav-to-journal panel gap check with Playwright passed at 1280px desktop and 390px mobile widths",
@@ -89,6 +96,9 @@
     "Route-state checks confirm the rops-link-panel button bottom margin rule is present in both Sass and generated CSS",
     "Route-state checks confirm the #mural-status paragraph and .rops-mural-status style no longer render",
     "Route-state checks confirm the Mural disabled/default state hides the existing Connect Mural button",
+    "Browser connected-state check confirmed the existing #mural-connect button remains in the DOM while hidden, disabled, display: none, and measuring 0px by 0px",
+    "Browser disconnected-state check confirmed the same #mural-connect button becomes visible and enabled when Mural verification returns a disconnected response",
+    "Browser spacing check confirmed Project details to Stakeholder management, Stakeholder management to Research planning, and Research planning to Research outcomes each measure 30px",
     "npm test -- --ci could not run because the current script passes --ci through to Node, which exits with node: bad option: --ci",
     "npm test passed with 245 tests and 0 failures",
     "npm run validate passed"

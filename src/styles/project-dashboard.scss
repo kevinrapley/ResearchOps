@@ -55,8 +55,12 @@
 
 .rops-dashboard-grid {
 	display: grid;
-	gap: 20px;
+	gap: 30px;
 	grid-template-columns: 1fr;
+}
+
+.rops-dashboard-grid > .govuk-summary-card {
+	margin-bottom: 0;
 }
 
 .rops-dashboard-layout {
@@ -169,6 +173,10 @@
 
 .rops-mural-actions {
 	margin-top: 20px;
+}
+
+#mural-connect[hidden] {
+	display: none;
 }
 
 .rops-disabled-button {
