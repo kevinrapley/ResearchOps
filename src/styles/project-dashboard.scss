@@ -175,6 +175,37 @@
 	padding-bottom: 0;
 }
 
+.rops-objective-list {
+	margin-bottom: 20px;
+}
+
+.rops-objective-list > li {
+	border-bottom: 1px solid #b1b4b6;
+	margin-bottom: 15px;
+	padding-bottom: 15px;
+}
+
+.rops-objective-list > li:last-child {
+	border-bottom: 0;
+	margin-bottom: 0;
+	padding-bottom: 0;
+}
+
+.rops-objective-list__title {
+	display: block;
+}
+
+.rops-objective-list__sublist {
+	margin-bottom: 0;
+	margin-top: 10px;
+}
+
+.rops-objective-list__sublist > li {
+	border-bottom: 0;
+	margin-bottom: 5px;
+	padding-bottom: 0;
+}
+
 .rops-study-list {
 	margin-bottom: 20px;
 }

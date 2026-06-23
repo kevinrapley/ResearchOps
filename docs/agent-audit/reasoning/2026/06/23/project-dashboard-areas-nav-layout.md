@@ -34,6 +34,8 @@ Follow-up: address PR review feedback by keeping the dashboard header and `<h1>`
 
 Follow-up: fix the Project details summary list cascade so `dl.govuk-body-s`, `dt` and `dd` compute to the expected smaller GOV.UK body size.
 
+Follow-up: render Project Objectives from simple Markdown-style numbered and dashed list text, producing an ordered list with nested unordered lists and divider lines only between top-level objectives.
+
 ## Run metadata
 
 - Date: 2026-06-23
@@ -94,6 +96,10 @@ Follow-up: fix the Project details summary list cascade so `dl.govuk-body-s`, `d
 - `package.json`
 - GitHub PR #423 review thread `PRRT_kwDOP3Td2M6LkMtl`
 - `public/assets/govuk/govuk-frontend.css`
+- `public/js/project-dashboard.js`
+- `src/govuk/templates/pages/project-dashboard.njk`
+- `src/styles/project-dashboard.scss`
+- `tests/project-dashboard-route-state.test.js`
 
 ## Files created or modified
 
@@ -149,6 +155,13 @@ Follow-up: fix the Project details summary list cascade so `dl.govuk-body-s`, `d
 - Added route-state assertions for the header-before-sidebar and project-title-before-project-areas-nav DOM order in both source and generated HTML.
 - Fixed the Project details summary-list typography cascade by making non-navigation panel `dl.govuk-body-s` elements inherit from the `govuk-body-s` panel content wrapper before their keys and values inherit from the `dl`.
 - Added `.govuk-body` to the non-navigation panel typography inheritance rule so medium body paragraphs inside smaller panel content do not override the intended panel text size.
+- Replaced the static Project Objectives `<ul>` placeholder with a neutral `.rops-objectives-list` container so the client renderer can emit a valid `<ol>` when objectives are loaded.
+- Added a lightweight Project Objectives parser that recognises numbered lines such as `1. Objective` or `1) Objective` as top-level ordered-list items.
+- Added support for dashed, starred or plus-prefixed lines as nested unordered-list items beneath the current numbered objective.
+- Preserved escaping for all objective text before insertion into generated HTML.
+- Added `.rops-objective-list` styles so top-level objective items have divider lines while `.rops-objective-list__sublist > li` explicitly has no divider line.
+- Kept plain legacy objective strings supported by rendering them as top-level ordered-list items when no Markdown-style numbering is present.
+- Added route-state assertions for the neutral objectives container, Markdown-style parser hooks, ordered-list classes, nested-list classes and top-level/nested divider styling.
 
 ## Validation attempted
 
@@ -192,6 +205,15 @@ Follow-up: fix the Project details summary list cascade so `dl.govuk-body-s`, `d
 - `npm test` passed after the review source-order and Project details summary-list typography fixes with 245 tests and 0 failures.
 - `npm run validate` passed after the review source-order and Project details summary-list typography fixes.
 - Final browser computed-style check after validation rebuilt assets confirmed the Project details summary-list key still computes to `16px` font size and `20px` line height, and the dashboard header still precedes the `Project areas` navigation in DOM order.
+- `npm run build:generated-css && npm run build:govuk-pages` passed after the Project Objectives Markdown-style rendering change.
+- `node --test tests/project-dashboard-route-state.test.js` passed after the Project Objectives Markdown-style rendering change.
+- Browser mock-data check confirmed the sample objectives render as 3 top-level ordered objectives with nested unordered-list counts of 3, 4 and 3.
+- Browser computed-style check confirmed top-level objective items have divider lines except the final item, and nested bullet items have no divider lines.
+- `node --test tests/project-dashboard-route-state.test.js tests/govuk-design-system-baseline-route-state.test.js tests/govuk-tables-summary-lists-application-route-state.test.js` passed after the Project Objectives Markdown-style rendering change.
+- `npm run format:check` passed after the Project Objectives Markdown-style rendering change.
+- `npm run lint` passed after the Project Objectives Markdown-style rendering change with existing repository warnings and no errors.
+- `npm test` passed after the Project Objectives Markdown-style rendering change with 245 tests and 0 failures.
+- `npm run validate` passed after the Project Objectives Markdown-style rendering change.
 
 ## Residual risks
 

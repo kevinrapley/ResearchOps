@@ -121,6 +121,8 @@ includes(templateSource, "href=\"#project-objectives\"", "project dashboard temp
 includes(templateSource, "id=\"project-objectives\"", "project dashboard template");
 includes(templateSource, "Project Objectives", "project dashboard template");
 includes(templateSource, "id=\"objectives-list\"", "project dashboard template");
+includes(templateSource, "class=\"rops-objectives-list\" id=\"objectives-list\"", "project dashboard template");
+excludes(templateSource, "class=\"govuk-list govuk-list--spaced rops-divided-list\" id=\"objectives-list\"", "project dashboard template");
 includes(templateSource, "id: \"add-objective-toggle\"", "project dashboard template");
 assert.equal(
 	templateSource.indexOf("id=\"stakeholders\"") < templateSource.indexOf("id=\"project-objectives\""),
@@ -180,6 +182,8 @@ includes(pageSource, "href=\"#project-objectives\"", "project dashboard page");
 includes(pageSource, "id=\"project-objectives\"", "project dashboard page");
 includes(pageSource, "Project Objectives", "project dashboard page");
 includes(pageSource, "id=\"objectives-list\"", "project dashboard page");
+includes(pageSource, "class=\"rops-objectives-list\" id=\"objectives-list\"", "project dashboard page");
+excludes(pageSource, "class=\"govuk-list govuk-list--spaced rops-divided-list\" id=\"objectives-list\"", "project dashboard page");
 includes(pageSource, "id=\"add-objective-toggle\"", "project dashboard page");
 assert.equal(
 	pageSource.indexOf("id=\"daas-brand-panel\"") < pageSource.indexOf("class=\"rops-dashboard-layout\""),
@@ -252,6 +256,13 @@ includes(controllerSource, "return await loadProjectFromRecord(projectId);", "pr
 includes(controllerSource, "falling back to project list endpoint", "project dashboard controller");
 includes(controllerSource, "function renderProject", "project dashboard controller");
 includes(controllerSource, "function renderProjectBrand", "project dashboard controller");
+includes(controllerSource, "function parseObjectiveMarkdownList", "project dashboard controller");
+includes(controllerSource, "function objectiveLines", "project dashboard controller");
+includes(controllerSource, "function objectiveListHtml", "project dashboard controller");
+includes(controllerSource, "line.match(/^\\d+[.)]\\s+(.+)$/)", "project dashboard controller");
+includes(controllerSource, "line.match(/^[-*+]\\s+(.+)$/)", "project dashboard controller");
+includes(controllerSource, "govuk-list govuk-list--number rops-objective-list", "project dashboard controller");
+includes(controllerSource, "govuk-list govuk-list--bullet rops-objective-list__sublist", "project dashboard controller");
 includes(controllerSource, "function normaliseBrandKey", "project dashboard controller");
 includes(controllerSource, "project.teamName", "project dashboard controller");
 includes(controllerSource, "teamNames: normaliseCommaList(project.teamNames ?? project.team_names ?? project[\"Team Names\"])", "project dashboard controller");
@@ -389,6 +400,9 @@ includes(dashboardSassSource, "home-office-digital-triangles.svg", "project dash
 includes(dashboardSassSource, "background-position: right -3rem bottom -7rem;", "project dashboard Sass source");
 includes(dashboardSassSource, "background-size: 50% 200%;", "project dashboard Sass source");
 includes(dashboardSassSource, ".rops-study-list", "project dashboard Sass source");
+includes(dashboardSassSource, ".rops-objective-list", "project dashboard Sass source");
+includes(dashboardSassSource, ".rops-objective-list > li", "project dashboard Sass source");
+includes(dashboardSassSource, ".rops-objective-list__sublist > li", "project dashboard Sass source");
 includes(dashboardSassSource, ".dashboard-action-panel", "project dashboard Sass source");
 includes(dashboardSassSource, ".rops-planning-grid", "project dashboard Sass source");
 includes(dashboardSassSource, "minmax(170px, 1fr) minmax(0, 1fr);", "project dashboard Sass source");
@@ -435,6 +449,9 @@ includes(dashboardCssSource, "home-office-digital-triangles.svg", "project dashb
 includes(dashboardCssSource, "background-position: right -3rem bottom -7rem", "project dashboard stylesheet");
 includes(dashboardCssSource, "background-size: 50% 200%", "project dashboard stylesheet");
 includes(dashboardCssSource, ".rops-study-list", "project dashboard stylesheet");
+includes(dashboardCssSource, ".rops-objective-list", "project dashboard stylesheet");
+includes(dashboardCssSource, ".rops-objective-list > li", "project dashboard stylesheet");
+includes(dashboardCssSource, ".rops-objective-list__sublist > li", "project dashboard stylesheet");
 includes(dashboardCssSource, ".dashboard-action-panel", "project dashboard stylesheet");
 includes(dashboardCssSource, ".rops-planning-grid", "project dashboard stylesheet");
 includes(dashboardCssSource, "minmax(170px, 1fr) minmax(0, 1fr);", "project dashboard stylesheet");
