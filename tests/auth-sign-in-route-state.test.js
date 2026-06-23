@@ -140,8 +140,10 @@ function assertPasswordlessRoleExpiryFiltersExist() {
 
 	assert.match(passwordless, /ra\.expires_at IS NULL OR ra\.expires_at > strftime/);
 	assert.ok(roleExpiryFilters.length >= 2);
-	assert.match(passwordless, /MAX\(ra\.approved_at\) AS most_recent_role_approved_at/);
-	assert.match(passwordless, /COALESCE\(most_recent_role_approved_at, most_recent_role_created_at, membership_created_at\) DESC/);
+	assert.match(passwordless, /async function roles\(db, userId\)/);
+	assert.match(passwordless, /dedupeRoles\(result\.results \|\| \[\]\)/);
+	assert.match(passwordless, /ORDER BY m\.created_at DESC, t\.name ASC/);
+	assert.doesNotMatch(passwordless, /most_recent_role_approved_at/);
 }
 
 function assertAuthResolverPrefersResearchOpsSession() {

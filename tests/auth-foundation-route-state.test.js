@@ -132,7 +132,7 @@ function assertMigrationContainsRequiredControlPlaneTables() {
 
   assert.match(
     migration,
-    /scope_type TEXT NOT NULL CHECK \(scope_type IN \('team', 'project', 'study'\)\)/,
+    /scope_type TEXT NOT NULL CHECK \(scope_type IN \('organisation', 'team', 'project', 'study'\)\)/,
   );
   assert.match(migration, /scope_id TEXT NOT NULL/);
   assert.match(migration, /'route_api_me_identity_get', 'GET', '\/api\/me\/identity'/);

@@ -232,6 +232,32 @@ async function hasProjectScopedRevealPermission(db, context, projectId) {
 	}
 }
 
+async function hasOrganisationScopedRevealPermission(db, context) {
+	const userId = context?.user?.id || "";
+	if (!userId) return false;
+
+	try {
+		const row = await db
+			.prepare(`
+				SELECT ra.id
+				FROM auth_role_assignments ra
+				INNER JOIN auth_role_permissions rp ON rp.role_id = ra.role_id
+				WHERE ra.user_id = ?
+					AND ra.scope_type = 'organisation'
+					AND ra.scope_id = 'home_office'
+					AND ra.assignment_status = 'active'
+					AND rp.permission_code = 'participant.pii.reveal'
+					AND (ra.expires_at IS NULL OR ra.expires_at > strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
+				LIMIT 1
+			`)
+			.bind(userId)
+			.first();
+		return Boolean(row);
+	} catch {
+		return false;
+	}
+}
+
 async function roleRevealTeamKeys(db, context) {
 	const userId = context?.user?.id || "";
 	if (!userId) return new Set();
@@ -263,6 +289,7 @@ async function canRevealParticipantForProject(svc, context, projectId) {
 	const db = dbFor(svc.env);
 	if (!db || !projectId) return false;
 	if (await hasProjectScopedRevealPermission(db, context, projectId)) return true;
+	if (await hasOrganisationScopedRevealPermission(db, context)) return true;
 
 	const revealTeamKeys = await roleRevealTeamKeys(db, context);
 	if ([...revealTeamKeys].some(isCoreTeamKey) && authTeamKeys(context).size) return true;

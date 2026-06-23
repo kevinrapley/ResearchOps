@@ -28,7 +28,7 @@ function assertElementAttributes(source, elementName, expectedAttributes, label)
 function assertAccountPageExistsAsDashboard() {
 	assert.match(accountPage, /<title>Your ResearchOps account - ResearchOps Demo Suite<\/title>/);
 	assert.match(accountPage, /<h1 class="govuk-heading-xl" id="account-dashboard-title">Your ResearchOps account<\/h1>/);
-	assert.match(accountPage, /Check who you are signed in as, which teams you belong to and what you can do\./);
+	assert.match(accountPage, /Check who you are signed in as, your Home Office roles and which teams you belong to\./);
 	assert.match(accountPage, /id="account-dashboard"/);
 	assert.match(accountPage, /id="account-identity-title">Your account/);
 	assert.match(accountPage, /id="account-user-value"/);
@@ -43,8 +43,11 @@ function assertAccountPageExistsAsDashboard() {
 	);
 	assert.match(accountPage, /id="account-current-team-value"/);
 	assert.match(accountPage, /id="account-team-memberships"/);
-	assert.match(accountPage, /Your teams and roles/);
-	assert.match(accountPage, /You may have different roles and access in each team/);
+	assert.match(accountPage, /Your Home Office roles/);
+	assert.match(accountPage, /These roles describe what you can do in ResearchOps/);
+	assert.match(accountPage, /id="account-roles"/);
+	assert.match(accountPage, /Your teams/);
+	assert.match(accountPage, /Teams show which service or delivery contexts you belong to/);
 	assertElementAttributes(
 		accountPage,
 		'section',
@@ -100,6 +103,7 @@ function assertDashboardUsesSameOriginApiAndAuthContext() {
 function assertDashboardRendersAccountIdentity() {
 	assert.match(accountScript, /email: document\.getElementById\('account-email-value'\)/);
 	assert.match(accountScript, /accountStatus: document\.getElementById\('account-status-value'\)/);
+	assert.match(accountScript, /accountRoles: document\.getElementById\('account-roles'\)/);
 	assert.match(accountScript, /function formatAccountStatus\(value\)/);
 	assert.match(accountScript, /if \(dom\.user\) dom\.user\.textContent = displayName\(context\)/);
 	assert.match(accountScript, /if \(dom\.email\) dom\.email\.textContent = context\?\.user\?\.email \|\| 'Not available'/);
@@ -120,10 +124,9 @@ function assertDashboardRendersAdaptiveTeamMembershipPresentation() {
 	assert.match(accountScript, /function renderTeamMembership\(team\)/);
 	assert.match(accountScript, /govuk-summary-card/);
 	assert.match(accountScript, /Current team/);
-	assert.match(accountScript, /Role or roles/);
-	assert.match(accountScript, /No active role/);
-	assert.match(accountScript, /What this lets you do/);
-	assert.match(accountScript, /No active access summary for this team/);
+	assert.match(accountScript, /Team role/);
+	assert.match(accountScript, /Active team membership/);
+	assert.match(accountScript, /Team administration access/);
 	assert.match(accountScript, /function renderNoTeamState\(\)/);
 	assert.match(accountScript, /Request access to a team before using research records that belong to a team/);
 	assert.match(accountScript, /href="\$\{CONFIG\.TEAM_ACCESS_URL\}">Request access to a team/);
@@ -166,6 +169,9 @@ function assertDashboardRendersCurrentTeamContextWithoutHidingMemberships() {
 function assertDashboardSeparatesRolesFromCapabilities() {
 	assert.match(accountScript, /function roleLabels\(team\)/);
 	assert.match(accountScript, /labelList\(team\?\.roles, 'No active role'\)/);
+	assert.match(accountScript, /function homeOfficeRoleLabels\(context\)/);
+	assert.match(accountScript, /function renderHomeOfficeRoles\(context\)/);
+	assert.match(accountScript, /No active Home Office role/);
 	assert.match(accountScript, /function capabilityLabel\(permission\)/);
 	assert.match(accountScript, /return permission\?\.label \|\| permission\?\.description \|\| ''/);
 	assert.match(accountScript, /function capabilityItems\(permissions = \[\]\)/);

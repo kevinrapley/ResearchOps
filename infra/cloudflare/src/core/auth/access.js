@@ -307,19 +307,11 @@ async function listTeams(db, userId) {
 			SELECT
 				t.id,
 				t.name,
-				MAX(ra.approved_at) AS most_recent_role_approved_at,
-				MAX(ra.created_at) AS most_recent_role_created_at,
 				m.created_at AS membership_created_at
 			FROM auth_team_memberships m
 			INNER JOIN auth_teams t ON t.id = m.team_id
-			LEFT JOIN auth_role_assignments ra ON ra.user_id = m.user_id
-				AND ra.scope_type = 'team'
-				AND ra.scope_id = t.id
-				AND ra.assignment_status = 'active'
-				AND (ra.expires_at IS NULL OR ra.expires_at > strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
 			WHERE m.user_id = ? AND m.membership_status = 'active' AND t.team_status = 'active'
-			GROUP BY t.id, t.name, m.created_at
-			ORDER BY COALESCE(most_recent_role_approved_at, most_recent_role_created_at, membership_created_at) DESC, t.name ASC
+			ORDER BY m.created_at DESC, t.name ASC
 		`)
 		.bind(userId)
 		.all();
@@ -331,27 +323,42 @@ function selectActiveTeam(request, teams) {
 	return teams.find((team) => team.id === requestedTeamId) || teams[0] || null;
 }
 
-async function listRoles(db, userId, teamId) {
-	if (!teamId) return [];
+function roleScopePriority(scopeType) {
+	if (scopeType === 'organisation') return 0;
+	if (scopeType === 'team') return 1;
+	if (scopeType === 'project') return 2;
+	if (scopeType === 'study') return 3;
+	return 4;
+}
+
+function dedupeRoles(rows) {
+	const byRole = new Map();
+	for (const row of rows || []) {
+		const existing = byRole.get(row.role_key);
+		if (!existing || roleScopePriority(row.scope_type) < roleScopePriority(existing.scope_type)) {
+			byRole.set(row.role_key, row);
+		}
+	}
+	return [...byRole.values()].sort((first, second) => String(first.label || '').localeCompare(String(second.label || '')));
+}
+
+async function listRoles(db, userId) {
 	const result = await db
 		.prepare(`
 			SELECT r.role_key, r.label, r.description, r.is_sensitive, ra.scope_type, ra.scope_id, ra.expires_at
 			FROM auth_role_assignments ra
 			INNER JOIN auth_roles r ON r.id = ra.role_id
 			WHERE ra.user_id = ?
-				AND ra.scope_type = 'team'
-				AND ra.scope_id = ?
 				AND ra.assignment_status = 'active'
 				AND (ra.expires_at IS NULL OR ra.expires_at > strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
-			ORDER BY r.label ASC
+			ORDER BY r.label ASC, ra.scope_type ASC, ra.scope_id ASC
 		`)
-		.bind(userId, teamId)
+		.bind(userId)
 		.all();
-	return result.results || [];
+	return dedupeRoles(result.results || []);
 }
 
-async function listPermissions(db, userId, teamId) {
-	if (!teamId) return [];
+async function listPermissions(db, userId) {
 	const result = await db
 		.prepare(`
 			SELECT DISTINCT p.code, p.label, p.description, p.is_sensitive, p.is_reserved
@@ -359,8 +366,6 @@ async function listPermissions(db, userId, teamId) {
 			INNER JOIN auth_role_permissions rp ON rp.role_id = ra.role_id
 			INNER JOIN auth_permissions p ON p.code = rp.permission_code
 			WHERE ra.user_id = ?
-				AND ra.scope_type = 'team'
-				AND ra.scope_id = ?
 				AND ra.assignment_status = 'active'
 				AND (ra.expires_at IS NULL OR ra.expires_at > strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
 			UNION
@@ -368,13 +373,11 @@ async function listPermissions(db, userId, teamId) {
 			FROM auth_permission_exceptions e
 			INNER JOIN auth_permissions p ON p.code = e.permission_code
 			WHERE e.user_id = ?
-				AND e.scope_type = 'team'
-				AND e.scope_id = ?
 				AND e.exception_status = 'active'
 				AND e.expires_at > strftime('%Y-%m-%dT%H:%M:%fZ', 'now')
 			ORDER BY code ASC
 		`)
-		.bind(userId, teamId, userId, teamId)
+		.bind(userId, userId)
 		.all();
 	return result.results || [];
 }
@@ -396,10 +399,10 @@ export async function resolveAuthenticatedContext(request, env) {
 		const user = await ensureUserForAccessPayload(db, accessPayload);
 		await updateLastSeen(db, accessPayload.sub);
 
-		const teams = await listTeams(db, user.id);
-		const activeTeam = selectActiveTeam(request, teams);
-		const roles = await listRoles(db, user.id, activeTeam?.id);
-		const permissions = await listPermissions(db, user.id, activeTeam?.id);
+			const teams = await listTeams(db, user.id);
+			const activeTeam = selectActiveTeam(request, teams);
+			const roles = await listRoles(db, user.id);
+			const permissions = await listPermissions(db, user.id);
 
 		return {
 			authenticated: true,

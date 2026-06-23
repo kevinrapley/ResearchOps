@@ -126,14 +126,6 @@ function allRowsForSql(sql) {
 		return membershipTeamRows();
 	}
 
-	if (sql.includes("FROM auth_team_memberships m") && sql.includes("most_recent_role_approved_at")) {
-		return membershipTeamRows();
-	}
-
-	if (sql.includes("'role_assignment' AS membershipSource")) {
-		return [];
-	}
-
 	if (sql.includes("SELECT id, name") && sql.includes("FROM auth_teams")) {
 		return [{ id: TEST_TEAM_ID, name: TEST_TEAM_NAME }];
 	}

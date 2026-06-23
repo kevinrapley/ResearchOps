@@ -31,7 +31,7 @@
 			<div class="govuk-grid-column-two-thirds">
 				<span class="govuk-caption-l">ResearchOps account</span>
 				<h1 class="govuk-heading-xl" id="account-dashboard-title">Your ResearchOps account</h1>
-				<p class="govuk-body-l">Check who you are signed in as, which teams you belong to and what you can do.</p>
+					<p class="govuk-body-l">Check who you are signed in as, your Home Office roles and which teams you belong to.</p>
 			</div>
 		</div>
 
@@ -69,19 +69,25 @@
 					}
 				]
 			}) }}
-		</section>
+			</section>
 
-		<section aria-labelledby="account-current-team-title" id="account-current-team-section" hidden>
-			<h2 class="govuk-heading-m" id="account-current-team-title">Current team context</h2>
-			<p class="govuk-body">ResearchOps uses this team context when deciding which team-scoped actions and records you can use.</p>
-			<p class="govuk-inset-text" id="account-current-team-value">Not loaded</p>
-		</section>
+			<section aria-labelledby="account-roles-title">
+				<h2 class="govuk-heading-m" id="account-roles-title">Your Home Office roles</h2>
+				<p class="govuk-body">These roles describe what you can do in ResearchOps. They are separate from the teams you belong to.</p>
+				<div id="account-roles"></div>
+			</section>
 
-		<section aria-labelledby="account-teams-title">
-			<h2 class="govuk-heading-m" id="account-teams-title">Your teams and roles</h2>
-			<p class="govuk-body">You may have different roles and access in each team.</p>
-			<div id="account-team-memberships"></div>
-		</section>
+			<section aria-labelledby="account-current-team-title" id="account-current-team-section" hidden>
+				<h2 class="govuk-heading-m" id="account-current-team-title">Current team context</h2>
+				<p class="govuk-body">ResearchOps uses this team context when deciding which team-scoped actions and records you can use.</p>
+				<p class="govuk-inset-text" id="account-current-team-value">Not loaded</p>
+			</section>
+
+			<section aria-labelledby="account-teams-title">
+				<h2 class="govuk-heading-m" id="account-teams-title">Your teams</h2>
+				<p class="govuk-body">Teams show which service or delivery contexts you belong to.</p>
+				<div id="account-team-memberships"></div>
+			</section>
 
 		<section aria-labelledby="account-team-access-requests-title" id="account-team-access-requests-section" hidden>
 			<h2 class="govuk-heading-m" id="account-team-access-requests-title">Team access requests</h2>

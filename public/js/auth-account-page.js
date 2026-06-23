@@ -55,6 +55,7 @@ const dom = {
 	user: document.getElementById('account-user-value'),
 	email: document.getElementById('account-email-value'),
 	accountStatus: document.getElementById('account-status-value'),
+	accountRoles: document.getElementById('account-roles'),
 	currentTeamSection: document.getElementById('account-current-team-section'),
 	currentTeam: document.getElementById('account-current-team-value'),
 	teamMemberships: document.getElementById('account-team-memberships'),
@@ -242,6 +243,19 @@ function roleLabels(team) {
 	return labelList(team?.roles, 'No active role');
 }
 
+function homeOfficeRoleLabels(context) {
+	return labelList(context?.roles, 'No active Home Office role');
+}
+
+function renderHomeOfficeRoles(context) {
+	if (!dom.accountRoles) return;
+	dom.accountRoles.innerHTML = `
+		<div class="govuk-inset-text">
+			<p class="govuk-body">${escapeHtml(homeOfficeRoleLabels(context))}</p>
+		</div>
+	`;
+}
+
 function renderCoreAdminInset(team) {
 	if (!isResearchOpsCoreTeamAdmin(team)) return '';
 	return `
@@ -253,7 +267,7 @@ function renderCoreAdminInset(team) {
 
 function renderCapabilityList(team) {
 	const capabilities = capabilityItems(team?.permissions || []);
-	if (capabilities.length === 0) return '<p class="govuk-body">No active access summary for this team.</p>';
+	if (capabilities.length === 0) return '<p class="govuk-body">No active team administration access.</p>';
 	return `
 		<ul class="govuk-list govuk-list--bullet">
 			${capabilities
@@ -271,6 +285,23 @@ function renderCapabilityList(team) {
 }
 
 function renderTeamMembership(team) {
+	const rolesRow = (team.roles || []).length
+		? `
+			<div class="govuk-summary-list__row">
+				<dt class="govuk-summary-list__key">Team role</dt>
+				<dd class="govuk-summary-list__value">${escapeHtml(roleLabels(team))}</dd>
+			</div>
+		`
+		: '';
+	const permissionsRow = capabilityItems(team.permissions || []).length
+		? `
+			<div class="govuk-summary-list__row">
+				<dt class="govuk-summary-list__key">Team administration access</dt>
+				<dd class="govuk-summary-list__value">${renderCapabilityList(team)}</dd>
+			</div>
+		`
+		: '';
+	const membershipOnly = rolesRow || permissionsRow ? '' : '<p class="govuk-body">Active team membership</p>';
 	return `
 		<div class="govuk-summary-card">
 			<div class="govuk-summary-card__title-wrapper">
@@ -280,16 +311,8 @@ function renderTeamMembership(team) {
 				</h3>
 			</div>
 			<div class="govuk-summary-card__content">
-				<dl class="govuk-summary-list govuk-summary-list--no-border">
-					<div class="govuk-summary-list__row">
-						<dt class="govuk-summary-list__key">Role or roles</dt>
-						<dd class="govuk-summary-list__value">${escapeHtml(roleLabels(team))}</dd>
-					</div>
-					<div class="govuk-summary-list__row">
-						<dt class="govuk-summary-list__key">What this lets you do</dt>
-						<dd class="govuk-summary-list__value">${renderCapabilityList(team)}</dd>
-					</div>
-				</dl>
+				${membershipOnly}
+				${rolesRow || permissionsRow ? `<dl class="govuk-summary-list govuk-summary-list--no-border">${rolesRow}${permissionsRow}</dl>` : ''}
 				${renderCoreAdminInset(team)}
 			</div>
 		</div>
@@ -403,6 +426,7 @@ function renderDashboard(context, requests = []) {
 	if (dom.user) dom.user.textContent = displayName(context);
 	if (dom.email) dom.email.textContent = context?.user?.email || 'Not available';
 	if (dom.accountStatus) dom.accountStatus.textContent = formatAccountStatus(context?.user?.accountStatus);
+	renderHomeOfficeRoles(context);
 	renderCurrentTeam(context, memberships);
 	renderTeamMemberships(context);
 	renderTeamAccessRequests(requests);

@@ -57,6 +57,10 @@ includes(participantService, 'participant.contact.reveal.denied', 'participant s
 includes(participantService, 'participant.created', 'participant service');
 includes(participantService, 'CONTACT_RESTRICTED_MESSAGE', 'participant service');
 includes(participantService, 'preferFallbackMessage ? fallbackMessage', 'participant service');
+includes(participantService, 'async function hasOrganisationScopedRevealPermission(db, context)', 'participant service');
+includes(participantService, "AND ra.scope_type = 'organisation'", 'participant service');
+includes(participantService, "AND ra.scope_id = 'home_office'", 'participant service');
+includes(participantService, 'if (await hasOrganisationScopedRevealPermission(db, context)) return true;', 'participant service');
 
 excludes(participantService, 'fetchWithTimeout', 'participant service');
 excludes(participantService, 'airtableTryWrite', 'participant service');
