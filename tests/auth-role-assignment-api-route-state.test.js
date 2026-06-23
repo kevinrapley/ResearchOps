@@ -190,6 +190,9 @@ function assertHomeOfficeRoleScopeMigrationExists() {
 	assert.match(homeOfficeRoleScopeMigration, /'home_office'/);
 	assert.match(homeOfficeRoleScopeMigration, /role_research_lead/);
 	assert.match(homeOfficeRoleScopeMigration, /role_safeguarding_lead/);
+	assert.match(homeOfficeRoleScopeMigration, /ra\.expires_at IS NULL OR ra\.expires_at > strftime/);
+	assert.match(homeOfficeRoleScopeMigration, /src\.expires_at/);
+	assert.match(homeOfficeRoleScopeMigration, /MAX\(auth_role_assignments\.expires_at, excluded\.expires_at\)/);
 	assert.match(homeOfficeRoleScopeMigration, /scope_type = 'team'/);
 	assert.match(homeOfficeRoleScopeMigration, /assignment_status = 'revoked'/);
 	assert.match(homeOfficeRoleScopeMigration, /Team Admin remains team-scoped/);

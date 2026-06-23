@@ -112,10 +112,15 @@ active_home_office_role_sources AS (
     ra.user_id,
     ra.role_id,
     MAX(ra.approved_by_user_id) AS approved_by_user_id,
-    MAX(ra.approved_at) AS approved_at
+    MAX(ra.approved_at) AS approved_at,
+    CASE
+      WHEN SUM(CASE WHEN ra.expires_at IS NULL THEN 1 ELSE 0 END) > 0 THEN NULL
+      ELSE MAX(ra.expires_at)
+    END AS expires_at
   FROM auth_role_assignments ra
   INNER JOIN home_office_roles r ON r.role_id = ra.role_id
   WHERE ra.assignment_status = 'active'
+    AND (ra.expires_at IS NULL OR ra.expires_at > strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
   GROUP BY ra.user_id, ra.role_id
 )
 INSERT INTO auth_role_assignments (
@@ -140,7 +145,7 @@ SELECT
   'Home Office role migrated from legacy team or project-scoped research role assignment.',
   src.approved_by_user_id,
   COALESCE(src.approved_at, strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
-  NULL
+  src.expires_at
 FROM active_home_office_role_sources src
 INNER JOIN auth_users u ON u.id = src.user_id
 INNER JOIN auth_roles r ON r.id = src.role_id
@@ -149,7 +154,10 @@ ON CONFLICT(user_id, role_id, scope_type, scope_id) DO UPDATE SET
   requested_reason = excluded.requested_reason,
   approved_by_user_id = excluded.approved_by_user_id,
   approved_at = excluded.approved_at,
-  expires_at = NULL,
+  expires_at = CASE
+    WHEN auth_role_assignments.expires_at IS NULL OR excluded.expires_at IS NULL THEN NULL
+    ELSE MAX(auth_role_assignments.expires_at, excluded.expires_at)
+  END,
   updated_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now');
 
 WITH home_office_roles(role_id) AS (

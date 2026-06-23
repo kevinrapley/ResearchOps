@@ -15,7 +15,8 @@
     ".agent-operating-model/precedence-policy.md",
     ".agent-operating-model/trace-policy.md",
     ".agent-operating-model/trace-layers.md",
-    ".agent-operating-model/behavioural-evals.json"
+    ".agent-operating-model/behavioural-evals.json",
+    ".agent-operating-model/github-mutation-policy.md"
   ],
   "selectedBundles": [
     {
@@ -62,6 +63,7 @@
     "infra/cloudflare/src/core/auth/access.js",
     "infra/cloudflare/src/core/auth/passwordless.js",
     "infra/cloudflare/src/core/auth/role-assignments-scoped.js",
+    "infra/cloudflare/src/service/participants.js",
     "public/js/auth-account-page.js",
     "public/pages/account/index.html",
     "src/govuk/templates/pages/account.njk",
@@ -70,12 +72,14 @@
     "tests/auth-foundation-route-state.test.js",
     "tests/auth-role-assignment-api-route-state.test.js",
     "tests/auth-sign-in-route-state.test.js",
+    "tests/participant-pseudonymised-view-route-state.test.js",
     "tests/projects-route-contract.test.js"
   ],
   "validation": [
     "node --check for changed auth and account JavaScript files: passed",
     "npm run build:govuk-pages: passed",
     "focused auth/account route-state and contract tests: passed",
+    "focused participant reveal route-state test: passed",
     "full main SQLite migration chain through 0022_home_office_role_scope.sql: passed",
     "npm test: passed, 245 tests",
     "npm run lint: passed with existing warnings",
