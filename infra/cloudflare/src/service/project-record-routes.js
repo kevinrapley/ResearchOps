@@ -11,6 +11,8 @@ const AIRTABLE_MAX_PAGE_SIZE = 100;
 const MAX_AIRTABLE_PAGES = 20;
 const MAX_JSON_BODY_BYTES = 1024 * 1024;
 const PROJECT_CACHE_TABLE_SQL = "CREATE TABLE IF NOT EXISTS rops_projects_cache (id TEXT PRIMARY KEY, name TEXT NOT NULL, org TEXT, phase TEXT, status TEXT, active INTEGER NOT NULL DEFAULT 1, source TEXT NOT NULL DEFAULT 'airtable', updated_at TEXT NOT NULL, payload_json TEXT)";
+const FULL_PROJECT_CACHE_SOURCES_SQL = "('airtable', 'preview-seed')";
+const READABLE_PROJECT_CACHE_SOURCES_SQL = "('airtable', 'preview-seed', 'airtable-partial')";
 
 function json(body, status = 200, headers = {}) {
 	return new Response(JSON.stringify(body), { status, headers: { ...JSON_HEADERS, ...headers } });
@@ -419,7 +421,7 @@ async function ensureProjectCache(db) {
 async function sourceForProjectCacheWrite(db, projectId, mode) {
 	if (mode !== "preserve-full") return mode === "full" ? "airtable" : "airtable-partial";
 	const row = await db.prepare("SELECT source FROM rops_projects_cache WHERE id = ? LIMIT 1").bind(projectId).first();
-	return row?.source === "airtable" ? "airtable" : "airtable-partial";
+	return row?.source === "airtable" || row?.source === "preview-seed" ? row.source : "airtable-partial";
 }
 
 async function syncActiveProjectsToD1(env, projects = [], options = {}) {
@@ -462,26 +464,19 @@ async function writeProjectToD1(env, project = {}) {
 		.run();
 }
 
-async function readD1ProjectCache(env) {
+async function readD1ProjectCache(env, options = {}) {
 	const db = env.RESEARCHOPS_D1;
 	if (!db?.prepare) throw Object.assign(new Error("RESEARCHOPS_D1 binding not available"), { source: "d1" });
 	await ensureProjectCache(db);
-	const partial = await db.prepare("SELECT id FROM rops_projects_cache WHERE active = 1 AND source = 'airtable-partial' LIMIT 1").first();
-	const response = await db.prepare("SELECT * FROM rops_projects_cache WHERE active = 1 AND source = 'airtable' ORDER BY updated_at DESC").all();
+	const sourcesSql = options.includePartial ? READABLE_PROJECT_CACHE_SOURCES_SQL : FULL_PROJECT_CACHE_SOURCES_SQL;
+	const response = await db.prepare(`SELECT * FROM rops_projects_cache WHERE active = 1 AND source IN ${sourcesSql} ORDER BY updated_at DESC`).all();
 	const rows = response?.results || [];
-	if (partial) {
-		return {
-			projects: [],
-			activeProjectCount: rows.length,
-			invalidProjectCount: 0,
-			incomplete: true,
-		};
-	}
 	const projects = rows.map(mapD1Project).filter(isRenderable);
 	return {
 		projects,
 		activeProjectCount: rows.length,
 		invalidProjectCount: Math.max(rows.length - projects.length, 0),
+		incomplete: options.includePartial && rows.some((row) => row?.source === "airtable-partial"),
 	};
 }
 
@@ -489,7 +484,7 @@ async function getD1ProjectRecord(env, projectId) {
 	const db = env.RESEARCHOPS_D1;
 	if (!db?.prepare) throw Object.assign(new Error("RESEARCHOPS_D1 binding not available"), { source: "d1" });
 	await ensureProjectCache(db);
-	const row = await db.prepare("SELECT * FROM rops_projects_cache WHERE active = 1 AND source IN ('airtable', 'airtable-partial') AND id = ? LIMIT 1").bind(projectId).first();
+	const row = await db.prepare(`SELECT * FROM rops_projects_cache WHERE active = 1 AND source IN ${READABLE_PROJECT_CACHE_SOURCES_SQL} AND id = ? LIMIT 1`).bind(projectId).first();
 	const project = mapD1Project(row || {});
 	return isRenderable(project) ? project : null;
 }
@@ -661,9 +656,9 @@ export async function listProjectRecords(request, env, authContext = {}) {
 		}
 	}
 
-	if (refresh || !d1Snapshot) {
+	if (refresh || !d1Snapshot || !d1Snapshot.projects.length) {
 		try {
-			d1Snapshot = await readD1ProjectCache(env);
+			d1Snapshot = await readD1ProjectCache(env, { includePartial: true });
 			if (d1Snapshot.projects.length) {
 				return json(
 					{ ok: true, projects: visibleProjects(d1Snapshot.projects, authContext, displayLimit), canStartProject: canStartProject(authContext) },

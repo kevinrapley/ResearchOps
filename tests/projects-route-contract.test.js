@@ -9,6 +9,7 @@ const TEST_SESSION_TOKEN = "project-contract-session";
 const d1RunCalls = [];
 let d1HasPartialProject = false;
 let d1ProjectCacheRow = null;
+let d1ProjectCacheRows = [];
 
 const PROJECT_RECORD_IDS = [
 	"recMtdmBbaFilF2Tm",
@@ -123,6 +124,15 @@ function membershipTeamRows() {
 }
 
 function allRowsForSql(sql) {
+	if (sql.includes("SELECT * FROM rops_projects_cache") && sql.includes("ORDER BY updated_at DESC")) {
+		const includePartial = sql.includes("'airtable-partial'");
+		return d1ProjectCacheRows.filter((row) => {
+			if (row?.active === 0) return false;
+			if (row?.source === "airtable-partial") return includePartial;
+			return row?.source === "airtable" || row?.source === "preview-seed";
+		});
+	}
+
 	if (sql.includes("FROM auth_team_memberships m") && sql.includes("membershipSource")) {
 		return membershipTeamRows();
 	}
@@ -280,6 +290,38 @@ function projectRecords() {
 			}),
 		},
 	];
+}
+
+function d1ProjectCacheRecord({ id = PROJECT_RECORD_IDS[2], source = "preview-seed", name = "Test Project 1" } = {}) {
+	return {
+		id,
+		name,
+		org: TEST_TEAM_NAME,
+		phase: "Discovery",
+		status: "Goal setting & problem defining",
+		active: 1,
+		source,
+		updated_at: "2026-06-24T09:00:00.000Z",
+		payload_json: JSON.stringify({
+			id,
+			airtableId: id,
+			recordId: id,
+			name,
+			description: "Test Project Description",
+			"rops:servicePhase": "Discovery",
+			"rops:projectStatus": "Goal setting & problem defining",
+			objectives: ["Test objective"],
+			user_groups: ["Participants"],
+			stakeholders: [],
+			team_ids: [TEST_TEAM_ID],
+			teamIds: [TEST_TEAM_ID],
+			teamNames: [TEST_TEAM_NAME],
+			teamName: TEST_TEAM_NAME,
+			team_name: TEST_TEAM_NAME,
+			team: TEST_TEAM_NAME,
+			org: TEST_TEAM_NAME,
+		}),
+	};
 }
 
 function createMockFetch(calls, { rejectProjectTeamFields = [], rejectProjectPatchStatus = 0 } = {}) {
@@ -482,6 +524,59 @@ async function assertPartialProjectCacheDoesNotShortCircuitProjectList() {
 		);
 	} finally {
 		d1HasPartialProject = false;
+		globalThis.fetch = originalFetch;
+	}
+}
+
+async function assertProjectListUsesPreviewSeedD1WhenAirtableIsUnavailable() {
+	const originalFetch = globalThis.fetch;
+	d1ProjectCacheRows = [d1ProjectCacheRecord({ source: "preview-seed" })];
+	globalThis.fetch = createMockFetch([]);
+	const d1OnlyEnv = {
+		...env,
+		AIRTABLE_BASE_ID: "",
+		AIRTABLE_TABLE_PROJECTS: "",
+		AIRTABLE_API_KEY: "",
+	};
+
+	try {
+		const response = await worker.fetch(authenticatedRequest("https://worker.test/api/projects"), d1OnlyEnv, {});
+		assert.equal(response.status, 200);
+		assert.equal(response.headers.get("x-rops-source"), "d1");
+
+		const payload = await response.json();
+		assert.equal(payload.ok, true);
+		assert.equal(payload.projects.length, 1);
+		assert.equal(payload.projects[0].id, PROJECT_RECORD_IDS[2]);
+		assert.equal(payload.projects[0].name, "Test Project 1");
+	} finally {
+		d1ProjectCacheRows = [];
+		globalThis.fetch = originalFetch;
+	}
+}
+
+async function assertPartialProjectCacheIsFallbackWhenAirtableIsUnavailable() {
+	const originalFetch = globalThis.fetch;
+	d1ProjectCacheRows = [d1ProjectCacheRecord({ source: "airtable-partial" })];
+	globalThis.fetch = createMockFetch([]);
+	const d1OnlyEnv = {
+		...env,
+		AIRTABLE_BASE_ID: "",
+		AIRTABLE_TABLE_PROJECTS: "",
+		AIRTABLE_API_KEY: "",
+	};
+
+	try {
+		const response = await worker.fetch(authenticatedRequest("https://worker.test/api/projects"), d1OnlyEnv, {});
+		assert.equal(response.status, 200);
+		assert.equal(response.headers.get("x-rops-source"), "d1");
+
+		const payload = await response.json();
+		assert.equal(payload.ok, true);
+		assert.equal(payload.projects.length, 1);
+		assert.equal(payload.projects[0].id, PROJECT_RECORD_IDS[2]);
+	} finally {
+		d1ProjectCacheRows = [];
 		globalThis.fetch = originalFetch;
 	}
 }
@@ -764,6 +859,32 @@ async function assertProjectReadResolvesAirtableRecordId() {
 	}
 }
 
+async function assertProjectReadUsesPreviewSeedD1WhenAirtableIsUnavailable() {
+	const originalFetch = globalThis.fetch;
+	d1ProjectCacheRow = d1ProjectCacheRecord({ source: "preview-seed" });
+	globalThis.fetch = createMockFetch([]);
+	const d1OnlyEnv = {
+		...env,
+		AIRTABLE_BASE_ID: "",
+		AIRTABLE_TABLE_PROJECTS: "",
+		AIRTABLE_API_KEY: "",
+	};
+
+	try {
+		const response = await worker.fetch(authenticatedRequest(`https://worker.test/api/projects/${PROJECT_RECORD_IDS[2]}`), d1OnlyEnv, {});
+		assert.equal(response.status, 200);
+		assert.equal(response.headers.get("x-rops-source"), "d1");
+
+		const project = await response.json();
+		assert.equal(project.id, PROJECT_RECORD_IDS[2]);
+		assert.equal(project.name, "Test Project 1");
+		assert.deepEqual(project.objectives, ["Test objective"]);
+	} finally {
+		d1ProjectCacheRow = null;
+		globalThis.fetch = originalFetch;
+	}
+}
+
 async function assertProjectPatchUsesD1WhenAirtableIsRateLimited() {
 	const calls = [];
 	const waitUntilPromises = [];
@@ -847,6 +968,40 @@ async function assertProjectPatchUsesD1WhenAirtableIsRateLimited() {
 	}
 }
 
+async function assertProjectPatchPreservesPreviewSeedD1SourceWhenAirtableIsRateLimited() {
+	const calls = [];
+	const originalFetch = globalThis.fetch;
+	d1RunCalls.length = 0;
+	d1ProjectCacheRow = d1ProjectCacheRecord({ source: "preview-seed" });
+	globalThis.fetch = createMockFetch(calls, { rejectProjectPatchStatus: 429 });
+
+	try {
+		const response = await worker.fetch(
+			new Request(`https://worker.test/api/projects/${PROJECT_RECORD_IDS[2]}`, {
+				method: "PATCH",
+				headers: {
+					"content-type": "application/json",
+					cookie: `rops_session=${TEST_SESSION_TOKEN}`,
+				},
+				body: JSON.stringify({
+					objectives: ["Keep D1 preview seed visible"],
+				}),
+			}),
+			env,
+			{ waitUntil() {} },
+		);
+		assert.equal(response.status, 200);
+		assert.equal(response.headers.get("x-rops-source"), "d1");
+
+		const cacheInsertCall = d1RunCalls.find((call) => call.sql.includes("INSERT INTO rops_projects_cache"));
+		assert.ok(cacheInsertCall);
+		assert.equal(cacheInsertCall.args[5], "preview-seed");
+	} finally {
+		d1ProjectCacheRow = null;
+		globalThis.fetch = originalFetch;
+	}
+}
+
 async function assertNonRecordProjectIdIsNotFound() {
 	const originalFetch = globalThis.fetch;
 	globalThis.fetch = createMockFetch([]);
@@ -893,12 +1048,16 @@ function assertLegacyProjectsDirectHandlerIsAbsent() {
 await assertProjectsRouteFailsClosedWithoutSession();
 await assertProjectsRouteUsesAirtableProjectsTable();
 await assertPartialProjectCacheDoesNotShortCircuitProjectList();
+await assertProjectListUsesPreviewSeedD1WhenAirtableIsUnavailable();
+await assertPartialProjectCacheIsFallbackWhenAirtableIsUnavailable();
 await assertAuthenticatedProjectCreateUsesSessionContext();
 await assertProjectCreateDoesNotBlockWhenTeamFieldsAreMissing();
 await assertProjectCreatePreservesSupportedTeamFields();
 await assertProjectCreateDoesNotBlockWhenOrgFieldIsMissing();
 await assertProjectReadResolvesAirtableRecordId();
+await assertProjectReadUsesPreviewSeedD1WhenAirtableIsUnavailable();
 await assertProjectPatchUsesD1WhenAirtableIsRateLimited();
+await assertProjectPatchPreservesPreviewSeedD1SourceWhenAirtableIsRateLimited();
 await assertNonRecordProjectIdIsNotFound();
 await assertProjectsCsvRouteStillWorks();
 assertLegacyProjectsDirectHandlerIsAbsent();
