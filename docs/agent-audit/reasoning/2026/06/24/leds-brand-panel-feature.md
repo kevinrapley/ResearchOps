@@ -5,7 +5,7 @@
 - Date: 2026-06-24
 - Branch: `feature/leds-brand-panel`
 - Trace trigger: required by `feature/` branch prefix
-- Task summary: move the LEDS-only brand-panel changes out of the merged tag-colour PR branch and onto their own branch from updated `main`; follow up by overlaying the Home Office digital triangles asset on the LEDS brand panel `::after` layer, then tune that overlay with soft-light blending, brightness filtering and adjusted positioning.
+- Task summary: move the LEDS-only brand-panel changes out of the merged tag-colour PR branch and onto their own branch from updated `main`; follow up by overlaying the Home Office digital triangles asset on the LEDS brand panel `::after` layer, tune that overlay with soft-light blending, brightness filtering and adjusted positioning, then address a valid Codex review comment by bumping cache-busting query strings for changed CSS and JavaScript assets.
 
 ## Operating model loaded
 
@@ -29,10 +29,10 @@ Selected bundles:
 - `researchops-developer-control` at `.agent-operating-model/bundles/researchops-developer-control/`
 - `multi-functional-team` at `.agent-operating-model/bundles/multi-functional-team/`
 - `govuk-design-system` at `.agent-operating-model/bundles/govuk-design-system/`
+- `cloudflare` at `.agent-operating-model/bundles/cloudflare/`
 
 Skipped bundles:
 
-- `cloudflare`: no Worker, bindings, storage or deployment change.
 - `openai-platform`: no OpenAI API or model change.
 - `mcp-agent-tooling`: no MCP protocol or agent tooling change.
 - `airtable-public-api`: no Airtable API change.
@@ -43,6 +43,7 @@ Precedence applied:
 - GitHub Diamond governed branch selection, trace and PR discipline.
 - ResearchOps Developer Control governed generated CSS and rendered page parity.
 - GOV.UK Design System governed the frontend component and accessibility context.
+- Cloudflare governed the static asset caching context for `public/_headers`.
 
 ## Branch and worktree handling
 
@@ -74,8 +75,22 @@ Precedence applied:
 - `.agent-operating-model/bundles/researchops-developer-control/prompt.body.xml`
 - `.agent-operating-model/bundles/multi-functional-team/prompt.body.xml`
 - `.agent-operating-model/bundles/govuk-design-system/prompt.body.xml`
+- `.agent-operating-model/bundles/cloudflare/prompt.body.xml`
 - `scripts/validate.sh`
+- `public/_headers`
 - `src/govuk/templates/macros/daas-brand-panel.njk`
+- `src/govuk/templates/pages/project-dashboard.njk`
+- `src/govuk/templates/pages/project-dashboard-participants.njk`
+- `src/govuk/templates/pages/projects-journals.njk`
+- `src/govuk/templates/pages/projects-outcomes.njk`
+- `src/govuk/templates/pages/study.njk`
+- `src/govuk/templates/pages/study-new.njk`
+- `src/govuk/templates/pages/study-consent-forms.njk`
+- `src/govuk/templates/pages/study-guides.njk`
+- `src/govuk/templates/pages/study-note-takers-observers.njk`
+- `src/govuk/templates/pages/study-participant-consent.njk`
+- `src/govuk/templates/pages/study-participants.njk`
+- `src/govuk/templates/pages/study-synthesis.njk`
 - `src/styles/daas-brand-panel.scss`
 - `src/styles/project-dashboard.scss`
 - `public/js/daas-brand-panel.js`
@@ -86,6 +101,18 @@ Precedence applied:
 ## Files changed
 
 - `src/govuk/templates/macros/daas-brand-panel.njk`
+- `src/govuk/templates/pages/project-dashboard.njk`
+- `src/govuk/templates/pages/project-dashboard-participants.njk`
+- `src/govuk/templates/pages/projects-journals.njk`
+- `src/govuk/templates/pages/projects-outcomes.njk`
+- `src/govuk/templates/pages/study.njk`
+- `src/govuk/templates/pages/study-new.njk`
+- `src/govuk/templates/pages/study-consent-forms.njk`
+- `src/govuk/templates/pages/study-guides.njk`
+- `src/govuk/templates/pages/study-note-takers-observers.njk`
+- `src/govuk/templates/pages/study-participant-consent.njk`
+- `src/govuk/templates/pages/study-participants.njk`
+- `src/govuk/templates/pages/study-synthesis.njk`
 - `src/styles/daas-brand-panel.scss`
 - `src/styles/project-dashboard.scss`
 - `public/css/daas-brand-panel.css`
@@ -124,6 +151,9 @@ Precedence applied:
 - Rebuilt generated CSS and rendered GOV.UK pages.
 - Updated route-state tests to cover LEDS macro output, rendered page output, controller hooks and stylesheet contracts.
 - Added route-state assertions that inspect the LEDS `::after` declaration so the triangle overlay remains tied to the LEDS panel.
+- Bumped shared brand-panel CSS and JavaScript query strings from `20260616` to `leds-brand-panel-20260624` in source templates and rendered pages.
+- Bumped project dashboard CSS and JavaScript query strings to `project-dashboard-leds-brand-panel-20260624`.
+- Added a `+1` reaction to the valid Codex review comment at `public/js/daas-brand-panel.js:98` before remediation.
 
 ## Validation
 
@@ -157,6 +187,17 @@ Passed:
 - `npm run format:check` (follow-up overlay tuning check)
 - `npm run trace:coverage` (follow-up overlay tuning check)
 - `node -e "JSON.parse(require('fs').readFileSync('docs/agent-audit/reasoning/2026/06/24/leds-brand-panel-feature.json', 'utf8'))"` (follow-up overlay tuning check)
+- `gh api graphql -F owner='kevinrapley' -F repo='ResearchOps' -F number=431 ...` (review-thread state check)
+- `gh api repos/kevinrapley/ResearchOps/pulls/comments/3470569357/reactions --method POST ...` (valid review comment acknowledged)
+- `npm run build:govuk-pages` (cache-bust follow-up check)
+- `rg -n "daas-brand-panel\.(css|js)\?v=20260616|project-dashboard\.(css|js)\?v=project-dashboard-description-edit-20260624" . -g '!node_modules' -g '!vendor'` (cache-bust follow-up check; no matches)
+- `node --test tests/daas-brand-panel-route-state.test.js tests/project-dashboard-route-state.test.js` (cache-bust follow-up check)
+- `npm run generated-css:check` (cache-bust follow-up check)
+- `git diff --check` (cache-bust follow-up check)
+- `node -e "JSON.parse(require('fs').readFileSync('docs/agent-audit/reasoning/2026/06/24/leds-brand-panel-feature.json', 'utf8'))"` (cache-bust follow-up check)
+- `npm run format:check` (cache-bust follow-up check)
+- `npm run trace:coverage` (cache-bust follow-up check)
+- `if rg -n "daas-brand-panel\.(css|js)\?v=20260616|project-dashboard\.(css|js)\?v=project-dashboard-description-edit-20260624" . -g '!node_modules' -g '!vendor'; then exit 1; else exit 0; fi` (cache-bust follow-up check)
 
 Failed then replaced:
 

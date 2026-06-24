@@ -119,8 +119,8 @@ includes(templateSource, "id=\"project-description-region\"", "project dashboard
 includes(templateSource, "Loading service stage", "project dashboard template");
 includes(templateSource, "Loading project stage", "project dashboard template");
 includes(templateSource, "Mural optional", "project dashboard template");
-includes(templateSource, "project-dashboard.js?v=project-dashboard-description-edit-20260624", "project dashboard template");
-includes(templateSource, "project-dashboard.css?v=project-dashboard-description-edit-20260624", "project dashboard template");
+includes(templateSource, "project-dashboard.js?v=project-dashboard-leds-brand-panel-20260624", "project dashboard template");
+includes(templateSource, "project-dashboard.css?v=project-dashboard-leds-brand-panel-20260624", "project dashboard template");
 includes(templateSource, "project-dashboard-participants-list.js?v=participant-list-reveal-hide-20260602", "project dashboard template");
 excludes(templateSource, "project-dashboard-participants-list.js?v=participant-list-controls-20260601", "project dashboard template");
 includes(templateSource, "text: \"Dashboard\"", "project dashboard template");
@@ -248,8 +248,8 @@ assert.equal(
 	"Expected objectives list to render outside the Stakeholder management card",
 );
 includes(pageSource, "/images/brands/daas-logo.svg", "project dashboard page");
-includes(pageSource, "project-dashboard.js?v=project-dashboard-description-edit-20260624", "project dashboard page");
-includes(pageSource, "project-dashboard.css?v=project-dashboard-description-edit-20260624", "project dashboard page");
+includes(pageSource, "project-dashboard.js?v=project-dashboard-leds-brand-panel-20260624", "project dashboard page");
+includes(pageSource, "project-dashboard.css?v=project-dashboard-leds-brand-panel-20260624", "project dashboard page");
 includes(pageSource, "id=\"project-description-region\"", "project dashboard page");
 includes(pageSource, "Project", "project dashboard page");
 includes(pageSource, "Dashboard", "project dashboard page");

@@ -126,14 +126,14 @@ for (const route of routes) {
 	const pageSource = fs.readFileSync(route.page, "utf8");
 	includes(templateSource, "{% from \"macros/daas-brand-panel.njk\" import daasBrandPanel %}", `${route.label} template`);
 	includes(templateSource, "{{ daasBrandPanel() }}", `${route.label} template`);
-	includes(templateSource, "/css/daas-brand-panel.css?v=20260616", `${route.label} template`);
-	includes(templateSource, "/js/daas-brand-panel.js?v=20260616", `${route.label} template`);
+	includes(templateSource, "/css/daas-brand-panel.css?v=leds-brand-panel-20260624", `${route.label} template`);
+	includes(templateSource, "/js/daas-brand-panel.js?v=leds-brand-panel-20260624", `${route.label} template`);
 	includes(pageSource, "id=\"daas-brand-panel\"", `${route.label} page`);
 	includes(pageSource, "class=\"rops-daas-brand-panel\"", `${route.label} page`);
 	includes(pageSource, "/images/brands/daas-logo.svg", `${route.label} page`);
 	includes(pageSource, "id=\"leds-brand-panel\"", `${route.label} page`);
 	includes(pageSource, "class=\"rops-leds-brand-panel\"", `${route.label} page`);
 	includes(pageSource, "/images/brands/leds-logo-white.svg", `${route.label} page`);
-	includes(pageSource, "href=\"/css/daas-brand-panel.css?v=20260616\"", `${route.label} page`);
-	includes(pageSource, "src=\"/js/daas-brand-panel.js?v=20260616\"", `${route.label} page`);
+	includes(pageSource, "href=\"/css/daas-brand-panel.css?v=leds-brand-panel-20260624\"", `${route.label} page`);
+	includes(pageSource, "src=\"/js/daas-brand-panel.js?v=leds-brand-panel-20260624\"", `${route.label} page`);
 }
