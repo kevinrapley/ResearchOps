@@ -7,6 +7,13 @@ const TEST_TEAM_NAME = "DaaS";
 const TEST_USER_ID = "usr_project_contract";
 const TEST_SESSION_TOKEN = "project-contract-session";
 const DAAS_PROJECT_RECORD_ID = "recdMo80h1QaNQCBk";
+const DAAS_PROJECT_NAME = "Third Country National Discovery";
+const DAAS_CREATED_AT = "2026-06-24T10:10:00.000Z";
+const DAAS_OBJECTIVES = [
+	"1. Understand the problem space\n- Establish a shared understanding of the TCN problem\n- Define the problem statement, goals, and assumptions\n- Align stakeholders on the scope and purpose of Discovery",
+	'2. Build an "As-Is" view of the current system\n- Map end-to-end workflows (UK <-> EU)\n- Identify systems involved (e.g., LEDS, HOB, ACRO)\n- Understand data flows and formats\n- Capture process steps, timings, and responsibilities',
+	"3. Identify users, stakeholders, and impacts\n- Understand who uses TCN data (direct and indirect users)\n- Map organisations involved across policing, borders, and justice\n- Assess who will be impacted by change",
+];
 const d1RunCalls = [];
 let d1HasPartialProject = false;
 let d1ProjectCacheRow = null;
@@ -293,7 +300,28 @@ function projectRecords() {
 	];
 }
 
-function d1ProjectCacheRecord({ id = PROJECT_RECORD_IDS[2], source = "preview-seed", name = "Test Project 1" } = {}) {
+function d1ProjectCacheRecord({ id = PROJECT_RECORD_IDS[2], source = "preview-seed", name = "Test Project 1", createdAt = "2026-06-24T09:00:00.000Z", project = {} } = {}) {
+	const payload = {
+		id,
+		airtableId: id,
+		recordId: id,
+		name,
+		description: "Test Project Description",
+		createdAt,
+		"rops:servicePhase": "Discovery",
+		"rops:projectStatus": "Goal setting & problem defining",
+		objectives: ["Test objective"],
+		user_groups: ["Participants"],
+		stakeholders: [],
+		team_ids: [TEST_TEAM_ID],
+		teamIds: [TEST_TEAM_ID],
+		teamNames: [TEST_TEAM_NAME],
+		teamName: TEST_TEAM_NAME,
+		team_name: TEST_TEAM_NAME,
+		team: TEST_TEAM_NAME,
+		org: TEST_TEAM_NAME,
+		...project,
+	};
 	return {
 		id,
 		name,
@@ -302,26 +330,8 @@ function d1ProjectCacheRecord({ id = PROJECT_RECORD_IDS[2], source = "preview-se
 		status: "Goal setting & problem defining",
 		active: 1,
 		source,
-		updated_at: "2026-06-24T09:00:00.000Z",
-		payload_json: JSON.stringify({
-			id,
-			airtableId: id,
-			recordId: id,
-			name,
-			description: "Test Project Description",
-			"rops:servicePhase": "Discovery",
-			"rops:projectStatus": "Goal setting & problem defining",
-			objectives: ["Test objective"],
-			user_groups: ["Participants"],
-			stakeholders: [],
-			team_ids: [TEST_TEAM_ID],
-			teamIds: [TEST_TEAM_ID],
-			teamNames: [TEST_TEAM_NAME],
-			teamName: TEST_TEAM_NAME,
-			team_name: TEST_TEAM_NAME,
-			team: TEST_TEAM_NAME,
-			org: TEST_TEAM_NAME,
-		}),
+		updated_at: createdAt,
+		payload_json: JSON.stringify(payload),
 	};
 }
 
@@ -531,7 +541,23 @@ async function assertPartialProjectCacheDoesNotShortCircuitProjectList() {
 
 async function assertProjectListUsesPreviewSeedD1WhenAirtableIsUnavailable() {
 	const originalFetch = globalThis.fetch;
-	d1ProjectCacheRows = [d1ProjectCacheRecord({ id: DAAS_PROJECT_RECORD_ID, source: "preview-seed", name: "DaaS project" })];
+	d1ProjectCacheRows = [
+		d1ProjectCacheRecord({ id: PROJECT_RECORD_IDS[2], source: "preview-seed", name: "Test Project 1", createdAt: "2026-05-17T23:30:00.000Z" }),
+		d1ProjectCacheRecord({
+			id: DAAS_PROJECT_RECORD_ID,
+			source: "preview-seed",
+			name: DAAS_PROJECT_NAME,
+			createdAt: DAAS_CREATED_AT,
+			project: {
+				description: "Discovery research project",
+				objectives: DAAS_OBJECTIVES,
+				user_groups: ["Law enforcement", "Borders and immigration"],
+				stakeholders: [{ name: "Pam Thethi", role: "PSG - ILEC - Criminal Records Team", email: "pam.thethi@homeoffice.gov.uk" }],
+				lead_researcher: "Amy Everett",
+				lead_researcher_email: "amy.everett@homeoffice.gov.uk",
+			},
+		}),
+	];
 	globalThis.fetch = createMockFetch([]);
 	const d1OnlyEnv = {
 		...env,
@@ -547,10 +573,16 @@ async function assertProjectListUsesPreviewSeedD1WhenAirtableIsUnavailable() {
 
 		const payload = await response.json();
 		assert.equal(payload.ok, true);
-		assert.equal(payload.projects.length, 1);
+		assert.equal(payload.projects.length, 2);
 		assert.equal(payload.projects[0].id, DAAS_PROJECT_RECORD_ID);
-		assert.equal(payload.projects[0].name, "DaaS project");
+		assert.equal(payload.projects[0].name, DAAS_PROJECT_NAME);
 		assert.equal(payload.projects[0].teamName, TEST_TEAM_NAME);
+		assert.equal(payload.projects[0].createdAt, DAAS_CREATED_AT);
+		assert.equal(payload.projects[0].description, "Discovery research project");
+		assert.deepEqual(payload.projects[0].objectives, DAAS_OBJECTIVES);
+		assert.deepEqual(payload.projects[0].user_groups, ["Law enforcement", "Borders and immigration"]);
+		assert.equal(payload.projects[0].stakeholders[0].name, "Pam Thethi");
+		assert.equal(payload.projects[1].id, PROJECT_RECORD_IDS[2]);
 	} finally {
 		d1ProjectCacheRows = [];
 		globalThis.fetch = originalFetch;
@@ -863,7 +895,20 @@ async function assertProjectReadResolvesAirtableRecordId() {
 
 async function assertProjectReadUsesPreviewSeedD1WhenAirtableIsUnavailable() {
 	const originalFetch = globalThis.fetch;
-	d1ProjectCacheRow = d1ProjectCacheRecord({ id: DAAS_PROJECT_RECORD_ID, source: "preview-seed", name: "DaaS project" });
+	d1ProjectCacheRow = d1ProjectCacheRecord({
+		id: DAAS_PROJECT_RECORD_ID,
+		source: "preview-seed",
+		name: DAAS_PROJECT_NAME,
+		createdAt: DAAS_CREATED_AT,
+		project: {
+			description: "Discovery research project",
+			objectives: DAAS_OBJECTIVES,
+			user_groups: ["Law enforcement", "Borders and immigration"],
+			stakeholders: [{ name: "Pam Thethi", role: "PSG - ILEC - Criminal Records Team", email: "pam.thethi@homeoffice.gov.uk" }],
+			lead_researcher: "Amy Everett",
+			lead_researcher_email: "amy.everett@homeoffice.gov.uk",
+		},
+	});
 	globalThis.fetch = createMockFetch([]);
 	const d1OnlyEnv = {
 		...env,
@@ -879,9 +924,14 @@ async function assertProjectReadUsesPreviewSeedD1WhenAirtableIsUnavailable() {
 
 		const project = await response.json();
 		assert.equal(project.id, DAAS_PROJECT_RECORD_ID);
-		assert.equal(project.name, "DaaS project");
+		assert.equal(project.name, DAAS_PROJECT_NAME);
+		assert.equal(project.description, "Discovery research project");
 		assert.equal(project.teamName, TEST_TEAM_NAME);
-		assert.deepEqual(project.objectives, ["Test objective"]);
+		assert.deepEqual(project.objectives, DAAS_OBJECTIVES);
+		assert.deepEqual(project.user_groups, ["Law enforcement", "Borders and immigration"]);
+		assert.equal(project.stakeholders[0].name, "Pam Thethi");
+		assert.equal(project.lead_researcher, "Amy Everett");
+		assert.equal(project.lead_researcher_email, "amy.everett@homeoffice.gov.uk");
 	} finally {
 		d1ProjectCacheRow = null;
 		globalThis.fetch = originalFetch;
@@ -1051,6 +1101,11 @@ function assertLegacyProjectsDirectHandlerIsAbsent() {
 function assertPreviewMigrationSeedsDaaSProject() {
 	const migration = fs.readFileSync("infra/cloudflare/migrations/preview/0002_seed_projects_cache.sql", "utf8");
 	assert.equal(migration.includes(DAAS_PROJECT_RECORD_ID), true);
+	assert.equal(migration.includes(DAAS_PROJECT_NAME), true);
+	assert.equal(migration.includes('"createdAt":"2026-06-24T10:10:00.000Z"'), true);
+	assert.equal(migration.includes("Establish a shared understanding of the TCN problem"), true);
+	assert.equal(migration.includes("Map end-to-end workflows (UK <-> EU)"), true);
+	assert.equal(migration.includes('"lead_researcher":"Amy Everett"'), true);
 	assert.equal(migration.includes('"team_ids":["team_daas"]'), true);
 	assert.equal(migration.includes('"teamName":"DaaS"'), true);
 }

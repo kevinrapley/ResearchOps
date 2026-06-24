@@ -58,7 +58,8 @@
     "Airtable Public API governed the follow-up decision to treat Airtable capture as secondary and non-blocking when rate-limited.",
     "Cloudflare also governed the follow-up Pages proxy correction for preview-host API calls carrying Cloudflare Access headers into the passwordless/D1 Worker.",
     "Cloudflare and Airtable Public API governed the follow-up project-list correction so D1 preview/cache rows remain the first-class read source and Airtable remains a secondary capture/upstream source.",
-    "Cloudflare governed the DaaS project follow-up because the missing record was a preview D1 seed gap rather than a browser rendering problem."
+    "Cloudflare governed the DaaS project follow-up because the missing record was a preview D1 seed gap rather than a browser rendering problem.",
+    "Cloudflare governed the DaaS ordering and content follow-up because the preview D1 payload needed the same project fields the dashboard and Projects page use for display."
   ],
   "filesRead": [
     "README.md",
@@ -76,8 +77,17 @@
     ".agent-operating-model/bundles/govuk-design-system/prompt.spec.yaml",
     ".agent-operating-model/bundles/govuk-design-system/prompt.body.xml",
     ".agent-operating-model/bundles/researchops-developer-control/references/core-rules.xml",
+    ".agent-operating-model/bundles/researchops-developer-control/references/researchops-platform-context.xml",
     ".agent-operating-model/bundles/researchops-developer-control/references/researchops-repository-conventions.xml",
+    ".agent-operating-model/bundles/researchops-developer-control/references/researchops-endpoint-catalog.xml",
+    ".agent-operating-model/bundles/researchops-developer-control/references/researchops-route-availability-policy.xml",
     ".agent-operating-model/bundles/researchops-developer-control/references/quality-gates.xml",
+    ".agent-operating-model/bundles/cloudflare/prompt.spec.yaml",
+    ".agent-operating-model/bundles/cloudflare/prompt.body.xml",
+    ".agent-operating-model/bundles/cloudflare/references/storage-and-state.xml",
+    ".agent-operating-model/bundles/cloudflare/references/testing-and-observability.xml",
+    ".agent-operating-model/bundles/airtable-public-api/prompt.spec.yaml",
+    ".agent-operating-model/bundles/airtable-public-api/prompt.body.xml",
     ".agent-operating-model/bundles/govuk-design-system/references/govuk-form-affordance-reference.xml",
     ".agent-operating-model/bundles/govuk-design-system/roles/accessibility-specialist.xml",
     "public/pages/project-dashboard/index.html",
@@ -95,7 +105,10 @@
     "public/_worker.js",
     "tests/pages-advanced-worker-auth-route-state.test.js",
     "infra/cloudflare/migrations/preview/0002_seed_projects_cache.sql",
-    "tests/projects-route-contract.test.js"
+    "tests/projects-route-contract.test.js",
+    "public/js/projects-page.js",
+    "data/projects.csv",
+    "docs/agent-audit/reasoning/2026/06/16/daas-dashboard-brand-panel.md"
   ],
   "filesModifiedOrCreated": [
     "docs/agent-audit/reasoning/2026/06/24/edit-project-objectives-markdown.md",
@@ -121,7 +134,8 @@
     "Preview-load follow-up confirmed preview Pages proxying kept forwarding cf-access-jwt-assertion to the passwordless preview Worker. Without a ResearchOps session this triggered Cloudflare Access fallback and returned access_configuration_missing. The proxy now strips the Access JWT and email headers for preview-host API calls while preserving the ResearchOps session cookie.",
     "Second dashboard-load follow-up confirmed /pages/project-dashboard/ was not included in the Pages static protected-route preflight. A signed-out dashboard URL could render the dashboard shell and then fail its project API calls. The route is now protected like /pages/projects/ and /pages/repository/.",
     "D1 read follow-up confirmed the project route ignored preview D1 cache rows with source preview-seed and did not use partial D1 rows after Airtable was unavailable. The project route now treats preview-seed as a readable full D1 source, preserves it across D1-backed edits, and allows airtable-partial rows as a last-resort fallback.",
-    "DaaS follow-up confirmed Home Office Biometrics projects loaded from D1 preview seed, but the reported DaaS project id recdMo80h1QaNQCBk was absent from the preview project seed. A remote D1 read check was attempted but blocked because the local environment has no CLOUDFLARE_API_TOKEN."
+    "DaaS follow-up confirmed Home Office Biometrics projects loaded from D1 preview seed, but the reported DaaS project id recdMo80h1QaNQCBk was absent from the preview project seed. A remote D1 read check was attempted but blocked because the local environment has no CLOUDFLARE_API_TOKEN.",
+    "DaaS ordering/content follow-up confirmed the DaaS seed used a placeholder DaaS project payload with no createdAt, objectives, user groups, stakeholders or lead researcher fields. Projects and dashboard rendering depend on those fields, so the row sorted below older seed rows and rendered empty content."
   ],
   "reviewThreads": [
     {
@@ -152,6 +166,10 @@
     "node --import ./tests/helpers/generated-govuk-page-source.mjs --test tests/projects-service-split-route-state.test.js tests/projects-page-route-state.test.js: passed, 2 tests",
     "node --import ./tests/helpers/generated-govuk-page-source.mjs --test tests/projects-route-contract.test.js: passed after the D1 preview-seed and partial-cache fallback correction",
     "node --import ./tests/helpers/generated-govuk-page-source.mjs --test tests/projects-route-contract.test.js: passed after adding the DaaS preview seed regression",
+    "node --import ./tests/helpers/generated-govuk-page-source.mjs --test tests/projects-route-contract.test.js: passed after adding DaaS ordering and TCN content assertions",
+    "sqlite3 ':memory:' < infra/cloudflare/migrations/preview/0002_seed_projects_cache.sql: passed after the TCN content seed correction",
+    "npm test: passed after the DaaS ordering and TCN content correction, 247 tests",
+    "npm run lint: passed with existing repository warnings and no errors after the DaaS ordering and TCN content correction",
     "npm run lint: passed with existing repository warnings and no errors after the D1 preview-seed correction",
     "npm test: first run after lint failed in tests/deploy-asset-paths.test.js; the focused asset-path test passed immediately afterwards and a clean rerun of npm test passed, 247 tests",
     "npm test: passed after the DaaS preview seed correction, 247 tests",

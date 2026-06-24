@@ -51,14 +51,14 @@ INSERT INTO rops_projects_cache (id, name, org, phase, status, active, source, u
 VALUES
 	(
 		'recdMo80h1QaNQCBk',
-		'DaaS project',
+		'Third Country National Discovery',
 		'DaaS',
 		'Discovery',
 		'Goal setting & problem defining',
 		1,
 		'preview-seed',
-		'2026-06-24T09:40:00.000Z',
-		'{"id":"recdMo80h1QaNQCBk","airtableId":"recdMo80h1QaNQCBk","recordId":"recdMo80h1QaNQCBk","name":"DaaS project","description":"","rops:servicePhase":"Discovery","rops:projectStatus":"Goal setting & problem defining","objectives":[],"user_groups":[],"stakeholders":[],"team_ids":["team_daas"],"teamIds":["team_daas"],"teamNames":["DaaS"],"teamName":"DaaS","team_name":"DaaS","team":"DaaS","org":"DaaS"}'
+		'2026-06-24T10:10:00.000Z',
+		'{"id":"recdMo80h1QaNQCBk","airtableId":"recdMo80h1QaNQCBk","recordId":"recdMo80h1QaNQCBk","name":"Third Country National Discovery","description":"Discovery research project","createdAt":"2026-06-24T10:10:00.000Z","rops:servicePhase":"Discovery","rops:projectStatus":"Goal setting & problem defining","objectives":["1. Understand the problem space\n- Establish a shared understanding of the TCN problem\n- Define the problem statement, goals, and assumptions\n- Align stakeholders on the scope and purpose of Discovery","2. Build an \"As-Is\" view of the current system\n- Map end-to-end workflows (UK <-> EU)\n- Identify systems involved (e.g., LEDS, HOB, ACRO)\n- Understand data flows and formats\n- Capture process steps, timings, and responsibilities","3. Identify users, stakeholders, and impacts\n- Understand who uses TCN data (direct and indirect users)\n- Map organisations involved across policing, borders, and justice\n- Assess who will be impacted by change"],"user_groups":["Law enforcement","Borders and immigration"],"stakeholders":[{"name":"Pam Thethi","role":"PSG - ILEC - Criminal Records Team","email":"pam.thethi@homeoffice.gov.uk"}],"lead_researcher":"Amy Everett","lead_researcher_email":"amy.everett@homeoffice.gov.uk","team_ids":["team_daas"],"teamIds":["team_daas"],"teamNames":["DaaS"],"teamName":"DaaS","team_name":"DaaS","team":"DaaS","org":"DaaS"}'
 	)
 ON CONFLICT(id) DO UPDATE SET
 	name = excluded.name,

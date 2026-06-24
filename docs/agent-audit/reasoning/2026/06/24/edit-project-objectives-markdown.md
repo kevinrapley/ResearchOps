@@ -47,6 +47,7 @@ Precedence applied:
 - Cloudflare also governed the follow-up Pages proxy correction for preview-host API calls carrying Cloudflare Access headers into the passwordless/D1 Worker.
 - Cloudflare and Airtable Public API governed the follow-up project-list correction so D1 preview/cache rows remain the first-class read source and Airtable remains a secondary capture/upstream source.
 - Cloudflare governed the DaaS project follow-up because the missing record was a preview D1 seed gap rather than a browser rendering problem.
+- Cloudflare governed the DaaS ordering and content follow-up because the preview D1 payload needed the same project fields the dashboard and Projects page use for display.
 
 ## Files Read
 
@@ -65,8 +66,17 @@ Precedence applied:
 - `.agent-operating-model/bundles/govuk-design-system/prompt.spec.yaml`
 - `.agent-operating-model/bundles/govuk-design-system/prompt.body.xml`
 - `.agent-operating-model/bundles/researchops-developer-control/references/core-rules.xml`
+- `.agent-operating-model/bundles/researchops-developer-control/references/researchops-platform-context.xml`
 - `.agent-operating-model/bundles/researchops-developer-control/references/researchops-repository-conventions.xml`
+- `.agent-operating-model/bundles/researchops-developer-control/references/researchops-endpoint-catalog.xml`
+- `.agent-operating-model/bundles/researchops-developer-control/references/researchops-route-availability-policy.xml`
 - `.agent-operating-model/bundles/researchops-developer-control/references/quality-gates.xml`
+- `.agent-operating-model/bundles/cloudflare/prompt.spec.yaml`
+- `.agent-operating-model/bundles/cloudflare/prompt.body.xml`
+- `.agent-operating-model/bundles/cloudflare/references/storage-and-state.xml`
+- `.agent-operating-model/bundles/cloudflare/references/testing-and-observability.xml`
+- `.agent-operating-model/bundles/airtable-public-api/prompt.spec.yaml`
+- `.agent-operating-model/bundles/airtable-public-api/prompt.body.xml`
 - `.agent-operating-model/bundles/govuk-design-system/references/govuk-form-affordance-reference.xml`
 - `.agent-operating-model/bundles/govuk-design-system/roles/accessibility-specialist.xml`
 - `public/pages/project-dashboard/index.html`
@@ -85,6 +95,9 @@ Precedence applied:
 - `tests/pages-advanced-worker-auth-route-state.test.js`
 - `infra/cloudflare/migrations/preview/0002_seed_projects_cache.sql`
 - `tests/projects-route-contract.test.js`
+- `public/js/projects-page.js`
+- `data/projects.csv`
+- `docs/agent-audit/reasoning/2026/06/16/daas-dashboard-brand-panel.md`
 
 ## Diagnosis
 
@@ -93,6 +106,7 @@ Precedence applied:
 - The Worker project PATCH route already accepts `objectives` and stores normalised objective lines.
 - The missing behavior was local interaction: rendered objectives were not editable and there was no inline textarea blur-save path.
 - DaaS follow-up diagnosis: Home Office Biometrics projects loaded from D1 preview seed, but the reported DaaS project id `recdMo80h1QaNQCBk` was absent from `infra/cloudflare/migrations/preview/0002_seed_projects_cache.sql`. A remote D1 read check was attempted but blocked because the local environment has no `CLOUDFLARE_API_TOKEN`.
+- DaaS ordering/content diagnosis: the DaaS seed used a placeholder `DaaS project` payload with no `createdAt`, objectives, user groups, stakeholders or lead researcher fields. The Projects page and Worker both sort by `createdAt`, so the DaaS row fell below seeded Home Office Biometrics rows and the dashboard rendered empty content panels.
 
 ## Changes
 
@@ -109,6 +123,7 @@ Precedence applied:
 - Follow-up dashboard-load correction: added `/pages/project-dashboard/` to the Pages static protected-route preflight. A signed-out project dashboard URL now redirects to `/pages/account/sign-in/` with the original `?id=...` return path instead of rendering the dashboard shell and then failing its project API calls.
 - Follow-up D1 read correction: allowed `preview-seed` project cache rows to serve the project list and single-project dashboard reads, preserved `preview-seed` when a D1-backed objective edit is saved, and allowed `airtable-partial` project cache rows as the last-resort list fallback after Airtable is unavailable.
 - Follow-up DaaS seed correction: added the known DaaS Airtable record id `recdMo80h1QaNQCBk` to the preview D1 project cache seed with `DaaS` org/team metadata and `team_daas` in `payload_json`, so DaaS users can load it from D1 when Airtable is unavailable.
+- Follow-up DaaS content correction: replaced the placeholder seed payload with `Third Country National Discovery`, `createdAt`, description, TCN objective Markdown, user groups, stakeholder and lead researcher fields so DaaS appears first in Projects and the dashboard has the expected content when Airtable is unavailable.
 - Bumped the project dashboard JS and CSS asset version to `project-dashboard-objective-edit-20260624`.
 - Regenerated `public/css/project-dashboard.css` and `public/pages/project-dashboard/index.html`.
 - Updated route-state tests for the inline edit contract, blur-save path, keyboard activation, focus styling and cache-busted assets.
@@ -137,6 +152,10 @@ Precedence applied:
 - `node --import ./tests/helpers/generated-govuk-page-source.mjs --test tests/projects-service-split-route-state.test.js tests/projects-page-route-state.test.js`: passed, 2 tests.
 - `node --import ./tests/helpers/generated-govuk-page-source.mjs --test tests/projects-route-contract.test.js`: passed after the D1 preview-seed and partial-cache fallback correction.
 - `node --import ./tests/helpers/generated-govuk-page-source.mjs --test tests/projects-route-contract.test.js`: passed after adding the DaaS preview seed regression.
+- `node --import ./tests/helpers/generated-govuk-page-source.mjs --test tests/projects-route-contract.test.js`: passed after adding DaaS ordering and TCN content assertions.
+- `sqlite3 ':memory:' < infra/cloudflare/migrations/preview/0002_seed_projects_cache.sql`: passed after the TCN content seed correction.
+- `npm test`: passed after the DaaS ordering and TCN content correction, 247 tests.
+- `npm run lint`: passed with existing repository warnings and no errors after the DaaS ordering and TCN content correction.
 - `npm run lint`: passed with existing repository warnings and no errors after the D1 preview-seed correction.
 - `npm test`: first run after lint failed in `tests/deploy-asset-paths.test.js`; the focused asset-path test passed immediately afterwards and a clean rerun of `npm test` passed, 247 tests.
 - `npm test`: passed after the DaaS preview seed correction, 247 tests.
