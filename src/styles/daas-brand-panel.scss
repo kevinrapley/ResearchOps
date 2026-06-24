@@ -1,4 +1,5 @@
-.rops-daas-brand-panel {
+.rops-daas-brand-panel,
+.rops-leds-brand-panel {
 	display: none;
 }
 
@@ -20,6 +21,50 @@
 	}
 
 	.rops-daas-brand-panel__logo {
+		display: block;
+		height: auto;
+		max-width: min(264px, 45%);
+		position: relative;
+		width: 264px;
+		z-index: 1;
+	}
+
+	.rops-leds-brand-panel--visible {
+		align-items: center;
+		background-color: #1a1d35;
+		box-sizing: border-box;
+		display: flex;
+		isolation: isolate;
+		min-height: 124px;
+		margin-bottom: 1rem;
+		margin-top: 1rem;
+		overflow: hidden;
+		padding: 24px 32px;
+		position: relative;
+	}
+
+	.rops-leds-brand-panel--visible::before {
+		background-image: url('/images/brands/leds-panel-background.png');
+		background-position: center 34%;
+		background-repeat: no-repeat;
+		background-size: cover;
+		content: '';
+		inset: 0;
+		mix-blend-mode: screen;
+		opacity: 0.58;
+		position: absolute;
+		z-index: 0;
+	}
+
+	.rops-leds-brand-panel--visible::after {
+		background-color: rgba(123, 47, 143, 0.34);
+		content: '';
+		inset: 0;
+		position: absolute;
+		z-index: 0;
+	}
+
+	.rops-leds-brand-panel__logo {
 		display: block;
 		height: auto;
 		max-width: min(264px, 45%);

@@ -242,14 +242,22 @@ function brandValues(value) {
 }
 
 function renderProjectBrand(project = {}) {
-	const panel = document.getElementById("daas-brand-panel");
-	if (!panel) return;
-	const isDaaSProject = [project.org, project.teamName, project.team_name, project.team, project.teamNames, project.team_names, project.teams]
+	const daasPanel = document.getElementById("daas-brand-panel");
+	const ledsPanel = document.getElementById("leds-brand-panel");
+	if (!daasPanel && !ledsPanel) return;
+	const brandKeys = [project.org, project.teamName, project.team_name, project.team, project.teamNames, project.team_names, project.teams]
 		.flatMap(brandValues)
-		.map(normaliseBrandKey)
-		.includes("daas");
-	panel.hidden = !isDaaSProject;
-	panel.classList.toggle("rops-daas-brand-panel--visible", isDaaSProject);
+		.map(normaliseBrandKey);
+	const isDaaSProject = brandKeys.includes("daas");
+	const isLedsProject = !isDaaSProject && brandKeys.includes("leds");
+	if (daasPanel) {
+		daasPanel.hidden = !isDaaSProject;
+		daasPanel.classList.toggle("rops-daas-brand-panel--visible", isDaaSProject);
+	}
+	if (ledsPanel) {
+		ledsPanel.hidden = !isLedsProject;
+		ledsPanel.classList.toggle("rops-leds-brand-panel--visible", isLedsProject);
+	}
 }
 
 function renderProject(project) {

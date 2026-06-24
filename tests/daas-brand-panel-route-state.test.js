@@ -72,6 +72,9 @@ function includes(source, text, label) {
 includes(macroSource, "id=\"daas-brand-panel\"", "DaaS brand panel macro");
 includes(macroSource, "class=\"rops-daas-brand-panel\"", "DaaS brand panel macro");
 includes(macroSource, "/images/brands/daas-logo.svg", "DaaS brand panel macro");
+includes(macroSource, "id=\"leds-brand-panel\"", "DaaS brand panel macro");
+includes(macroSource, "class=\"rops-leds-brand-panel\"", "DaaS brand panel macro");
+includes(macroSource, "/images/brands/leds-logo-white.svg", "DaaS brand panel macro");
 
 includes(generatedTargetsSource, "source: 'src/styles/daas-brand-panel.scss'", "generated CSS targets");
 includes(generatedTargetsSource, "output: 'public/css/daas-brand-panel.css'", "generated CSS targets");
@@ -82,14 +85,23 @@ for (const source of [sassSource, cssSource]) {
 	includes(source, "home-office-digital-triangles.svg", "DaaS brand panel stylesheet");
 	includes(source, "background-position: right -3rem bottom -7rem", "DaaS brand panel stylesheet");
 	includes(source, "background-size: 50% 200%", "DaaS brand panel stylesheet");
+	includes(source, ".rops-leds-brand-panel", "LEDS brand panel stylesheet");
+	includes(source, "#1a1d35", "LEDS brand panel stylesheet");
+	includes(source, "leds-panel-background.png", "LEDS brand panel stylesheet");
+	includes(source, "background-position: center 34%", "LEDS brand panel stylesheet");
+	includes(source, "mix-blend-mode: screen", "LEDS brand panel stylesheet");
 }
 
 includes(controllerSource, "export function isDaaSProject", "DaaS brand panel controller");
+includes(controllerSource, "export function isLedsProject", "DaaS brand panel controller");
 includes(controllerSource, "export function renderDaaSBrandPanel", "DaaS brand panel controller");
+includes(controllerSource, "export function renderLedsBrandPanel", "DaaS brand panel controller");
+includes(controllerSource, "export function renderProjectBrandPanels", "DaaS brand panel controller");
 includes(controllerSource, "export async function loadProjectBrandById", "DaaS brand panel controller");
 includes(controllerSource, "await import(\"/js/study-route-context.js\")", "DaaS brand panel controller");
 includes(controllerSource, "resolveStudyContextFromUrl(params)", "DaaS brand panel controller");
 includes(controllerSource, "rops-daas-brand-panel--visible", "DaaS brand panel controller");
+includes(controllerSource, "rops-leds-brand-panel--visible", "DaaS brand panel controller");
 
 for (const route of routes) {
 	const templateSource = fs.readFileSync(route.template, "utf8");
@@ -101,6 +113,9 @@ for (const route of routes) {
 	includes(pageSource, "id=\"daas-brand-panel\"", `${route.label} page`);
 	includes(pageSource, "class=\"rops-daas-brand-panel\"", `${route.label} page`);
 	includes(pageSource, "/images/brands/daas-logo.svg", `${route.label} page`);
+	includes(pageSource, "id=\"leds-brand-panel\"", `${route.label} page`);
+	includes(pageSource, "class=\"rops-leds-brand-panel\"", `${route.label} page`);
+	includes(pageSource, "/images/brands/leds-logo-white.svg", `${route.label} page`);
 	includes(pageSource, "href=\"/css/daas-brand-panel.css?v=20260616\"", `${route.label} page`);
 	includes(pageSource, "src=\"/js/daas-brand-panel.js?v=20260616\"", `${route.label} page`);
 }

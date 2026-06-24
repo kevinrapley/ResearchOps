@@ -103,6 +103,9 @@ assert.equal(
 includes(daasPanelMacroSource, "id=\"daas-brand-panel\"", "DaaS brand panel macro");
 includes(daasPanelMacroSource, "class=\"rops-daas-brand-panel\"", "DaaS brand panel macro");
 includes(daasPanelMacroSource, "/images/brands/daas-logo.svg", "DaaS brand panel macro");
+includes(daasPanelMacroSource, "id=\"leds-brand-panel\"", "DaaS brand panel macro");
+includes(daasPanelMacroSource, "class=\"rops-leds-brand-panel\"", "DaaS brand panel macro");
+includes(daasPanelMacroSource, "/images/brands/leds-logo-white.svg", "DaaS brand panel macro");
 includes(templateSource, "id=\"kv-project-stage\"", "project dashboard template");
 includes(templateSource, "id=\"project-description-region\"", "project dashboard template");
 includes(templateSource, "Loading service stage", "project dashboard template");
@@ -159,9 +162,11 @@ includes(pageSource, "class=\"govuk-summary-list govuk-body-s\"", "project dashb
 includes(pageSource, "id=\"project-title\"", "project dashboard page");
 includes(pageSource, "id=\"breadcrumb-project\"", "project dashboard page");
 includes(pageSource, "id=\"daas-brand-panel\"", "project dashboard page");
+includes(pageSource, "id=\"leds-brand-panel\"", "project dashboard page");
 excludes(pageSource, "id=\"mural-status\"", "project dashboard page");
 excludes(pageSource, "class=\"rops-mural-status\"", "project dashboard page");
 includes(pageSource, "class=\"rops-daas-brand-panel\"", "project dashboard page");
+includes(pageSource, "class=\"rops-leds-brand-panel\"", "project dashboard page");
 includes(pageSource, "class=\"rops-dashboard-layout\"", "project dashboard page");
 includes(pageSource, "class=\"rops-dashboard-sidebar\"", "project dashboard page");
 includes(pageSource, "class=\"govuk-summary-card rops-project-areas-nav\"", "project dashboard page");
@@ -295,6 +300,7 @@ includes(controllerSource, "function brandValues", "project dashboard controller
 includes(controllerSource, "project.teamNames", "project dashboard controller");
 includes(controllerSource, ".flatMap(brandValues)", "project dashboard controller");
 includes(controllerSource, "rops-daas-brand-panel--visible", "project dashboard controller");
+includes(controllerSource, "rops-leds-brand-panel--visible", "project dashboard controller");
 includes(controllerSource, "function renderStudies", "project dashboard controller");
 includes(controllerSource, "function isStudiesUnavailableError", "project dashboard controller");
 includes(controllerSource, "if (isStudiesUnavailableError(error)) return [];", "project dashboard controller");
@@ -411,6 +417,7 @@ excludes(muralStateSource, "syncDashboardPresentation", "Project Dashboard Mural
 
 includes(dashboardSassSource, ".rops-dashboard-header", "project dashboard Sass source");
 includes(dashboardSassSource, ".rops-daas-brand-panel", "project dashboard Sass source");
+includes(dashboardSassSource, ".rops-leds-brand-panel", "project dashboard Sass source");
 includes(dashboardSassSource, ".rops-dashboard-layout", "project dashboard Sass source");
 includes(dashboardSassSource, ".rops-dashboard-sidebar", "project dashboard Sass source");
 includes(dashboardSassSource, ".rops-project-areas-nav", "project dashboard Sass source");
@@ -492,6 +499,10 @@ includes(dashboardCssSource, "#1a1d35", "project dashboard stylesheet");
 includes(dashboardCssSource, "home-office-digital-triangles.svg", "project dashboard stylesheet");
 includes(dashboardCssSource, "background-position: right -3rem bottom -7rem", "project dashboard stylesheet");
 includes(dashboardCssSource, "background-size: 50% 200%", "project dashboard stylesheet");
+includes(dashboardCssSource, ".rops-leds-brand-panel", "project dashboard stylesheet");
+includes(dashboardCssSource, "#1a1d35", "project dashboard stylesheet");
+includes(dashboardCssSource, "leds-panel-background.png", "project dashboard stylesheet");
+includes(dashboardCssSource, "mix-blend-mode: screen", "project dashboard stylesheet");
 includes(dashboardCssSource, ".rops-study-list", "project dashboard stylesheet");
 includes(dashboardCssSource, ".rops-objective-list", "project dashboard stylesheet");
 includes(dashboardCssSource, ".rops-objective-list > li", "project dashboard stylesheet");

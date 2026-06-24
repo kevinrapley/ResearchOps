@@ -1,4 +1,5 @@
 const DAAS_KEY = "daas";
+const LEDS_KEY = "leds";
 
 function resolveApiBase() {
 	const explicit =
@@ -68,6 +69,10 @@ export function isDaaSProject(project = {}) {
 	return projectBrandValues(project).map(normaliseBrandKey).includes(DAAS_KEY);
 }
 
+export function isLedsProject(project = {}) {
+	return projectBrandValues(project).map(normaliseBrandKey).includes(LEDS_KEY);
+}
+
 export function renderDaaSBrandPanel(project = {}) {
 	const panel = document.getElementById("daas-brand-panel");
 	if (!panel) return false;
@@ -75,6 +80,22 @@ export function renderDaaSBrandPanel(project = {}) {
 	panel.hidden = !showPanel;
 	panel.classList.toggle("rops-daas-brand-panel--visible", showPanel);
 	return showPanel;
+}
+
+export function renderLedsBrandPanel(project = {}) {
+	const panel = document.getElementById("leds-brand-panel");
+	if (!panel) return false;
+	const showPanel = !isDaaSProject(project) && isLedsProject(project);
+	panel.hidden = !showPanel;
+	panel.classList.toggle("rops-leds-brand-panel--visible", showPanel);
+	return showPanel;
+}
+
+export function renderProjectBrandPanels(project = {}) {
+	return {
+		daas: renderDaaSBrandPanel(project),
+		leds: renderLedsBrandPanel(project),
+	};
 }
 
 async function readJsonResponse(response) {
@@ -119,13 +140,13 @@ async function projectForCurrentRoute() {
 }
 
 async function initDaaSBrandPanel() {
-	if (!document.getElementById("daas-brand-panel")) return;
+	if (!document.getElementById("daas-brand-panel") && !document.getElementById("leds-brand-panel")) return;
 	try {
 		const project = await projectForCurrentRoute();
-		renderDaaSBrandPanel(project || {});
+		renderProjectBrandPanels(project || {});
 	} catch (error) {
 		console.warn("[daas-brand-panel] project brand lookup failed", error);
-		renderDaaSBrandPanel({});
+		renderProjectBrandPanels({});
 	}
 }
 
