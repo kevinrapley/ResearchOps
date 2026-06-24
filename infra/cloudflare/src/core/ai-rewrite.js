@@ -39,7 +39,7 @@
 
 import { DEFAULTS } from "./ai-rewrite/config.js";
 import { auditForBias, neutraliseInventedMethods, neutraliseInventedQuantifiers } from "./ai-rewrite/guardrails.js";
-import { corsHeaders, json } from "./ai-rewrite/http.js";
+import { corsHeaders, isAllowedOrigin, json } from "./ai-rewrite/http.js";
 import { DESC_SYSTEM_PROMPT, OBJ_SYSTEM_PROMPT, rulesPromptForMode, SUGGESTION_LIBRARY } from "./ai-rewrite/prompts.js";
 import { clamp, detectPII, safeParseJSON, safeText, sanitizeRewrite } from "./ai-rewrite/text.js";
 
@@ -88,8 +88,7 @@ class AiRewriteService {
 		}
 
 		// Enforce ALLOWED_ORIGINS
-		const allowed = (this.env.ALLOWED_ORIGINS || "").split(",").map(s => s.trim()).filter(Boolean);
-		if (origin && !allowed.includes(origin)) {
+		if (!isAllowedOrigin(this.env, origin)) {
 			return json({ error: "Origin not allowed" }, 403, corsHeaders(this.env, origin));
 		}
 

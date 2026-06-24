@@ -51,12 +51,12 @@
 							<textarea id="p_desc" name="description" class="govuk-textarea" required aria-required="true" aria-invalid="false" aria-describedby="p_desc_help"></textarea>
 						</div>
 
-						<div id="ai-tools" class="toolbar mt-2 hidden start-assist" aria-label="Description assistance">
+						<div id="ai-tools" class="hidden start-assist" aria-label="Description assistance">
 							<p id="ai-rewrite-help" class="govuk-hint">
 								This sends the description you entered to an AI service to suggest improvements. Do not include participant personal data.
 							</p>
 							<button class="govuk-button govuk-button--secondary" id="btn-ai-rewrite" type="button" aria-describedby="ai-rewrite-help">Try AI rewrite</button>
-							<small id="ai-rewrite-status" class="mono muted" aria-live="polite"></small>
+							<span id="ai-rewrite-status" class="govuk-body-s start-assist-status" aria-live="polite"></span>
 						</div>
 
 						<div id="description-suggestions" class="mt-2 start-assist-output" aria-live="polite"></div>
@@ -85,13 +85,13 @@
 							<p id="p_objectives_help" class="govuk-hint">List at least one research objective. Keep objectives action-oriented and linked to decisions the team needs to make. Do not include participant personal data.</p>
 							<p id="p_objectives_error" class="govuk-error-message start-error" hidden></p>
 							<textarea id="p_objectives" name="p_objectives" class="govuk-textarea" rows="5" required aria-required="true" aria-invalid="false" aria-describedby="p_objectives_help"></textarea>
-							<div id="ai-objectives-tools" class="toolbar mt-2 hidden start-assist" aria-label="Objectives assistance">
+							<div id="ai-objectives-tools" class="hidden start-assist" aria-label="Objectives assistance">
 								<p id="ai-objectives-help" class="govuk-hint">
 									This sends the objectives you entered to an AI service to suggest improvements. Do not include participant personal data.
 								</p>
 								<button class="govuk-button govuk-button--secondary" id="btn-obj-suggestions" type="button">Get suggestions</button>
 								<button class="govuk-button govuk-button--secondary" id="btn-obj-ai-rewrite" type="button" aria-describedby="ai-objectives-help">Try AI rewrite</button>
-								<small id="ai-obj-status" class="mono muted" aria-live="polite"></small>
+								<span id="ai-obj-status" class="govuk-body-s start-assist-status" aria-live="polite"></span>
 							</div>
 						</div>
 

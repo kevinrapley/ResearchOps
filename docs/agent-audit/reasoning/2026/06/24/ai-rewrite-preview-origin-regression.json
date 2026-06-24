@@ -1,0 +1,137 @@
+{
+  "date": "2026-06-24",
+  "branch": "fix/ai-rewrite-preview-origin",
+  "taskSummary": "Investigate and fix a regression where Step 1 /pages/start/ AI rewrite reports that suggestions are temporarily unavailable and the AI review/rewrite area has degraded presentation.",
+  "traceDecision": "required-fix-branch",
+  "correctedBranchBehaviour": "Investigation started on feature/edit-project-objectives-markdown, but this was an existing-behaviour regression. The work was moved to fix/ai-rewrite-preview-origin before commit, push and PR creation.",
+  "operatingModelFilesLoaded": [
+    "AGENTS.md",
+    ".agent-operating-model/orchestration.xml",
+    ".agent-operating-model/bundle-registry.json",
+    ".agent-operating-model/task-signal-catalog.json",
+    ".agent-operating-model/selection-rules.json",
+    ".agent-operating-model/bootstrap-checklist.md",
+    ".agent-operating-model/precedence-policy.md",
+    ".agent-operating-model/trace-policy.md",
+    ".agent-operating-model/trace-layers.md",
+    ".agent-operating-model/github-mutation-policy.md"
+  ],
+  "selectedBundles": [
+    {
+      "id": "github-diamond",
+      "canonicalPath": ".agent-operating-model/bundles/github/"
+    },
+    {
+      "id": "researchops-developer-control",
+      "canonicalPath": ".agent-operating-model/bundles/researchops-developer-control/"
+    },
+    {
+      "id": "multi-functional-team",
+      "canonicalPath": ".agent-operating-model/bundles/multi-functional-team/"
+    },
+    {
+      "id": "govuk-design-system",
+      "canonicalPath": ".agent-operating-model/bundles/govuk-design-system/"
+    },
+    {
+      "id": "cloudflare",
+      "canonicalPath": ".agent-operating-model/bundles/cloudflare/"
+    }
+  ],
+  "skippedBundles": [
+    "openai-platform",
+    "mcp-agent-tooling",
+    "airtable-public-api",
+    "mural-public-api"
+  ],
+  "filesRead": [
+    "public/pages/start/index.html",
+    "public/js/start-description-assist.js",
+    "public/js/start-objectives-assist.js",
+    "infra/cloudflare/src/core/ai-rewrite.js",
+    "infra/cloudflare/src/core/ai-rewrite/http.js",
+    "infra/cloudflare/src/core/ai-rewrite/config.js",
+    "infra/cloudflare/src/core/ai-rewrite/testing.js",
+    "infra/cloudflare/src/core/router.js",
+    "infra/cloudflare/src/worker.js",
+    "infra/cloudflare/wrangler.toml",
+    "public/js/copilot-suggester.js",
+    "src/styles/start.scss",
+    "public/css/start.css",
+    "src/govuk/templates/pages/start.njk",
+    "tests/ai-rewrite-split-route-state.test.js",
+    "tests/start-page-route-state.test.js",
+    "tests/start-project-step-1-defaults-route-state.test.js"
+  ],
+  "filesCreatedOrModified": [
+    "infra/cloudflare/src/core/ai-rewrite/http.js",
+    "infra/cloudflare/src/core/ai-rewrite.js",
+    "src/styles/start.scss",
+    "public/css/start.css",
+    "src/govuk/templates/pages/start.njk",
+    "public/pages/start/index.html",
+    "public/js/copilot-suggester.js",
+    "public/js/start-description-assist.js",
+    "public/js/start-objectives-assist.js",
+    "tests/ai-rewrite-origin-policy.test.js",
+    "tests/start-page-route-state.test.js",
+    "docs/agent-audit/reasoning/2026/06/24/ai-rewrite-preview-origin-regression.md",
+    "docs/agent-audit/reasoning/2026/06/24/ai-rewrite-preview-origin-regression.json"
+  ],
+  "rootCause": "The AI rewrite handler had a separate literal ALLOWED_ORIGINS check that rejected ResearchOps Pages branch preview origins even though the wider Worker CORS layer accepts researchops.pages.dev and *.researchops.pages.dev. The first fix was too narrow: the handler still rejected production custom domains including research-operations.com, www.research-operations.com and govuk.research-operations.com. The degraded visual presentation was separate: the renderer emitted structured suggestion and rewrite classes, but the Start page stylesheet did not style them. A GOV.UK conformance review then found the Start route stylesheet overrode govuk-textarea with font: inherit and the suggestion renderers used plain custom markup instead of GOV.UK body, list, tag, inset text and section-break classes.",
+  "validation": [
+    {
+      "command": "node --test tests/ai-rewrite-origin-policy.test.js",
+      "result": "failed before fix with 403 !== 200, passed after fix"
+    },
+    {
+      "command": "node --test tests/ai-rewrite-split-route-state.test.js tests/ai-rewrite-origin-policy.test.js tests/start-page-route-state.test.js tests/start-project-step-1-defaults-route-state.test.js",
+      "result": "passed, 4 tests"
+    },
+    {
+      "command": "node --test tests/ai-rewrite-origin-policy.test.js tests/start-page-route-state.test.js tests/ai-rewrite-split-route-state.test.js tests/start-project-step-1-defaults-route-state.test.js",
+      "result": "passed after follow-up fix, 8 tests"
+    },
+    {
+      "command": "direct AI rewrite handler reproduction",
+      "result": "accepted research-operations.com, www.research-operations.com, govuk.research-operations.com and a ResearchOps Pages branch preview origin; rejected evil.example with 403"
+    },
+    {
+      "command": "Playwright visual verification against local static Start page with mocked AI rewrite response",
+      "result": "desktop and mobile screenshots rendered suggestion grids, AI summary and rewrite block with non-zero layout, no horizontal overflow and responsive one-column/two-column behaviour"
+    },
+    {
+      "command": "Playwright GOV.UK conformance visual verification against local static Start page with mocked AI rewrite response",
+      "result": "desktop and mobile screenshots showed textarea, local suggestion heading, AI severity tag and rewrite block computed to GDS Transport, arial, sans-serif; GOV.UK tag and inset-text classes rendered; status text used govuk-body-s start-assist-status; no horizontal overflow"
+    },
+    {
+      "command": "node --test tests/start-page-route-state.test.js tests/ai-rewrite-origin-policy.test.js tests/ai-rewrite-split-route-state.test.js tests/start-project-step-1-defaults-route-state.test.js",
+      "result": "passed after GOV.UK conformance pass, 8 tests"
+    },
+    {
+      "command": "npx prettier -c --ignore-unknown src/govuk/templates/pages/start.njk src/styles/start.scss public/css/start.css public/js/copilot-suggester.js public/js/start-description-assist.js public/js/start-objectives-assist.js public/pages/start/index.html tests/start-page-route-state.test.js",
+      "result": "passed"
+    },
+    {
+      "command": "npx eslint public/js/copilot-suggester.js public/js/start-description-assist.js public/js/start-objectives-assist.js tests/start-page-route-state.test.js",
+      "result": "passed with no errors; reported 2 existing no-console warnings in public/js/start-description-assist.js"
+    },
+    {
+      "command": "git diff --check",
+      "result": "passed"
+    },
+    {
+      "command": "npx eslint infra/cloudflare/src/core/ai-rewrite.js infra/cloudflare/src/core/ai-rewrite/http.js tests/ai-rewrite-origin-policy.test.js tests/start-page-route-state.test.js",
+      "result": "passed with no errors; reported 3 existing no-console warnings in infra/cloudflare/src/core/ai-rewrite.js"
+    },
+    {
+      "command": "npx prettier -c infra/cloudflare/src/core/ai-rewrite/http.js src/styles/start.scss public/css/start.css tests/ai-rewrite-origin-policy.test.js tests/start-page-route-state.test.js docs/agent-audit/reasoning/2026/06/24/ai-rewrite-preview-origin-regression.md docs/agent-audit/reasoning/2026/06/24/ai-rewrite-preview-origin-regression.json",
+      "result": "initially failed on tests/ai-rewrite-origin-policy.test.js, then passed after formatting that test file and after the follow-up styling/origin changes"
+    },
+    {
+      "command": "node -e \"JSON.parse(require('fs').readFileSync('docs/agent-audit/reasoning/2026/06/24/ai-rewrite-preview-origin-regression.json','utf8')); console.log('json ok')\"",
+      "result": "passed"
+    }
+  ],
+  "residualRisk": "If a deployed Worker environment is missing the AI binding, the endpoint will still return AI_UNAVAILABLE and the UI will show the same generic message."
+}
