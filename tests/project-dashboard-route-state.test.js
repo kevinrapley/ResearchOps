@@ -104,11 +104,12 @@ includes(daasPanelMacroSource, "id=\"daas-brand-panel\"", "DaaS brand panel macr
 includes(daasPanelMacroSource, "class=\"rops-daas-brand-panel\"", "DaaS brand panel macro");
 includes(daasPanelMacroSource, "/images/brands/daas-logo.svg", "DaaS brand panel macro");
 includes(templateSource, "id=\"kv-project-stage\"", "project dashboard template");
+includes(templateSource, "id=\"project-description-region\"", "project dashboard template");
 includes(templateSource, "Loading service stage", "project dashboard template");
 includes(templateSource, "Loading project stage", "project dashboard template");
 includes(templateSource, "Mural optional", "project dashboard template");
-includes(templateSource, "project-dashboard.js?v=project-dashboard-daas-brand-20260616", "project dashboard template");
-includes(templateSource, "project-dashboard.css?v=project-dashboard-daas-brand-20260616", "project dashboard template");
+includes(templateSource, "project-dashboard.js?v=project-dashboard-description-edit-20260624", "project dashboard template");
+includes(templateSource, "project-dashboard.css?v=project-dashboard-description-edit-20260624", "project dashboard template");
 includes(templateSource, "project-dashboard-participants-list.js?v=participant-list-reveal-hide-20260602", "project dashboard template");
 excludes(templateSource, "project-dashboard-participants-list.js?v=participant-list-controls-20260601", "project dashboard template");
 includes(templateSource, "text: \"Dashboard\"", "project dashboard template");
@@ -234,8 +235,9 @@ assert.equal(
 	"Expected objectives list to render outside the Stakeholder management card",
 );
 includes(pageSource, "/images/brands/daas-logo.svg", "project dashboard page");
-includes(pageSource, "project-dashboard.js?v=project-dashboard-daas-brand-20260616", "project dashboard page");
-includes(pageSource, "project-dashboard.css?v=project-dashboard-daas-brand-20260616", "project dashboard page");
+includes(pageSource, "project-dashboard.js?v=project-dashboard-description-edit-20260624", "project dashboard page");
+includes(pageSource, "project-dashboard.css?v=project-dashboard-description-edit-20260624", "project dashboard page");
+includes(pageSource, "id=\"project-description-region\"", "project dashboard page");
 includes(pageSource, "Project", "project dashboard page");
 includes(pageSource, "Dashboard", "project dashboard page");
 includes(pageSource, "id=\"mural-connect\"", "project dashboard page");
@@ -256,13 +258,36 @@ includes(controllerSource, "return await loadProjectFromRecord(projectId);", "pr
 includes(controllerSource, "falling back to project list endpoint", "project dashboard controller");
 includes(controllerSource, "function renderProject", "project dashboard controller");
 includes(controllerSource, "function renderProjectBrand", "project dashboard controller");
+includes(controllerSource, "function renderProjectDescription", "project dashboard controller");
+includes(controllerSource, "function beginDescriptionEdit", "project dashboard controller");
+includes(controllerSource, "data-description-edit", "project dashboard controller");
+includes(controllerSource, "data-description-editor", "project dashboard controller");
+includes(controllerSource, "await saveProjectPatch({ description: nextDescription });", "project dashboard controller");
+includes(controllerSource, "currentProject.description = nextDescription;", "project dashboard controller");
+includes(controllerSource, "initDescriptionInlineEditing();", "project dashboard controller");
 includes(controllerSource, "function parseObjectiveMarkdownList", "project dashboard controller");
+includes(controllerSource, "function objectiveMarkdownItems", "project dashboard controller");
 includes(controllerSource, "function objectiveLines", "project dashboard controller");
 includes(controllerSource, "function objectiveListHtml", "project dashboard controller");
 includes(controllerSource, "line.match(/^\\d+[.)]\\s+(.+)$/)", "project dashboard controller");
 includes(controllerSource, "line.match(/^[-*+]\\s+(.+)$/)", "project dashboard controller");
 includes(controllerSource, "govuk-list govuk-list--number rops-objective-list", "project dashboard controller");
 includes(controllerSource, "govuk-list govuk-list--bullet rops-objective-list__sublist", "project dashboard controller");
+includes(controllerSource, "data-objective-edit", "project dashboard controller");
+includes(controllerSource, "data-objective-editor-index", "project dashboard controller");
+includes(controllerSource, "listItem.classList.add(\"rops-objective-list__item--editing\")", "project dashboard controller");
+includes(controllerSource, "textarea?.addEventListener(\"blur\"", "project dashboard controller");
+excludes(controllerSource, "}, { once: true });", "project dashboard controller");
+includes(controllerSource, "else nextObjectives.splice(index, 1);", "project dashboard controller");
+includes(controllerSource, "await saveProjectPatch({ objectives: nextObjectives });", "project dashboard controller");
+includes(controllerSource, "currentProject.objectives = nextObjectives;\n\t\t\trenderObjectives(nextObjectives);", "project dashboard controller");
+includes(
+	controllerSource,
+	"list.innerHTML = parsedObjectives.length ? objectiveListHtml(parsedObjectives) : '<p class=\"govuk-body-s\">No objectives yet.</p>';",
+	"project dashboard controller",
+);
+includes(controllerSource, "initObjectiveInlineEditing();", "project dashboard controller");
+includes(controllerSource, "event.key !== \"Enter\" && event.key !== \" \"", "project dashboard controller");
 includes(controllerSource, "function normaliseBrandKey", "project dashboard controller");
 includes(controllerSource, "project.teamName", "project dashboard controller");
 includes(controllerSource, "teamNames: normaliseCommaList(project.teamNames ?? project.team_names ?? project[\"Team Names\"])", "project dashboard controller");
@@ -288,6 +313,25 @@ excludes(controllerSource, "Service stage not recorded", "project dashboard cont
 excludes(controllerSource, "Project stage not recorded", "project dashboard controller");
 excludes(controllerSource, "rops-api.digikev-kevin-rapley.workers.dev", "project dashboard controller");
 excludes(controllerSource, "alert(\"Could not load project.\");", "project dashboard controller");
+
+includes(dashboardSassSource, ".rops-objective-list__display[role='button']", "project dashboard stylesheet");
+includes(dashboardSassSource, ".rops-dashboard-description[role='button']", "project dashboard stylesheet");
+includes(dashboardSassSource, ".rops-dashboard-description[role='button']:focus", "project dashboard stylesheet");
+includes(dashboardSassSource, ".rops-description-editor__textarea", "project dashboard stylesheet");
+includes(dashboardSassSource, ".rops-description-editor {\n\twidth: 100%;", "project dashboard stylesheet");
+includes(dashboardSassSource, ".rops-description-editor__textarea {\n\tbox-sizing: border-box;\n\tmin-height: 9rem;\n\tresize: vertical;\n\twidth: 100%;", "project dashboard stylesheet");
+includes(dashboardSassSource, ".rops-objective-list__display[role='button']:focus", "project dashboard stylesheet");
+includes(dashboardSassSource, ".rops-objective-list > .rops-objective-list__item--editing", "project dashboard stylesheet");
+includes(dashboardSassSource, "list-style: none;", "project dashboard stylesheet");
+includes(dashboardSassSource, ".rops-objective-editor__textarea", "project dashboard stylesheet");
+includes(dashboardCssSource, ".rops-objective-list__display[role=button]", "project dashboard stylesheet");
+includes(dashboardCssSource, ".rops-dashboard-description[role=button]", "project dashboard stylesheet");
+includes(dashboardCssSource, ".rops-dashboard-description[role=button]:focus", "project dashboard stylesheet");
+includes(dashboardCssSource, ".rops-description-editor__textarea", "project dashboard stylesheet");
+includes(dashboardCssSource, ".rops-description-editor {\n\twidth: 100%;", "project dashboard stylesheet");
+includes(dashboardCssSource, ".rops-description-editor__textarea {\n\tbox-sizing: border-box;\n\tmin-height: 9rem;\n\tresize: vertical;\n\twidth: 100%;", "project dashboard stylesheet");
+includes(dashboardCssSource, ".rops-objective-list__display[role=button]:focus", "project dashboard stylesheet");
+includes(dashboardCssSource, ".rops-objective-list > .rops-objective-list__item--editing", "project dashboard stylesheet");
 
 includes(dashboardContextSource, "[\"breadcrumb-project\", \"/pages/project-dashboard/\", \"id\"]", "project dashboard context controller");
 includes(dashboardContextSource, "projectScopedHref(path, queryKey, projectId, hash)", "project dashboard context controller");

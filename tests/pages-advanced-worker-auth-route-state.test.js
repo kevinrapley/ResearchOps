@@ -14,16 +14,17 @@ function excludes(source, text, label) {
 }
 
 includes(workerSource, "stripAccessHeaders: true", "Pages advanced worker");
+includes(workerSource, "headers.delete('cf-access-jwt-assertion');", "Pages advanced worker");
 includes(workerSource, "headers.delete('cf-access-authenticated-user-email');", "Pages advanced worker");
 includes(workerSource, "headers.delete('cf-access-user-email');", "Pages advanced worker");
-includes(workerSource, "'jwt-only'", "Pages advanced worker");
+includes(workerSource, "target.stripAccessHeaders ? 'false' : 'true'", "Pages advanced worker");
 includes(workerSource, "function shouldDisableStaticCache(pathname)", "Pages advanced worker static cache policy");
 includes(workerSource, "pathname === '/' || pathname.endsWith('/') || pathname.endsWith('.html')", "Pages advanced worker static cache policy");
 includes(workerSource, "headers.set('cache-control', 'no-store');", "Pages advanced worker static cache policy");
 includes(workerSource, "headers.delete('content-length');", "Pages advanced worker brand routing");
 includes(workerSource, "function protectedPageRedirect(request, env)", "Pages advanced worker protected page preflight");
 includes(workerSource, "apiEndpointTarget(request, env, '/api/me')", "Pages advanced worker protected page preflight");
-includes(workerSource, "cleanPath === '/pages/projects' || cleanPath === '/pages/repository'", "Pages advanced worker protected page preflight");
+includes(workerSource, "cleanPath === '/pages/project-dashboard'", "Pages advanced worker protected page preflight");
 includes(workerSource, "return response.ok ? null : signInRedirect(request);", "Pages advanced worker protected page preflight");
 includes(workerSource, "x-researchops-auth-redirect", "Pages advanced worker protected page preflight");
 includes(workerSource, "const PRODUCTION_BRAND_HOSTS = new Map", "Pages advanced worker brand routing");
@@ -32,7 +33,7 @@ includes(workerSource, "['govuk.research-operations.com', GOVUK_BRAND]", "Pages 
 includes(workerSource, "headers.set('x-researchops-brand', brand);", "Pages advanced worker brand routing");
 includes(workerSource, "injectBrandIntoHtml(await response.text(), brand)", "Pages advanced worker brand routing");
 includes(workerSource, "return staticAssetResponse(request, env);", "Pages advanced worker static cache policy");
-excludes(workerSource, "headers.delete('cf-access-jwt-assertion');", "Pages advanced worker");
+excludes(workerSource, "'jwt-only'", "Pages advanced worker");
 
 function assetEnv(headers = {}, body = "asset") {
 	return {
@@ -132,6 +133,25 @@ test("Pages advanced worker redirects unauthenticated Projects page requests to 
 	});
 });
 
+test("Pages advanced worker redirects unauthenticated Project dashboard requests to sign in", async () => {
+	await withMockedFetch(async (url) => {
+		assert.equal(url, "https://rops-api.digikev-kevin-rapley.workers.dev/api/me");
+		return new Response(JSON.stringify({ ok: false, error: "authentication_required" }), { status: 401 });
+	}, async () => {
+		const response = await worker.fetch(
+			new Request("https://researchops.pages.dev/pages/project-dashboard/?id=recMtdmBbaFilF2Tm"),
+			assetEnv({ "content-type": "text/html; charset=utf-8" }, "<!doctype html><html><head></head><body>Project dashboard</body></html>"),
+		);
+		assert.equal(response.status, 302);
+		assert.equal(response.headers.get("cache-control"), "no-store");
+		assert.equal(response.headers.get("x-researchops-auth-redirect"), "pages-static-preflight");
+		assert.equal(
+			response.headers.get("location"),
+			"https://researchops.pages.dev/pages/account/sign-in/?returnTo=%2Fpages%2Fproject-dashboard%2F%3Fid%3DrecMtdmBbaFilF2Tm",
+		);
+	});
+});
+
 test("Pages advanced worker redirects unauthenticated Repository page requests to sign in", async () => {
 	await withMockedFetch(async (url) => {
 		assert.equal(url, "https://rops-api.digikev-kevin-rapley.workers.dev/api/me");
@@ -192,5 +212,35 @@ test("Pages advanced worker serves protected static pages after app authenticati
 		assert.equal(response.status, 200);
 		assert.equal(response.headers.get("x-researchops-brand"), "govuk");
 		assert.equal(await response.text(), '<!doctype html><html data-researchops-brand="govuk"><head>\n\t<meta name="researchops-brand" content="govuk"></head><body>Projects</body></html>');
+	});
+});
+
+test("Pages advanced worker strips Cloudflare Access headers from preview API requests", async () => {
+	await withMockedFetch(async (url, init = {}) => {
+		assert.equal(url, "https://rops-api-passwordless-preview.digikev-kevin-rapley.workers.dev/api/projects/recMtdmBbaFilF2Tm");
+		const headers = new Headers(init.headers);
+		assert.equal(headers.has("cf-access-jwt-assertion"), false);
+		assert.equal(headers.has("cf-access-authenticated-user-email"), false);
+		assert.equal(headers.has("cf-access-user-email"), false);
+		assert.equal(headers.get("cookie"), "rops_session=test-session");
+		return new Response(JSON.stringify({ ok: true, id: "recMtdmBbaFilF2Tm" }), {
+			status: 200,
+			headers: { "content-type": "application/json; charset=utf-8" },
+		});
+	}, async () => {
+		const response = await worker.fetch(
+			new Request("https://feature-edit-project-objectives-markdown.researchops.pages.dev/api/projects/recMtdmBbaFilF2Tm", {
+				headers: {
+					"cf-access-jwt-assertion": "access.jwt",
+					"cf-access-authenticated-user-email": "user@example.test",
+					"cf-access-user-email": "user@example.test",
+					cookie: "rops_session=test-session",
+				},
+			}),
+			assetEnv(),
+		);
+		assert.equal(response.status, 200);
+		assert.equal(response.headers.get("x-researchops-api-origin-source"), "preview-host");
+		assert.equal(response.headers.get("x-researchops-access-headers-forwarded"), "false");
 	});
 });

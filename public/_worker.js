@@ -78,6 +78,7 @@ function requestHeaders(request, target) {
 	headers.delete('cf-visitor');
 
 	if (target.stripAccessHeaders) {
+		headers.delete('cf-access-jwt-assertion');
 		headers.delete('cf-access-authenticated-user-email');
 		headers.delete('cf-access-user-email');
 	}
@@ -92,7 +93,7 @@ function addDiagnosticHeaders(headers, target) {
 	headers.set('x-researchops-api-upstream', target.origin);
 	headers.set('x-researchops-api-origin-source', target.source);
 	headers.set('x-researchops-pages-host', target.hostname);
-	headers.set('x-researchops-access-headers-forwarded', target.stripAccessHeaders ? 'jwt-only' : 'true');
+	headers.set('x-researchops-access-headers-forwarded', target.stripAccessHeaders ? 'false' : 'true');
 	return headers;
 }
 
@@ -118,7 +119,7 @@ function jsonResponse(body, status = 200, target = null, extraHeaders = {}) {
 
 function isProtectedPage(pathname) {
 	const cleanPath = pathname.replace(/\/+$/, '');
-	return cleanPath === '/pages/projects' || cleanPath === '/pages/repository';
+	return cleanPath === '/pages/projects' || cleanPath === '/pages/project-dashboard' || cleanPath === '/pages/repository';
 }
 
 function signInRedirect(request) {

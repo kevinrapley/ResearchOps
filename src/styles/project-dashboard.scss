@@ -15,6 +15,32 @@
 	max-width: 34em;
 }
 
+.rops-dashboard-description[role='button'] {
+	cursor: pointer;
+	display: inline-block;
+}
+
+.rops-dashboard-description[role='button']:focus {
+	background-color: #ffdd00;
+	box-shadow:
+		0 -2px #ffdd00,
+		0 4px #0b0c0c;
+	color: #0b0c0c;
+	outline: 3px solid transparent;
+	text-decoration: none;
+}
+
+.rops-description-editor {
+	width: 100%;
+}
+
+.rops-description-editor__textarea {
+	box-sizing: border-box;
+	min-height: 9rem;
+	resize: vertical;
+	width: 100%;
+}
+
 .rops-daas-brand-panel {
 	display: none;
 }
@@ -191,8 +217,27 @@
 	padding-bottom: 0;
 }
 
+.rops-objective-list > .rops-objective-list__item--editing {
+	list-style: none;
+}
+
 .rops-objective-list__title {
 	display: block;
+}
+
+.rops-objective-list__display[role='button'] {
+	cursor: pointer;
+	display: block;
+	padding: 2px 0;
+}
+
+.rops-objective-list__display[role='button']:focus {
+	background-color: #ffdd00;
+	box-shadow:
+		0 -2px #ffdd00,
+		0 4px #0b0c0c;
+	color: #0b0c0c;
+	outline: 3px solid transparent;
 }
 
 .rops-objective-list__sublist {
@@ -204,6 +249,10 @@
 	border-bottom: 0;
 	margin-bottom: 5px;
 	padding-bottom: 0;
+}
+
+.rops-objective-editor__textarea {
+	margin-bottom: 10px;
 }
 
 .rops-study-list {

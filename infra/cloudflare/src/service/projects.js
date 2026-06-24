@@ -255,6 +255,7 @@ export async function updateProjectFraming(ctx, request, origin, projectId, auth
 	}
 
 	const fields = {};
+	if (Object.hasOwn(payload, "description")) fields.Description = String(payload.description || "").trim();
 	if (Object.hasOwn(payload, "objectives")) fields.Objectives = normaliseLines(payload.objectives).join("\n");
 	if (Object.hasOwn(payload, "user_groups")) fields.UserGroups = normaliseUserGroups(payload.user_groups).join(", ");
 	if (Object.hasOwn(payload, "stakeholders")) fields.Stakeholders = JSON.stringify(normaliseStakeholders(payload.stakeholders));
