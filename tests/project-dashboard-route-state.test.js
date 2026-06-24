@@ -266,6 +266,7 @@ includes(controllerSource, "govuk-list govuk-list--number rops-objective-list", 
 includes(controllerSource, "govuk-list govuk-list--bullet rops-objective-list__sublist", "project dashboard controller");
 includes(controllerSource, "data-objective-edit", "project dashboard controller");
 includes(controllerSource, "data-objective-editor-index", "project dashboard controller");
+includes(controllerSource, "listItem.classList.add(\"rops-objective-list__item--editing\")", "project dashboard controller");
 includes(controllerSource, "textarea?.addEventListener(\"blur\"", "project dashboard controller");
 includes(controllerSource, "await saveProjectPatch({ objectives: nextObjectives });", "project dashboard controller");
 includes(controllerSource, "initObjectiveInlineEditing();", "project dashboard controller");
@@ -298,9 +299,12 @@ excludes(controllerSource, "alert(\"Could not load project.\");", "project dashb
 
 includes(dashboardSassSource, ".rops-objective-list__display[role='button']", "project dashboard stylesheet");
 includes(dashboardSassSource, ".rops-objective-list__display[role='button']:focus", "project dashboard stylesheet");
+includes(dashboardSassSource, ".rops-objective-list > .rops-objective-list__item--editing", "project dashboard stylesheet");
+includes(dashboardSassSource, "list-style: none;", "project dashboard stylesheet");
 includes(dashboardSassSource, ".rops-objective-editor__textarea", "project dashboard stylesheet");
 includes(dashboardCssSource, ".rops-objective-list__display[role=button]", "project dashboard stylesheet");
 includes(dashboardCssSource, ".rops-objective-list__display[role=button]:focus", "project dashboard stylesheet");
+includes(dashboardCssSource, ".rops-objective-list > .rops-objective-list__item--editing", "project dashboard stylesheet");
 
 includes(dashboardContextSource, "[\"breadcrumb-project\", \"/pages/project-dashboard/\", \"id\"]", "project dashboard context controller");
 includes(dashboardContextSource, "projectScopedHref(path, queryKey, projectId, hash)", "project dashboard context controller");

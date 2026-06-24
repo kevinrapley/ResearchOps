@@ -376,6 +376,7 @@ function beginObjectiveEdit(index) {
 	const listItem = list?.querySelector(`[data-objective-index="${index}"]`);
 	if (!objective || !listItem || list.querySelector("[data-objective-editor-index]")) return;
 
+	listItem.classList.add("rops-objective-list__item--editing");
 	listItem.innerHTML = objectiveEditorHtml(index, objective);
 	const textarea = listItem.querySelector("textarea");
 	const status = listItem.querySelector(".dashboard-action-status");

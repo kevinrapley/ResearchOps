@@ -86,6 +86,7 @@ Precedence applied:
 - Rendered each objective as a keyboard-accessible edit target with a visible GOV.UK focus state.
 - Added inline textarea editing for an objective; unchanged blur restores the rendered view, changed blur PATCHes the updated `objectives` payload and re-renders from the saved Markdown.
 - Added an accessible hidden label and polite status region for the inline editor.
+- Follow-up correction: hid the parent ordered-list marker while a list item is in edit mode so the Markdown `1.` appears only inside the textarea.
 - Bumped the project dashboard JS and CSS asset version to `project-dashboard-objective-edit-20260624`.
 - Regenerated `public/css/project-dashboard.css` and `public/pages/project-dashboard/index.html`.
 - Updated route-state tests for the inline edit contract, blur-save path, keyboard activation, focus styling and cache-busted assets.
@@ -101,6 +102,7 @@ Precedence applied:
 - `npm test -- --ci`: failed because the repository script passes `--ci` through to `node --test`, which reports `node: bad option: --ci`.
 - `npm test`: passed, 245 tests.
 - Local Playwright preview check against `http://127.0.0.1:4173/pages/project-dashboard/?id=test-project-1`: passed for desktop click-to-edit and blur-save, visible focus state, mobile keyboard edit and blur-save, and no mobile horizontal overflow.
+- Follow-up local Playwright preview check: passed for desktop and mobile edit mode with the `<li>` marker hidden and the Markdown `1.` retained inside the textarea.
 - `git diff --check`: passed.
 
 ## Residual Risk
