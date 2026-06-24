@@ -69,6 +69,14 @@ function includes(source, text, label) {
 	assert.equal(source.includes(text), true, `Expected ${label} to include: ${text}`);
 }
 
+function declarationBlock(source, selector, label) {
+	const start = source.indexOf(selector);
+	assert.notEqual(start, -1, `Expected ${label} to include selector: ${selector}`);
+	const end = source.indexOf("}", start);
+	assert.notEqual(end, -1, `Expected ${label} selector block to close: ${selector}`);
+	return source.slice(start, end);
+}
+
 includes(macroSource, "id=\"daas-brand-panel\"", "DaaS brand panel macro");
 includes(macroSource, "class=\"rops-daas-brand-panel\"", "DaaS brand panel macro");
 includes(macroSource, "/images/brands/daas-logo.svg", "DaaS brand panel macro");
@@ -90,6 +98,14 @@ for (const source of [sassSource, cssSource]) {
 	includes(source, "leds-panel-background.png", "LEDS brand panel stylesheet");
 	includes(source, "background-position: center 34%", "LEDS brand panel stylesheet");
 	includes(source, "mix-blend-mode: screen", "LEDS brand panel stylesheet");
+	const ledsOverlayBlock = declarationBlock(
+		source,
+		".rops-leds-brand-panel--visible::after",
+		"LEDS brand panel stylesheet",
+	);
+	includes(ledsOverlayBlock, "home-office-digital-triangles.svg", "LEDS brand panel overlay");
+	includes(ledsOverlayBlock, "background-position: right -3rem bottom -7rem", "LEDS brand panel overlay");
+	includes(ledsOverlayBlock, "background-size: 50% 200%", "LEDS brand panel overlay");
 }
 
 includes(controllerSource, "export function isDaaSProject", "DaaS brand panel controller");

@@ -58,6 +58,10 @@
 
 	.rops-leds-brand-panel--visible::after {
 		background-color: rgba(123, 47, 143, 0.34);
+		background-image: url('/images/brands/home-office-digital-triangles.svg');
+		background-position: right -3rem bottom -7rem;
+		background-repeat: no-repeat;
+		background-size: 50% 200%;
 		content: '';
 		inset: 0;
 		position: absolute;

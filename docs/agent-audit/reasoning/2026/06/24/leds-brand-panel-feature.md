@@ -5,7 +5,7 @@
 - Date: 2026-06-24
 - Branch: `feature/leds-brand-panel`
 - Trace trigger: required by `feature/` branch prefix
-- Task summary: move the LEDS-only brand-panel changes out of the merged tag-colour PR branch and onto their own branch from updated `main`.
+- Task summary: move the LEDS-only brand-panel changes out of the merged tag-colour PR branch and onto their own branch from updated `main`; follow up by overlaying the Home Office digital triangles asset on the LEDS brand panel `::after` layer in the same position as DaaS.
 
 ## Operating model loaded
 
@@ -118,9 +118,11 @@ Precedence applied:
 - Added LEDS panel styling to the shared DaaS panel stylesheet and project dashboard stylesheet.
 - Set `.rops-leds-brand-panel--visible` to `background-color: #1a1d35`.
 - Added the screened LEDS panel image layer and white LEDS logo to the panel.
+- Added the Home Office digital triangles asset to the LEDS `::after` overlay using the same background position, repeat and size as DaaS.
 - Extended the shared brand-panel controller and project-dashboard controller so LEDS projects show the LEDS panel while DaaS projects retain the DaaS panel.
 - Rebuilt generated CSS and rendered GOV.UK pages.
 - Updated route-state tests to cover LEDS macro output, rendered page output, controller hooks and stylesheet contracts.
+- Added route-state assertions that inspect the LEDS `::after` declaration so the triangle overlay remains tied to the LEDS panel.
 
 ## Validation
 
@@ -140,6 +142,12 @@ Passed:
 - `npm run generated-css:check`
 - `npm run lint` (passed with existing repository warnings)
 - `npm run validate`
+- `node --test tests/daas-brand-panel-route-state.test.js tests/project-dashboard-route-state.test.js` (follow-up triangle overlay check)
+- `git diff --check` (follow-up triangle overlay check)
+- `npm run format:check` (follow-up triangle overlay check)
+- `npm run generated-css:check` (follow-up triangle overlay check)
+- `npm run trace:coverage` (follow-up triangle overlay check)
+- `node -e "JSON.parse(require('fs').readFileSync('docs/agent-audit/reasoning/2026/06/24/leds-brand-panel-feature.json', 'utf8'))"` (follow-up triangle overlay check)
 
 Failed then replaced:
 

@@ -26,6 +26,14 @@ function countOccurrences(source, text) {
 	return source.split(text).length - 1;
 }
 
+function declarationBlock(source, selector, label) {
+	const start = source.indexOf(selector);
+	assert.notEqual(start, -1, `Expected ${label} to include selector: ${selector}`);
+	const end = source.indexOf("}", start);
+	assert.notEqual(end, -1, `Expected ${label} selector block to close: ${selector}`);
+	return source.slice(start, end);
+}
+
 function projectAreasNavSource(source) {
 	const start = source.indexOf("class=\"govuk-summary-card rops-project-areas-nav\"");
 	if (start === -1) return "";
@@ -450,6 +458,14 @@ includes(dashboardSassSource, "#1a1d35", "project dashboard Sass source");
 includes(dashboardSassSource, "home-office-digital-triangles.svg", "project dashboard Sass source");
 includes(dashboardSassSource, "background-position: right -3rem bottom -7rem;", "project dashboard Sass source");
 includes(dashboardSassSource, "background-size: 50% 200%;", "project dashboard Sass source");
+const sassLedsOverlayBlock = declarationBlock(
+	dashboardSassSource,
+	".rops-leds-brand-panel--visible::after",
+	"project dashboard Sass source",
+);
+includes(sassLedsOverlayBlock, "home-office-digital-triangles.svg", "project dashboard LEDS overlay");
+includes(sassLedsOverlayBlock, "background-position: right -3rem bottom -7rem;", "project dashboard LEDS overlay");
+includes(sassLedsOverlayBlock, "background-size: 50% 200%;", "project dashboard LEDS overlay");
 includes(dashboardSassSource, ".rops-study-list", "project dashboard Sass source");
 includes(dashboardSassSource, ".rops-objective-list", "project dashboard Sass source");
 includes(dashboardSassSource, ".rops-objective-list > li", "project dashboard Sass source");
@@ -499,6 +515,14 @@ includes(dashboardCssSource, "#1a1d35", "project dashboard stylesheet");
 includes(dashboardCssSource, "home-office-digital-triangles.svg", "project dashboard stylesheet");
 includes(dashboardCssSource, "background-position: right -3rem bottom -7rem", "project dashboard stylesheet");
 includes(dashboardCssSource, "background-size: 50% 200%", "project dashboard stylesheet");
+const cssLedsOverlayBlock = declarationBlock(
+	dashboardCssSource,
+	".rops-leds-brand-panel--visible::after",
+	"project dashboard stylesheet",
+);
+includes(cssLedsOverlayBlock, "home-office-digital-triangles.svg", "project dashboard LEDS overlay");
+includes(cssLedsOverlayBlock, "background-position: right -3rem bottom -7rem", "project dashboard LEDS overlay");
+includes(cssLedsOverlayBlock, "background-size: 50% 200%", "project dashboard LEDS overlay");
 includes(dashboardCssSource, ".rops-leds-brand-panel", "project dashboard stylesheet");
 includes(dashboardCssSource, "#1a1d35", "project dashboard stylesheet");
 includes(dashboardCssSource, "leds-panel-background.png", "project dashboard stylesheet");

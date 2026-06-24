@@ -1,9 +1,9 @@
 {
   "date": "2026-06-24",
-  "timestampUtc": "2026-06-24T21:52:35Z",
+  "timestampUtc": "2026-06-24T22:11:58Z",
   "branch": "feature/leds-brand-panel",
   "traceTrigger": "feature branch prefix",
-  "taskSummary": "Move the LEDS-only brand-panel changes out of the merged tag-colour PR branch and onto their own branch from updated main.",
+  "taskSummary": "Move the LEDS-only brand-panel changes out of the merged tag-colour PR branch and onto their own branch from updated main; follow up by overlaying the Home Office digital triangles asset on the LEDS brand panel ::after layer in the same position as DaaS.",
   "operatingModelFilesLoaded": [
     "AGENTS.md",
     ".agent-operating-model/orchestration.xml",
@@ -169,6 +169,36 @@
     {
       "command": "npm run validate",
       "status": "passed"
+    },
+    {
+      "command": "node --test tests/daas-brand-panel-route-state.test.js tests/project-dashboard-route-state.test.js",
+      "status": "passed",
+      "notes": "Follow-up triangle overlay check."
+    },
+    {
+      "command": "git diff --check",
+      "status": "passed",
+      "notes": "Follow-up triangle overlay check."
+    },
+    {
+      "command": "npm run format:check",
+      "status": "passed",
+      "notes": "Follow-up triangle overlay check."
+    },
+    {
+      "command": "npm run generated-css:check",
+      "status": "passed",
+      "notes": "Follow-up triangle overlay check."
+    },
+    {
+      "command": "npm run trace:coverage",
+      "status": "passed",
+      "notes": "Follow-up triangle overlay check."
+    },
+    {
+      "command": "node -e \"JSON.parse(require('fs').readFileSync('docs/agent-audit/reasoning/2026/06/24/leds-brand-panel-feature.json', 'utf8'))\"",
+      "status": "passed",
+      "notes": "Follow-up triangle overlay check."
     }
   ],
   "failedThenReplaced": [
