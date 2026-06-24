@@ -82,29 +82,29 @@
 	margin-top: 20px;
 	}
 
-.sugg-grid, .ai-sugg-grid {
+.sugg-grid {
 	display: grid;
 	gap: 20px;
 	}
 
-.sugg-col, .ai-sugg-col {
+.sugg-col {
 	border-top: 1px solid #b1b4b6;
 	padding-top: 15px;
 	}
 
-.sugg-heading, .sugg-col .govuk-heading-s, .ai-sugg-col .govuk-heading-s {
+.sugg-heading, .sugg-col .govuk-heading-s {
 	margin-bottom: 10px;
 	}
 
-.sugg-list, .ai-sugg-list {
+.sugg-list {
 	margin-bottom: 0;
 	}
 
-.sugg-item, .ai-sugg-item {
+.sugg-item {
 	margin-bottom: 20px;
 	}
 
-.sugg-row, .ai-sugg-row {
+.sugg-row {
 	align-items: center;
 	display: flex;
 	flex-wrap: wrap;
@@ -112,20 +112,20 @@
 	margin-bottom: 4px;
 	}
 
-.sugg-cat, .ai-sugg-cat {
+.sugg-cat {
 	display: inline-block;
 	}
 
-.sugg-sev, .ai-sugg-sev {
+.sugg-sev {
 	text-transform: lowercase;
 	}
 
-.sugg-tip, .ai-sugg-tip {
+.sugg-tip {
 	margin-bottom: 5px;
 	max-width: 68ch;
 	}
 
-.sugg-why, .ai-sugg-why {
+.sugg-why {
 	color: #505a5f;
 	margin-bottom: 0;
 	max-width: 68ch;
@@ -147,11 +147,24 @@
 	max-width: 100%;
 	overflow: auto;
 	padding: 15px;
-	white-space: pre-wrap;
+	}
+
+.rewrite-block h2, .rewrite-block h3 {
+	font-size: 19px;
+	margin: 0 0 10px;
+	}
+
+.rewrite-block p, .rewrite-block ul, .rewrite-block ol {
+	margin-bottom: 15px;
+	max-width: 68ch;
+	}
+
+.rewrite-block > :last-child {
+	margin-bottom: 0;
 	}
 
 @media (min-width: 40.0625em) {
-	.sugg-grid, .ai-sugg-grid {
+	.sugg-grid {
 		grid-template-columns: repeat(2, minmax(0, 1fr));
 		}
 	}

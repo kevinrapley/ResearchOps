@@ -5,7 +5,7 @@
  *
  * @description
  * - Mirrors Step 1 behaviour, with a lower threshold (≥ 60 chars).
- * - Uses the same 2-column suggestion presentation (general vs bias).
+ * - Uses local 2-column suggestions separately from the markdown AI rewrite preview.
  * - Calls /api/ai-rewrite?mode=objectives for AI (only on explicit click).
  *
  * @typedef {Object} AssistConfig
@@ -21,6 +21,8 @@
  */
 
 import { initCopilotSuggester } from './copilot-suggester.js';
+import { marked } from '/lib/marked.min.js';
+import DOMPurify from '/lib/purify.min.js';
 
 /* =========================
  * Helpers
@@ -39,6 +41,16 @@ const esc = (s) =>
 		'"': '&quot;',
 		"'": '&#39;'
 	} [c]));
+
+/**
+ * Render sanitized markdown.
+ * @param {string} markdown
+ * @returns {string}
+ */
+function renderMarkdown(markdown) {
+	const rawHtml = marked.parse(String(markdown || ''));
+	return DOMPurify.sanitize(rawHtml);
+}
 
 /**
  * Classify suggestions into "general" vs "bias & inclusion".
@@ -115,21 +127,18 @@ function renderTwoColumnSuggestions(left = [], right = [], idPrefix = 'sugg') {
 }
 
 /**
- * Render AI panel using two-column layout + rewrite block.
+ * Render AI panel using a summary + markdown rewrite block.
  * @param {{summary?:string, suggestions?:Array, rewrite?:string}} data
  * @param {string} [idPrefix='ai']
  * @returns {string}
  */
-function renderAiPanelTwoCol(data, idPrefix = 'ai') {
-	const list = Array.isArray(data?.suggestions) ? data.suggestions : [];
-	const { left, right } = splitSuggestionsByBias(list);
+function renderAiPanel(data, idPrefix = 'ai') {
 	return `
     <div class="${idPrefix}-region">
-      <div class="govuk-inset-text ${idPrefix}-summary"><p class="govuk-body"><strong>AI summary:</strong> ${esc(data?.summary || '')}</p></div>
-      ${renderTwoColumnSuggestions(left, right, `${idPrefix}-sugg`)}
+      <div class="govuk-inset-text ${idPrefix}-summary"><p class="govuk-body"><strong>Review summary:</strong> ${esc(data?.summary || '')}</p></div>
       <hr class="govuk-section-break govuk-section-break--m govuk-section-break--visible">
       <h3 class="govuk-heading-s">Concise rewrite</h3>
-      <div class="rewrite-block govuk-body" aria-label="AI rewrite">${esc(data?.rewrite || '')}</div>
+      <div class="rewrite-block govuk-body" aria-label="AI rewrite">${renderMarkdown(data?.rewrite || '')}</div>
       <button type="button" id="apply-ai-obj-rewrite" class="govuk-button govuk-button--secondary">Replace objectives with rewrite</button>
     </div>
   `;
@@ -244,11 +253,10 @@ export function initStartObjectiveAssist(cfg = {}) {
 
 			const data = await res.json();
 			if (aiMount) {
-				aiMount.innerHTML = renderAiPanelTwoCol(data, 'ai');
+				aiMount.innerHTML = renderAiPanel(data, 'ai');
 				const apply = aiMount.querySelector('#apply-ai-obj-rewrite');
-				const pre = aiMount.querySelector('.rewrite-block');
 				apply?.addEventListener('click', () => {
-					ta.value = pre?.textContent || '';
+					ta.value = typeof data?.rewrite === 'string' ? data.rewrite : '';
 					ta.focus();
 					try { sugg.forceSuggest(); } catch {}
 				});
@@ -257,6 +265,8 @@ export function initStartObjectiveAssist(cfg = {}) {
 			aiStatus && (aiStatus.textContent =
 				data?.flags?.possible_personal_data ?
 				'Possible personal data detected in your original text.' :
+				data?.flags?.ai_unavailable ?
+				'Done. Rule-based suggestions shown.' :
 				'Done.');
 		} catch {
 			aiStatus && (aiStatus.textContent = 'Network error.');

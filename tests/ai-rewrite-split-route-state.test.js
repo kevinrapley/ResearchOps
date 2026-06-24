@@ -3,6 +3,7 @@ import fs from "node:fs";
 
 const routeSource = fs.readFileSync("infra/cloudflare/src/core/ai-rewrite.js", "utf8");
 const configSource = fs.readFileSync("infra/cloudflare/src/core/ai-rewrite/config.js", "utf8");
+const fallbackSource = fs.readFileSync("infra/cloudflare/src/core/ai-rewrite/fallback.js", "utf8");
 const guardrailsSource = fs.readFileSync("infra/cloudflare/src/core/ai-rewrite/guardrails.js", "utf8");
 const httpSource = fs.readFileSync("infra/cloudflare/src/core/ai-rewrite/http.js", "utf8");
 const promptsSource = fs.readFileSync("infra/cloudflare/src/core/ai-rewrite/prompts.js", "utf8");
@@ -18,6 +19,7 @@ function excludes(source, text, label) {
 }
 
 includes(routeSource, 'import { DEFAULTS } from "./ai-rewrite/config.js";', "AI rewrite route");
+includes(routeSource, 'from "./ai-rewrite/fallback.js";', "AI rewrite route");
 includes(routeSource, 'from "./ai-rewrite/guardrails.js";', "AI rewrite route");
 includes(routeSource, 'from "./ai-rewrite/http.js";', "AI rewrite route");
 includes(routeSource, 'from "./ai-rewrite/prompts.js";', "AI rewrite route");
@@ -32,12 +34,16 @@ excludes(routeSource, "function sanitizeRewrite", "AI rewrite route");
 excludes(routeSource, "function auditForBias", "AI rewrite route");
 excludes(routeSource, "const SUGGESTION_LIBRARY", "AI rewrite route");
 excludes(routeSource, "function createMockEnv", "AI rewrite route");
+excludes(routeSource, "MAX_REWRITE_CHARS", "AI rewrite route");
+excludes(configSource, "MAX_REWRITE_CHARS", "AI rewrite config");
 
 includes(configSource, "export const DEFAULTS", "AI rewrite config");
+includes(fallbackSource, "export function buildFallbackResponse", "AI rewrite fallback");
 includes(httpSource, "export function corsHeaders", "AI rewrite HTTP helpers");
 includes(httpSource, "export function json", "AI rewrite HTTP helpers");
 includes(textSource, "export function detectPII", "AI rewrite text helpers");
 includes(textSource, "export function sanitizeRewrite", "AI rewrite text helpers");
+excludes(textSource, "export function clampAtBoundary", "AI rewrite text helpers");
 includes(guardrailsSource, "export function neutraliseInventedQuantifiers", "AI rewrite guardrails");
 includes(guardrailsSource, "export function neutraliseInventedMethods", "AI rewrite guardrails");
 includes(guardrailsSource, "export function auditForBias", "AI rewrite guardrails");
@@ -46,5 +52,7 @@ includes(promptsSource, "export const DESC_SYSTEM_PROMPT", "AI rewrite prompts")
 includes(promptsSource, "export const OBJ_SYSTEM_PROMPT", "AI rewrite prompts");
 includes(promptsSource, "export function rulesPromptForMode", "AI rewrite prompts");
 includes(promptsSource, "export const SUGGESTION_LIBRARY", "AI rewrite prompts");
+includes(promptsSource, "The rewrite field may contain markdown", "AI rewrite prompts");
+includes(promptsSource, "Structure the rewrite as markdown using level 2 headings", "AI rewrite prompts");
 includes(testingSource, "export function createMockEnv", "AI rewrite testing helpers");
 includes(testingSource, "export function makeJsonRequest", "AI rewrite testing helpers");

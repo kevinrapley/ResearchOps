@@ -20,7 +20,7 @@
  * Design:
  * - Uses Cloudflare Workers AI via `env.AI.run(model, ...)`
  * - OFFICIAL-by-default (no third-party calls)
- * - Hard clamps for input/output length, strict JSON shaping
+ * - Hard clamps for input length and suggestion fields, strict JSON shaping
  * - PII sweep (email, NI, NHS) and counters-only Airtable logging
  *
  * @requires globalThis.fetch
@@ -38,6 +38,7 @@
  */
 
 import { DEFAULTS } from "./ai-rewrite/config.js";
+import { buildFallbackResponse } from "./ai-rewrite/fallback.js";
 import { auditForBias, neutraliseInventedMethods, neutraliseInventedQuantifiers } from "./ai-rewrite/guardrails.js";
 import { corsHeaders, isAllowedOrigin, json } from "./ai-rewrite/http.js";
 import { DESC_SYSTEM_PROMPT, OBJ_SYSTEM_PROMPT, rulesPromptForMode, SUGGESTION_LIBRARY } from "./ai-rewrite/prompts.js";
@@ -135,10 +136,10 @@ class AiRewriteService {
 				severity: "one of: 'high' | 'medium' | 'low'"
 			}],
 			rewrite: [
-				"string (<= 1800 chars).",
+				"string.",
 				mode === "objectives" ?
-				"A numbered list of refined objectives when supported by the input; keep each objective concise and measurable where possible." :
-				"Concise, PII-free rewrite using labelled sections WHEN SUPPORTED by the input. Each section starts with a label on its own line (with a colon), then content on the next line(s), and one blank line between sections. Only include sections if supported by the input."
+				"Markdown numbered list of refined objectives when supported by the input; keep each objective concise and measurable where possible." :
+				"Concise, PII-free markdown rewrite using level 2 headings and short paragraphs or bullet lists. Use sections such as Research focus, Scope, Users and context, Research questions, Method and inclusion, Deliverables, Outcomes, Data handling and Success criteria. Do not use markdown tables."
 			].join(" ")
 		}, null, 2);
 
@@ -150,7 +151,7 @@ class AiRewriteService {
 					{ category: "Measurability", tip: "Add numeric targets to 2 objectives.", why: "Enables progress tracking.", severity: "high" },
 					{ category: "Clarity", tip: "Start each objective with an action verb.", why: "Improves readability.", severity: "medium" }
 				],
-				rewrite: "1) Identify the top 3 blockers in the account proofing journey by end of Q2.\n2) Increase task completion for the ID check step by 15% within 3 months.\n3) Validate the revised error messages with at least 8 participants using screen readers.\n4) Produce a prioritised backlog of improvements agreed with policy and service design."
+				rewrite: "1. Identify the top 3 blockers in the account proofing journey by end of Q2.\n2. Increase task completion for the ID check step by 15% within 3 months.\n3. Validate the revised error messages with at least 8 participants using screen readers.\n4. Produce a prioritised backlog of improvements agreed with policy and service design."
 			} : {
 				summary: "Clarify scope and outcomes; surface research questions; avoid PII.",
 				suggestions: [
@@ -158,7 +159,7 @@ class AiRewriteService {
 					{ category: "Research questions", tip: "List 2–4 key questions.", why: "Focuses method and analysis.", severity: "medium" },
 					{ category: "Outcomes & measures", tip: "Add a numeric target with a timeframe.", why: "Enables tracking of success.", severity: "high" }
 				],
-				rewrite: "Problem:\nApplicants abandon the address step because instructions and error messages are unclear.\n\nScope:\nIn scope: address capture and validation screens in the online flow. Out of scope: payment provider changes.\n\nUsers:\nFirst-time visa applicants on mobile, including people using screen readers and with low bandwidth.\n\nOutcomes:\nIdentify the top 3 blockers and reduce abandonment by 15% within the next quarter."
+				rewrite: "## Research focus\n\nApplicants abandon the address step because instructions and error messages are unclear.\n\n## Scope\n\n- In scope: address capture and validation screens in the online flow.\n- Out of scope: payment provider changes.\n\n## Users and context\n\nFirst-time visa applicants on mobile, including people using screen readers and with low bandwidth.\n\n## Outcomes\n\nIdentify the top 3 blockers and reduce abandonment by 15% within the next quarter."
 			}, null, 2
 		);
 
@@ -179,8 +180,8 @@ class AiRewriteService {
 			"",
 			"Constraints:",
 			`- suggestions: max ${DEFAULTS.MAX_SUGGESTIONS} items; each tip/why <= ${DEFAULTS.MAX_SUGGESTION_LEN} chars; include a balanced mix across categories.`,
-			`- rewrite: <= ${DEFAULTS.MAX_REWRITE_CHARS} chars; remove emails/NI/NHS numbers; no placeholders like 'lorem' or 'TBD'.`,
-			"- Do not include markdown, code fences, or any text outside JSON.",
+			"- rewrite: include the complete rewrite in full; markdown is allowed inside rewrite; remove emails/NI/NHS numbers; no placeholders like 'lorem' or 'TBD'.",
+			"- Do not include markdown code fences or any text outside JSON.",
 			"",
 			"If unsure, still return valid JSON using best-effort values. Here is a minimal valid example:",
 			OUTPUT_EXAMPLE,
@@ -190,8 +191,17 @@ class AiRewriteService {
 			"INPUT (verbatim):"
 		].join("\n");
 
+		const fallbackBody = () => buildFallbackResponse({ mode, input, hasPII, cfg: this.cfg });
+
 		// ---- Model call
 		let modelOutput = "";
+		if (!this.env.AI || typeof this.env.AI.run !== "function") {
+			if (this.env.AUDIT === "true") {
+				console.warn("ai.run.missing_binding", { mode });
+			}
+			return json(fallbackBody(), 200, corsHeaders(this.env, origin));
+		}
+
 		try {
 			const resp = await this.env.AI.run(model, {
 				messages: [
@@ -200,8 +210,8 @@ class AiRewriteService {
 				],
 				temperature: 0.15, // tightened for determinism
 				top_p: 0.9,// smallest set of tokens whose combined probability is at least 90% of the distribution
-				max_tokens: 900, // 900 tokens is plenty for summary + 6–8 suggestions + rewrite.
-				stop: ["```", "\n\n\n", "\nINPUT (verbatim):"] // conservative stops to prevent run-on prose
+				max_tokens: 2048, // Allow complete JSON with summary, suggestions and full markdown rewrite.
+				stop: ["```", "\nINPUT (verbatim):"] // conservative stops to prevent run-on prose
 			});
 
 			modelOutput = typeof resp === "string" ? resp : (resp?.response || resp?.result || "");
@@ -209,10 +219,7 @@ class AiRewriteService {
 			if (this.env.AUDIT === "true") {
 				console.warn("ai.run.fail", { err: String(e?.message || e) });
 			}
-			return json({ error: "AI_UNAVAILABLE", message: "The AI service is temporarily unavailable." },
-				503,
-				corsHeaders(this.env, origin)
-			);
+			return json(fallbackBody(), 200, corsHeaders(this.env, origin));
 		}
 
 		// Trim any accidental prose around JSON
@@ -224,6 +231,13 @@ class AiRewriteService {
 
 		// Parse + clamp + sanitize
 		const parsed = safeParseJSON(modelOutput);
+		if (!Array.isArray(parsed.suggestions) && typeof parsed.rewrite !== "string" && typeof parsed.summary !== "string") {
+			if (this.env.AUDIT === "true") {
+				console.warn("ai.output.invalid", { mode });
+			}
+			return json(fallbackBody(), 200, corsHeaders(this.env, origin));
+		}
+
 		let suggestions = Array.isArray(parsed.suggestions) ?
 			parsed.suggestions
 			.slice(0, this.cfg.MAX_SUGGESTIONS)
@@ -235,9 +249,7 @@ class AiRewriteService {
 			}))
 			.filter(s => s.tip.trim().length > 0) : [];
 
-		let rewrite = sanitizeRewrite(
-			clamp(typeof parsed.rewrite === "string" ? parsed.rewrite : "", this.cfg.MAX_REWRITE_CHARS)
-		);
+		let rewrite = sanitizeRewrite(typeof parsed.rewrite === "string" ? parsed.rewrite : "");
 
 		// === Post-processing guardrail for invented metrics/timeframes/methods ===
 		// Compare rewrite vs input; neutralise invented quantifiers and add notes.
@@ -275,14 +287,7 @@ class AiRewriteService {
 			);
 		}
 
-
-		// Minimal safe fallback to keep UI consistent (do not invent details)
-		if (!rewrite) {
-			rewrite =
-				mode === "objectives" ?
-				"1) [Refine an objective with a measurable target and timeframe].\n2) [Clarify another objective; keep it action-oriented]." :
-				"Problem: [clarify user need and scope].\n\nUsers: [name primary users and contexts, including accessibility].\n\nOutcomes: [add a measurable target and timeframe].";
-		}
+		if (!rewrite) return json(fallbackBody(), 200, corsHeaders(this.env, origin));
 
 		// Final PII sweep on rewrite
 		if (detectPII(rewrite)) {

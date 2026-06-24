@@ -118,7 +118,7 @@ export function neutraliseInventedQuantifiers(rewrite, input) {
 	out = out.replace(/[ \t]+/g, " ")
 		.replace(/\s+([,.;:])/g, "$1")
 		.replace(/\(\s*\)/g, "")
-		.replace(/\s{2,}/g, " ")
+		.replace(/[ \t]{2,}/g, " ")
 		.replace(/\n[ \t]+/g, "\n")
 		.trim();
 
@@ -157,7 +157,7 @@ export function neutraliseInventedMethods(rewrite, input) {
 	out = out.replace(/[ \t]{2,}/g, " ")
 		.replace(/\s+([,.;:])/g, "$1")
 		.replace(/\(\s*\)/g, "")
-		.replace(/\s{2,}/g, " ")
+		.replace(/[ \t]{2,}/g, " ")
 		.replace(/\s+\n/g, "\n")
 		.trim();
 
@@ -344,7 +344,7 @@ export function auditForBias(rewrite, input) {
 	// Normalise whitespace after replacements
 	out = out.replace(/[ \t]{2,}/g, " ")
 		.replace(/\s+([,.;:])/g, "$1")
-		.replace(/\s{2,}/g, " ")
+		.replace(/[ \t]{2,}/g, " ")
 		.replace(/\n[ \t]+/g, "\n")
 		.trim();
 
