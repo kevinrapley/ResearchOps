@@ -1,9 +1,16 @@
+const RESEARCHOPS_CUSTOM_ORIGINS = new Set([
+	"https://research-operations.com",
+	"https://www.research-operations.com",
+	"https://govuk.research-operations.com"
+]);
+
 /**
- * Check whether an origin belongs to the ResearchOps Pages site or branch previews.
+ * Check whether an origin belongs to the ResearchOps Pages site, branch previews or production custom domains.
  * @param {string} origin
  * @returns {boolean}
  */
-function isResearchOpsPagesOrigin(origin) {
+function isResearchOpsOrigin(origin) {
+	if (RESEARCHOPS_CUSTOM_ORIGINS.has(origin)) return true;
 	try {
 		const { hostname, protocol } = new URL(origin);
 		return (
@@ -24,7 +31,7 @@ function isResearchOpsPagesOrigin(origin) {
 export function isAllowedOrigin(env, origin) {
 	if (!origin) return true;
 	const allowed = (env.ALLOWED_ORIGINS || "").split(",").map(s => s.trim()).filter(Boolean);
-	return allowed.includes(origin) || isResearchOpsPagesOrigin(origin);
+	return allowed.includes(origin) || isResearchOpsOrigin(origin);
 }
 
 /**
