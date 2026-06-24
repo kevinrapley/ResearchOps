@@ -1,0 +1,110 @@
+{
+  "traceId": "atrace-20260624-edit-project-objectives-markdown",
+  "date": "2026-06-24",
+  "branch": "feature/edit-project-objectives-markdown",
+  "traceRequired": true,
+  "traceReason": "repository-affecting work on a feature/ branch",
+  "taskSummary": "Make project dashboard objectives editable in place as Markdown and save changed Markdown on textarea blur.",
+  "operatingModelFilesLoaded": [
+    "AGENTS.md",
+    ".agent-operating-model/orchestration.xml",
+    ".agent-operating-model/bundle-registry.json",
+    ".agent-operating-model/task-signal-catalog.json",
+    ".agent-operating-model/selection-rules.json",
+    ".agent-operating-model/bootstrap-checklist.md",
+    ".agent-operating-model/precedence-policy.md",
+    ".agent-operating-model/trace-policy.md",
+    ".agent-operating-model/trace-layers.md",
+    ".agent-operating-model/behavioural-evals.json",
+    ".agent-operating-model/github-mutation-policy.md"
+  ],
+  "selectedBundles": [
+    {
+      "id": "github-diamond",
+      "canonicalPath": ".agent-operating-model/bundles/github/"
+    },
+    {
+      "id": "researchops-developer-control",
+      "canonicalPath": ".agent-operating-model/bundles/researchops-developer-control/"
+    },
+    {
+      "id": "multi-functional-team",
+      "canonicalPath": ".agent-operating-model/bundles/multi-functional-team/"
+    },
+    {
+      "id": "govuk-design-system",
+      "canonicalPath": ".agent-operating-model/bundles/govuk-design-system/"
+    }
+  ],
+  "skippedBundles": [
+    "cloudflare",
+    "openai-platform",
+    "mcp-agent-tooling",
+    "airtable-public-api",
+    "mural-public-api"
+  ],
+  "precedenceDecisions": [
+    "GitHub Diamond governed branch naming, trace creation, validation, commit, push and PR creation.",
+    "ResearchOps Developer Control governed repository layers, generated static page parity and route-state tests.",
+    "Multi-Functional Team governed public-sector product assurance and avoiding unnecessary scope.",
+    "GOV.UK Design System governed textarea, keyboard access and focus-state handling."
+  ],
+  "filesRead": [
+    "README.md",
+    ".github/CODEOWNERS",
+    ".github/pull_request_template.md",
+    "package.json",
+    "package-lock.json",
+    "RECENT_LEARNINGS.md",
+    ".agent-operating-model/bundles/github/prompt.spec.yaml",
+    ".agent-operating-model/bundles/github/prompt.body.xml",
+    ".agent-operating-model/bundles/researchops-developer-control/prompt.spec.yaml",
+    ".agent-operating-model/bundles/researchops-developer-control/prompt.body.xml",
+    ".agent-operating-model/bundles/multi-functional-team/prompt.spec.yaml",
+    ".agent-operating-model/bundles/multi-functional-team/prompt.body.xml",
+    ".agent-operating-model/bundles/govuk-design-system/prompt.spec.yaml",
+    ".agent-operating-model/bundles/govuk-design-system/prompt.body.xml",
+    ".agent-operating-model/bundles/researchops-developer-control/references/core-rules.xml",
+    ".agent-operating-model/bundles/researchops-developer-control/references/researchops-repository-conventions.xml",
+    ".agent-operating-model/bundles/researchops-developer-control/references/quality-gates.xml",
+    ".agent-operating-model/bundles/govuk-design-system/references/govuk-form-affordance-reference.xml",
+    ".agent-operating-model/bundles/govuk-design-system/roles/accessibility-specialist.xml",
+    "public/pages/project-dashboard/index.html",
+    "src/govuk/templates/pages/project-dashboard.njk",
+    "public/js/project-dashboard.js",
+    "src/styles/project-dashboard.scss",
+    "public/css/project-dashboard.css",
+    "tests/project-dashboard-route-state.test.js",
+    "infra/cloudflare/src/service/projects.js",
+    "infra/cloudflare/src/service/projects/normalisation.js"
+  ],
+  "filesModifiedOrCreated": [
+    "docs/agent-audit/reasoning/2026/06/24/edit-project-objectives-markdown.md",
+    "docs/agent-audit/reasoning/2026/06/24/edit-project-objectives-markdown.json",
+    "public/css/project-dashboard.css",
+    "public/js/project-dashboard.js",
+    "public/pages/project-dashboard/index.html",
+    "src/govuk/templates/pages/project-dashboard.njk",
+    "src/styles/project-dashboard.scss",
+    "tests/project-dashboard-route-state.test.js"
+  ],
+  "validation": [
+    "npm run agent:model -- task text: passed",
+    "npm run build:project-dashboard: passed",
+    "npm run build:govuk-pages: passed",
+    "node --import ./tests/helpers/generated-govuk-page-source.mjs --test tests/project-dashboard-route-state.test.js: passed, 1 test",
+    "npm run format:check: passed",
+    "npm run lint: passed with existing repository warnings and no errors",
+    "npm test: passed, 245 tests",
+    "Local Playwright preview check: passed for desktop click-to-edit and blur-save, visible focus state, mobile keyboard edit and blur-save, and no mobile horizontal overflow",
+    "git diff --check: passed"
+  ],
+  "validationNotRun": [
+    "npm test -- --ci did not run because node --test rejected the forwarded --ci flag.",
+    "Live Cloudflare Pages deployment verification was not run because this branch has not yet been merged or deployed."
+  ],
+  "residualRisks": [
+    "The browser interaction was validated against a local static preview with mocked project API responses, not a deployed preview environment.",
+    "Live deployment will update through the normal PR merge and Pages deployment path."
+  ]
+}

@@ -195,6 +195,21 @@
 	display: block;
 }
 
+.rops-objective-list__display[role='button'] {
+	cursor: pointer;
+	display: block;
+	padding: 2px 0;
+}
+
+.rops-objective-list__display[role='button']:focus {
+	background-color: #ffdd00;
+	box-shadow:
+		0 -2px #ffdd00,
+		0 4px #0b0c0c;
+	color: #0b0c0c;
+	outline: 3px solid transparent;
+}
+
 .rops-objective-list__sublist {
 	margin-bottom: 0;
 	margin-top: 10px;
@@ -204,6 +219,10 @@
 	border-bottom: 0;
 	margin-bottom: 5px;
 	padding-bottom: 0;
+}
+
+.rops-objective-editor__textarea {
+	margin-bottom: 10px;
 }
 
 .rops-study-list {

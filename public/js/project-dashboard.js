@@ -317,6 +317,10 @@ function renderObjectives(objectives = []) {
 }
 
 function parseObjectiveMarkdownList(objectives = []) {
+	return objectiveMarkdownItems(objectives);
+}
+
+function objectiveMarkdownItems(objectives = []) {
 	const lines = objectiveLines(objectives);
 	const items = [];
 	let currentItem = null;
@@ -324,16 +328,17 @@ function parseObjectiveMarkdownList(objectives = []) {
 		const numberedMatch = line.match(/^\d+[.)]\s+(.+)$/);
 		const bulletMatch = line.match(/^[-*+]\s+(.+)$/);
 		if (numberedMatch) {
-			currentItem = { text: numberedMatch[1].trim(), children: [] };
+			currentItem = { text: numberedMatch[1].trim(), children: [], markdownLines: [line] };
 			items.push(currentItem);
 		} else if (bulletMatch && currentItem) {
 			currentItem.children.push(bulletMatch[1].trim());
+			currentItem.markdownLines.push(line);
 		} else {
-			currentItem = { text: (bulletMatch?.[1] || line).trim(), children: [] };
+			currentItem = { text: (bulletMatch?.[1] || line).trim(), children: [], markdownLines: [line] };
 			items.push(currentItem);
 		}
 	}
-	return items.filter((item) => item.text);
+	return items.filter((item) => item.text).map((item) => ({ ...item, markdown: item.markdownLines.join("\n") }));
 }
 
 function objectiveLines(objectives = []) {
@@ -344,13 +349,86 @@ function objectiveLines(objectives = []) {
 }
 
 function objectiveListHtml(objectives = []) {
-	const items = objectives.map((objective) => {
+	const items = objectives.map((objective, index) => {
 		const children = objective.children.length
 			? `<ul class="govuk-list govuk-list--bullet rops-objective-list__sublist">${objective.children.map((child) => `<li>${escapeHtml(child)}</li>`).join("")}</ul>`
 			: "";
-		return `<li><span class="rops-objective-list__title">${escapeHtml(objective.text)}</span>${children}</li>`;
+		return `<li data-objective-index="${index}"><div class="rops-objective-list__display" role="button" tabindex="0" data-objective-edit="${index}" aria-label="Edit objective: ${escapeHtml(objective.text)}"><span class="rops-objective-list__title">${escapeHtml(objective.text)}</span>${children}</div></li>`;
 	});
 	return `<ol class="govuk-list govuk-list--number rops-objective-list">${items.join("")}</ol>`;
+}
+
+function objectiveEditorHtml(index, objective) {
+	const textareaId = `objective-editor-${index}`;
+	const statusId = `objective-editor-status-${index}`;
+	return `
+<div class="rops-objective-editor" data-objective-editor-index="${index}">
+<label class="govuk-label govuk-visually-hidden" for="${textareaId}">Edit objective markdown</label>
+<textarea class="govuk-textarea rops-objective-editor__textarea" id="${textareaId}" rows="5" aria-describedby="${statusId}">${escapeHtml(objective.markdown)}</textarea>
+<div class="dashboard-action-status" id="${statusId}" aria-live="polite"></div>
+</div>`;
+}
+
+function beginObjectiveEdit(index) {
+	const items = objectiveMarkdownItems(currentProject?.objectives || []);
+	const objective = items[index];
+	const list = document.getElementById("objectives-list");
+	const listItem = list?.querySelector(`[data-objective-index="${index}"]`);
+	if (!objective || !listItem || list.querySelector("[data-objective-editor-index]")) return;
+
+	listItem.innerHTML = objectiveEditorHtml(index, objective);
+	const textarea = listItem.querySelector("textarea");
+	const status = listItem.querySelector(".dashboard-action-status");
+	const originalMarkdown = objective.markdown.trim();
+	let saveStarted = false;
+
+	textarea?.focus();
+	textarea?.addEventListener("blur", async () => {
+		if (saveStarted) return;
+		saveStarted = true;
+		const nextMarkdown = textarea.value.trim();
+		if (nextMarkdown === originalMarkdown) {
+			renderObjectives(currentProject.objectives || []);
+			return;
+		}
+
+		const nextObjectives = items.map((item) => item.markdown);
+		if (nextMarkdown) nextObjectives[index] = nextMarkdown;
+		else nextObjectives.splice(index, 1);
+
+		try {
+			textarea.disabled = true;
+			if (status) status.textContent = "Saving objective.";
+			await saveProjectPatch({ objectives: nextObjectives });
+			currentProject.objectives = nextObjectives;
+			renderObjectives(nextObjectives);
+		} catch (error) {
+			saveStarted = false;
+			textarea.disabled = false;
+			if (status) {
+				status.classList.add("dashboard-action-status--error");
+				status.textContent = `Could not save objective. ${String(error?.message || error)}`;
+			}
+			textarea.focus();
+		}
+	}, { once: true });
+}
+
+function initObjectiveInlineEditing() {
+	const list = document.getElementById("objectives-list");
+	if (!list) return;
+	list.addEventListener("click", (event) => {
+		const trigger = event.target instanceof Element ? event.target.closest("[data-objective-edit]") : null;
+		if (!trigger || !list.contains(trigger)) return;
+		beginObjectiveEdit(Number(trigger.dataset.objectiveEdit));
+	});
+	list.addEventListener("keydown", (event) => {
+		if (event.key !== "Enter" && event.key !== " ") return;
+		const trigger = event.target instanceof Element ? event.target.closest("[data-objective-edit]") : null;
+		if (!trigger || !list.contains(trigger)) return;
+		event.preventDefault();
+		beginObjectiveEdit(Number(trigger.dataset.objectiveEdit));
+	});
 }
 
 function renderUserGroups(userGroups = []) {
@@ -584,6 +662,7 @@ function initProjectActions() {
 	initPanelClosers();
 	initStakeholderForm();
 	initObjectiveForm();
+	initObjectiveInlineEditing();
 	initUserGroupForm();
 }
 
