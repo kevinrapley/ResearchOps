@@ -113,6 +113,7 @@ Precedence applied:
 - DaaS ordering/content diagnosis: the DaaS seed used a placeholder `DaaS project` payload with no `createdAt`, objectives, user groups, stakeholders or lead researcher fields. The Projects page and Worker both sort by `createdAt`, so the DaaS row fell below seeded Home Office Biometrics rows and the dashboard rendered empty content panels.
 - Target-state screenshot diagnosis: the latest deployed DaaS view had the correct project name and objectives but still used the short placeholder description, one stakeholder and two user groups. The target screenshot showed the full TCN description, three PSG - ILEC stakeholders and seven user groups. The Home Office purple brand variant was environment-specific and did not require a code change.
 - Description-edit follow-up diagnosis: the dashboard rendered the project description as plain text and the inline editing helpers existed only for objectives. The project record route also needed to accept `description` as an updatable framing field so blur-save could persist through D1 before non-blocking Airtable capture.
+- Description-width follow-up diagnosis: the displayed description's readable `34em` max width had also been applied to the edit wrapper, so the textarea did not use the available dashboard content width.
 
 ## Changes
 
@@ -134,6 +135,7 @@ Precedence applied:
 - Follow-up description-edit correction: wrapped the description in a stable `project-description-region`, renders it as a keyboard-accessible edit target, replaces it with a GOV.UK textarea on click or keyboard activation, saves changed text on blur with `{ description }`, restores unchanged text without saving, and keeps failed saves retryable in the open textarea.
 - Follow-up description persistence correction: added `description` to the D1-first project framing PATCH route and legacy framing mapper, mapping it to Airtable `Description` only as secondary capture.
 - Follow-up description coverage: added route-state assertions for the description editor hooks, focus styling and cache-busted assets, and extended the D1/Airtable 429 project PATCH contract to assert edited descriptions are saved in D1 and included in queued Airtable capture.
+- Follow-up description-width correction: kept the displayed description text at a readable width but made `.rops-description-editor` and `.rops-description-editor__textarea` use `width: 100%` with border-box sizing so edit mode spans the available area.
 - Bumped the project dashboard JS and CSS asset version to `project-dashboard-objective-edit-20260624`.
 - Bumped the project dashboard JS and CSS asset version again to `project-dashboard-description-edit-20260624`.
 - Regenerated `public/css/project-dashboard.css` and `public/pages/project-dashboard/index.html`.
@@ -163,6 +165,8 @@ Precedence applied:
 - `npm test`: passed after the description-edit follow-up, 247 tests.
 - `npm run trace:coverage -- --date 2026-06-24`: passed after the description-edit follow-up.
 - `git diff --check`: passed after the description-edit follow-up.
+- `npm run build:project-dashboard`: passed after the description-width correction.
+- `node --import ./tests/helpers/generated-govuk-page-source.mjs --test tests/project-dashboard-route-state.test.js`: passed after the description-width correction.
 - `node --test tests/pages-advanced-worker-auth-route-state.test.js`: passed, 12 tests after adding the project dashboard protected-page preflight.
 - `node --import ./tests/helpers/generated-govuk-page-source.mjs --test tests/projects-route-contract.test.js`: passed after the Pages proxy correction.
 - `npm run format:check`: initially failed because generated CSS was stale; `npm run lint` rebuilt generated CSS and then passed. A follow-up `npm run format:check` passed.

@@ -31,12 +31,14 @@
 	}
 
 .rops-description-editor {
-	max-width: 34em;
+	width: 100%;
 	}
 
 .rops-description-editor__textarea {
+	box-sizing: border-box;
 	min-height: 9rem;
 	resize: vertical;
+	width: 100%;
 	}
 
 .rops-daas-brand-panel {

@@ -142,7 +142,8 @@
     "DaaS follow-up confirmed Home Office Biometrics projects loaded from D1 preview seed, but the reported DaaS project id recdMo80h1QaNQCBk was absent from the preview project seed. A remote D1 read check was attempted but blocked because the local environment has no CLOUDFLARE_API_TOKEN.",
     "DaaS ordering/content follow-up confirmed the DaaS seed used a placeholder DaaS project payload with no createdAt, objectives, user groups, stakeholders or lead researcher fields. Projects and dashboard rendering depend on those fields, so the row sorted below older seed rows and rendered empty content.",
     "Target-state screenshot follow-up confirmed the latest DaaS view had the correct project name and objectives but still used the short placeholder description, one stakeholder and two user groups. The target screenshot showed the full TCN description, three PSG - ILEC stakeholders and seven user groups. The Home Office purple brand variant was environment-specific and not changed.",
-    "Description-edit follow-up confirmed the dashboard rendered the project description as plain text and the inline editing helpers existed only for objectives. The project record route also needed to accept description as an updatable framing field so blur-save could persist through D1 before non-blocking Airtable capture."
+    "Description-edit follow-up confirmed the dashboard rendered the project description as plain text and the inline editing helpers existed only for objectives. The project record route also needed to accept description as an updatable framing field so blur-save could persist through D1 before non-blocking Airtable capture.",
+    "Description-width follow-up confirmed the displayed description's readable 34em max width had also been applied to the edit wrapper, so the textarea did not use the available dashboard content width."
   ],
   "reviewThreads": [
     {
@@ -173,6 +174,8 @@
     "npm test: passed after the description-edit follow-up, 247 tests",
     "npm run trace:coverage -- --date 2026-06-24: passed after the description-edit follow-up",
     "git diff --check: passed after the description-edit follow-up",
+    "npm run build:project-dashboard: passed after the description-width correction",
+    "node --import ./tests/helpers/generated-govuk-page-source.mjs --test tests/project-dashboard-route-state.test.js: passed after the description-width correction",
     "node --test tests/pages-advanced-worker-auth-route-state.test.js: passed, 12 tests after adding the project dashboard protected-page preflight",
     "node --import ./tests/helpers/generated-govuk-page-source.mjs --test tests/projects-route-contract.test.js: passed after the Pages proxy correction",
     "npm run format:check: initially failed because generated CSS was stale; npm run lint rebuilt generated CSS and then passed. A follow-up npm run format:check passed",

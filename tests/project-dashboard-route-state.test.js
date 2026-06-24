@@ -318,6 +318,8 @@ includes(dashboardSassSource, ".rops-objective-list__display[role='button']", "p
 includes(dashboardSassSource, ".rops-dashboard-description[role='button']", "project dashboard stylesheet");
 includes(dashboardSassSource, ".rops-dashboard-description[role='button']:focus", "project dashboard stylesheet");
 includes(dashboardSassSource, ".rops-description-editor__textarea", "project dashboard stylesheet");
+includes(dashboardSassSource, ".rops-description-editor {\n\twidth: 100%;", "project dashboard stylesheet");
+includes(dashboardSassSource, ".rops-description-editor__textarea {\n\tbox-sizing: border-box;\n\tmin-height: 9rem;\n\tresize: vertical;\n\twidth: 100%;", "project dashboard stylesheet");
 includes(dashboardSassSource, ".rops-objective-list__display[role='button']:focus", "project dashboard stylesheet");
 includes(dashboardSassSource, ".rops-objective-list > .rops-objective-list__item--editing", "project dashboard stylesheet");
 includes(dashboardSassSource, "list-style: none;", "project dashboard stylesheet");
@@ -326,6 +328,8 @@ includes(dashboardCssSource, ".rops-objective-list__display[role=button]", "proj
 includes(dashboardCssSource, ".rops-dashboard-description[role=button]", "project dashboard stylesheet");
 includes(dashboardCssSource, ".rops-dashboard-description[role=button]:focus", "project dashboard stylesheet");
 includes(dashboardCssSource, ".rops-description-editor__textarea", "project dashboard stylesheet");
+includes(dashboardCssSource, ".rops-description-editor {\n\twidth: 100%;", "project dashboard stylesheet");
+includes(dashboardCssSource, ".rops-description-editor__textarea {\n\tbox-sizing: border-box;\n\tmin-height: 9rem;\n\tresize: vertical;\n\twidth: 100%;", "project dashboard stylesheet");
 includes(dashboardCssSource, ".rops-objective-list__display[role=button]:focus", "project dashboard stylesheet");
 includes(dashboardCssSource, ".rops-objective-list > .rops-objective-list__item--editing", "project dashboard stylesheet");
 
