@@ -44,6 +44,7 @@ Precedence applied:
 - GOV.UK Design System governed textarea, keyboard access and focus-state handling.
 - Cloudflare governed the follow-up decision to make the project PATCH route succeed from D1 rather than an external API response.
 - Airtable Public API governed the follow-up decision to treat Airtable capture as secondary and non-blocking when rate-limited.
+- Cloudflare also governed the follow-up Pages proxy correction for preview-host API calls carrying Cloudflare Access headers into the passwordless/D1 Worker.
 
 ## Files Read
 
@@ -76,6 +77,10 @@ Precedence applied:
 - `infra/cloudflare/src/service/project-record-routes.js`
 - `infra/cloudflare/src/worker.js`
 - `infra/cloudflare/src/service/projects/normalisation.js`
+- `infra/cloudflare/src/core/auth/access.js`
+- `infra/cloudflare/src/core/auth/passwordless.js`
+- `public/_worker.js`
+- `tests/pages-advanced-worker-auth-route-state.test.js`
 
 ## Diagnosis
 
@@ -94,9 +99,12 @@ Precedence applied:
 - Codex review correction: removed the one-shot blur listener so a failed PATCH can be retried from the same open textarea.
 - Follow-up acceptance coverage: asserted that clearing an objective textarea splices the objective out, saves the shorter objectives payload and re-renders either the remaining objectives or the clean empty state with no editor/list-item orphan.
 - Follow-up persistence correction: routed project PATCH updates through the D1-backed project-record route, requires the updated framing to be written into `rops_projects_cache` before responding, and schedules Airtable PATCH capture with `waitUntil` so Airtable 429s do not block the edit.
+- Follow-up preview-load correction: stripped `cf-access-jwt-assertion` from preview Pages proxy API requests, matching the existing stripping of Cloudflare Access email headers. This keeps the preview API on the ResearchOps passwordless session path and prevents the passwordless/D1 Worker from falling back to Cloudflare Access validation when Access certificate settings are intentionally absent.
+- Updated the Pages proxy diagnostic header so stripped preview requests report `x-researchops-access-headers-forwarded: false` rather than `jwt-only`.
 - Bumped the project dashboard JS and CSS asset version to `project-dashboard-objective-edit-20260624`.
 - Regenerated `public/css/project-dashboard.css` and `public/pages/project-dashboard/index.html`.
 - Updated route-state tests for the inline edit contract, blur-save path, keyboard activation, focus styling and cache-busted assets.
+- Updated the Pages advanced Worker route-state test to assert preview API calls remove Cloudflare Access JWT and email headers while preserving the ResearchOps session cookie.
 
 ## Validation
 
@@ -107,12 +115,16 @@ Precedence applied:
 - `npm run format:check`: passed.
 - `npm run lint`: passed with existing repository warnings and no errors.
 - `npm test -- --ci`: failed because the repository script passes `--ci` through to `node --test`, which reports `node: bad option: --ci`.
-- `npm test`: passed, 245 tests.
+- `npm test`: passed, 246 tests after the Pages proxy regression was added.
 - Local Playwright preview check against `http://127.0.0.1:4173/pages/project-dashboard/?id=test-project-1`: passed for desktop click-to-edit and blur-save, visible focus state, mobile keyboard edit and blur-save, and no mobile horizontal overflow.
 - Follow-up local Playwright preview check: passed for desktop and mobile edit mode with the `<li>` marker hidden and the Markdown `1.` retained inside the textarea.
 - Codex review retry check: local Playwright preview forced the first PATCH to fail and confirmed the editor stayed open and the next blur saved without reopening.
 - Follow-up local Playwright preview check: clearing and blurring the first objective removed it, promoted the remaining objective without an empty list item, and clearing the final objective replaced the ordered list with `<p class="govuk-body-s">No objectives yet.</p>` with no editor, editing class or orphaned `<li>`.
 - `node --import ./tests/helpers/generated-govuk-page-source.mjs --test tests/projects-route-contract.test.js`: passed, including Airtable 429 during project PATCH with D1 success.
+- `node --test tests/pages-advanced-worker-auth-route-state.test.js`: passed, 11 tests.
+- `node --import ./tests/helpers/generated-govuk-page-source.mjs --test tests/projects-route-contract.test.js`: passed after the Pages proxy correction.
+- `npm run format:check`: initially failed because generated CSS was stale; `npm run lint` rebuilt generated CSS and then passed. A follow-up `npm run format:check` passed.
+- `npm run trace:coverage -- --date 2026-06-24`: passed.
 - `node --import ./tests/helpers/generated-govuk-page-source.mjs --test tests/projects-service-split-route-state.test.js tests/projects-page-route-state.test.js`: passed, 2 tests.
 - `git diff --check`: passed.
 
@@ -123,3 +135,4 @@ Precedence applied:
 ## Residual Risk
 
 - Live deployment verification was not run because this branch has not yet been merged or deployed.
+- Production Cloudflare Access fallback remains unchanged; this correction is scoped to preview-host API proxying where the target is the passwordless preview Worker.
