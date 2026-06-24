@@ -139,11 +139,6 @@ html[data-researchops-brand=home-office] .govuk-phase-banner {
 	border-bottom-color: #cbcbcb;
 	}
 
-html[data-researchops-brand=home-office] .govuk-phase-banner__content__tag, html[data-researchops-brand=home-office] .govuk-tag {
-	background: #dbd5e9;
-	color: #3d2375;
-	}
-
 html[data-researchops-brand=home-office] .govuk-notification-banner {
 	border-color: #732282;
 	background-color: #732282;
@@ -210,10 +205,6 @@ html[data-researchops-brand=home-office] .researchops-home-front-page .govuk-tem
 
 html[data-researchops-brand=home-office] .researchops-home-front-page .govuk-phase-banner, html[data-researchops-brand=home-office] .researchops-repository-front-page .govuk-phase-banner {
 	box-shadow: 0 0 0 100vmax #732282;
-	}
-
-html[data-researchops-brand=home-office] .researchops-home-front-page .govuk-phase-banner .govuk-tag, html[data-researchops-brand=home-office] .researchops-repository-front-page .govuk-phase-banner .govuk-tag {
-	color: #732282;
 	}
 
 html[data-researchops-brand=home-office] .researchops-home-masthead, html[data-researchops-brand=home-office] .researchops-home-masthead .govuk-heading-xl, html[data-researchops-brand=home-office] .researchops-home-masthead .govuk-body-l, html[data-researchops-brand=home-office] .researchops-home-masthead .govuk-body, html[data-researchops-brand=home-office] .researchops-home-masthead .govuk-breadcrumbs, html[data-researchops-brand=home-office] .researchops-home-masthead .govuk-breadcrumbs__link, html[data-researchops-brand=home-office] .researchops-home-masthead .govuk-breadcrumbs__link:link, html[data-researchops-brand=home-office] .researchops-home-masthead .govuk-breadcrumbs__link:visited, html[data-researchops-brand=home-office] .researchops-home-masthead .govuk-breadcrumbs__list-item, html[data-researchops-brand=home-office] .repository-masthead, html[data-researchops-brand=home-office] .repository-masthead .govuk-heading-xl, html[data-researchops-brand=home-office] .repository-masthead .govuk-body-l, html[data-researchops-brand=home-office] .repository-masthead .govuk-body, html[data-researchops-brand=home-office] .repository-masthead .govuk-breadcrumbs, html[data-researchops-brand=home-office] .repository-masthead .govuk-breadcrumbs__link, html[data-researchops-brand=home-office] .repository-masthead .govuk-breadcrumbs__link:link, html[data-researchops-brand=home-office] .repository-masthead .govuk-breadcrumbs__link:visited, html[data-researchops-brand=home-office] .repository-masthead .govuk-breadcrumbs__list-item {
