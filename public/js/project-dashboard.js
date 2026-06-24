@@ -412,7 +412,7 @@ function beginObjectiveEdit(index) {
 			}
 			textarea.focus();
 		}
-	}, { once: true });
+	});
 }
 
 function initObjectiveInlineEditing() {
