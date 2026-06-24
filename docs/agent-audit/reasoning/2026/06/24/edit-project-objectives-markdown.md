@@ -48,6 +48,7 @@ Precedence applied:
 - Cloudflare and Airtable Public API governed the follow-up project-list correction so D1 preview/cache rows remain the first-class read source and Airtable remains a secondary capture/upstream source.
 - Cloudflare governed the DaaS project follow-up because the missing record was a preview D1 seed gap rather than a browser rendering problem.
 - Cloudflare governed the DaaS ordering and content follow-up because the preview D1 payload needed the same project fields the dashboard and Projects page use for display.
+- Cloudflare governed the target-state screenshot follow-up because the remaining mismatch was incomplete preview D1 record content. The brand variant shown in the target screenshot was confirmed as environment-specific and left unchanged.
 
 ## Files Read
 
@@ -98,6 +99,7 @@ Precedence applied:
 - `public/js/projects-page.js`
 - `data/projects.csv`
 - `docs/agent-audit/reasoning/2026/06/16/daas-dashboard-brand-panel.md`
+- Target-state screenshots attached by the user showing the expected DaaS/TCN description, stakeholders and user groups.
 
 ## Diagnosis
 
@@ -107,6 +109,7 @@ Precedence applied:
 - The missing behavior was local interaction: rendered objectives were not editable and there was no inline textarea blur-save path.
 - DaaS follow-up diagnosis: Home Office Biometrics projects loaded from D1 preview seed, but the reported DaaS project id `recdMo80h1QaNQCBk` was absent from `infra/cloudflare/migrations/preview/0002_seed_projects_cache.sql`. A remote D1 read check was attempted but blocked because the local environment has no `CLOUDFLARE_API_TOKEN`.
 - DaaS ordering/content diagnosis: the DaaS seed used a placeholder `DaaS project` payload with no `createdAt`, objectives, user groups, stakeholders or lead researcher fields. The Projects page and Worker both sort by `createdAt`, so the DaaS row fell below seeded Home Office Biometrics rows and the dashboard rendered empty content panels.
+- Target-state screenshot diagnosis: the latest deployed DaaS view had the correct project name and objectives but still used the short placeholder description, one stakeholder and two user groups. The target screenshot showed the full TCN description, three PSG - ILEC stakeholders and seven user groups. The Home Office purple brand variant was environment-specific and did not require a code change.
 
 ## Changes
 
@@ -124,6 +127,7 @@ Precedence applied:
 - Follow-up D1 read correction: allowed `preview-seed` project cache rows to serve the project list and single-project dashboard reads, preserved `preview-seed` when a D1-backed objective edit is saved, and allowed `airtable-partial` project cache rows as the last-resort list fallback after Airtable is unavailable.
 - Follow-up DaaS seed correction: added the known DaaS Airtable record id `recdMo80h1QaNQCBk` to the preview D1 project cache seed with `DaaS` org/team metadata and `team_daas` in `payload_json`, so DaaS users can load it from D1 when Airtable is unavailable.
 - Follow-up DaaS content correction: replaced the placeholder seed payload with `Third Country National Discovery`, `createdAt`, description, TCN objective Markdown, user groups, stakeholder and lead researcher fields so DaaS appears first in Projects and the dashboard has the expected content when Airtable is unavailable.
+- Follow-up target-state content correction: expanded the DaaS/TCN preview seed payload to the target screenshot content: the long Home Office Digital/ECRIS-TCN description, Pam Thethi, Chris Moffitt and Maria Athayde as stakeholders, and the seven expected user groups.
 - Bumped the project dashboard JS and CSS asset version to `project-dashboard-objective-edit-20260624`.
 - Regenerated `public/css/project-dashboard.css` and `public/pages/project-dashboard/index.html`.
 - Updated route-state tests for the inline edit contract, blur-save path, keyboard activation, focus styling and cache-busted assets.
@@ -156,6 +160,10 @@ Precedence applied:
 - `sqlite3 ':memory:' < infra/cloudflare/migrations/preview/0002_seed_projects_cache.sql`: passed after the TCN content seed correction.
 - `npm test`: passed after the DaaS ordering and TCN content correction, 247 tests.
 - `npm run lint`: passed with existing repository warnings and no errors after the DaaS ordering and TCN content correction.
+- `node --import ./tests/helpers/generated-govuk-page-source.mjs --test tests/projects-route-contract.test.js`: passed after expanding the DaaS/TCN description, stakeholders and user groups to match the target screenshot.
+- `sqlite3 ':memory:' < infra/cloudflare/migrations/preview/0002_seed_projects_cache.sql`: passed after the target-state content correction.
+- `sqlite3 ':memory:' ".read infra/cloudflare/migrations/preview/0002_seed_projects_cache.sql" "SELECT json_extract(payload_json, '$.description'), json_array_length(json_extract(payload_json, '$.stakeholders')), json_array_length(json_extract(payload_json, '$.user_groups')) FROM rops_projects_cache WHERE id = 'recdMo80h1QaNQCBk';"`: returned the long TCN description with 3 stakeholders and 7 user groups.
+- `npm test`: passed after the final target-state DaaS/TCN content correction, 247 tests.
 - `npm run lint`: passed with existing repository warnings and no errors after the D1 preview-seed correction.
 - `npm test`: first run after lint failed in `tests/deploy-asset-paths.test.js`; the focused asset-path test passed immediately afterwards and a clean rerun of `npm test` passed, 247 tests.
 - `npm test`: passed after the DaaS preview seed correction, 247 tests.

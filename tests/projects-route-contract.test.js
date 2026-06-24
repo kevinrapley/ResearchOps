@@ -9,10 +9,18 @@ const TEST_SESSION_TOKEN = "project-contract-session";
 const DAAS_PROJECT_RECORD_ID = "recdMo80h1QaNQCBk";
 const DAAS_PROJECT_NAME = "Third Country National Discovery";
 const DAAS_CREATED_AT = "2026-06-24T10:10:00.000Z";
+const DAAS_DESCRIPTION =
+	"The Third Country National (TCN) Discovery is a Home Office Digital research and analysis phase focused on understanding and improving how criminal conviction data about non-EU nationals is identified, accessed, and shared between the UK and EU. It supports the UK's potential participation in the ECRIS-TCN system, which enables member states to identify where conviction data is held for third country nationals.";
 const DAAS_OBJECTIVES = [
 	"1. Understand the problem space\n- Establish a shared understanding of the TCN problem\n- Define the problem statement, goals, and assumptions\n- Align stakeholders on the scope and purpose of Discovery",
 	'2. Build an "As-Is" view of the current system\n- Map end-to-end workflows (UK <-> EU)\n- Identify systems involved (e.g., LEDS, HOB, ACRO)\n- Understand data flows and formats\n- Capture process steps, timings, and responsibilities',
 	"3. Identify users, stakeholders, and impacts\n- Understand who uses TCN data (direct and indirect users)\n- Map organisations involved across policing, borders, and justice\n- Assess who will be impacted by change",
+];
+const DAAS_USER_GROUPS = ["Law enforcement", "ACRO", "Borders and immigration", "Justice and legal", "Indirect operational users", "Technical and data users", "Policy and governance users"];
+const DAAS_STAKEHOLDERS = [
+	{ name: "Pam Thethi", role: "PSG - ILEC - Criminal Records Team", email: "pam.thethi@homeoffice.gov.uk" },
+	{ name: "Chris Moffitt", role: "PSG - ILEC - Criminal Records Team", email: "christopher.moffitt@homeoffice.gov.uk" },
+	{ name: "Maria Athayde", role: "PSG - ILEC - Criminal Records Team", email: "maria.athayde@homeoffice.gov.uk" },
 ];
 const d1RunCalls = [];
 let d1HasPartialProject = false;
@@ -549,10 +557,10 @@ async function assertProjectListUsesPreviewSeedD1WhenAirtableIsUnavailable() {
 			name: DAAS_PROJECT_NAME,
 			createdAt: DAAS_CREATED_AT,
 			project: {
-				description: "Discovery research project",
+				description: DAAS_DESCRIPTION,
 				objectives: DAAS_OBJECTIVES,
-				user_groups: ["Law enforcement", "Borders and immigration"],
-				stakeholders: [{ name: "Pam Thethi", role: "PSG - ILEC - Criminal Records Team", email: "pam.thethi@homeoffice.gov.uk" }],
+				user_groups: DAAS_USER_GROUPS,
+				stakeholders: DAAS_STAKEHOLDERS,
 				lead_researcher: "Amy Everett",
 				lead_researcher_email: "amy.everett@homeoffice.gov.uk",
 			},
@@ -578,10 +586,13 @@ async function assertProjectListUsesPreviewSeedD1WhenAirtableIsUnavailable() {
 		assert.equal(payload.projects[0].name, DAAS_PROJECT_NAME);
 		assert.equal(payload.projects[0].teamName, TEST_TEAM_NAME);
 		assert.equal(payload.projects[0].createdAt, DAAS_CREATED_AT);
-		assert.equal(payload.projects[0].description, "Discovery research project");
+		assert.equal(payload.projects[0].description, DAAS_DESCRIPTION);
 		assert.deepEqual(payload.projects[0].objectives, DAAS_OBJECTIVES);
-		assert.deepEqual(payload.projects[0].user_groups, ["Law enforcement", "Borders and immigration"]);
+		assert.deepEqual(payload.projects[0].user_groups, DAAS_USER_GROUPS);
+		assert.equal(payload.projects[0].stakeholders.length, 3);
 		assert.equal(payload.projects[0].stakeholders[0].name, "Pam Thethi");
+		assert.equal(payload.projects[0].stakeholders[1].name, "Chris Moffitt");
+		assert.equal(payload.projects[0].stakeholders[2].name, "Maria Athayde");
 		assert.equal(payload.projects[1].id, PROJECT_RECORD_IDS[2]);
 	} finally {
 		d1ProjectCacheRows = [];
@@ -901,10 +912,10 @@ async function assertProjectReadUsesPreviewSeedD1WhenAirtableIsUnavailable() {
 		name: DAAS_PROJECT_NAME,
 		createdAt: DAAS_CREATED_AT,
 		project: {
-			description: "Discovery research project",
+			description: DAAS_DESCRIPTION,
 			objectives: DAAS_OBJECTIVES,
-			user_groups: ["Law enforcement", "Borders and immigration"],
-			stakeholders: [{ name: "Pam Thethi", role: "PSG - ILEC - Criminal Records Team", email: "pam.thethi@homeoffice.gov.uk" }],
+			user_groups: DAAS_USER_GROUPS,
+			stakeholders: DAAS_STAKEHOLDERS,
 			lead_researcher: "Amy Everett",
 			lead_researcher_email: "amy.everett@homeoffice.gov.uk",
 		},
@@ -925,11 +936,14 @@ async function assertProjectReadUsesPreviewSeedD1WhenAirtableIsUnavailable() {
 		const project = await response.json();
 		assert.equal(project.id, DAAS_PROJECT_RECORD_ID);
 		assert.equal(project.name, DAAS_PROJECT_NAME);
-		assert.equal(project.description, "Discovery research project");
+		assert.equal(project.description, DAAS_DESCRIPTION);
 		assert.equal(project.teamName, TEST_TEAM_NAME);
 		assert.deepEqual(project.objectives, DAAS_OBJECTIVES);
-		assert.deepEqual(project.user_groups, ["Law enforcement", "Borders and immigration"]);
+		assert.deepEqual(project.user_groups, DAAS_USER_GROUPS);
+		assert.equal(project.stakeholders.length, 3);
 		assert.equal(project.stakeholders[0].name, "Pam Thethi");
+		assert.equal(project.stakeholders[1].name, "Chris Moffitt");
+		assert.equal(project.stakeholders[2].name, "Maria Athayde");
 		assert.equal(project.lead_researcher, "Amy Everett");
 		assert.equal(project.lead_researcher_email, "amy.everett@homeoffice.gov.uk");
 	} finally {
@@ -1103,8 +1117,13 @@ function assertPreviewMigrationSeedsDaaSProject() {
 	assert.equal(migration.includes(DAAS_PROJECT_RECORD_ID), true);
 	assert.equal(migration.includes(DAAS_PROJECT_NAME), true);
 	assert.equal(migration.includes('"createdAt":"2026-06-24T10:10:00.000Z"'), true);
+	assert.equal(migration.includes("ECRIS-TCN system"), true);
 	assert.equal(migration.includes("Establish a shared understanding of the TCN problem"), true);
 	assert.equal(migration.includes("Map end-to-end workflows (UK <-> EU)"), true);
+	assert.equal(migration.includes('"ACRO"'), true);
+	assert.equal(migration.includes('"Policy and governance users"'), true);
+	assert.equal(migration.includes("Chris Moffitt"), true);
+	assert.equal(migration.includes("Maria Athayde"), true);
 	assert.equal(migration.includes('"lead_researcher":"Amy Everett"'), true);
 	assert.equal(migration.includes('"team_ids":["team_daas"]'), true);
 	assert.equal(migration.includes('"teamName":"DaaS"'), true);

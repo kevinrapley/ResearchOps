@@ -59,7 +59,8 @@
     "Cloudflare also governed the follow-up Pages proxy correction for preview-host API calls carrying Cloudflare Access headers into the passwordless/D1 Worker.",
     "Cloudflare and Airtable Public API governed the follow-up project-list correction so D1 preview/cache rows remain the first-class read source and Airtable remains a secondary capture/upstream source.",
     "Cloudflare governed the DaaS project follow-up because the missing record was a preview D1 seed gap rather than a browser rendering problem.",
-    "Cloudflare governed the DaaS ordering and content follow-up because the preview D1 payload needed the same project fields the dashboard and Projects page use for display."
+    "Cloudflare governed the DaaS ordering and content follow-up because the preview D1 payload needed the same project fields the dashboard and Projects page use for display.",
+    "Cloudflare governed the target-state screenshot follow-up because the remaining mismatch was incomplete preview D1 record content. The brand variant shown in the target screenshot was confirmed as environment-specific and left unchanged."
   ],
   "filesRead": [
     "README.md",
@@ -108,7 +109,8 @@
     "tests/projects-route-contract.test.js",
     "public/js/projects-page.js",
     "data/projects.csv",
-    "docs/agent-audit/reasoning/2026/06/16/daas-dashboard-brand-panel.md"
+    "docs/agent-audit/reasoning/2026/06/16/daas-dashboard-brand-panel.md",
+    "User target-state screenshots showing the expected DaaS/TCN description, stakeholders and user groups."
   ],
   "filesModifiedOrCreated": [
     "docs/agent-audit/reasoning/2026/06/24/edit-project-objectives-markdown.md",
@@ -135,7 +137,8 @@
     "Second dashboard-load follow-up confirmed /pages/project-dashboard/ was not included in the Pages static protected-route preflight. A signed-out dashboard URL could render the dashboard shell and then fail its project API calls. The route is now protected like /pages/projects/ and /pages/repository/.",
     "D1 read follow-up confirmed the project route ignored preview D1 cache rows with source preview-seed and did not use partial D1 rows after Airtable was unavailable. The project route now treats preview-seed as a readable full D1 source, preserves it across D1-backed edits, and allows airtable-partial rows as a last-resort fallback.",
     "DaaS follow-up confirmed Home Office Biometrics projects loaded from D1 preview seed, but the reported DaaS project id recdMo80h1QaNQCBk was absent from the preview project seed. A remote D1 read check was attempted but blocked because the local environment has no CLOUDFLARE_API_TOKEN.",
-    "DaaS ordering/content follow-up confirmed the DaaS seed used a placeholder DaaS project payload with no createdAt, objectives, user groups, stakeholders or lead researcher fields. Projects and dashboard rendering depend on those fields, so the row sorted below older seed rows and rendered empty content."
+    "DaaS ordering/content follow-up confirmed the DaaS seed used a placeholder DaaS project payload with no createdAt, objectives, user groups, stakeholders or lead researcher fields. Projects and dashboard rendering depend on those fields, so the row sorted below older seed rows and rendered empty content.",
+    "Target-state screenshot follow-up confirmed the latest DaaS view had the correct project name and objectives but still used the short placeholder description, one stakeholder and two user groups. The target screenshot showed the full TCN description, three PSG - ILEC stakeholders and seven user groups. The Home Office purple brand variant was environment-specific and not changed."
   ],
   "reviewThreads": [
     {
@@ -170,6 +173,10 @@
     "sqlite3 ':memory:' < infra/cloudflare/migrations/preview/0002_seed_projects_cache.sql: passed after the TCN content seed correction",
     "npm test: passed after the DaaS ordering and TCN content correction, 247 tests",
     "npm run lint: passed with existing repository warnings and no errors after the DaaS ordering and TCN content correction",
+    "node --import ./tests/helpers/generated-govuk-page-source.mjs --test tests/projects-route-contract.test.js: passed after expanding the DaaS/TCN description, stakeholders and user groups to match the target screenshot",
+    "sqlite3 ':memory:' < infra/cloudflare/migrations/preview/0002_seed_projects_cache.sql: passed after the target-state content correction",
+    "sqlite3 JSON extraction check returned the long TCN description with 3 stakeholders and 7 user groups for recdMo80h1QaNQCBk",
+    "npm test: passed after the final target-state DaaS/TCN content correction, 247 tests",
     "npm run lint: passed with existing repository warnings and no errors after the D1 preview-seed correction",
     "npm test: first run after lint failed in tests/deploy-asset-paths.test.js; the focused asset-path test passed immediately afterwards and a clean rerun of npm test passed, 247 tests",
     "npm test: passed after the DaaS preview seed correction, 247 tests",
