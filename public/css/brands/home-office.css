@@ -139,6 +139,11 @@ html[data-researchops-brand=home-office] .govuk-phase-banner {
 	border-bottom-color: #cbcbcb;
 	}
 
+html[data-researchops-brand=home-office] .govuk-tag {
+	font-size: 1rem;
+	line-height: 1.25;
+	}
+
 html[data-researchops-brand=home-office] .govuk-notification-banner {
 	border-color: #732282;
 	background-color: #732282;

@@ -3,7 +3,7 @@
   "timestampUtc": "2026-06-24T20:33:15Z",
   "branch": "fix/govuk-brand-tag-colours",
   "traceTrigger": "fix branch prefix",
-  "taskSummary": "Stop the Home Office brand variant making GOV.UK tags use the Home Office light purple colour.",
+  "taskSummary": "Stop the Home Office brand variant making GOV.UK tags use the Home Office light purple colour, then use small text for every Home Office-branded GOV.UK tag.",
   "operatingModelFilesLoaded": [
     "AGENTS.md",
     ".agent-operating-model/orchestration.xml",
@@ -55,6 +55,7 @@
     "src/styles/brands/home-office.scss",
     "public/css/brands/home-office.css",
     "tests/brand-variant-route-state.test.js",
+    "public/assets/govuk/govuk-frontend.css",
     "scripts/styles/build-generated-css.mjs",
     "scripts/styles/format-generated-css.mjs",
     "scripts/styles/generated-css-targets.mjs"
@@ -77,6 +78,10 @@
     },
     {
       "command": "npx prettier -c src/styles/brands/home-office.scss tests/brand-variant-route-state.test.js",
+      "status": "passed"
+    },
+    {
+      "command": "npm run trace:coverage",
       "status": "passed"
     }
   ],

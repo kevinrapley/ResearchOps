@@ -168,6 +168,11 @@ html[data-researchops-brand='home-office'] {
 		border-bottom-color: $ho-border;
 	}
 
+	.govuk-tag {
+		font-size: 1rem;
+		line-height: 1.25;
+	}
+
 	.govuk-notification-banner {
 		border-color: $ho-purple;
 		background-color: $ho-purple;

@@ -5,7 +5,7 @@
 - Date: 2026-06-24
 - Branch: `fix/govuk-brand-tag-colours`
 - Trace trigger: required by `fix/` branch prefix
-- Task summary: stop the Home Office brand variant making GOV.UK tags use the Home Office light purple colour, so tags use the same colours as the GOV.UK brand.
+- Task summary: stop the Home Office brand variant making GOV.UK tags use the Home Office light purple colour, so tags use the same colours as the GOV.UK brand, then use small text for every Home Office-branded GOV.UK tag.
 
 ## Operating model loaded
 
@@ -70,8 +70,9 @@ Precedence applied:
 - Removed the Home Office brand variables that defined a light purple GOV.UK tag colour.
 - Removed the Home Office brand override for `.govuk-tag` and `.govuk-phase-banner__content__tag`.
 - Removed the dependent Home Office phase-banner `.govuk-tag` text-colour override.
+- Added a typography-only Home Office brand `.govuk-tag` rule for small tag text.
 - Regenerated only `public/css/brands/home-office.css`.
-- Updated the brand route-state test to assert that Home Office brand CSS no longer owns GOV.UK tag colours.
+- Updated the brand route-state test to assert that Home Office brand CSS no longer owns GOV.UK tag colours and does set small tag typography.
 
 ## Validation
 
@@ -80,6 +81,7 @@ Passed:
 - `node --test tests/brand-variant-route-state.test.js`
 - `node scripts/styles/format-generated-css.mjs --check public/css/brands/home-office.css`
 - `npx prettier -c src/styles/brands/home-office.scss tests/brand-variant-route-state.test.js`
+- `npm run trace:coverage`
 
 Not run:
 
