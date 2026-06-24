@@ -464,7 +464,9 @@ const sassLedsOverlayBlock = declarationBlock(
 	"project dashboard Sass source",
 );
 includes(sassLedsOverlayBlock, "home-office-digital-triangles.svg", "project dashboard LEDS overlay");
-includes(sassLedsOverlayBlock, "background-position: right -3rem bottom -7rem;", "project dashboard LEDS overlay");
+includes(sassLedsOverlayBlock, "backdrop-filter: brightness(0.65);", "project dashboard LEDS overlay");
+includes(sassLedsOverlayBlock, "background-blend-mode: soft-light;", "project dashboard LEDS overlay");
+includes(sassLedsOverlayBlock, "background-position: right -2.5rem bottom -5.75rem;", "project dashboard LEDS overlay");
 includes(sassLedsOverlayBlock, "background-size: 50% 200%;", "project dashboard LEDS overlay");
 includes(dashboardSassSource, ".rops-study-list", "project dashboard Sass source");
 includes(dashboardSassSource, ".rops-objective-list", "project dashboard Sass source");
@@ -521,7 +523,9 @@ const cssLedsOverlayBlock = declarationBlock(
 	"project dashboard stylesheet",
 );
 includes(cssLedsOverlayBlock, "home-office-digital-triangles.svg", "project dashboard LEDS overlay");
-includes(cssLedsOverlayBlock, "background-position: right -3rem bottom -7rem", "project dashboard LEDS overlay");
+includes(cssLedsOverlayBlock, "backdrop-filter: brightness(0.65)", "project dashboard LEDS overlay");
+includes(cssLedsOverlayBlock, "background-blend-mode: soft-light", "project dashboard LEDS overlay");
+includes(cssLedsOverlayBlock, "background-position: right -2.5rem bottom -5.75rem", "project dashboard LEDS overlay");
 includes(cssLedsOverlayBlock, "background-size: 50% 200%", "project dashboard LEDS overlay");
 includes(dashboardCssSource, ".rops-leds-brand-panel", "project dashboard stylesheet");
 includes(dashboardCssSource, "#1a1d35", "project dashboard stylesheet");

@@ -104,7 +104,9 @@ for (const source of [sassSource, cssSource]) {
 		"LEDS brand panel stylesheet",
 	);
 	includes(ledsOverlayBlock, "home-office-digital-triangles.svg", "LEDS brand panel overlay");
-	includes(ledsOverlayBlock, "background-position: right -3rem bottom -7rem", "LEDS brand panel overlay");
+	includes(ledsOverlayBlock, "backdrop-filter: brightness(0.65)", "LEDS brand panel overlay");
+	includes(ledsOverlayBlock, "background-blend-mode: soft-light", "LEDS brand panel overlay");
+	includes(ledsOverlayBlock, "background-position: right -2.5rem bottom -5.75rem", "LEDS brand panel overlay");
 	includes(ledsOverlayBlock, "background-size: 50% 200%", "LEDS brand panel overlay");
 }
 

@@ -5,7 +5,7 @@
 - Date: 2026-06-24
 - Branch: `feature/leds-brand-panel`
 - Trace trigger: required by `feature/` branch prefix
-- Task summary: move the LEDS-only brand-panel changes out of the merged tag-colour PR branch and onto their own branch from updated `main`; follow up by overlaying the Home Office digital triangles asset on the LEDS brand panel `::after` layer in the same position as DaaS.
+- Task summary: move the LEDS-only brand-panel changes out of the merged tag-colour PR branch and onto their own branch from updated `main`; follow up by overlaying the Home Office digital triangles asset on the LEDS brand panel `::after` layer, then tune that overlay with soft-light blending, brightness filtering and adjusted positioning.
 
 ## Operating model loaded
 
@@ -119,6 +119,7 @@ Precedence applied:
 - Set `.rops-leds-brand-panel--visible` to `background-color: #1a1d35`.
 - Added the screened LEDS panel image layer and white LEDS logo to the panel.
 - Added the Home Office digital triangles asset to the LEDS `::after` overlay using the same background position, repeat and size as DaaS.
+- Tuned the LEDS `::after` overlay with `background-blend-mode: soft-light`, `backdrop-filter: brightness(0.65)` and `background-position: right -2.5rem bottom -5.75rem`.
 - Extended the shared brand-panel controller and project-dashboard controller so LEDS projects show the LEDS panel while DaaS projects retain the DaaS panel.
 - Rebuilt generated CSS and rendered GOV.UK pages.
 - Updated route-state tests to cover LEDS macro output, rendered page output, controller hooks and stylesheet contracts.
@@ -148,6 +149,14 @@ Passed:
 - `npm run generated-css:check` (follow-up triangle overlay check)
 - `npm run trace:coverage` (follow-up triangle overlay check)
 - `node -e "JSON.parse(require('fs').readFileSync('docs/agent-audit/reasoning/2026/06/24/leds-brand-panel-feature.json', 'utf8'))"` (follow-up triangle overlay check)
+- `node scripts/styles/build-generated-css.mjs public/css/daas-brand-panel.css` (follow-up overlay tuning check)
+- `node scripts/styles/build-generated-css.mjs public/css/project-dashboard.css` (follow-up overlay tuning check)
+- `node --test tests/daas-brand-panel-route-state.test.js tests/project-dashboard-route-state.test.js` (follow-up overlay tuning check)
+- `npm run generated-css:check` (follow-up overlay tuning check)
+- `git diff --check` (follow-up overlay tuning check)
+- `npm run format:check` (follow-up overlay tuning check)
+- `npm run trace:coverage` (follow-up overlay tuning check)
+- `node -e "JSON.parse(require('fs').readFileSync('docs/agent-audit/reasoning/2026/06/24/leds-brand-panel-feature.json', 'utf8'))"` (follow-up overlay tuning check)
 
 Failed then replaced:
 
