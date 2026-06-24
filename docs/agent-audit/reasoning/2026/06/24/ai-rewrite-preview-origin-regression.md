@@ -65,12 +65,19 @@ A follow-up reproduction showed the first fix was too narrow. The same local AI 
 
 The degraded visual presentation had a separate cause. The suggestion renderer already emitted structured classes for local suggestions, AI analysis and rewritten copy, but the Start page stylesheet only styled the outer assist container. The detailed panel styling existed only as implementation notes in `public/js/copilot-suggester.js`, so the rendered suggestions fell back to raw list-like browser presentation.
 
+A further GOV.UK conformance review found that the Start route stylesheet overrode the GOV.UK textarea component with `font: inherit`. In the rendered page this allowed the description textarea to fall back to a non-GOV.UK browser/form font. The suggestion and AI rewrite renderers also emitted plain custom markup for headings, status text, severity labels and the rewrite preview instead of GOV.UK body, list, tag, inset text and section-break classes.
+
 ## Files changed
 
 - `infra/cloudflare/src/core/ai-rewrite/http.js`
 - `infra/cloudflare/src/core/ai-rewrite.js`
 - `src/styles/start.scss`
 - `public/css/start.css`
+- `src/govuk/templates/pages/start.njk`
+- `public/pages/start/index.html`
+- `public/js/copilot-suggester.js`
+- `public/js/start-description-assist.js`
+- `public/js/start-objectives-assist.js`
 - `tests/ai-rewrite-origin-policy.test.js`
 - `tests/start-page-route-state.test.js`
 - `docs/agent-audit/reasoning/2026/06/24/ai-rewrite-preview-origin-regression.md`
@@ -86,6 +93,11 @@ The degraded visual presentation had a separate cause. The suggestion renderer a
 - Added rejection coverage for an untrusted origin.
 - Restored Start page styling for local suggestions, AI analysis suggestions, AI summary text and rewritten description output.
 - Added route-state assertions that the generated Start stylesheet contains the suggestion and rewrite panel classes.
+- Removed the Start route textarea font override so `govuk-textarea` keeps the GOV.UK font stack and component styling.
+- Replaced custom suggestion severity badges with GOV.UK tag classes.
+- Replaced custom AI summary and rewrite presentation with GOV.UK inset text, section break, heading, body text and secondary button classes.
+- Replaced mono/muted AI status text with `govuk-body-s` status text.
+- Added route-state assertions for the GOV.UK AI renderer classes and for preventing `font: inherit` from returning to the Start stylesheet.
 
 ## Validation
 
@@ -101,6 +113,18 @@ The degraded visual presentation had a separate cause. The suggestion renderer a
   - Desktop screenshot: `/tmp/researchops-start-ai-desktop.png`
   - Mobile screenshot: `/tmp/researchops-start-ai-mobile.png`
   - Verified the suggestion grids, AI summary and rewrite block render with non-zero layout, no horizontal overflow, and responsive one-column/two-column behaviour.
+- Playwright GOV.UK conformance visual verification against a local static Start page with the AI rewrite response mocked
+  - Desktop screenshot: `/tmp/researchops-start-govuk-ai-desktop.png`
+  - Mobile screenshot: `/tmp/researchops-start-govuk-ai-mobile.png`
+  - Verified the textarea, local suggestion heading, AI severity tag and rewrite block computed to `"GDS Transport", arial, sans-serif` at desktop and mobile sizes.
+  - Verified GOV.UK tag and inset-text classes rendered, status text used `govuk-body-s start-assist-status`, and there was no horizontal overflow.
+- `node --test tests/start-page-route-state.test.js tests/ai-rewrite-origin-policy.test.js tests/ai-rewrite-split-route-state.test.js tests/start-project-step-1-defaults-route-state.test.js`
+  - Passed after the GOV.UK conformance pass: 8 tests.
+- `npx prettier -c --ignore-unknown src/govuk/templates/pages/start.njk src/styles/start.scss public/css/start.css public/js/copilot-suggester.js public/js/start-description-assist.js public/js/start-objectives-assist.js public/pages/start/index.html tests/start-page-route-state.test.js`
+  - Passed.
+- `npx eslint public/js/copilot-suggester.js public/js/start-description-assist.js public/js/start-objectives-assist.js tests/start-page-route-state.test.js`
+  - Passed with no errors.
+  - Reported 2 pre-existing `no-console` warnings in `public/js/start-description-assist.js`.
 - `git diff --check`
   - Passed.
 - `npx eslint infra/cloudflare/src/core/ai-rewrite.js infra/cloudflare/src/core/ai-rewrite/http.js tests/ai-rewrite-origin-policy.test.js tests/start-page-route-state.test.js`

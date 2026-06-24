@@ -78,17 +78,24 @@ function splitSuggestionsByBias(items = []) {
  * @returns {string}
  */
 function renderTwoColumnSuggestions(left = [], right = [], idPrefix = 'sugg') {
+	const severityClass = severity => {
+		const value = String(severity || 'medium').toLowerCase();
+		if (value === 'high') return 'govuk-tag--red';
+		if (value === 'low') return 'govuk-tag--green';
+		return 'govuk-tag--yellow';
+	};
+
 	const renderList = (items, emptyText) => {
-		if (!items?.length) return `<p class="muted">${esc(emptyText)}</p>`;
-		return `<ul class="${idPrefix}-list">
+		if (!items?.length) return `<p class="govuk-body">${esc(emptyText)}</p>`;
+		return `<ul class="govuk-list govuk-list--bullet govuk-list--spaced ${idPrefix}-list">
       ${items.map(s => `
         <li class="${idPrefix}-item">
           <div class="${idPrefix}-row">
             <strong class="${idPrefix}-cat">${esc(s?.category || 'General')}</strong>
-            <span class="${idPrefix}-sev ${esc(s?.severity || 'medium')}">${esc(s?.severity || 'medium')}</span>
+            <strong class="govuk-tag ${severityClass(s?.severity)} ${idPrefix}-sev ${esc(s?.severity || 'medium')}">${esc(s?.severity || 'medium')}</strong>
           </div>
-          <div class="${idPrefix}-tip">${esc(s?.tip || '')}</div>
-          <div class="${idPrefix}-why"><span class="mono muted">Why:</span> ${esc(s?.why || '')}</div>
+          <p class="govuk-body ${idPrefix}-tip">${esc(s?.tip || '')}</p>
+          <p class="govuk-body-s ${idPrefix}-why"><strong>Why:</strong> ${esc(s?.why || '')}</p>
         </li>
       `).join('')}
     </ul>`;
@@ -118,12 +125,12 @@ function renderAiPanelTwoCol(data, idPrefix = 'ai') {
 	const { left, right } = splitSuggestionsByBias(list);
 	return `
     <div class="${idPrefix}-region">
-      <div class="${idPrefix}-summary"><strong>AI summary:</strong> ${esc(data?.summary || '')}</div>
+      <div class="govuk-inset-text ${idPrefix}-summary"><p class="govuk-body"><strong>AI summary:</strong> ${esc(data?.summary || '')}</p></div>
       ${renderTwoColumnSuggestions(left, right, `${idPrefix}-sugg`)}
-      <hr />
-      <div><strong>Concise rewrite (optional):</strong></div>
-      <pre class="rewrite-block" aria-label="AI rewrite">${esc(data?.rewrite || '')}</pre>
-      <button type="button" id="apply-ai-obj-rewrite" class="govuk-button govuk-button--secondary">Replace Objectives with rewrite</button>
+      <hr class="govuk-section-break govuk-section-break--m govuk-section-break--visible">
+      <h3 class="govuk-heading-s">Concise rewrite</h3>
+      <div class="rewrite-block govuk-body" aria-label="AI rewrite">${esc(data?.rewrite || '')}</div>
+      <button type="button" id="apply-ai-obj-rewrite" class="govuk-button govuk-button--secondary">Replace objectives with rewrite</button>
     </div>
   `;
 }
@@ -249,7 +256,7 @@ export function initStartObjectiveAssist(cfg = {}) {
 
 			aiStatus && (aiStatus.textContent =
 				data?.flags?.possible_personal_data ?
-				'⚠️ Possible personal data detected in your original text.' :
+				'Possible personal data detected in your original text.' :
 				'Done.');
 		} catch {
 			aiStatus && (aiStatus.textContent = 'Network error.');

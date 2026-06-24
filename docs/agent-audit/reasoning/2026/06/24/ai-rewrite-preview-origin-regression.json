@@ -58,6 +58,7 @@
     "public/js/copilot-suggester.js",
     "src/styles/start.scss",
     "public/css/start.css",
+    "src/govuk/templates/pages/start.njk",
     "tests/ai-rewrite-split-route-state.test.js",
     "tests/start-page-route-state.test.js",
     "tests/start-project-step-1-defaults-route-state.test.js"
@@ -67,12 +68,17 @@
     "infra/cloudflare/src/core/ai-rewrite.js",
     "src/styles/start.scss",
     "public/css/start.css",
+    "src/govuk/templates/pages/start.njk",
+    "public/pages/start/index.html",
+    "public/js/copilot-suggester.js",
+    "public/js/start-description-assist.js",
+    "public/js/start-objectives-assist.js",
     "tests/ai-rewrite-origin-policy.test.js",
     "tests/start-page-route-state.test.js",
     "docs/agent-audit/reasoning/2026/06/24/ai-rewrite-preview-origin-regression.md",
     "docs/agent-audit/reasoning/2026/06/24/ai-rewrite-preview-origin-regression.json"
   ],
-  "rootCause": "The AI rewrite handler had a separate literal ALLOWED_ORIGINS check that rejected ResearchOps Pages branch preview origins even though the wider Worker CORS layer accepts researchops.pages.dev and *.researchops.pages.dev. The first fix was too narrow: the handler still rejected production custom domains including research-operations.com, www.research-operations.com and govuk.research-operations.com. The degraded visual presentation was separate: the renderer emitted structured suggestion and rewrite classes, but the Start page stylesheet did not style them.",
+  "rootCause": "The AI rewrite handler had a separate literal ALLOWED_ORIGINS check that rejected ResearchOps Pages branch preview origins even though the wider Worker CORS layer accepts researchops.pages.dev and *.researchops.pages.dev. The first fix was too narrow: the handler still rejected production custom domains including research-operations.com, www.research-operations.com and govuk.research-operations.com. The degraded visual presentation was separate: the renderer emitted structured suggestion and rewrite classes, but the Start page stylesheet did not style them. A GOV.UK conformance review then found the Start route stylesheet overrode govuk-textarea with font: inherit and the suggestion renderers used plain custom markup instead of GOV.UK body, list, tag, inset text and section-break classes.",
   "validation": [
     {
       "command": "node --test tests/ai-rewrite-origin-policy.test.js",
@@ -93,6 +99,22 @@
     {
       "command": "Playwright visual verification against local static Start page with mocked AI rewrite response",
       "result": "desktop and mobile screenshots rendered suggestion grids, AI summary and rewrite block with non-zero layout, no horizontal overflow and responsive one-column/two-column behaviour"
+    },
+    {
+      "command": "Playwright GOV.UK conformance visual verification against local static Start page with mocked AI rewrite response",
+      "result": "desktop and mobile screenshots showed textarea, local suggestion heading, AI severity tag and rewrite block computed to GDS Transport, arial, sans-serif; GOV.UK tag and inset-text classes rendered; status text used govuk-body-s start-assist-status; no horizontal overflow"
+    },
+    {
+      "command": "node --test tests/start-page-route-state.test.js tests/ai-rewrite-origin-policy.test.js tests/ai-rewrite-split-route-state.test.js tests/start-project-step-1-defaults-route-state.test.js",
+      "result": "passed after GOV.UK conformance pass, 8 tests"
+    },
+    {
+      "command": "npx prettier -c --ignore-unknown src/govuk/templates/pages/start.njk src/styles/start.scss public/css/start.css public/js/copilot-suggester.js public/js/start-description-assist.js public/js/start-objectives-assist.js public/pages/start/index.html tests/start-page-route-state.test.js",
+      "result": "passed"
+    },
+    {
+      "command": "npx eslint public/js/copilot-suggester.js public/js/start-description-assist.js public/js/start-objectives-assist.js tests/start-page-route-state.test.js",
+      "result": "passed with no errors; reported 2 existing no-console warnings in public/js/start-description-assist.js"
     },
     {
       "command": "git diff --check",

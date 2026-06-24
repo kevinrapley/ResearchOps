@@ -62,20 +62,26 @@ function esc(s) {
  * @returns {string}
  */
 function renderTwoColumns(left, right) {
+	const severityClass = severity => {
+		const value = String(severity || "medium").toLowerCase();
+		if (value === "high") return "govuk-tag--red";
+		if (value === "low") return "govuk-tag--green";
+		return "govuk-tag--yellow";
+	};
 	const col = (items, heading, emptyMsg) => `
     <section class="sugg-col" aria-label="${esc(heading)}">
-      <h3 class="sugg-heading">${esc(heading)}</h3>
-      <ul class="sugg-list">
+      <h3 class="govuk-heading-s sugg-heading">${esc(heading)}</h3>
+      <ul class="govuk-list govuk-list--bullet govuk-list--spaced sugg-list">
         ${items.length ? items.map(s => `
           <li class="sugg-item">
             <div class="sugg-row">
               <strong class="sugg-cat">${esc(s.category || "General")}</strong>
-              <span class="sugg-sev ${esc(s.severity || "medium")}">${esc(s.severity || "medium")}</span>
+              <strong class="govuk-tag ${severityClass(s.severity)} sugg-sev ${esc(s.severity || "medium")}">${esc(s.severity || "medium")}</strong>
             </div>
-            <div class="sugg-tip">${esc(s.tip || "")}</div>
-            <div class="sugg-why"><span class="mono muted">Why:</span> ${esc(s.why || "")}</div>
+            <p class="govuk-body sugg-tip">${esc(s.tip || "")}</p>
+            <p class="govuk-body-s sugg-why"><strong>Why:</strong> ${esc(s.why || "")}</p>
           </li>`).join("")
-        : `<li class="sugg-item"><em>${esc(emptyMsg)}</em></li>`}
+        : `<li class="sugg-item"><p class="govuk-body"><em>${esc(emptyMsg)}</em></p></li>`}
       </ul>
     </section>`.trim();
 
@@ -176,7 +182,6 @@ function defaultRules(t) {
 function defaultBiasRules(t) {
 	/** @type {RuleItem[]} */
 	const tips = [];
-	const txt = (t || "").toLowerCase();
 
 	// Accessibility tech
 	if (!/(screen\s*reader|accessibil|wcag|voiceover|talkback)/i.test(t)) {
