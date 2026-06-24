@@ -3,6 +3,7 @@ import fs from "node:fs";
 
 const routeSource = fs.readFileSync("infra/cloudflare/src/core/ai-rewrite.js", "utf8");
 const configSource = fs.readFileSync("infra/cloudflare/src/core/ai-rewrite/config.js", "utf8");
+const fallbackSource = fs.readFileSync("infra/cloudflare/src/core/ai-rewrite/fallback.js", "utf8");
 const guardrailsSource = fs.readFileSync("infra/cloudflare/src/core/ai-rewrite/guardrails.js", "utf8");
 const httpSource = fs.readFileSync("infra/cloudflare/src/core/ai-rewrite/http.js", "utf8");
 const promptsSource = fs.readFileSync("infra/cloudflare/src/core/ai-rewrite/prompts.js", "utf8");
@@ -18,6 +19,7 @@ function excludes(source, text, label) {
 }
 
 includes(routeSource, 'import { DEFAULTS } from "./ai-rewrite/config.js";', "AI rewrite route");
+includes(routeSource, 'from "./ai-rewrite/fallback.js";', "AI rewrite route");
 includes(routeSource, 'from "./ai-rewrite/guardrails.js";', "AI rewrite route");
 includes(routeSource, 'from "./ai-rewrite/http.js";', "AI rewrite route");
 includes(routeSource, 'from "./ai-rewrite/prompts.js";', "AI rewrite route");
@@ -34,6 +36,7 @@ excludes(routeSource, "const SUGGESTION_LIBRARY", "AI rewrite route");
 excludes(routeSource, "function createMockEnv", "AI rewrite route");
 
 includes(configSource, "export const DEFAULTS", "AI rewrite config");
+includes(fallbackSource, "export function buildFallbackResponse", "AI rewrite fallback");
 includes(httpSource, "export function corsHeaders", "AI rewrite HTTP helpers");
 includes(httpSource, "export function json", "AI rewrite HTTP helpers");
 includes(textSource, "export function detectPII", "AI rewrite text helpers");

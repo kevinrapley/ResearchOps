@@ -125,7 +125,7 @@ function renderAiPanelTwoCol(data, idPrefix = 'ai') {
 	const { left, right } = splitSuggestionsByBias(list);
 	return `
     <div class="${idPrefix}-region">
-      <div class="govuk-inset-text ${idPrefix}-summary"><p class="govuk-body"><strong>AI summary:</strong> ${esc(data?.summary || '')}</p></div>
+      <div class="govuk-inset-text ${idPrefix}-summary"><p class="govuk-body"><strong>Review summary:</strong> ${esc(data?.summary || '')}</p></div>
       ${renderTwoColumnSuggestions(left, right, `${idPrefix}-sugg`)}
       <hr class="govuk-section-break govuk-section-break--m govuk-section-break--visible">
       <h3 class="govuk-heading-s">Concise rewrite</h3>
@@ -257,6 +257,8 @@ export function initStartObjectiveAssist(cfg = {}) {
 			aiStatus && (aiStatus.textContent =
 				data?.flags?.possible_personal_data ?
 				'Possible personal data detected in your original text.' :
+				data?.flags?.ai_unavailable ?
+				'Done. Rule-based suggestions shown.' :
 				'Done.');
 		} catch {
 			aiStatus && (aiStatus.textContent = 'Network error.');

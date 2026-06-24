@@ -38,6 +38,7 @@
  */
 
 import { DEFAULTS } from "./ai-rewrite/config.js";
+import { buildFallbackResponse } from "./ai-rewrite/fallback.js";
 import { auditForBias, neutraliseInventedMethods, neutraliseInventedQuantifiers } from "./ai-rewrite/guardrails.js";
 import { corsHeaders, isAllowedOrigin, json } from "./ai-rewrite/http.js";
 import { DESC_SYSTEM_PROMPT, OBJ_SYSTEM_PROMPT, rulesPromptForMode, SUGGESTION_LIBRARY } from "./ai-rewrite/prompts.js";
@@ -190,8 +191,17 @@ class AiRewriteService {
 			"INPUT (verbatim):"
 		].join("\n");
 
+		const fallbackBody = () => buildFallbackResponse({ mode, input, hasPII, cfg: this.cfg });
+
 		// ---- Model call
 		let modelOutput = "";
+		if (!this.env.AI || typeof this.env.AI.run !== "function") {
+			if (this.env.AUDIT === "true") {
+				console.warn("ai.run.missing_binding", { mode });
+			}
+			return json(fallbackBody(), 200, corsHeaders(this.env, origin));
+		}
+
 		try {
 			const resp = await this.env.AI.run(model, {
 				messages: [
@@ -209,10 +219,7 @@ class AiRewriteService {
 			if (this.env.AUDIT === "true") {
 				console.warn("ai.run.fail", { err: String(e?.message || e) });
 			}
-			return json({ error: "AI_UNAVAILABLE", message: "The AI service is temporarily unavailable." },
-				503,
-				corsHeaders(this.env, origin)
-			);
+			return json(fallbackBody(), 200, corsHeaders(this.env, origin));
 		}
 
 		// Trim any accidental prose around JSON
@@ -224,6 +231,13 @@ class AiRewriteService {
 
 		// Parse + clamp + sanitize
 		const parsed = safeParseJSON(modelOutput);
+		if (!Array.isArray(parsed.suggestions) && typeof parsed.rewrite !== "string" && typeof parsed.summary !== "string") {
+			if (this.env.AUDIT === "true") {
+				console.warn("ai.output.invalid", { mode });
+			}
+			return json(fallbackBody(), 200, corsHeaders(this.env, origin));
+		}
+
 		let suggestions = Array.isArray(parsed.suggestions) ?
 			parsed.suggestions
 			.slice(0, this.cfg.MAX_SUGGESTIONS)
@@ -275,14 +289,7 @@ class AiRewriteService {
 			);
 		}
 
-
-		// Minimal safe fallback to keep UI consistent (do not invent details)
-		if (!rewrite) {
-			rewrite =
-				mode === "objectives" ?
-				"1) [Refine an objective with a measurable target and timeframe].\n2) [Clarify another objective; keep it action-oriented]." :
-				"Problem: [clarify user need and scope].\n\nUsers: [name primary users and contexts, including accessibility].\n\nOutcomes: [add a measurable target and timeframe].";
-		}
+		if (!rewrite) return json(fallbackBody(), 200, corsHeaders(this.env, origin));
 
 		// Final PII sweep on rewrite
 		if (detectPII(rewrite)) {

@@ -1,0 +1,110 @@
+{
+	"date": "2026-06-24",
+	"branch": "fix/ai-rewrite-production-unavailable",
+	"taskSummary": "Fix the production /api/ai-rewrite path after PR #428 reached main but Step 1 still showed Suggestions are temporarily unavailable.",
+	"traceDecision": "required-fix-branch",
+	"operatingModelFilesLoaded": [
+		"AGENTS.md",
+		".agent-operating-model/orchestration.xml",
+		".agent-operating-model/bundle-registry.json",
+		".agent-operating-model/task-signal-catalog.json",
+		".agent-operating-model/selection-rules.json",
+		".agent-operating-model/bootstrap-checklist.md",
+		".agent-operating-model/precedence-policy.md",
+		".agent-operating-model/trace-policy.md",
+		".agent-operating-model/trace-layers.md",
+		".agent-operating-model/github-mutation-policy.md"
+	],
+	"selectedBundles": [
+		{
+			"id": "github-diamond",
+			"canonicalPath": ".agent-operating-model/bundles/github/"
+		},
+		{
+			"id": "researchops-developer-control",
+			"canonicalPath": ".agent-operating-model/bundles/researchops-developer-control/"
+		},
+		{
+			"id": "multi-functional-team",
+			"canonicalPath": ".agent-operating-model/bundles/multi-functional-team/"
+		},
+		{
+			"id": "govuk-design-system",
+			"canonicalPath": ".agent-operating-model/bundles/govuk-design-system/"
+		},
+		{
+			"id": "cloudflare",
+			"canonicalPath": ".agent-operating-model/bundles/cloudflare/"
+		}
+	],
+	"skippedBundles": [
+		"openai-platform",
+		"mcp-agent-tooling",
+		"airtable-public-api",
+		"mural-public-api"
+	],
+	"filesRead": [
+		"infra/cloudflare/src/core/ai-rewrite.js",
+		"infra/cloudflare/src/core/ai-rewrite/config.js",
+		"infra/cloudflare/src/core/ai-rewrite/prompts.js",
+		"infra/cloudflare/src/core/ai-rewrite/testing.js",
+		"infra/cloudflare/src/core/ai-rewrite/text.js",
+		"infra/cloudflare/src/core/ai-rewrite/http.js",
+		"infra/cloudflare/wrangler.toml",
+		".github/workflows/deploy-worker.yml",
+		".github/workflows/worker-ci.yml",
+		"deployment-toolchain.yaml",
+		"docs/deployment/wrangler-toolchain.md",
+		"public/js/start-description-assist.js",
+		"public/js/start-objectives-assist.js",
+		"tests/ai-rewrite-origin-policy.test.js",
+		"tests/ai-rewrite-split-route-state.test.js",
+		"docs/agent-audit/reasoning/2026/06/24/ai-rewrite-preview-origin-regression.md",
+		"docs/agent-audit/reasoning/2026/06/24/ai-rewrite-preview-origin-regression.json"
+	],
+	"filesCreatedOrModified": [
+		"infra/cloudflare/src/core/ai-rewrite.js",
+		"infra/cloudflare/src/core/ai-rewrite/fallback.js",
+		"public/js/start-description-assist.js",
+		"public/js/start-objectives-assist.js",
+		"tests/ai-rewrite-ai-fallback.test.js",
+		"tests/ai-rewrite-split-route-state.test.js",
+		"docs/agent-audit/reasoning/2026/06/24/ai-rewrite-production-unavailable.md",
+		"docs/agent-audit/reasoning/2026/06/24/ai-rewrite-production-unavailable.json"
+	],
+	"productionEvidence": [
+		"research-operations.com /api/ai-rewrite?mode=description returned 503 AI_UNAVAILABLE from main Worker SHA afb13173d115e03c24b11ae48fa5eb1860d647e7",
+		"researchops.pages.dev /api/ai-rewrite?mode=description returned the same 503 AI_UNAVAILABLE",
+		"response headers showed the Pages advanced Worker proxy reached the expected upstream Worker"
+	],
+	"rootCause": "The AI rewrite service returned 503 AI_UNAVAILABLE whenever env.AI.run threw. PR #428 fixed origin/proxy access, but the upstream Worker still failed at the Workers AI runtime call and the UI had no structured response to render.",
+	"implementation": [
+		"Added deterministic server-side review and rewrite fallback for missing AI binding, thrown Workers AI calls and invalid model output.",
+		"Returned fallback output with HTTP 200 and flags.ai_unavailable true.",
+		"Removed bracketed placeholder fallback from the live response path.",
+		"Changed Step 1 and Step 2 panels to say Review summary and to report rule-based suggestions when fallback output is shown."
+	],
+	"validation": [
+		{
+			"command": "node --test tests/ai-rewrite-ai-fallback.test.js tests/ai-rewrite-origin-policy.test.js tests/ai-rewrite-split-route-state.test.js",
+			"result": "passed, 9 tests"
+		},
+		{
+			"command": "local response-shape check with missing AI binding",
+			"result": "returned 200, flags.ai_unavailable true, 3 suggestions and rewrite beginning with Research focus"
+		},
+		{
+			"command": "npx prettier -c infra/cloudflare/src/core/ai-rewrite.js infra/cloudflare/src/core/ai-rewrite/fallback.js public/js/start-description-assist.js public/js/start-objectives-assist.js tests/ai-rewrite-ai-fallback.test.js tests/ai-rewrite-split-route-state.test.js",
+			"result": "passed"
+		},
+		{
+			"command": "npx eslint infra/cloudflare/src/core/ai-rewrite.js infra/cloudflare/src/core/ai-rewrite/fallback.js public/js/start-description-assist.js public/js/start-objectives-assist.js tests/ai-rewrite-ai-fallback.test.js tests/ai-rewrite-split-route-state.test.js",
+			"result": "passed with no errors; reported no-console warnings from audit/client diagnostics"
+		},
+		{
+			"command": "git diff --check",
+			"result": "passed"
+		}
+	],
+	"residualRisk": "The user-facing feature remains useful during Workers AI failures, but production Worker logs should still be reviewed for ai.run.fail to diagnose why the live Workers AI call failed."
+}
