@@ -324,6 +324,16 @@
       "command": "if rg -n \"daas-brand-panel\\.(css|js)\\?v=20260616|project-dashboard\\.(css|js)\\?v=project-dashboard-description-edit-20260624\" . -g '!node_modules' -g '!vendor'; then exit 1; else exit 0; fi",
       "status": "passed",
       "notes": "Cache-bust follow-up check; no old query strings found."
+    },
+    {
+      "command": "gh api repos/kevinrapley/ResearchOps/pulls/431/comments/3470569357/replies --method POST ...",
+      "status": "passed",
+      "notes": "Valid review comment replied with remediation and validation summary."
+    },
+    {
+      "command": "gh api graphql -f query='mutation($thread:ID!){resolveReviewThread(input:{threadId:$thread}){thread{id isResolved}}}' -f thread='PRRT_kwDOP3Td2M6MDQzF'",
+      "status": "passed",
+      "notes": "Valid review thread resolved."
     }
   ],
   "failedThenReplaced": [
