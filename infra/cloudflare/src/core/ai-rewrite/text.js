@@ -22,6 +22,41 @@ export function clamp(s, n) {
 }
 
 /**
+ * Clamp text without cutting off in the middle of a useful boundary.
+ * Prefers markdown section, paragraph, sentence and word boundaries.
+ * @function clampAtBoundary
+ * @inner
+ * @param {string} s
+ * @param {number} n
+ * @returns {string}
+ */
+export function clampAtBoundary(s, n) {
+	const text = String(s || "");
+	if (!n || text.length <= n) return text;
+
+	const slice = text.slice(0, n);
+	const minUseful = Math.floor(n * 0.6);
+	const candidates = [
+		slice.lastIndexOf("\n\n## "),
+		slice.lastIndexOf("\n\n")
+	].filter(index => index > minUseful);
+
+	let sentenceEnd = -1;
+	const sentencePattern = /[.!?](?=\s|$)/g;
+	let match;
+	while ((match = sentencePattern.exec(slice)) !== null) {
+		if (match.index + 1 > minUseful) sentenceEnd = match.index + 1;
+	}
+	if (sentenceEnd > -1) candidates.push(sentenceEnd);
+
+	const wordBoundary = slice.lastIndexOf(" ");
+	if (wordBoundary > minUseful) candidates.push(wordBoundary);
+
+	const boundary = candidates.length ? Math.max(...candidates) : n;
+	return slice.slice(0, boundary).trim();
+}
+
+/**
  * Safe JSON.parse returning {} on failure.
  * @function safeParseJSON
  * @inner

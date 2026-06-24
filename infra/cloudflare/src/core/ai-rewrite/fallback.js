@@ -1,4 +1,4 @@
-import { clamp, sanitizeRewrite } from "./text.js";
+import { clamp, clampAtBoundary, sanitizeRewrite } from "./text.js";
 
 const DESCRIPTION_CHECKS = Object.freeze([
 	{
@@ -97,37 +97,65 @@ function missingSection(label, text) {
 	return `## ${label}\n\n${text}`;
 }
 
+function fitSections(sections, maxChars) {
+	const fitted = [];
+	for (const item of sections.filter(Boolean)) {
+		const next = fitted.length ? `${fitted.join("\n\n")}\n\n${item}` : item;
+		if (next.length <= maxChars) {
+			fitted.push(item);
+		}
+	}
+	return fitted.length ? fitted.join("\n\n") : clampAtBoundary(sections.filter(Boolean).join("\n\n"), maxChars);
+}
+
+function dataHandlingSection(input) {
+	if (/\bpersonal data\b/i.test(input)) {
+		return missingSection(
+			"Data handling",
+			"The description says the research should help teams avoid participant personal data. It does not state consent, retention or storage arrangements."
+		);
+	}
+	return missingSection("Data handling", "The current description does not state data handling, consent or retention arrangements.");
+}
+
+function methodAndInclusionSection(input, lines) {
+	if (/\b(accessibility|accessible|screen reader|mobile|desktop|low digital confidence|plain English|language)\b/i.test(input)) {
+		return missingSection(
+			"Method and inclusion",
+			"The description mentions accessibility, device coverage, plain English, low digital confidence or time pressure. It does not state the research method."
+		);
+	}
+	return lines.length ?
+		section("Method and inclusion", lines) :
+		missingSection("Method and inclusion", "The current description does not state method or inclusion considerations such as accessibility, screen reader support, mobile users, language needs or Chrome, Safari and Firefox browser coverage.");
+}
+
 function fallbackDescriptionRewrite(input, cfg) {
 	const sentences = splitSentences(input);
 	const scopeLines = matchingSentences(sentences, /\b(scope|in scope|out of scope|boundary|boundaries)\b/i);
 	const questionLines = matchingSentences(sentences, /\?|research question|question(s)?\b/i);
 	const deliverableLines = matchingSentences(sentences, /\b(deliverable|output|playback|report|backlog|recommendation)\b/i);
 	const inclusionLines = matchingSentences(sentences, /\b(identify|consider|test|interview|survey|workshop|accessibility|screen reader|mobile|desktop|language)\b/i);
-	const dataLines = matchingSentences(sentences, /\b(personal data|consent|retention|privacy|data handling|DPIA|ethic)\b/i);
 
 	const sections = [
-		section("Research focus", sentences.slice(0, 2)),
+		section("Research focus", sentences.slice(0, 1)),
 		scopeLines.length ?
 			section("Scope", scopeLines) :
 			missingSection("Scope", "- In scope: The current description does not state explicit in-scope boundaries.\n- Out of scope: The current description does not state explicit out-of-scope boundaries."),
-		section("Users and context", matchingSentences(sentences, /\b(user|users|team|teams|stakeholder|manager|service designer|researcher)\b/i)),
+		section("Users and context", matchingSentences(sentences, /\b(user|users|stakeholder|manager|service designer|researcher)\b/i)),
 		questionLines.length ?
 			section("Research questions", questionLines) :
 			missingSection("Research questions", "- The current description does not state the research questions."),
-		inclusionLines.length ?
-			section("Method and inclusion", inclusionLines) :
-			missingSection("Method and inclusion", "The current description does not state method or inclusion considerations such as accessibility, screen reader support, mobile users, language needs or Chrome, Safari and Firefox browser coverage."),
+		methodAndInclusionSection(input, inclusionLines),
 		deliverableLines.length ?
 			section("Deliverables", deliverableLines) :
 			missingSection("Deliverables", "The current description does not state expected outputs such as a playback, report or prioritised backlog."),
 		section("Outcomes", matchingSentences(sentences, /\b(success|outcome|decision|decisions|deliverable|output|report|backlog|question)\b/i)),
-		dataLines.length ?
-			section("Data handling", dataLines) :
-			missingSection("Data handling", "The current description does not state data handling, consent or retention arrangements.")
+		dataHandlingSection(input)
 	].filter(Boolean);
 
-	const rewrite = sections.length ? sections.join("\n\n") : section("Research focus", sentences.slice(0, 4));
-	return clamp(sanitizeRewrite(rewrite), cfg.MAX_REWRITE_CHARS);
+	const rewrite = sections.length ? fitSections(sections, cfg.MAX_REWRITE_CHARS) : section("Research focus", sentences.slice(0, 4));
+	return clampAtBoundary(sanitizeRewrite(rewrite), cfg.MAX_REWRITE_CHARS);
 }
 
 function splitObjectives(input) {
@@ -142,7 +170,7 @@ function fallbackObjectivesRewrite(input, cfg) {
 	const rewrite = objectives.length ?
 		objectives.map((objective, index) => `${index + 1}. ${objective}`).join("\n") :
 		`1. ${sanitizeRewrite(input)}`;
-	return clamp(sanitizeRewrite(rewrite), cfg.MAX_REWRITE_CHARS);
+	return clampAtBoundary(sanitizeRewrite(rewrite), cfg.MAX_REWRITE_CHARS);
 }
 
 function fallbackSuggestions(input, mode, cfg) {

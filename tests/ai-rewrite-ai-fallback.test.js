@@ -36,7 +36,32 @@ test('AI rewrite returns rule-based output when the Workers AI binding is missin
 	assert.match(body.rewrite, /^## Research focus/m);
 	assert.match(body.rewrite, /^## Scope/m);
 	assert.match(body.rewrite, /^## Deliverables/m);
+	assert.match(body.rewrite, /storage arrangements\.$/);
+	assert.doesNotMatch(body.rewrite, /accessibility b$/);
 	assert.doesNotMatch(body.rewrite, /research@example\.com/);
+});
+
+test('AI rewrite fallback does not cut markdown sections off mid-word', async () => {
+	const env = createMockEnv({ AI: undefined });
+	const text = [
+		'The research should identify unclear language, missing guidance, accessibility barriers and points where teams might enter personal data by mistake.',
+		'It should consider mobile and desktop use, screen reader support, plain English, low digital confidence and teams working under time pressure.',
+		'Success means teams can explain the project purpose, choose appropriate objectives, avoid participant personal data and understand what happens after the project is created.',
+	].join(' ');
+	const request = makeJsonRequest(
+		'/api/ai-rewrite?mode=description',
+		{ text },
+		{ headers: { Origin: ORIGIN } }
+	);
+
+	const response = await aiRewrite(request, env, ORIGIN);
+	const body = await response.json();
+
+	assert.equal(response.status, 200);
+	assert.match(body.rewrite, /^## Data handling/m);
+	assert.match(body.rewrite, /storage arrangements\.$/);
+	assert.doesNotMatch(body.rewrite, /\baccessibility b$/);
+	assert.doesNotMatch(body.rewrite, /\b[a-z]{1,2}$/i);
 });
 
 test('AI rewrite returns rule-based output when the Workers AI call fails', async () => {

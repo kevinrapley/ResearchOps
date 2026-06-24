@@ -42,7 +42,7 @@ import { buildFallbackResponse } from "./ai-rewrite/fallback.js";
 import { auditForBias, neutraliseInventedMethods, neutraliseInventedQuantifiers } from "./ai-rewrite/guardrails.js";
 import { corsHeaders, isAllowedOrigin, json } from "./ai-rewrite/http.js";
 import { DESC_SYSTEM_PROMPT, OBJ_SYSTEM_PROMPT, rulesPromptForMode, SUGGESTION_LIBRARY } from "./ai-rewrite/prompts.js";
-import { clamp, detectPII, safeParseJSON, safeText, sanitizeRewrite } from "./ai-rewrite/text.js";
+import { clamp, clampAtBoundary, detectPII, safeParseJSON, safeText, sanitizeRewrite } from "./ai-rewrite/text.js";
 
 export { BASE_SYSTEM_PROMPT, DESC_SYSTEM_PROMPT, OBJ_SYSTEM_PROMPT } from "./ai-rewrite/prompts.js";
 export { createMockEnv, makeJsonRequest } from "./ai-rewrite/testing.js";
@@ -250,7 +250,7 @@ class AiRewriteService {
 			.filter(s => s.tip.trim().length > 0) : [];
 
 		let rewrite = sanitizeRewrite(
-			clamp(typeof parsed.rewrite === "string" ? parsed.rewrite : "", this.cfg.MAX_REWRITE_CHARS)
+			clampAtBoundary(typeof parsed.rewrite === "string" ? parsed.rewrite : "", this.cfg.MAX_REWRITE_CHARS)
 		);
 
 		// === Post-processing guardrail for invented metrics/timeframes/methods ===

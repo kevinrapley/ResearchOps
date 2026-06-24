@@ -41,6 +41,7 @@ includes(httpSource, "export function corsHeaders", "AI rewrite HTTP helpers");
 includes(httpSource, "export function json", "AI rewrite HTTP helpers");
 includes(textSource, "export function detectPII", "AI rewrite text helpers");
 includes(textSource, "export function sanitizeRewrite", "AI rewrite text helpers");
+includes(textSource, "export function clampAtBoundary", "AI rewrite text helpers");
 includes(guardrailsSource, "export function neutraliseInventedQuantifiers", "AI rewrite guardrails");
 includes(guardrailsSource, "export function neutraliseInventedMethods", "AI rewrite guardrails");
 includes(guardrailsSource, "export function auditForBias", "AI rewrite guardrails");

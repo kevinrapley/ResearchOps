@@ -66,6 +66,7 @@
 		"infra/cloudflare/src/core/ai-rewrite.js",
 		"infra/cloudflare/src/core/ai-rewrite/fallback.js",
 		"infra/cloudflare/src/core/ai-rewrite/prompts.js",
+		"infra/cloudflare/src/core/ai-rewrite/text.js",
 		"public/css/start.css",
 		"public/js/copilot-suggester.js",
 		"public/js/start-description-assist.js",
@@ -92,7 +93,10 @@
 		"Changed the rewrite contract to markdown syntax inside the JSON rewrite field.",
 		"Rendered the rewrite preview as sanitized markdown HTML while preserving raw markdown for textarea replacement.",
 		"Updated the local scorer to recognise markdown Scope, Research questions and Deliverables headings.",
-		"Removed unused ai-sugg-* Start route styles."
+		"Removed unused ai-sugg-* Start route styles.",
+		"Added boundary-aware rewrite clamping so long markdown output is not cut off mid-word or mid-sentence.",
+		"Reduced fallback rewrite repetition so the Data handling section fits as a complete section.",
+		"Added regression coverage for the reported accessibility b cutoff and for a complete Data handling sentence."
 	],
 	"validation": [
 		{
@@ -122,6 +126,14 @@
 		{
 			"command": "local browser flow with mocked /api/ai-rewrite",
 			"result": "confirmed zero duplicate AI suggestion grids, markdown rendered as HTML, replacement wrote markdown into the textarea, and local scoring rerendered to favourable empty states"
+		},
+		{
+			"command": "node --test tests/ai-rewrite-ai-fallback.test.js tests/ai-rewrite-origin-policy.test.js tests/ai-rewrite-split-route-state.test.js tests/start-page-route-state.test.js",
+			"result": "passed after boundary-aware clamping amendment, 11 tests"
+		},
+		{
+			"command": "local response check with the reported Step 1 wording",
+			"result": "confirmed the fallback rewrite includes a complete Data handling section ending with storage arrangements and does not end with the partial text accessibility b"
 		}
 	],
 	"residualRisk": "The user-facing feature remains useful during Workers AI failures, but production Worker logs should still be reviewed for ai.run.fail to diagnose why the live Workers AI call failed."

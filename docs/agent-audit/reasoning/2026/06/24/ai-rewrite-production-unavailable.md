@@ -100,6 +100,13 @@ The previous PR fixed the request routing and allowed origins. This branch fixes
 - Updated the local scorer to recognise markdown `Scope`, `Research questions` and `Deliverables` headings.
 - Removed unused `ai-sugg-*` Start route styles.
 
+## Second PR amendment
+
+- Added boundary-aware rewrite clamping so long markdown output is not cut off mid-word or mid-sentence.
+- Reduced fallback rewrite repetition so the final `Data handling` section fits as a complete section.
+- Kept the raw textarea replacement value as markdown while preserving HTML rendering in the preview block.
+- Added regression coverage for the reported `accessibility b` cutoff and for a complete `Data handling` sentence.
+
 ## Validation
 
 - `node --test tests/ai-rewrite-ai-fallback.test.js tests/ai-rewrite-origin-policy.test.js tests/ai-rewrite-split-route-state.test.js`
@@ -120,6 +127,10 @@ The previous PR fixed the request routing and allowed origins. This branch fixes
   - Confirmed markdown rendered as a heading in `.rewrite-block`.
   - Confirmed `Replace description with rewrite` wrote markdown syntax into `#p_desc`.
   - Confirmed the local scorer rerendered to `No suggestions found.` and `No bias findings.` after replacement.
+- `node --test tests/ai-rewrite-ai-fallback.test.js tests/ai-rewrite-origin-policy.test.js tests/ai-rewrite-split-route-state.test.js tests/start-page-route-state.test.js`
+  - Passed after the boundary-aware clamping amendment: 11 tests.
+- Local response check with the reported Step 1 wording
+  - Confirmed the fallback rewrite includes a complete `Data handling` section ending with `storage arrangements.` and does not end with the partial text `accessibility b`.
 
 ## Residual risk
 
