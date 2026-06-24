@@ -8,14 +8,14 @@
 
 		<meta name="project:name" content="" />
 		<link rel="modulepreload" href="/js/project-dashboard-context.js" />
-		<link rel="modulepreload" href="/js/project-dashboard.js?v=project-dashboard-objective-edit-20260624" />
+		<link rel="modulepreload" href="/js/project-dashboard.js?v=project-dashboard-description-edit-20260624" />
 		<link
 			rel="modulepreload"
 			href="/js/project-dashboard-participants-list.js?v=participant-list-reveal-hide-20260602"
 		/>
 		<link
 			rel="stylesheet"
-			href="/css/project-dashboard.css?v=project-dashboard-objective-edit-20260624"
+			href="/css/project-dashboard.css?v=project-dashboard-description-edit-20260624"
 			media="screen"
 		/>
 
@@ -62,10 +62,12 @@
 					<header class="rops-dashboard-header" typeof="schema:ResearchProject" resource="#project">
 						<span id="eyebrow-org" class="govuk-caption-l" property="schema:sourceOrganization"></span>
 						<h1 id="project-title" class="govuk-heading-xl" property="schema:name">Project dashboard</h1>
-						<p id="project-subtitle" class="govuk-body-l rops-dashboard-description" property="schema:description">
-							Use this dashboard to manage project context, research planning, reflexive journaling and research
-							outcomes.
-						</p>
+						<div id="project-description-region" class="rops-dashboard-description-region">
+							<p id="project-subtitle" class="govuk-body-l rops-dashboard-description" property="schema:description">
+								Use this dashboard to manage project context, research planning, reflexive journaling and research
+								outcomes.
+							</p>
+						</div>
 						<div class="rops-status-strip" aria-label="Project status">
 							<strong class="govuk-tag govuk-tag--blue" id="project-service-stage-tag">Loading service stage</strong>
 							<strong class="govuk-tag govuk-tag--purple" id="project-stage-tag">Loading project stage</strong>
@@ -510,7 +512,7 @@
 		<x-include src="/partials/footer.html"></x-include>
 
 		<script type="module" src="/js/project-dashboard-context.js"></script>
-		<script type="module" src="/js/project-dashboard.js?v=project-dashboard-objective-edit-20260624"></script>
+		<script type="module" src="/js/project-dashboard.js?v=project-dashboard-description-edit-20260624"></script>
 		<script
 			type="module"
 			src="/js/project-dashboard-participants-list.js?v=participant-list-reveal-hide-20260602"

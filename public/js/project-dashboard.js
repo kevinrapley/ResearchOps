@@ -56,6 +56,11 @@ function setTagText(id, value, fallback) {
 	element.textContent = String(value ?? "").trim() || fallback;
 }
 
+function editableDescriptionHtml(description = "") {
+	const text = String(description || "").trim();
+	return `<p id="project-subtitle" class="govuk-body-l rops-dashboard-description" property="schema:description" role="button" tabindex="0" data-description-edit aria-label="Edit project description">${escapeHtml(text || "No project description yet.")}</p>`;
+}
+
 function firstPresent(...values) {
 	for (const value of values) if (value !== undefined && value !== null && String(value).trim()) return String(value).trim();
 	return "";
@@ -252,7 +257,7 @@ function renderProject(project) {
 	renderProjectBrand(project);
 	setText("#eyebrow-org", project.org);
 	setText("#project-title", project.name, "Untitled project");
-	setText("#project-subtitle", project.description);
+	renderProjectDescription(project.description);
 	setText("#kv-service-stage", project.phase);
 	setText("#kv-project-stage", project.status);
 	setText("#kv-client-name", project.org);
@@ -292,6 +297,74 @@ setLinkHref("import-participants-link", `/pages/project-dashboard/participants/i
 	renderStakeholders(project.stakeholders || []);
 	renderObjectives(project.objectives || []);
 	renderUserGroups(project.user_groups || []);
+}
+
+function renderProjectDescription(description = "") {
+	const region = document.getElementById("project-description-region");
+	if (region) region.innerHTML = editableDescriptionHtml(description);
+}
+
+function descriptionEditorHtml(description = "") {
+	return `
+<div class="rops-description-editor" data-description-editor>
+<label class="govuk-label govuk-visually-hidden" for="project-description-editor">Edit project description</label>
+<textarea class="govuk-textarea rops-description-editor__textarea" id="project-description-editor" rows="6" aria-describedby="project-description-editor-status">${escapeHtml(description)}</textarea>
+<div class="dashboard-action-status" id="project-description-editor-status" aria-live="polite"></div>
+</div>`;
+}
+
+function beginDescriptionEdit() {
+	const region = document.getElementById("project-description-region");
+	if (!region || region.querySelector("[data-description-editor]")) return;
+	const originalDescription = String(currentProject?.description || "").trim();
+	region.innerHTML = descriptionEditorHtml(originalDescription);
+	const textarea = region.querySelector("textarea");
+	const status = region.querySelector(".dashboard-action-status");
+	let saveStarted = false;
+
+	textarea?.focus();
+	textarea?.addEventListener("blur", async () => {
+		if (saveStarted) return;
+		saveStarted = true;
+		const nextDescription = textarea.value.trim();
+		if (nextDescription === originalDescription) {
+			renderProjectDescription(currentProject.description || "");
+			return;
+		}
+
+		try {
+			textarea.disabled = true;
+			if (status) status.textContent = "Saving description.";
+			await saveProjectPatch({ description: nextDescription });
+			currentProject.description = nextDescription;
+			renderProjectDescription(nextDescription);
+		} catch (error) {
+			saveStarted = false;
+			textarea.disabled = false;
+			if (status) {
+				status.classList.add("dashboard-action-status--error");
+				status.textContent = `Could not save description. ${String(error?.message || error)}`;
+			}
+			textarea.focus();
+		}
+	});
+}
+
+function initDescriptionInlineEditing() {
+	const region = document.getElementById("project-description-region");
+	if (!region) return;
+	region.addEventListener("click", (event) => {
+		const trigger = event.target instanceof Element ? event.target.closest("[data-description-edit]") : null;
+		if (!trigger || !region.contains(trigger)) return;
+		beginDescriptionEdit();
+	});
+	region.addEventListener("keydown", (event) => {
+		if (event.key !== "Enter" && event.key !== " ") return;
+		const trigger = event.target instanceof Element ? event.target.closest("[data-description-edit]") : null;
+		if (!trigger || !region.contains(trigger)) return;
+		event.preventDefault();
+		beginDescriptionEdit();
+	});
 }
 
 function renderStakeholders(stakeholders = []) {
@@ -663,6 +736,7 @@ function initProjectActions() {
 	initPanelClosers();
 	initStakeholderForm();
 	initObjectiveForm();
+	initDescriptionInlineEditing();
 	initObjectiveInlineEditing();
 	initUserGroupForm();
 }

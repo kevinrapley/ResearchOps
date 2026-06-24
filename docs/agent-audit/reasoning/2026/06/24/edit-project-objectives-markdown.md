@@ -3,7 +3,7 @@
 - Date: 2026-06-24
 - Branch: `feature/edit-project-objectives-markdown`
 - Trace decision: required because this is repository-affecting work on a `feature/` branch.
-- Task: make `/pages/project-dashboard/` project objectives editable in place as Markdown, saving changed Markdown automatically on textarea blur.
+- Task: make `/pages/project-dashboard/` project objectives editable in place as Markdown, saving changed Markdown automatically on textarea blur, then extend the same click-to-edit and blur-save pattern to the project description text.
 
 ## Operating Model
 
@@ -49,6 +49,7 @@ Precedence applied:
 - Cloudflare governed the DaaS project follow-up because the missing record was a preview D1 seed gap rather than a browser rendering problem.
 - Cloudflare governed the DaaS ordering and content follow-up because the preview D1 payload needed the same project fields the dashboard and Projects page use for display.
 - Cloudflare governed the target-state screenshot follow-up because the remaining mismatch was incomplete preview D1 record content. The brand variant shown in the target screenshot was confirmed as environment-specific and left unchanged.
+- GOV.UK Design System, Cloudflare and Airtable Public API governed the description-edit follow-up because the project description became a keyboard-accessible textarea interaction that saves through D1 first and queues Airtable capture second.
 
 ## Files Read
 
@@ -100,6 +101,7 @@ Precedence applied:
 - `data/projects.csv`
 - `docs/agent-audit/reasoning/2026/06/16/daas-dashboard-brand-panel.md`
 - Target-state screenshots attached by the user showing the expected DaaS/TCN description, stakeholders and user groups.
+- Current request to make the project description text editable with the same textarea blur-save behaviour as project objectives.
 
 ## Diagnosis
 
@@ -110,6 +112,7 @@ Precedence applied:
 - DaaS follow-up diagnosis: Home Office Biometrics projects loaded from D1 preview seed, but the reported DaaS project id `recdMo80h1QaNQCBk` was absent from `infra/cloudflare/migrations/preview/0002_seed_projects_cache.sql`. A remote D1 read check was attempted but blocked because the local environment has no `CLOUDFLARE_API_TOKEN`.
 - DaaS ordering/content diagnosis: the DaaS seed used a placeholder `DaaS project` payload with no `createdAt`, objectives, user groups, stakeholders or lead researcher fields. The Projects page and Worker both sort by `createdAt`, so the DaaS row fell below seeded Home Office Biometrics rows and the dashboard rendered empty content panels.
 - Target-state screenshot diagnosis: the latest deployed DaaS view had the correct project name and objectives but still used the short placeholder description, one stakeholder and two user groups. The target screenshot showed the full TCN description, three PSG - ILEC stakeholders and seven user groups. The Home Office purple brand variant was environment-specific and did not require a code change.
+- Description-edit follow-up diagnosis: the dashboard rendered the project description as plain text and the inline editing helpers existed only for objectives. The project record route also needed to accept `description` as an updatable framing field so blur-save could persist through D1 before non-blocking Airtable capture.
 
 ## Changes
 
@@ -128,7 +131,11 @@ Precedence applied:
 - Follow-up DaaS seed correction: added the known DaaS Airtable record id `recdMo80h1QaNQCBk` to the preview D1 project cache seed with `DaaS` org/team metadata and `team_daas` in `payload_json`, so DaaS users can load it from D1 when Airtable is unavailable.
 - Follow-up DaaS content correction: replaced the placeholder seed payload with `Third Country National Discovery`, `createdAt`, description, TCN objective Markdown, user groups, stakeholder and lead researcher fields so DaaS appears first in Projects and the dashboard has the expected content when Airtable is unavailable.
 - Follow-up target-state content correction: expanded the DaaS/TCN preview seed payload to the target screenshot content: the long Home Office Digital/ECRIS-TCN description, Pam Thethi, Chris Moffitt and Maria Athayde as stakeholders, and the seven expected user groups.
+- Follow-up description-edit correction: wrapped the description in a stable `project-description-region`, renders it as a keyboard-accessible edit target, replaces it with a GOV.UK textarea on click or keyboard activation, saves changed text on blur with `{ description }`, restores unchanged text without saving, and keeps failed saves retryable in the open textarea.
+- Follow-up description persistence correction: added `description` to the D1-first project framing PATCH route and legacy framing mapper, mapping it to Airtable `Description` only as secondary capture.
+- Follow-up description coverage: added route-state assertions for the description editor hooks, focus styling and cache-busted assets, and extended the D1/Airtable 429 project PATCH contract to assert edited descriptions are saved in D1 and included in queued Airtable capture.
 - Bumped the project dashboard JS and CSS asset version to `project-dashboard-objective-edit-20260624`.
+- Bumped the project dashboard JS and CSS asset version again to `project-dashboard-description-edit-20260624`.
 - Regenerated `public/css/project-dashboard.css` and `public/pages/project-dashboard/index.html`.
 - Updated route-state tests for the inline edit contract, blur-save path, keyboard activation, focus styling and cache-busted assets.
 - Updated the Pages advanced Worker route-state test to assert preview API calls remove Cloudflare Access JWT and email headers while preserving the ResearchOps session cookie.
@@ -149,6 +156,13 @@ Precedence applied:
 - Codex review retry check: local Playwright preview forced the first PATCH to fail and confirmed the editor stayed open and the next blur saved without reopening.
 - Follow-up local Playwright preview check: clearing and blurring the first objective removed it, promoted the remaining objective without an empty list item, and clearing the final objective replaced the ordered list with `<p class="govuk-body-s">No objectives yet.</p>` with no editor, editing class or orphaned `<li>`.
 - `node --import ./tests/helpers/generated-govuk-page-source.mjs --test tests/projects-route-contract.test.js`: passed, including Airtable 429 during project PATCH with D1 success.
+- `node --import ./tests/helpers/generated-govuk-page-source.mjs --test tests/project-dashboard-route-state.test.js`: passed after adding description inline edit route-state coverage.
+- `node --import ./tests/helpers/generated-govuk-page-source.mjs --test tests/projects-route-contract.test.js`: passed after adding D1-first description PATCH coverage and Airtable capture assertions.
+- `npm run format:check`: passed after the description-edit follow-up.
+- `npm run lint`: passed with existing repository warnings and no errors after the description-edit follow-up.
+- `npm test`: passed after the description-edit follow-up, 247 tests.
+- `npm run trace:coverage -- --date 2026-06-24`: passed after the description-edit follow-up.
+- `git diff --check`: passed after the description-edit follow-up.
 - `node --test tests/pages-advanced-worker-auth-route-state.test.js`: passed, 12 tests after adding the project dashboard protected-page preflight.
 - `node --import ./tests/helpers/generated-govuk-page-source.mjs --test tests/projects-route-contract.test.js`: passed after the Pages proxy correction.
 - `npm run format:check`: initially failed because generated CSS was stale; `npm run lint` rebuilt generated CSS and then passed. A follow-up `npm run format:check` passed.

@@ -997,6 +997,7 @@ async function assertProjectPatchUsesD1WhenAirtableIsRateLimited() {
 					cookie: `rops_session=${TEST_SESSION_TOKEN}`,
 				},
 				body: JSON.stringify({
+					description: "Updated project description",
 					objectives: ["Understand the problem space", "Map the current system"],
 				}),
 			}),
@@ -1013,6 +1014,7 @@ async function assertProjectPatchUsesD1WhenAirtableIsRateLimited() {
 		const payload = await response.json();
 		assert.equal(payload.ok, true);
 		assert.equal(payload.project.id, PROJECT_RECORD_IDS[2]);
+		assert.equal(payload.project.description, "Updated project description");
 		assert.deepEqual(payload.project.objectives, ["Understand the problem space", "Map the current system"]);
 		assert.equal(payload.capture.airtable, "queued");
 
@@ -1020,12 +1022,14 @@ async function assertProjectPatchUsesD1WhenAirtableIsRateLimited() {
 		assert.ok(cacheInsertCall);
 		assert.equal(cacheInsertCall.args[5], "airtable");
 		const cachedProject = JSON.parse(cacheInsertCall.args[7]);
+		assert.equal(cachedProject.description, "Updated project description");
 		assert.deepEqual(cachedProject.objectives, ["Understand the problem space", "Map the current system"]);
 
-		assert.equal(
-			calls.some(({ url, options }) => url.endsWith("/Projects") && options.method === "PATCH"),
-			true,
-		);
+		const airtablePatchCall = calls.find(({ url, options }) => url.endsWith("/Projects") && options.method === "PATCH");
+		assert.ok(airtablePatchCall);
+		const airtablePatchBody = JSON.parse(String(airtablePatchCall.options.body || "{}"));
+		assert.equal(airtablePatchBody.records[0].fields.Description, "Updated project description");
+		assert.equal(airtablePatchBody.records[0].fields.Objectives, "Understand the problem space\nMap the current system");
 		assert.equal(waitUntilPromises.length, 1);
 		const captureResults = await Promise.allSettled(waitUntilPromises);
 		assert.equal(captureResults[0].status, "fulfilled");

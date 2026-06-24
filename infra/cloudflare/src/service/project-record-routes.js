@@ -492,6 +492,11 @@ async function getD1ProjectRecord(env, projectId) {
 function buildProjectFramingPatch(payload = {}) {
 	const fields = {};
 	const projectPatch = {};
+	if (Object.hasOwn(payload, "description")) {
+		const description = displayText(payload.description || "");
+		fields.Description = description;
+		projectPatch.description = description;
+	}
 	if (Object.hasOwn(payload, "objectives")) {
 		const objectives = splitList(payload.objectives, /\r?\n|[|]/);
 		fields.Objectives = objectives.join("\n");
