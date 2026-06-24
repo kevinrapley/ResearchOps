@@ -63,7 +63,11 @@ excludes(headerServiceBrandCss, "word-spacing: -6px;", "header product-name styl
 excludes(headerServiceBrandCss, "box-shadow: 0 3px 0 #ffffff;", "header product-name stylesheet");
 
 includes(headerPartial, "class=\"govuk-skip-link\" href=\"#main-content\"", "shared header partial");
-includes(headerPartial, "href=\"/css/govuk/govuk-header-service-brand.css\"", "shared header partial");
+includes(
+	headerPartial,
+	"href=\"/css/govuk/govuk-header-service-brand.css?v=hide-signed-out-sign-out-20260624-1\"",
+	"shared header partial"
+);
 includes(
 	headerPartial,
 	"class=\"govuk-template__header govuk-header\" role=\"banner\" data-module=\"govuk-header\"",

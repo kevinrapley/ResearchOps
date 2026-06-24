@@ -2,6 +2,14 @@
 
 This file records repeatable repository-specific lessons for ResearchOps agents and maintainers. It is not a changelog.
 
+## 2026-06-24 — Header hidden states need visual CSS assertions and cache-busted shared CSS
+
+Context: PR #425 changed the shared masthead so signed-out users saw a `Sign in` account link and the `Sign out` link used the HTML `hidden` attribute. After merge, the live masthead visually showed both `Sign in` and `Sign out` even though the sign-out link was intended to be hidden. The route-state test only checked the markup and broad account-nav hidden CSS, and the local browser check used accessibility-role visibility rather than also checking computed display and layout dimensions for the hidden anchor. The shared header stylesheet was also loaded without a cache-busting query string.
+
+Learning: A hidden control can be absent from the accessibility tree while still requiring explicit CSS protection and deployed asset cache handling. Shared masthead states need tests that cover individual hidden account links, not only the parent nav. Browser checks for visual regressions should inspect computed `display` and element dimensions for hidden controls, and shared CSS changes that affect deployed header chrome need a versioned stylesheet URL.
+
+Action: When changing signed-in or signed-out header account states, add or update CSS assertions for each hidden account link selector, not just the container. Use a browser check that verifies `display: none` and zero rendered dimensions for hidden controls. Cache-bust shared header CSS when the fix relies on updated CSS reaching already-deployed browsers.
+
 ## 2026-06-04 — Migration work requires a proactive test-contract impact sweep
 
 Context: PR #345 migrated the study page to a new rendering and component model. The implementation work moved faster than the test-contract review. Several CI failures were discovered sequentially because route-state, shared assertion and generated-output tests still referred to legacy markup and contract terms. These included old CSS classes, route IDs, generated stylesheet paths, script URLs, DOM hooks and exact HTML strings that were no longer the correct contract after migration.
