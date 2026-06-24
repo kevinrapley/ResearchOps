@@ -11,8 +11,6 @@ $ho-white: #ffffff;
 $govuk-link: #1d70b8;
 $govuk-link-visited: #4c2c92;
 $govuk-link-hover: #003078;
-$govuk-tag-purple-text: #3d2375;
-$govuk-tag-purple-background: #dbd5e9;
 
 html[data-researchops-brand='home-office'] {
 	--govuk-brand-colour: #{$ho-purple};
@@ -170,10 +168,9 @@ html[data-researchops-brand='home-office'] {
 		border-bottom-color: $ho-border;
 	}
 
-	.govuk-phase-banner__content__tag,
 	.govuk-tag {
-		background: $govuk-tag-purple-background;
-		color: $govuk-tag-purple-text;
+		font-size: 1rem;
+		line-height: 1.25;
 	}
 
 	.govuk-notification-banner {
@@ -275,11 +272,6 @@ html[data-researchops-brand='home-office'] {
 	.researchops-home-front-page .govuk-phase-banner,
 	.researchops-repository-front-page .govuk-phase-banner {
 		box-shadow: 0 0 0 100vmax $ho-purple;
-	}
-
-	.researchops-home-front-page .govuk-phase-banner .govuk-tag,
-	.researchops-repository-front-page .govuk-phase-banner .govuk-tag {
-		color: $ho-purple;
 	}
 
 	.researchops-home-masthead,

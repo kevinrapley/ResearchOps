@@ -1,0 +1,102 @@
+{
+  "date": "2026-06-24",
+  "timestampUtc": "2026-06-24T20:33:15Z",
+  "branch": "fix/govuk-brand-tag-colours",
+  "traceTrigger": "fix branch prefix",
+  "taskSummary": "Stop the Home Office brand variant making GOV.UK tags use the Home Office light purple colour, then use small text for every Home Office-branded GOV.UK tag.",
+  "operatingModelFilesLoaded": [
+    "AGENTS.md",
+    ".agent-operating-model/orchestration.xml",
+    ".agent-operating-model/bundle-registry.json",
+    ".agent-operating-model/task-signal-catalog.json",
+    ".agent-operating-model/selection-rules.json",
+    ".agent-operating-model/bootstrap-checklist.md",
+    ".agent-operating-model/precedence-policy.md",
+    ".agent-operating-model/trace-policy.md",
+    ".agent-operating-model/trace-layers.md",
+    ".agent-operating-model/behavioural-evals.json",
+    ".agent-operating-model/github-mutation-policy.md"
+  ],
+  "selectedBundles": [
+    {
+      "id": "github-diamond",
+      "canonicalPath": ".agent-operating-model/bundles/github/"
+    },
+    {
+      "id": "researchops-developer-control",
+      "canonicalPath": ".agent-operating-model/bundles/researchops-developer-control/"
+    },
+    {
+      "id": "multi-functional-team",
+      "canonicalPath": ".agent-operating-model/bundles/multi-functional-team/"
+    },
+    {
+      "id": "govuk-design-system",
+      "canonicalPath": ".agent-operating-model/bundles/govuk-design-system/"
+    }
+  ],
+  "skippedBundles": [
+    "cloudflare",
+    "openai-platform",
+    "mcp-agent-tooling",
+    "airtable-public-api",
+    "mural-public-api"
+  ],
+  "precedenceDecisions": [
+    "GitHub Diamond governed branch, trace and PR discipline.",
+    "ResearchOps Developer Control governed repository conventions and generated CSS parity.",
+    "GOV.UK Design System governed tag component colour behaviour."
+  ],
+  "filesRead": [
+    "README.md",
+    ".github/CODEOWNERS",
+    "RECENT_LEARNINGS.md",
+    "package.json",
+    "src/styles/brands/home-office.scss",
+    "public/css/brands/home-office.css",
+    "tests/brand-variant-route-state.test.js",
+    "public/assets/govuk/govuk-frontend.css",
+    "scripts/styles/build-generated-css.mjs",
+    "scripts/styles/format-generated-css.mjs",
+    "scripts/styles/generated-css-targets.mjs"
+  ],
+  "filesModified": [
+    "src/styles/brands/home-office.scss",
+    "public/css/brands/home-office.css",
+    "tests/brand-variant-route-state.test.js",
+    "docs/agent-audit/reasoning/2026/06/24/govuk-brand-tag-colours.md",
+    "docs/agent-audit/reasoning/2026/06/24/govuk-brand-tag-colours.json"
+  ],
+  "validation": [
+    {
+      "command": "node --test tests/brand-variant-route-state.test.js",
+      "status": "passed"
+    },
+    {
+      "command": "node scripts/styles/format-generated-css.mjs --check public/css/brands/home-office.css",
+      "status": "passed"
+    },
+    {
+      "command": "npx prettier -c src/styles/brands/home-office.scss tests/brand-variant-route-state.test.js",
+      "status": "passed"
+    },
+    {
+      "command": "npm run trace:coverage",
+      "status": "passed"
+    }
+  ],
+  "notRun": [
+    {
+      "command": "npm test -- --ci",
+      "reason": "The worktree already contained many unrelated uncommitted changes outside this task."
+    },
+    {
+      "command": "npm run validate",
+      "reason": "The worktree already contained many unrelated uncommitted changes outside this task."
+    }
+  ],
+  "residualRisks": [
+    "Visual browser verification was not run; route-state and CSS contract checks verify the cascade ownership change.",
+    "The branch contains substantial pre-existing unrelated worktree changes that should not be included in this task commit."
+  ]
+}
