@@ -57,7 +57,8 @@
     "Cloudflare governed the follow-up decision to make the project PATCH route succeed from D1 rather than an external API response.",
     "Airtable Public API governed the follow-up decision to treat Airtable capture as secondary and non-blocking when rate-limited.",
     "Cloudflare also governed the follow-up Pages proxy correction for preview-host API calls carrying Cloudflare Access headers into the passwordless/D1 Worker.",
-    "Cloudflare and Airtable Public API governed the follow-up project-list correction so D1 preview/cache rows remain the first-class read source and Airtable remains a secondary capture/upstream source."
+    "Cloudflare and Airtable Public API governed the follow-up project-list correction so D1 preview/cache rows remain the first-class read source and Airtable remains a secondary capture/upstream source.",
+    "Cloudflare governed the DaaS project follow-up because the missing record was a preview D1 seed gap rather than a browser rendering problem."
   ],
   "filesRead": [
     "README.md",
@@ -107,6 +108,7 @@
     "public/_worker.js",
     "src/govuk/templates/pages/project-dashboard.njk",
     "src/styles/project-dashboard.scss",
+    "infra/cloudflare/migrations/preview/0002_seed_projects_cache.sql",
     "tests/projects-route-contract.test.js",
     "tests/project-dashboard-route-state.test.js",
     "tests/pages-advanced-worker-auth-route-state.test.js"
@@ -118,7 +120,8 @@
     "Persistence follow-up confirmed project PATCH was still Airtable-blocking; Airtable 429 was returned to the browser even though Cloudflare D1 must be the first-class save path. The updated route now requires D1 persistence before returning success and schedules Airtable capture separately.",
     "Preview-load follow-up confirmed preview Pages proxying kept forwarding cf-access-jwt-assertion to the passwordless preview Worker. Without a ResearchOps session this triggered Cloudflare Access fallback and returned access_configuration_missing. The proxy now strips the Access JWT and email headers for preview-host API calls while preserving the ResearchOps session cookie.",
     "Second dashboard-load follow-up confirmed /pages/project-dashboard/ was not included in the Pages static protected-route preflight. A signed-out dashboard URL could render the dashboard shell and then fail its project API calls. The route is now protected like /pages/projects/ and /pages/repository/.",
-    "D1 read follow-up confirmed the project route ignored preview D1 cache rows with source preview-seed and did not use partial D1 rows after Airtable was unavailable. The project route now treats preview-seed as a readable full D1 source, preserves it across D1-backed edits, and allows airtable-partial rows as a last-resort fallback."
+    "D1 read follow-up confirmed the project route ignored preview D1 cache rows with source preview-seed and did not use partial D1 rows after Airtable was unavailable. The project route now treats preview-seed as a readable full D1 source, preserves it across D1-backed edits, and allows airtable-partial rows as a last-resort fallback.",
+    "DaaS follow-up confirmed Home Office Biometrics projects loaded from D1 preview seed, but the reported DaaS project id recdMo80h1QaNQCBk was absent from the preview project seed. A remote D1 read check was attempted but blocked because the local environment has no CLOUDFLARE_API_TOKEN."
   ],
   "reviewThreads": [
     {
@@ -148,8 +151,10 @@
     "npm run trace:coverage -- --date 2026-06-24: passed",
     "node --import ./tests/helpers/generated-govuk-page-source.mjs --test tests/projects-service-split-route-state.test.js tests/projects-page-route-state.test.js: passed, 2 tests",
     "node --import ./tests/helpers/generated-govuk-page-source.mjs --test tests/projects-route-contract.test.js: passed after the D1 preview-seed and partial-cache fallback correction",
+    "node --import ./tests/helpers/generated-govuk-page-source.mjs --test tests/projects-route-contract.test.js: passed after adding the DaaS preview seed regression",
     "npm run lint: passed with existing repository warnings and no errors after the D1 preview-seed correction",
     "npm test: first run after lint failed in tests/deploy-asset-paths.test.js; the focused asset-path test passed immediately afterwards and a clean rerun of npm test passed, 247 tests",
+    "npm test: passed after the DaaS preview seed correction, 247 tests",
     "git diff --check: passed"
   ],
   "validationNotRun": [
@@ -160,6 +165,6 @@
     "The browser interaction was validated against a local static preview with mocked project API responses, not a deployed preview environment.",
     "Live deployment will update through the normal PR merge and Pages deployment path.",
     "Production Cloudflare Access fallback remains unchanged; the Access-header stripping correction is scoped to preview-host API proxying where the target is the passwordless preview Worker.",
-    "A direct dashboard URL for a project id that is absent from D1 will still depend on Airtable becoming available; this change fixes the route behaviour when usable D1 project cache rows exist."
+    "Any other direct dashboard URL for a project id that is absent from D1 will still depend on Airtable becoming available; this DaaS follow-up adds the known DaaS project id reported in testing."
   ]
 }

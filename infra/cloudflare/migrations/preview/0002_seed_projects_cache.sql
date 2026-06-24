@@ -47,6 +47,29 @@ ON CONFLICT(id) DO UPDATE SET
 	active = 1,
 	updated_at = excluded.updated_at;
 
+INSERT INTO rops_projects_cache (id, name, org, phase, status, active, source, updated_at, payload_json)
+VALUES
+	(
+		'recdMo80h1QaNQCBk',
+		'DaaS project',
+		'DaaS',
+		'Discovery',
+		'Goal setting & problem defining',
+		1,
+		'preview-seed',
+		'2026-06-24T09:40:00.000Z',
+		'{"id":"recdMo80h1QaNQCBk","airtableId":"recdMo80h1QaNQCBk","recordId":"recdMo80h1QaNQCBk","name":"DaaS project","description":"","rops:servicePhase":"Discovery","rops:projectStatus":"Goal setting & problem defining","objectives":[],"user_groups":[],"stakeholders":[],"team_ids":["team_daas"],"teamIds":["team_daas"],"teamNames":["DaaS"],"teamName":"DaaS","team_name":"DaaS","team":"DaaS","org":"DaaS"}'
+	)
+ON CONFLICT(id) DO UPDATE SET
+	name = excluded.name,
+	org = excluded.org,
+	phase = excluded.phase,
+	status = excluded.status,
+	active = 1,
+	source = excluded.source,
+	updated_at = excluded.updated_at,
+	payload_json = excluded.payload_json;
+
 INSERT INTO rops_studies_cache (id, project_id, study_id, title, method, status, description, created_at, active, source, updated_at, payload_json)
 VALUES
 	(

@@ -46,6 +46,7 @@ Precedence applied:
 - Airtable Public API governed the follow-up decision to treat Airtable capture as secondary and non-blocking when rate-limited.
 - Cloudflare also governed the follow-up Pages proxy correction for preview-host API calls carrying Cloudflare Access headers into the passwordless/D1 Worker.
 - Cloudflare and Airtable Public API governed the follow-up project-list correction so D1 preview/cache rows remain the first-class read source and Airtable remains a secondary capture/upstream source.
+- Cloudflare governed the DaaS project follow-up because the missing record was a preview D1 seed gap rather than a browser rendering problem.
 
 ## Files Read
 
@@ -91,6 +92,7 @@ Precedence applied:
 - The browser-side project save helper already sends PATCH requests to `/api/projects/:id`.
 - The Worker project PATCH route already accepts `objectives` and stores normalised objective lines.
 - The missing behavior was local interaction: rendered objectives were not editable and there was no inline textarea blur-save path.
+- DaaS follow-up diagnosis: Home Office Biometrics projects loaded from D1 preview seed, but the reported DaaS project id `recdMo80h1QaNQCBk` was absent from `infra/cloudflare/migrations/preview/0002_seed_projects_cache.sql`. A remote D1 read check was attempted but blocked because the local environment has no `CLOUDFLARE_API_TOKEN`.
 
 ## Changes
 
@@ -106,6 +108,7 @@ Precedence applied:
 - Updated the Pages proxy diagnostic header so stripped preview requests report `x-researchops-access-headers-forwarded: false` rather than `jwt-only`.
 - Follow-up dashboard-load correction: added `/pages/project-dashboard/` to the Pages static protected-route preflight. A signed-out project dashboard URL now redirects to `/pages/account/sign-in/` with the original `?id=...` return path instead of rendering the dashboard shell and then failing its project API calls.
 - Follow-up D1 read correction: allowed `preview-seed` project cache rows to serve the project list and single-project dashboard reads, preserved `preview-seed` when a D1-backed objective edit is saved, and allowed `airtable-partial` project cache rows as the last-resort list fallback after Airtable is unavailable.
+- Follow-up DaaS seed correction: added the known DaaS Airtable record id `recdMo80h1QaNQCBk` to the preview D1 project cache seed with `DaaS` org/team metadata and `team_daas` in `payload_json`, so DaaS users can load it from D1 when Airtable is unavailable.
 - Bumped the project dashboard JS and CSS asset version to `project-dashboard-objective-edit-20260624`.
 - Regenerated `public/css/project-dashboard.css` and `public/pages/project-dashboard/index.html`.
 - Updated route-state tests for the inline edit contract, blur-save path, keyboard activation, focus styling and cache-busted assets.
@@ -133,8 +136,10 @@ Precedence applied:
 - `npm run trace:coverage -- --date 2026-06-24`: passed.
 - `node --import ./tests/helpers/generated-govuk-page-source.mjs --test tests/projects-service-split-route-state.test.js tests/projects-page-route-state.test.js`: passed, 2 tests.
 - `node --import ./tests/helpers/generated-govuk-page-source.mjs --test tests/projects-route-contract.test.js`: passed after the D1 preview-seed and partial-cache fallback correction.
+- `node --import ./tests/helpers/generated-govuk-page-source.mjs --test tests/projects-route-contract.test.js`: passed after adding the DaaS preview seed regression.
 - `npm run lint`: passed with existing repository warnings and no errors after the D1 preview-seed correction.
 - `npm test`: first run after lint failed in `tests/deploy-asset-paths.test.js`; the focused asset-path test passed immediately afterwards and a clean rerun of `npm test` passed, 247 tests.
+- `npm test`: passed after the DaaS preview seed correction, 247 tests.
 - `git diff --check`: passed.
 
 ## Review Threads
@@ -145,4 +150,4 @@ Precedence applied:
 
 - Live deployment verification was not run because this branch has not yet been merged or deployed.
 - Production Cloudflare Access fallback remains unchanged; this correction is scoped to preview-host API proxying where the target is the passwordless preview Worker.
-- A direct dashboard URL for a project id that is absent from D1 will still depend on Airtable becoming available; this change fixes the route behaviour when usable D1 project cache rows exist.
+- Any other direct dashboard URL for a project id that is absent from D1 will still depend on Airtable becoming available; this DaaS follow-up adds the known DaaS project id reported in testing.

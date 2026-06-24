@@ -6,6 +6,7 @@ const TEST_TEAM_ID = "team_daas";
 const TEST_TEAM_NAME = "DaaS";
 const TEST_USER_ID = "usr_project_contract";
 const TEST_SESSION_TOKEN = "project-contract-session";
+const DAAS_PROJECT_RECORD_ID = "recdMo80h1QaNQCBk";
 const d1RunCalls = [];
 let d1HasPartialProject = false;
 let d1ProjectCacheRow = null;
@@ -530,7 +531,7 @@ async function assertPartialProjectCacheDoesNotShortCircuitProjectList() {
 
 async function assertProjectListUsesPreviewSeedD1WhenAirtableIsUnavailable() {
 	const originalFetch = globalThis.fetch;
-	d1ProjectCacheRows = [d1ProjectCacheRecord({ source: "preview-seed" })];
+	d1ProjectCacheRows = [d1ProjectCacheRecord({ id: DAAS_PROJECT_RECORD_ID, source: "preview-seed", name: "DaaS project" })];
 	globalThis.fetch = createMockFetch([]);
 	const d1OnlyEnv = {
 		...env,
@@ -547,8 +548,9 @@ async function assertProjectListUsesPreviewSeedD1WhenAirtableIsUnavailable() {
 		const payload = await response.json();
 		assert.equal(payload.ok, true);
 		assert.equal(payload.projects.length, 1);
-		assert.equal(payload.projects[0].id, PROJECT_RECORD_IDS[2]);
-		assert.equal(payload.projects[0].name, "Test Project 1");
+		assert.equal(payload.projects[0].id, DAAS_PROJECT_RECORD_ID);
+		assert.equal(payload.projects[0].name, "DaaS project");
+		assert.equal(payload.projects[0].teamName, TEST_TEAM_NAME);
 	} finally {
 		d1ProjectCacheRows = [];
 		globalThis.fetch = originalFetch;
@@ -861,7 +863,7 @@ async function assertProjectReadResolvesAirtableRecordId() {
 
 async function assertProjectReadUsesPreviewSeedD1WhenAirtableIsUnavailable() {
 	const originalFetch = globalThis.fetch;
-	d1ProjectCacheRow = d1ProjectCacheRecord({ source: "preview-seed" });
+	d1ProjectCacheRow = d1ProjectCacheRecord({ id: DAAS_PROJECT_RECORD_ID, source: "preview-seed", name: "DaaS project" });
 	globalThis.fetch = createMockFetch([]);
 	const d1OnlyEnv = {
 		...env,
@@ -871,13 +873,14 @@ async function assertProjectReadUsesPreviewSeedD1WhenAirtableIsUnavailable() {
 	};
 
 	try {
-		const response = await worker.fetch(authenticatedRequest(`https://worker.test/api/projects/${PROJECT_RECORD_IDS[2]}`), d1OnlyEnv, {});
+		const response = await worker.fetch(authenticatedRequest(`https://worker.test/api/projects/${DAAS_PROJECT_RECORD_ID}`), d1OnlyEnv, {});
 		assert.equal(response.status, 200);
 		assert.equal(response.headers.get("x-rops-source"), "d1");
 
 		const project = await response.json();
-		assert.equal(project.id, PROJECT_RECORD_IDS[2]);
-		assert.equal(project.name, "Test Project 1");
+		assert.equal(project.id, DAAS_PROJECT_RECORD_ID);
+		assert.equal(project.name, "DaaS project");
+		assert.equal(project.teamName, TEST_TEAM_NAME);
 		assert.deepEqual(project.objectives, ["Test objective"]);
 	} finally {
 		d1ProjectCacheRow = null;
@@ -1045,6 +1048,13 @@ function assertLegacyProjectsDirectHandlerIsAbsent() {
 	assert.equal(router.includes("Matched /api/projects (direct)"), false);
 }
 
+function assertPreviewMigrationSeedsDaaSProject() {
+	const migration = fs.readFileSync("infra/cloudflare/migrations/preview/0002_seed_projects_cache.sql", "utf8");
+	assert.equal(migration.includes(DAAS_PROJECT_RECORD_ID), true);
+	assert.equal(migration.includes('"team_ids":["team_daas"]'), true);
+	assert.equal(migration.includes('"teamName":"DaaS"'), true);
+}
+
 await assertProjectsRouteFailsClosedWithoutSession();
 await assertProjectsRouteUsesAirtableProjectsTable();
 await assertPartialProjectCacheDoesNotShortCircuitProjectList();
@@ -1061,3 +1071,4 @@ await assertProjectPatchPreservesPreviewSeedD1SourceWhenAirtableIsRateLimited();
 await assertNonRecordProjectIdIsNotFound();
 await assertProjectsCsvRouteStillWorks();
 assertLegacyProjectsDirectHandlerIsAbsent();
+assertPreviewMigrationSeedsDaaSProject();
