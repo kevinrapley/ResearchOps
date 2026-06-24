@@ -138,8 +138,8 @@ class AiRewriteService {
 			rewrite: [
 				"string (<= 1800 chars).",
 				mode === "objectives" ?
-				"A numbered list of refined objectives when supported by the input; keep each objective concise and measurable where possible." :
-				"Concise, PII-free rewrite using labelled sections WHEN SUPPORTED by the input. Each section starts with a label on its own line (with a colon), then content on the next line(s), and one blank line between sections. Only include sections if supported by the input."
+				"Markdown numbered list of refined objectives when supported by the input; keep each objective concise and measurable where possible." :
+				"Concise, PII-free markdown rewrite using level 2 headings and short paragraphs or bullet lists. Use sections such as Research focus, Scope, Users and context, Research questions, Method and inclusion, Deliverables, Outcomes, Data handling and Success criteria. Do not use markdown tables."
 			].join(" ")
 		}, null, 2);
 
@@ -151,7 +151,7 @@ class AiRewriteService {
 					{ category: "Measurability", tip: "Add numeric targets to 2 objectives.", why: "Enables progress tracking.", severity: "high" },
 					{ category: "Clarity", tip: "Start each objective with an action verb.", why: "Improves readability.", severity: "medium" }
 				],
-				rewrite: "1) Identify the top 3 blockers in the account proofing journey by end of Q2.\n2) Increase task completion for the ID check step by 15% within 3 months.\n3) Validate the revised error messages with at least 8 participants using screen readers.\n4) Produce a prioritised backlog of improvements agreed with policy and service design."
+				rewrite: "1. Identify the top 3 blockers in the account proofing journey by end of Q2.\n2. Increase task completion for the ID check step by 15% within 3 months.\n3. Validate the revised error messages with at least 8 participants using screen readers.\n4. Produce a prioritised backlog of improvements agreed with policy and service design."
 			} : {
 				summary: "Clarify scope and outcomes; surface research questions; avoid PII.",
 				suggestions: [
@@ -159,7 +159,7 @@ class AiRewriteService {
 					{ category: "Research questions", tip: "List 2–4 key questions.", why: "Focuses method and analysis.", severity: "medium" },
 					{ category: "Outcomes & measures", tip: "Add a numeric target with a timeframe.", why: "Enables tracking of success.", severity: "high" }
 				],
-				rewrite: "Problem:\nApplicants abandon the address step because instructions and error messages are unclear.\n\nScope:\nIn scope: address capture and validation screens in the online flow. Out of scope: payment provider changes.\n\nUsers:\nFirst-time visa applicants on mobile, including people using screen readers and with low bandwidth.\n\nOutcomes:\nIdentify the top 3 blockers and reduce abandonment by 15% within the next quarter."
+				rewrite: "## Research focus\n\nApplicants abandon the address step because instructions and error messages are unclear.\n\n## Scope\n\n- In scope: address capture and validation screens in the online flow.\n- Out of scope: payment provider changes.\n\n## Users and context\n\nFirst-time visa applicants on mobile, including people using screen readers and with low bandwidth.\n\n## Outcomes\n\nIdentify the top 3 blockers and reduce abandonment by 15% within the next quarter."
 			}, null, 2
 		);
 
@@ -180,8 +180,8 @@ class AiRewriteService {
 			"",
 			"Constraints:",
 			`- suggestions: max ${DEFAULTS.MAX_SUGGESTIONS} items; each tip/why <= ${DEFAULTS.MAX_SUGGESTION_LEN} chars; include a balanced mix across categories.`,
-			`- rewrite: <= ${DEFAULTS.MAX_REWRITE_CHARS} chars; remove emails/NI/NHS numbers; no placeholders like 'lorem' or 'TBD'.`,
-			"- Do not include markdown, code fences, or any text outside JSON.",
+			`- rewrite: <= ${DEFAULTS.MAX_REWRITE_CHARS} chars; markdown is allowed inside rewrite; remove emails/NI/NHS numbers; no placeholders like 'lorem' or 'TBD'.`,
+			"- Do not include markdown code fences or any text outside JSON.",
 			"",
 			"If unsure, still return valid JSON using best-effort values. Here is a minimal valid example:",
 			OUTPUT_EXAMPLE,

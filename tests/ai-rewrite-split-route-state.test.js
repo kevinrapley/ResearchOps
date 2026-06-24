@@ -49,5 +49,7 @@ includes(promptsSource, "export const DESC_SYSTEM_PROMPT", "AI rewrite prompts")
 includes(promptsSource, "export const OBJ_SYSTEM_PROMPT", "AI rewrite prompts");
 includes(promptsSource, "export function rulesPromptForMode", "AI rewrite prompts");
 includes(promptsSource, "export const SUGGESTION_LIBRARY", "AI rewrite prompts");
+includes(promptsSource, "The rewrite field may contain markdown", "AI rewrite prompts");
+includes(promptsSource, "Structure the rewrite as markdown using level 2 headings", "AI rewrite prompts");
 includes(testingSource, "export function createMockEnv", "AI rewrite testing helpers");
 includes(testingSource, "export function makeJsonRequest", "AI rewrite testing helpers");

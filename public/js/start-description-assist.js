@@ -5,7 +5,7 @@
  *
  * @description
  * - Shows toolbar when description length ≥ 400.
- * - Two-column AI suggestions (general vs. bias) + concise rewrite preview.
+ * - Renders local suggestions separately from the markdown AI rewrite preview.
  * - Calls /api/ai-rewrite?mode=description only on explicit click.
  * - Re-runs local suggestions after applying the rewrite.
  *
@@ -22,6 +22,8 @@
  */
 
 import { initCopilotSuggester } from './copilot-suggester.js';
+import { marked } from '/lib/marked.min.js';
+import DOMPurify from '/lib/purify.min.js';
 
 /* ---------------- Helpers ---------------- */
 
@@ -38,70 +40,18 @@ function esc(s) {
   }[c]));
 }
 
-/** Split suggestions into general vs bias/inclusion */
-function splitSuggestionsByBias(items = []) {
-  const biasKeywords = [
-    'bias','inclusion','inclusive','accessibility','accessible','assistive',
-    'screen reader','screen-reader','contrast','language','bilingual','welsh',
-    'device coverage','browser coverage','diversity','equality','disability',
-    'low vision','motor','hearing'
-  ];
-  const isBiasy = (t = '') => biasKeywords.some(k => t.toLowerCase().includes(k));
-  const left = [], right = [];
-  for (const s of items) {
-    const blob = `${s?.category ?? ''} ${s?.tip ?? ''} ${s?.why ?? ''}`.toLowerCase();
-    (isBiasy(blob) ? right : left).push(s);
-  }
-  return { left, right };
+function renderMarkdown(markdown) {
+  const rawHtml = marked.parse(String(markdown || ''));
+  return DOMPurify.sanitize(rawHtml);
 }
 
-function renderTwoColumnSuggestions(left = [], right = [], idPrefix = 'sugg') {
-  const severityClass = severity => {
-    const value = String(severity || 'medium').toLowerCase();
-    if (value === 'high') return 'govuk-tag--red';
-    if (value === 'low') return 'govuk-tag--green';
-    return 'govuk-tag--yellow';
-  };
-
-  const list = (items, empty) =>
-    items?.length
-      ? `<ul class="govuk-list govuk-list--bullet govuk-list--spaced ${idPrefix}-list">
-          ${items.map(s => `
-            <li class="${idPrefix}-item">
-              <div class="${idPrefix}-row">
-                <strong class="${idPrefix}-cat">${esc(s?.category || 'General')}</strong>
-                <strong class="govuk-tag ${severityClass(s?.severity)} ${idPrefix}-sev ${esc(s?.severity || 'medium')}">${esc(s?.severity || 'medium')}</strong>
-              </div>
-              <p class="govuk-body ${idPrefix}-tip">${esc(s?.tip || '')}</p>
-              <p class="govuk-body-s ${idPrefix}-why"><strong>Why:</strong> ${esc(s?.why || '')}</p>
-            </li>`).join('')}
-        </ul>`
-      : `<p class="govuk-body">${esc(empty)}</p>`;
-
-  return `
-    <section class="${idPrefix}-grid" aria-label="Suggestions grid">
-      <div class="${idPrefix}-col" aria-label="Suggestions">
-        <h3 class="govuk-heading-s">Suggestions</h3>
-        ${list(left, 'No general suggestions.')}
-      </div>
-      <div class="${idPrefix}-col" aria-label="Bias &amp; Inclusion">
-        <h3 class="govuk-heading-s">Bias &amp; Inclusion</h3>
-        ${list(right, 'No bias findings.')}
-      </div>
-    </section>
-  `;
-}
-
-function renderAiPanelTwoCol(data, idPrefix = 'ai') {
-  const all = Array.isArray(data?.suggestions) ? data.suggestions : [];
-  const { left, right } = splitSuggestionsByBias(all);
+function renderAiPanel(data, idPrefix = 'ai') {
   return `
     <div class="${idPrefix}-region">
       <div class="govuk-inset-text ${idPrefix}-summary"><p class="govuk-body"><strong>Review summary:</strong> ${esc(data?.summary || '')}</p></div>
-      ${renderTwoColumnSuggestions(left, right, `${idPrefix}-sugg`)}
       <hr class="govuk-section-break govuk-section-break--m govuk-section-break--visible">
       <h3 class="govuk-heading-s">Concise rewrite</h3>
-      <div class="rewrite-block govuk-body" aria-label="AI rewrite">${esc(data?.rewrite || '')}</div>
+      <div class="rewrite-block govuk-body" aria-label="AI rewrite">${renderMarkdown(data?.rewrite || '')}</div>
       <button type="button" id="apply-ai-rewrite" class="govuk-button govuk-button--secondary">Replace description with rewrite</button>
     </div>
   `;
@@ -201,11 +151,10 @@ export function initStartDescriptionAssist(cfg = {}) {
 
       const data = await res.json();
       if (aiMount) {
-        aiMount.innerHTML = renderAiPanelTwoCol(data, 'ai');
+        aiMount.innerHTML = renderAiPanel(data, 'ai');
         const apply = aiMount.querySelector('#apply-ai-rewrite');
-        const pre = aiMount.querySelector('.rewrite-block');
         apply?.addEventListener('click', () => {
-          ta.value = pre?.textContent || '';
+          ta.value = typeof data?.rewrite === 'string' ? data.rewrite : '';
           ta.focus();
           try { sugg.forceSuggest(); } catch {}
         });

@@ -65,10 +65,15 @@
 	"filesCreatedOrModified": [
 		"infra/cloudflare/src/core/ai-rewrite.js",
 		"infra/cloudflare/src/core/ai-rewrite/fallback.js",
+		"infra/cloudflare/src/core/ai-rewrite/prompts.js",
+		"public/css/start.css",
+		"public/js/copilot-suggester.js",
 		"public/js/start-description-assist.js",
 		"public/js/start-objectives-assist.js",
+		"src/styles/start.scss",
 		"tests/ai-rewrite-ai-fallback.test.js",
 		"tests/ai-rewrite-split-route-state.test.js",
+		"tests/start-page-route-state.test.js",
 		"docs/agent-audit/reasoning/2026/06/24/ai-rewrite-production-unavailable.md",
 		"docs/agent-audit/reasoning/2026/06/24/ai-rewrite-production-unavailable.json"
 	],
@@ -82,7 +87,12 @@
 		"Added deterministic server-side review and rewrite fallback for missing AI binding, thrown Workers AI calls and invalid model output.",
 		"Returned fallback output with HTTP 200 and flags.ai_unavailable true.",
 		"Removed bracketed placeholder fallback from the live response path.",
-		"Changed Step 1 and Step 2 panels to say Review summary and to report rule-based suggestions when fallback output is shown."
+		"Changed Step 1 and Step 2 panels to say Review summary and to report rule-based suggestions when fallback output is shown.",
+		"Removed duplicated Suggestions / Bias & Inclusion output from the AI rewrite panel.",
+		"Changed the rewrite contract to markdown syntax inside the JSON rewrite field.",
+		"Rendered the rewrite preview as sanitized markdown HTML while preserving raw markdown for textarea replacement.",
+		"Updated the local scorer to recognise markdown Scope, Research questions and Deliverables headings.",
+		"Removed unused ai-sugg-* Start route styles."
 	],
 	"validation": [
 		{
@@ -104,6 +114,14 @@
 		{
 			"command": "git diff --check",
 			"result": "passed"
+		},
+		{
+			"command": "node --test tests/ai-rewrite-ai-fallback.test.js tests/ai-rewrite-origin-policy.test.js tests/ai-rewrite-split-route-state.test.js tests/start-page-route-state.test.js",
+			"result": "passed after PR amendment, 10 tests"
+		},
+		{
+			"command": "local browser flow with mocked /api/ai-rewrite",
+			"result": "confirmed zero duplicate AI suggestion grids, markdown rendered as HTML, replacement wrote markdown into the textarea, and local scoring rerendered to favourable empty states"
 		}
 	],
 	"residualRisk": "The user-facing feature remains useful during Workers AI failures, but production Worker logs should still be reviewed for ai.run.fail to diagnose why the live Workers AI call failed."

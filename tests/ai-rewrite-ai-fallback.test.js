@@ -33,7 +33,9 @@ test('AI rewrite returns rule-based output when the Workers AI binding is missin
 	assert.equal(body.flags.ai_unavailable, true);
 	assert.equal(body.flags.possible_personal_data, true);
 	assert.ok(body.suggestions.length > 0);
-	assert.match(body.rewrite, /Research focus:/);
+	assert.match(body.rewrite, /^## Research focus/m);
+	assert.match(body.rewrite, /^## Scope/m);
+	assert.match(body.rewrite, /^## Deliverables/m);
 	assert.doesNotMatch(body.rewrite, /research@example\.com/);
 });
 
@@ -57,6 +59,7 @@ test('AI rewrite returns rule-based output when the Workers AI call fails', asyn
 	assert.equal(response.status, 200);
 	assert.equal(body.flags.ai_unavailable, true);
 	assert.ok(body.rewrite.length > 0);
+	assert.match(body.rewrite, /^## Research focus/m);
 	assert.ok(body.suggestions.every((item) => ['high', 'medium', 'low'].includes(item.severity)));
 });
 
@@ -77,5 +80,5 @@ test('AI rewrite returns rule-based output when model output is invalid', async 
 
 	assert.equal(response.status, 200);
 	assert.equal(body.flags.ai_unavailable, true);
-	assert.match(body.rewrite, /^1\)/);
+	assert.match(body.rewrite, /^1\./);
 });

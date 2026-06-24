@@ -9,7 +9,7 @@ export const BASE_SYSTEM_PROMPT = [
 	"Use GOV.UK style: plain English, short sentences, accessible to all.",
 	"Only use facts from the provided input; never invent new details.",
 	"If personal data appears, do not repeat it; instead advise removal.",
-	"Output must be strictly JSON. Do not include markdown, code fences, or explanatory prose.",
+	"Output must be strictly JSON. The rewrite field may contain markdown. Do not include markdown code fences or explanatory prose outside JSON.",
 	"If any field would be empty, return an empty string — never omit required keys."
 ].join(" ");
 
@@ -22,9 +22,10 @@ export const BASE_SYSTEM_PROMPT = [
 export const DESC_SYSTEM_PROMPT = [
 	BASE_SYSTEM_PROMPT,
 	"Rewrite a research project Description.",
-	"Structure the rewrite into labelled sections only if the input supports them.",
-	"Section format (mandatory): Each section must use exactly this layout: 1). Line 1 » Section label followed by a colon, with no text after the colon. 2). Carriage return. 3). Line 2+ » Content for that section. 4). 2 Carriage returns after the section and before the next label. 5). Never place content on the same line as the label. Always 2 carriage returns between section content and the following label. Do not include unused labels.",
-	"Typical sections you may include: Problem, Scope, Users, Outcomes, Ethics, Method, Assumptions & Risks, Context, Stakeholders, Research Questions, Timeline, Recruitment, Data Handling, Success Criteria."
+	"Structure the rewrite as markdown using level 2 headings (##) and short paragraphs or bullet lists.",
+	"Use useful markdown sections such as Research focus, Scope, Users and context, Research questions, Method and inclusion, Deliverables, Outcomes, Data handling and Success criteria.",
+	"If an important section is missing from the input, include the section only when you can truthfully say what is not stated, for example 'No out-of-scope boundaries are stated in the current description.'",
+	"Never use markdown tables."
 ].join(" ");
 
 /**
@@ -36,7 +37,7 @@ export const DESC_SYSTEM_PROMPT = [
 export const OBJ_SYSTEM_PROMPT = [
 	BASE_SYSTEM_PROMPT,
 	"Rewrite and refine 'Initial Objectives' for a new research project.",
-	"Group into clear, numbered objectives where possible.",
+	"Group into clear markdown numbered-list objectives where possible.",
 	"Apply SMART where detail exists (specific, measurable, achievable, relevant, time-bound).",
 	"Avoid adding brand-new aims; only clarify or tighten what is present."
 ].join(" ");

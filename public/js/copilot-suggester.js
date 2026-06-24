@@ -108,9 +108,10 @@ function defaultRules(t) {
 	const tips = [];
 	const txt = (t || "").trim();
 	const lc = txt.toLowerCase();
+	const hasMarkdownHeading = heading => new RegExp(`^#{1,6}\\s+${heading}\\b`, "im").test(txt);
 
 	// 1) Scope nudges (if no explicit "In scope"/"Out of scope" lines)
-	if (!/\b(in|out)\s+of\s+scope\b/i.test(txt)) {
+	if (!/\b(in|out)\s+of\s+scope\b/i.test(txt) && !hasMarkdownHeading("Scope")) {
 		tips.push({
 			category: "Scope",
 			tip: "Add one line each for ‘In scope’ and ‘Out of scope’.",
@@ -120,7 +121,7 @@ function defaultRules(t) {
 	}
 
 	// 2) Research questions prompt (if no question marks or “research question” phrases)
-	if (!/[?]/.test(txt) && !/research questions?/i.test(txt)) {
+	if (!/[?]/.test(txt) && !/research questions?/i.test(txt) && !hasMarkdownHeading("Research questions")) {
 		tips.push({
 			category: "Research questions",
 			tip: "List 2–4 research questions your study will answer.",
@@ -142,7 +143,7 @@ function defaultRules(t) {
 	}
 
 	// 4) Deliverables/artefacts (if not mentioned)
-	if (!/(report|playback|readout|backlog|recommendations|artefacts?|artifacts?)/i.test(txt)) {
+	if (!/(report|playback|readout|backlog|recommendations|artefacts?|artifacts?)/i.test(txt) && !hasMarkdownHeading("Deliverables")) {
 		tips.push({
 			category: "Deliverables",
 			tip: "State expected outputs (e.g., playback, short report, prioritised backlog).",

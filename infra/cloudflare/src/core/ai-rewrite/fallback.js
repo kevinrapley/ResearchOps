@@ -90,18 +90,40 @@ function matchingSentences(sentences, pattern, max = 3) {
 
 function section(label, lines) {
 	const text = lines.join(" ").trim();
-	return text ? `${label}:\n${text}` : "";
+	return text ? `## ${label}\n\n${text}` : "";
+}
+
+function missingSection(label, text) {
+	return `## ${label}\n\n${text}`;
 }
 
 function fallbackDescriptionRewrite(input, cfg) {
 	const sentences = splitSentences(input);
+	const scopeLines = matchingSentences(sentences, /\b(scope|in scope|out of scope|boundary|boundaries)\b/i);
+	const questionLines = matchingSentences(sentences, /\?|research question|question(s)?\b/i);
+	const deliverableLines = matchingSentences(sentences, /\b(deliverable|output|playback|report|backlog|recommendation)\b/i);
+	const inclusionLines = matchingSentences(sentences, /\b(identify|consider|test|interview|survey|workshop|accessibility|screen reader|mobile|desktop|language)\b/i);
+	const dataLines = matchingSentences(sentences, /\b(personal data|consent|retention|privacy|data handling|DPIA|ethic)\b/i);
+
 	const sections = [
 		section("Research focus", sentences.slice(0, 2)),
-		section("Scope", matchingSentences(sentences, /\b(scope|in scope|out of scope|boundary|boundaries)\b/i)),
+		scopeLines.length ?
+			section("Scope", scopeLines) :
+			missingSection("Scope", "- In scope: The current description does not state explicit in-scope boundaries.\n- Out of scope: The current description does not state explicit out-of-scope boundaries."),
 		section("Users and context", matchingSentences(sentences, /\b(user|users|team|teams|stakeholder|manager|service designer|researcher)\b/i)),
-		section("Method and inclusion", matchingSentences(sentences, /\b(identify|consider|test|interview|survey|workshop|accessibility|screen reader|mobile|desktop|language)\b/i)),
+		questionLines.length ?
+			section("Research questions", questionLines) :
+			missingSection("Research questions", "- The current description does not state the research questions."),
+		inclusionLines.length ?
+			section("Method and inclusion", inclusionLines) :
+			missingSection("Method and inclusion", "The current description does not state method or inclusion considerations such as accessibility, screen reader support, mobile users, language needs or Chrome, Safari and Firefox browser coverage."),
+		deliverableLines.length ?
+			section("Deliverables", deliverableLines) :
+			missingSection("Deliverables", "The current description does not state expected outputs such as a playback, report or prioritised backlog."),
 		section("Outcomes", matchingSentences(sentences, /\b(success|outcome|decision|decisions|deliverable|output|report|backlog|question)\b/i)),
-		section("Data handling", matchingSentences(sentences, /\b(personal data|consent|retention|privacy|data handling|DPIA|ethic)\b/i))
+		dataLines.length ?
+			section("Data handling", dataLines) :
+			missingSection("Data handling", "The current description does not state data handling, consent or retention arrangements.")
 	].filter(Boolean);
 
 	const rewrite = sections.length ? sections.join("\n\n") : section("Research focus", sentences.slice(0, 4));
@@ -118,8 +140,8 @@ function splitObjectives(input) {
 function fallbackObjectivesRewrite(input, cfg) {
 	const objectives = splitObjectives(input).slice(0, 6);
 	const rewrite = objectives.length ?
-		objectives.map((objective, index) => `${index + 1}) ${objective}`).join("\n") :
-		`1) ${sanitizeRewrite(input)}`;
+		objectives.map((objective, index) => `${index + 1}. ${objective}`).join("\n") :
+		`1. ${sanitizeRewrite(input)}`;
 	return clamp(sanitizeRewrite(rewrite), cfg.MAX_REWRITE_CHARS);
 }
 

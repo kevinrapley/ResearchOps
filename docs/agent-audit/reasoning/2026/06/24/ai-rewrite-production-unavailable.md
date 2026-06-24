@@ -90,6 +90,16 @@ The previous PR fixed the request routing and allowed origins. This branch fixes
 - Updated Step 1 and Step 2 panels to use `Review summary:` instead of `AI summary:`.
 - Updated the status text to say `Done. Rule-based suggestions shown.` when the server flags fallback output.
 
+## PR amendment
+
+- Removed the duplicated Suggestions / Bias & Inclusion grid from the AI rewrite panel.
+- Kept the local Suggestions / Bias & Inclusion grid as the single scoring surface.
+- Changed the Description rewrite prompt and fallback output to use markdown syntax in the `rewrite` field.
+- Rendered `div.rewrite-block.govuk-body` from sanitized markdown HTML.
+- Changed the replace action to write the raw markdown `rewrite` value into the textarea instead of copying text from the preview.
+- Updated the local scorer to recognise markdown `Scope`, `Research questions` and `Deliverables` headings.
+- Removed unused `ai-sugg-*` Start route styles.
+
 ## Validation
 
 - `node --test tests/ai-rewrite-ai-fallback.test.js tests/ai-rewrite-origin-policy.test.js tests/ai-rewrite-split-route-state.test.js`
@@ -103,6 +113,13 @@ The previous PR fixed the request routing and allowed origins. This branch fixes
   - Reported `no-console` warnings from audit logging in `infra/cloudflare/src/core/ai-rewrite.js` and existing client diagnostics in `public/js/start-description-assist.js`.
 - `git diff --check`
   - Passed.
+- `node --test tests/ai-rewrite-ai-fallback.test.js tests/ai-rewrite-origin-policy.test.js tests/ai-rewrite-split-route-state.test.js tests/start-page-route-state.test.js`
+  - Passed after the PR amendment: 10 tests.
+- Local browser flow with mocked `/api/ai-rewrite`
+  - Confirmed the AI panel rendered zero `.ai-sugg-grid` elements.
+  - Confirmed markdown rendered as a heading in `.rewrite-block`.
+  - Confirmed `Replace description with rewrite` wrote markdown syntax into `#p_desc`.
+  - Confirmed the local scorer rerendered to `No suggestions found.` and `No bias findings.` after replacement.
 
 ## Residual risk
 
