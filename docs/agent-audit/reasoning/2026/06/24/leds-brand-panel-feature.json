@@ -1,0 +1,365 @@
+{
+  "date": "2026-06-24",
+  "timestampUtc": "2026-06-24T22:40:35Z",
+  "branch": "feature/leds-brand-panel",
+  "traceTrigger": "feature branch prefix",
+  "taskSummary": "Move the LEDS-only brand-panel changes out of the merged tag-colour PR branch and onto their own branch from updated main; follow up by overlaying the Home Office digital triangles asset on the LEDS brand panel ::after layer, tune that overlay with soft-light blending, brightness filtering and adjusted positioning, then address a valid Codex review comment by bumping cache-busting query strings for changed CSS and JavaScript assets.",
+  "operatingModelFilesLoaded": [
+    "AGENTS.md",
+    ".agent-operating-model/orchestration.xml",
+    ".agent-operating-model/bundle-registry.json",
+    ".agent-operating-model/task-signal-catalog.json",
+    ".agent-operating-model/selection-rules.json",
+    ".agent-operating-model/bootstrap-checklist.md",
+    ".agent-operating-model/precedence-policy.md",
+    ".agent-operating-model/trace-policy.md",
+    ".agent-operating-model/trace-layers.md",
+    ".agent-operating-model/behavioural-evals.json",
+    ".agent-operating-model/github-mutation-policy.md"
+  ],
+  "selectedBundles": [
+    {
+      "id": "github-diamond",
+      "canonicalPath": ".agent-operating-model/bundles/github/"
+    },
+    {
+      "id": "researchops-developer-control",
+      "canonicalPath": ".agent-operating-model/bundles/researchops-developer-control/"
+    },
+    {
+      "id": "multi-functional-team",
+      "canonicalPath": ".agent-operating-model/bundles/multi-functional-team/"
+    },
+    {
+      "id": "govuk-design-system",
+      "canonicalPath": ".agent-operating-model/bundles/govuk-design-system/"
+    },
+    {
+      "id": "cloudflare",
+      "canonicalPath": ".agent-operating-model/bundles/cloudflare/"
+    }
+  ],
+  "skippedBundles": [
+    "openai-platform",
+    "mcp-agent-tooling",
+    "airtable-public-api",
+    "mural-public-api"
+  ],
+  "precedenceDecisions": [
+    "GitHub Diamond governed branch selection, trace and PR discipline.",
+    "ResearchOps Developer Control governed generated CSS and rendered page parity.",
+    "GOV.UK Design System governed the frontend component and accessibility context.",
+    "Cloudflare governed the static asset caching context for public/_headers."
+  ],
+  "branchHandling": [
+    "Preserved the dirty fix/govuk-brand-tag-colours worktree in stash@{1}.",
+    "Preserved leftover local sandbox runtime state in stash@{0}.",
+    "Fast-forwarded local main to origin/main after PR #430 had merged.",
+    "Created feature/leds-brand-panel from updated main.",
+    "Restored only the LEDS brand-panel paths from the preserved stash.",
+    "Excluded local sandbox infrastructure, local sandbox seed files, auth-header changes and hostname brand-variant changes from this branch."
+  ],
+  "filesRead": [
+    "AGENTS.md",
+    "README.md",
+    ".github/CODEOWNERS",
+    "RECENT_LEARNINGS.md",
+    "package.json",
+    ".agent-operating-model/orchestration.xml",
+    ".agent-operating-model/bundle-registry.json",
+    ".agent-operating-model/task-signal-catalog.json",
+    ".agent-operating-model/selection-rules.json",
+    ".agent-operating-model/bootstrap-checklist.md",
+    ".agent-operating-model/precedence-policy.md",
+    ".agent-operating-model/trace-policy.md",
+    ".agent-operating-model/trace-layers.md",
+    ".agent-operating-model/behavioural-evals.json",
+    ".agent-operating-model/github-mutation-policy.md",
+    ".agent-operating-model/bundles/github/prompt.body.xml",
+    ".agent-operating-model/bundles/researchops-developer-control/prompt.body.xml",
+    ".agent-operating-model/bundles/multi-functional-team/prompt.body.xml",
+    ".agent-operating-model/bundles/govuk-design-system/prompt.body.xml",
+    ".agent-operating-model/bundles/cloudflare/prompt.body.xml",
+    "scripts/validate.sh",
+    "public/_headers",
+    "src/govuk/templates/macros/daas-brand-panel.njk",
+    "src/govuk/templates/pages/project-dashboard.njk",
+    "src/govuk/templates/pages/project-dashboard-participants.njk",
+    "src/govuk/templates/pages/projects-journals.njk",
+    "src/govuk/templates/pages/projects-outcomes.njk",
+    "src/govuk/templates/pages/study.njk",
+    "src/govuk/templates/pages/study-new.njk",
+    "src/govuk/templates/pages/study-consent-forms.njk",
+    "src/govuk/templates/pages/study-guides.njk",
+    "src/govuk/templates/pages/study-note-takers-observers.njk",
+    "src/govuk/templates/pages/study-participant-consent.njk",
+    "src/govuk/templates/pages/study-participants.njk",
+    "src/govuk/templates/pages/study-synthesis.njk",
+    "src/styles/daas-brand-panel.scss",
+    "src/styles/project-dashboard.scss",
+    "public/js/daas-brand-panel.js",
+    "public/js/project-dashboard.js",
+    "tests/daas-brand-panel-route-state.test.js",
+    "tests/project-dashboard-route-state.test.js"
+  ],
+  "filesModified": [
+    "src/govuk/templates/macros/daas-brand-panel.njk",
+    "src/govuk/templates/pages/project-dashboard.njk",
+    "src/govuk/templates/pages/project-dashboard-participants.njk",
+    "src/govuk/templates/pages/projects-journals.njk",
+    "src/govuk/templates/pages/projects-outcomes.njk",
+    "src/govuk/templates/pages/study.njk",
+    "src/govuk/templates/pages/study-new.njk",
+    "src/govuk/templates/pages/study-consent-forms.njk",
+    "src/govuk/templates/pages/study-guides.njk",
+    "src/govuk/templates/pages/study-note-takers-observers.njk",
+    "src/govuk/templates/pages/study-participant-consent.njk",
+    "src/govuk/templates/pages/study-participants.njk",
+    "src/govuk/templates/pages/study-synthesis.njk",
+    "src/styles/daas-brand-panel.scss",
+    "src/styles/project-dashboard.scss",
+    "public/css/daas-brand-panel.css",
+    "public/css/project-dashboard.css",
+    "public/js/daas-brand-panel.js",
+    "public/js/project-dashboard.js",
+    "public/images/brands/leds-logo.svg",
+    "public/images/brands/leds-logo-white.svg",
+    "public/images/brands/leds-panel-background.png",
+    "public/pages/project-dashboard/index.html",
+    "public/pages/project-dashboard/participants/index.html",
+    "public/pages/projects/journals/index.html",
+    "public/pages/projects/outcomes/index.html",
+    "public/pages/study/consent-forms/index.html",
+    "public/pages/study/guides/index.html",
+    "public/pages/study/index.html",
+    "public/pages/study/new/index.html",
+    "public/pages/study/note-takers-observers/index.html",
+    "public/pages/study/participant-consent/index.html",
+    "public/pages/study/participants/index.html",
+    "public/pages/study/synthesis/index.html",
+    "tests/daas-brand-panel-route-state.test.js",
+    "tests/project-dashboard-route-state.test.js",
+    "docs/agent-audit/reasoning/2026/06/24/leds-brand-panel-feature.md",
+    "docs/agent-audit/reasoning/2026/06/24/leds-brand-panel-feature.json"
+  ],
+  "validation": [
+    {
+      "command": "node scripts/styles/build-generated-css.mjs public/css/daas-brand-panel.css",
+      "status": "passed"
+    },
+    {
+      "command": "node scripts/styles/build-generated-css.mjs public/css/project-dashboard.css",
+      "status": "passed"
+    },
+    {
+      "command": "npm run build:govuk-pages",
+      "status": "passed"
+    },
+    {
+      "command": "node --test tests/daas-brand-panel-route-state.test.js tests/project-dashboard-route-state.test.js",
+      "status": "passed"
+    },
+    {
+      "command": "node scripts/styles/format-generated-css.mjs --check public/css/daas-brand-panel.css public/css/project-dashboard.css",
+      "status": "passed"
+    },
+    {
+      "command": "npx prettier -c src/styles/daas-brand-panel.scss src/styles/project-dashboard.scss public/js/daas-brand-panel.js public/js/project-dashboard.js tests/daas-brand-panel-route-state.test.js tests/project-dashboard-route-state.test.js public/images/brands/leds-logo.svg public/images/brands/leds-logo-white.svg",
+      "status": "passed"
+    },
+    {
+      "command": "git diff --check",
+      "status": "passed"
+    },
+    {
+      "command": "npm test",
+      "status": "passed"
+    },
+    {
+      "command": "node -e \"JSON.parse(require('fs').readFileSync('docs/agent-audit/reasoning/2026/06/24/leds-brand-panel-feature.json', 'utf8'))\"",
+      "status": "passed"
+    },
+    {
+      "command": "npm run trace:coverage",
+      "status": "passed"
+    },
+    {
+      "command": "npm run format:check",
+      "status": "passed"
+    },
+    {
+      "command": "npm run generated-css:check",
+      "status": "passed"
+    },
+    {
+      "command": "npm run lint",
+      "status": "passed",
+      "notes": "Passed with existing repository warnings."
+    },
+    {
+      "command": "npm run validate",
+      "status": "passed"
+    },
+    {
+      "command": "node --test tests/daas-brand-panel-route-state.test.js tests/project-dashboard-route-state.test.js",
+      "status": "passed",
+      "notes": "Follow-up triangle overlay check."
+    },
+    {
+      "command": "git diff --check",
+      "status": "passed",
+      "notes": "Follow-up triangle overlay check."
+    },
+    {
+      "command": "npm run format:check",
+      "status": "passed",
+      "notes": "Follow-up triangle overlay check."
+    },
+    {
+      "command": "npm run generated-css:check",
+      "status": "passed",
+      "notes": "Follow-up triangle overlay check."
+    },
+    {
+      "command": "npm run trace:coverage",
+      "status": "passed",
+      "notes": "Follow-up triangle overlay check."
+    },
+    {
+      "command": "node -e \"JSON.parse(require('fs').readFileSync('docs/agent-audit/reasoning/2026/06/24/leds-brand-panel-feature.json', 'utf8'))\"",
+      "status": "passed",
+      "notes": "Follow-up triangle overlay check."
+    },
+    {
+      "command": "node scripts/styles/build-generated-css.mjs public/css/daas-brand-panel.css",
+      "status": "passed",
+      "notes": "Follow-up overlay tuning check."
+    },
+    {
+      "command": "node scripts/styles/build-generated-css.mjs public/css/project-dashboard.css",
+      "status": "passed",
+      "notes": "Follow-up overlay tuning check."
+    },
+    {
+      "command": "node --test tests/daas-brand-panel-route-state.test.js tests/project-dashboard-route-state.test.js",
+      "status": "passed",
+      "notes": "Follow-up overlay tuning check."
+    },
+    {
+      "command": "npm run generated-css:check",
+      "status": "passed",
+      "notes": "Follow-up overlay tuning check."
+    },
+    {
+      "command": "git diff --check",
+      "status": "passed",
+      "notes": "Follow-up overlay tuning check."
+    },
+    {
+      "command": "npm run format:check",
+      "status": "passed",
+      "notes": "Follow-up overlay tuning check."
+    },
+    {
+      "command": "npm run trace:coverage",
+      "status": "passed",
+      "notes": "Follow-up overlay tuning check."
+    },
+    {
+      "command": "node -e \"JSON.parse(require('fs').readFileSync('docs/agent-audit/reasoning/2026/06/24/leds-brand-panel-feature.json', 'utf8'))\"",
+      "status": "passed",
+      "notes": "Follow-up overlay tuning check."
+    },
+    {
+      "command": "gh api graphql -F owner='kevinrapley' -F repo='ResearchOps' -F number=431 ...",
+      "status": "passed",
+      "notes": "Review-thread state check found the Codex cache-busting comment unresolved and current."
+    },
+    {
+      "command": "gh api repos/kevinrapley/ResearchOps/pulls/comments/3470569357/reactions --method POST ...",
+      "status": "passed",
+      "notes": "Valid review comment acknowledged with +1 reaction."
+    },
+    {
+      "command": "npm run build:govuk-pages",
+      "status": "passed",
+      "notes": "Cache-bust follow-up check."
+    },
+    {
+      "command": "rg -n \"daas-brand-panel\\.(css|js)\\?v=20260616|project-dashboard\\.(css|js)\\?v=project-dashboard-description-edit-20260624\" . -g '!node_modules' -g '!vendor'",
+      "status": "passed",
+      "notes": "Cache-bust follow-up check; no matches."
+    },
+    {
+      "command": "node --test tests/daas-brand-panel-route-state.test.js tests/project-dashboard-route-state.test.js",
+      "status": "passed",
+      "notes": "Cache-bust follow-up check."
+    },
+    {
+      "command": "npm run generated-css:check",
+      "status": "passed",
+      "notes": "Cache-bust follow-up check."
+    },
+    {
+      "command": "git diff --check",
+      "status": "passed",
+      "notes": "Cache-bust follow-up check."
+    },
+    {
+      "command": "node -e \"JSON.parse(require('fs').readFileSync('docs/agent-audit/reasoning/2026/06/24/leds-brand-panel-feature.json', 'utf8'))\"",
+      "status": "passed",
+      "notes": "Cache-bust follow-up check."
+    },
+    {
+      "command": "npm run format:check",
+      "status": "passed",
+      "notes": "Cache-bust follow-up check."
+    },
+    {
+      "command": "npm run trace:coverage",
+      "status": "passed",
+      "notes": "Cache-bust follow-up check."
+    },
+    {
+      "command": "if rg -n \"daas-brand-panel\\.(css|js)\\?v=20260616|project-dashboard\\.(css|js)\\?v=project-dashboard-description-edit-20260624\" . -g '!node_modules' -g '!vendor'; then exit 1; else exit 0; fi",
+      "status": "passed",
+      "notes": "Cache-bust follow-up check; no old query strings found."
+    },
+    {
+      "command": "gh api repos/kevinrapley/ResearchOps/pulls/431/comments/3470569357/replies --method POST ...",
+      "status": "passed",
+      "notes": "Valid review comment replied with remediation and validation summary."
+    },
+    {
+      "command": "gh api graphql -f query='mutation($thread:ID!){resolveReviewThread(input:{threadId:$thread}){thread{id isResolved}}}' -f thread='PRRT_kwDOP3Td2M6MDQzF'",
+      "status": "passed",
+      "notes": "Valid review thread resolved."
+    }
+  ],
+  "failedThenReplaced": [
+    {
+      "command": "npm test -- --ci",
+      "status": "failed",
+      "reason": "Node rejected --ci as an invalid option for the repository's current node --test script."
+    },
+    {
+      "command": "npx prettier -c ... src/govuk/templates/macros/daas-brand-panel.njk ...",
+      "status": "failed",
+      "reason": "Prettier could not infer a parser for .njk; Nunjucks output was validated through page rendering and route-state tests."
+    },
+    {
+      "command": "first npm run lint attempt",
+      "status": "failed",
+      "reason": "build:generated-css rewrote generated CSS and generated-css:check found drift; rerunning after npm run validate produced a passing lint run with existing repository warnings."
+    }
+  ],
+  "notRun": [
+    {
+      "command": "manual browser verification",
+      "reason": "Route-state checks verify the rendered HTML and controller/style contracts for this branch."
+    }
+  ],
+  "residualRisks": [
+    "Local sandbox LEDS seed work remains preserved in the stash and was intentionally excluded from this branch to keep the PR scoped to the visible LEDS brand-panel feature."
+  ]
+}

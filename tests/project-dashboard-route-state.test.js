@@ -26,6 +26,14 @@ function countOccurrences(source, text) {
 	return source.split(text).length - 1;
 }
 
+function declarationBlock(source, selector, label) {
+	const start = source.indexOf(selector);
+	assert.notEqual(start, -1, `Expected ${label} to include selector: ${selector}`);
+	const end = source.indexOf("}", start);
+	assert.notEqual(end, -1, `Expected ${label} selector block to close: ${selector}`);
+	return source.slice(start, end);
+}
+
 function projectAreasNavSource(source) {
 	const start = source.indexOf("class=\"govuk-summary-card rops-project-areas-nav\"");
 	if (start === -1) return "";
@@ -103,13 +111,16 @@ assert.equal(
 includes(daasPanelMacroSource, "id=\"daas-brand-panel\"", "DaaS brand panel macro");
 includes(daasPanelMacroSource, "class=\"rops-daas-brand-panel\"", "DaaS brand panel macro");
 includes(daasPanelMacroSource, "/images/brands/daas-logo.svg", "DaaS brand panel macro");
+includes(daasPanelMacroSource, "id=\"leds-brand-panel\"", "DaaS brand panel macro");
+includes(daasPanelMacroSource, "class=\"rops-leds-brand-panel\"", "DaaS brand panel macro");
+includes(daasPanelMacroSource, "/images/brands/leds-logo-white.svg", "DaaS brand panel macro");
 includes(templateSource, "id=\"kv-project-stage\"", "project dashboard template");
 includes(templateSource, "id=\"project-description-region\"", "project dashboard template");
 includes(templateSource, "Loading service stage", "project dashboard template");
 includes(templateSource, "Loading project stage", "project dashboard template");
 includes(templateSource, "Mural optional", "project dashboard template");
-includes(templateSource, "project-dashboard.js?v=project-dashboard-description-edit-20260624", "project dashboard template");
-includes(templateSource, "project-dashboard.css?v=project-dashboard-description-edit-20260624", "project dashboard template");
+includes(templateSource, "project-dashboard.js?v=project-dashboard-leds-brand-panel-20260624", "project dashboard template");
+includes(templateSource, "project-dashboard.css?v=project-dashboard-leds-brand-panel-20260624", "project dashboard template");
 includes(templateSource, "project-dashboard-participants-list.js?v=participant-list-reveal-hide-20260602", "project dashboard template");
 excludes(templateSource, "project-dashboard-participants-list.js?v=participant-list-controls-20260601", "project dashboard template");
 includes(templateSource, "text: \"Dashboard\"", "project dashboard template");
@@ -159,9 +170,11 @@ includes(pageSource, "class=\"govuk-summary-list govuk-body-s\"", "project dashb
 includes(pageSource, "id=\"project-title\"", "project dashboard page");
 includes(pageSource, "id=\"breadcrumb-project\"", "project dashboard page");
 includes(pageSource, "id=\"daas-brand-panel\"", "project dashboard page");
+includes(pageSource, "id=\"leds-brand-panel\"", "project dashboard page");
 excludes(pageSource, "id=\"mural-status\"", "project dashboard page");
 excludes(pageSource, "class=\"rops-mural-status\"", "project dashboard page");
 includes(pageSource, "class=\"rops-daas-brand-panel\"", "project dashboard page");
+includes(pageSource, "class=\"rops-leds-brand-panel\"", "project dashboard page");
 includes(pageSource, "class=\"rops-dashboard-layout\"", "project dashboard page");
 includes(pageSource, "class=\"rops-dashboard-sidebar\"", "project dashboard page");
 includes(pageSource, "class=\"govuk-summary-card rops-project-areas-nav\"", "project dashboard page");
@@ -235,8 +248,8 @@ assert.equal(
 	"Expected objectives list to render outside the Stakeholder management card",
 );
 includes(pageSource, "/images/brands/daas-logo.svg", "project dashboard page");
-includes(pageSource, "project-dashboard.js?v=project-dashboard-description-edit-20260624", "project dashboard page");
-includes(pageSource, "project-dashboard.css?v=project-dashboard-description-edit-20260624", "project dashboard page");
+includes(pageSource, "project-dashboard.js?v=project-dashboard-leds-brand-panel-20260624", "project dashboard page");
+includes(pageSource, "project-dashboard.css?v=project-dashboard-leds-brand-panel-20260624", "project dashboard page");
 includes(pageSource, "id=\"project-description-region\"", "project dashboard page");
 includes(pageSource, "Project", "project dashboard page");
 includes(pageSource, "Dashboard", "project dashboard page");
@@ -295,6 +308,7 @@ includes(controllerSource, "function brandValues", "project dashboard controller
 includes(controllerSource, "project.teamNames", "project dashboard controller");
 includes(controllerSource, ".flatMap(brandValues)", "project dashboard controller");
 includes(controllerSource, "rops-daas-brand-panel--visible", "project dashboard controller");
+includes(controllerSource, "rops-leds-brand-panel--visible", "project dashboard controller");
 includes(controllerSource, "function renderStudies", "project dashboard controller");
 includes(controllerSource, "function isStudiesUnavailableError", "project dashboard controller");
 includes(controllerSource, "if (isStudiesUnavailableError(error)) return [];", "project dashboard controller");
@@ -411,6 +425,7 @@ excludes(muralStateSource, "syncDashboardPresentation", "Project Dashboard Mural
 
 includes(dashboardSassSource, ".rops-dashboard-header", "project dashboard Sass source");
 includes(dashboardSassSource, ".rops-daas-brand-panel", "project dashboard Sass source");
+includes(dashboardSassSource, ".rops-leds-brand-panel", "project dashboard Sass source");
 includes(dashboardSassSource, ".rops-dashboard-layout", "project dashboard Sass source");
 includes(dashboardSassSource, ".rops-dashboard-sidebar", "project dashboard Sass source");
 includes(dashboardSassSource, ".rops-project-areas-nav", "project dashboard Sass source");
@@ -443,6 +458,16 @@ includes(dashboardSassSource, "#1a1d35", "project dashboard Sass source");
 includes(dashboardSassSource, "home-office-digital-triangles.svg", "project dashboard Sass source");
 includes(dashboardSassSource, "background-position: right -3rem bottom -7rem;", "project dashboard Sass source");
 includes(dashboardSassSource, "background-size: 50% 200%;", "project dashboard Sass source");
+const sassLedsOverlayBlock = declarationBlock(
+	dashboardSassSource,
+	".rops-leds-brand-panel--visible::after",
+	"project dashboard Sass source",
+);
+includes(sassLedsOverlayBlock, "home-office-digital-triangles.svg", "project dashboard LEDS overlay");
+includes(sassLedsOverlayBlock, "backdrop-filter: brightness(0.65);", "project dashboard LEDS overlay");
+includes(sassLedsOverlayBlock, "background-blend-mode: soft-light;", "project dashboard LEDS overlay");
+includes(sassLedsOverlayBlock, "background-position: right -2.5rem bottom -5.75rem;", "project dashboard LEDS overlay");
+includes(sassLedsOverlayBlock, "background-size: 50% 200%;", "project dashboard LEDS overlay");
 includes(dashboardSassSource, ".rops-study-list", "project dashboard Sass source");
 includes(dashboardSassSource, ".rops-objective-list", "project dashboard Sass source");
 includes(dashboardSassSource, ".rops-objective-list > li", "project dashboard Sass source");
@@ -492,6 +517,20 @@ includes(dashboardCssSource, "#1a1d35", "project dashboard stylesheet");
 includes(dashboardCssSource, "home-office-digital-triangles.svg", "project dashboard stylesheet");
 includes(dashboardCssSource, "background-position: right -3rem bottom -7rem", "project dashboard stylesheet");
 includes(dashboardCssSource, "background-size: 50% 200%", "project dashboard stylesheet");
+const cssLedsOverlayBlock = declarationBlock(
+	dashboardCssSource,
+	".rops-leds-brand-panel--visible::after",
+	"project dashboard stylesheet",
+);
+includes(cssLedsOverlayBlock, "home-office-digital-triangles.svg", "project dashboard LEDS overlay");
+includes(cssLedsOverlayBlock, "backdrop-filter: brightness(0.65)", "project dashboard LEDS overlay");
+includes(cssLedsOverlayBlock, "background-blend-mode: soft-light", "project dashboard LEDS overlay");
+includes(cssLedsOverlayBlock, "background-position: right -2.5rem bottom -5.75rem", "project dashboard LEDS overlay");
+includes(cssLedsOverlayBlock, "background-size: 50% 200%", "project dashboard LEDS overlay");
+includes(dashboardCssSource, ".rops-leds-brand-panel", "project dashboard stylesheet");
+includes(dashboardCssSource, "#1a1d35", "project dashboard stylesheet");
+includes(dashboardCssSource, "leds-panel-background.png", "project dashboard stylesheet");
+includes(dashboardCssSource, "mix-blend-mode: screen", "project dashboard stylesheet");
 includes(dashboardCssSource, ".rops-study-list", "project dashboard stylesheet");
 includes(dashboardCssSource, ".rops-objective-list", "project dashboard stylesheet");
 includes(dashboardCssSource, ".rops-objective-list > li", "project dashboard stylesheet");
