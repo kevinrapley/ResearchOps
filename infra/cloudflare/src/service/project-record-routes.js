@@ -449,6 +449,19 @@ async function syncActiveProjectsToD1(env, projects = [], options = {}) {
 	}
 }
 
+async function writeProjectToD1(env, project = {}) {
+	const db = env.RESEARCHOPS_D1;
+	if (!db?.prepare) throw Object.assign(new Error("RESEARCHOPS_D1 binding not available"), { source: "d1" });
+	if (!isAirtableRecordId(project.id)) throw Object.assign(new Error("Project record id is required"), { source: "d1" });
+	await ensureProjectCache(db);
+	const source = await sourceForProjectCacheWrite(db, project.id, "preserve-full");
+	const updatedAt = new Date().toISOString();
+	await db
+		.prepare("INSERT INTO rops_projects_cache (id, name, org, phase, status, active, source, updated_at, payload_json) VALUES (?, ?, ?, ?, ?, 1, ?, ?, ?) ON CONFLICT(id) DO UPDATE SET name = excluded.name, org = excluded.org, phase = excluded.phase, status = excluded.status, active = excluded.active, source = excluded.source, updated_at = excluded.updated_at, payload_json = excluded.payload_json")
+		.bind(project.id, project.name || "", project.org || "", project["rops:servicePhase"] || "", project["rops:projectStatus"] || "", source, updatedAt, JSON.stringify(project))
+		.run();
+}
+
 async function readD1ProjectCache(env) {
 	const db = env.RESEARCHOPS_D1;
 	if (!db?.prepare) throw Object.assign(new Error("RESEARCHOPS_D1 binding not available"), { source: "d1" });
@@ -479,6 +492,42 @@ async function getD1ProjectRecord(env, projectId) {
 	const row = await db.prepare("SELECT * FROM rops_projects_cache WHERE active = 1 AND source IN ('airtable', 'airtable-partial') AND id = ? LIMIT 1").bind(projectId).first();
 	const project = mapD1Project(row || {});
 	return isRenderable(project) ? project : null;
+}
+
+function buildProjectFramingPatch(payload = {}) {
+	const fields = {};
+	const projectPatch = {};
+	if (Object.hasOwn(payload, "objectives")) {
+		const objectives = splitList(payload.objectives, /\r?\n|[|]/);
+		fields.Objectives = objectives.join("\n");
+		projectPatch.objectives = objectives;
+	}
+	if (Object.hasOwn(payload, "user_groups")) {
+		const userGroups = splitList(payload.user_groups, /\r?\n|[|,]/);
+		fields.UserGroups = userGroups.join(", ");
+		projectPatch.user_groups = userGroups;
+	}
+	if (Object.hasOwn(payload, "stakeholders")) {
+		const stakeholders = parseStakeholders(payload.stakeholders);
+		fields.Stakeholders = JSON.stringify(stakeholders);
+		projectPatch.stakeholders = stakeholders;
+	}
+	return { fields, projectPatch };
+}
+
+async function patchProjectInAirtable(env, projectId, fields = {}) {
+	const table = encodeURIComponent(env.AIRTABLE_TABLE_PROJECTS);
+	return airtableJson(env, `https://api.airtable.com/v0/${env.AIRTABLE_BASE_ID}/${table}`, {
+		method: "PATCH",
+		headers: { "Content-Type": "application/json" },
+		body: JSON.stringify({ records: [{ id: projectId, fields }] }),
+	});
+}
+
+function captureProjectPatchInAirtable(env, projectId, fields = {}, executionCtx = null) {
+	if (missingEnv(env, ["AIRTABLE_BASE_ID", "AIRTABLE_TABLE_PROJECTS", "AIRTABLE_API_KEY"]).length) return;
+	const capture = patchProjectInAirtable(env, projectId, fields).catch(() => null);
+	if (executionCtx?.waitUntil) executionCtx.waitUntil(capture);
 }
 
 function d1EmptyDiagnostic(snapshot) {
@@ -685,5 +734,67 @@ export async function getProjectRecord(_request, env, projectId, authContext = {
 		},
 		503,
 		sourceHeaders("none"),
+	);
+}
+
+export async function updateProjectRecord(request, env, projectId, authContext = {}, executionCtx = null) {
+	if (!isAirtableRecordId(projectId)) return json({ ok: false, error: "Project not found" }, 404);
+
+	const body = await request.arrayBuffer();
+	if (body.byteLength > MAX_JSON_BODY_BYTES) return json({ ok: false, error: "Payload too large" }, 413);
+
+	let payload = {};
+	try {
+		payload = JSON.parse(new TextDecoder().decode(body));
+	} catch {
+		return json({ ok: false, error: "Invalid JSON" }, 400);
+	}
+
+	const { fields, projectPatch } = buildProjectFramingPatch(payload);
+	if (!Object.keys(fields).length) return json({ ok: false, error: "No updatable project framing fields provided" }, 400);
+
+	let project = null;
+	try {
+		project = await getD1ProjectRecord(env, projectId);
+	} catch (error) {
+		return json(
+			{
+				ok: false,
+				error: "d1_unavailable",
+				detail: displayText(error?.message || error),
+			},
+			503,
+			sourceHeaders("none"),
+		);
+	}
+
+	if (!project || !userCanSee(project, authContext)) {
+		return json({ ok: false, error: "Project not found" }, 404, sourceHeaders("d1"));
+	}
+
+	const updatedProject = { ...project, ...projectPatch };
+	try {
+		await writeProjectToD1(env, updatedProject);
+	} catch (error) {
+		return json(
+			{
+				ok: false,
+				error: "d1_write_failed",
+				detail: displayText(error?.message || error),
+			},
+			503,
+			sourceHeaders("none"),
+		);
+	}
+	captureProjectPatchInAirtable(env, projectId, fields, executionCtx);
+
+	return json(
+		{
+			ok: true,
+			project: updatedProject,
+			capture: { airtable: missingEnv(env, ["AIRTABLE_BASE_ID", "AIRTABLE_TABLE_PROJECTS", "AIRTABLE_API_KEY"]).length ? "not_configured" : "queued" },
+		},
+		200,
+		sourceHeaders("d1"),
 	);
 }

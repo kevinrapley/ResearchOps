@@ -8,7 +8,7 @@ import { assertRoutePermission } from "./core/auth/route-permissions.js";
 import { handleTeamAccessRequestsRoute } from "./core/auth/team-access-requests.js";
 import { handleRequest } from "./core/router.js";
 import { ResearchOpsService } from "./service/index.js";
-import { createProjectRecord, getProjectRecord, listProjectRecords } from "./service/project-record-routes.js";
+import { createProjectRecord, getProjectRecord, listProjectRecords, updateProjectRecord } from "./service/project-record-routes.js";
 import { diagnoseProjectLinkedRecords } from "./service/studies.js";
 
 function coerceResponse(res) {
@@ -323,15 +323,13 @@ async function handleProjects(request, env) {
 	return new Response(JSON.stringify({ error: "Method not allowed" }), { status: 405, headers: { "content-type": "application/json; charset=utf-8" } });
 }
 
-async function handleProjectRecord(request, env, apiPath) {
-	const origin = request.headers.get("Origin") || "";
-	const service = serviceFor(env);
+async function handleProjectRecord(request, env, apiPath, executionCtx) {
 	const authContext = await authContextFor(request, env);
 	const match = apiPath.match(/^\/api\/projects\/([^/]+)$/);
 	if (!match) return new Response(JSON.stringify({ error: "Not found", path: apiPath }), { status: 404, headers: { "content-type": "application/json; charset=utf-8" } });
 	const projectId = decodeURIComponent(match[1]);
 	if (request.method === "GET") return getProjectRecord(request, env, projectId, authContext);
-	if (request.method === "PATCH") return service.updateProjectFraming(request, origin, projectId, authContext);
+	if (request.method === "PATCH") return updateProjectRecord(request, env, projectId, authContext, executionCtx);
 	return new Response(JSON.stringify({ error: "Method not allowed" }), { status: 405, headers: { "content-type": "application/json; charset=utf-8" } });
 }
 
@@ -464,7 +462,7 @@ export default {
 			else if (method === "GET" && apiPath === "/api/_diag/projects-source") result = await handleProjectSourceDiagnostics(request, env);
 			else if (method === "GET" && apiPath === "/api/_diag/project-linked-records") result = await handleProjectLinkedDiagnostics(request, env);
 			else if ((method === "GET" || method === "POST") && apiPath === "/api/projects") result = await handleProjects(request, env);
-			else if (apiPath.startsWith("/api/projects/")) result = await handleProjectRecord(request, env, apiPath);
+			else if (apiPath.startsWith("/api/projects/")) result = await handleProjectRecord(request, env, apiPath, ctx);
 			else if (apiPath === "/api/studies" || apiPath.startsWith("/api/studies/")) result = await handleStudies(request, env, apiPath);
 			else if (apiPath === "/api/synthesis" || apiPath.startsWith("/api/synthesis/")) result = await handleSynthesis(request, env, apiPath);
 			else if (apiPath === "/api/consent-forms" || apiPath.startsWith("/api/consent-forms/")) result = await handleConsentForms(request, env, apiPath);

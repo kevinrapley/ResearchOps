@@ -27,13 +27,13 @@ Selected bundles:
 - `researchops-developer-control` at `.agent-operating-model/bundles/researchops-developer-control/`
 - `multi-functional-team` at `.agent-operating-model/bundles/multi-functional-team/`
 - `govuk-design-system` at `.agent-operating-model/bundles/govuk-design-system/`
+- `cloudflare` at `.agent-operating-model/bundles/cloudflare/`
+- `airtable-public-api` at `.agent-operating-model/bundles/airtable-public-api/`
 
 Skipped conditional bundles:
 
-- `cloudflare`: the existing Worker PATCH route already accepts `objectives`; no Worker runtime, binding or deployment behaviour was changed.
 - `openai-platform`: no OpenAI API or model behaviour was changed.
 - `mcp-agent-tooling`: no MCP or agent-tool contract behaviour was changed.
-- `airtable-public-api`: no Airtable API contract was changed; the existing project patch contract is reused.
 - `mural-public-api`: no Mural integration behaviour was changed.
 
 Precedence applied:
@@ -42,6 +42,8 @@ Precedence applied:
 - ResearchOps Developer Control governed repository layers, generated static page parity and route-state tests.
 - Multi-Functional Team governed public-sector product assurance and avoiding unnecessary scope.
 - GOV.UK Design System governed textarea, keyboard access and focus-state handling.
+- Cloudflare governed the follow-up decision to make the project PATCH route succeed from D1 rather than an external API response.
+- Airtable Public API governed the follow-up decision to treat Airtable capture as secondary and non-blocking when rate-limited.
 
 ## Files Read
 
@@ -71,6 +73,8 @@ Precedence applied:
 - `public/css/project-dashboard.css`
 - `tests/project-dashboard-route-state.test.js`
 - `infra/cloudflare/src/service/projects.js`
+- `infra/cloudflare/src/service/project-record-routes.js`
+- `infra/cloudflare/src/worker.js`
 - `infra/cloudflare/src/service/projects/normalisation.js`
 
 ## Diagnosis
@@ -89,6 +93,7 @@ Precedence applied:
 - Follow-up correction: hid the parent ordered-list marker while a list item is in edit mode so the Markdown `1.` appears only inside the textarea.
 - Codex review correction: removed the one-shot blur listener so a failed PATCH can be retried from the same open textarea.
 - Follow-up acceptance coverage: asserted that clearing an objective textarea splices the objective out, saves the shorter objectives payload and re-renders either the remaining objectives or the clean empty state with no editor/list-item orphan.
+- Follow-up persistence correction: routed project PATCH updates through the D1-backed project-record route, requires the updated framing to be written into `rops_projects_cache` before responding, and schedules Airtable PATCH capture with `waitUntil` so Airtable 429s do not block the edit.
 - Bumped the project dashboard JS and CSS asset version to `project-dashboard-objective-edit-20260624`.
 - Regenerated `public/css/project-dashboard.css` and `public/pages/project-dashboard/index.html`.
 - Updated route-state tests for the inline edit contract, blur-save path, keyboard activation, focus styling and cache-busted assets.
@@ -107,6 +112,8 @@ Precedence applied:
 - Follow-up local Playwright preview check: passed for desktop and mobile edit mode with the `<li>` marker hidden and the Markdown `1.` retained inside the textarea.
 - Codex review retry check: local Playwright preview forced the first PATCH to fail and confirmed the editor stayed open and the next blur saved without reopening.
 - Follow-up local Playwright preview check: clearing and blurring the first objective removed it, promoted the remaining objective without an empty list item, and clearing the final objective replaced the ordered list with `<p class="govuk-body-s">No objectives yet.</p>` with no editor, editing class or orphaned `<li>`.
+- `node --import ./tests/helpers/generated-govuk-page-source.mjs --test tests/projects-route-contract.test.js`: passed, including Airtable 429 during project PATCH with D1 success.
+- `node --import ./tests/helpers/generated-govuk-page-source.mjs --test tests/projects-service-split-route-state.test.js tests/projects-page-route-state.test.js`: passed, 2 tests.
 - `git diff --check`: passed.
 
 ## Review Threads

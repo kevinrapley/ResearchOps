@@ -8,6 +8,7 @@ const TEST_USER_ID = "usr_project_contract";
 const TEST_SESSION_TOKEN = "project-contract-session";
 const d1RunCalls = [];
 let d1HasPartialProject = false;
+let d1ProjectCacheRow = null;
 
 const PROJECT_RECORD_IDS = [
 	"recMtdmBbaFilF2Tm",
@@ -164,6 +165,14 @@ function firstRowForSql(sql) {
 		return d1HasPartialProject ? { id: PROJECT_RECORD_IDS[0] } : null;
 	}
 
+	if (sql.includes("SELECT source FROM rops_projects_cache WHERE id = ?")) {
+		return d1ProjectCacheRow ? { source: d1ProjectCacheRow.source || "airtable" } : null;
+	}
+
+	if (sql.includes("SELECT * FROM rops_projects_cache") && sql.includes("id = ?")) {
+		return d1ProjectCacheRow;
+	}
+
 	return null;
 }
 
@@ -273,7 +282,7 @@ function projectRecords() {
 	];
 }
 
-function createMockFetch(calls, { rejectProjectTeamFields = [] } = {}) {
+function createMockFetch(calls, { rejectProjectTeamFields = [], rejectProjectPatchStatus = 0 } = {}) {
 	let projectTeamFieldRejections = 0;
 	return async (resource, options = {}) => {
 		const url = String(resource);
@@ -308,6 +317,39 @@ function createMockFetch(calls, { rejectProjectTeamFields = [] } = {}) {
 						id: PROJECT_RECORD_IDS[0],
 						createdTime: "2026-06-15T10:00:00.000Z",
 						fields,
+					},
+				],
+			});
+		}
+
+		if (url.endsWith("/Projects") && options.method === "PATCH") {
+			if (rejectProjectPatchStatus) {
+				return jsonResponse(
+					{
+						error: {
+							type: "RATE_LIMIT_REACHED",
+							message: "Rate limit reached",
+						},
+					},
+					{ status: rejectProjectPatchStatus },
+				);
+			}
+			const body = JSON.parse(String(options.body || "{}"));
+			const record = body.records?.[0] || {};
+			return jsonResponse({
+				records: [
+					{
+						id: record.id || PROJECT_RECORD_IDS[2],
+						createdTime: "2026-06-24T10:00:00.000Z",
+						fields: {
+							...projectFields(record.id || PROJECT_RECORD_IDS[2], {
+								Name: "Test Project 1",
+								Description: "Test Project Description",
+								Phase: "Discovery",
+								Status: "Goal setting & problem defining",
+							}),
+							...(record.fields || {}),
+						},
 					},
 				],
 			});
@@ -722,6 +764,89 @@ async function assertProjectReadResolvesAirtableRecordId() {
 	}
 }
 
+async function assertProjectPatchUsesD1WhenAirtableIsRateLimited() {
+	const calls = [];
+	const waitUntilPromises = [];
+	const originalFetch = globalThis.fetch;
+	d1RunCalls.length = 0;
+	d1ProjectCacheRow = {
+		id: PROJECT_RECORD_IDS[2],
+		name: "Test Project 1",
+		org: TEST_TEAM_NAME,
+		phase: "Discovery",
+		status: "Goal setting & problem defining",
+		active: 1,
+		source: "airtable",
+		updated_at: "2026-06-24T09:00:00.000Z",
+		payload_json: JSON.stringify({
+			id: PROJECT_RECORD_IDS[2],
+			airtableId: PROJECT_RECORD_IDS[2],
+			recordId: PROJECT_RECORD_IDS[2],
+			name: "Test Project 1",
+			description: "Test Project Description",
+			"rops:servicePhase": "Discovery",
+			"rops:projectStatus": "Goal setting & problem defining",
+			objectives: ["Old objective"],
+			user_groups: ["Participants"],
+			stakeholders: [],
+			team_ids: [TEST_TEAM_ID],
+			teamIds: [TEST_TEAM_ID],
+			teamNames: [TEST_TEAM_NAME],
+			teamName: TEST_TEAM_NAME,
+			team_name: TEST_TEAM_NAME,
+			team: TEST_TEAM_NAME,
+			org: TEST_TEAM_NAME,
+		}),
+	};
+	globalThis.fetch = createMockFetch(calls, { rejectProjectPatchStatus: 429 });
+
+	try {
+		const response = await worker.fetch(
+			new Request(`https://worker.test/api/projects/${PROJECT_RECORD_IDS[2]}`, {
+				method: "PATCH",
+				headers: {
+					"content-type": "application/json",
+					cookie: `rops_session=${TEST_SESSION_TOKEN}`,
+				},
+				body: JSON.stringify({
+					objectives: ["Understand the problem space", "Map the current system"],
+				}),
+			}),
+			env,
+			{
+				waitUntil(promise) {
+					waitUntilPromises.push(promise);
+				},
+			},
+		);
+		assert.equal(response.status, 200);
+		assert.equal(response.headers.get("x-rops-source"), "d1");
+
+		const payload = await response.json();
+		assert.equal(payload.ok, true);
+		assert.equal(payload.project.id, PROJECT_RECORD_IDS[2]);
+		assert.deepEqual(payload.project.objectives, ["Understand the problem space", "Map the current system"]);
+		assert.equal(payload.capture.airtable, "queued");
+
+		const cacheInsertCall = d1RunCalls.find((call) => call.sql.includes("INSERT INTO rops_projects_cache"));
+		assert.ok(cacheInsertCall);
+		assert.equal(cacheInsertCall.args[5], "airtable");
+		const cachedProject = JSON.parse(cacheInsertCall.args[7]);
+		assert.deepEqual(cachedProject.objectives, ["Understand the problem space", "Map the current system"]);
+
+		assert.equal(
+			calls.some(({ url, options }) => url.endsWith("/Projects") && options.method === "PATCH"),
+			true,
+		);
+		assert.equal(waitUntilPromises.length, 1);
+		const captureResults = await Promise.allSettled(waitUntilPromises);
+		assert.equal(captureResults[0].status, "fulfilled");
+	} finally {
+		d1ProjectCacheRow = null;
+		globalThis.fetch = originalFetch;
+	}
+}
+
 async function assertNonRecordProjectIdIsNotFound() {
 	const originalFetch = globalThis.fetch;
 	globalThis.fetch = createMockFetch([]);
@@ -773,6 +898,7 @@ await assertProjectCreateDoesNotBlockWhenTeamFieldsAreMissing();
 await assertProjectCreatePreservesSupportedTeamFields();
 await assertProjectCreateDoesNotBlockWhenOrgFieldIsMissing();
 await assertProjectReadResolvesAirtableRecordId();
+await assertProjectPatchUsesD1WhenAirtableIsRateLimited();
 await assertNonRecordProjectIdIsNotFound();
 await assertProjectsCsvRouteStillWorks();
 assertLegacyProjectsDirectHandlerIsAbsent();
