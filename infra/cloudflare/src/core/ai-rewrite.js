@@ -20,7 +20,7 @@
  * Design:
  * - Uses Cloudflare Workers AI via `env.AI.run(model, ...)`
  * - OFFICIAL-by-default (no third-party calls)
- * - Hard clamps for input/output length, strict JSON shaping
+ * - Hard clamps for input length and suggestion fields, strict JSON shaping
  * - PII sweep (email, NI, NHS) and counters-only Airtable logging
  *
  * @requires globalThis.fetch
@@ -42,7 +42,7 @@ import { buildFallbackResponse } from "./ai-rewrite/fallback.js";
 import { auditForBias, neutraliseInventedMethods, neutraliseInventedQuantifiers } from "./ai-rewrite/guardrails.js";
 import { corsHeaders, isAllowedOrigin, json } from "./ai-rewrite/http.js";
 import { DESC_SYSTEM_PROMPT, OBJ_SYSTEM_PROMPT, rulesPromptForMode, SUGGESTION_LIBRARY } from "./ai-rewrite/prompts.js";
-import { clamp, clampAtBoundary, detectPII, safeParseJSON, safeText, sanitizeRewrite } from "./ai-rewrite/text.js";
+import { clamp, detectPII, safeParseJSON, safeText, sanitizeRewrite } from "./ai-rewrite/text.js";
 
 export { BASE_SYSTEM_PROMPT, DESC_SYSTEM_PROMPT, OBJ_SYSTEM_PROMPT } from "./ai-rewrite/prompts.js";
 export { createMockEnv, makeJsonRequest } from "./ai-rewrite/testing.js";
@@ -136,7 +136,7 @@ class AiRewriteService {
 				severity: "one of: 'high' | 'medium' | 'low'"
 			}],
 			rewrite: [
-				"string (<= 1800 chars).",
+				"string.",
 				mode === "objectives" ?
 				"Markdown numbered list of refined objectives when supported by the input; keep each objective concise and measurable where possible." :
 				"Concise, PII-free markdown rewrite using level 2 headings and short paragraphs or bullet lists. Use sections such as Research focus, Scope, Users and context, Research questions, Method and inclusion, Deliverables, Outcomes, Data handling and Success criteria. Do not use markdown tables."
@@ -180,7 +180,7 @@ class AiRewriteService {
 			"",
 			"Constraints:",
 			`- suggestions: max ${DEFAULTS.MAX_SUGGESTIONS} items; each tip/why <= ${DEFAULTS.MAX_SUGGESTION_LEN} chars; include a balanced mix across categories.`,
-			`- rewrite: <= ${DEFAULTS.MAX_REWRITE_CHARS} chars; markdown is allowed inside rewrite; remove emails/NI/NHS numbers; no placeholders like 'lorem' or 'TBD'.`,
+			"- rewrite: include the complete rewrite in full; markdown is allowed inside rewrite; remove emails/NI/NHS numbers; no placeholders like 'lorem' or 'TBD'.",
 			"- Do not include markdown code fences or any text outside JSON.",
 			"",
 			"If unsure, still return valid JSON using best-effort values. Here is a minimal valid example:",
@@ -210,8 +210,8 @@ class AiRewriteService {
 				],
 				temperature: 0.15, // tightened for determinism
 				top_p: 0.9,// smallest set of tokens whose combined probability is at least 90% of the distribution
-				max_tokens: 900, // 900 tokens is plenty for summary + 6–8 suggestions + rewrite.
-				stop: ["```", "\n\n\n", "\nINPUT (verbatim):"] // conservative stops to prevent run-on prose
+				max_tokens: 2048, // Allow complete JSON with summary, suggestions and full markdown rewrite.
+				stop: ["```", "\nINPUT (verbatim):"] // conservative stops to prevent run-on prose
 			});
 
 			modelOutput = typeof resp === "string" ? resp : (resp?.response || resp?.result || "");
@@ -249,9 +249,7 @@ class AiRewriteService {
 			}))
 			.filter(s => s.tip.trim().length > 0) : [];
 
-		let rewrite = sanitizeRewrite(
-			clampAtBoundary(typeof parsed.rewrite === "string" ? parsed.rewrite : "", this.cfg.MAX_REWRITE_CHARS)
-		);
+		let rewrite = sanitizeRewrite(typeof parsed.rewrite === "string" ? parsed.rewrite : "");
 
 		// === Post-processing guardrail for invented metrics/timeframes/methods ===
 		// Compare rewrite vs input; neutralise invented quantifiers and add notes.

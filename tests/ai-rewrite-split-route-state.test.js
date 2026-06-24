@@ -34,6 +34,8 @@ excludes(routeSource, "function sanitizeRewrite", "AI rewrite route");
 excludes(routeSource, "function auditForBias", "AI rewrite route");
 excludes(routeSource, "const SUGGESTION_LIBRARY", "AI rewrite route");
 excludes(routeSource, "function createMockEnv", "AI rewrite route");
+excludes(routeSource, "MAX_REWRITE_CHARS", "AI rewrite route");
+excludes(configSource, "MAX_REWRITE_CHARS", "AI rewrite config");
 
 includes(configSource, "export const DEFAULTS", "AI rewrite config");
 includes(fallbackSource, "export function buildFallbackResponse", "AI rewrite fallback");
@@ -41,7 +43,7 @@ includes(httpSource, "export function corsHeaders", "AI rewrite HTTP helpers");
 includes(httpSource, "export function json", "AI rewrite HTTP helpers");
 includes(textSource, "export function detectPII", "AI rewrite text helpers");
 includes(textSource, "export function sanitizeRewrite", "AI rewrite text helpers");
-includes(textSource, "export function clampAtBoundary", "AI rewrite text helpers");
+excludes(textSource, "export function clampAtBoundary", "AI rewrite text helpers");
 includes(guardrailsSource, "export function neutraliseInventedQuantifiers", "AI rewrite guardrails");
 includes(guardrailsSource, "export function neutraliseInventedMethods", "AI rewrite guardrails");
 includes(guardrailsSource, "export function auditForBias", "AI rewrite guardrails");

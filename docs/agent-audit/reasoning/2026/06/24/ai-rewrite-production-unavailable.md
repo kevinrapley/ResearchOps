@@ -107,6 +107,16 @@ The previous PR fixed the request routing and allowed origins. This branch fixes
 - Kept the raw textarea replacement value as markdown while preserving HTML rendering in the preview block.
 - Added regression coverage for the reported `accessibility b` cutoff and for a complete `Data handling` sentence.
 
+## Third PR amendment
+
+- Removed the app-side rewrite character cap entirely.
+- Removed the boundary-aware clamping helper because a complete rewrite is required, not a better truncated rewrite.
+- Removed the model instruction that asked for a rewrite of 1,800 characters or fewer.
+- Increased the Workers AI token budget for the JSON response so summary, suggestions and the full markdown rewrite have room to complete.
+- Removed fallback section fitting so rule-based fallback output returns all generated markdown sections.
+- Updated AI rewrite guardrail whitespace cleanup so quantifier, method and bias post-processing preserve markdown line breaks.
+- Added regression coverage proving model rewrite output longer than the old limit is preserved through the final `Data handling` sentence.
+
 ## Validation
 
 - `node --test tests/ai-rewrite-ai-fallback.test.js tests/ai-rewrite-origin-policy.test.js tests/ai-rewrite-split-route-state.test.js`
@@ -131,6 +141,10 @@ The previous PR fixed the request routing and allowed origins. This branch fixes
   - Passed after the boundary-aware clamping amendment: 11 tests.
 - Local response check with the reported Step 1 wording
   - Confirmed the fallback rewrite includes a complete `Data handling` section ending with `storage arrangements.` and does not end with the partial text `accessibility b`.
+- `node --test tests/ai-rewrite-ai-fallback.test.js tests/ai-rewrite-origin-policy.test.js tests/ai-rewrite-split-route-state.test.js tests/start-page-route-state.test.js`
+  - Passed after removing the rewrite character cap: 12 tests.
+- Local response check with a mocked model rewrite longer than the old 1,800-character limit
+  - Confirmed the response keeps the final `Data handling` heading and final sentence.
 
 ## Residual risk
 

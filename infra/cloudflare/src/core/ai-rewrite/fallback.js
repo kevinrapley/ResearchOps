@@ -1,4 +1,4 @@
-import { clamp, clampAtBoundary, sanitizeRewrite } from "./text.js";
+import { clamp, sanitizeRewrite } from "./text.js";
 
 const DESCRIPTION_CHECKS = Object.freeze([
 	{
@@ -97,17 +97,6 @@ function missingSection(label, text) {
 	return `## ${label}\n\n${text}`;
 }
 
-function fitSections(sections, maxChars) {
-	const fitted = [];
-	for (const item of sections.filter(Boolean)) {
-		const next = fitted.length ? `${fitted.join("\n\n")}\n\n${item}` : item;
-		if (next.length <= maxChars) {
-			fitted.push(item);
-		}
-	}
-	return fitted.length ? fitted.join("\n\n") : clampAtBoundary(sections.filter(Boolean).join("\n\n"), maxChars);
-}
-
 function dataHandlingSection(input) {
 	if (/\bpersonal data\b/i.test(input)) {
 		return missingSection(
@@ -130,7 +119,7 @@ function methodAndInclusionSection(input, lines) {
 		missingSection("Method and inclusion", "The current description does not state method or inclusion considerations such as accessibility, screen reader support, mobile users, language needs or Chrome, Safari and Firefox browser coverage.");
 }
 
-function fallbackDescriptionRewrite(input, cfg) {
+function fallbackDescriptionRewrite(input) {
 	const sentences = splitSentences(input);
 	const scopeLines = matchingSentences(sentences, /\b(scope|in scope|out of scope|boundary|boundaries)\b/i);
 	const questionLines = matchingSentences(sentences, /\?|research question|question(s)?\b/i);
@@ -154,8 +143,8 @@ function fallbackDescriptionRewrite(input, cfg) {
 		dataHandlingSection(input)
 	].filter(Boolean);
 
-	const rewrite = sections.length ? fitSections(sections, cfg.MAX_REWRITE_CHARS) : section("Research focus", sentences.slice(0, 4));
-	return clampAtBoundary(sanitizeRewrite(rewrite), cfg.MAX_REWRITE_CHARS);
+	const rewrite = sections.length ? sections.join("\n\n") : section("Research focus", sentences.slice(0, 4));
+	return sanitizeRewrite(rewrite);
 }
 
 function splitObjectives(input) {
@@ -165,12 +154,12 @@ function splitObjectives(input) {
 		.filter(Boolean);
 }
 
-function fallbackObjectivesRewrite(input, cfg) {
+function fallbackObjectivesRewrite(input) {
 	const objectives = splitObjectives(input).slice(0, 6);
 	const rewrite = objectives.length ?
 		objectives.map((objective, index) => `${index + 1}. ${objective}`).join("\n") :
 		`1. ${sanitizeRewrite(input)}`;
-	return clampAtBoundary(sanitizeRewrite(rewrite), cfg.MAX_REWRITE_CHARS);
+	return sanitizeRewrite(rewrite);
 }
 
 function fallbackSuggestions(input, mode, cfg) {
@@ -196,8 +185,8 @@ function fallbackSuggestions(input, mode, cfg) {
  */
 export function buildFallbackResponse({ mode, input, hasPII, cfg }) {
 	const rewrite = mode === "objectives" ?
-		fallbackObjectivesRewrite(input, cfg) :
-		fallbackDescriptionRewrite(input, cfg);
+		fallbackObjectivesRewrite(input) :
+		fallbackDescriptionRewrite(input);
 
 	return {
 		summary: mode === "objectives" ?

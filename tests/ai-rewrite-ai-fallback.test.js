@@ -64,6 +64,45 @@ test('AI rewrite fallback does not cut markdown sections off mid-word', async ()
 	assert.doesNotMatch(body.rewrite, /\b[a-z]{1,2}$/i);
 });
 
+test('AI rewrite preserves complete model rewrite output', async () => {
+	const longRewrite = [
+		'## Research focus',
+		'',
+		Array.from(
+			{ length: 95 },
+			(_, index) =>
+				`Sentence ${index + 1} keeps the generated rewrite deliberately longer than the old app-side limit.`
+		).join(' '),
+		'',
+		'## Data handling',
+		'',
+		'This final data handling sentence must still be present in full.',
+	].join('\n');
+	const env = createMockEnv({
+		AI: {
+			run: async () =>
+				JSON.stringify({
+					summary: 'Complete rewrite returned.',
+					suggestions: [],
+					rewrite: longRewrite,
+				}),
+		},
+	});
+	const request = makeJsonRequest(
+		'/api/ai-rewrite?mode=description',
+		{ text: `${LONG_DESCRIPTION} ${LONG_DESCRIPTION}` },
+		{ headers: { Origin: ORIGIN } }
+	);
+
+	const response = await aiRewrite(request, env, ORIGIN);
+	const body = await response.json();
+
+	assert.equal(response.status, 200);
+	assert.ok(body.rewrite.length > 1800);
+	assert.match(body.rewrite, /^## Data handling/m);
+	assert.match(body.rewrite, /This final data handling sentence must still be present in full\.$/);
+});
+
 test('AI rewrite returns rule-based output when the Workers AI call fails', async () => {
 	const env = createMockEnv({
 		AI: {

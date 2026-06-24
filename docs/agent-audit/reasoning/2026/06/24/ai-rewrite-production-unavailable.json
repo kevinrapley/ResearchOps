@@ -64,7 +64,9 @@
 	],
 	"filesCreatedOrModified": [
 		"infra/cloudflare/src/core/ai-rewrite.js",
+		"infra/cloudflare/src/core/ai-rewrite/config.js",
 		"infra/cloudflare/src/core/ai-rewrite/fallback.js",
+		"infra/cloudflare/src/core/ai-rewrite/guardrails.js",
 		"infra/cloudflare/src/core/ai-rewrite/prompts.js",
 		"infra/cloudflare/src/core/ai-rewrite/text.js",
 		"public/css/start.css",
@@ -96,7 +98,14 @@
 		"Removed unused ai-sugg-* Start route styles.",
 		"Added boundary-aware rewrite clamping so long markdown output is not cut off mid-word or mid-sentence.",
 		"Reduced fallback rewrite repetition so the Data handling section fits as a complete section.",
-		"Added regression coverage for the reported accessibility b cutoff and for a complete Data handling sentence."
+		"Added regression coverage for the reported accessibility b cutoff and for a complete Data handling sentence.",
+		"Removed the app-side rewrite character cap entirely.",
+		"Removed the boundary-aware clamping helper because a complete rewrite is required, not a better truncated rewrite.",
+		"Removed the model instruction that asked for a rewrite of 1800 characters or fewer.",
+		"Increased the Workers AI token budget for the JSON response so summary, suggestions and the full markdown rewrite have room to complete.",
+		"Removed fallback section fitting so rule-based fallback output returns all generated markdown sections.",
+		"Updated AI rewrite guardrail whitespace cleanup so quantifier, method and bias post-processing preserve markdown line breaks.",
+		"Added regression coverage proving model rewrite output longer than the old limit is preserved through the final Data handling sentence."
 	],
 	"validation": [
 		{
@@ -134,6 +143,14 @@
 		{
 			"command": "local response check with the reported Step 1 wording",
 			"result": "confirmed the fallback rewrite includes a complete Data handling section ending with storage arrangements and does not end with the partial text accessibility b"
+		},
+		{
+			"command": "node --test tests/ai-rewrite-ai-fallback.test.js tests/ai-rewrite-origin-policy.test.js tests/ai-rewrite-split-route-state.test.js tests/start-page-route-state.test.js",
+			"result": "passed after removing the rewrite character cap, 12 tests"
+		},
+		{
+			"command": "local response check with a mocked model rewrite longer than the old 1800-character limit",
+			"result": "confirmed the response keeps the final Data handling heading and final sentence"
 		}
 	],
 	"residualRisk": "The user-facing feature remains useful during Workers AI failures, but production Worker logs should still be reviewed for ai.run.fail to diagnose why the live Workers AI call failed."
