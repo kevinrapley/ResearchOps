@@ -113,7 +113,8 @@
     "Codex review identified that using a one-shot blur listener prevented retrying a failed PATCH from the still-open editor.",
     "Acceptance follow-up confirmed that clearing an objective textarea should splice that objective out, save the shorter objectives payload, and re-render the list or empty state without orphaned editor or list-item HTML.",
     "Persistence follow-up confirmed project PATCH was still Airtable-blocking; Airtable 429 was returned to the browser even though Cloudflare D1 must be the first-class save path. The updated route now requires D1 persistence before returning success and schedules Airtable capture separately.",
-    "Preview-load follow-up confirmed preview Pages proxying kept forwarding cf-access-jwt-assertion to the passwordless preview Worker. Without a ResearchOps session this triggered Cloudflare Access fallback and returned access_configuration_missing. The proxy now strips the Access JWT and email headers for preview-host API calls while preserving the ResearchOps session cookie."
+    "Preview-load follow-up confirmed preview Pages proxying kept forwarding cf-access-jwt-assertion to the passwordless preview Worker. Without a ResearchOps session this triggered Cloudflare Access fallback and returned access_configuration_missing. The proxy now strips the Access JWT and email headers for preview-host API calls while preserving the ResearchOps session cookie.",
+    "Second dashboard-load follow-up confirmed /pages/project-dashboard/ was not included in the Pages static protected-route preflight. A signed-out dashboard URL could render the dashboard shell and then fail its project API calls. The route is now protected like /pages/projects/ and /pages/repository/."
   ],
   "reviewThreads": [
     {
@@ -131,13 +132,13 @@
     "node --import ./tests/helpers/generated-govuk-page-source.mjs --test tests/project-dashboard-route-state.test.js: passed, 1 test",
     "npm run format:check: passed",
     "npm run lint: passed with existing repository warnings and no errors",
-    "npm test: passed, 246 tests after the Pages proxy regression was added",
+    "npm test: passed, 247 tests after the project dashboard protected-page regression was added",
     "Local Playwright preview check: passed for desktop click-to-edit and blur-save, visible focus state, mobile keyboard edit and blur-save, and no mobile horizontal overflow",
     "Follow-up local Playwright preview check: passed for desktop and mobile edit mode with the li marker hidden and the Markdown 1. retained inside the textarea",
     "Codex review retry check: local Playwright preview forced the first PATCH to fail and confirmed the editor stayed open and the next blur saved without reopening",
     "Follow-up local Playwright preview check: clearing and blurring the first objective removed it, promoted the remaining objective without an empty list item, and clearing the final objective replaced the ordered list with the No objectives yet empty state with no editor, editing class or orphaned li",
     "node --import ./tests/helpers/generated-govuk-page-source.mjs --test tests/projects-route-contract.test.js: passed, including Airtable 429 during project PATCH with D1 success",
-    "node --test tests/pages-advanced-worker-auth-route-state.test.js: passed, 11 tests",
+    "node --test tests/pages-advanced-worker-auth-route-state.test.js: passed, 12 tests after adding the project dashboard protected-page preflight",
     "node --import ./tests/helpers/generated-govuk-page-source.mjs --test tests/projects-route-contract.test.js: passed after the Pages proxy correction",
     "npm run format:check: initially failed because generated CSS was stale; npm run lint rebuilt generated CSS and then passed. A follow-up npm run format:check passed",
     "npm run trace:coverage -- --date 2026-06-24: passed",

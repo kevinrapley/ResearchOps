@@ -101,10 +101,12 @@ Precedence applied:
 - Follow-up persistence correction: routed project PATCH updates through the D1-backed project-record route, requires the updated framing to be written into `rops_projects_cache` before responding, and schedules Airtable PATCH capture with `waitUntil` so Airtable 429s do not block the edit.
 - Follow-up preview-load correction: stripped `cf-access-jwt-assertion` from preview Pages proxy API requests, matching the existing stripping of Cloudflare Access email headers. This keeps the preview API on the ResearchOps passwordless session path and prevents the passwordless/D1 Worker from falling back to Cloudflare Access validation when Access certificate settings are intentionally absent.
 - Updated the Pages proxy diagnostic header so stripped preview requests report `x-researchops-access-headers-forwarded: false` rather than `jwt-only`.
+- Follow-up dashboard-load correction: added `/pages/project-dashboard/` to the Pages static protected-route preflight. A signed-out project dashboard URL now redirects to `/pages/account/sign-in/` with the original `?id=...` return path instead of rendering the dashboard shell and then failing its project API calls.
 - Bumped the project dashboard JS and CSS asset version to `project-dashboard-objective-edit-20260624`.
 - Regenerated `public/css/project-dashboard.css` and `public/pages/project-dashboard/index.html`.
 - Updated route-state tests for the inline edit contract, blur-save path, keyboard activation, focus styling and cache-busted assets.
 - Updated the Pages advanced Worker route-state test to assert preview API calls remove Cloudflare Access JWT and email headers while preserving the ResearchOps session cookie.
+- Added a Pages advanced Worker route-state regression asserting signed-out `/pages/project-dashboard/?id=...` requests redirect to sign-in with the project id preserved in `returnTo`.
 
 ## Validation
 
@@ -115,13 +117,13 @@ Precedence applied:
 - `npm run format:check`: passed.
 - `npm run lint`: passed with existing repository warnings and no errors.
 - `npm test -- --ci`: failed because the repository script passes `--ci` through to `node --test`, which reports `node: bad option: --ci`.
-- `npm test`: passed, 246 tests after the Pages proxy regression was added.
+- `npm test`: passed, 247 tests after the project dashboard protected-page regression was added.
 - Local Playwright preview check against `http://127.0.0.1:4173/pages/project-dashboard/?id=test-project-1`: passed for desktop click-to-edit and blur-save, visible focus state, mobile keyboard edit and blur-save, and no mobile horizontal overflow.
 - Follow-up local Playwright preview check: passed for desktop and mobile edit mode with the `<li>` marker hidden and the Markdown `1.` retained inside the textarea.
 - Codex review retry check: local Playwright preview forced the first PATCH to fail and confirmed the editor stayed open and the next blur saved without reopening.
 - Follow-up local Playwright preview check: clearing and blurring the first objective removed it, promoted the remaining objective without an empty list item, and clearing the final objective replaced the ordered list with `<p class="govuk-body-s">No objectives yet.</p>` with no editor, editing class or orphaned `<li>`.
 - `node --import ./tests/helpers/generated-govuk-page-source.mjs --test tests/projects-route-contract.test.js`: passed, including Airtable 429 during project PATCH with D1 success.
-- `node --test tests/pages-advanced-worker-auth-route-state.test.js`: passed, 11 tests.
+- `node --test tests/pages-advanced-worker-auth-route-state.test.js`: passed, 12 tests after adding the project dashboard protected-page preflight.
 - `node --import ./tests/helpers/generated-govuk-page-source.mjs --test tests/projects-route-contract.test.js`: passed after the Pages proxy correction.
 - `npm run format:check`: initially failed because generated CSS was stale; `npm run lint` rebuilt generated CSS and then passed. A follow-up `npm run format:check` passed.
 - `npm run trace:coverage -- --date 2026-06-24`: passed.

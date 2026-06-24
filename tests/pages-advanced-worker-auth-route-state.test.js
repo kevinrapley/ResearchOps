@@ -24,7 +24,7 @@ includes(workerSource, "headers.set('cache-control', 'no-store');", "Pages advan
 includes(workerSource, "headers.delete('content-length');", "Pages advanced worker brand routing");
 includes(workerSource, "function protectedPageRedirect(request, env)", "Pages advanced worker protected page preflight");
 includes(workerSource, "apiEndpointTarget(request, env, '/api/me')", "Pages advanced worker protected page preflight");
-includes(workerSource, "cleanPath === '/pages/projects' || cleanPath === '/pages/repository'", "Pages advanced worker protected page preflight");
+includes(workerSource, "cleanPath === '/pages/project-dashboard'", "Pages advanced worker protected page preflight");
 includes(workerSource, "return response.ok ? null : signInRedirect(request);", "Pages advanced worker protected page preflight");
 includes(workerSource, "x-researchops-auth-redirect", "Pages advanced worker protected page preflight");
 includes(workerSource, "const PRODUCTION_BRAND_HOSTS = new Map", "Pages advanced worker brand routing");
@@ -129,6 +129,25 @@ test("Pages advanced worker redirects unauthenticated Projects page requests to 
 		assert.equal(
 			response.headers.get("location"),
 			"https://researchops.pages.dev/pages/account/sign-in/?returnTo=%2Fpages%2Fprojects%2F%3Fsort%3Dnewest",
+		);
+	});
+});
+
+test("Pages advanced worker redirects unauthenticated Project dashboard requests to sign in", async () => {
+	await withMockedFetch(async (url) => {
+		assert.equal(url, "https://rops-api.digikev-kevin-rapley.workers.dev/api/me");
+		return new Response(JSON.stringify({ ok: false, error: "authentication_required" }), { status: 401 });
+	}, async () => {
+		const response = await worker.fetch(
+			new Request("https://researchops.pages.dev/pages/project-dashboard/?id=recMtdmBbaFilF2Tm"),
+			assetEnv({ "content-type": "text/html; charset=utf-8" }, "<!doctype html><html><head></head><body>Project dashboard</body></html>"),
+		);
+		assert.equal(response.status, 302);
+		assert.equal(response.headers.get("cache-control"), "no-store");
+		assert.equal(response.headers.get("x-researchops-auth-redirect"), "pages-static-preflight");
+		assert.equal(
+			response.headers.get("location"),
+			"https://researchops.pages.dev/pages/account/sign-in/?returnTo=%2Fpages%2Fproject-dashboard%2F%3Fid%3DrecMtdmBbaFilF2Tm",
 		);
 	});
 });
