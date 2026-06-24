@@ -1,0 +1,92 @@
+{
+  "traceId": "atrace-20260624-hide-signed-out-sign-out-link",
+  "date": "2026-06-24",
+  "branch": "fix/hide-signed-out-sign-out-link",
+  "traceRequired": true,
+  "traceReason": "repository-affecting work on a fix/ branch",
+  "taskSummary": "Fix signed-out masthead state so only Sign in is visually shown and Sign out is hidden.",
+  "operatingModelFilesLoaded": [
+    "AGENTS.md",
+    ".agent-operating-model/orchestration.xml",
+    ".agent-operating-model/bundle-registry.json",
+    ".agent-operating-model/task-signal-catalog.json",
+    ".agent-operating-model/selection-rules.json",
+    ".agent-operating-model/bootstrap-checklist.md",
+    ".agent-operating-model/precedence-policy.md",
+    ".agent-operating-model/trace-policy.md",
+    ".agent-operating-model/trace-layers.md",
+    ".agent-operating-model/behavioural-evals.json",
+    ".agent-operating-model/github-mutation-policy.md"
+  ],
+  "selectedBundles": [
+    {
+      "id": "github-diamond",
+      "canonicalPath": ".agent-operating-model/bundles/github/"
+    },
+    {
+      "id": "researchops-developer-control",
+      "canonicalPath": ".agent-operating-model/bundles/researchops-developer-control/"
+    },
+    {
+      "id": "multi-functional-team",
+      "canonicalPath": ".agent-operating-model/bundles/multi-functional-team/"
+    },
+    {
+      "id": "govuk-design-system",
+      "canonicalPath": ".agent-operating-model/bundles/govuk-design-system/"
+    }
+  ],
+  "skippedBundles": [
+    "cloudflare",
+    "openai-platform",
+    "mcp-agent-tooling",
+    "airtable-public-api",
+    "mural-public-api"
+  ],
+  "precedenceDecisions": [
+    "GitHub Diamond governed branch hygiene, trace creation, validation, commit, push and PR creation.",
+    "ResearchOps Developer Control governed service-specific shared header behaviour.",
+    "Multi-Functional Team governed clear signed-out user-facing account state.",
+    "GOV.UK Design System governed header/navigation accessibility and visual state."
+  ],
+  "filesRead": [
+    "README.md",
+    ".github/CODEOWNERS",
+    ".github/pull_request_template.md",
+    "package.json",
+    "package-lock.json",
+    "RECENT_LEARNINGS.md",
+    "public/partials/header.html",
+    "public/css/govuk/govuk-header-service-brand.css",
+    "public/js/auth-header-links.js",
+    "tests/auth-header-links-route-state.test.js",
+    "tests/govuk-page-chrome-navigation-route-state.test.js"
+  ],
+  "filesModifiedOrCreated": [
+    "RECENT_LEARNINGS.md",
+    "docs/agent-audit/reasoning/2026/06/24/hide-signed-out-sign-out-link.md",
+    "docs/agent-audit/reasoning/2026/06/24/hide-signed-out-sign-out-link.json",
+    "public/css/govuk/govuk-header-service-brand.css",
+    "public/partials/header.html",
+    "tests/auth-header-links-route-state.test.js",
+    "tests/govuk-page-chrome-navigation-route-state.test.js"
+  ],
+  "validation": [
+    "npm run agent:model -- task text: passed",
+    "live asset inspection with curl: confirmed missing individual hidden account-link CSS before fix",
+    "npm test -- tests/auth-header-links-route-state.test.js tests/govuk-page-chrome-navigation-route-state.test.js: passed, 2 tests",
+    "browser check with /api/me returning 401: passed",
+    "npm run lint: passed with existing repository warnings and no errors",
+    "npm test: passed, 245 tests",
+    "trace JSON parse plus Prettier check for changed files: passed",
+    "npm run trace:coverage -- --date 2026-06-24: passed",
+    "git diff --check: passed"
+  ],
+  "validationNotRun": [
+    "Live Cloudflare Pages deployment verification was not run because this branch has not yet been merged or deployed."
+  ],
+  "residualRisks": [
+    "The browser check used a local static server and mocked unauthenticated /api/me response.",
+    "Live deployment will update through the normal PR merge and Pages deployment path."
+  ]
+}

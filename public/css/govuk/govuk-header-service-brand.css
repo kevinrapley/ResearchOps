@@ -126,6 +126,10 @@
 	white-space: nowrap;
 	}
 
+.researchops-header__account-link[hidden] {
+	display: none !important;
+	}
+
 @media (forced-colors: active) {
 	.govuk-header .researchops-header__logotype,
 	.govuk-header .researchops-header__wordmark,

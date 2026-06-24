@@ -70,6 +70,13 @@ function assertHeaderAccountLinksAreRightAligned() {
 	includes(headerCss, 'display: none;', 'header stylesheet');
 	includes(headerCss, '.researchops-header__account-link', 'header stylesheet');
 	includes(headerCss, 'white-space: nowrap;', 'header stylesheet');
+	includes(headerCss, '.researchops-header__account-link[hidden]', 'header stylesheet');
+	includes(headerCss, 'display: none !important;', 'header stylesheet');
+	includes(
+		headerPartial,
+		'/css/govuk/govuk-header-service-brand.css?v=hide-signed-out-sign-out-20260624-1',
+		'shared header partial',
+	);
 }
 
 function assertHeaderPartialBypassesStaleIncludeCache() {
