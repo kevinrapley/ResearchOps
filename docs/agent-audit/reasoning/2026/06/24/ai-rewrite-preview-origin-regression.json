@@ -1,0 +1,97 @@
+{
+  "date": "2026-06-24",
+  "branch": "fix/ai-rewrite-preview-origin",
+  "taskSummary": "Investigate and fix a regression where Step 1 /pages/start/ AI rewrite reports that suggestions are temporarily unavailable.",
+  "traceDecision": "required-fix-branch",
+  "correctedBranchBehaviour": "Investigation started on feature/edit-project-objectives-markdown, but this was an existing-behaviour regression. The work was moved to fix/ai-rewrite-preview-origin before commit, push and PR creation.",
+  "operatingModelFilesLoaded": [
+    "AGENTS.md",
+    ".agent-operating-model/orchestration.xml",
+    ".agent-operating-model/bundle-registry.json",
+    ".agent-operating-model/task-signal-catalog.json",
+    ".agent-operating-model/selection-rules.json",
+    ".agent-operating-model/bootstrap-checklist.md",
+    ".agent-operating-model/precedence-policy.md",
+    ".agent-operating-model/trace-policy.md",
+    ".agent-operating-model/trace-layers.md",
+    ".agent-operating-model/github-mutation-policy.md"
+  ],
+  "selectedBundles": [
+    {
+      "id": "github-diamond",
+      "canonicalPath": ".agent-operating-model/bundles/github/"
+    },
+    {
+      "id": "researchops-developer-control",
+      "canonicalPath": ".agent-operating-model/bundles/researchops-developer-control/"
+    },
+    {
+      "id": "multi-functional-team",
+      "canonicalPath": ".agent-operating-model/bundles/multi-functional-team/"
+    },
+    {
+      "id": "govuk-design-system",
+      "canonicalPath": ".agent-operating-model/bundles/govuk-design-system/"
+    },
+    {
+      "id": "cloudflare",
+      "canonicalPath": ".agent-operating-model/bundles/cloudflare/"
+    }
+  ],
+  "skippedBundles": [
+    "openai-platform",
+    "mcp-agent-tooling",
+    "airtable-public-api",
+    "mural-public-api"
+  ],
+  "filesRead": [
+    "public/pages/start/index.html",
+    "public/js/start-description-assist.js",
+    "public/js/start-objectives-assist.js",
+    "infra/cloudflare/src/core/ai-rewrite.js",
+    "infra/cloudflare/src/core/ai-rewrite/http.js",
+    "infra/cloudflare/src/core/ai-rewrite/config.js",
+    "infra/cloudflare/src/core/ai-rewrite/testing.js",
+    "infra/cloudflare/src/core/router.js",
+    "infra/cloudflare/src/worker.js",
+    "infra/cloudflare/wrangler.toml",
+    "tests/ai-rewrite-split-route-state.test.js",
+    "tests/start-page-route-state.test.js",
+    "tests/start-project-step-1-defaults-route-state.test.js"
+  ],
+  "filesCreatedOrModified": [
+    "infra/cloudflare/src/core/ai-rewrite/http.js",
+    "infra/cloudflare/src/core/ai-rewrite.js",
+    "tests/ai-rewrite-origin-policy.test.js",
+    "docs/agent-audit/reasoning/2026/06/24/ai-rewrite-preview-origin-regression.md",
+    "docs/agent-audit/reasoning/2026/06/24/ai-rewrite-preview-origin-regression.json"
+  ],
+  "rootCause": "The AI rewrite handler had a separate literal ALLOWED_ORIGINS check that rejected ResearchOps Pages branch preview origins even though the wider Worker CORS layer accepts researchops.pages.dev and *.researchops.pages.dev.",
+  "validation": [
+    {
+      "command": "node --test tests/ai-rewrite-origin-policy.test.js",
+      "result": "failed before fix with 403 !== 200, passed after fix"
+    },
+    {
+      "command": "node --test tests/ai-rewrite-split-route-state.test.js tests/ai-rewrite-origin-policy.test.js tests/start-page-route-state.test.js tests/start-project-step-1-defaults-route-state.test.js",
+      "result": "passed, 4 tests"
+    },
+    {
+      "command": "git diff --check",
+      "result": "passed"
+    },
+    {
+      "command": "npx eslint infra/cloudflare/src/core/ai-rewrite.js infra/cloudflare/src/core/ai-rewrite/http.js tests/ai-rewrite-origin-policy.test.js",
+      "result": "passed with no errors; reported 3 existing no-console warnings in infra/cloudflare/src/core/ai-rewrite.js"
+    },
+    {
+      "command": "npx prettier -c infra/cloudflare/src/core/ai-rewrite.js infra/cloudflare/src/core/ai-rewrite/http.js tests/ai-rewrite-origin-policy.test.js docs/agent-audit/reasoning/2026/06/24/ai-rewrite-preview-origin-regression.md docs/agent-audit/reasoning/2026/06/24/ai-rewrite-preview-origin-regression.json",
+      "result": "initially failed on tests/ai-rewrite-origin-policy.test.js, then passed after formatting that test file"
+    },
+    {
+      "command": "node -e \"JSON.parse(require('fs').readFileSync('docs/agent-audit/reasoning/2026/06/24/ai-rewrite-preview-origin-regression.json','utf8')); console.log('json ok')\"",
+      "result": "passed"
+    }
+  ],
+  "residualRisk": "If a deployed Worker environment is missing the AI binding, the endpoint will still return AI_UNAVAILABLE and the UI will show the same generic message."
+}
