@@ -269,7 +269,14 @@ includes(controllerSource, "data-objective-editor-index", "project dashboard con
 includes(controllerSource, "listItem.classList.add(\"rops-objective-list__item--editing\")", "project dashboard controller");
 includes(controllerSource, "textarea?.addEventListener(\"blur\"", "project dashboard controller");
 excludes(controllerSource, "}, { once: true });", "project dashboard controller");
+includes(controllerSource, "else nextObjectives.splice(index, 1);", "project dashboard controller");
 includes(controllerSource, "await saveProjectPatch({ objectives: nextObjectives });", "project dashboard controller");
+includes(controllerSource, "currentProject.objectives = nextObjectives;\n\t\t\trenderObjectives(nextObjectives);", "project dashboard controller");
+includes(
+	controllerSource,
+	"list.innerHTML = parsedObjectives.length ? objectiveListHtml(parsedObjectives) : '<p class=\"govuk-body-s\">No objectives yet.</p>';",
+	"project dashboard controller",
+);
 includes(controllerSource, "initObjectiveInlineEditing();", "project dashboard controller");
 includes(controllerSource, "event.key !== \"Enter\" && event.key !== \" \"", "project dashboard controller");
 includes(controllerSource, "function normaliseBrandKey", "project dashboard controller");

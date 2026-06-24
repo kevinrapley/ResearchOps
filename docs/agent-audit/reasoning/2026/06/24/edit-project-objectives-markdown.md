@@ -88,6 +88,7 @@ Precedence applied:
 - Added an accessible hidden label and polite status region for the inline editor.
 - Follow-up correction: hid the parent ordered-list marker while a list item is in edit mode so the Markdown `1.` appears only inside the textarea.
 - Codex review correction: removed the one-shot blur listener so a failed PATCH can be retried from the same open textarea.
+- Follow-up acceptance coverage: asserted that clearing an objective textarea splices the objective out, saves the shorter objectives payload and re-renders either the remaining objectives or the clean empty state with no editor/list-item orphan.
 - Bumped the project dashboard JS and CSS asset version to `project-dashboard-objective-edit-20260624`.
 - Regenerated `public/css/project-dashboard.css` and `public/pages/project-dashboard/index.html`.
 - Updated route-state tests for the inline edit contract, blur-save path, keyboard activation, focus styling and cache-busted assets.
@@ -105,6 +106,7 @@ Precedence applied:
 - Local Playwright preview check against `http://127.0.0.1:4173/pages/project-dashboard/?id=test-project-1`: passed for desktop click-to-edit and blur-save, visible focus state, mobile keyboard edit and blur-save, and no mobile horizontal overflow.
 - Follow-up local Playwright preview check: passed for desktop and mobile edit mode with the `<li>` marker hidden and the Markdown `1.` retained inside the textarea.
 - Codex review retry check: local Playwright preview forced the first PATCH to fail and confirmed the editor stayed open and the next blur saved without reopening.
+- Follow-up local Playwright preview check: clearing and blurring the first objective removed it, promoted the remaining objective without an empty list item, and clearing the final objective replaced the ordered list with `<p class="govuk-body-s">No objectives yet.</p>` with no editor, editing class or orphaned `<li>`.
 - `git diff --check`: passed.
 
 ## Review Threads
