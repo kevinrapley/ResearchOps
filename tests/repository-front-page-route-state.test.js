@@ -11,6 +11,8 @@ const files = {
 	repositoryMacro: fs.readFileSync('src/govuk/templates/macros/repository.njk', 'utf8'),
 	pageData: fs.readFileSync('src/govuk/data/repository-page.mjs', 'utf8'),
 	styles: fs.readFileSync('src/styles/repository.scss', 'utf8'),
+	heroStyles: fs.readFileSync('src/styles/_hero-phase-banner.scss', 'utf8'),
+	compiledStyles: fs.readFileSync('public/css/repository.css', 'utf8'),
 	pageScript: fs.readFileSync('public/js/repository-page.js', 'utf8'),
 	staticScript: [
 		'public/js/repository-static-page.js',
@@ -57,6 +59,7 @@ function workflowSection(source, startMarker, endMarker) {
 has(files.template, 'Research repository', 'repository template');
 has(files.template, 'Published artefacts', 'repository template');
 has(files.template, 'repository-page.js?v=repository-api-20260607c', 'repository template');
+has(files.template, 'repository.css?v=repository-hero-seam-20260626', 'repository template');
 has(files.template, "params.set('hydrate', 'full')", 'repository template');
 has(files.template, '<div class="app-masthead repository-masthead">', 'repository template');
 has(files.template, '{{ repositoryHero(hero) }}', 'repository template');
@@ -90,13 +93,29 @@ has(files.styles, '.repository-masthead', 'repository stylesheet');
 has(files.styles, 'border-bottom: 10px solid var(--govuk-brand-colour, #1d70b8);', 'repository stylesheet');
 has(files.styles, 'background: var(--govuk-brand-colour, #1d70b8);', 'repository stylesheet');
 has(files.styles, '.repository-masthead .govuk-breadcrumbs__link', 'repository stylesheet');
-has(files.styles, ".govuk-service-navigation[data-active='Research Repository']", 'repository stylesheet');
-has(files.styles, '.govuk-service-navigation__link:visited', 'repository stylesheet');
-has(files.styles, '.govuk-service-navigation__item', 'repository stylesheet');
-has(files.styles, '.govuk-service-navigation__service-name', 'repository stylesheet');
-has(files.styles, 'border-bottom: 0;', 'repository stylesheet');
-has(files.styles, 'box-shadow: none;', 'repository stylesheet');
-has(files.styles, '.govuk-phase-banner .govuk-tag', 'repository stylesheet');
+has(files.styles, "@use 'hero-phase-banner' as hero;", 'repository stylesheet');
+has(
+	files.styles,
+	"@include hero.researchops-hero-page('.researchops-repository-front-page', 'Research Repository');",
+	'repository stylesheet'
+);
+has(files.heroStyles, '@mixin researchops-hero-page($page-selector, $active-nav)', 'shared hero stylesheet');
+has(
+	files.compiledStyles,
+	'.researchops-repository-front-page .govuk-template__header .govuk-service-navigation[data-active="Research Repository"]',
+	'compiled repository stylesheet'
+);
+has(
+	files.compiledStyles,
+	'border-bottom: 1px solid rgba(255, 255, 255, 0.35);',
+	'compiled repository stylesheet'
+);
+has(
+	files.compiledStyles,
+	'.researchops-repository-front-page .govuk-phase-banner__content',
+	'compiled repository stylesheet'
+);
+has(files.compiledStyles, 'clip-path: inset(0 -100vmax -1px);', 'compiled repository stylesheet');
 has(files.styles, '.repository-hero__image-column', 'repository stylesheet');
 has(files.styles, '@media (min-width: 48.0625em)', 'repository stylesheet');
 

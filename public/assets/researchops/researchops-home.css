@@ -37,13 +37,9 @@
 		}
 	}
 
-.researchops-home-front-page .govuk-template__header {
-	border-bottom: 0;
-	}
-
 .researchops-home-front-page .govuk-template__header .govuk-service-navigation[data-active=Home] {
 	border-top: 1px solid rgba(255, 255, 255, 0.35);
-	border-bottom: 0;
+	border-bottom: 1px solid rgba(255, 255, 255, 0.35);
 	background: var(--govuk-brand-colour, #1d70b8);
 	}
 
@@ -85,7 +81,7 @@
 	padding-bottom: 0;
 	background: var(--govuk-brand-colour, #1d70b8);
 	box-shadow: 0 0 0 100vmax var(--govuk-brand-colour, #1d70b8);
-	clip-path: inset(0 -100vmax);
+	clip-path: inset(0 -100vmax -1px);
 	color: #ffffff;
 	}
 
@@ -94,6 +90,7 @@
 	align-items: baseline;
 	width: 100%;
 	padding-bottom: 10px;
+	border-bottom: 1px solid rgba(255, 255, 255, 0.35);
 	}
 
 .researchops-home-front-page .govuk-phase-banner .govuk-tag {

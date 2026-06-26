@@ -3,6 +3,8 @@ import fs from 'node:fs';
 
 const homeTemplate = fs.readFileSync('src/govuk/templates/pages/home.njk', 'utf8');
 const homePage = fs.readFileSync('public/index.html', 'utf8');
+const homeStyles = fs.readFileSync('src/styles/researchops-home.scss', 'utf8');
+const heroStyles = fs.readFileSync('src/styles/_hero-phase-banner.scss', 'utf8');
 const homeCss = fs.readFileSync('public/assets/researchops/researchops-home.css', 'utf8');
 const homeOfficeBrandCss = fs.readFileSync('public/css/brands/home-office.css', 'utf8');
 const explainerScript = fs.readFileSync('public/js/researchops-explainer-animation.js', 'utf8');
@@ -18,8 +20,11 @@ assert.match(homePage, /data-svg="\/images\/home-masthead-researchops-illustrati
 assert.match(homePage, /src="\/audio\/researchops-explainer\.m4a"/);
 assert.match(homePage, /Text alternative for audio explainer/);
 assert.match(homePage, /ResearchOps helps public service teams plan, run and reuse user research/);
-assert.match(homePage, /researchops-home\.css\?v=home-phase-banner-no-rule-20260626/);
-assert.match(homeTemplate, /researchops-home\.css\?v=home-phase-banner-no-rule-20260626/);
+assert.match(homePage, /researchops-home\.css\?v=home-phase-banner-seam-20260626/);
+assert.match(homeTemplate, /researchops-home\.css\?v=home-phase-banner-seam-20260626/);
+assert.match(homeStyles, /@use 'hero-phase-banner' as hero;/);
+assert.match(homeStyles, /@include hero\.researchops-hero-page\('\.researchops-home-front-page', 'Home'\);/);
+assert.match(heroStyles, /@mixin researchops-hero-page\(\$page-selector, \$active-nav\)/);
 
 assert.match(
 	homeCss,
@@ -36,31 +41,23 @@ assert.match(
 );
 assert.match(
 	homeCss,
-	/\.researchops-home-front-page \.govuk-template__header \{[\s\S]*?border-bottom: 0;/
+	/\.researchops-home-front-page \.govuk-template__header \.govuk-service-navigation\[data-active=Home\] \{[\s\S]*?border-top: 1px solid rgba\(255, 255, 255, 0\.35\);[\s\S]*?border-bottom: 1px solid rgba\(255, 255, 255, 0\.35\);/
 );
 assert.match(
 	homeOfficeBrandCss,
-	/html\[data-researchops-brand=home-office\] \.researchops-home-front-page \.govuk-header \{[\s\S]*?border-bottom: 0;/
+	/html\[data-researchops-brand=home-office\] \.govuk-header \{[\s\S]*?border-bottom: 4px solid #732282;/
 );
-assert.match(
-	homeCss,
-	/\.researchops-home-front-page \.govuk-template__header \.govuk-service-navigation\[data-active=Home\] \{[\s\S]*?border-bottom: 0;/
-);
-assert.match(
-	homeCss,
-	/\.researchops-home-front-page \.govuk-phase-banner \{[\s\S]*?border-bottom: 0;[\s\S]*?padding-bottom: 0;/
-);
-assert.match(
-	homeCss,
-	/\.researchops-home-front-page \.govuk-phase-banner__content \{[\s\S]*?align-items: baseline;[\s\S]*?width: 100%;[\s\S]*?padding-bottom: 10px;/
-);
-const homePhaseBannerContentRule = homeCss.match(
-	/\.researchops-home-front-page \.govuk-phase-banner__content \{[\s\S]*?\n\t\}/
-);
-assert.ok(homePhaseBannerContentRule);
 assert.doesNotMatch(
-	homePhaseBannerContentRule[0],
-	/border-bottom:/
+	homeOfficeBrandCss,
+	/html\[data-researchops-brand=home-office\] \.researchops-home-front-page \.govuk-header/
+);
+assert.match(
+	homeCss,
+	/\.researchops-home-front-page \.govuk-phase-banner \{[\s\S]*?border-bottom: 0;[\s\S]*?padding-bottom: 0;[\s\S]*?clip-path: inset\(0 -100vmax -1px\);/
+);
+assert.match(
+	homeCss,
+	/\.researchops-home-front-page \.govuk-phase-banner__content \{[\s\S]*?align-items: baseline;[\s\S]*?width: 100%;[\s\S]*?padding-bottom: 10px;[\s\S]*?border-bottom: 1px solid rgba\(255, 255, 255, 0\.35\);/
 );
 assert.match(explainerScript, /prefersReducedMotion/);
 assert.match(explainerScript, /prefers-reduced-motion: reduce/);
