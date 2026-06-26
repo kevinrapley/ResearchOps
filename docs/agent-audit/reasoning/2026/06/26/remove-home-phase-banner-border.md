@@ -88,7 +88,6 @@ Skipped bundles:
 - `public/css/brands/home-office.css`
 - `src/govuk/templates/pages/home.njk`
 - `src/govuk/templates/pages/repository.njk`
-- `src/govuk/templates/pages/repository-static.njk`
 - `public/index.html`
 - `public/pages/repository/**/index.html` (ignored generated output for local rendered verification)
 - `tests/researchops-home-hero-layout-route-state.test.js`

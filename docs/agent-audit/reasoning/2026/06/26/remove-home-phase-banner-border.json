@@ -83,7 +83,6 @@
     "src/styles/brands/home-office.scss",
     "src/govuk/templates/pages/home.njk",
     "src/govuk/templates/pages/repository.njk",
-    "src/govuk/templates/pages/repository-static.njk",
     "assets/researchops/researchops-home.css",
     "public/assets/researchops/researchops-home.css",
     "public/css/repository.css (ignored generated output for local rendered verification)",
