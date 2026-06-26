@@ -75,10 +75,19 @@
 	.govuk-phase-banner {
 		margin-bottom: 0;
 		border-bottom: 0;
+		padding-bottom: 0;
 		background: var(--govuk-brand-colour, #1d70b8);
 		box-shadow: 0 0 0 100vmax var(--govuk-brand-colour, #1d70b8);
 		clip-path: inset(0 -100vmax);
 		color: govuk-colour('white');
+	}
+
+	.govuk-phase-banner__content {
+		display: flex;
+		align-items: baseline;
+		width: 100%;
+		padding-bottom: govuk-spacing(2);
+		border-bottom: 1px solid rgba(255, 255, 255, 0.35);
 	}
 
 	.govuk-phase-banner .govuk-tag {

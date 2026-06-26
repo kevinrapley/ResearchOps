@@ -4,7 +4,7 @@
   "branch": "fix/remove-home-phase-banner-border",
   "traceRequired": true,
   "traceReason": "repository-affecting work on a fix/ branch",
-  "taskSummary": "Remove the unwanted 1px bottom border visible below the home page prototype banner in the Home Office branded view.",
+  "taskSummary": "Remove the unwanted left-extending 1px line immediately below the home page Prototype phase tag in the Home Office branded hero view while preserving the normal non-hero phase-banner border.",
   "operatingModelFilesLoaded": [
     "AGENTS.md",
     ".agent-operating-model/orchestration.xml",
@@ -49,7 +49,8 @@
     "GitHub Diamond governed branch naming, trace creation, validation, commit, push and PR readiness.",
     "ResearchOps Developer Control governed generated CSS parity for the Sass source and generated home CSS assets.",
     "Multi-Functional Team governed keeping the user-facing change narrowly scoped to the reported visual defect.",
-    "GOV.UK Design System governed preserving the phase-banner component content and navigation semantics while removing only the visual border."
+    "GOV.UK Design System governed preserving the phase-banner component content and navigation semantics while containing the visual border to the phase-banner content row.",
+    "User clarification corrected the scope from removing the whole phase-banner bottom rule to removing only the full-width overrun to the left of the Prototype tag."
   ],
   "filesRead": [
     "README.md",
@@ -67,7 +68,9 @@
     "src/styles/researchops-home.scss",
     "assets/researchops/researchops-home.css",
     "public/assets/researchops/researchops-home.css",
-    "tests/researchops-home-hero-layout-route-state.test.js"
+    "tests/researchops-home-hero-layout-route-state.test.js",
+    "public/css/govuk/govuk-page-chrome.css",
+    "public/css/brands/home-office.css"
   ],
   "filesModified": [
     "src/styles/researchops-home.scss",
@@ -83,14 +86,24 @@
       "status": "passed"
     },
     {
-      "command": "Playwright desktop check at 1000x1200 for /?brand=home-office",
+      "command": "Playwright rendered check at 1640x1024 for /?brand=home-office",
       "status": "passed",
-      "evidence": "phase banner border-bottom computed as 0px none; Prototype tag present; active Home nav present; no horizontal scroll"
+      "evidence": "outer phase banner border-bottom computed as 0px none; inner phase-banner content row computed as display:flex, width:1020px, padding-bottom:10px and border-bottom:1px solid rgba(255, 255, 255, 0.35); content row left edge matched the Prototype tag left edge at 310px"
+    },
+    {
+      "command": "Playwright rendered check at 1640x1024 for /pages/projects/?brand=home-office",
+      "status": "passed",
+      "evidence": "non-hero phase banner retained border-bottom:1px solid rgb(203, 203, 203) on the outer .govuk-phase-banner; inner content row retained border-bottom:0px none"
     },
     {
       "command": "Playwright mobile check at 390x900 for /?brand=home-office",
       "status": "passed",
-      "evidence": "phase banner border-bottom computed as 0px none; Prototype tag present; active Home nav present; no horizontal scroll"
+      "evidence": "no horizontal scroll; outer phase banner border-bottom computed as 0px none; inner content row computed as width:360px, padding-bottom:10px and border-bottom:1px solid rgba(255, 255, 255, 0.35)"
+    },
+    {
+      "command": "Playwright screenshot at /tmp/researchops-home-phase-banner-after.png",
+      "status": "passed",
+      "evidence": "visual inspection showed the line below the Prototype row no longer appears in the left margin and the normal separator above the phase banner remains"
     },
     {
       "command": "node --test tests/researchops-home-hero-layout-route-state.test.js",
@@ -101,11 +114,19 @@
       "status": "passed"
     },
     {
-      "command": "npx prettier -c src/styles/researchops-home.scss tests/researchops-home-hero-layout-route-state.test.js",
+      "command": "npx prettier --check src/styles/researchops-home.scss tests/researchops-home-hero-layout-route-state.test.js",
+      "status": "passed"
+    },
+    {
+      "command": "git diff --check",
       "status": "passed"
     }
   ],
   "notRun": [
+    {
+      "command": "npm run format -c -- src/styles/researchops-home.scss tests/researchops-home-hero-layout-route-state.test.js assets/researchops/researchops-home.css public/assets/researchops/researchops-home.css",
+      "reason": "Invalid command shape for this repository. It ran the repository formatter with no file changes, then failed because the generated-CSS helper received non-generated CSS targets. Replaced with targeted Prettier and generated-CSS checks."
+    },
     {
       "command": "npm test",
       "reason": "The change is a narrow home-page CSS rule with a focused route-state regression test and rendered browser verification."
@@ -116,6 +137,6 @@
     }
   ],
   "residualRisks": [
-    "The active home navigation strip still has its existing 1px separator. This trace addresses the bottom border on the prototype phase banner that matched the reported lowest horizontal rule."
+    "The active home navigation strip still has its existing 1px separator above the phase banner. This trace now addresses only the line immediately below the Prototype tag row, as clarified by the user."
   ]
 }

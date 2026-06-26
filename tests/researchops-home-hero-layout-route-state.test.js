@@ -33,6 +33,13 @@ assert.match(
 	homeCss,
 	/\.researchops-explainer-transcript \.govuk-details__summary[\s\S]*?color: #ffffff;/
 );
-assert.match(homeCss, /\.researchops-home-front-page \.govuk-phase-banner \{[\s\S]*?border-bottom: 0;/);
+assert.match(
+	homeCss,
+	/\.researchops-home-front-page \.govuk-phase-banner \{[\s\S]*?border-bottom: 0;[\s\S]*?padding-bottom: 0;/
+);
+assert.match(
+	homeCss,
+	/\.researchops-home-front-page \.govuk-phase-banner__content \{[\s\S]*?align-items: baseline;[\s\S]*?width: 100%;[\s\S]*?padding-bottom: 10px;[\s\S]*?border-bottom: 1px solid rgba\(255, 255, 255, 0\.35\);/
+);
 assert.match(explainerScript, /prefersReducedMotion/);
 assert.match(explainerScript, /prefers-reduced-motion: reduce/);
