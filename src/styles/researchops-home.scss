@@ -1,9 +1,13 @@
 @use 'govuk-frontend/dist/govuk/base' as *;
 
 .researchops-home-front-page {
+	.govuk-template__header {
+		border-bottom: 0;
+	}
+
 	.govuk-template__header .govuk-service-navigation[data-active='Home'] {
 		border-top: 1px solid rgba(255, 255, 255, 0.35);
-		border-bottom: 1px solid rgba(255, 255, 255, 0.35);
+		border-bottom: 0;
 		background: var(--govuk-brand-colour, #1d70b8);
 	}
 
@@ -87,7 +91,6 @@
 		align-items: baseline;
 		width: 100%;
 		padding-bottom: govuk-spacing(2);
-		border-bottom: 1px solid rgba(255, 255, 255, 0.35);
 	}
 
 	.govuk-phase-banner .govuk-tag {

@@ -4,6 +4,7 @@ import fs from 'node:fs';
 const homeTemplate = fs.readFileSync('src/govuk/templates/pages/home.njk', 'utf8');
 const homePage = fs.readFileSync('public/index.html', 'utf8');
 const homeCss = fs.readFileSync('public/assets/researchops/researchops-home.css', 'utf8');
+const homeOfficeBrandCss = fs.readFileSync('public/css/brands/home-office.css', 'utf8');
 const explainerScript = fs.readFileSync('public/js/researchops-explainer-animation.js', 'utf8');
 
 assert.match(
@@ -17,8 +18,8 @@ assert.match(homePage, /data-svg="\/images\/home-masthead-researchops-illustrati
 assert.match(homePage, /src="\/audio\/researchops-explainer\.m4a"/);
 assert.match(homePage, /Text alternative for audio explainer/);
 assert.match(homePage, /ResearchOps helps public service teams plan, run and reuse user research/);
-assert.match(homePage, /researchops-home\.css\?v=home-phase-banner-contained-20260626/);
-assert.match(homeTemplate, /researchops-home\.css\?v=home-phase-banner-contained-20260626/);
+assert.match(homePage, /researchops-home\.css\?v=home-phase-banner-no-rule-20260626/);
+assert.match(homeTemplate, /researchops-home\.css\?v=home-phase-banner-no-rule-20260626/);
 
 assert.match(
 	homeCss,
@@ -35,11 +36,31 @@ assert.match(
 );
 assert.match(
 	homeCss,
+	/\.researchops-home-front-page \.govuk-template__header \{[\s\S]*?border-bottom: 0;/
+);
+assert.match(
+	homeOfficeBrandCss,
+	/html\[data-researchops-brand=home-office\] \.researchops-home-front-page \.govuk-header \{[\s\S]*?border-bottom: 0;/
+);
+assert.match(
+	homeCss,
+	/\.researchops-home-front-page \.govuk-template__header \.govuk-service-navigation\[data-active=Home\] \{[\s\S]*?border-bottom: 0;/
+);
+assert.match(
+	homeCss,
 	/\.researchops-home-front-page \.govuk-phase-banner \{[\s\S]*?border-bottom: 0;[\s\S]*?padding-bottom: 0;/
 );
 assert.match(
 	homeCss,
-	/\.researchops-home-front-page \.govuk-phase-banner__content \{[\s\S]*?align-items: baseline;[\s\S]*?width: 100%;[\s\S]*?padding-bottom: 10px;[\s\S]*?border-bottom: 1px solid rgba\(255, 255, 255, 0\.35\);/
+	/\.researchops-home-front-page \.govuk-phase-banner__content \{[\s\S]*?align-items: baseline;[\s\S]*?width: 100%;[\s\S]*?padding-bottom: 10px;/
+);
+const homePhaseBannerContentRule = homeCss.match(
+	/\.researchops-home-front-page \.govuk-phase-banner__content \{[\s\S]*?\n\t\}/
+);
+assert.ok(homePhaseBannerContentRule);
+assert.doesNotMatch(
+	homePhaseBannerContentRule[0],
+	/border-bottom:/
 );
 assert.match(explainerScript, /prefersReducedMotion/);
 assert.match(explainerScript, /prefers-reduced-motion: reduce/);
