@@ -77,11 +77,20 @@
 
 .researchops-home-front-page .govuk-phase-banner {
 	margin-bottom: 0;
-	border-bottom-color: rgba(255, 255, 255, 0.35);
+	border-bottom: 0;
+	padding-bottom: 0;
 	background: var(--govuk-brand-colour, #1d70b8);
 	box-shadow: 0 0 0 100vmax var(--govuk-brand-colour, #1d70b8);
-	clip-path: inset(0 -100vmax);
+	clip-path: inset(0 -100vmax -1px);
 	color: #ffffff;
+	}
+
+.researchops-home-front-page .govuk-phase-banner__content {
+	display: flex;
+	align-items: baseline;
+	width: 100%;
+	padding-bottom: 10px;
+	border-bottom: 1px solid rgba(255, 255, 255, 0.35);
 	}
 
 .researchops-home-front-page .govuk-phase-banner .govuk-tag {

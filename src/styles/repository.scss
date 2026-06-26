@@ -9,96 +9,9 @@
 
 /* Repository front page structure */
 
-.researchops-repository-front-page {
-	.govuk-template__header .govuk-service-navigation[data-active='Research Repository'] {
-		border-top: 1px solid rgba(255, 255, 255, 0.35);
-		border-bottom: 1px solid rgba(255, 255, 255, 0.35);
-		background: var(--govuk-brand-colour, #1d70b8);
-	}
+@use 'hero-phase-banner' as hero;
 
-	.govuk-template__header
-		.govuk-service-navigation[data-active='Research Repository']
-		.govuk-service-navigation__toggle,
-	.govuk-template__header
-		.govuk-service-navigation[data-active='Research Repository']
-		.govuk-service-navigation__link,
-	.govuk-template__header
-		.govuk-service-navigation[data-active='Research Repository']
-		.govuk-service-navigation__link:visited {
-		color: #ffffff;
-	}
-
-	.govuk-template__header
-		.govuk-service-navigation[data-active='Research Repository']
-		.govuk-service-navigation__toggle {
-		border-color: #ffffff;
-	}
-
-	.govuk-template__header
-		.govuk-service-navigation[data-active='Research Repository']
-		.govuk-service-navigation__item,
-	.govuk-template__header
-		.govuk-service-navigation[data-active='Research Repository']
-		.govuk-service-navigation__service-name {
-		border-color: #ffffff;
-	}
-
-	.govuk-template__header
-		.govuk-service-navigation[data-active='Research Repository']
-		.govuk-service-navigation__toggle:hover,
-	.govuk-template__header
-		.govuk-service-navigation[data-active='Research Repository']
-		.govuk-service-navigation__link:hover {
-		color: #ffffff;
-		text-decoration-thickness: 3px;
-	}
-
-	.govuk-template__header
-		.govuk-service-navigation[data-active='Research Repository']
-		.govuk-service-navigation__item--active
-		.govuk-service-navigation__link,
-	.govuk-template__header
-		.govuk-service-navigation[data-active='Research Repository']
-		.govuk-service-navigation__link[aria-current='true'],
-	.govuk-template__header
-		.govuk-service-navigation[data-active='Research Repository']
-		.govuk-service-navigation__link[aria-current='page'] {
-		border-bottom: 0;
-		box-shadow: none;
-		color: #ffffff;
-	}
-
-	.govuk-template__header
-		.govuk-service-navigation[data-active='Research Repository']
-		.govuk-service-navigation__link:focus {
-		background-color: #ffdd00;
-		color: #0b0c0c;
-		outline: 3px solid #ffdd00;
-		outline-offset: 0;
-		box-shadow:
-			0 -2px #ffdd00,
-			0 4px #0b0c0c;
-		text-decoration: none;
-	}
-
-	.govuk-phase-banner {
-		margin-bottom: 0;
-		border-bottom-color: rgba(255, 255, 255, 0.35);
-		background: var(--govuk-brand-colour, #1d70b8);
-		box-shadow: 0 0 0 100vmax var(--govuk-brand-colour, #1d70b8);
-		clip-path: inset(0 -100vmax);
-		color: #ffffff;
-	}
-
-	.govuk-phase-banner .govuk-tag {
-		background: #ffffff;
-		color: var(--govuk-brand-colour, #1d70b8);
-	}
-
-	.govuk-phase-banner__text {
-		color: #ffffff;
-	}
-}
+@include hero.researchops-hero-page('.researchops-repository-front-page', 'Research Repository');
 
 .repository-masthead {
 	margin-top: -40px;

@@ -1,0 +1,192 @@
+{
+  "traceId": "atrace-20260626-remove-home-phase-banner-border",
+  "date": "2026-06-26",
+  "branch": "fix/remove-home-phase-banner-border",
+  "traceRequired": true,
+  "traceReason": "repository-affecting work on a fix/ branch",
+  "taskSummary": "Remove the unwanted full-width horizontal line below the Prototype phase-banner row on Home Office branded hero pages while preserving the normal header, navigation and content-row borders.",
+  "operatingModelFilesLoaded": [
+    "AGENTS.md",
+    ".agent-operating-model/orchestration.xml",
+    ".agent-operating-model/bundle-registry.json",
+    ".agent-operating-model/task-signal-catalog.json",
+    ".agent-operating-model/selection-rules.json",
+    ".agent-operating-model/bootstrap-checklist.md",
+    ".agent-operating-model/precedence-policy.md",
+    ".agent-operating-model/trace-policy.md",
+    ".agent-operating-model/trace-layers.md",
+    ".agent-operating-model/behavioural-evals.json",
+    ".agent-operating-model/github-mutation-policy.md",
+    "/Users/kevin.rapley/.hermes/skills/github/github-diamond-standard/SKILL.md",
+    "/Users/kevin.rapley/.hermes/skills/software-development/frontend-visual-verification/SKILL.md"
+  ],
+  "selectedBundles": [
+    {
+      "id": "github-diamond",
+      "canonicalPath": ".agent-operating-model/bundles/github/"
+    },
+    {
+      "id": "researchops-developer-control",
+      "canonicalPath": ".agent-operating-model/bundles/researchops-developer-control/"
+    },
+    {
+      "id": "multi-functional-team",
+      "canonicalPath": ".agent-operating-model/bundles/multi-functional-team/"
+    },
+    {
+      "id": "govuk-design-system",
+      "canonicalPath": ".agent-operating-model/bundles/govuk-design-system/"
+    }
+  ],
+  "skippedBundles": [
+    "cloudflare",
+    "openai-platform",
+    "mcp-agent-tooling",
+    "airtable-public-api",
+    "mural-public-api"
+  ],
+  "precedenceDecisions": [
+    "GitHub Diamond governed branch naming, trace creation, validation, commit, push and PR readiness.",
+    "ResearchOps Developer Control governed generated CSS parity for the Sass source and generated home CSS assets.",
+    "Multi-Functional Team governed keeping the user-facing change narrowly scoped to the reported visual defect.",
+    "GOV.UK Design System governed preserving the phase-banner component content and navigation semantics while removing decorative separator rules in the marked home hero area.",
+    "User clarification corrected the scope: restore the borders removed by the previous overbroad attempt and remove only the marked full-width line below the Prototype phase-banner row.",
+    "Rendered inspection showed the desired content-row border should remain constrained to the GOV.UK width container. The final implementation restores the Home Office header border, restores the Home service-navigation bottom border, restores the phase-banner content-row border, keeps the outer phase-banner bottom border removed, and extends the full-bleed phase-banner background 1px below the clipped edge so the line no longer appears outside the content row.",
+    "Follow-up clarification identified the same defect on /pages/repository/ and confirmed the hero treatment should be shared. The final implementation moved the active service-navigation and phase-banner hero rules into src/styles/_hero-phase-banner.scss, then included that shared mixin from the Home and Repository route stylesheets.",
+    "Codex PR review comment discussion_r3481088318 was valid: the home stylesheet cache key needed bumping so the corrected CSS is reliably served. The comment was acknowledged with a +1 reaction before remediation, replied to with validation evidence at discussion_r3481231786, and resolved."
+  ],
+  "filesRead": [
+    "README.md",
+    "RECENT_LEARNINGS.md",
+    ".github/CODEOWNERS",
+    ".github/pull_request_template.md",
+    ".github/workflows/ci.yml",
+    ".github/workflows/render-govuk-pages.yml",
+    "package.json",
+    "public/index.html",
+    "public/partials/header.html",
+    "public/js/brand-variant.js",
+    "src/govuk/templates/pages/home.njk",
+    "src/govuk/templates/layouts/researchops.njk",
+    "src/styles/researchops-home.scss",
+    "assets/researchops/researchops-home.css",
+    "public/assets/researchops/researchops-home.css",
+    "tests/researchops-home-hero-layout-route-state.test.js",
+    "public/css/govuk/govuk-page-chrome.css",
+    "public/css/brands/home-office.css",
+    "src/styles/brands/home-office.scss"
+  ],
+  "filesModified": [
+    "src/styles/researchops-home.scss",
+    "src/styles/_hero-phase-banner.scss",
+    "src/styles/repository.scss",
+    "src/styles/brands/home-office.scss",
+    "src/govuk/templates/pages/home.njk",
+    "src/govuk/templates/pages/repository.njk",
+    "assets/researchops/researchops-home.css",
+    "public/assets/researchops/researchops-home.css",
+    "public/css/repository.css (ignored generated output for local rendered verification)",
+    "public/css/brands/home-office.css",
+    "public/index.html",
+    "public/pages/repository/**/index.html (ignored generated output for local rendered verification)",
+    "tests/researchops-home-hero-layout-route-state.test.js",
+    "tests/repository-front-page-route-state.test.js",
+    "docs/agent-audit/reasoning/2026/06/26/remove-home-phase-banner-border.md",
+    "docs/agent-audit/reasoning/2026/06/26/remove-home-phase-banner-border.json"
+  ],
+  "validation": [
+    {
+      "command": "node scripts/styles/build-generated-css.mjs assets/researchops/researchops-home.css public/assets/researchops/researchops-home.css",
+      "status": "passed"
+    },
+    {
+      "command": "node scripts/styles/build-generated-css.mjs public/css/repository.css",
+      "status": "passed"
+    },
+    {
+      "command": "node scripts/styles/build-generated-css.mjs public/css/brands/home-office.css",
+      "status": "passed"
+    },
+    {
+      "command": "Playwright rendered check at 2048x512 for /?brand=home-office",
+      "status": "passed",
+      "evidence": "Home Office header computed border-bottom:4px solid rgb(115, 34, 130); Home service navigation computed border-bottom:1px solid rgba(255, 255, 255, 0.35); outer phase banner computed border-bottom:0px none and clip-path:inset(0px -2048px -1px); phase-banner content row computed border-bottom:1px solid rgba(255, 255, 255, 0.35)."
+    },
+    {
+      "command": "Playwright rendered check at 2048x512 for /pages/repository/?brand=home-office",
+      "status": "passed",
+      "evidence": "Home Office header computed border-bottom:4px solid rgb(115, 34, 130); Research Repository service navigation computed border-bottom:1px solid rgba(255, 255, 255, 0.35); outer phase banner computed border-bottom:0px none and clip-path:inset(0px -2048px -1px); phase-banner content row computed border-bottom:1px solid rgba(255, 255, 255, 0.35)."
+    },
+    {
+      "command": "Playwright rendered check at 1640x1024 for /pages/projects/?brand=home-office",
+      "status": "passed",
+      "evidence": "non-hero phase banner retained border-bottom:1px solid rgb(203, 203, 203) on the outer .govuk-phase-banner; inner content row retained border-bottom:0px none"
+    },
+    {
+      "command": "Playwright screenshot at /tmp/researchops-home-seam-check.png",
+      "status": "passed",
+      "evidence": "Visual inspection showed the line below the Prototype row is constrained to the content width, with no left or right full-width extension."
+    },
+    {
+      "command": "Playwright screenshot at /tmp/researchops-repository-seam-check.png",
+      "status": "passed",
+      "evidence": "Visual inspection showed the repository phase-banner line below the Prototype row is constrained to the content width, with no left or right full-width extension."
+    },
+    {
+      "command": "Screenshot pixel samples at the phase-banner content border row for Home and Repository",
+      "status": "passed",
+      "evidence": "Outside-left and outside-right pixels were plain brand purple (115, 34, 130, 255); an inside-content pixel was the border tint (164, 111, 173, 255) on both pages."
+    },
+    {
+      "command": "node --test tests/researchops-home-hero-layout-route-state.test.js",
+      "status": "passed"
+    },
+    {
+      "command": "node --test tests/repository-front-page-route-state.test.js",
+      "status": "passed"
+    },
+    {
+      "command": "node scripts/styles/format-generated-css.mjs --check assets/researchops/researchops-home.css public/assets/researchops/researchops-home.css public/css/repository.css public/css/brands/home-office.css",
+      "status": "passed"
+    },
+    {
+      "command": "npx prettier --check src/styles/_hero-phase-banner.scss src/styles/researchops-home.scss src/styles/repository.scss src/styles/brands/home-office.scss public/index.html tests/researchops-home-hero-layout-route-state.test.js tests/repository-front-page-route-state.test.js docs/agent-audit/reasoning/2026/06/26/remove-home-phase-banner-border.md docs/agent-audit/reasoning/2026/06/26/remove-home-phase-banner-border.json",
+      "status": "passed"
+    },
+    {
+      "command": "rg -n \"home-phase-banner-contained-20260626|home-phase-banner-no-rule-20260626\" src/govuk/templates/pages/home.njk public/index.html tests/researchops-home-hero-layout-route-state.test.js",
+      "status": "passed",
+      "evidence": "Neither stale cache key remains in the relevant home files."
+    },
+    {
+      "command": "git diff --check",
+      "status": "passed"
+    },
+    {
+      "command": "GitHub review-thread handling for discussion_r3481088318",
+      "status": "passed",
+      "evidence": "+1 reaction added to valid Codex comment; GraphQL reply added at discussion_r3481231786; GraphQL resolveReviewThread returned isResolved:true"
+    }
+  ],
+  "notRun": [
+    {
+      "command": "npm run format -c -- src/styles/researchops-home.scss tests/researchops-home-hero-layout-route-state.test.js assets/researchops/researchops-home.css public/assets/researchops/researchops-home.css",
+      "reason": "Invalid command shape for this repository. It ran the repository formatter with no file changes, then failed because the generated-CSS helper received non-generated CSS targets. Replaced with targeted Prettier and generated-CSS checks."
+    },
+    {
+      "command": "npx prettier --check src/styles/researchops-home.scss src/govuk/templates/pages/home.njk public/index.html tests/researchops-home-hero-layout-route-state.test.js docs/agent-audit/reasoning/2026/06/26/remove-home-phase-banner-border.md docs/agent-audit/reasoning/2026/06/26/remove-home-phase-banner-border.json",
+      "reason": "Not used as final evidence because Prettier cannot infer a parser for .njk in this repository. Replaced with targeted Prettier checks for parseable files plus git diff --check and the focused route-state test for the template."
+    },
+    {
+      "command": "npm test",
+      "reason": "The change is a narrow home-page CSS rule with a focused route-state regression test and rendered browser verification."
+    },
+    {
+      "command": "npm run validate",
+      "reason": "The change is a narrow home-page CSS rule with a focused route-state regression test and rendered browser verification."
+    }
+  ],
+  "residualRisks": [
+    "The active Home tab underline remains because it is the selected-navigation affordance, not the marked horizontal separator."
+  ]
+}
