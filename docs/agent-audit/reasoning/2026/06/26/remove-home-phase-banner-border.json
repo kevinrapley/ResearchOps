@@ -1,0 +1,121 @@
+{
+  "traceId": "atrace-20260626-remove-home-phase-banner-border",
+  "date": "2026-06-26",
+  "branch": "fix/remove-home-phase-banner-border",
+  "traceRequired": true,
+  "traceReason": "repository-affecting work on a fix/ branch",
+  "taskSummary": "Remove the unwanted 1px bottom border visible below the home page prototype banner in the Home Office branded view.",
+  "operatingModelFilesLoaded": [
+    "AGENTS.md",
+    ".agent-operating-model/orchestration.xml",
+    ".agent-operating-model/bundle-registry.json",
+    ".agent-operating-model/task-signal-catalog.json",
+    ".agent-operating-model/selection-rules.json",
+    ".agent-operating-model/bootstrap-checklist.md",
+    ".agent-operating-model/precedence-policy.md",
+    ".agent-operating-model/trace-policy.md",
+    ".agent-operating-model/trace-layers.md",
+    ".agent-operating-model/behavioural-evals.json",
+    ".agent-operating-model/github-mutation-policy.md",
+    "/Users/kevin.rapley/.hermes/skills/github/github-diamond-standard/SKILL.md",
+    "/Users/kevin.rapley/.hermes/skills/software-development/frontend-visual-verification/SKILL.md"
+  ],
+  "selectedBundles": [
+    {
+      "id": "github-diamond",
+      "canonicalPath": ".agent-operating-model/bundles/github/"
+    },
+    {
+      "id": "researchops-developer-control",
+      "canonicalPath": ".agent-operating-model/bundles/researchops-developer-control/"
+    },
+    {
+      "id": "multi-functional-team",
+      "canonicalPath": ".agent-operating-model/bundles/multi-functional-team/"
+    },
+    {
+      "id": "govuk-design-system",
+      "canonicalPath": ".agent-operating-model/bundles/govuk-design-system/"
+    }
+  ],
+  "skippedBundles": [
+    "cloudflare",
+    "openai-platform",
+    "mcp-agent-tooling",
+    "airtable-public-api",
+    "mural-public-api"
+  ],
+  "precedenceDecisions": [
+    "GitHub Diamond governed branch naming, trace creation, validation, commit, push and PR readiness.",
+    "ResearchOps Developer Control governed generated CSS parity for the Sass source and generated home CSS assets.",
+    "Multi-Functional Team governed keeping the user-facing change narrowly scoped to the reported visual defect.",
+    "GOV.UK Design System governed preserving the phase-banner component content and navigation semantics while removing only the visual border."
+  ],
+  "filesRead": [
+    "README.md",
+    "RECENT_LEARNINGS.md",
+    ".github/CODEOWNERS",
+    ".github/pull_request_template.md",
+    ".github/workflows/ci.yml",
+    ".github/workflows/render-govuk-pages.yml",
+    "package.json",
+    "public/index.html",
+    "public/partials/header.html",
+    "public/js/brand-variant.js",
+    "src/govuk/templates/pages/home.njk",
+    "src/govuk/templates/layouts/researchops.njk",
+    "src/styles/researchops-home.scss",
+    "assets/researchops/researchops-home.css",
+    "public/assets/researchops/researchops-home.css",
+    "tests/researchops-home-hero-layout-route-state.test.js"
+  ],
+  "filesModified": [
+    "src/styles/researchops-home.scss",
+    "assets/researchops/researchops-home.css",
+    "public/assets/researchops/researchops-home.css",
+    "tests/researchops-home-hero-layout-route-state.test.js",
+    "docs/agent-audit/reasoning/2026/06/26/remove-home-phase-banner-border.md",
+    "docs/agent-audit/reasoning/2026/06/26/remove-home-phase-banner-border.json"
+  ],
+  "validation": [
+    {
+      "command": "node scripts/styles/build-generated-css.mjs assets/researchops/researchops-home.css public/assets/researchops/researchops-home.css",
+      "status": "passed"
+    },
+    {
+      "command": "Playwright desktop check at 1000x1200 for /?brand=home-office",
+      "status": "passed",
+      "evidence": "phase banner border-bottom computed as 0px none; Prototype tag present; active Home nav present; no horizontal scroll"
+    },
+    {
+      "command": "Playwright mobile check at 390x900 for /?brand=home-office",
+      "status": "passed",
+      "evidence": "phase banner border-bottom computed as 0px none; Prototype tag present; active Home nav present; no horizontal scroll"
+    },
+    {
+      "command": "node --test tests/researchops-home-hero-layout-route-state.test.js",
+      "status": "passed"
+    },
+    {
+      "command": "node scripts/styles/format-generated-css.mjs --check assets/researchops/researchops-home.css public/assets/researchops/researchops-home.css",
+      "status": "passed"
+    },
+    {
+      "command": "npx prettier -c src/styles/researchops-home.scss tests/researchops-home-hero-layout-route-state.test.js",
+      "status": "passed"
+    }
+  ],
+  "notRun": [
+    {
+      "command": "npm test",
+      "reason": "The change is a narrow home-page CSS rule with a focused route-state regression test and rendered browser verification."
+    },
+    {
+      "command": "npm run validate",
+      "reason": "The change is a narrow home-page CSS rule with a focused route-state regression test and rendered browser verification."
+    }
+  ],
+  "residualRisks": [
+    "The active home navigation strip still has its existing 1px separator. This trace addresses the bottom border on the prototype phase banner that matched the reported lowest horizontal rule."
+  ]
+}

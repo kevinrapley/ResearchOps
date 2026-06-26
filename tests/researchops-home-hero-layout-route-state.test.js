@@ -33,5 +33,6 @@ assert.match(
 	homeCss,
 	/\.researchops-explainer-transcript \.govuk-details__summary[\s\S]*?color: #ffffff;/
 );
+assert.match(homeCss, /\.researchops-home-front-page \.govuk-phase-banner \{[\s\S]*?border-bottom: 0;/);
 assert.match(explainerScript, /prefersReducedMotion/);
 assert.match(explainerScript, /prefers-reduced-motion: reduce/);
