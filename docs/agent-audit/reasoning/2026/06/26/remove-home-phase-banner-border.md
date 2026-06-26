@@ -47,6 +47,7 @@ Skipped bundles:
 - Multi-Functional Team governed keeping the user-facing change narrowly scoped to the reported visual defect.
 - GOV.UK Design System governed preserving the phase-banner component content and navigation semantics while containing the visual border to the phase-banner content row.
 - User clarification corrected the scope from removing the whole phase-banner bottom rule to removing only the full-width overrun to the left of the `Prototype` tag.
+- Codex PR review comment `discussion_r3481088318` was valid: the home stylesheet cache key needed bumping so the corrected CSS is reliably served. The comment was acknowledged with a `+1` reaction before remediation.
 
 ## Files Read
 
@@ -63,8 +64,10 @@ Skipped bundles:
 - `src/govuk/templates/pages/home.njk`
 - `src/govuk/templates/layouts/researchops.njk`
 - `src/styles/researchops-home.scss`
+- `src/govuk/templates/pages/home.njk`
 - `assets/researchops/researchops-home.css`
 - `public/assets/researchops/researchops-home.css`
+- `public/index.html`
 - `tests/researchops-home-hero-layout-route-state.test.js`
 - `public/css/govuk/govuk-page-chrome.css`
 - `public/css/brands/home-office.css`
@@ -88,11 +91,14 @@ Skipped bundles:
 - `node --test tests/researchops-home-hero-layout-route-state.test.js`: passed.
 - `node scripts/styles/format-generated-css.mjs --check assets/researchops/researchops-home.css public/assets/researchops/researchops-home.css`: passed.
 - `npx prettier --check src/styles/researchops-home.scss tests/researchops-home-hero-layout-route-state.test.js`: passed.
+- `npx prettier --check src/styles/researchops-home.scss public/index.html tests/researchops-home-hero-layout-route-state.test.js docs/agent-audit/reasoning/2026/06/26/remove-home-phase-banner-border.md docs/agent-audit/reasoning/2026/06/26/remove-home-phase-banner-border.json`: passed.
+- `rg -n "home-explainer-no-bg-20260617|home-phase-banner-contained-20260626" src/govuk/templates/pages/home.njk public/index.html tests/researchops-home-hero-layout-route-state.test.js`: passed; only the new cache key appears.
 - `git diff --check`: passed.
 
 ## Not Run
 
 - `npm run format -c -- src/styles/researchops-home.scss tests/researchops-home-hero-layout-route-state.test.js assets/researchops/researchops-home.css public/assets/researchops/researchops-home.css`: invalid command shape for this repository; it ran the repository formatter with no file changes, then failed because the generated-CSS helper received non-generated CSS targets. Replaced with targeted Prettier and generated-CSS checks above.
+- `npx prettier --check src/styles/researchops-home.scss src/govuk/templates/pages/home.njk public/index.html tests/researchops-home-hero-layout-route-state.test.js docs/agent-audit/reasoning/2026/06/26/remove-home-phase-banner-border.md docs/agent-audit/reasoning/2026/06/26/remove-home-phase-banner-border.json`: not used as final evidence because Prettier cannot infer a parser for `.njk` in this repository. Replaced with targeted Prettier checks for parseable files plus `git diff --check` and the focused route-state test for the template.
 - Full `npm test`: not run because the change is a narrow home-page CSS rule with a focused route-state regression test and rendered browser verification.
 - Full `npm run validate`: not run for the same scope reason.
 
