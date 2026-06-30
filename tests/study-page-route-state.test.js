@@ -82,7 +82,7 @@ for (const text of [
 	"/css/govuk/govuk-forms.css",
 	"/css/govuk/govuk-tables.css",
 	"/css/study-page.css",
-	"/js/study-page.js?v=study-readiness-polish-20260605",
+	"/js/study-page.js?v=study-evidence-summary-20260630",
 	"class=\"govuk-breadcrumbs\"",
 	"class=\"govuk-summary-list",
 	"class=\"govuk-task-list",

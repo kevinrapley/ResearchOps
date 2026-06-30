@@ -87,6 +87,23 @@ Precedence decisions:
 - `docs/agent-audit/reasoning/2026/06/30/res-8-study-evidence-summary.md`
 - `docs/agent-audit/reasoning/2026/06/30/res-8-study-evidence-summary.json`
 
+## Codex review comment remediation
+
+PR review thread:
+
+- Comment: `https://github.com/kevinrapley/ResearchOps/pull/436#discussion_r3502009330`
+- Author: `chatgpt-codex-connector`
+- File: `src/govuk/templates/pages/study.njk`
+- State inspected: unresolved and not outdated.
+- Disposition: valid.
+
+Remedy:
+
+- Added a `+1` reaction to the original comment.
+- Updated `studyPageScriptVersion` from `study-readiness-polish-20260605` to `study-evidence-summary-20260630`.
+- Regenerated `public/pages/study/index.html`, updating both the module preload and script URL.
+- Updated `tests/study-page-route-state.test.js` so the route-state contract protects the new Study script version.
+
 ## Validation
 
 Passed:
@@ -101,10 +118,14 @@ Passed:
 - `npm test` — full test suite passed: 257 tests, 257 pass.
 - `npm run generated-css:check`
 - `git diff --check`
+- `npm run build:govuk-pages`
+- `npm test -- tests/study-page-route-state.test.js`
+- `npx prettier -c tests/study-page-route-state.test.js public/pages/study/index.html`
 
 Not fully passed:
 
 - `npm run lint` failed at repository-wide `prettier -c .` because the untracked `skills/github/github-diamond-standard/references/upstream-bundle/` tree contains 113 pre-existing format warnings. Focused Prettier and ESLint checks on the changed files passed.
+- `npx prettier -c src/govuk/templates/pages/study.njk tests/study-page-route-state.test.js public/pages/study/index.html` failed because Prettier cannot infer a parser for `.njk`; the formatter-supported changed files passed in the follow-up command.
 
 ## Residual risks
 

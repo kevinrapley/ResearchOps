@@ -85,7 +85,19 @@
     "Mapped evidence progress into No evidence captured, Evidence captured, Clusters drafted and Themes available states.",
     "Updated the Study analysis task status and hint from evidence state.",
     "Regenerated generated CSS and public/pages/study/index.html.",
-    "Extended tests/study-page-route-state.test.js for markup, controller and CSS hooks."
+    "Extended tests/study-page-route-state.test.js for markup, controller and CSS hooks.",
+    "Remediated Codex PR comment r3502009330 by bumping the Study page script cache key for the new evidence summary controller code."
+  ],
+  "reviewCommentRemediation": [
+    {
+      "commentUrl": "https://github.com/kevinrapley/ResearchOps/pull/436#discussion_r3502009330",
+      "author": "chatgpt-codex-connector",
+      "threadState": "unresolved, not outdated when inspected",
+      "path": "src/govuk/templates/pages/study.njk",
+      "disposition": "valid",
+      "reaction": "+1 added",
+      "remedy": "Updated studyPageScriptVersion to study-evidence-summary-20260630, regenerated public/pages/study/index.html, and updated tests/study-page-route-state.test.js to assert the new module URL."
+    }
   ],
   "validation": [
     {
@@ -142,6 +154,26 @@
       "command": "npm run lint",
       "result": "failed-pre-existing-untracked-tree",
       "evidence": "Repository-wide prettier -c . failed because untracked skills/github/github-diamond-standard/references/upstream-bundle contains 113 format warnings; changed-file Prettier and ESLint checks passed."
+    },
+    {
+      "command": "npm run build:govuk-pages",
+      "result": "passed",
+      "evidence": "Regenerated public/pages/study/index.html with study-evidence-summary-20260630 for modulepreload and script URLs."
+    },
+    {
+      "command": "npm test -- tests/study-page-route-state.test.js",
+      "result": "passed",
+      "evidence": "Focused Study page route-state regression passed after the script-version update."
+    },
+    {
+      "command": "npx prettier -c src/govuk/templates/pages/study.njk tests/study-page-route-state.test.js public/pages/study/index.html",
+      "result": "failed-tool-limitation",
+      "evidence": "Prettier could not infer a parser for the .njk template file."
+    },
+    {
+      "command": "npx prettier -c tests/study-page-route-state.test.js public/pages/study/index.html",
+      "result": "passed",
+      "evidence": "Formatter-supported changed files passed Prettier after excluding the .njk template."
     }
   ],
   "residualRisks": [
