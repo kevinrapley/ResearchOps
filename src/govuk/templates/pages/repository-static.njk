@@ -187,6 +187,22 @@
 				<div class="govuk-grid-column-one-third">
 					<div class="repository-filter-panel">
 						<div class="govuk-form-group">
+							<label class="govuk-label govuk-label--s" for="candidate-confidence">Confidence</label>
+							<select class="govuk-select" id="candidate-confidence" name="confidence">
+								<option value="low">Low</option>
+								<option value="medium">Medium</option>
+								<option value="high">High</option>
+							</select>
+						</div>
+						<div class="govuk-form-group">
+							<label class="govuk-label govuk-label--s" for="candidate-evidence-maturity">Evidence maturity</label>
+							<select class="govuk-select" id="candidate-evidence-maturity" name="evidenceMaturity">
+								<option value="early-signal">Early signal</option>
+								<option value="reviewed-synthesis">Reviewed synthesis</option>
+								<option value="validated-pattern">Validated pattern</option>
+							</select>
+						</div>
+						<div class="govuk-form-group">
 							<label class="govuk-label govuk-label--s" for="candidate-service-area">Service area</label>
 							<select class="govuk-select" id="candidate-service-area" name="serviceArea"></select>
 						</div>
@@ -218,6 +234,10 @@
 						<div class="govuk-form-group">
 							<label class="govuk-label govuk-label--s" for="candidate-source-study-id">Source study</label>
 							<input class="govuk-input" id="candidate-source-study-id" name="sourceStudyId" type="text" autocomplete="off">
+						</div>
+						<div class="govuk-form-group">
+							<label class="govuk-label govuk-label--s" for="candidate-source-synthesis-id">Source synthesis or recommendation ID</label>
+							<input class="govuk-input" id="candidate-source-synthesis-id" name="sourceSynthesisId" type="text" autocomplete="off">
 						</div>
 					</div>
 					<div class="govuk-grid-column-one-half">

@@ -4,6 +4,7 @@ import fs from "node:fs";
 const workerSource = fs.readFileSync("infra/cloudflare/src/worker.js", "utf8");
 const serviceIndexSource = fs.readFileSync("infra/cloudflare/src/service/index.js", "utf8");
 const synthesisServiceSource = fs.readFileSync("infra/cloudflare/src/service/synthesis.js", "utf8");
+const synthesisPageSource = fs.readFileSync("public/js/synthesize-page.js", "utf8");
 
 function includes(source, text, label) {
   assert.equal(source.includes(text), true, `Expected ${label} to include: ${text}`);
@@ -51,3 +52,10 @@ includes(synthesisServiceSource, "projectId", "Synthesis service");
 includes(synthesisServiceSource, "studyId", "Synthesis service");
 includes(synthesisServiceSource, "evidenceIds", "Synthesis service");
 excludes(synthesisServiceSource, "localStorage", "Synthesis service");
+
+includes(synthesisPageSource, "function repositoryCandidateHref(theme)", "Synthesis page");
+includes(synthesisPageSource, 'route("/pages/repository/review/candidates/new/"', "Synthesis page");
+includes(synthesisPageSource, 'sourceSynthesisId: theme.id', "Synthesis page");
+includes(synthesisPageSource, 'evidenceType: "reviewed-synthesis"', "Synthesis page");
+includes(synthesisPageSource, 'data-submit-to-repository="theme"', "Synthesis page");
+includes(synthesisPageSource, "Submit to repository", "Synthesis page");

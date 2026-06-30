@@ -7,6 +7,49 @@ function populateSelect(select, filters, filterName) {
 	for (const item of filter?.items || []) select.appendChild(option(item.value, titleFromSlug(item.label || item.value)));
 }
 
+function setFieldValue(form, name, value) {
+	const field = form?.elements?.[name];
+	const cleaned = text(value);
+	if (!field || !cleaned) return;
+	if (field instanceof HTMLSelectElement && !Array.from(field.options).some((item) => item.value === cleaned)) {
+		field.appendChild(option(cleaned, titleFromSlug(cleaned)));
+	}
+	field.value = cleaned;
+}
+
+function candidatePrefillFromQuery() {
+	const params = new URLSearchParams(window.location.search);
+	const aliases = new Map([
+		["title", ["title", "candidateTitle"]],
+		["summary", ["summary", "candidateSummary"]],
+		["limitations", ["limitations"]],
+		["reuseGuidance", ["reuseGuidance", "reuse"]],
+		["doNotUseFor", ["doNotUseFor", "doNotUse"]],
+		["confidence", ["confidence"]],
+		["evidenceMaturity", ["evidenceMaturity", "maturity"]],
+		["serviceArea", ["serviceArea", "service_area"]],
+		["userGroup", ["userGroup", "user_group"]],
+		["method", ["method"]],
+		["riskArea", ["riskArea", "risk_area"]],
+		["sourceProjectId", ["sourceProjectId", "pid", "projectId"]],
+		["sourceStudyId", ["sourceStudyId", "sid", "studyId"]],
+		["sourceSynthesisId", ["sourceSynthesisId", "sourceRecommendationId", "synthesisId", "recommendationId"]],
+		["evidenceType", ["evidenceType", "sourceType"]],
+		["sampleSummary", ["sampleSummary", "evidenceBasis"]],
+	]);
+	const prefill = {};
+	for (const [name, keys] of aliases.entries()) {
+		const key = keys.find((candidate) => params.has(candidate));
+		if (key) prefill[name] = params.get(key);
+	}
+	return prefill;
+}
+
+function applyCandidatePrefill(form) {
+	const prefill = candidatePrefillFromQuery();
+	for (const [name, value] of Object.entries(prefill)) setFieldValue(form, name, value);
+}
+
 async function populateProjectSelect() {
 	const select = document.getElementById("candidate-source-project-id");
 	if (!select) return;
@@ -36,6 +79,7 @@ export async function initialiseCandidatePage() {
 	populateSelect(document.getElementById("candidate-user-group"), filters, "user_group");
 	populateSelect(document.getElementById("candidate-method"), filters, "method");
 	populateSelect(document.getElementById("candidate-risk-area"), filters, "risk_area");
+	applyCandidatePrefill(form);
 
 	form.addEventListener("submit", async (event) => {
 		event.preventDefault();
