@@ -180,21 +180,41 @@ async function loadStudyCollection(path, studyId, key) {
 	}
 }
 
+async function loadStudySynthesisSummary(studyId) {
+	try {
+		const url = new URL(apiUrl("/api/synthesis"), window.location.origin);
+		url.searchParams.set("study", studyId);
+		const body = await jsonFetch(url.toString());
+		return {
+			clusters: Array.isArray(body?.clusters) ? body.clusters : [],
+			themes: Array.isArray(body?.themes) ? body.themes : []
+		};
+	} catch (error) {
+		console.warn("[study-page] synthesis summary lookup failed", error);
+		return { clusters: [], themes: [] };
+	}
+}
+
 async function loadReadinessContext(studyId) {
-	const [participants, guides, consentForms, participantConsentRecords, supportSetup] = await Promise.all([
-		loadStudyCollection("/api/participants", studyId, "participants"),
-		loadStudyCollection("/api/guides", studyId, "guides"),
-		loadStudyCollection("/api/consent-forms", studyId, "consentForms"),
-		loadStudyCollection("/api/participant-consent", studyId, "participantConsentRecords"),
-		loadStudySupportSetup(studyId)
-	]);
+	const [participants, guides, consentForms, participantConsentRecords, supportSetup, evidence, synthesisSummary] =
+		await Promise.all([
+			loadStudyCollection("/api/participants", studyId, "participants"),
+			loadStudyCollection("/api/guides", studyId, "guides"),
+			loadStudyCollection("/api/consent-forms", studyId, "consentForms"),
+			loadStudyCollection("/api/participant-consent", studyId, "participantConsentRecords"),
+			loadStudySupportSetup(studyId),
+			loadStudyCollection("/api/synthesis/evidence", studyId, "evidence"),
+			loadStudySynthesisSummary(studyId)
+		]);
 
 	return {
 		participants,
 		guides,
 		consentForms,
 		participantConsentRecords,
-		supportSetup
+		supportSetup,
+		evidence,
+		synthesisSummary
 	};
 }
 
@@ -404,6 +424,74 @@ function renderReadiness(study, context, sessionHref) {
 	renderSessionGate(readiness, sessionHref);
 }
 
+function pluralise(count, singular, plural = `${singular}s`) {
+	return `${count} ${count === 1 ? singular : plural}`;
+}
+
+function evidenceStateForContext(context = {}) {
+	const evidence = Array.isArray(context.evidence) ? context.evidence : [];
+	const synthesisSummary = context.synthesisSummary || {};
+	const clusters = Array.isArray(synthesisSummary.clusters) ? synthesisSummary.clusters : [];
+	const themes = Array.isArray(synthesisSummary.themes) ? synthesisSummary.themes : [];
+
+	if (evidence.length === 0) {
+		return {
+			state: "No evidence captured",
+			countText: "No evidence notes are linked to this study yet.",
+			stateText: "Synthesis is not ready because there is no captured evidence.",
+			nextAction: "Capture session evidence before starting synthesis.",
+			status: "Not available yet",
+			hint: "Capture evidence notes before grouping them into study-level themes."
+		};
+	}
+
+	if (themes.length > 0) {
+		return {
+			state: "Themes available",
+			countText: `${pluralise(evidence.length, "evidence note")} linked to this study.`,
+			stateText: `${pluralise(clusters.length, "cluster")} and ${pluralise(themes.length, "theme")} available for review.`,
+			nextAction: "Review the synthesis themes and evidence links before sharing findings.",
+			status: "Ready",
+			hint: "Review evidence clusters and traceable study-level themes."
+		};
+	}
+
+	if (clusters.length > 0) {
+		return {
+			state: "Clusters drafted",
+			countText: `${pluralise(evidence.length, "evidence note")} linked to this study.`,
+			stateText: `${pluralise(clusters.length, "working cluster")} created; no study-level themes yet.`,
+			nextAction: "Create traceable themes from the strongest evidence clusters.",
+			status: "Action needed",
+			hint: "Create traceable themes from the existing evidence clusters."
+		};
+	}
+
+	return {
+		state: "Evidence captured",
+		countText: `${pluralise(evidence.length, "evidence note")} linked to this study.`,
+		stateText: "Evidence is ready to group into working clusters.",
+		nextAction: "Group evidence notes into clusters and then create study-level themes.",
+		status: "Available",
+		hint: "Group captured evidence notes into working clusters."
+	};
+}
+
+function renderEvidenceStateSummary(context = {}) {
+	const summary = evidenceStateForContext(context);
+	setText("#study-evidence-count", summary.countText);
+	setText("#study-evidence-state", summary.stateText);
+	setText("#study-evidence-next-action", summary.nextAction);
+
+	const synthesisStatus = $("#study-analysis-synthesis-status");
+	const synthesisHint = $("#study-analysis-synthesis-hint");
+	if (synthesisStatus) {
+		synthesisStatus.textContent = summary.status;
+		synthesisStatus.className = `govuk-tag ${readinessTagClass(summary.status)} study-readiness-status`;
+	}
+	if (synthesisHint) synthesisHint.textContent = summary.hint;
+}
+
 function renderSupportSetupStatus(supportSetup = {}) {
 	const status = $("#study-setup-support-status");
 	const hint = $("#study-setup-support-hint");
@@ -461,6 +549,7 @@ function renderStudy(project, study, projectId, studyId, readinessContext) {
 	const routes = renderRoutes(projectId, studyId);
 	renderReadiness(study, readinessContext, routes.sessionHref);
 	renderSupportSetupStatus(readinessContext.supportSetup);
+	renderEvidenceStateSummary(readinessContext);
 }
 
 async function init() {

@@ -369,6 +369,39 @@
 								</li>
 							</ul>
 						</section>
+
+						<section
+							class="study-evidence-summary-section govuk-!-margin-bottom-8"
+							aria-labelledby="study-evidence-summary-title"
+						>
+							<h2 id="study-evidence-summary-title" class="govuk-heading-m">Evidence state summary</h2>
+							<p id="study-evidence-summary-intro" class="govuk-body">
+								Checking captured study evidence and synthesis progress.
+							</p>
+
+							<dl class="govuk-summary-list study-evidence-summary-list">
+								<div class="govuk-summary-list__row">
+									<dt class="govuk-summary-list__key">Evidence notes</dt>
+									<dd class="govuk-summary-list__value">
+										<span id="study-evidence-count">Checking evidence notes.</span>
+									</dd>
+								</div>
+
+								<div class="govuk-summary-list__row">
+									<dt class="govuk-summary-list__key">Synthesis state</dt>
+									<dd class="govuk-summary-list__value">
+										<span id="study-evidence-state">Checking synthesis state.</span>
+									</dd>
+								</div>
+
+								<div class="govuk-summary-list__row">
+									<dt class="govuk-summary-list__key">Next action</dt>
+									<dd class="govuk-summary-list__value">
+										<span id="study-evidence-next-action">Wait for the evidence summary to load.</span>
+									</dd>
+								</div>
+							</dl>
+						</section>
 					</aside>
 				</div>
 
@@ -475,11 +508,15 @@
 								</div>
 
 								<div id="study-analysis-1-hint" class="govuk-task-list__hint">
-									Group evidence notes into working cluster groupings and create traceable study-level themes.
+									<span id="study-analysis-synthesis-hint">
+										Group evidence notes into working cluster groupings and create traceable study-level themes.
+									</span>
 								</div>
 							</div>
 							<div class="govuk-task-list__status" id="study-analysis-1-status">
-								<strong class="govuk-tag govuk-tag--grey">Available when evidence is captured</strong>
+								<strong id="study-analysis-synthesis-status" class="govuk-tag govuk-tag--grey">
+									Available when evidence is captured
+								</strong>
 							</div>
 						</li>
 					</ul>

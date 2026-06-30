@@ -77,6 +77,14 @@
 	display: block;
 	}
 
+.study-evidence-summary-list {
+	margin-bottom: 0;
+	}
+
+.study-evidence-summary-list .govuk-summary-list__key {
+	width: 38%;
+	}
+
 .study-session-button.govuk-button--disabled, .study-session-button[aria-disabled=true] {
 	pointer-events: none;
 	}
