@@ -9,7 +9,7 @@
 {% from "govuk/components/inset-text/macro.njk" import govukInsetText %}
 {% from "macros/daas-brand-panel.njk" import daasBrandPanel %}
 
-{% set studyPageScriptVersion = "study-readiness-polish-20260605" %}
+{% set studyPageScriptVersion = "study-evidence-summary-20260630" %}
 
 {% block head %}
 	<meta property="schema:name" content="Study — ResearchOps">
@@ -232,6 +232,28 @@
 					]
 				}) }}
 			</section>
+
+			<section class="study-evidence-summary-section govuk-!-margin-bottom-8" aria-labelledby="study-evidence-summary-title">
+				<h2 id="study-evidence-summary-title" class="govuk-heading-m">Evidence state summary</h2>
+				<p id="study-evidence-summary-intro" class="govuk-body">Checking captured study evidence and synthesis progress.</p>
+				{{ govukSummaryList({
+					classes: "study-evidence-summary-list",
+					rows: [
+						{
+							key: { text: "Evidence notes" },
+							value: { html: '<span id="study-evidence-count">Checking evidence notes.</span>' }
+						},
+						{
+							key: { text: "Synthesis state" },
+							value: { html: '<span id="study-evidence-state">Checking synthesis state.</span>' }
+						},
+						{
+							key: { text: "Next action" },
+							value: { html: '<span id="study-evidence-next-action">Wait for the evidence summary to load.</span>' }
+						}
+					]
+				}) }}
+			</section>
 		</aside>
 	</div>
 
@@ -278,8 +300,8 @@
 			items: [
 				{
 					title: { html: '<a id="link-synthesis" class="govuk-link govuk-task-list__link" href="#">Synthesise study evidence</a>' },
-					hint: { text: "Group evidence notes into working cluster groupings and create traceable study-level themes." },
-					status: { html: '<strong class="govuk-tag govuk-tag--grey">Available when evidence is captured</strong>' }
+					hint: { html: '<span id="study-analysis-synthesis-hint">Group evidence notes into working cluster groupings and create traceable study-level themes.</span>' },
+					status: { html: '<strong id="study-analysis-synthesis-status" class="govuk-tag govuk-tag--grey">Available when evidence is captured</strong>' }
 				}
 			]
 		}) }}

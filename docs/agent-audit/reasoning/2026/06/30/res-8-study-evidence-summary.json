@@ -1,0 +1,183 @@
+{
+  "date": "2026-06-30",
+  "branch": "feature/res-8-study-evidence-summary",
+  "traceRequired": true,
+  "task": "Resolve RES-8 by adding a Study readiness and evidence state summary to the ResearchOps Study page.",
+  "selectedBundles": [
+    {
+      "id": "github-diamond",
+      "path": ".agent-operating-model/bundles/github/"
+    },
+    {
+      "id": "researchops-developer-control",
+      "path": ".agent-operating-model/bundles/researchops-developer-control/"
+    },
+    {
+      "id": "multi-functional-team",
+      "path": ".agent-operating-model/bundles/multi-functional-team/"
+    },
+    {
+      "id": "govuk-design-system",
+      "path": ".agent-operating-model/bundles/govuk-design-system/"
+    }
+  ],
+  "skippedBundles": [
+    {
+      "id": "cloudflare",
+      "reason": "No Worker, binding, runtime or deployment implementation changed."
+    },
+    {
+      "id": "openai-platform",
+      "reason": "No OpenAI API integration changed."
+    },
+    {
+      "id": "mcp-agent-tooling",
+      "reason": "No MCP tooling changed."
+    },
+    {
+      "id": "airtable-public-api",
+      "reason": "No Airtable API implementation changed."
+    },
+    {
+      "id": "mural-public-api",
+      "reason": "No Mural API implementation changed."
+    }
+  ],
+  "operatingModelFilesLoaded": [
+    "AGENTS.md",
+    ".agent-operating-model/orchestration.xml",
+    ".agent-operating-model/bundle-registry.json",
+    ".agent-operating-model/task-signal-catalog.json",
+    ".agent-operating-model/selection-rules.json",
+    ".agent-operating-model/bootstrap-checklist.md",
+    ".agent-operating-model/precedence-policy.md",
+    ".agent-operating-model/trace-policy.md",
+    ".agent-operating-model/trace-layers.md",
+    ".agent-operating-model/behavioural-evals.json",
+    ".agent-operating-model/github-mutation-policy.md"
+  ],
+  "filesRead": [
+    "/Users/kevin.rapley/.hermes/cron/output/57515db15702/2026-06-30_19-36-33.md",
+    "/Users/kevin.rapley/.local/share/claude-code-os/dispatch-chats.json",
+    "README.md",
+    "package.json",
+    "src/govuk/templates/pages/study.njk",
+    "public/js/study-page.js",
+    "src/styles/study-page.scss",
+    "tests/study-page-route-state.test.js",
+    "visual-walkthrough.synthesis-fixtures.mjs",
+    "docs/agent-audit/reasoning/2026/06/05/study-readiness-polish.md",
+    "docs/agent-audit/reasoning/2026/06/05/study-readiness-polish.json"
+  ],
+  "filesModified": [
+    "src/govuk/templates/pages/study.njk",
+    "public/js/study-page.js",
+    "src/styles/study-page.scss",
+    "public/css/study-page.css",
+    "public/pages/study/index.html",
+    "tests/study-page-route-state.test.js",
+    "docs/agent-audit/reasoning/2026/06/30/res-8-study-evidence-summary.md",
+    "docs/agent-audit/reasoning/2026/06/30/res-8-study-evidence-summary.json"
+  ],
+  "implementationSummary": [
+    "Added an Evidence state summary GOV.UK summary-list panel to the Study page.",
+    "Loaded captured evidence notes from /api/synthesis/evidence and synthesis clusters/themes from /api/synthesis.",
+    "Mapped evidence progress into No evidence captured, Evidence captured, Clusters drafted and Themes available states.",
+    "Updated the Study analysis task status and hint from evidence state.",
+    "Regenerated generated CSS and public/pages/study/index.html.",
+    "Extended tests/study-page-route-state.test.js for markup, controller and CSS hooks.",
+    "Remediated Codex PR comment r3502009330 by bumping the Study page script cache key for the new evidence summary controller code."
+  ],
+  "reviewCommentRemediation": [
+    {
+      "commentUrl": "https://github.com/kevinrapley/ResearchOps/pull/436#discussion_r3502009330",
+      "author": "chatgpt-codex-connector",
+      "threadState": "unresolved, not outdated when inspected",
+      "path": "src/govuk/templates/pages/study.njk",
+      "disposition": "valid",
+      "reaction": "+1 added",
+      "remedy": "Updated studyPageScriptVersion to study-evidence-summary-20260630, regenerated public/pages/study/index.html, and updated tests/study-page-route-state.test.js to assert the new module URL."
+    }
+  ],
+  "validation": [
+    {
+      "command": "npm run build:generated-css && npm run build:govuk-pages",
+      "result": "passed",
+      "evidence": "Generated CSS and static GOV.UK pages were rebuilt."
+    },
+    {
+      "command": "npm test -- tests/study-page-route-state.test.js",
+      "result": "passed",
+      "evidence": "Focused Study page route-state regression passed."
+    },
+    {
+      "command": "npx prettier -c public/js/study-page.js src/styles/study-page.scss tests/study-page-route-state.test.js public/pages/study/index.html public/css/study-page.css",
+      "result": "passed",
+      "evidence": "Changed formatter-supported files passed Prettier."
+    },
+    {
+      "command": "npx eslint public/js/study-page.js tests/study-page-route-state.test.js",
+      "result": "passed-with-warnings",
+      "evidence": "No ESLint errors; public/js/study-page.js retains existing console warnings."
+    },
+    {
+      "command": "Playwright desktop mocked route check",
+      "result": "passed",
+      "evidence": "Evidence summary rendered 2 evidence notes, 1 cluster, 1 theme and synthesis status Ready."
+    },
+    {
+      "command": "Playwright mobile mocked route check at 390px",
+      "result": "passed",
+      "evidence": "Evidence summary width was 360px with no horizontal scroll."
+    },
+    {
+      "command": "Playwright empty-evidence mocked route check",
+      "result": "passed",
+      "evidence": "Next action rendered Capture session evidence before starting synthesis."
+    },
+    {
+      "command": "npm test",
+      "result": "passed",
+      "evidence": "Full test suite passed: 257 tests, 257 pass."
+    },
+    {
+      "command": "npm run generated-css:check",
+      "result": "passed",
+      "evidence": "Generated CSS formatting check passed."
+    },
+    {
+      "command": "git diff --check",
+      "result": "passed",
+      "evidence": "Whitespace check passed."
+    },
+    {
+      "command": "npm run lint",
+      "result": "failed-pre-existing-untracked-tree",
+      "evidence": "Repository-wide prettier -c . failed because untracked skills/github/github-diamond-standard/references/upstream-bundle contains 113 format warnings; changed-file Prettier and ESLint checks passed."
+    },
+    {
+      "command": "npm run build:govuk-pages",
+      "result": "passed",
+      "evidence": "Regenerated public/pages/study/index.html with study-evidence-summary-20260630 for modulepreload and script URLs."
+    },
+    {
+      "command": "npm test -- tests/study-page-route-state.test.js",
+      "result": "passed",
+      "evidence": "Focused Study page route-state regression passed after the script-version update."
+    },
+    {
+      "command": "npx prettier -c src/govuk/templates/pages/study.njk tests/study-page-route-state.test.js public/pages/study/index.html",
+      "result": "failed-tool-limitation",
+      "evidence": "Prettier could not infer a parser for the .njk template file."
+    },
+    {
+      "command": "npx prettier -c tests/study-page-route-state.test.js public/pages/study/index.html",
+      "result": "passed",
+      "evidence": "Formatter-supported changed files passed Prettier after excluding the .njk template."
+    }
+  ],
+  "residualRisks": [
+    "Linear page required login, so ticket detail was inferred from local Dispatch chat, cron evidence and existing Study implementation.",
+    "No new backend readiness endpoint was added; the UI uses existing synthesis endpoints and falls back to empty evidence state if calls fail."
+  ]
+}
