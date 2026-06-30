@@ -17,7 +17,7 @@ function excludes(source, text, label) {
 }
 
 includes(pageSource, "<html class=\"govuk-template\" lang=\"en\">", "synthesis page");
-for (const macro of ["govukBreadcrumbs({", "govukButton({", "govukInput({", "govukSummaryList({", "govukTextarea({"]) {
+for (const macro of ["govukBreadcrumbs({", "govukButton({", "govukInput({", "govukSelect({", "govukSummaryList({", "govukTextarea({"]) {
 	includes(templateSource, macro, "synthesis template");
 }
 includes(rendererSource, "template: 'pages/study-synthesis.njk'", "GOV.UK renderer");
@@ -28,7 +28,7 @@ includes(pageSource, "/js/govuk-frontend-init.js", "synthesis page");
 includes(pageSource, "src=\"/partials/header.html\"", "synthesis page");
 includes(pageSource, "src=\"/partials/footer.html\"", "synthesis page");
 includes(pageSource, "/js/synthesis-route-loader.js?v=study-record-id-routing-20260518", "synthesis page");
-includes(pageSource, "href=\"/css/synthesize.css?v=study-synthesis-20260501-progressive-disclosure\"", "synthesis page");
+includes(pageSource, "href=\"/css/synthesize.css?v=study-synthesis-20260701-govuk-markup-cleanup\"", "synthesis page");
 includes(pageSource, "data-study-subpage-template=\"synthesis\"", "synthesis page");
 
 for (const id of [
@@ -103,6 +103,12 @@ for (const marker of [
 	"/api/synthesis/clusters",
 	"/api/synthesis/themes",
 	"window.__ropsSynthesize",
+	"function repositoryCandidateHrefForTheme",
+	"data-submit-to-repository",
+	"govuk-summary-card",
+	"govuk-summary-list govuk-summary-list--no-border",
+	"govuk-checkboxes evidence-card",
+	"govuk-tag",
 ]) {
 	includes(controllerSource, marker, "synthesis controller");
 }

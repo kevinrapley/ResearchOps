@@ -8,11 +8,7 @@
 
 		<meta property="schema:name" content="Study synthesis - ResearchOps" />
 		<link rel="stylesheet" href="/css/govuk/govuk-forms.css" media="screen" />
-		<link
-			rel="stylesheet"
-			href="/css/synthesize.css?v=study-synthesis-20260501-progressive-disclosure"
-			media="screen"
-		/>
+		<link rel="stylesheet" href="/css/synthesize.css?v=study-synthesis-20260701-govuk-markup-cleanup" media="screen" />
 		<link rel="stylesheet" href="/css/daas-brand-panel.css?v=leds-brand-panel-20260624" media="screen" />
 		<link rel="modulepreload" href="/js/study-route-context.js" />
 		<link rel="modulepreload" href="/js/daas-brand-panel.js?v=leds-brand-panel-20260624" />
@@ -150,7 +146,11 @@
 				</section>
 
 				<div id="synthesis-workspace" class="synthesis-flow" hidden>
-					<section id="clusters-section" class="panel synthesis-panel" aria-labelledby="clusters-title">
+					<section
+						id="clusters-section"
+						class="synthesis-panel govuk-!-margin-bottom-8"
+						aria-labelledby="clusters-title"
+					>
 						<header class="synthesis-panel__header">
 							<div>
 								<h2 id="clusters-title" class="govuk-heading-m">Working cluster groupings</h2>
@@ -166,7 +166,7 @@
 								<label class="govuk-label" for="cluster-label">Cluster grouping name</label>
 
 								<input
-									class="govuk-input"
+									class="govuk-input govuk-!-width-two-thirds"
 									id="cluster-label"
 									name="clusterLabel"
 									type="text"
@@ -180,7 +180,7 @@
 								<label class="govuk-label" for="cluster-description">Cluster grouping description</label>
 
 								<textarea
-									class="govuk-textarea"
+									class="govuk-textarea govuk-!-width-two-thirds"
 									id="cluster-description"
 									name="clusterDescription"
 									rows="4"
@@ -210,7 +210,12 @@
 						<div id="cluster-list" class="cluster-list"></div>
 					</section>
 
-					<section id="evidence-section" class="panel synthesis-panel" aria-labelledby="evidence-title" hidden>
+					<section
+						id="evidence-section"
+						class="synthesis-panel govuk-!-margin-bottom-8"
+						aria-labelledby="evidence-title"
+						hidden
+					>
 						<header class="synthesis-panel__header">
 							<div>
 								<h2 id="evidence-title" class="govuk-heading-m">Evidence</h2>
@@ -225,7 +230,7 @@
 								<div id="tag-filter-hint" class="govuk-hint">Use a tag, framework category or safeguarding label.</div>
 
 								<input
-									class="govuk-input"
+									class="govuk-input govuk-!-width-two-thirds"
 									id="tag-filter"
 									name="tagFilter"
 									type="text"
@@ -237,12 +242,16 @@
 
 							<div class="govuk-form-group">
 								<label class="govuk-label" for="target-cluster">Add selected evidence to</label>
+
 								<select
+									class="govuk-select govuk-!-width-two-thirds"
 									id="target-cluster"
-									class="govuk-select"
+									name="targetCluster"
 									aria-describedby="add-selected-evidence-hint"
-									disabled
-								></select>
+									disabled="disabled"
+								>
+									<option value="">Create a working cluster grouping first</option>
+								</select>
 							</div>
 
 							<div class="synthesis-action-block">
@@ -275,7 +284,12 @@
 						<p class="govuk-body">Add evidence to a working cluster grouping before creating a theme.</p>
 					</section>
 
-					<section id="themes-section" class="panel synthesis-panel" aria-labelledby="themes-title" hidden>
+					<section
+						id="themes-section"
+						class="synthesis-panel govuk-!-margin-bottom-8"
+						aria-labelledby="themes-title"
+						hidden
+					>
 						<header class="synthesis-panel__header">
 							<div>
 								<h2 id="themes-title" class="govuk-heading-m">Themes</h2>
@@ -288,14 +302,23 @@
 						<form id="theme-form" class="theme-create" novalidate>
 							<div class="govuk-form-group">
 								<label class="govuk-label" for="theme-cluster">Working cluster grouping</label>
-								<select id="theme-cluster" class="govuk-select" aria-describedby="create-theme-hint" disabled></select>
+
+								<select
+									class="govuk-select govuk-!-width-two-thirds"
+									id="theme-cluster"
+									name="themeCluster"
+									aria-describedby="create-theme-hint"
+									disabled="disabled"
+								>
+									<option value="">Add evidence to a working cluster grouping first</option>
+								</select>
 							</div>
 
 							<div class="govuk-form-group">
 								<label class="govuk-label" for="theme-label">Theme name</label>
 
 								<input
-									class="govuk-input"
+									class="govuk-input govuk-!-width-two-thirds"
 									id="theme-label"
 									name="themeLabel"
 									type="text"
@@ -309,7 +332,7 @@
 								<label class="govuk-label" for="theme-description">Theme description</label>
 
 								<textarea
-									class="govuk-textarea"
+									class="govuk-textarea govuk-!-width-two-thirds"
 									id="theme-description"
 									name="themeDescription"
 									rows="5"

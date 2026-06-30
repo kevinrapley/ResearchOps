@@ -124,9 +124,6 @@ has(files.staticTemplate, 'repository-selected-state', 'static repository templa
 lacks(files.staticTemplate, 'researchops-repository-front-page', 'static repository template');
 has(files.staticTemplate, 'repository-sort-form', 'static repository template');
 has(files.staticTemplate, 'repository-pagination', 'static repository template');
-has(files.staticTemplate, 'id="candidate-confidence" name="confidence"', 'static repository template');
-has(files.staticTemplate, 'id="candidate-evidence-maturity" name="evidenceMaturity"', 'static repository template');
-has(files.staticTemplate, 'id="candidate-source-synthesis-id" name="sourceSynthesisId"', 'static repository template');
 has(files.staticTemplate, "{{ resultsHeading or 'Published artefacts' }}", 'static repository template');
 lacks(files.staticTemplate, 'Published evidence', 'static repository template');
 
@@ -149,6 +146,16 @@ has(files.pageScript, 'renderRepositoryState(localRepositoryState(params))', 're
 has(files.pageScript, 'window.__repositoryPrefetch', 'repository page script');
 has(files.pageScript, 'window.history.pushState', 'repository page script');
 has(files.pageScript, 'params.append(input.name, input.value)', 'repository page script');
+has(files.staticTemplate, 'repository-candidate-prefill-summary', 'static repository template');
+has(files.staticTemplate, 'candidate-source-synthesis-id', 'static repository template');
+has(files.staticTemplate, 'candidate-confidence', 'static repository template');
+has(files.staticTemplate, 'candidate-evidence-maturity', 'static repository template');
+has(files.staticScript, 'function applyCandidatePrefill', 'static page script');
+has(files.staticScript, 'sourceSynthesisId', 'static page script');
+has(files.staticScript, 'sourceRecommendationId', 'static page script');
+has(files.service, 'piiAndConsentGateStatus', 'repository service');
+has(files.staticScript, 'PII and consent gates remain pending', 'static page script');
+has(files.service, 'sourceSynthesisId', 'repository service');
 has(files.staticScript, 'selectedValueFor(type)', 'static page script');
 has(files.staticScript, 'renderSelectedState(selected)', 'static page script');
 has(files.staticScript, 'renderPagination(type, value', 'static page script');
@@ -160,9 +167,6 @@ has(files.staticScript, 'window.__repositoryPrefetch', 'static page script');
 has(files.staticScript, 'repositoryJson(requestPath)', 'static page script');
 has(files.staticScript, 'window.history.pushState', 'static page script');
 has(files.staticScript, 'window.addEventListener("popstate"', 'static page script');
-has(files.staticScript, 'function candidatePrefillFromQuery()', 'static page script');
-has(files.staticScript, '["sourceSynthesisId", ["sourceSynthesisId", "sourceRecommendationId", "synthesisId", "recommendationId"]]', 'static page script');
-has(files.staticScript, 'applyCandidatePrefill(form)', 'static page script');
 has(files.staticScript, '["frontline-staff", "Frontline staff"]', 'static page script');
 has(files.staticScript, '["assisted-digital-users", "Assisted digital users"]', 'static page script');
 has(files.staticScript, '["research-operations-staff", "Research operations staff"]', 'static page script');
@@ -184,11 +188,6 @@ has(files.service, 'catalogue: hydrate === HYDRATE_FULL_MODE ? { artefacts: allA
 has(files.service, 'const HYDRATE_FULL_MODE = "full"', 'repository service');
 has(files.service, 'const snapshot = await publishedRepositorySnapshot(svc);', 'repository service');
 has(files.service, 'invalidateRepositorySnapshotCache(svc);', 'repository service');
-has(files.service, 'sourceProvenance: {', 'repository service');
-has(files.service, 'sourceSynthesisOrRecommendationId: sourceSynthesisId', 'repository service');
-has(files.service, 'candidateDraft: {', 'repository service');
-has(files.service, 'pii: "pending"', 'repository service');
-has(files.service, 'consent: "pending"', 'repository service');
 has(files.service, 'const method = searchValues(url, "method")', 'repository service');
 has(
 	files.service,

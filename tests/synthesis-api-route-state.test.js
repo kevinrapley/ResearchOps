@@ -57,5 +57,5 @@ includes(synthesisPageSource, "function repositoryCandidateHref(theme)", "Synthe
 includes(synthesisPageSource, 'route("/pages/repository/review/candidates/new/"', "Synthesis page");
 includes(synthesisPageSource, 'sourceSynthesisId: theme.id', "Synthesis page");
 includes(synthesisPageSource, 'evidenceType: "reviewed-synthesis"', "Synthesis page");
-includes(synthesisPageSource, 'data-submit-to-repository="theme"', "Synthesis page");
+includes(synthesisPageSource, 'data-submit-to-repository="${escapeHtml(theme.id)}"', "Synthesis page");
 includes(synthesisPageSource, "Submit to repository", "Synthesis page");

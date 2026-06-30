@@ -1,0 +1,120 @@
+{
+  "date": "2026-06-30",
+  "branch": "feature/res-8-study-evidence-summary",
+  "traceRequired": true,
+  "taskSummary": "Seed the local recLEDSResearch01 database with realistic studies and study outputs for testing PR #437.",
+  "pr": {
+    "number": 437,
+    "title": "Add source-linked repository candidate drafting",
+    "headRefName": "feature/res-9-source-linked-candidate-drafting"
+  },
+  "remoteSystemsChanged": false,
+  "operatingModelFilesLoaded": [
+    "AGENTS.md",
+    ".agent-operating-model/orchestration.xml",
+    ".agent-operating-model/bundle-registry.json",
+    ".agent-operating-model/task-signal-catalog.json",
+    ".agent-operating-model/selection-rules.json",
+    ".agent-operating-model/bootstrap-checklist.md",
+    ".agent-operating-model/precedence-policy.md",
+    ".agent-operating-model/trace-policy.md",
+    ".agent-operating-model/trace-layers.md",
+    ".agent-operating-model/behavioural-evals.json",
+    ".agent-operating-model/github-mutation-policy.md"
+  ],
+  "selectedBundles": [
+    {
+      "id": "github-diamond",
+      "canonicalPath": ".agent-operating-model/bundles/github/"
+    },
+    {
+      "id": "researchops-developer-control",
+      "canonicalPath": ".agent-operating-model/bundles/researchops-developer-control/"
+    },
+    {
+      "id": "multi-functional-team",
+      "canonicalPath": ".agent-operating-model/bundles/multi-functional-team/"
+    },
+    {
+      "id": "cloudflare",
+      "canonicalPath": ".agent-operating-model/bundles/cloudflare/"
+    }
+  ],
+  "skippedBundles": [
+    "govuk-design-system",
+    "airtable-public-api",
+    "mural-public-api",
+    "openai-platform",
+    "mcp-agent-tooling"
+  ],
+  "localOnlyChanges": [
+    "/Users/kevin.rapley/.hermes/data/research-operations-local.sqlite3",
+    "/Users/kevin.rapley/.hermes/scripts/serve_research_operations.py"
+  ],
+  "repositoryFilesCreated": [
+    "docs/agent-audit/reasoning/2026/06/30/local-leds-pr437-seed.md",
+    "docs/agent-audit/reasoning/2026/06/30/local-leds-pr437-seed.json"
+  ],
+  "backups": [
+    "/Users/kevin.rapley/.hermes/data/research-operations-local.sqlite3.bak-20260630-232544",
+    "/Users/kevin.rapley/.hermes/scripts/serve_research_operations.py.bak-20260630-232544"
+  ],
+  "seededContent": {
+    "projectId": "recLEDSResearch01",
+    "studies": [
+      "recLEDSOpsNeeds01",
+      "recLEDSMigration02",
+      "recLEDSDecision03"
+    ],
+    "primaryStudyForPr437": "recLEDSOpsNeeds01",
+    "evidenceCount": 4,
+    "clusterCount": 2,
+    "themeCount": 2,
+    "themes": [
+      "themeLEDSConfidenceSignals",
+      "themeLEDSReusableDecisionTrail"
+    ]
+  },
+  "validation": [
+    {
+      "command": "python3 -m py_compile /Users/kevin.rapley/.hermes/scripts/serve_research_operations.py",
+      "result": "passed"
+    },
+    {
+      "command": "SQLite seeded row counts",
+      "result": "passed",
+      "evidence": "3 studies, 4 evidence rows, 2 cluster rows and 2 theme rows"
+    },
+    {
+      "command": "GET https://research-operations/api/studies?project=recLEDSResearch01",
+      "result": "passed"
+    },
+    {
+      "command": "GET https://research-operations/api/synthesis/evidence?sid=recLEDSOpsNeeds01&pid=recLEDSResearch01",
+      "result": "passed"
+    },
+    {
+      "command": "GET https://research-operations/api/synthesis?sid=recLEDSOpsNeeds01&pid=recLEDSResearch01",
+      "result": "passed"
+    },
+    {
+      "command": "GET https://research-operations/api/repository?limit=1",
+      "result": "passed",
+      "evidence": "Repository filters returned and candidate queue was empty after validation cleanup."
+    },
+    {
+      "command": "Playwright synthesis smoke check",
+      "result": "passed",
+      "evidence": "Rendered 4 evidence cards, 2 clusters, 2 themes and 2 Submit to repository links."
+    },
+    {
+      "command": "Playwright candidate prefill and submit check",
+      "result": "passed",
+      "evidence": "Candidate form was prefilled from theme source parameters and submitted successfully; generated validation row was removed."
+    }
+  ],
+  "residualRisks": [
+    "The helper script is outside the repository checkout and could be overwritten by another local automation.",
+    "No remote Cloudflare D1, Airtable or GitHub data was changed."
+  ]
+}

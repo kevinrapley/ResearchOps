@@ -108,5 +108,7 @@ includes(impactTrackerSource, 'data-impact-edit', 'impact tracker edit action');
 includes(impactTrackerSource, 'data-impact-confirm-delete', 'impact tracker delete confirmation');
 includes(impactTrackerSource, 'method: isUpdate ? "PATCH" : "POST"', 'impact tracker update endpoint');
 includes(impactTrackerSource, 'method: "DELETE"', 'impact tracker delete endpoint');
+includes(impactTrackerSource, 'candidateHrefForRecommendation', 'impact tracker repository candidate path');
+includes(impactTrackerSource, 'data-submit-recommendation-to-repository', 'impact tracker repository candidate action');
 excludes(impactTrackerSource, 'window.confirm', 'impact tracker component');
 excludes(impactTrackerSource, 'alert("Metric name is required")', 'impact tracker component');

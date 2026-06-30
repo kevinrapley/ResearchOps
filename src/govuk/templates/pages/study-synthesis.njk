@@ -12,7 +12,7 @@
 {% block head %}
 	<meta property="schema:name" content="Study synthesis - ResearchOps">
 	<link rel="stylesheet" href="/css/govuk/govuk-forms.css" media="screen">
-	<link rel="stylesheet" href="/css/synthesize.css?v=study-synthesis-20260501-progressive-disclosure" media="screen">
+	<link rel="stylesheet" href="/css/synthesize.css?v=study-synthesis-20260701-govuk-markup-cleanup" media="screen">
 	<link rel="stylesheet" href="/css/daas-brand-panel.css?v=leds-brand-panel-20260624" media="screen">
 	<link rel="modulepreload" href="/js/study-route-context.js">
 	<link rel="modulepreload" href="/js/daas-brand-panel.js?v=leds-brand-panel-20260624">
@@ -79,10 +79,10 @@
 			href: "/pages/study/session/",
 			attributes: { id: "capture-evidence-link" }
 		}) }}
-	</section>
+		</section>
 
-	<div id="synthesis-workspace" class="synthesis-flow" hidden>
-		<section id="clusters-section" class="panel synthesis-panel" aria-labelledby="clusters-title">
+		<div id="synthesis-workspace" class="synthesis-flow" hidden>
+		<section id="clusters-section" class="synthesis-panel govuk-!-margin-bottom-8" aria-labelledby="clusters-title">
 			<header class="synthesis-panel__header">
 				<div>
 					<h2 id="clusters-title" class="govuk-heading-m">Working cluster groupings</h2>
@@ -95,6 +95,7 @@
 					id: "cluster-label",
 					name: "clusterLabel",
 					label: { text: "Cluster grouping name" },
+					classes: "govuk-!-width-two-thirds",
 					attributes: { autocomplete: "off", "aria-describedby": "create-cluster-hint", disabled: "disabled" }
 				}) }}
 
@@ -104,6 +105,7 @@
 					value: "",
 					rows: 4,
 					label: { text: "Cluster grouping description" },
+					classes: "govuk-!-width-two-thirds",
 					attributes: { disabled: "disabled" }
 				}) }}
 
@@ -121,7 +123,7 @@
 			<div id="cluster-list" class="cluster-list"></div>
 		</section>
 
-		<section id="evidence-section" class="panel synthesis-panel" aria-labelledby="evidence-title" hidden>
+		<section id="evidence-section" class="synthesis-panel govuk-!-margin-bottom-8" aria-labelledby="evidence-title" hidden>
 			<header class="synthesis-panel__header">
 				<div>
 					<h2 id="evidence-title" class="govuk-heading-m">Evidence</h2>
@@ -135,13 +137,20 @@
 					name: "tagFilter",
 					label: { text: "Filter by tag" },
 					hint: { text: "Use a tag, framework category or safeguarding label." },
+					classes: "govuk-!-width-two-thirds",
 					attributes: { autocomplete: "off", spellcheck: "false" }
 				}) }}
 
-				<div class="govuk-form-group">
-					<label class="govuk-label" for="target-cluster">Add selected evidence to</label>
-					<select id="target-cluster" class="govuk-select" aria-describedby="add-selected-evidence-hint" disabled></select>
-				</div>
+				{{ govukSelect({
+					id: "target-cluster",
+					name: "targetCluster",
+					label: { text: "Add selected evidence to" },
+					classes: "govuk-!-width-two-thirds",
+					items: [
+						{ value: "", text: "Create a working cluster grouping first" }
+					],
+					attributes: { "aria-describedby": "add-selected-evidence-hint", disabled: "disabled" }
+				}) }}
 
 				<div class="synthesis-action-block">
 					{{ govukButton({
@@ -166,7 +175,7 @@
 			<p class="govuk-body">Add evidence to a working cluster grouping before creating a theme.</p>
 		</section>
 
-		<section id="themes-section" class="panel synthesis-panel" aria-labelledby="themes-title" hidden>
+		<section id="themes-section" class="synthesis-panel govuk-!-margin-bottom-8" aria-labelledby="themes-title" hidden>
 			<header class="synthesis-panel__header">
 				<div>
 					<h2 id="themes-title" class="govuk-heading-m">Themes</h2>
@@ -175,15 +184,22 @@
 			</header>
 
 			<form id="theme-form" class="theme-create" novalidate>
-				<div class="govuk-form-group">
-					<label class="govuk-label" for="theme-cluster">Working cluster grouping</label>
-					<select id="theme-cluster" class="govuk-select" aria-describedby="create-theme-hint" disabled></select>
-				</div>
+				{{ govukSelect({
+					id: "theme-cluster",
+					name: "themeCluster",
+					label: { text: "Working cluster grouping" },
+					classes: "govuk-!-width-two-thirds",
+					items: [
+						{ value: "", text: "Add evidence to a working cluster grouping first" }
+					],
+					attributes: { "aria-describedby": "create-theme-hint", disabled: "disabled" }
+				}) }}
 
 				{{ govukInput({
 					id: "theme-label",
 					name: "themeLabel",
 					label: { text: "Theme name" },
+					classes: "govuk-!-width-two-thirds",
 					attributes: { autocomplete: "off", "aria-describedby": "create-theme-hint", disabled: "disabled" }
 				}) }}
 
@@ -193,6 +209,7 @@
 					value: "",
 					rows: 5,
 					label: { text: "Theme description" },
+					classes: "govuk-!-width-two-thirds",
 					attributes: { disabled: "disabled" }
 				}) }}
 
