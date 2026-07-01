@@ -96,6 +96,40 @@
     {
       "command": "Browser computed-style check at 1264x732",
       "result": "passed: radios group has govuk-!-margin-bottom-6, computed margin-bottom is 30px, measured gap to next question is 30px and there is no horizontal overflow"
+    },
+    {
+      "command": "npm run format:check",
+      "result": "passed after the success-panel contrast fix"
+    },
+    {
+      "command": "node --import ./tests/helpers/generated-govuk-page-source.mjs --test tests/auth-registration-requests-route-state.test.js",
+      "result": "passed after the success-panel contrast fix"
+    },
+    {
+      "command": "Browser success-state check",
+      "result": "passed: confirmation panel background is rgb(15, 122, 82), body and inverse link text are rgb(255, 255, 255), no plain govuk-body or plain govuk-link remains inside the panel and there is no horizontal overflow"
+    },
+    {
+      "command": "npm run lint",
+      "result": "passed after the success-panel contrast fix with 0 errors and existing warnings"
+    },
+    {
+      "command": "node --test tests/deploy-asset-paths.test.js",
+      "result": "passed after a transient full-suite deploy asset comparison failure"
+    },
+    {
+      "command": "npm test",
+      "result": "passed on rerun after the success-panel contrast fix: 271 tests"
+    }
+  ],
+  "codexReviewComments": [
+    {
+      "threadId": "PRRT_kwDOP3Td2M6NvEBk",
+      "commentUrl": "https://github.com/kevinrapley/ResearchOps/pull/451#discussion_r3509418998",
+      "classification": "valid",
+      "acknowledgement": "+1 reaction added",
+      "remedy": "Changed showSuccess() to use govuk-panel__body and govuk-link govuk-link--inverse, with route-state assertions.",
+      "status": "fixed locally; reply and resolution to follow after push"
     }
   ],
   "validationNotRun": [

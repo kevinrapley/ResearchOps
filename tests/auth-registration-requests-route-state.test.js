@@ -162,6 +162,9 @@ function assertCheckAnswersBehaviourExists() {
 	assert.match(registrationPageScript, /Sending this request will not give you access/);
 	assert.match(registrationPageScript, /A team admin will review it and decide what access you need/);
 	assert.match(registrationPageScript, /govuk-panel--confirmation/);
+	assert.match(registrationPageScript, /govuk-panel__body/);
+	assert.match(registrationPageScript, /govuk-link govuk-link--inverse/);
+	assert.doesNotMatch(registrationPageScript, /<p class="govuk-body"><a class="govuk-link" href="\/pages\/account\/sign-in\/">Go to sign in<\/a><\/p>/);
 	assert.doesNotMatch(elementForId(registrationPageSource, 'registration-check-answers'), /tabindex=/);
 	assert.doesNotMatch(registrationPageScript, /registration-check-answers-title'\)\?\.focus/);
 }
