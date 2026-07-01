@@ -1,152 +1,319 @@
 <!doctype html>
 <html class="govuk-template" lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>Research session - ResearchOps Demo Suite</title>
+		<link rel="stylesheet" href="/assets/govuk/govuk-frontend.css" media="screen" />
 
-<head>
-	<meta charset="utf-8" />
-	<meta name="viewport" content="width=device-width, initial-scale=1" />
-	<meta name="sda-auto" content="true" />
-	<title>Research session — ResearchOps</title>
+		<meta property="schema:name" content="Research session - ResearchOps" />
+		<meta property="schema:creator" content="Home Office ResearchOps Platform" />
+		<meta property="schema:dateModified" content="2026-07-01" />
+		<meta property="dcterms:language" content="en-GB" />
+		<link rel="stylesheet" href="/css/study-page.css" media="screen" />
+		<link rel="stylesheet" href="/css/daas-brand-panel.css?v=leds-brand-panel-20260624" media="screen" />
+		<link rel="modulepreload" href="/js/daas-brand-panel.js?v=leds-brand-panel-20260624" />
+		<link rel="modulepreload" href="/components/session-controller.js" />
+		<link rel="modulepreload" href="/components/session-consent-controller.js" />
 
-	<!-- Project name hint for integrations (kept in sync by renderProject) -->
-	<meta name="project:name" content="">
+		<script type="module" src="/components/layout.js" defer></script>
+		<script type="module" src="/js/govuk-frontend-init.js" defer></script>
+	</head>
+	<body class="govuk-template__body">
+		<script>
+			document.body.className +=
+				" js-enabled" + ("noModule" in HTMLScriptElement.prototype ? " govuk-frontend-supported" : "");
+		</script>
+		<x-include src="/partials/header.html" vars='{"active":"Projects"}'></x-include>
+		<main class="govuk-main-wrapper" id="main-content" role="main" tabindex="-1">
+			<div class="govuk-width-container study-session-page" data-study-subpage-template="session">
+				<nav class="govuk-breadcrumbs" aria-label="Breadcrumb">
+					<ol class="govuk-breadcrumbs__list">
+						<li class="govuk-breadcrumbs__list-item">
+							<a class="govuk-breadcrumbs__link" href="/pages/projects/">Projects</a>
+						</li>
 
-	<link rel="stylesheet" href="/css/govuk/govuk-typography.css" media="screen" />
-	<link rel="stylesheet" href="/css/govuk/govuk-colours.css" media="screen" />
-	<link rel="stylesheet" href="/css/screen.css" media="screen" />
-	<link rel="stylesheet" href="/css/govuk/govuk-buttons.css" media="screen" />
-	<link rel="stylesheet" href="/css/govuk/govuk-forms.css" media="screen" />
-	<link rel="stylesheet" href="/css/session.css" media="screen" />
+						<li class="govuk-breadcrumbs__list-item">
+							<a class="govuk-breadcrumbs__link" href="#" id="breadcrumb-project">Project</a>
+						</li>
 
-	<link rel="modulepreload" href="/components/session-controller.js" />
-	<link rel="modulepreload" href="/components/session-consent-controller.js" />
+						<li class="govuk-breadcrumbs__list-item">
+							<a class="govuk-breadcrumbs__link" href="#" id="breadcrumb-study">Study</a>
+						</li>
 
-	<script type="module" src="/components/layout.js" defer></script>
-	<script type="module" src="/components/session-controller.js" defer></script>
-	<script type="module" src="/components/session-consent-controller.js" defer></script>
-	<link rel="stylesheet" href="/assets/govuk/govuk-frontend.css" media="screen">
-	<script type="module" src="/js/govuk-frontend-init.js" defer></script>
-</head>
+						<li class="govuk-breadcrumbs__list-item" aria-current="page">Session</li>
+					</ol>
+				</nav>
 
-<body class="govuk-template__body">
-	<script>document.body.className += ' js-enabled' + ('noModule' in HTMLScriptElement.prototype ? ' govuk-frontend-supported' : '');</script>
-
-	<!-- Page metadata -->
-	<meta property="schema:name" content="Research Session — ResearchOps" />
-	<meta property="schema:creator" content="Home Office ResearchOps Platform" />
-	<meta property="schema:dateModified" content="2025-10-29" />
-	<meta property="dcterms:language" content="en-GB" />
-
-	<x-include src="/partials/header.html" vars='{
-		"active":"Projects",
-		"subtitle":"Study session"
-	}'></x-include>
-
-	<main id="main-content" class="govuk-body session-page govuk-main-wrapper" role="main" aria-describedby="page-desc" data-project-name="" typeof="schema:ResearchProject" resource="#project" tabindex="-1">
-		<header class="page-header">
-			<h1 class="govuk-heading-l">Begin a session</h1>
-			<p id="page-desc" class="govuk-body">Select a participant scheduled to this study and manage your live note‑taking session.</p>
-		</header>
-
-		<section class="picker">
-			<h2 class="govuk-heading-m">Select participant</h2>
-			<div class="picker__row govuk-form-group">
-				<label for="participant-select" class="govuk-label">Participant</label>
-				<select id="participant-select" class="govuk-select" aria-describedby="participant-help">
-					<option value="" selected>— Choose a participant —</option>
-				</select>
-				<p id="participant-help" class="govuk-hint">This list will be populated from Airtable for the current study.</p>
-			</div>
-
-			<div class="columns">
-				<section class="panel" aria-labelledby="participant-details-title">
-					<h3 id="participant-details-title" class="govuk-heading-s">Participant details</h3>
-					<dl class="data-list" id="participant-details">
-						<!-- Filled by controller -->
-					</dl>
-				</section>
-
-				<section class="panel" aria-labelledby="consent-summary-title">
-					<h3 id="consent-summary-title" class="govuk-heading-s">Consent summary</h3>
-					<dl class="data-list" id="consent-summary">
-						<!-- Filled by controller -->
-					</dl>
-				</section>
-			</div>
-		</section>
-
-		<hr class="divider" />
-
-		<section class="session-controls" aria-labelledby="controls-title">
-			<h2 id="controls-title" class="govuk-heading-m">Session controls</h2>
-
-			<div id="consent-gate-message" class="consent-gate-message" role="alert" hidden>
-				<h3 class="govuk-heading-s">Participant consent must be checked before this session starts</h3>
-				<p id="consent-gate-message-body" class="govuk-body">Choose a participant to review consent status.</p>
-				<a id="manage-participant-consent-link" href="/pages/study/participant-consent/" class="govuk-button govuk-button--secondary">Manage participant consent</a>
-			</div>
-
-			<div class="controls-row">
-				<button id="btn-start" class="govuk-button">&#x25B6; Start</button>
-				<button id="btn-pause" class="govuk-button govuk-button--secondary" disabled>&#x23f8; Pause</button>
-				<button id="btn-stop" class="govuk-button govuk-button--warning" disabled>&#x23F9; Stop</button>
-				<div class="timer" role="timer" aria-live="polite" aria-atomic="true">
-					<span id="timer-display">00:00:00</span>
+				<div class="rops-daas-brand-panel" id="daas-brand-panel" hidden aria-label="DaaS">
+					<img class="rops-daas-brand-panel__logo" src="/images/brands/daas-logo.svg" alt="DaaS" />
 				</div>
-			</div>
-		</section>
+				<div class="rops-leds-brand-panel" id="leds-brand-panel" hidden aria-label="LEDS">
+					<img
+						class="rops-leds-brand-panel__logo"
+						src="/images/brands/leds-logo-white.svg"
+						alt="Law Enforcement Data Service"
+					/>
+				</div>
 
-		<section class="notes" aria-labelledby="notes-title">
-			<h2 id="notes-title" class="govuk-heading-m">Notes</h2>
-
-			<div class="note-toolbar">
-				<div class="note-toolbar__left">
-					<div class="govuk-form-group">
-						<label for="framework" class="govuk-label">Note framework</label>
-						<select id="framework" class="govuk-select">
-							<option value="none" selected>None</option>
-							<option value="aeiou">AEIOU</option>
-							<option value="poems">POEMS</option>
-						</select>
-					</div>
-
-					<div class="govuk-form-group">
-						<label for="note-kind" class="govuk-label">Category</label>
-						<select id="note-kind" class="govuk-select">
-							<option value="idea">Ideas/Notes</option>
-							<option value="quote">Quote</option>
-							<option value="observation">Observation</option>
-						</select>
+				<div class="govuk-error-summary" id="session-error-summary" hidden="hidden" data-module="govuk-error-summary">
+					<div role="alert">
+						<h2 class="govuk-error-summary__title">There is a problem</h2>
+						<div class="govuk-error-summary__body">
+							<ul class="govuk-list govuk-error-summary__list">
+								<li>
+									<a href="#participant-select">Participants could not be loaded.</a>
+								</li>
+							</ul>
+						</div>
 					</div>
 				</div>
 
-				<div class="note-toolbar__right" aria-label="Formatting">
-					<button class="govuk-button govuk-button--secondary" data-cmd="bold" title="Bold (Ctrl+B)"><strong>B</strong></button>
-					<button class="govuk-button govuk-button--secondary" data-cmd="italic" title="Italic (Ctrl+I)"><em>I</em></button>
-					<button class="govuk-button govuk-button--secondary" data-cmd="underline" title="Underline (Ctrl+U)"><span style="text-decoration:underline">U</span></button>
-					<button class="govuk-button govuk-button--secondary" data-cmd="formatBlock" data-value="blockquote" title="Blockquote">“”</button>
-					<button class="govuk-button govuk-button--secondary" data-cmd="formatBlock" data-value="h2" title="Heading">H2</button>
-					<button class="govuk-button govuk-button--secondary" data-cmd="formatBlock" data-value="h3" title="Sub‑heading">H3</button>
-					<button class="govuk-button govuk-button--secondary" data-cmd="formatBlock" data-value="p" title="Paragraph">¶</button>
+				<div id="session-entity" typeof="schema:Event" resource="#session" hidden>
+					<meta property="schema:identifier" content="" />
 				</div>
+
+				<header class="study-session-hero govuk-!-margin-bottom-6">
+					<p id="study-title" class="govuk-caption-m">Study</p>
+					<h1 class="govuk-heading-l">Run a research session</h1>
+					<p id="page-desc" class="govuk-body-l govuk-!-width-two-thirds">
+						Select a participant, check consent, control the timer and capture session notes.
+					</p>
+				</header>
+
+				<section class="study-session-section govuk-!-margin-bottom-8" aria-labelledby="participant-picker-title">
+					<h2 id="participant-picker-title" class="govuk-heading-m">Select participant</h2>
+
+					<div class="govuk-form-group">
+						<label class="govuk-label" for="participant-select">Participant</label>
+
+						<div id="participant-select-hint" class="govuk-hint">
+							This list is populated from participants scheduled to the current study.
+						</div>
+
+						<select
+							class="govuk-select govuk-!-width-two-thirds"
+							id="participant-select"
+							name="participantSelect"
+							aria-describedby="participant-select-hint"
+						>
+							<option value="" selected>Choose a participant</option>
+						</select>
+					</div>
+
+					<div class="govuk-grid-row study-session-summary-grid">
+						<section class="govuk-grid-column-one-half" aria-labelledby="participant-details-title">
+							<h3 id="participant-details-title" class="govuk-heading-s">Participant details</h3>
+							<dl class="govuk-summary-list study-session-data-list" id="participant-details"></dl>
+						</section>
+
+						<section class="govuk-grid-column-one-half" aria-labelledby="consent-summary-title">
+							<h3 id="consent-summary-title" class="govuk-heading-s">Consent summary</h3>
+							<dl class="govuk-summary-list study-session-data-list" id="consent-summary"></dl>
+						</section>
+					</div>
+				</section>
+
+				<section class="study-session-section govuk-!-margin-bottom-8" aria-labelledby="controls-title">
+					<h2 id="controls-title" class="govuk-heading-m">Session controls</h2>
+
+					<div id="consent-gate-message" class="govuk-warning-text study-session-consent-gate" role="alert" hidden>
+						<span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+						<strong class="govuk-warning-text__text">
+							<span class="govuk-visually-hidden">Warning</span>
+							<span id="consent-gate-message-body">Choose a participant to review consent status.</span>
+						</strong>
+					</div>
+					<p id="consent-gate-actions" class="govuk-button-group study-session-consent-gate-actions" hidden>
+						<a
+							id="manage-participant-consent-link"
+							href="/pages/study/participant-consent/"
+							class="govuk-button govuk-button--secondary"
+						>
+							Manage participant consent
+						</a>
+					</p>
+
+					<div class="govuk-button-group study-session-controls">
+						<button type="button" class="govuk-button" data-module="govuk-button" id="btn-start">Start</button>
+
+						<button
+							type="button"
+							class="govuk-button govuk-button--secondary"
+							data-module="govuk-button"
+							id="btn-pause"
+							disabled="disabled"
+						>
+							Pause
+						</button>
+
+						<button
+							type="button"
+							class="govuk-button govuk-button--warning"
+							data-module="govuk-button"
+							id="btn-stop"
+							disabled="disabled"
+						>
+							Stop
+						</button>
+
+						<p
+							class="study-session-timer govuk-body govuk-!-font-weight-bold"
+							role="timer"
+							aria-live="polite"
+							aria-atomic="true"
+						>
+							<span id="timer-display">00:00:00</span>
+						</p>
+					</div>
+				</section>
+
+				<section class="study-session-section" aria-labelledby="notes-title">
+					<h2 id="notes-title" class="govuk-heading-m">Notes</h2>
+					<p class="govuk-body govuk-!-width-two-thirds">
+						Use the note editor during the session. Note timings are captured from the first meaningful keystroke.
+					</p>
+
+					<div class="govuk-grid-row study-session-note-options">
+						<div class="govuk-grid-column-one-half">
+							<div class="govuk-form-group">
+								<label class="govuk-label" for="framework">Note framework</label>
+
+								<select class="govuk-select" id="framework" name="framework">
+									<option value="none" selected>None</option>
+
+									<option value="aeiou">AEIOU</option>
+
+									<option value="poems">POEMS</option>
+								</select>
+							</div>
+						</div>
+						<div class="govuk-grid-column-one-half">
+							<div class="govuk-form-group">
+								<label class="govuk-label" for="note-kind">Category</label>
+
+								<select class="govuk-select" id="note-kind" name="noteKind">
+									<option value="idea">Ideas or notes</option>
+
+									<option value="quote">Quote</option>
+
+									<option value="observation">Observation</option>
+								</select>
+							</div>
+						</div>
+					</div>
+
+					<div class="govuk-form-group">
+						<label class="govuk-label" for="note-editor">Session note</label>
+						<div class="study-session-editor-shell">
+							<div class="study-session-formatting" role="toolbar" aria-label="Formatting">
+								<button
+									class="study-session-formatting-button"
+									type="button"
+									data-cmd="bold"
+									title="Bold"
+									aria-label="Bold"
+								>
+									<strong>B</strong>
+								</button>
+								<button
+									class="study-session-formatting-button"
+									type="button"
+									data-cmd="italic"
+									title="Italic"
+									aria-label="Italic"
+								>
+									<em>I</em>
+								</button>
+								<button
+									class="study-session-formatting-button"
+									type="button"
+									data-cmd="underline"
+									title="Underline"
+									aria-label="Underline"
+								>
+									<span class="study-session-underline-control">U</span>
+								</button>
+								<button
+									class="study-session-formatting-button study-session-formatting-button--quote"
+									type="button"
+									data-cmd="formatBlock"
+									data-value="blockquote"
+									title="Blockquote"
+									aria-label="Blockquote"
+								>
+									“
+								</button>
+								<button
+									class="study-session-formatting-button"
+									type="button"
+									data-cmd="formatBlock"
+									data-value="h2"
+									title="Heading 2"
+									aria-label="Heading 2"
+								>
+									H2
+								</button>
+								<button
+									class="study-session-formatting-button"
+									type="button"
+									data-cmd="formatBlock"
+									data-value="h3"
+									title="Heading 3"
+									aria-label="Heading 3"
+								>
+									H3
+								</button>
+								<button
+									class="study-session-formatting-button"
+									type="button"
+									data-cmd="formatBlock"
+									data-value="p"
+									title="Paragraph"
+									aria-label="Paragraph"
+								>
+									P
+								</button>
+							</div>
+							<div
+								id="note-editor"
+								class="study-session-editor govuk-body"
+								contenteditable="true"
+								role="textbox"
+								aria-multiline="true"
+								aria-describedby="note-editor-hint"
+							></div>
+						</div>
+						<div id="note-editor-hint" class="govuk-hint">
+							Do not enter participant personal data unless it is necessary for the research record.
+						</div>
+					</div>
+
+					<div class="govuk-button-group">
+						<button
+							type="button"
+							class="govuk-button"
+							data-module="govuk-button"
+							id="btn-save-note"
+							disabled="disabled"
+						>
+							Save note
+						</button>
+
+						<p id="note-timestamps" class="govuk-hint study-session-note-status" aria-live="polite"></p>
+					</div>
+
+					<section id="saved-notes-section" aria-labelledby="saved-notes-title" class="govuk-!-margin-top-6" hidden>
+						<h3 id="saved-notes-title" class="govuk-heading-s">Saved notes</h3>
+						<ul id="notes-list" class="govuk-list study-session-notes-list"></ul>
+					</section>
+				</section>
 			</div>
+		</main>
+		<x-include src="/partials/footer.html"></x-include>
 
-			<div class="editor-wrap">
-				<div id="note-editor" class="editor" contenteditable="true" role="textbox" aria-multiline="true"></div>
-			</div>
-
-			<div class="note-actions">
-				<button id="btn-save-note" class="govuk-button" disabled>💾 Save</button>
-				<span id="note-timestamps" class="timestamps" aria-live="polite"></span>
-			</div>
-
-			<section aria-labelledby="saved-notes-title" class="saved-notes">
-				<h3 id="saved-notes-title" class="govuk-heading-s">Saved notes</h3>
-				<ul id="notes-list" class="notes-list"></ul>
-			</section>
-		</section>
-	</main>
-
-	<x-include src="/partials/footer.html"></x-include>
-</body>
-
+		<script type="module" src="/js/daas-brand-panel.js?v=leds-brand-panel-20260624"></script>
+		<script type="module" src="/components/session-controller.js"></script>
+		<script type="module" src="/components/session-consent-controller.js"></script>
+	</body>
 </html>

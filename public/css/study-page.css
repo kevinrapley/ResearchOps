@@ -89,6 +89,170 @@
 	pointer-events: none;
 	}
 
+.study-session-section {
+	border-top: 1px solid #b1b4b6;
+	padding-top: 24px;
+	}
+
+.study-session-summary-grid {
+	margin-top: 24px;
+	}
+
+.study-session-data-list {
+	margin: 0;
+	}
+
+.study-session-data-list .govuk-summary-list__row {
+	display: grid;
+	grid-template-columns: minmax(150px, max-content) minmax(0, 1fr);
+	column-gap: 20px;
+	align-items: start;
+	border-bottom: 0;
+	margin-bottom: 10px;
+	}
+
+.study-session-data-list .govuk-summary-list__key, .study-session-data-list .govuk-summary-list__value {
+	display: block;
+	width: auto;
+	padding: 0;
+	margin: 0;
+	}
+
+.study-session-data-list .govuk-summary-list__key {
+	font-weight: 700;
+	}
+
+.study-session-data-list .govuk-summary-list__value {
+	min-width: 0;
+	}
+
+.study-session-consent-gate {
+	max-width: 720px;
+	margin-bottom: 10px;
+	}
+
+.study-session-consent-gate-actions {
+	max-width: 720px;
+	margin-bottom: 30px;
+	}
+
+.study-session-consent-gate-actions .govuk-button {
+	margin-bottom: 0;
+	}
+
+.study-session-controls {
+	align-items: center;
+	}
+
+.study-session-timer {
+	min-width: 9ch;
+	margin: 0 0 15px auto;
+	font-variant-numeric: tabular-nums;
+	text-align: right;
+	}
+
+.study-session-note-options {
+	margin-bottom: 20px;
+	}
+
+.study-session-editor-shell {
+	max-width: 100%;
+	}
+
+.study-session-formatting {
+	display: flex;
+	gap: 5px;
+	align-items: center;
+	max-width: 100%;
+	overflow-x: auto;
+	-webkit-overflow-scrolling: touch;
+	border: 2px solid #0b0c0c;
+	border-bottom: 0;
+	padding: 5px;
+	background: #f3f2f1;
+	}
+
+.study-session-formatting-button {
+	display: inline-flex;
+	flex: 0 0 44px;
+	align-items: center;
+	justify-content: center;
+	box-sizing: border-box;
+	width: 44px;
+	height: 44px;
+	margin: 0;
+	border: 2px solid #0b0c0c;
+	padding: 0;
+	background: #f3f2f1;
+	box-shadow: 0 2px 0 #0b0c0c;
+	color: #0b0c0c;
+	font-family: "GDS Transport", arial, sans-serif;
+	font-size: 19px;
+	line-height: 1;
+	text-align: center;
+	white-space: nowrap;
+	cursor: pointer;
+	}
+
+.study-session-formatting-button:hover {
+	background: #dbdad9;
+	}
+
+.study-session-formatting-button:focus {
+	outline: 3px solid #ffdd00;
+	outline-offset: 0;
+	box-shadow: inset 0 0 0 2px #0b0c0c;
+	}
+
+.study-session-formatting-button--quote {
+	align-items: center;
+	padding-top: 6px;
+	font-size: 30px;
+	font-weight: 700;
+	line-height: 1;
+	}
+
+.study-session-underline-control {
+	text-decoration: underline;
+	}
+
+.study-session-editor {
+	min-height: 160px;
+	padding: 10px;
+	border: 2px solid #0b0c0c;
+	margin-bottom: 0;
+	background: #ffffff;
+	outline: 3px solid transparent;
+	box-sizing: border-box;
+	}
+
+.study-session-editor:focus {
+	border-color: #0b0c0c;
+	outline: 3px solid #ffdd00;
+	outline-offset: 0;
+	box-shadow: inset 0 0 0 2px;
+	}
+
+.study-session-note-status {
+	margin-bottom: 15px;
+	}
+
+.study-session-notes-list li {
+	border-top: 1px solid #b1b4b6;
+	padding: 15px 0;
+	}
+
+.study-session-notes-list li:first-child {
+	border-top: 0;
+	padding-top: 0;
+	}
+
+.study-session-notes-list .note-meta {
+	margin: 0 0 10px;
+	color: #505a5f;
+	font-size: 1rem;
+	}
+
 .govuk-task-list__item .govuk-tag {
 	max-width: 100%;
 	margin-top: 10px;
@@ -137,6 +301,21 @@
 	.study-action-bar .govuk-button {
 		box-sizing: border-box;
 		text-align: center;
+		width: 100%;
+		}
+	.study-session-data-list .govuk-summary-list__row {
+		grid-template-columns: minmax(140px, max-content) minmax(0, 1fr);
+		column-gap: 15px;
+		margin-bottom: 5px;
+		}
+	.study-session-controls .govuk-button {
+		box-sizing: border-box;
+		text-align: center;
+		width: 100%;
+		}
+	.study-session-timer {
+		margin-left: 0;
+		text-align: left;
 		width: 100%;
 		}
 	}

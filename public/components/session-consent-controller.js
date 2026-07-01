@@ -16,6 +16,7 @@ const $ = (selector, root = document) => root.querySelector(selector);
 const state = {
 	projectId: "",
 	studyId: "",
+	sessionId: "",
 	participantConsentRecords: []
 };
 
@@ -56,9 +57,9 @@ async function loadParticipantConsent() {
 function consentRecordForSelection() {
 	const select = $("#participant-select");
 	const option = select?.selectedOptions?.[0];
-	const participantId = option?.dataset?.airtableId || select?.value || "";
-	if (!participantId) return null;
-	return state.participantConsentRecords.find(record => record.participantId === participantId) || null;
+	const participantIds = new Set([option?.dataset?.airtableId, select?.value].filter(Boolean));
+	if (!participantIds.size) return null;
+	return state.participantConsentRecords.find(record => participantIds.has(record.participantId || record.participant_id)) || null;
 }
 
 function consentStatus(record) {
@@ -83,13 +84,17 @@ function appendConsentSummary(record) {
 	existing.forEach(item => item.remove());
 
 	const add = (term, value) => {
+		const row = document.createElement("div");
+		row.className = "govuk-summary-list__row";
+		row.dataset.sessionConsentRow = "true";
 		const dt = document.createElement("dt");
-		dt.dataset.sessionConsentRow = "true";
+		dt.className = "govuk-summary-list__key";
 		dt.textContent = term;
 		const dd = document.createElement("dd");
-		dd.dataset.sessionConsentRow = "true";
+		dd.className = "govuk-summary-list__value";
 		dd.textContent = value;
-		summary.append(dt, dd);
+		row.append(dt, dd);
+		summary.append(row);
 	};
 
 	add("Required consent", consentStatus(record));
@@ -104,10 +109,12 @@ function appendConsentSummary(record) {
 
 function setGate(blocked, message) {
 	const gate = $("#consent-gate-message");
+	const actions = $("#consent-gate-actions");
 	const body = $("#consent-gate-message-body");
 	const start = $("#btn-start");
 	if (body) body.textContent = message;
 	if (gate) gate.hidden = !blocked;
+	if (actions) actions.hidden = !blocked;
 	if (start) {
 		start.disabled = blocked;
 		start.setAttribute("aria-describedby", blocked ? "consent-gate-message-body" : "");
@@ -148,16 +155,22 @@ function updateGate() {
 
 function updateRoutes() {
 	const link = $("#manage-participant-consent-link");
-	if (link) link.href = route("/pages/study/participant-consent/", { pid: state.projectId, sid: state.studyId });
+	const select = $("#participant-select");
+	const participantId = select?.value || "";
+	if (link) link.href = route("/pages/study/participant-consent/", { id: state.studyId, session: state.sessionId, participant: participantId });
 }
 
 async function init() {
 	const params = new URLSearchParams(window.location.search);
-	state.projectId = params.get("pid") || "";
-	state.studyId = params.get("sid") || "";
+	state.projectId = params.get("project") || params.get("pid") || "";
+	state.studyId = params.get("id") || params.get("sid") || "";
+	state.sessionId = params.get("session") || "";
 	updateRoutes();
 	state.participantConsentRecords = await loadParticipantConsent();
-	$("#participant-select")?.addEventListener("change", updateGate);
+	$("#participant-select")?.addEventListener("change", () => {
+		updateRoutes();
+		updateGate();
+	});
 	updateGate();
 }
 
