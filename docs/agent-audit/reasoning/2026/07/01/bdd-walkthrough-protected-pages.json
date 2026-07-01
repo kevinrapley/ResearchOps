@@ -1,0 +1,117 @@
+{
+  "traceId": "bdd-walkthrough-protected-pages",
+  "date": "2026-07-01",
+  "branch": "fix/bdd-walkthrough-protected-pages",
+  "task": "Investigate attached full BDD walkthrough logs and fix the failing walkthrough captures.",
+  "traceRequired": true,
+  "operatingModelFilesLoaded": [
+    "AGENTS.md",
+    ".agent-operating-model/orchestration.xml",
+    ".agent-operating-model/bundle-registry.json",
+    ".agent-operating-model/task-signal-catalog.json",
+    ".agent-operating-model/selection-rules.json",
+    ".agent-operating-model/bootstrap-checklist.md",
+    ".agent-operating-model/precedence-policy.md",
+    ".agent-operating-model/trace-policy.md",
+    ".agent-operating-model/trace-layers.md",
+    ".agent-operating-model/behavioural-evals.json",
+    ".agent-operating-model/github-mutation-policy.md"
+  ],
+  "selectedBundles": [
+    {
+      "id": "github-diamond",
+      "canonicalPath": ".agent-operating-model/bundles/github/"
+    },
+    {
+      "id": "researchops-developer-control",
+      "canonicalPath": ".agent-operating-model/bundles/researchops-developer-control/"
+    },
+    {
+      "id": "multi-functional-team",
+      "canonicalPath": ".agent-operating-model/bundles/multi-functional-team/"
+    }
+  ],
+  "skippedBundles": [
+    "govuk-design-system",
+    "cloudflare",
+    "openai-platform",
+    "mcp-agent-tooling",
+    "airtable-public-api",
+    "mural-public-api"
+  ],
+  "evidence": [
+    "Attached logs_77064295337.zip showed bdd-smoke passed with 3 scenarios and 11 steps.",
+    "Attached logs_77064295337.zip showed visual walkthrough failed for 4 captures.",
+    "The AI rewrite state waited for stale copy: Concise rewrite (optional):.",
+    "The project-dashboard state was redirected to sign-in before mocked project API routes could render Assisted Digital Support Discovery.",
+    "public/_worker.js protects /pages/projects, /pages/project-dashboard and /pages/repository.",
+    "Codex review threads PRRT_kwDOP3Td2M6NqBfg and PRRT_kwDOP3Td2M6NqBgU correctly identified that /pages/projects/index.html bypassed the Worker-protected /pages/projects/ route."
+  ],
+  "filesModified": [
+    "scripts/visual-walkthrough.mjs",
+    "visual-walkthrough.config.mjs",
+    "tests/qa-bdd-authenticated-walkthrough-route-state.test.js",
+    "docs/agent-audit/reasoning/2026/07/01/bdd-walkthrough-protected-pages.md",
+    "docs/agent-audit/reasoning/2026/07/01/bdd-walkthrough-protected-pages.json"
+  ],
+  "validation": [
+    {
+      "command": "targeted Playwright check for step-2-ai-rewrite-shown",
+      "status": "passed"
+    },
+    {
+      "command": "targeted Playwright check for /pages/projects/",
+      "status": "passed"
+    },
+    {
+      "command": "static protected-page contract check",
+      "status": "passed"
+    },
+    {
+      "command": "BASE_URL=https://researchops.pages.dev/ npm run qa:cucumber:ci",
+      "status": "passed"
+    },
+    {
+      "command": "npm run qa:cucumber:walkthrough",
+      "status": "passed"
+    },
+    {
+      "command": "node --test tests/qa-bdd-authenticated-walkthrough-route-state.test.js",
+      "status": "passed"
+    },
+    {
+      "command": "npx prettier -c scripts/visual-walkthrough.mjs visual-walkthrough.config.mjs tests/qa-bdd-authenticated-walkthrough-route-state.test.js",
+      "status": "passed"
+    },
+    {
+      "command": "git diff --check",
+      "status": "passed"
+    }
+  ],
+  "validationNotes": [
+    "npm run qa:cucumber:ci failed when first run without a local server or BASE_URL because http://localhost:8788/ refused connections; it passed when rerun with the deployed base URL used by the workflow.",
+    "Remote authenticated project-dashboard and projects verification needs the GitHub RESEARCHOPS_QA_BDD_AUTH_CODE secret, which was not available locally."
+  ],
+  "residualRisks": [
+    "The workflow secret-backed remote auth path was not fully reproduced locally.",
+    "Future Worker protection changes must keep SERVER_PROTECTED_PAGE_IDS aligned with public/_worker.js."
+  ],
+  "reviewThreads": [
+    {
+      "threadId": "PRRT_kwDOP3Td2M6NqBfg",
+      "commentId": 3507616452,
+      "author": "chatgpt-codex-connector",
+      "classification": "valid",
+      "action": "Added a +1 reaction, updated the Projects walkthrough state to capture /pages/projects/, validated the fix, replied with evidence and resolved the thread.",
+      "resolved": true
+    },
+    {
+      "threadId": "PRRT_kwDOP3Td2M6NqBgU",
+      "commentId": 3507616541,
+      "author": "chatgpt-codex-connector",
+      "classification": "valid-duplicate",
+      "action": "Added a +1 reaction, covered by the same Projects walkthrough state and test update, replied with evidence and resolved the thread.",
+      "resolved": true
+    }
+  ]
+}

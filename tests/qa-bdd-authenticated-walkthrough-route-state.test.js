@@ -11,6 +11,7 @@ const packageSource = fs.readFileSync('package.json', 'utf8');
 const stepSource = fs.readFileSync('features/steps/common.steps.js', 'utf8');
 const worldSource = fs.readFileSync('features/support/world.js', 'utf8');
 const visualWalkthroughSource = fs.readFileSync('scripts/visual-walkthrough.mjs', 'utf8');
+const visualWalkthroughConfigSource = fs.readFileSync('visual-walkthrough.config.mjs', 'utf8');
 const helperSource = fs.readFileSync('scripts/walkthrough-playwright.mjs', 'utf8');
 const passwordlessSource = fs.readFileSync('infra/cloudflare/src/core/auth/passwordless.js', 'utf8');
 const participantConsentSource = fs.readFileSync('public/js/participant-consent-page.js', 'utf8');
@@ -49,7 +50,18 @@ test('visual walkthrough uses local assets and deterministic authenticated mocks
 	assert.match(visualWalkthroughSource, /process\.env\.WALKTHROUGH_LOCAL_ASSETS === 'true'/);
 	assert.match(visualWalkthroughSource, /playwrightRequest\.newContext/);
 	assert.match(visualWalkthroughSource, /RESEARCHOPS_QA_BDD_AUTH_CODE/);
-	assert.match(visualWalkthroughSource, /SERVER_PROTECTED_PAGE_IDS = new Set\(\['repository'\]\)/);
+	assert.match(
+		visualWalkthroughSource,
+		/SERVER_PROTECTED_PAGE_IDS = new Set\(\['projects', 'project-dashboard', 'repository'\]\)/,
+	);
+	const projectsPage = visualWalkthroughConfig.pages.find((page) => page.id === 'projects');
+	assert.equal(projectsPage.path, '/pages/projects/index.html');
+	assert.equal(projectsPage.defaultState.path, '/pages/projects/');
+	assert.deepEqual(projectsPage.defaultState.actions, [
+		{ type: 'waitForText', text: 'Assisted Digital Support Discovery' },
+	]);
+	assert.match(visualWalkthroughConfigSource, /selector: '#apply-ai-obj-rewrite'/);
+	assert.doesNotMatch(visualWalkthroughConfigSource, /Concise rewrite \(optional\):/);
 	assert.match(helperSource, /operationalMockRoutes/);
 	assert.match(helperSource, /typeof body === 'function'/);
 	assert.match(helperSource, /SIGN_IN_EMAIL = 'qa-bdd\.walkthrough@example\.gov\.uk'/);

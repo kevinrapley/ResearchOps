@@ -93,7 +93,7 @@ const baseURL = normalizeBaseURL(
 const useLocalAssets = process.env.WALKTHROUGH_LOCAL_ASSETS === 'true';
 const qaBddAuthEmail = process.env.RESEARCHOPS_QA_BDD_AUTH_EMAIL || SIGN_IN_EMAIL;
 const qaBddAuthCode = String(process.env.RESEARCHOPS_QA_BDD_AUTH_CODE || '').replace(/\s+/g, '');
-const SERVER_PROTECTED_PAGE_IDS = new Set(['repository']);
+const SERVER_PROTECTED_PAGE_IDS = new Set(['projects', 'project-dashboard', 'repository']);
 let qaBddStorageStatePromise = null;
 const captureProfiles = (visualWalkthroughConfig.profiles || DEFAULT_PROFILES).map((profile) => ({
 	...profile,
