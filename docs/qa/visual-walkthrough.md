@@ -235,8 +235,8 @@ When the manual walkthrough job runs, it first completes the smoke suite and the
 4. prints a staged diff summary
 5. commits `Update application visual walkthrough report` when files changed
 6. pushes the generated report back to `main`
-7. deploys the generated `reports-site/` artefact to `reopsreporting` on manual runs where `publish_reporting_site` is true
+7. waits for the `reopsreporting` Cloudflare Pages GitHub integration to publish the committed `reports-site/` artefact, then verifies the live timestamp on manual runs where `publish_reporting_site` is true
 
-`reports-site/**` is ignored by the push trigger, so report-only commits do not create a workflow loop.
+`reports-site/**` is ignored by the GitHub Actions push trigger, so report-only commits do not create a workflow loop. The generated report includes `reports-site/wrangler.toml`, and the Cloudflare Pages project must use `reports-site` as its root directory so it does not inherit the main service app's root `wrangler.toml`.
 
 The separate `Deploy reporting site` workflow validates the committed `reports-site/` directory after every `main` push and on manual dispatch. It rejects the GOV.UK service app shell so the reporting artefact cannot silently become the main ResearchOps service. Manual dispatch also deploys `reports-site/` to the `reopsreporting` Cloudflare Pages project and verifies the live report timestamp. If the Cloudflare API token does not have Pages deployment permission, the manual deploy fails without breaking normal `main` push validation.

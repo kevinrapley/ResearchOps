@@ -1,0 +1,118 @@
+{
+  "traceId": "bdd-reporting-pages-github-publish",
+  "date": "2026-07-01",
+  "branch": "fix/bdd-reporting-pages-github-publish",
+  "task": "Fix failed manual qa-bdd walkthrough run after PR #442 merged to main.",
+  "traceRequired": true,
+  "operatingModelFilesLoaded": [
+    "AGENTS.md",
+    ".agent-operating-model/orchestration.xml",
+    ".agent-operating-model/bundle-registry.json",
+    ".agent-operating-model/task-signal-catalog.json",
+    ".agent-operating-model/selection-rules.json",
+    ".agent-operating-model/bootstrap-checklist.md",
+    ".agent-operating-model/precedence-policy.md",
+    ".agent-operating-model/trace-policy.md",
+    ".agent-operating-model/trace-layers.md",
+    ".agent-operating-model/behavioural-evals.json",
+    ".agent-operating-model/github-mutation-policy.md"
+  ],
+  "selectedBundles": [
+    {
+      "id": "github-diamond",
+      "canonicalPath": ".agent-operating-model/bundles/github/"
+    },
+    {
+      "id": "researchops-developer-control",
+      "canonicalPath": ".agent-operating-model/bundles/researchops-developer-control/"
+    },
+    {
+      "id": "multi-functional-team",
+      "canonicalPath": ".agent-operating-model/bundles/multi-functional-team/"
+    },
+    {
+      "id": "cloudflare",
+      "canonicalPath": ".agent-operating-model/bundles/cloudflare/"
+    }
+  ],
+  "skippedBundles": [
+    "govuk-design-system",
+    "openai-platform",
+    "mcp-agent-tooling",
+    "airtable-public-api",
+    "mural-public-api"
+  ],
+  "evidence": [
+    "Manual qa-bdd run 28534365361 failed in the walkthrough job.",
+    "PR #443 CI run 28537142269 failed unit tests because tests/reports-site-validation.test.js expected the previous committed report shape after the latest report contained 46 pages, 64 states and 128 captures.",
+    "PR #443 Codex review thread PRRT_kwDOP3Td2M6NrFyK correctly identified that branch-dispatched manual walkthroughs cannot verify a Cloudflare Pages GitHub publish unless reports-site was persisted to main.",
+    "BDD smoke passed and the visual walkthrough generated the report.",
+    "The workflow persisted reports-site to main at eec87a0b with startedAt 2026-07-01T17:04:12.316Z.",
+    "Wrangler direct upload failed with Cloudflare authentication error 10000 while reading pages/projects/reopsreporting.",
+    "Cloudflare API showed reopsreporting received a successful production deployment from the GitHub push.",
+    "Cloudflare API showed the reopsreporting build destination was public, not reports-site.",
+    "Live reporting URLs returned ResearchOps Demo Suite and did not contain Run started.",
+    "Cloudflare Pages project was updated to root_dir reports-site and destination_dir .",
+    "A follow-up ad hoc Pages build failed because current main lacks reports-site/wrangler.toml and Cloudflare inherited the parent wrangler.toml.",
+    "A direct Wrangler Pages upload from reports-site succeeded as deployment c541ed60-3929-40e1-a4ca-929bd0b08f8f.",
+    "Live reporting URLs show Run started: 2026-07-01T17:04:12.316Z."
+  ],
+  "filesModified": [
+    ".github/workflows/qa-bdd.yml",
+    "scripts/render-reporting-review-site.mjs",
+    "tests/reporting-site-deploy-route-state.test.js",
+    "tests/reports-site-validation.test.js",
+    "tests/reporting-review-generation-model.test.js",
+    "docs/qa/visual-walkthrough.md",
+    "reports-site/wrangler.toml",
+    "docs/agent-audit/reasoning/2026/07/01/bdd-reporting-pages-github-publish.md",
+    "docs/agent-audit/reasoning/2026/07/01/bdd-reporting-pages-github-publish.json"
+  ],
+  "validation": [
+    {
+      "command": "node --test tests/reporting-site-deploy-route-state.test.js",
+      "status": "passed"
+    },
+    {
+      "command": "node --test tests/reports-site-validation.test.js",
+      "status": "passed"
+    },
+    {
+      "command": "node --test tests/*.test.js",
+      "status": "passed"
+    },
+    {
+      "command": "node --test tests/reporting-review-generation-model.test.js",
+      "status": "passed"
+    },
+    {
+      "command": "node scripts/validate-reports-site.mjs",
+      "status": "passed"
+    },
+    {
+      "command": "npx prettier -c .github/workflows/qa-bdd.yml scripts/render-reporting-review-site.mjs tests/reporting-site-deploy-route-state.test.js tests/reporting-review-generation-model.test.js docs/qa/visual-walkthrough.md reports-site/wrangler.toml docs/agent-audit/reasoning/2026/07/01/bdd-reporting-pages-github-publish.md docs/agent-audit/reasoning/2026/07/01/bdd-reporting-pages-github-publish.json",
+      "status": "passed"
+    },
+    {
+      "command": "npm run trace:coverage -- --date 2026-07-01",
+      "status": "passed"
+    },
+    {
+      "command": "npm run validate",
+      "status": "passed"
+    },
+    {
+      "command": "npx --yes wrangler@4.34.0 pages deploy . --project-name=reopsreporting --branch=main --commit-hash=$(git rev-parse origin/main) --commit-message=\"Publish reporting site after BDD walkthrough\"",
+      "status": "passed",
+      "details": "Ran from reports-site and created Cloudflare Pages deployment c541ed60-3929-40e1-a4ca-929bd0b08f8f."
+    },
+    {
+      "command": "curl live reporting URLs and check Run started: 2026-07-01T17:04:12.316Z",
+      "status": "passed"
+    }
+  ],
+  "residualRisks": [
+    "Cloudflare Pages project has been changed to root reports-site and output .; future GitHub-triggered builds require this branch to merge so reports-site/wrangler.toml exists on main.",
+    "The separate manual Deploy reporting site workflow still requires a Cloudflare token with Pages edit/write permission for Wrangler direct upload."
+  ]
+}

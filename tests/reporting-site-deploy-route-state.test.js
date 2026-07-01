@@ -8,6 +8,7 @@ const reportingDeployWorkflow = fs.readFileSync(
 );
 const qaBddWorkflow = fs.readFileSync('.github/workflows/qa-bdd.yml', 'utf8');
 const rootPagesConfig = fs.readFileSync('wrangler.toml', 'utf8');
+const reportsSitePagesConfig = fs.readFileSync('reports-site/wrangler.toml', 'utf8');
 const reportsSiteIndex = fs.readFileSync('reports-site/index.html', 'utf8');
 const publicIndex = fs.readFileSync('public/index.html', 'utf8');
 
@@ -62,6 +63,8 @@ test('reporting workflow guards against deploying the GOV.UK service app', () =>
 
 test('main service and reporting site have distinct deployment roots', () => {
 	assert.match(rootPagesConfig, /^pages_build_output_dir\s*=\s*["']public["']$/m);
+	assert.match(reportsSitePagesConfig, /^pages_build_output_dir\s*=\s*["']\.[\"']$/m);
+	assert.match(reportsSitePagesConfig, /^name\s*=\s*["']reopsreporting["']$/m);
 
 	assert.match(publicIndex, /<html class="govuk-template"/);
 	assert.match(publicIndex, /<title>ResearchOps Demo Suite<\/title>/);
@@ -72,9 +75,16 @@ test('main service and reporting site have distinct deployment roots', () => {
 	assert.doesNotMatch(reportsSiteIndex, /<title>ResearchOps Demo Suite<\/title>/);
 });
 
-test('manual walkthrough still deploys the generated report when requested', () => {
+test('manual walkthrough verifies the live report only when the report is persisted', () => {
 	assert.match(qaBddWorkflow, /publish_reporting_site:/);
-	assert.match(qaBddWorkflow, /pages deploy reports-site\s+\\/);
-	assert.match(qaBddWorkflow, /--project-name=\$\{REPORTING_PAGES_PROJECT\}/);
+	assert.doesNotMatch(qaBddWorkflow, /pages deploy reports-site\s+\\/);
+	assert.doesNotMatch(qaBddWorkflow, /CLOUDFLARE_API_TOKEN: \$\{\{ secrets\.CF_API_TOKEN \}\}/);
+	assert.match(qaBddWorkflow, /Cloudflare Pages GitHub deployment/);
+	assert.match(qaBddWorkflow, /steps\.persist_target\.outputs\.enabled == 'true'/);
+	assert.match(qaBddWorkflow, /attempt in \{1\.\.30\}/);
 	assert.match(qaBddWorkflow, /Run started: \$\{expected_started_at\}/);
+	assert.match(
+		qaBddWorkflow,
+		/Cloudflare Pages live timestamp verification was skipped because this run did not persist/,
+	);
 });
