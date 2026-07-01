@@ -239,4 +239,4 @@ When the manual walkthrough job runs, it first completes the smoke suite and the
 
 `reports-site/**` is ignored by the push trigger, so report-only commits do not create a workflow loop.
 
-The separate `Deploy reporting site` workflow deploys the committed `reports-site/` directory to the `reopsreporting` Cloudflare Pages project after every `main` push and on manual dispatch. It validates `reports-site/` first and rejects the GOV.UK service app shell, so the reporting project is reset to the static walkthrough artefact even when the main ResearchOps Pages app changes.
+The separate `Deploy reporting site` workflow validates the committed `reports-site/` directory after every `main` push and on manual dispatch. It rejects the GOV.UK service app shell so the reporting artefact cannot silently become the main ResearchOps service. Manual dispatch also deploys `reports-site/` to the `reopsreporting` Cloudflare Pages project and verifies the live report timestamp. If the Cloudflare API token does not have Pages deployment permission, the manual deploy fails without breaking normal `main` push validation.

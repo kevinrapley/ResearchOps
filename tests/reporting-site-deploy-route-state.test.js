@@ -11,16 +11,35 @@ const rootPagesConfig = fs.readFileSync('wrangler.toml', 'utf8');
 const reportsSiteIndex = fs.readFileSync('reports-site/index.html', 'utf8');
 const publicIndex = fs.readFileSync('public/index.html', 'utf8');
 
-test('reporting Pages project deploys the committed reports-site artefact', () => {
+test('reporting Pages project validates the committed reports-site artefact on main pushes', () => {
 	assert.match(reportingDeployWorkflow, /REPORTING_PAGES_PROJECT:\s+reopsreporting/);
 	assert.match(reportingDeployWorkflow, /REPORTING_PAGES_URL:\s+https:\/\/reopsreporting\.pages\.dev\//);
 	assert.match(reportingDeployWorkflow, /branches:\s+\[main\]/);
 	assert.match(reportingDeployWorkflow, /node scripts\/validate-reports-site\.mjs/);
+	assert.match(reportingDeployWorkflow, /ResearchOps application visual walkthrough/);
+	assert.match(reportingDeployWorkflow, /govuk-template/);
+	assert.doesNotMatch(reportingDeployWorkflow, /paths:/);
+});
+
+test('reporting Pages project deploys only on manual dispatch', () => {
 	assert.match(reportingDeployWorkflow, /pages deploy reports-site\s+\\/);
 	assert.match(reportingDeployWorkflow, /--project-name=\$\{REPORTING_PAGES_PROJECT\}/);
 	assert.match(reportingDeployWorkflow, /Run started: \$\{expected_started_at\}/);
+	assert.match(reportingDeployWorkflow, /Require main for manual reporting deploys/);
+	assert.match(
+		reportingDeployWorkflow,
+		/github\.event_name == 'workflow_dispatch' && github\.ref != 'refs\/heads\/main'/
+	);
+	assert.match(
+		reportingDeployWorkflow,
+		/Manual reporting-site deploys must be dispatched from main\./
+	);
+	assert.match(reportingDeployWorkflow, /if: github\.event_name == 'workflow_dispatch'/);
+	assert.match(
+		reportingDeployWorkflow,
+		/github\.event_name == 'workflow_dispatch' &&\s+steps\.deploy_reporting_site\.outcome == 'success'/
+	);
 	assert.doesNotMatch(reportingDeployWorkflow, /pages deploy public/);
-	assert.doesNotMatch(reportingDeployWorkflow, /paths:/);
 });
 
 test('reporting workflow guards against deploying the GOV.UK service app', () => {
