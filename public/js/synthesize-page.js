@@ -25,6 +25,9 @@ const els = {
   summaryStudy: $("#summary-study"),
   summaryEvidenceCount: $("#summary-evidence-count"),
   summaryThemeCount: $("#summary-theme-count"),
+  taskClustersStatus: $("#synthesis-task-clusters-status"),
+  taskEvidenceStatus: $("#synthesis-task-evidence-status"),
+  taskThemesStatus: $("#synthesis-task-themes-status"),
   noEvidenceState: $("#no-evidence-state"),
   captureEvidenceLink: $("#capture-evidence-link"),
   workspace: $("#synthesis-workspace"),
@@ -214,6 +217,16 @@ function clustersWithEvidence() {
   return state.clusters.filter((cluster) => (cluster.evidenceIds || []).length > 0);
 }
 
+function groupedEvidenceCount() {
+  const groupedIds = new Set();
+  for (const cluster of state.clusters) {
+    for (const evidenceId of cluster.evidenceIds || []) {
+      groupedIds.add(evidenceId);
+    }
+  }
+  return groupedIds.size;
+}
+
 function repositoryCandidateHref(theme) {
   const study = state.study || {};
   const evidenceIds = Array.isArray(theme.evidenceIds) ? theme.evidenceIds : [];
@@ -270,6 +283,27 @@ function updateSummary() {
   if (els.summaryStudy) els.summaryStudy.textContent = studyDisplayName(study);
   if (els.summaryEvidenceCount) els.summaryEvidenceCount.textContent = pluralise(state.evidence.length, "evidence item");
   if (els.summaryThemeCount) els.summaryThemeCount.textContent = pluralise(state.themes.length, "theme");
+}
+
+function updateTaskListStatus() {
+  const flow = workflowState();
+  const groupedCount = groupedEvidenceCount();
+
+  if (els.taskClustersStatus) {
+    if (!flow.hasEvidence) els.taskClustersStatus.textContent = "Capture evidence first";
+    else els.taskClustersStatus.textContent = state.clusters.length ? pluralise(state.clusters.length, "working group") : "Not started";
+  }
+
+  if (els.taskEvidenceStatus) {
+    if (!flow.hasEvidence) els.taskEvidenceStatus.textContent = "Capture evidence first";
+    else if (!flow.hasClusters) els.taskEvidenceStatus.textContent = "Create working groups first";
+    else els.taskEvidenceStatus.textContent = groupedCount ? pluralise(groupedCount, "evidence note") : "No evidence added";
+  }
+
+  if (els.taskThemesStatus) {
+    if (!flow.hasGroupedEvidence) els.taskThemesStatus.textContent = "Add evidence to a group first";
+    else els.taskThemesStatus.textContent = state.themes.length ? pluralise(state.themes.length, "theme") : "No themes";
+  }
 }
 
 function updateActionAvailability() {
@@ -511,6 +545,7 @@ function renderAll() {
   renderEvidence();
   renderClusters();
   renderThemes();
+  updateTaskListStatus();
   updateActionAvailability();
   updateWorkflowVisibility();
 }
@@ -683,8 +718,10 @@ window.__ropsSynthesize = Object.freeze({
   repositoryCandidateHrefForTheme,
   evidenceMatchesFilter,
   workflowState,
+  groupedEvidenceCount,
   repositoryCandidateHref,
   updateWorkflowVisibility,
+  updateTaskListStatus,
   createCluster,
   addSelectedEvidenceToCluster,
   createTheme,

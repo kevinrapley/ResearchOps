@@ -4,15 +4,16 @@
 {% from "govuk/components/input/macro.njk" import govukInput %}
 {% from "govuk/components/select/macro.njk" import govukSelect %}
 {% from "govuk/components/summary-list/macro.njk" import govukSummaryList %}
+{% from "govuk/components/task-list/macro.njk" import govukTaskList %}
 {% from "govuk/components/textarea/macro.njk" import govukTextarea %}
 {% from "macros/daas-brand-panel.njk" import daasBrandPanel %}
 
-{% set studyPageScriptVersion = "study-synthesis-20260701-codex-comment-fixes" %}
+{% set studyPageScriptVersion = "study-synthesis-20260701-cache-refresh" %}
+{% set studyPageStylesheetVersion = "study-synthesis-20260701-cache-refresh" %}
 
 {% block head %}
 	<meta property="schema:name" content="Study synthesis - ResearchOps">
-	<link rel="stylesheet" href="/css/govuk/govuk-forms.css" media="screen">
-	<link rel="stylesheet" href="/css/synthesize.css?v=study-synthesis-20260701-step-output-polish" media="screen">
+	<link rel="stylesheet" href="/css/synthesize.css?v={{ studyPageStylesheetVersion }}" media="screen">
 	<link rel="stylesheet" href="/css/daas-brand-panel.css?v=leds-brand-panel-20260624" media="screen">
 	<link rel="modulepreload" href="/js/study-route-context.js">
 	<link rel="modulepreload" href="/js/daas-brand-panel.js?v=leds-brand-panel-20260624">
@@ -74,6 +75,30 @@
 	</section>
 
 	<div id="synthesis-workspace" class="synthesis-flow" hidden>
+		<section class="synthesis-overview govuk-!-margin-bottom-8" aria-labelledby="synthesis-overview-title">
+			<h2 id="synthesis-overview-title" class="govuk-heading-m">How synthesis works</h2>
+			{{ govukTaskList({
+				classes: "synthesis-task-list",
+				items: [
+					{
+						title: { text: "Step 1: Create working groups" },
+						href: "#clusters-section",
+						status: { html: '<span id="synthesis-task-clusters-status">Not started</span>' }
+					},
+					{
+						title: { text: "Step 2: Add evidence to a group" },
+						href: "#evidence-section",
+						status: { html: '<span id="synthesis-task-evidence-status">Create working groups first</span>' }
+					},
+					{
+						title: { text: "Step 3: Create themes from grouped evidence" },
+						href: "#themes-section",
+						status: { html: '<span id="synthesis-task-themes-status">Add evidence to a group first</span>' }
+					}
+				]
+			}) }}
+		</section>
+
 		<section id="clusters-section" class="synthesis-panel govuk-!-margin-bottom-8" aria-labelledby="clusters-title">
 			<header class="synthesis-panel__header">
 				<div>

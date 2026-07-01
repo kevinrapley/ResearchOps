@@ -19,7 +19,7 @@ function excludes(source, text, label) {
 }
 
 includes(pageSource, "<html class=\"govuk-template\" lang=\"en\">", "synthesis page");
-for (const macro of ["govukBreadcrumbs({", "govukButton({", "govukInput({", "govukSelect({", "govukSummaryList({", "govukTextarea({"]) {
+for (const macro of ["govukBreadcrumbs({", "govukButton({", "govukInput({", "govukSelect({", "govukSummaryList({", "govukTaskList({", "govukTextarea({"]) {
 	includes(templateSource, macro, "synthesis template");
 }
 includes(rendererSource, "template: 'pages/study-synthesis.njk'", "GOV.UK renderer");
@@ -29,8 +29,9 @@ includes(pageSource, "/components/layout.js", "synthesis page");
 includes(pageSource, "/js/govuk-frontend-init.js", "synthesis page");
 includes(pageSource, "src=\"/partials/header.html\"", "synthesis page");
 includes(pageSource, "src=\"/partials/footer.html\"", "synthesis page");
-includes(pageSource, "/js/synthesis-route-loader.js?v=study-synthesis-20260701-codex-comment-fixes", "synthesis page");
-includes(pageSource, "href=\"/css/synthesize.css?v=study-synthesis-20260701-step-output-polish\"", "synthesis page");
+excludes(pageSource, "/css/govuk/govuk-forms.css", "synthesis page");
+includes(pageSource, "/js/synthesis-route-loader.js?v=study-synthesis-20260701-cache-refresh", "synthesis page");
+includes(pageSource, "href=\"/css/synthesize.css?v=study-synthesis-20260701-cache-refresh\"", "synthesis page");
 includes(pageSource, "data-study-subpage-template=\"synthesis\"", "synthesis page");
 includes(generatedCssTargetsSource, "source: 'src/styles/synthesize.scss'", "generated CSS targets");
 includes(generatedCssTargetsSource, "output: 'public/css/synthesize.css'", "generated CSS targets");
@@ -45,9 +46,13 @@ for (const id of [
 	"breadcrumb-study",
 	"summary-evidence-count",
 	"summary-theme-count",
+	"synthesis-task-clusters-status",
+	"synthesis-task-evidence-status",
+	"synthesis-task-themes-status",
 	"no-evidence-state",
 	"capture-evidence-link",
 	"synthesis-workspace",
+	"synthesis-overview-title",
 	"clusters-section",
 	"evidence-section",
 	"themes-locked",
@@ -79,6 +84,15 @@ for (const id of [
 includes(pageSource, "Group study evidence into themes you can trace back to source notes.", "synthesis page");
 includes(pageSource, "Capture evidence before starting synthesis", "synthesis page");
 includes(pageSource, "Capture evidence in a session", "synthesis page");
+includes(pageSource, "How synthesis works", "synthesis page");
+includes(pageSource, "Step 1: Create working groups", "synthesis page");
+includes(pageSource, "Step 2: Add evidence to a group", "synthesis page");
+includes(pageSource, "Step 3: Create themes from grouped evidence", "synthesis page");
+includes(pageSource, "Create working groups first", "synthesis page");
+includes(pageSource, "Add evidence to a group first", "synthesis page");
+includes(pageSource, "href=\"#clusters-section\"", "synthesis page");
+includes(pageSource, "href=\"#evidence-section\"", "synthesis page");
+includes(pageSource, "href=\"#themes-section\"", "synthesis page");
 includes(pageSource, "Working cluster groupings", "synthesis page");
 includes(pageSource, "Create a working cluster grouping before selecting evidence.", "synthesis page");
 includes(pageSource, "synthesis-step-layout", "synthesis page");
@@ -102,13 +116,15 @@ excludes(pageSource, "href=\"/css/screen.css\"", "synthesis page");
 
 includes(loaderSource, "study-canonical-url-bridge.js?v=study-record-id-routing-20260518", "synthesis loader");
 includes(loaderSource, "components/layout.js", "synthesis loader");
-includes(loaderSource, "synthesize-page.js?v=study-synthesis-20260701-codex-comment-fixes", "synthesis loader");
+includes(loaderSource, "synthesize-page.js?v=study-synthesis-20260701-cache-refresh", "synthesis loader");
 
 for (const marker of [
 	"const API_ORIGIN",
 	"function apiUrl",
 	"function workflowState",
 	"function sourceDisplayLabel",
+	"function groupedEvidenceCount",
+	"function updateTaskListStatus",
 	"function updateWorkflowVisibility",
 	"function loadStudySynthesis",
 	"/api/synthesis/evidence",
@@ -127,6 +143,9 @@ for (const marker of [
 	"Service operator interview",
 	"Data assurance session",
 	"Policy and product review",
+	"pluralise(state.clusters.length, \"working group\")",
+	"pluralise(groupedCount, \"evidence note\")",
+	"pluralise(state.themes.length, \"theme\")",
 ]) {
 	includes(controllerSource, marker, "synthesis controller");
 }
@@ -156,4 +175,16 @@ includes(sassSource, "grid-template-columns: minmax(0, 1fr) minmax(0, 1fr)", "sy
 includes(stylesheetSource, "grid-template-columns: minmax(0, 1fr) minmax(0, 1fr)", "synthesis stylesheet");
 includes(sassSource, "font-size: 16px", "synthesis Sass source");
 includes(stylesheetSource, "font-size: 16px", "synthesis stylesheet");
+includes(sassSource, "padding: 15px 15px 20px 15px", "synthesis Sass source");
+includes(stylesheetSource, "padding: 15px 15px 20px 15px", "synthesis stylesheet");
+includes(sassSource, "row-gap: 5px", "synthesis Sass source");
+includes(stylesheetSource, "row-gap: 5px", "synthesis stylesheet");
+includes(sassSource, ".synthesis-tag {\n\tmax-width: 100%;\n\tmargin-top: 0;\n\tmargin-bottom: 0;\n\twhite-space: normal;\n}", "synthesis Sass source");
+includes(stylesheetSource, ".synthesis-tag {\n\tmax-width: 100%;\n\tmargin-top: 0;\n\tmargin-bottom: 0;\n\twhite-space: normal;\n\t}", "synthesis stylesheet");
 includes(stylesheetSource, "/* transparency begins in the cascade */", "synthesis stylesheet");
+excludes(sassSource, ".study-synthesis-page .govuk-select", "synthesis Sass source");
+excludes(stylesheetSource, ".study-synthesis-page .govuk-select", "synthesis stylesheet");
+excludes(sassSource, "appearance: none", "synthesis Sass source");
+excludes(stylesheetSource, "appearance: none", "synthesis stylesheet");
+excludes(sassSource, ".govuk-select:disabled", "synthesis Sass source");
+excludes(stylesheetSource, ".govuk-select:disabled", "synthesis stylesheet");

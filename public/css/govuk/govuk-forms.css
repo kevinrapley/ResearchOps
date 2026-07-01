@@ -87,7 +87,12 @@
 .govuk-select {
 	width: auto;
 	max-width: 100%;
-	padding-right: 30px;
+	padding-right: 40px;
+	appearance: none;
+	background-image: url("data:image/svg+xml,%3Csvg width='20' height='20' viewBox='0 0 20 20' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M4 7l6 6 6-6' fill='none' stroke='%230b0c0c' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+	background-position: right 10px center;
+	background-repeat: no-repeat;
+	background-size: 20px 20px;
 	}
 
 .govuk-input:focus,

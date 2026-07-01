@@ -54,6 +54,10 @@ includes(generatedGovukCss, 'font-family:"GDS Transport"', "generated GOV.UK Fro
 includes(generatedGovukCss, ".govuk-summary-card", "generated GOV.UK Frontend stylesheet");
 includes(generatedGovukCss, ".govuk-details", "generated GOV.UK Frontend stylesheet");
 includes(generatedGovukCss, ".govuk-tag", "generated GOV.UK Frontend stylesheet");
+includes(generatedGovukCss, ".govuk-select", "generated GOV.UK Frontend stylesheet");
+includes(generatedGovukCss, "appearance:none", "generated GOV.UK Frontend stylesheet");
+includes(generatedGovukCss, "background-position:right 10px center", "generated GOV.UK Frontend stylesheet");
+includes(generatedGovukCss, "background-size:20px 20px", "generated GOV.UK Frontend stylesheet");
 
 includes(buttonCss, ".govuk-button", "legacy GOV.UK button stylesheet");
 includes(buttonCss, ".govuk-button--secondary", "legacy GOV.UK button stylesheet");
@@ -74,6 +78,9 @@ includes(formCss, ".govuk-error-message", "legacy GOV.UK form stylesheet");
 includes(formCss, ".govuk-input", "legacy GOV.UK form stylesheet");
 includes(formCss, ".govuk-textarea", "legacy GOV.UK form stylesheet");
 includes(formCss, ".govuk-select", "legacy GOV.UK form stylesheet");
+includes(formCss, "appearance: none", "legacy GOV.UK form stylesheet");
+includes(formCss, "background-position: right 10px center", "legacy GOV.UK form stylesheet");
+includes(formCss, "background-size: 20px 20px", "legacy GOV.UK form stylesheet");
 includes(formCss, ".govuk-error-summary", "legacy GOV.UK form stylesheet");
 includes(formCss, ".govuk-button-group", "legacy GOV.UK form stylesheet");
 

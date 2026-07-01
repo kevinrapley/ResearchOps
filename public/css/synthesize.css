@@ -110,7 +110,7 @@
 
 .evidence-card {
 	border: 1px solid #b1b4b6;
-	padding: 15px 15px 10px;
+	padding: 15px 15px 20px 15px;
 	background: #ffffff;
 	}
 
@@ -148,12 +148,15 @@
 .synthesis-tags {
 	display: flex;
 	flex-wrap: wrap;
-	gap: 5px;
+	column-gap: 5px;
+	row-gap: 5px;
 	margin-top: 10px;
 	}
 
 .synthesis-tag {
 	max-width: 100%;
+	margin-top: 0;
+	margin-bottom: 0;
 	white-space: normal;
 	}
 
@@ -198,7 +201,7 @@
 	cursor: not-allowed;
 	}
 
-.govuk-input:disabled, .govuk-select:disabled, .govuk-textarea:disabled {
+.govuk-input:disabled, .govuk-textarea:disabled {
 	border-color: #b1b4b6;
 	background-color: #f3f2f1;
 	color: #505a5f;
