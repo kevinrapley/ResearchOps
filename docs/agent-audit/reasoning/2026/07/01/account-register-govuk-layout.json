@@ -129,7 +129,8 @@
       "classification": "valid",
       "acknowledgement": "+1 reaction added",
       "remedy": "Changed showSuccess() to use govuk-panel__body and govuk-link govuk-link--inverse, with route-state assertions.",
-      "status": "fixed locally; reply and resolution to follow after push"
+      "replyUrl": "https://github.com/kevinrapley/ResearchOps/pull/451#discussion_r3509444159",
+      "status": "resolved on GitHub after commit 37472182 was pushed"
     }
   ],
   "validationNotRun": [

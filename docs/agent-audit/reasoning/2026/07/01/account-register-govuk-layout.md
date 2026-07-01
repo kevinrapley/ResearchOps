@@ -110,7 +110,8 @@
 - Classification: valid.
 - Acknowledgement: added a `+1` reaction to the original comment.
 - Remedy: changed `showSuccess()` in `public/js/auth-registration-page.js` to use confirmation-panel-safe body and inverse link classes, and added route-state assertions in `tests/auth-registration-requests-route-state.test.js`.
-- Status: fixed locally; reply and thread resolution to be completed after the fix commit is pushed.
+- Reply: `https://github.com/kevinrapley/ResearchOps/pull/451#discussion_r3509444159`
+- Status: resolved on GitHub after commit `37472182` was pushed.
 
 ## Validation Not Run
 
