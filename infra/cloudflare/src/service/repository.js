@@ -650,6 +650,7 @@ function reviewNavigation(queues = [], currentQueue) {
 function reviewItem(row, tags = [], auditRows = []) {
 	const payload = parseJson(row.payload_json, {});
 	const queueKey = reviewQueueForStatus(row);
+	const impactSource = impactSourceFromPayload(payload);
 	return {
 		id: row.id,
 		queue: queueKey,
@@ -677,6 +678,7 @@ function reviewItem(row, tags = [], auditRows = []) {
 		queueReason: cleanText(payload.queueReason || payload.reviewWorkflow?.queueReason || ""),
 		withdrawalReason: cleanText(payload.withdrawalReason || payload.reviewWorkflow?.withdrawalReason || ""),
 		publicationGate: payload.publicationGate || {},
+		impactSource: impactSource || {},
 		tags: [
 			{ text: `${row.confidence} confidence`, classes: tagClassFor("confidence", row.confidence) },
 			{ text: labelFromSlug(row.evidence_maturity), classes: tagClassFor("maturity", row.evidence_maturity) },

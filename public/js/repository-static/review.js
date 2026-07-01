@@ -294,7 +294,11 @@ function renderReviewDetail(queue, item) {
 		reviewSummaryRow("User group", titleFromSlug(item.userGroup)),
 		reviewSummaryRow("Method", titleFromSlug(item.method || item.sourceMethod)),
 		reviewSummaryRow("Source project", item.sourceProjectId || "Not recorded"),
-		reviewSummaryRow("Source study", item.sourceStudyId || "Not recorded")
+		reviewSummaryRow("Source study", item.sourceStudyId || "Not recorded"),
+		reviewSummaryRow("Impact record", item.impactSource?.impactRecordId),
+		reviewSummaryRow("Impact context", item.impactSource?.impactSummary),
+		reviewSummaryRow("Decision context", item.impactSource?.decisionSummary),
+		reviewSummaryRow("Outcome context", item.impactSource?.outcomeSummary)
 	);
 
 	if (item.queueReason || item.withdrawalReason) {

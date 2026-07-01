@@ -202,6 +202,11 @@ has(files.service, 'synthesisId: sourceSynthesisId', 'repository service');
 has(files.service, 'impactSourceFromPayload(payload)', 'repository service');
 has(files.service, 'if (impactSource) artefact.impactSource = impactSource;', 'repository service');
 has(files.service, 'impactSource', 'repository service');
+has(files.staticScript, 'Impact record', 'static repository review script');
+has(files.staticScript, 'item.impactSource?.impactRecordId', 'static repository review script');
+has(files.staticScript, 'Impact context', 'static repository review script');
+has(files.staticScript, 'Decision context', 'static repository review script');
+has(files.staticScript, 'Outcome context', 'static repository review script');
 has(files.service, 'const method = searchValues(url, "method")', 'repository service');
 has(
 	files.service,

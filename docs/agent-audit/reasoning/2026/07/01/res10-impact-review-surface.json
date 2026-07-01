@@ -1,0 +1,37 @@
+{
+  "schemaVersion": "agent-trace-promotion/v1",
+  "title": "Address Codex review thread requiring candidate impact metadata to be visible before publication.",
+  "sourceTrace": ".agent-traces/raw/atrace-20260701-res10-impact-review-surface.jsonl",
+  "markdownReport": "docs/agent-audit/reasoning/2026/07/01/res10-impact-review-surface.md",
+  "jsonSummary": "docs/agent-audit/reasoning/2026/07/01/res10-impact-review-surface.json",
+  "promotedAt": "2026-07-01T05:55:54.022Z",
+  "eventCount": 22,
+  "run": {
+    "startedAt": "2026-07-01T05:55:53.829Z",
+    "completedAt": "2026-07-01T05:55:53.871Z",
+    "taskSummary": "Address Codex review thread requiring candidate impact metadata to be visible before publication."
+  },
+  "bundles": [
+    "github-diamond",
+    "researchops-developer-control",
+    "multi-functional-team",
+    "govuk-design-system",
+    "cloudflare"
+  ],
+  "filesRead": [],
+  "filesWritten": [
+    "infra/cloudflare/src/service/repository.js",
+    "public/js/repository-static/review.js",
+    "tests/repository-review-workbench-runtime.test.js",
+    "tests/repository-front-page-route-state.test.js"
+  ],
+  "validations": [
+    "npm test -- tests/repository-impact-linkage-runtime.test.js tests/repository-front-page-route-state.test.js tests/repository-review-workbench-runtime.test.js — exit 0",
+    "npm run build — exit 0",
+    "npm run trace:coverage — exit 0",
+    "git diff --check — exit 0",
+    "npx eslint infra/cloudflare/src/service/repository.js public/js/repository-static/review.js tests/repository-review-workbench-runtime.test.js tests/repository-front-page-route-state.test.js — exit 0"
+  ],
+  "issues": [],
+  "warnings": []
+}
