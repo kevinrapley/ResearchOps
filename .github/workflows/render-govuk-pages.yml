@@ -91,18 +91,19 @@ jobs:
 
           GOVUK_CHANGED_TEMPLATE_FILE="$changed_templates_path" node --input-type=module <<'NODE' > "$changed_outputs_path"
           import { readFileSync } from 'node:fs';
+          import { govukPages } from './scripts/govuk/render-govuk-pages.mjs';
 
           const changedTemplates = readFileSync(process.env.GOVUK_CHANGED_TEMPLATE_FILE, 'utf8')
             .split('\n')
             .map((line) => line.trim())
             .filter(Boolean);
-          const renderScript = readFileSync('scripts/govuk/render-govuk-pages.mjs', 'utf8');
-          const pagePattern = /{\s*template:\s*'([^']+)'\s*,\s*output:\s*'([^']+)'/g;
           const byTemplate = new Map();
-          let match;
 
-          while ((match = pagePattern.exec(renderScript))) {
-            byTemplate.set(match[1], match[2]);
+          for (const page of govukPages) {
+            if (!byTemplate.has(page.template)) {
+              byTemplate.set(page.template, []);
+            }
+            byTemplate.get(page.template).push(page.output);
           }
 
           const missing = changedTemplates.filter((template) => !byTemplate.has(template));
@@ -110,8 +111,15 @@ jobs:
             throw new Error(`No GOV.UK renderer page registration found for: ${missing.join(', ')}`);
           }
 
+          const changedOutputs = new Set();
           for (const template of changedTemplates) {
-            console.log(byTemplate.get(template));
+            for (const output of byTemplate.get(template)) {
+              changedOutputs.add(output);
+            }
+          }
+
+          for (const output of [...changedOutputs].sort()) {
+            console.log(output);
           }
           NODE
 
