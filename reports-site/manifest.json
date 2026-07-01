@@ -1,8 +1,8 @@
 {
   "title": "ResearchOps application visual walkthrough",
   "description": "Generated evidence of the current application build, covering registered pages and important interaction states.",
-  "startedAt": "2026-06-16T21:58:48.233Z",
-  "baseURL": "https://research-operations.com/",
+  "startedAt": "2026-07-01T17:04:12.316Z",
+  "baseURL": "https://researchops.pages.dev/",
   "profiles": [
     {
       "id": "desktop",
@@ -77,9 +77,9 @@
       ]
     }
   ],
-  "pageCount": 45,
-  "stateCount": 63,
-  "captureCount": 126,
+  "pageCount": 46,
+  "stateCount": 64,
+  "captureCount": 128,
   "failureCount": 0,
   "pages": [
     {
@@ -93,23 +93,23 @@
           "id": "default",
           "title": "Default state",
           "description": "Initial loaded page state.",
-          "url": "https://research-operations.com/",
+          "url": "https://researchops.pages.dev/",
           "status": "captured",
           "captures": [
             {
               "profile": "desktop",
               "profileTitle": "Desktop",
               "status": "captured",
-              "url": "https://research-operations.com/",
-              "durationMs": 1416,
+              "url": "https://researchops.pages.dev/",
+              "durationMs": 1198,
               "screenshot": "screenshots/desktop/core__home__default.png"
             },
             {
               "profile": "mobile",
               "profileTitle": "Mobile",
               "status": "captured",
-              "url": "https://research-operations.com/",
-              "durationMs": 1538,
+              "url": "https://researchops.pages.dev/",
+              "durationMs": 1468,
               "screenshot": "screenshots/mobile/core__home__default.png"
             }
           ],
@@ -143,6 +143,61 @@
       ]
     },
     {
+      "id": "product-proof",
+      "title": "ResearchOps Product Proof",
+      "group": "Core",
+      "path": "/pages/product-proof/index.html",
+      "description": "Public static proof page showing the ResearchOps lifecycle before sign-in.",
+      "states": [
+        {
+          "id": "default",
+          "title": "Lifecycle proof before sign-in",
+          "description": "Public product proof page captured without authenticated data.",
+          "url": "https://researchops.pages.dev/pages/product-proof/index.html",
+          "status": "captured",
+          "captures": [
+            {
+              "profile": "desktop",
+              "profileTitle": "Desktop",
+              "status": "captured",
+              "url": "https://researchops.pages.dev/pages/product-proof/index.html",
+              "durationMs": 1901,
+              "screenshot": "screenshots/desktop/core__product-proof__default.png"
+            },
+            {
+              "profile": "mobile",
+              "profileTitle": "Mobile",
+              "status": "captured",
+              "url": "https://researchops.pages.dev/pages/product-proof/index.html",
+              "durationMs": 3151,
+              "screenshot": "screenshots/mobile/core__product-proof__default.png"
+            }
+          ],
+          "designRisk": {
+            "risk": "No specific design risk recorded for this state.",
+            "impact": "No additional impact has been identified beyond the standard route review.",
+            "recommendedChange": "Review this state during the next design critique and update the walkthrough registry if a risk is found.",
+            "owner": "UCD team",
+            "status": "No risk recorded"
+          },
+          "evidenceTypes": [
+            "Screenshot evidence",
+            "Route-level Cucumber evidence",
+            "State-level acceptance criteria",
+            "Accessibility evidence",
+            "Design-risk notes"
+          ],
+          "screenshot": "screenshots/desktop/core__product-proof__default.png",
+          "acceptanceCriteria": "Feature: Use the ResearchOps Product Proof page\n\n  As a user researcher\n  I want to use the researchOps Product Proof page\n  So that I can continue the right ResearchOps task with confidence\n\n  Background:\n    Given I am a user researcher\n    When I visit the researchOps Product Proof page\n\n  Scenario: Understand the page purpose\n    Then I should see content that supports public static proof page showing the ResearchOps lifecycle before sign-in\n    And I should understand what ResearchOps task I can complete from this page\n\n  Scenario: Use \"Lifecycle proof before sign-in\" in the ResearchOps journey\n    Given I am using the researchOps Product Proof page\n    Then I should understand the research value of this part of the journey\n    And I should see that public product proof page captured without authenticated data\n    And I should be given enough service context to decide what to do next\n\n  Scenario: Complete the interaction needed for this ResearchOps task\n    Given I am ready to continue this ResearchOps journey\n    Then I should see \"Walk through how the product works\"\n    Then I should be able to continue the ResearchOps journey with confidence\n\n  Scenario: Use this part of the journey accessibly\n    Then the page should have one clear main heading\n    And headings, labels and controls should be exposed in a logical reading order\n    And I should be able to move through the available controls using a keyboard\n    And I should be able to activate links, buttons and form controls without a mouse",
+          "criteriaMaturity": {
+            "label": "Needs review",
+            "slug": "needs-review",
+            "description": "This state uses generated acceptance criteria that require UCD review before approval."
+          }
+        }
+      ]
+    },
+    {
       "id": "account-sign-in",
       "title": "Sign in to ResearchOps",
       "group": "Account",
@@ -153,23 +208,23 @@
           "id": "default",
           "title": "Email address requested",
           "description": "Sign-in page before a code has been requested.",
-          "url": "https://research-operations.com/pages/account/sign-in/index.html",
+          "url": "https://researchops.pages.dev/pages/account/sign-in/index.html",
           "status": "captured",
           "captures": [
             {
               "profile": "desktop",
               "profileTitle": "Desktop",
               "status": "captured",
-              "url": "https://research-operations.com/pages/account/sign-in/index.html",
-              "durationMs": 1333,
+              "url": "https://researchops.pages.dev/pages/account/sign-in/index.html",
+              "durationMs": 1350,
               "screenshot": "screenshots/desktop/account__account-sign-in__default.png"
             },
             {
               "profile": "mobile",
               "profileTitle": "Mobile",
               "status": "captured",
-              "url": "https://research-operations.com/pages/account/sign-in/index.html",
-              "durationMs": 1483,
+              "url": "https://researchops.pages.dev/pages/account/sign-in/index.html",
+              "durationMs": 1342,
               "screenshot": "screenshots/mobile/account__account-sign-in__default.png"
             }
           ],
@@ -199,23 +254,23 @@
           "id": "code-requested",
           "title": "6 digit code requested",
           "description": "Sign-in page after the QA walkthrough email address has requested a one-time code.",
-          "url": "https://research-operations.com/pages/account/sign-in/index.html",
+          "url": "https://researchops.pages.dev/pages/account/sign-in/index.html",
           "status": "captured",
           "captures": [
             {
               "profile": "desktop",
               "profileTitle": "Desktop",
               "status": "captured",
-              "url": "https://research-operations.com/pages/account/sign-in/index.html",
-              "durationMs": 2018,
+              "url": "https://researchops.pages.dev/pages/account/sign-in/index.html",
+              "durationMs": 1902,
               "screenshot": "screenshots/desktop/account__account-sign-in__code-requested.png"
             },
             {
               "profile": "mobile",
               "profileTitle": "Mobile",
               "status": "captured",
-              "url": "https://research-operations.com/pages/account/sign-in/index.html",
-              "durationMs": 2129,
+              "url": "https://researchops.pages.dev/pages/account/sign-in/index.html",
+              "durationMs": 2084,
               "screenshot": "screenshots/mobile/account__account-sign-in__code-requested.png"
             }
           ],
@@ -254,23 +309,23 @@
           "id": "default",
           "title": "Account request form",
           "description": "Registration request page captured before answers are entered.",
-          "url": "https://research-operations.com/pages/account/register/index.html",
+          "url": "https://researchops.pages.dev/pages/account/register/index.html",
           "status": "captured",
           "captures": [
             {
               "profile": "desktop",
               "profileTitle": "Desktop",
               "status": "captured",
-              "url": "https://research-operations.com/pages/account/register/index.html",
-              "durationMs": 1430,
+              "url": "https://researchops.pages.dev/pages/account/register/index.html",
+              "durationMs": 1389,
               "screenshot": "screenshots/desktop/account__account-registration__default.png"
             },
             {
               "profile": "mobile",
               "profileTitle": "Mobile",
               "status": "captured",
-              "url": "https://research-operations.com/pages/account/register/index.html",
-              "durationMs": 1611,
+              "url": "https://researchops.pages.dev/pages/account/register/index.html",
+              "durationMs": 1500,
               "screenshot": "screenshots/mobile/account__account-registration__default.png"
             }
           ],
@@ -309,23 +364,23 @@
           "id": "default",
           "title": "Default state",
           "description": "Initial loaded page state.",
-          "url": "https://research-operations.com/pages/account/team-access/index.html",
+          "url": "https://researchops.pages.dev/pages/account/team-access/index.html",
           "status": "captured",
           "captures": [
             {
               "profile": "desktop",
               "profileTitle": "Desktop",
               "status": "captured",
-              "url": "https://research-operations.com/pages/account/team-access/index.html",
-              "durationMs": 1104,
+              "url": "https://researchops.pages.dev/pages/account/team-access/index.html",
+              "durationMs": 1117,
               "screenshot": "screenshots/desktop/account__account-team-access__default.png"
             },
             {
               "profile": "mobile",
               "profileTitle": "Mobile",
               "status": "captured",
-              "url": "https://research-operations.com/pages/account/team-access/index.html",
-              "durationMs": 1230,
+              "url": "https://researchops.pages.dev/pages/account/team-access/index.html",
+              "durationMs": 1203,
               "screenshot": "screenshots/mobile/account__account-team-access__default.png"
             }
           ],
@@ -364,23 +419,23 @@
           "id": "default",
           "title": "Signed-in account dashboard",
           "description": "Account dashboard captured with deterministic Team Admin context.",
-          "url": "https://research-operations.com/pages/account/index.html",
+          "url": "https://researchops.pages.dev/pages/account/index.html",
           "status": "captured",
           "captures": [
             {
               "profile": "desktop",
               "profileTitle": "Desktop",
               "status": "captured",
-              "url": "https://research-operations.com/pages/account/index.html",
-              "durationMs": 1433,
+              "url": "https://researchops.pages.dev/pages/account/index.html",
+              "durationMs": 1339,
               "screenshot": "screenshots/desktop/account__account-dashboard__default.png"
             },
             {
               "profile": "mobile",
               "profileTitle": "Mobile",
               "status": "captured",
-              "url": "https://research-operations.com/pages/account/index.html",
-              "durationMs": 1500,
+              "url": "https://researchops.pages.dev/pages/account/index.html",
+              "durationMs": 1458,
               "screenshot": "screenshots/mobile/account__account-dashboard__default.png"
             }
           ],
@@ -419,23 +474,23 @@
           "id": "default",
           "title": "Default state",
           "description": "Initial loaded page state.",
-          "url": "https://research-operations.com/pages/start/overview/index.html",
+          "url": "https://researchops.pages.dev/pages/start/overview/index.html",
           "status": "captured",
           "captures": [
             {
               "profile": "desktop",
               "profileTitle": "Desktop",
               "status": "captured",
-              "url": "https://research-operations.com/pages/start/overview/index.html",
-              "durationMs": 1055,
+              "url": "https://researchops.pages.dev/pages/start/overview/index.html",
+              "durationMs": 1081,
               "screenshot": "screenshots/desktop/core__start-overview__default.png"
             },
             {
               "profile": "mobile",
               "profileTitle": "Mobile",
               "status": "captured",
-              "url": "https://research-operations.com/pages/start/overview/index.html",
-              "durationMs": 1188,
+              "url": "https://researchops.pages.dev/pages/start/overview/index.html",
+              "durationMs": 1128,
               "screenshot": "screenshots/mobile/core__start-overview__default.png"
             }
           ],
@@ -474,23 +529,23 @@
           "id": "default",
           "title": "Default state",
           "description": "Initial loaded page state.",
-          "url": "https://research-operations.com/pages/start/index.html",
+          "url": "https://researchops.pages.dev/pages/start/index.html",
           "status": "captured",
           "captures": [
             {
               "profile": "desktop",
               "profileTitle": "Desktop",
               "status": "captured",
-              "url": "https://research-operations.com/pages/start/index.html",
-              "durationMs": 1093,
+              "url": "https://researchops.pages.dev/pages/start/index.html",
+              "durationMs": 1080,
               "screenshot": "screenshots/desktop/core__start__default.png"
             },
             {
               "profile": "mobile",
               "profileTitle": "Mobile",
               "status": "captured",
-              "url": "https://research-operations.com/pages/start/index.html",
-              "durationMs": 1196,
+              "url": "https://researchops.pages.dev/pages/start/index.html",
+              "durationMs": 1221,
               "screenshot": "screenshots/mobile/core__start__default.png"
             }
           ],
@@ -522,23 +577,23 @@
           "id": "step-1-filled",
           "title": "Step 1 completed",
           "description": "Project definition entered.",
-          "url": "https://research-operations.com/pages/start/index.html",
+          "url": "https://researchops.pages.dev/pages/start/index.html",
           "status": "captured",
           "captures": [
             {
               "profile": "desktop",
               "profileTitle": "Desktop",
               "status": "captured",
-              "url": "https://research-operations.com/pages/start/index.html",
-              "durationMs": 1537,
+              "url": "https://researchops.pages.dev/pages/start/index.html",
+              "durationMs": 1469,
               "screenshot": "screenshots/desktop/core__start__step-1-filled.png"
             },
             {
               "profile": "mobile",
               "profileTitle": "Mobile",
               "status": "captured",
-              "url": "https://research-operations.com/pages/start/index.html",
-              "durationMs": 1615,
+              "url": "https://researchops.pages.dev/pages/start/index.html",
+              "durationMs": 1586,
               "screenshot": "screenshots/mobile/core__start__step-1-filled.png"
             }
           ],
@@ -570,23 +625,23 @@
           "id": "step-2-default",
           "title": "Step 2 default state",
           "description": "Second wizard step.",
-          "url": "https://research-operations.com/pages/start/index.html",
+          "url": "https://researchops.pages.dev/pages/start/index.html",
           "status": "captured",
           "captures": [
             {
               "profile": "desktop",
               "profileTitle": "Desktop",
               "status": "captured",
-              "url": "https://research-operations.com/pages/start/index.html",
-              "durationMs": 1924,
+              "url": "https://researchops.pages.dev/pages/start/index.html",
+              "durationMs": 1941,
               "screenshot": "screenshots/desktop/core__start__step-2-default.png"
             },
             {
               "profile": "mobile",
               "profileTitle": "Mobile",
               "status": "captured",
-              "url": "https://research-operations.com/pages/start/index.html",
-              "durationMs": 2092,
+              "url": "https://researchops.pages.dev/pages/start/index.html",
+              "durationMs": 2031,
               "screenshot": "screenshots/mobile/core__start__step-2-default.png"
             }
           ],
@@ -618,23 +673,23 @@
           "id": "step-2-filled-no-ai",
           "title": "Step 2 completed",
           "description": "Research context entered.",
-          "url": "https://research-operations.com/pages/start/index.html",
+          "url": "https://researchops.pages.dev/pages/start/index.html",
           "status": "captured",
           "captures": [
             {
               "profile": "desktop",
               "profileTitle": "Desktop",
               "status": "captured",
-              "url": "https://research-operations.com/pages/start/index.html",
-              "durationMs": 2640,
+              "url": "https://researchops.pages.dev/pages/start/index.html",
+              "durationMs": 2648,
               "screenshot": "screenshots/desktop/core__start__step-2-filled-no-ai.png"
             },
             {
               "profile": "mobile",
               "profileTitle": "Mobile",
               "status": "captured",
-              "url": "https://research-operations.com/pages/start/index.html",
-              "durationMs": 2796,
+              "url": "https://researchops.pages.dev/pages/start/index.html",
+              "durationMs": 2770,
               "screenshot": "screenshots/mobile/core__start__step-2-filled-no-ai.png"
             }
           ],
@@ -666,23 +721,23 @@
           "id": "step-2-ai-rewrite-shown",
           "title": "Step 2 AI rewrite shown",
           "description": "AI rewrite panel is shown using a deterministic mocked response.",
-          "url": "https://research-operations.com/pages/start/index.html",
+          "url": "https://researchops.pages.dev/pages/start/index.html",
           "status": "captured",
           "captures": [
             {
               "profile": "desktop",
               "profileTitle": "Desktop",
               "status": "captured",
-              "url": "https://research-operations.com/pages/start/index.html",
-              "durationMs": 3250,
+              "url": "https://researchops.pages.dev/pages/start/index.html",
+              "durationMs": 3214,
               "screenshot": "screenshots/desktop/core__start__step-2-ai-rewrite-shown.png"
             },
             {
               "profile": "mobile",
               "profileTitle": "Mobile",
               "status": "captured",
-              "url": "https://research-operations.com/pages/start/index.html",
-              "durationMs": 3528,
+              "url": "https://researchops.pages.dev/pages/start/index.html",
+              "durationMs": 3415,
               "screenshot": "screenshots/mobile/core__start__step-2-ai-rewrite-shown.png"
             }
           ],
@@ -714,23 +769,23 @@
           "id": "step-3-default",
           "title": "Step 3 default state",
           "description": "Final data-entry step.",
-          "url": "https://research-operations.com/pages/start/index.html",
+          "url": "https://researchops.pages.dev/pages/start/index.html",
           "status": "captured",
           "captures": [
             {
               "profile": "desktop",
               "profileTitle": "Desktop",
               "status": "captured",
-              "url": "https://research-operations.com/pages/start/index.html",
-              "durationMs": 3055,
+              "url": "https://researchops.pages.dev/pages/start/index.html",
+              "durationMs": 2985,
               "screenshot": "screenshots/desktop/core__start__step-3-default.png"
             },
             {
               "profile": "mobile",
               "profileTitle": "Mobile",
               "status": "captured",
-              "url": "https://research-operations.com/pages/start/index.html",
-              "durationMs": 3196,
+              "url": "https://researchops.pages.dev/pages/start/index.html",
+              "durationMs": 3057,
               "screenshot": "screenshots/mobile/core__start__step-3-default.png"
             }
           ],
@@ -762,23 +817,23 @@
           "id": "step-3-filled",
           "title": "Step 3 completed",
           "description": "Owner details entered.",
-          "url": "https://research-operations.com/pages/start/index.html",
+          "url": "https://researchops.pages.dev/pages/start/index.html",
           "status": "captured",
           "captures": [
             {
               "profile": "desktop",
               "profileTitle": "Desktop",
               "status": "captured",
-              "url": "https://research-operations.com/pages/start/index.html",
-              "durationMs": 3575,
+              "url": "https://researchops.pages.dev/pages/start/index.html",
+              "durationMs": 3631,
               "screenshot": "screenshots/desktop/core__start__step-3-filled.png"
             },
             {
               "profile": "mobile",
               "profileTitle": "Mobile",
               "status": "captured",
-              "url": "https://research-operations.com/pages/start/index.html",
-              "durationMs": 3736,
+              "url": "https://researchops.pages.dev/pages/start/index.html",
+              "durationMs": 3813,
               "screenshot": "screenshots/mobile/core__start__step-3-filled.png"
             }
           ],
@@ -810,23 +865,23 @@
           "id": "step-4-check-answers",
           "title": "Step 4 check your answers",
           "description": "Check-your-answers step.",
-          "url": "https://research-operations.com/pages/start/index.html",
+          "url": "https://researchops.pages.dev/pages/start/index.html",
           "status": "captured",
           "captures": [
             {
               "profile": "desktop",
               "profileTitle": "Desktop",
               "status": "captured",
-              "url": "https://research-operations.com/pages/start/index.html",
-              "durationMs": 5025,
+              "url": "https://researchops.pages.dev/pages/start/index.html",
+              "durationMs": 4067,
               "screenshot": "screenshots/desktop/core__start__step-4-check-answers.png"
             },
             {
               "profile": "mobile",
               "profileTitle": "Mobile",
               "status": "captured",
-              "url": "https://research-operations.com/pages/start/index.html",
-              "durationMs": 4260,
+              "url": "https://researchops.pages.dev/pages/start/index.html",
+              "durationMs": 4229,
               "screenshot": "screenshots/mobile/core__start__step-4-check-answers.png"
             }
           ],
@@ -988,25 +1043,25 @@
       "states": [
         {
           "id": "default",
-          "title": "Default state",
-          "description": "Initial loaded page state.",
-          "url": "https://research-operations.com/pages/projects/index.html",
+          "title": "Projects list with authenticated project context",
+          "description": "Projects page captured through the Worker-protected route.",
+          "url": "https://researchops.pages.dev/pages/projects/",
           "status": "captured",
           "captures": [
             {
               "profile": "desktop",
               "profileTitle": "Desktop",
               "status": "captured",
-              "url": "https://research-operations.com/pages/projects/index.html",
-              "durationMs": 1364,
+              "url": "https://researchops.pages.dev/pages/projects/",
+              "durationMs": 2430,
               "screenshot": "screenshots/desktop/projects__projects__default.png"
             },
             {
               "profile": "mobile",
               "profileTitle": "Mobile",
               "status": "captured",
-              "url": "https://research-operations.com/pages/projects/index.html",
-              "durationMs": 1549,
+              "url": "https://researchops.pages.dev/pages/projects/",
+              "durationMs": 2372,
               "screenshot": "screenshots/mobile/projects__projects__default.png"
             }
           ],
@@ -1050,23 +1105,23 @@
           "id": "default",
           "title": "Project dashboard with operational project context",
           "description": "Dashboard captured with a deterministic project ID.",
-          "url": "https://research-operations.com/pages/project-dashboard/?id=recVisualProject001",
+          "url": "https://researchops.pages.dev/pages/project-dashboard/?id=recVisualProject001",
           "status": "captured",
           "captures": [
             {
               "profile": "desktop",
               "profileTitle": "Desktop",
               "status": "captured",
-              "url": "https://research-operations.com/pages/project-dashboard/?id=recVisualProject001",
-              "durationMs": 4982,
+              "url": "https://researchops.pages.dev/pages/project-dashboard/?id=recVisualProject001",
+              "durationMs": 6413,
               "screenshot": "screenshots/desktop/projects__project-dashboard__default.png"
             },
             {
               "profile": "mobile",
               "profileTitle": "Mobile",
               "status": "captured",
-              "url": "https://research-operations.com/pages/project-dashboard/?id=recVisualProject001",
-              "durationMs": 3420,
+              "url": "https://researchops.pages.dev/pages/project-dashboard/?id=recVisualProject001",
+              "durationMs": 3091,
               "screenshot": "screenshots/mobile/projects__project-dashboard__default.png"
             }
           ],
@@ -1105,23 +1160,23 @@
           "id": "default",
           "title": "Add study with parent project context",
           "description": "Add-study workflow captured with the parent project ID present.",
-          "url": "https://research-operations.com/pages/study/new/?pid=recVisualProject001",
+          "url": "https://researchops.pages.dev/pages/study/new/?pid=recVisualProject001",
           "status": "captured",
           "captures": [
             {
               "profile": "desktop",
               "profileTitle": "Desktop",
               "status": "captured",
-              "url": "https://research-operations.com/pages/study/new/?pid=recVisualProject001",
-              "durationMs": 1464,
+              "url": "https://researchops.pages.dev/pages/study/new/?pid=recVisualProject001",
+              "durationMs": 1286,
               "screenshot": "screenshots/desktop/projects__project-dashboard-add-study__default.png"
             },
             {
               "profile": "mobile",
               "profileTitle": "Mobile",
               "status": "captured",
-              "url": "https://research-operations.com/pages/study/new/?pid=recVisualProject001",
-              "durationMs": 1499,
+              "url": "https://researchops.pages.dev/pages/study/new/?pid=recVisualProject001",
+              "durationMs": 1334,
               "screenshot": "screenshots/mobile/projects__project-dashboard-add-study__default.png"
             }
           ],
@@ -1160,23 +1215,23 @@
           "id": "default",
           "title": "Add participant with parent context",
           "description": "Participant workflow captured with the project ID present.",
-          "url": "https://research-operations.com/pages/project-dashboard/participants/?id=recVisualProject001",
+          "url": "https://researchops.pages.dev/pages/project-dashboard/participants/?id=recVisualProject001",
           "status": "captured",
           "captures": [
             {
               "profile": "desktop",
               "profileTitle": "Desktop",
               "status": "captured",
-              "url": "https://research-operations.com/pages/project-dashboard/participants/?id=recVisualProject001",
-              "durationMs": 1468,
+              "url": "https://researchops.pages.dev/pages/project-dashboard/participants/?id=recVisualProject001",
+              "durationMs": 1364,
               "screenshot": "screenshots/desktop/projects__project-dashboard-add-participant__default.png"
             },
             {
               "profile": "mobile",
               "profileTitle": "Mobile",
               "status": "captured",
-              "url": "https://research-operations.com/pages/project-dashboard/participants/?id=recVisualProject001",
-              "durationMs": 1481,
+              "url": "https://researchops.pages.dev/pages/project-dashboard/participants/?id=recVisualProject001",
+              "durationMs": 1398,
               "screenshot": "screenshots/mobile/projects__project-dashboard-add-participant__default.png"
             }
           ],
@@ -1215,23 +1270,23 @@
           "id": "default",
           "title": "Import participants with parent context",
           "description": "CSV import workflow captured with the project ID present.",
-          "url": "https://research-operations.com/pages/project-dashboard/participants/import/?id=recVisualProject001",
+          "url": "https://researchops.pages.dev/pages/project-dashboard/participants/import/?id=recVisualProject001",
           "status": "captured",
           "captures": [
             {
               "profile": "desktop",
               "profileTitle": "Desktop",
               "status": "captured",
-              "url": "https://research-operations.com/pages/project-dashboard/participants/import/?id=recVisualProject001",
-              "durationMs": 1311,
+              "url": "https://researchops.pages.dev/pages/project-dashboard/participants/import/?id=recVisualProject001",
+              "durationMs": 1273,
               "screenshot": "screenshots/desktop/projects__project-dashboard-import-participants__default.png"
             },
             {
               "profile": "mobile",
               "profileTitle": "Mobile",
               "status": "captured",
-              "url": "https://research-operations.com/pages/project-dashboard/participants/import/?id=recVisualProject001",
-              "durationMs": 1370,
+              "url": "https://researchops.pages.dev/pages/project-dashboard/participants/import/?id=recVisualProject001",
+              "durationMs": 1376,
               "screenshot": "screenshots/mobile/projects__project-dashboard-import-participants__default.png"
             }
           ],
@@ -1270,23 +1325,23 @@
           "id": "default",
           "title": "Project outcomes with project context",
           "description": "Outcomes page captured with a deterministic project ID.",
-          "url": "https://research-operations.com/pages/projects/outcomes/?id=recVisualProject001",
+          "url": "https://researchops.pages.dev/pages/projects/outcomes/?id=recVisualProject001",
           "status": "captured",
           "captures": [
             {
               "profile": "desktop",
               "profileTitle": "Desktop",
               "status": "captured",
-              "url": "https://research-operations.com/pages/projects/outcomes/?id=recVisualProject001",
-              "durationMs": 1813,
+              "url": "https://researchops.pages.dev/pages/projects/outcomes/?id=recVisualProject001",
+              "durationMs": 1782,
               "screenshot": "screenshots/desktop/projects__outcomes__default.png"
             },
             {
               "profile": "mobile",
               "profileTitle": "Mobile",
               "status": "captured",
-              "url": "https://research-operations.com/pages/projects/outcomes/?id=recVisualProject001",
-              "durationMs": 2148,
+              "url": "https://researchops.pages.dev/pages/projects/outcomes/?id=recVisualProject001",
+              "durationMs": 2078,
               "screenshot": "screenshots/mobile/projects__outcomes__default.png"
             }
           ],
@@ -1325,23 +1380,23 @@
           "id": "default",
           "title": "Project journals with project context",
           "description": "Reflexive journal page captured with project context.",
-          "url": "https://research-operations.com/pages/projects/journals/?id=recVisualProject001",
+          "url": "https://researchops.pages.dev/pages/projects/journals/?id=recVisualProject001",
           "status": "captured",
           "captures": [
             {
               "profile": "desktop",
               "profileTitle": "Desktop",
               "status": "captured",
-              "url": "https://research-operations.com/pages/projects/journals/?id=recVisualProject001",
-              "durationMs": 2915,
+              "url": "https://researchops.pages.dev/pages/projects/journals/?id=recVisualProject001",
+              "durationMs": 3017,
               "screenshot": "screenshots/desktop/projects__journals__default.png"
             },
             {
               "profile": "mobile",
               "profileTitle": "Mobile",
               "status": "captured",
-              "url": "https://research-operations.com/pages/projects/journals/?id=recVisualProject001",
-              "durationMs": 2729,
+              "url": "https://researchops.pages.dev/pages/projects/journals/?id=recVisualProject001",
+              "durationMs": 1919,
               "screenshot": "screenshots/mobile/projects__journals__default.png"
             }
           ],
@@ -1380,23 +1435,23 @@
           "id": "default",
           "title": "Journal entry route",
           "description": "Journal entry detail route captured before API hydration.",
-          "url": "https://research-operations.com/pages/journal/entry/index.html",
+          "url": "https://researchops.pages.dev/pages/journal/entry/index.html",
           "status": "captured",
           "captures": [
             {
               "profile": "desktop",
               "profileTitle": "Desktop",
               "status": "captured",
-              "url": "https://research-operations.com/pages/journal/entry/index.html",
-              "durationMs": 1241,
+              "url": "https://researchops.pages.dev/pages/journal/entry/index.html",
+              "durationMs": 1282,
               "screenshot": "screenshots/desktop/projects__journal-entry__default.png"
             },
             {
               "profile": "mobile",
               "profileTitle": "Mobile",
               "status": "captured",
-              "url": "https://research-operations.com/pages/journal/entry/index.html",
-              "durationMs": 1378,
+              "url": "https://researchops.pages.dev/pages/journal/entry/index.html",
+              "durationMs": 1300,
               "screenshot": "screenshots/mobile/projects__journal-entry__default.png"
             }
           ],
@@ -1435,23 +1490,23 @@
           "id": "default",
           "title": "Journal entry edit route",
           "description": "Journal entry edit route captured before API hydration.",
-          "url": "https://research-operations.com/pages/journal/edit/index.html",
+          "url": "https://researchops.pages.dev/pages/journal/edit/index.html",
           "status": "captured",
           "captures": [
             {
               "profile": "desktop",
               "profileTitle": "Desktop",
               "status": "captured",
-              "url": "https://research-operations.com/pages/journal/edit/index.html",
-              "durationMs": 1408,
+              "url": "https://researchops.pages.dev/pages/journal/edit/index.html",
+              "durationMs": 1214,
               "screenshot": "screenshots/desktop/projects__journal-entry-edit__default.png"
             },
             {
               "profile": "mobile",
               "profileTitle": "Mobile",
               "status": "captured",
-              "url": "https://research-operations.com/pages/journal/edit/index.html",
-              "durationMs": 1337,
+              "url": "https://researchops.pages.dev/pages/journal/edit/index.html",
+              "durationMs": 1389,
               "screenshot": "screenshots/mobile/projects__journal-entry-edit__default.png"
             }
           ],
@@ -1490,23 +1545,23 @@
           "id": "default",
           "title": "Study overview with readiness context",
           "description": "Study overview captured with the canonical Study record ID.",
-          "url": "https://research-operations.com/pages/study/?pid=recVisualProject001&sid=recVisualStudy001",
+          "url": "https://researchops.pages.dev/pages/study/?pid=recVisualProject001&sid=recVisualStudy001",
           "status": "captured",
           "captures": [
             {
               "profile": "desktop",
               "profileTitle": "Desktop",
               "status": "captured",
-              "url": "https://research-operations.com/pages/study/?pid=recVisualProject001&sid=recVisualStudy001",
-              "durationMs": 1513,
+              "url": "https://researchops.pages.dev/pages/study/?pid=recVisualProject001&sid=recVisualStudy001",
+              "durationMs": 1923,
               "screenshot": "screenshots/desktop/study__study__default.png"
             },
             {
               "profile": "mobile",
               "profileTitle": "Mobile",
               "status": "captured",
-              "url": "https://research-operations.com/pages/study/?pid=recVisualProject001&sid=recVisualStudy001",
-              "durationMs": 1616,
+              "url": "https://researchops.pages.dev/pages/study/?pid=recVisualProject001&sid=recVisualStudy001",
+              "durationMs": 2043,
               "screenshot": "screenshots/mobile/study__study__default.png"
             }
           ],
@@ -1545,23 +1600,23 @@
           "id": "default",
           "title": "Discussion guides with study context",
           "description": "Discussion guides page captured with the canonical Study record ID.",
-          "url": "https://research-operations.com/pages/study/guides/?pid=recVisualProject001&sid=recVisualStudy001",
+          "url": "https://researchops.pages.dev/pages/study/guides/?pid=recVisualProject001&sid=recVisualStudy001",
           "status": "captured",
           "captures": [
             {
               "profile": "desktop",
               "profileTitle": "Desktop",
               "status": "captured",
-              "url": "https://research-operations.com/pages/study/guides/?pid=recVisualProject001&sid=recVisualStudy001",
-              "durationMs": 2628,
+              "url": "https://researchops.pages.dev/pages/study/guides/?pid=recVisualProject001&sid=recVisualStudy001",
+              "durationMs": 1973,
               "screenshot": "screenshots/desktop/study__study-guides__default.png"
             },
             {
               "profile": "mobile",
               "profileTitle": "Mobile",
               "status": "captured",
-              "url": "https://research-operations.com/pages/study/guides/?pid=recVisualProject001&sid=recVisualStudy001",
-              "durationMs": 2408,
+              "url": "https://researchops.pages.dev/pages/study/guides/?pid=recVisualProject001&sid=recVisualStudy001",
+              "durationMs": 2246,
               "screenshot": "screenshots/mobile/study__study-guides__default.png"
             }
           ],
@@ -1600,23 +1655,23 @@
           "id": "default",
           "title": "Note takers and observers with study context",
           "description": "Support roles setup captured with the canonical Study record ID.",
-          "url": "https://research-operations.com/pages/study/note-takers-observers/?pid=recVisualProject001&sid=recVisualStudy001",
+          "url": "https://researchops.pages.dev/pages/study/note-takers-observers/?pid=recVisualProject001&sid=recVisualStudy001",
           "status": "captured",
           "captures": [
             {
               "profile": "desktop",
               "profileTitle": "Desktop",
               "status": "captured",
-              "url": "https://research-operations.com/pages/study/note-takers-observers/?pid=recVisualProject001&sid=recVisualStudy001",
-              "durationMs": 1576,
+              "url": "https://researchops.pages.dev/pages/study/note-takers-observers/?pid=recVisualProject001&sid=recVisualStudy001",
+              "durationMs": 1321,
               "screenshot": "screenshots/desktop/study__study-note-takers-observers__default.png"
             },
             {
               "profile": "mobile",
               "profileTitle": "Mobile",
               "status": "captured",
-              "url": "https://research-operations.com/pages/study/note-takers-observers/?pid=recVisualProject001&sid=recVisualStudy001",
-              "durationMs": 1737,
+              "url": "https://researchops.pages.dev/pages/study/note-takers-observers/?pid=recVisualProject001&sid=recVisualStudy001",
+              "durationMs": 1518,
               "screenshot": "screenshots/mobile/study__study-note-takers-observers__default.png"
             }
           ],
@@ -1655,23 +1710,23 @@
           "id": "default",
           "title": "Study participants with records",
           "description": "Participants page captured with the canonical Study record ID.",
-          "url": "https://research-operations.com/pages/study/participants/?pid=recVisualProject001&sid=recVisualStudy001",
+          "url": "https://researchops.pages.dev/pages/study/participants/?pid=recVisualProject001&sid=recVisualStudy001",
           "status": "captured",
           "captures": [
             {
               "profile": "desktop",
               "profileTitle": "Desktop",
               "status": "captured",
-              "url": "https://research-operations.com/pages/study/participants/?pid=recVisualProject001&sid=recVisualStudy001",
-              "durationMs": 1664,
+              "url": "https://researchops.pages.dev/pages/study/participants/?pid=recVisualProject001&sid=recVisualStudy001",
+              "durationMs": 1477,
               "screenshot": "screenshots/desktop/study__study-participants__default.png"
             },
             {
               "profile": "mobile",
               "profileTitle": "Mobile",
               "status": "captured",
-              "url": "https://research-operations.com/pages/study/participants/?pid=recVisualProject001&sid=recVisualStudy001",
-              "durationMs": 1758,
+              "url": "https://researchops.pages.dev/pages/study/participants/?pid=recVisualProject001&sid=recVisualStudy001",
+              "durationMs": 1635,
               "screenshot": "screenshots/mobile/study__study-participants__default.png"
             }
           ],
@@ -1710,23 +1765,23 @@
           "id": "default",
           "title": "Study session with study context",
           "description": "Session workspace captured with the canonical Study record ID.",
-          "url": "https://research-operations.com/pages/study/session/?pid=recVisualProject001&sid=recVisualStudy001",
+          "url": "https://researchops.pages.dev/pages/study/session/?pid=recVisualProject001&sid=recVisualStudy001",
           "status": "captured",
           "captures": [
             {
               "profile": "desktop",
               "profileTitle": "Desktop",
               "status": "captured",
-              "url": "https://research-operations.com/pages/study/session/?pid=recVisualProject001&sid=recVisualStudy001",
-              "durationMs": 1453,
+              "url": "https://researchops.pages.dev/pages/study/session/?pid=recVisualProject001&sid=recVisualStudy001",
+              "durationMs": 1293,
               "screenshot": "screenshots/desktop/study__study-session__default.png"
             },
             {
               "profile": "mobile",
               "profileTitle": "Mobile",
               "status": "captured",
-              "url": "https://research-operations.com/pages/study/session/?pid=recVisualProject001&sid=recVisualStudy001",
-              "durationMs": 1521,
+              "url": "https://researchops.pages.dev/pages/study/session/?pid=recVisualProject001&sid=recVisualStudy001",
+              "durationMs": 1462,
               "screenshot": "screenshots/mobile/study__study-session__default.png"
             }
           ],
@@ -1765,23 +1820,23 @@
           "id": "default",
           "title": "Study consent forms with study context",
           "description": "Consent form configuration captured with the canonical Study record ID.",
-          "url": "https://research-operations.com/pages/study/consent-forms/?pid=recVisualProject001&sid=recVisualStudy001",
+          "url": "https://researchops.pages.dev/pages/study/consent-forms/?pid=recVisualProject001&sid=recVisualStudy001",
           "status": "captured",
           "captures": [
             {
               "profile": "desktop",
               "profileTitle": "Desktop",
               "status": "captured",
-              "url": "https://research-operations.com/pages/study/consent-forms/?pid=recVisualProject001&sid=recVisualStudy001",
-              "durationMs": 1463,
+              "url": "https://researchops.pages.dev/pages/study/consent-forms/?pid=recVisualProject001&sid=recVisualStudy001",
+              "durationMs": 1395,
               "screenshot": "screenshots/desktop/study__study-consent-forms__default.png"
             },
             {
               "profile": "mobile",
               "profileTitle": "Mobile",
               "status": "captured",
-              "url": "https://research-operations.com/pages/study/consent-forms/?pid=recVisualProject001&sid=recVisualStudy001",
-              "durationMs": 1706,
+              "url": "https://researchops.pages.dev/pages/study/consent-forms/?pid=recVisualProject001&sid=recVisualStudy001",
+              "durationMs": 1660,
               "screenshot": "screenshots/mobile/study__study-consent-forms__default.png"
             }
           ],
@@ -1820,23 +1875,23 @@
           "id": "default",
           "title": "Consent workspace loaded",
           "description": "Participant consent loaded with study context, a published consent form, participants and existing consent records.",
-          "url": "https://research-operations.com/pages/study/participant-consent/?pid=recVisualConsentProject001&sid=recVisualConsentStudy001",
+          "url": "https://researchops.pages.dev/pages/study/participant-consent/?pid=recVisualConsentProject001&sid=recVisualConsentStudy001",
           "status": "captured",
           "captures": [
             {
               "profile": "desktop",
               "profileTitle": "Desktop",
               "status": "captured",
-              "url": "https://research-operations.com/pages/study/participant-consent/?pid=recVisualConsentProject001&sid=recVisualConsentStudy001",
-              "durationMs": 1987,
+              "url": "https://researchops.pages.dev/pages/study/participant-consent/?pid=recVisualConsentProject001&sid=recVisualConsentStudy001",
+              "durationMs": 1756,
               "screenshot": "screenshots/desktop/study__study-participant-consent__default.png"
             },
             {
               "profile": "mobile",
               "profileTitle": "Mobile",
               "status": "captured",
-              "url": "https://research-operations.com/pages/study/participant-consent/?pid=recVisualConsentProject001&sid=recVisualConsentStudy001",
-              "durationMs": 1985,
+              "url": "https://researchops.pages.dev/pages/study/participant-consent/?pid=recVisualConsentProject001&sid=recVisualConsentStudy001",
+              "durationMs": 1877,
               "screenshot": "screenshots/mobile/study__study-participant-consent__default.png"
             }
           ],
@@ -1868,23 +1923,23 @@
           "id": "missing-context-error",
           "title": "Missing study context error state",
           "description": "Participant consent loaded without project and study IDs; the page shows a blocking route-context message.",
-          "url": "https://research-operations.com/pages/study/participant-consent/index.html",
+          "url": "https://researchops.pages.dev/pages/study/participant-consent/index.html",
           "status": "captured",
           "captures": [
             {
               "profile": "desktop",
               "profileTitle": "Desktop",
               "status": "captured",
-              "url": "https://research-operations.com/pages/study/participant-consent/index.html",
-              "durationMs": 1359,
+              "url": "https://researchops.pages.dev/pages/study/participant-consent/index.html",
+              "durationMs": 1241,
               "screenshot": "screenshots/desktop/study__study-participant-consent__missing-context-error.png"
             },
             {
               "profile": "mobile",
               "profileTitle": "Mobile",
               "status": "captured",
-              "url": "https://research-operations.com/pages/study/participant-consent/index.html",
-              "durationMs": 1419,
+              "url": "https://researchops.pages.dev/pages/study/participant-consent/index.html",
+              "durationMs": 1325,
               "screenshot": "screenshots/mobile/study__study-participant-consent__missing-context-error.png"
             }
           ],
@@ -1916,23 +1971,23 @@
           "id": "no-published-consent-form",
           "title": "No published consent form state",
           "description": "The study has route context and participants, but no published consent form exists. The page routes the researcher to create consent forms before recording participant consent.",
-          "url": "https://research-operations.com/pages/study/participant-consent/?pid=recVisualConsentProject001&sid=recVisualConsentStudy001",
+          "url": "https://researchops.pages.dev/pages/study/participant-consent/?pid=recVisualConsentProject001&sid=recVisualConsentStudy001",
           "status": "captured",
           "captures": [
             {
               "profile": "desktop",
               "profileTitle": "Desktop",
               "status": "captured",
-              "url": "https://research-operations.com/pages/study/participant-consent/?pid=recVisualConsentProject001&sid=recVisualConsentStudy001",
-              "durationMs": 1495,
+              "url": "https://researchops.pages.dev/pages/study/participant-consent/?pid=recVisualConsentProject001&sid=recVisualConsentStudy001",
+              "durationMs": 1462,
               "screenshot": "screenshots/desktop/study__study-participant-consent__no-published-consent-form.png"
             },
             {
               "profile": "mobile",
               "profileTitle": "Mobile",
               "status": "captured",
-              "url": "https://research-operations.com/pages/study/participant-consent/?pid=recVisualConsentProject001&sid=recVisualConsentStudy001",
-              "durationMs": 1626,
+              "url": "https://researchops.pages.dev/pages/study/participant-consent/?pid=recVisualConsentProject001&sid=recVisualConsentStudy001",
+              "durationMs": 1620,
               "screenshot": "screenshots/mobile/study__study-participant-consent__no-published-consent-form.png"
             }
           ],
@@ -1964,23 +2019,23 @@
           "id": "no-participants",
           "title": "No participants state",
           "description": "The study has a published consent form, but no participants are available. The page routes the researcher to schedule participants before recording consent.",
-          "url": "https://research-operations.com/pages/study/participant-consent/?pid=recVisualConsentProject001&sid=recVisualConsentStudy001",
+          "url": "https://researchops.pages.dev/pages/study/participant-consent/?pid=recVisualConsentProject001&sid=recVisualConsentStudy001",
           "status": "captured",
           "captures": [
             {
               "profile": "desktop",
               "profileTitle": "Desktop",
               "status": "captured",
-              "url": "https://research-operations.com/pages/study/participant-consent/?pid=recVisualConsentProject001&sid=recVisualConsentStudy001",
-              "durationMs": 1571,
+              "url": "https://researchops.pages.dev/pages/study/participant-consent/?pid=recVisualConsentProject001&sid=recVisualConsentStudy001",
+              "durationMs": 1453,
               "screenshot": "screenshots/desktop/study__study-participant-consent__no-participants.png"
             },
             {
               "profile": "mobile",
               "profileTitle": "Mobile",
               "status": "captured",
-              "url": "https://research-operations.com/pages/study/participant-consent/?pid=recVisualConsentProject001&sid=recVisualConsentStudy001",
-              "durationMs": 1648,
+              "url": "https://researchops.pages.dev/pages/study/participant-consent/?pid=recVisualConsentProject001&sid=recVisualConsentStudy001",
+              "durationMs": 1588,
               "screenshot": "screenshots/mobile/study__study-participant-consent__no-participants.png"
             }
           ],
@@ -2012,23 +2067,23 @@
           "id": "participant-selected",
           "title": "Participant selected for consent review",
           "description": "A researcher selects a participant with an existing consent record and can review required statements, optional permissions and withdrawal controls.",
-          "url": "https://research-operations.com/pages/study/participant-consent/?pid=recVisualConsentProject001&sid=recVisualConsentStudy001",
+          "url": "https://researchops.pages.dev/pages/study/participant-consent/?pid=recVisualConsentProject001&sid=recVisualConsentStudy001",
           "status": "captured",
           "captures": [
             {
               "profile": "desktop",
               "profileTitle": "Desktop",
               "status": "captured",
-              "url": "https://research-operations.com/pages/study/participant-consent/?pid=recVisualConsentProject001&sid=recVisualConsentStudy001",
-              "durationMs": 2098,
+              "url": "https://researchops.pages.dev/pages/study/participant-consent/?pid=recVisualConsentProject001&sid=recVisualConsentStudy001",
+              "durationMs": 2008,
               "screenshot": "screenshots/desktop/study__study-participant-consent__participant-selected.png"
             },
             {
               "profile": "mobile",
               "profileTitle": "Mobile",
               "status": "captured",
-              "url": "https://research-operations.com/pages/study/participant-consent/?pid=recVisualConsentProject001&sid=recVisualConsentStudy001",
-              "durationMs": 2483,
+              "url": "https://researchops.pages.dev/pages/study/participant-consent/?pid=recVisualConsentProject001&sid=recVisualConsentStudy001",
+              "durationMs": 2402,
               "screenshot": "screenshots/mobile/study__study-participant-consent__participant-selected.png"
             }
           ],
@@ -2153,23 +2208,23 @@
           "id": "missing-sid-error",
           "title": "Missing study ID error state",
           "description": "Synthesis loaded without a study ID; the page shows the blocking route-context error.",
-          "url": "https://research-operations.com/pages/study/synthesis/index.html",
+          "url": "https://researchops.pages.dev/pages/study/synthesis/index.html",
           "status": "captured",
           "captures": [
             {
               "profile": "desktop",
               "profileTitle": "Desktop",
               "status": "captured",
-              "url": "https://research-operations.com/pages/study/synthesis/index.html",
-              "durationMs": 1455,
+              "url": "https://researchops.pages.dev/pages/study/synthesis/index.html",
+              "durationMs": 1122,
               "screenshot": "screenshots/desktop/study__synthesize__missing-sid-error.png"
             },
             {
               "profile": "mobile",
               "profileTitle": "Mobile",
               "status": "captured",
-              "url": "https://research-operations.com/pages/study/synthesis/index.html",
-              "durationMs": 1199,
+              "url": "https://researchops.pages.dev/pages/study/synthesis/index.html",
+              "durationMs": 1157,
               "screenshot": "screenshots/mobile/study__synthesize__missing-sid-error.png"
             }
           ],
@@ -2201,23 +2256,23 @@
           "id": "empty-evidence",
           "title": "Empty evidence state",
           "description": "Study synthesis loaded with valid study context but no captured evidence notes. The page routes the researcher to evidence capture rather than showing synthesis controls.",
-          "url": "https://research-operations.com/pages/study/synthesis/?id=recVisualStudy001",
+          "url": "https://researchops.pages.dev/pages/study/synthesis/?id=recVisualStudy001",
           "status": "captured",
           "captures": [
             {
               "profile": "desktop",
               "profileTitle": "Desktop",
               "status": "captured",
-              "url": "https://research-operations.com/pages/study/synthesis/?id=recVisualStudy001",
-              "durationMs": 1527,
+              "url": "https://researchops.pages.dev/pages/study/synthesis/?id=recVisualStudy001",
+              "durationMs": 1524,
               "screenshot": "screenshots/desktop/study__synthesize__empty-evidence.png"
             },
             {
               "profile": "mobile",
               "profileTitle": "Mobile",
               "status": "captured",
-              "url": "https://research-operations.com/pages/study/synthesis/?id=recVisualStudy001",
-              "durationMs": 1734,
+              "url": "https://researchops.pages.dev/pages/study/synthesis/?id=recVisualStudy001",
+              "durationMs": 1687,
               "screenshot": "screenshots/mobile/study__synthesize__empty-evidence.png"
             }
           ],
@@ -2249,23 +2304,23 @@
           "id": "evidence-loaded",
           "title": "Evidence available before working clusters",
           "description": "Study synthesis with realistic evidence available. The first available task is creating a working cluster grouping; evidence selection remains hidden until a cluster exists.",
-          "url": "https://research-operations.com/pages/study/synthesis/?id=recVisualStudy001",
+          "url": "https://researchops.pages.dev/pages/study/synthesis/?id=recVisualStudy001",
           "status": "captured",
           "captures": [
             {
               "profile": "desktop",
               "profileTitle": "Desktop",
               "status": "captured",
-              "url": "https://research-operations.com/pages/study/synthesis/?id=recVisualStudy001",
-              "durationMs": 1445,
+              "url": "https://researchops.pages.dev/pages/study/synthesis/?id=recVisualStudy001",
+              "durationMs": 1335,
               "screenshot": "screenshots/desktop/study__synthesize__evidence-loaded.png"
             },
             {
               "profile": "mobile",
               "profileTitle": "Mobile",
               "status": "captured",
-              "url": "https://research-operations.com/pages/study/synthesis/?id=recVisualStudy001",
-              "durationMs": 1424,
+              "url": "https://researchops.pages.dev/pages/study/synthesis/?id=recVisualStudy001",
+              "durationMs": 1395,
               "screenshot": "screenshots/mobile/study__synthesize__evidence-loaded.png"
             }
           ],
@@ -2297,23 +2352,23 @@
           "id": "working-cluster-created",
           "title": "Working cluster grouping created",
           "description": "A researcher creates a provisional working cluster grouping before adding evidence. Evidence selection becomes available only after the cluster exists.",
-          "url": "https://research-operations.com/pages/study/synthesis/?id=recVisualStudy001",
+          "url": "https://researchops.pages.dev/pages/study/synthesis/?id=recVisualStudy001",
           "status": "captured",
           "captures": [
             {
               "profile": "desktop",
               "profileTitle": "Desktop",
               "status": "captured",
-              "url": "https://research-operations.com/pages/study/synthesis/?id=recVisualStudy001",
-              "durationMs": 2318,
+              "url": "https://researchops.pages.dev/pages/study/synthesis/?id=recVisualStudy001",
+              "durationMs": 2181,
               "screenshot": "screenshots/desktop/study__synthesize__working-cluster-created.png"
             },
             {
               "profile": "mobile",
               "profileTitle": "Mobile",
               "status": "captured",
-              "url": "https://research-operations.com/pages/study/synthesis/?id=recVisualStudy001",
-              "durationMs": 2461,
+              "url": "https://researchops.pages.dev/pages/study/synthesis/?id=recVisualStudy001",
+              "durationMs": 2400,
               "screenshot": "screenshots/mobile/study__synthesize__working-cluster-created.png"
             }
           ],
@@ -2345,23 +2400,23 @@
           "id": "evidence-added-to-cluster",
           "title": "Evidence added to working cluster grouping",
           "description": "A researcher selects two evidence notes and adds them to an existing working cluster grouping. Theme creation becomes available after evidence is grouped.",
-          "url": "https://research-operations.com/pages/study/synthesis/?id=recVisualStudy001",
+          "url": "https://researchops.pages.dev/pages/study/synthesis/?id=recVisualStudy001",
           "status": "captured",
           "captures": [
             {
               "profile": "desktop",
               "profileTitle": "Desktop",
               "status": "captured",
-              "url": "https://research-operations.com/pages/study/synthesis/?id=recVisualStudy001",
-              "durationMs": 2399,
+              "url": "https://researchops.pages.dev/pages/study/synthesis/?id=recVisualStudy001",
+              "durationMs": 2253,
               "screenshot": "screenshots/desktop/study__synthesize__evidence-added-to-cluster.png"
             },
             {
               "profile": "mobile",
               "profileTitle": "Mobile",
               "status": "captured",
-              "url": "https://research-operations.com/pages/study/synthesis/?id=recVisualStudy001",
-              "durationMs": 2553,
+              "url": "https://researchops.pages.dev/pages/study/synthesis/?id=recVisualStudy001",
+              "durationMs": 2505,
               "screenshot": "screenshots/mobile/study__synthesize__evidence-added-to-cluster.png"
             }
           ],
@@ -2393,23 +2448,23 @@
           "id": "theme-blocked-without-evidence",
           "title": "Theme creation hidden before evidence is grouped",
           "description": "Theme creation remains hidden until at least one working cluster grouping contains source evidence.",
-          "url": "https://research-operations.com/pages/study/synthesis/?id=recVisualStudy001",
+          "url": "https://researchops.pages.dev/pages/study/synthesis/?id=recVisualStudy001",
           "status": "captured",
           "captures": [
             {
               "profile": "desktop",
               "profileTitle": "Desktop",
               "status": "captured",
-              "url": "https://research-operations.com/pages/study/synthesis/?id=recVisualStudy001",
-              "durationMs": 1567,
+              "url": "https://researchops.pages.dev/pages/study/synthesis/?id=recVisualStudy001",
+              "durationMs": 1518,
               "screenshot": "screenshots/desktop/study__synthesize__theme-blocked-without-evidence.png"
             },
             {
               "profile": "mobile",
               "profileTitle": "Mobile",
               "status": "captured",
-              "url": "https://research-operations.com/pages/study/synthesis/?id=recVisualStudy001",
-              "durationMs": 1895,
+              "url": "https://researchops.pages.dev/pages/study/synthesis/?id=recVisualStudy001",
+              "durationMs": 1798,
               "screenshot": "screenshots/mobile/study__synthesize__theme-blocked-without-evidence.png"
             }
           ],
@@ -2441,23 +2496,23 @@
           "id": "theme-created",
           "title": "Theme created with evidence traceability",
           "description": "A theme is created from a populated cluster and the source evidence IDs remain inspectable.",
-          "url": "https://research-operations.com/pages/study/synthesis/?id=recVisualStudy001",
+          "url": "https://researchops.pages.dev/pages/study/synthesis/?id=recVisualStudy001",
           "status": "captured",
           "captures": [
             {
               "profile": "desktop",
               "profileTitle": "Desktop",
               "status": "captured",
-              "url": "https://research-operations.com/pages/study/synthesis/?id=recVisualStudy001",
-              "durationMs": 2674,
+              "url": "https://researchops.pages.dev/pages/study/synthesis/?id=recVisualStudy001",
+              "durationMs": 2462,
               "screenshot": "screenshots/desktop/study__synthesize__theme-created.png"
             },
             {
               "profile": "mobile",
               "profileTitle": "Mobile",
               "status": "captured",
-              "url": "https://research-operations.com/pages/study/synthesis/?id=recVisualStudy001",
-              "durationMs": 2765,
+              "url": "https://researchops.pages.dev/pages/study/synthesis/?id=recVisualStudy001",
+              "durationMs": 2698,
               "screenshot": "screenshots/mobile/study__synthesize__theme-created.png"
             }
           ],
@@ -2608,23 +2663,23 @@
           "id": "default",
           "title": "Pending account requests",
           "description": "Registration request review page captured with a deterministic pending request.",
-          "url": "https://research-operations.com/pages/team/registration-requests/",
+          "url": "https://researchops.pages.dev/pages/team/registration-requests/",
           "status": "captured",
           "captures": [
             {
               "profile": "desktop",
               "profileTitle": "Desktop",
               "status": "captured",
-              "url": "https://research-operations.com/pages/team/registration-requests/",
-              "durationMs": 1404,
+              "url": "https://researchops.pages.dev/pages/team/registration-requests/",
+              "durationMs": 1337,
               "screenshot": "screenshots/desktop/team-administration__team-registration-requests__default.png"
             },
             {
               "profile": "mobile",
               "profileTitle": "Mobile",
               "status": "captured",
-              "url": "https://research-operations.com/pages/team/registration-requests/",
-              "durationMs": 1518,
+              "url": "https://researchops.pages.dev/pages/team/registration-requests/",
+              "durationMs": 1387,
               "screenshot": "screenshots/mobile/team-administration__team-registration-requests__default.png"
             }
           ],
@@ -2663,23 +2718,23 @@
           "id": "default",
           "title": "Default state",
           "description": "Initial loaded page state.",
-          "url": "https://research-operations.com/pages/team/access-requests/index.html",
+          "url": "https://researchops.pages.dev/pages/team/access-requests/index.html",
           "status": "captured",
           "captures": [
             {
               "profile": "desktop",
               "profileTitle": "Desktop",
               "status": "captured",
-              "url": "https://research-operations.com/pages/team/access-requests/index.html",
-              "durationMs": 1224,
+              "url": "https://researchops.pages.dev/pages/team/access-requests/index.html",
+              "durationMs": 1024,
               "screenshot": "screenshots/desktop/team-administration__team-access-requests__default.png"
             },
             {
               "profile": "mobile",
               "profileTitle": "Mobile",
               "status": "captured",
-              "url": "https://research-operations.com/pages/team/access-requests/index.html",
-              "durationMs": 1296,
+              "url": "https://researchops.pages.dev/pages/team/access-requests/index.html",
+              "durationMs": 1134,
               "screenshot": "screenshots/mobile/team-administration__team-access-requests__default.png"
             }
           ],
@@ -2718,23 +2773,23 @@
           "id": "default",
           "title": "Role assignment form with Team Admin scope",
           "description": "Role assignment page captured with a deterministic Team Admin context.",
-          "url": "https://research-operations.com/pages/team/role-assignments/index.html",
+          "url": "https://researchops.pages.dev/pages/team/role-assignments/index.html",
           "status": "captured",
           "captures": [
             {
               "profile": "desktop",
               "profileTitle": "Desktop",
               "status": "captured",
-              "url": "https://research-operations.com/pages/team/role-assignments/index.html",
-              "durationMs": 1500,
+              "url": "https://researchops.pages.dev/pages/team/role-assignments/index.html",
+              "durationMs": 1315,
               "screenshot": "screenshots/desktop/team-administration__team-role-assignments__default.png"
             },
             {
               "profile": "mobile",
               "profileTitle": "Mobile",
               "status": "captured",
-              "url": "https://research-operations.com/pages/team/role-assignments/index.html",
-              "durationMs": 1726,
+              "url": "https://researchops.pages.dev/pages/team/role-assignments/index.html",
+              "durationMs": 1560,
               "screenshot": "screenshots/mobile/team-administration__team-role-assignments__default.png"
             }
           ],
@@ -2773,23 +2828,23 @@
           "id": "default",
           "title": "Default state",
           "description": "Initial loaded page state.",
-          "url": "https://research-operations.com/pages/search/index.html",
+          "url": "https://researchops.pages.dev/pages/search/index.html",
           "status": "captured",
           "captures": [
             {
               "profile": "desktop",
               "profileTitle": "Desktop",
               "status": "captured",
-              "url": "https://research-operations.com/pages/search/index.html",
-              "durationMs": 1180,
+              "url": "https://researchops.pages.dev/pages/search/index.html",
+              "durationMs": 1039,
               "screenshot": "screenshots/desktop/utilities__search__default.png"
             },
             {
               "profile": "mobile",
               "profileTitle": "Mobile",
               "status": "captured",
-              "url": "https://research-operations.com/pages/search/index.html",
-              "durationMs": 1148,
+              "url": "https://researchops.pages.dev/pages/search/index.html",
+              "durationMs": 1086,
               "screenshot": "screenshots/mobile/utilities__search__default.png"
             }
           ],
@@ -2828,23 +2883,23 @@
           "id": "default",
           "title": "Default state",
           "description": "Initial loaded page state.",
-          "url": "https://research-operations.com/pages/notes/index.html",
+          "url": "https://researchops.pages.dev/pages/notes/index.html",
           "status": "captured",
           "captures": [
             {
               "profile": "desktop",
               "profileTitle": "Desktop",
               "status": "captured",
-              "url": "https://research-operations.com/pages/notes/index.html",
-              "durationMs": 1169,
+              "url": "https://researchops.pages.dev/pages/notes/index.html",
+              "durationMs": 1081,
               "screenshot": "screenshots/desktop/utilities__notes__default.png"
             },
             {
               "profile": "mobile",
               "profileTitle": "Mobile",
               "status": "captured",
-              "url": "https://research-operations.com/pages/notes/index.html",
-              "durationMs": 1402,
+              "url": "https://researchops.pages.dev/pages/notes/index.html",
+              "durationMs": 1185,
               "screenshot": "screenshots/mobile/utilities__notes__default.png"
             }
           ],
@@ -2883,23 +2938,23 @@
           "id": "default",
           "title": "Default state",
           "description": "Initial loaded page state.",
-          "url": "https://research-operations.com/pages/consent/index.html",
+          "url": "https://researchops.pages.dev/pages/consent/index.html",
           "status": "captured",
           "captures": [
             {
               "profile": "desktop",
               "profileTitle": "Desktop",
               "status": "captured",
-              "url": "https://research-operations.com/pages/consent/index.html",
-              "durationMs": 1247,
+              "url": "https://researchops.pages.dev/pages/consent/index.html",
+              "durationMs": 1112,
               "screenshot": "screenshots/desktop/utilities__consent__default.png"
             },
             {
               "profile": "mobile",
               "profileTitle": "Mobile",
               "status": "captured",
-              "url": "https://research-operations.com/pages/consent/index.html",
-              "durationMs": 1195,
+              "url": "https://researchops.pages.dev/pages/consent/index.html",
+              "durationMs": 1116,
               "screenshot": "screenshots/mobile/utilities__consent__default.png"
             }
           ],
@@ -2938,23 +2993,23 @@
           "id": "default",
           "title": "Default state",
           "description": "Initial loaded page state.",
-          "url": "https://research-operations.com/pages/sessions/index.html",
+          "url": "https://researchops.pages.dev/pages/sessions/index.html",
           "status": "captured",
           "captures": [
             {
               "profile": "desktop",
               "profileTitle": "Desktop",
               "status": "captured",
-              "url": "https://research-operations.com/pages/sessions/index.html",
-              "durationMs": 1160,
+              "url": "https://researchops.pages.dev/pages/sessions/index.html",
+              "durationMs": 1073,
               "screenshot": "screenshots/desktop/utilities__sessions__default.png"
             },
             {
               "profile": "mobile",
               "profileTitle": "Mobile",
               "status": "captured",
-              "url": "https://research-operations.com/pages/sessions/index.html",
-              "durationMs": 1203,
+              "url": "https://researchops.pages.dev/pages/sessions/index.html",
+              "durationMs": 1155,
               "screenshot": "screenshots/mobile/utilities__sessions__default.png"
             }
           ],
@@ -2993,23 +3048,23 @@
           "id": "default",
           "title": "Repository front page with published artefacts",
           "description": "Repository front page captured from the deployed generated page after the server-rendered repository shell is available.",
-          "url": "https://research-operations.com/pages/repository/",
+          "url": "https://researchops.pages.dev/pages/repository/",
           "status": "captured",
           "captures": [
             {
               "profile": "desktop",
               "profileTitle": "Desktop",
               "status": "captured",
-              "url": "https://research-operations.com/pages/repository/",
-              "durationMs": 2213,
+              "url": "https://researchops.pages.dev/pages/repository/",
+              "durationMs": 2432,
               "screenshot": "screenshots/desktop/research-repository__repository__default.png"
             },
             {
               "profile": "mobile",
               "profileTitle": "Mobile",
               "status": "captured",
-              "url": "https://research-operations.com/pages/repository/",
-              "durationMs": 2626,
+              "url": "https://researchops.pages.dev/pages/repository/",
+              "durationMs": 2654,
               "screenshot": "screenshots/mobile/research-repository__repository__default.png"
             }
           ],
@@ -3048,23 +3103,23 @@
           "id": "default",
           "title": "Browse evidence by service area",
           "description": "Service area pages help teams avoid repeating discovery work and understand where reusable evidence already exists.",
-          "url": "https://research-operations.com/pages/repository/service-areas/?service_area=assisted-digital-support",
+          "url": "https://researchops.pages.dev/pages/repository/service-areas/?service_area=assisted-digital-support",
           "status": "captured",
           "captures": [
             {
               "profile": "desktop",
               "profileTitle": "Desktop",
               "status": "captured",
-              "url": "https://research-operations.com/pages/repository/service-areas/?service_area=assisted-digital-support",
-              "durationMs": 1387,
+              "url": "https://researchops.pages.dev/pages/repository/service-areas/?service_area=assisted-digital-support",
+              "durationMs": 1309,
               "screenshot": "screenshots/desktop/research-repository__repository-service-areas__default.png"
             },
             {
               "profile": "mobile",
               "profileTitle": "Mobile",
               "status": "captured",
-              "url": "https://research-operations.com/pages/repository/service-areas/?service_area=assisted-digital-support",
-              "durationMs": 1975,
+              "url": "https://researchops.pages.dev/pages/repository/service-areas/?service_area=assisted-digital-support",
+              "durationMs": 1501,
               "screenshot": "screenshots/mobile/research-repository__repository-service-areas__default.png"
             }
           ],
@@ -3103,23 +3158,23 @@
           "id": "default",
           "title": "Browse by user group",
           "description": "Use this route when the user group is the strongest starting point for comparison across services.",
-          "url": "https://research-operations.com/pages/repository/user-groups/?user_group=frontline-staff",
+          "url": "https://researchops.pages.dev/pages/repository/user-groups/?user_group=frontline-staff",
           "status": "captured",
           "captures": [
             {
               "profile": "desktop",
               "profileTitle": "Desktop",
               "status": "captured",
-              "url": "https://research-operations.com/pages/repository/user-groups/?user_group=frontline-staff",
-              "durationMs": 2315,
+              "url": "https://researchops.pages.dev/pages/repository/user-groups/?user_group=frontline-staff",
+              "durationMs": 1357,
               "screenshot": "screenshots/desktop/research-repository__repository-user-groups__default.png"
             },
             {
               "profile": "mobile",
               "profileTitle": "Mobile",
               "status": "captured",
-              "url": "https://research-operations.com/pages/repository/user-groups/?user_group=frontline-staff",
-              "durationMs": 1551,
+              "url": "https://researchops.pages.dev/pages/repository/user-groups/?user_group=frontline-staff",
+              "durationMs": 1430,
               "screenshot": "screenshots/mobile/research-repository__repository-user-groups__default.png"
             }
           ],
@@ -3158,23 +3213,23 @@
           "id": "default",
           "title": "Browse evidence by research method",
           "description": "Method browsing helps teams understand the strength and limits of evidence before reusing findings.",
-          "url": "https://research-operations.com/pages/repository/methods/?method=interviews",
+          "url": "https://researchops.pages.dev/pages/repository/methods/?method=interviews",
           "status": "captured",
           "captures": [
             {
               "profile": "desktop",
               "profileTitle": "Desktop",
               "status": "captured",
-              "url": "https://research-operations.com/pages/repository/methods/?method=interviews",
-              "durationMs": 1359,
+              "url": "https://researchops.pages.dev/pages/repository/methods/?method=interviews",
+              "durationMs": 1295,
               "screenshot": "screenshots/desktop/research-repository__repository-methods__default.png"
             },
             {
               "profile": "mobile",
               "profileTitle": "Mobile",
               "status": "captured",
-              "url": "https://research-operations.com/pages/repository/methods/?method=interviews",
-              "durationMs": 1975,
+              "url": "https://researchops.pages.dev/pages/repository/methods/?method=interviews",
+              "durationMs": 1553,
               "screenshot": "screenshots/mobile/research-repository__repository-methods__default.png"
             }
           ],
@@ -3213,23 +3268,23 @@
           "id": "default",
           "title": "Browse evidence by risk or constraint",
           "description": "Risk browsing helps teams find relevant evidence before making decisions that could affect users or service delivery.",
-          "url": "https://research-operations.com/pages/repository/risks/?risk_area=evidence-boundaries",
+          "url": "https://researchops.pages.dev/pages/repository/risks/?risk_area=evidence-boundaries",
           "status": "captured",
           "captures": [
             {
               "profile": "desktop",
               "profileTitle": "Desktop",
               "status": "captured",
-              "url": "https://research-operations.com/pages/repository/risks/?risk_area=evidence-boundaries",
-              "durationMs": 1360,
+              "url": "https://researchops.pages.dev/pages/repository/risks/?risk_area=evidence-boundaries",
+              "durationMs": 1274,
               "screenshot": "screenshots/desktop/research-repository__repository-risks__default.png"
             },
             {
               "profile": "mobile",
               "profileTitle": "Mobile",
               "status": "captured",
-              "url": "https://research-operations.com/pages/repository/risks/?risk_area=evidence-boundaries",
-              "durationMs": 1739,
+              "url": "https://researchops.pages.dev/pages/repository/risks/?risk_area=evidence-boundaries",
+              "durationMs": 1450,
               "screenshot": "screenshots/mobile/research-repository__repository-risks__default.png"
             }
           ],
@@ -3268,23 +3323,23 @@
           "id": "default",
           "title": "Repository artefact",
           "description": "Use the artefact detail to check provenance, confidence, limitations and reuse guidance before applying published evidence.",
-          "url": "https://research-operations.com/pages/repository/artefacts/",
+          "url": "https://researchops.pages.dev/pages/repository/artefacts/",
           "status": "captured",
           "captures": [
             {
               "profile": "desktop",
               "profileTitle": "Desktop",
               "status": "captured",
-              "url": "https://research-operations.com/pages/repository/artefacts/",
-              "durationMs": 1273,
+              "url": "https://researchops.pages.dev/pages/repository/artefacts/",
+              "durationMs": 1309,
               "screenshot": "screenshots/desktop/research-repository__repository-artefacts__default.png"
             },
             {
               "profile": "mobile",
               "profileTitle": "Mobile",
               "status": "captured",
-              "url": "https://research-operations.com/pages/repository/artefacts/",
-              "durationMs": 1454,
+              "url": "https://researchops.pages.dev/pages/repository/artefacts/",
+              "durationMs": 1345,
               "screenshot": "screenshots/mobile/research-repository__repository-artefacts__default.png"
             }
           ],
@@ -3323,23 +3378,23 @@
           "id": "default",
           "title": "Staff need clearer evidence boundaries before accepting recommendations",
           "description": "This page is backed by the repository artefact API when available. Static structure keeps the route usable while data loads.",
-          "url": "https://research-operations.com/pages/repository/artefacts/staff-evidence-boundaries/",
+          "url": "https://researchops.pages.dev/pages/repository/artefacts/staff-evidence-boundaries/",
           "status": "captured",
           "captures": [
             {
               "profile": "desktop",
               "profileTitle": "Desktop",
               "status": "captured",
-              "url": "https://research-operations.com/pages/repository/artefacts/staff-evidence-boundaries/",
-              "durationMs": 1332,
+              "url": "https://researchops.pages.dev/pages/repository/artefacts/staff-evidence-boundaries/",
+              "durationMs": 1274,
               "screenshot": "screenshots/desktop/research-repository__repository-artefacts-staff-evidence-boundaries__default.png"
             },
             {
               "profile": "mobile",
               "profileTitle": "Mobile",
               "status": "captured",
-              "url": "https://research-operations.com/pages/repository/artefacts/staff-evidence-boundaries/",
-              "durationMs": 1477,
+              "url": "https://researchops.pages.dev/pages/repository/artefacts/staff-evidence-boundaries/",
+              "durationMs": 1436,
               "screenshot": "screenshots/mobile/research-repository__repository-artefacts-staff-evidence-boundaries__default.png"
             }
           ],
@@ -3378,23 +3433,23 @@
           "id": "default",
           "title": "Check answers pages reduce review anxiety when change links are explicit",
           "description": "The artefact detail route uses the same publication boundary as repository search.",
-          "url": "https://research-operations.com/pages/repository/artefacts/check-answers-review-anxiety/",
+          "url": "https://researchops.pages.dev/pages/repository/artefacts/check-answers-review-anxiety/",
           "status": "captured",
           "captures": [
             {
               "profile": "desktop",
               "profileTitle": "Desktop",
               "status": "captured",
-              "url": "https://research-operations.com/pages/repository/artefacts/check-answers-review-anxiety/",
-              "durationMs": 1387,
+              "url": "https://researchops.pages.dev/pages/repository/artefacts/check-answers-review-anxiety/",
+              "durationMs": 1288,
               "screenshot": "screenshots/desktop/research-repository__repository-artefacts-check-answers-review-anxiety__default.png"
             },
             {
               "profile": "mobile",
               "profileTitle": "Mobile",
               "status": "captured",
-              "url": "https://research-operations.com/pages/repository/artefacts/check-answers-review-anxiety/",
-              "durationMs": 1411,
+              "url": "https://researchops.pages.dev/pages/repository/artefacts/check-answers-review-anxiety/",
+              "durationMs": 1302,
               "screenshot": "screenshots/mobile/research-repository__repository-artefacts-check-answers-review-anxiety__default.png"
             }
           ],
@@ -3433,23 +3488,23 @@
           "id": "default",
           "title": "Operational teams rely on local workarounds when consent states are unclear",
           "description": "This route is safe for repository users because raw consent records and participant details stay outside the publication layer.",
-          "url": "https://research-operations.com/pages/repository/artefacts/consent-state-workarounds/",
+          "url": "https://researchops.pages.dev/pages/repository/artefacts/consent-state-workarounds/",
           "status": "captured",
           "captures": [
             {
               "profile": "desktop",
               "profileTitle": "Desktop",
               "status": "captured",
-              "url": "https://research-operations.com/pages/repository/artefacts/consent-state-workarounds/",
-              "durationMs": 1328,
+              "url": "https://researchops.pages.dev/pages/repository/artefacts/consent-state-workarounds/",
+              "durationMs": 1304,
               "screenshot": "screenshots/desktop/research-repository__repository-artefacts-consent-state-workarounds__default.png"
             },
             {
               "profile": "mobile",
               "profileTitle": "Mobile",
               "status": "captured",
-              "url": "https://research-operations.com/pages/repository/artefacts/consent-state-workarounds/",
-              "durationMs": 1925,
+              "url": "https://researchops.pages.dev/pages/repository/artefacts/consent-state-workarounds/",
+              "durationMs": 1269,
               "screenshot": "screenshots/mobile/research-repository__repository-artefacts-consent-state-workarounds__default.png"
             }
           ],
@@ -3488,23 +3543,23 @@
           "id": "default",
           "title": "Researchers need lightweight capture before structured tagging",
           "description": "The repository presents reusable learning without exposing raw notes or unreleased synthesis.",
-          "url": "https://research-operations.com/pages/repository/artefacts/lightweight-capture-before-tagging/",
+          "url": "https://researchops.pages.dev/pages/repository/artefacts/lightweight-capture-before-tagging/",
           "status": "captured",
           "captures": [
             {
               "profile": "desktop",
               "profileTitle": "Desktop",
               "status": "captured",
-              "url": "https://research-operations.com/pages/repository/artefacts/lightweight-capture-before-tagging/",
-              "durationMs": 1341,
+              "url": "https://researchops.pages.dev/pages/repository/artefacts/lightweight-capture-before-tagging/",
+              "durationMs": 1355,
               "screenshot": "screenshots/desktop/research-repository__repository-artefacts-lightweight-capture-before-tagging__default.png"
             },
             {
               "profile": "mobile",
               "profileTitle": "Mobile",
               "status": "captured",
-              "url": "https://research-operations.com/pages/repository/artefacts/lightweight-capture-before-tagging/",
-              "durationMs": 2176,
+              "url": "https://researchops.pages.dev/pages/repository/artefacts/lightweight-capture-before-tagging/",
+              "durationMs": 1333,
               "screenshot": "screenshots/mobile/research-repository__repository-artefacts-lightweight-capture-before-tagging__default.png"
             }
           ],
@@ -3543,23 +3598,23 @@
           "id": "default",
           "title": "Create candidate artefact",
           "description": "Candidate artefacts are not visible in repository search until review, PII clearance and consent-scope checks are complete.",
-          "url": "https://research-operations.com/pages/repository/review/candidates/new/",
+          "url": "https://researchops.pages.dev/pages/repository/review/candidates/new/",
           "status": "captured",
           "captures": [
             {
               "profile": "desktop",
               "profileTitle": "Desktop",
               "status": "captured",
-              "url": "https://research-operations.com/pages/repository/review/candidates/new/",
-              "durationMs": 1408,
+              "url": "https://researchops.pages.dev/pages/repository/review/candidates/new/",
+              "durationMs": 1370,
               "screenshot": "screenshots/desktop/research-repository__repository-review-candidates-new__default.png"
             },
             {
               "profile": "mobile",
               "profileTitle": "Mobile",
               "status": "captured",
-              "url": "https://research-operations.com/pages/repository/review/candidates/new/",
-              "durationMs": 1640,
+              "url": "https://researchops.pages.dev/pages/repository/review/candidates/new/",
+              "durationMs": 1592,
               "screenshot": "screenshots/mobile/research-repository__repository-review-candidates-new__default.png"
             }
           ],
@@ -3598,23 +3653,23 @@
           "id": "default",
           "title": "Candidate artefacts",
           "description": "Assess candidate artefacts, record a review outcome and keep a clear audit trail before anything is published.",
-          "url": "https://research-operations.com/pages/repository/review/candidates/",
+          "url": "https://researchops.pages.dev/pages/repository/review/candidates/",
           "status": "captured",
           "captures": [
             {
               "profile": "desktop",
               "profileTitle": "Desktop",
               "status": "captured",
-              "url": "https://research-operations.com/pages/repository/review/candidates/",
-              "durationMs": 1522,
+              "url": "https://researchops.pages.dev/pages/repository/review/candidates/",
+              "durationMs": 1364,
               "screenshot": "screenshots/desktop/research-repository__repository-review-candidates__default.png"
             },
             {
               "profile": "mobile",
               "profileTitle": "Mobile",
               "status": "captured",
-              "url": "https://research-operations.com/pages/repository/review/candidates/",
-              "durationMs": 1644,
+              "url": "https://researchops.pages.dev/pages/repository/review/candidates/",
+              "durationMs": 1609,
               "screenshot": "screenshots/mobile/research-repository__repository-review-candidates__default.png"
             }
           ],
@@ -3653,23 +3708,23 @@
           "id": "default",
           "title": "Due review",
           "description": "Run a scheduled review, confirm whether the evidence still stands and capture the decision for audit.",
-          "url": "https://research-operations.com/pages/repository/review/stale/",
+          "url": "https://researchops.pages.dev/pages/repository/review/stale/",
           "status": "captured",
           "captures": [
             {
               "profile": "desktop",
               "profileTitle": "Desktop",
               "status": "captured",
-              "url": "https://research-operations.com/pages/repository/review/stale/",
-              "durationMs": 1371,
+              "url": "https://researchops.pages.dev/pages/repository/review/stale/",
+              "durationMs": 1340,
               "screenshot": "screenshots/desktop/research-repository__repository-review-stale__default.png"
             },
             {
               "profile": "mobile",
               "profileTitle": "Mobile",
               "status": "captured",
-              "url": "https://research-operations.com/pages/repository/review/stale/",
-              "durationMs": 1692,
+              "url": "https://researchops.pages.dev/pages/repository/review/stale/",
+              "durationMs": 1607,
               "screenshot": "screenshots/mobile/research-repository__repository-review-stale__default.png"
             }
           ],
@@ -3708,23 +3763,23 @@
           "id": "default",
           "title": "Withdrawn artefacts",
           "description": "Inspect governed withdrawn records, understand why they were removed from reuse, and reinstate them when that decision changes.",
-          "url": "https://research-operations.com/pages/repository/review/withdrawn/",
+          "url": "https://researchops.pages.dev/pages/repository/review/withdrawn/",
           "status": "captured",
           "captures": [
             {
               "profile": "desktop",
               "profileTitle": "Desktop",
               "status": "captured",
-              "url": "https://research-operations.com/pages/repository/review/withdrawn/",
-              "durationMs": 1500,
+              "url": "https://researchops.pages.dev/pages/repository/review/withdrawn/",
+              "durationMs": 1416,
               "screenshot": "screenshots/desktop/research-repository__repository-review-withdrawn__default.png"
             },
             {
               "profile": "mobile",
               "profileTitle": "Mobile",
               "status": "captured",
-              "url": "https://research-operations.com/pages/repository/review/withdrawn/",
-              "durationMs": 1665,
+              "url": "https://researchops.pages.dev/pages/repository/review/withdrawn/",
+              "durationMs": 1558,
               "screenshot": "screenshots/mobile/research-repository__repository-review-withdrawn__default.png"
             }
           ],
