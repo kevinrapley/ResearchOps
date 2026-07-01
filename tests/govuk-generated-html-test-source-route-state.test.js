@@ -37,5 +37,7 @@ includes(helperSource, 'return originalReadFileSync(pathLike, options);', 'gener
 
 includes(rendererSource, 'export const govukPages = [', 'GOV.UK page renderer');
 includes(rendererSource, 'export function cacheBustOutcomesPageScripts', 'GOV.UK page renderer');
+includes(rendererSource, "template: 'pages/account-register.njk'", 'GOV.UK page renderer');
+includes(rendererSource, "output: 'public/pages/account/register/index.html'", 'GOV.UK page renderer');
 includes(rendererSource, "output: 'public/pages/projects/journals/index.html'", 'GOV.UK page renderer');
 excludes(helperSource, "originalReadFileSync('public/pages", 'generated GOV.UK page test helper');

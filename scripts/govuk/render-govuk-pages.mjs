@@ -231,6 +231,16 @@ export const govukPages = [
 		},
 	},
 	{
+		template: 'pages/account-register.njk',
+		output: 'public/pages/account/register/index.html',
+		context: {
+			pageTitle: 'Request a ResearchOps account - ResearchOps Demo Suite',
+			serviceName: 'ResearchOps Demo Suite',
+			activeNavigation: '',
+			navigation: accountNavigation,
+		},
+	},
+	{
 		template: 'pages/account-team-access.njk',
 		output: 'public/pages/account/team-access/index.html',
 		context: {

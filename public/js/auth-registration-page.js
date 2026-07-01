@@ -141,7 +141,6 @@ function redirectToAccount() {
 function resetStatusPresentation() {
 	if (!dom.status || !dom.statusTitle) return;
 	dom.status.classList.remove('govuk-panel', 'govuk-panel--confirmation');
-	dom.status.classList.add('account-registration-status');
 	dom.statusTitle.classList.remove('govuk-panel__title');
 	dom.statusTitle.classList.add('govuk-heading-m');
 }
