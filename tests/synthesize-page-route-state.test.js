@@ -175,6 +175,10 @@ includes(sassSource, "grid-template-columns: minmax(0, 1fr) minmax(0, 1fr)", "sy
 includes(stylesheetSource, "grid-template-columns: minmax(0, 1fr) minmax(0, 1fr)", "synthesis stylesheet");
 includes(sassSource, "font-size: 16px", "synthesis Sass source");
 includes(stylesheetSource, "font-size: 16px", "synthesis stylesheet");
+includes(sassSource, "padding: 15px 15px 20px 15px", "synthesis Sass source");
+includes(stylesheetSource, "padding: 15px 15px 20px 15px", "synthesis stylesheet");
+includes(sassSource, "row-gap: 5px", "synthesis Sass source");
+includes(stylesheetSource, "row-gap: 5px", "synthesis stylesheet");
 includes(stylesheetSource, "/* transparency begins in the cascade */", "synthesis stylesheet");
 excludes(sassSource, ".study-synthesis-page .govuk-select", "synthesis Sass source");
 excludes(stylesheetSource, ".study-synthesis-page .govuk-select", "synthesis stylesheet");

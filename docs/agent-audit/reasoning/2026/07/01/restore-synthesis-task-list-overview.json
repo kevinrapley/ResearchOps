@@ -71,6 +71,10 @@
       "result": "passed"
     },
     {
+      "command": "npm test -- tests/synthesize-page-route-state.test.js",
+      "result": "passed"
+    },
+    {
       "command": "npm test -- tests/synthesize-page-route-state.test.js tests/govuk-pages-render-workflow-state.test.js",
       "result": "passed"
     },
@@ -81,6 +85,10 @@
     {
       "command": "Playwright browser check against https://research-operations/pages/study/synthesis/?id=recLEDSOpsNeeds01&project=recLEDSResearch01#themes-section",
       "result": "passed; task list showed 2 working groups, 4 evidence notes and 2 themes; selects retained GOV.UK classes and styling; site-wide shared select arrow styling used appearance none, a centred chevron background, 40px right padding and 20px background size"
+    },
+    {
+      "command": "Playwright browser check against https://research-operations/pages/study/synthesis/?id=recLEDSOpsNeeds01&project=recLEDSResearch01#evidence-section",
+      "result": "passed; evidence cards computed to 15px top, 15px right, 20px bottom and 15px left padding; synthesis tags computed to 5px row and column gaps when wrapping"
     }
   ],
   "residualRisks": [
