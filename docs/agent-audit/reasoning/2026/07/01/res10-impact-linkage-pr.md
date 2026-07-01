@@ -72,7 +72,7 @@ None recorded.
 - - 2026-07-01T05:27:03.000Z — bundle.applied: .agent-operating-model/bundles/govuk-design-system
 - - 2026-07-01T05:27:04.000Z — bundle.applied: .agent-operating-model/bundles/cloudflare
 - - 2026-07-01T05:27:05.000Z — decision.recorded: Branch prefix feature/ requires promoted operational trace before PR readiness.
-- - 2026-07-01T05:27:06.000Z — decision.recorded: Serve https://research-operations/ from accessible .hermes RES-10 worktree because launchd could not read branch files under Documents/Codex.
+- - 2026-07-01T05:27:06.000Z — decision.recorded: Serve `research-operations` locally from accessible .hermes RES-10 worktree because launchd could not read branch files under Documents/Codex.
 - - 2026-07-01T05:27:07.000Z — issue.detected: Candidate prefill aliases omitted outcomeContextSummary even though RES-10 expected that upstream alias.
 - - 2026-07-01T05:27:08.000Z — file.write.planned: Add outcomeContextSummary alias and regression assertion; add promoted audit trace.
 - - 2026-07-01T05:27:09.000Z — file.write.completed: public/js/repository-static/candidate.js
