@@ -978,6 +978,34 @@ function renderHtml(manifest) {
 				document.documentElement.classList.add('has-lightbox');
 				lightboxCloseButton.focus();
 			}
+			function lightboxFocusableElements() {
+				return Array.from(
+					lightbox.querySelectorAll(
+						'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])'
+					)
+				).filter((element) => element.offsetParent !== null);
+			}
+			function trapLightboxFocus(event) {
+				if (event.key !== 'Tab' || lightbox.hidden) return;
+				const focusable = lightboxFocusableElements();
+				if (focusable.length === 0) return;
+				const first = focusable[0];
+				const last = focusable[focusable.length - 1];
+				if (!lightbox.contains(document.activeElement)) {
+					event.preventDefault();
+					first.focus();
+					return;
+				}
+				if (event.shiftKey && document.activeElement === first) {
+					event.preventDefault();
+					last.focus();
+					return;
+				}
+				if (!event.shiftKey && document.activeElement === last) {
+					event.preventDefault();
+					first.focus();
+				}
+			}
 			if (lightbox && lightboxImage && lightboxCloseButton) {
 				for (const link of document.querySelectorAll('[data-lightbox-image]')) {
 					link.addEventListener('click', (event) => {
@@ -991,6 +1019,7 @@ function renderHtml(manifest) {
 				});
 				document.addEventListener('keydown', (event) => {
 					if (!lightbox.hidden && event.key === 'Escape') closeLightbox();
+					trapLightboxFocus(event);
 				});
 			}
 			activate(buttons[0]?.dataset.profileFilter || 'desktop');

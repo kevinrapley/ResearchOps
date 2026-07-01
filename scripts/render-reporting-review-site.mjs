@@ -279,6 +279,14 @@ function renderLightboxScript() {
 		const closeButton = lightbox.querySelector('[data-lightbox-close]');
 		let lastFocusedElement = null;
 
+		function focusableElements() {
+			return Array.from(
+				lightbox.querySelectorAll(
+					'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])'
+				)
+			).filter((element) => element.offsetParent !== null);
+		}
+
 		function closeLightbox() {
 			lightbox.hidden = true;
 			document.documentElement.classList.remove('has-lightbox');
@@ -297,6 +305,33 @@ function renderLightboxScript() {
 			closeButton.focus();
 		}
 
+		function trapLightboxFocus(event) {
+			if (event.key !== 'Tab' || lightbox.hidden) return;
+
+			const focusable = focusableElements();
+			if (focusable.length === 0) return;
+
+			const first = focusable[0];
+			const last = focusable[focusable.length - 1];
+
+			if (!lightbox.contains(document.activeElement)) {
+				event.preventDefault();
+				first.focus();
+				return;
+			}
+
+			if (event.shiftKey && document.activeElement === first) {
+				event.preventDefault();
+				last.focus();
+				return;
+			}
+
+			if (!event.shiftKey && document.activeElement === last) {
+				event.preventDefault();
+				first.focus();
+			}
+		}
+
 		for (const link of document.querySelectorAll('[data-lightbox-image]')) {
 			link.addEventListener('click', (event) => {
 				event.preventDefault();
@@ -310,6 +345,7 @@ function renderLightboxScript() {
 		});
 		document.addEventListener('keydown', (event) => {
 			if (!lightbox.hidden && event.key === 'Escape') closeLightbox();
+			trapLightboxFocus(event);
 		});
 	})();
 	</script>`;

@@ -2,7 +2,7 @@
 	"date": "2026-07-01",
 	"branch": "fix/report-site-screenshot-lightbox",
 	"traceRequired": true,
-	"taskSummary": "Crop reporting site screenshot previews to a visible 665px height and open full screenshots in a scrollable modal lightbox.",
+	"taskSummary": "Crop reporting site screenshot previews to a visible 665px height and open full screenshots in a scrollable modal lightbox with keyboard focus trapped inside the modal.",
 	"operatingModelFilesLoaded": [
 		"AGENTS.md",
 		".agent-operating-model/orchestration.xml",
@@ -65,6 +65,11 @@
 			"evidence": "First thumbnail rendered at exactly 665px, the modal opened, the full image was taller than the modal body and the modal body used overflow:auto."
 		},
 		{
+			"command": "Playwright keyboard check against reports-site/index.html",
+			"result": "passed",
+			"evidence": "Tab and Shift+Tab remained inside the lightbox, Escape closed it and focus returned to the triggering thumbnail."
+		},
+		{
 			"command": "npm run lint -- --quiet",
 			"result": "passed",
 			"notes": "Existing ESLint-env deprecation warnings were reported."
@@ -75,6 +80,6 @@
 		}
 	],
 	"residualRisks": [
-		"The static report lightbox supports close, Escape and focus return but does not implement a full focus trap."
+		"No known residual accessibility issue remains from the Codex comment. The static report lightbox now keeps keyboard focus inside the modal while it is open."
 	]
 }

@@ -207,6 +207,11 @@ test('rendered report crops screenshot thumbnails and opens full images in a lig
 	assert.match(html, /event\.preventDefault\(\);\s*openLightbox\(link\);/);
 	assert.match(html, /image\.src = link\.href/);
 	assert.match(html, /event\.key === 'Escape'/);
+	assert.match(html, /function trapLightboxFocus\(event\)/);
+	assert.match(html, /event\.key !== 'Tab'/);
+	assert.match(html, /!lightbox\.contains\(document\.activeElement\)/);
+	assert.match(html, /event\.shiftKey && document\.activeElement === first/);
+	assert.match(html, /!event\.shiftKey && document\.activeElement === last/);
 });
 
 test('non-curated pages keep generated screen-state criteria', () => {

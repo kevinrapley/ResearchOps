@@ -55,19 +55,21 @@ Skipped bundles:
 
 - Set screenshot preview images to a consistent visible 665px height using top-aligned object-fit cropping.
 - Wrapped screenshots in lightbox links while keeping the existing image paths for direct fallback.
-- Added a modal dialog with a scrollable image body, close button, Escape handling and focus restoration.
+- Added a modal dialog with a scrollable image body, close button, Escape handling, focus restoration and Tab/Shift+Tab focus trapping.
 - Applied the same behavior to both the reporting review renderer and the raw visual walkthrough renderer.
 - Regenerated the committed `reports-site/index.html` artefact.
-- Added a renderer test covering the crop CSS, lightbox markup and click/Escape behavior.
+- Added a renderer test covering the crop CSS, lightbox markup, click/Escape behavior and focus trap logic.
+- Addressed Codex PR feedback that `aria-modal` dialogs must keep keyboard focus inside the modal while open.
 
 ## Validation
 
 - `node --test tests/reporting-review-generation-model.test.js tests/reports-site-validation.test.js tests/reporting-site-deploy-route-state.test.js`: passed.
 - `node scripts/validate-reports-site.mjs`: passed, validating 46 pages, 81 states and 162 captures.
 - Playwright browser check: passed. First screenshot preview rendered at exactly 665px, the lightbox opened, full image was taller than the modal body and the body used `overflow: auto`.
+- Playwright keyboard check: passed. Tab and Shift+Tab remained inside the lightbox, Escape closed it and focus returned to the triggering thumbnail.
 - `npm run lint -- --quiet`: passed with existing ESLint-env deprecation warnings only.
 - `npm run validate`: passed.
 
 ## Residual risk
 
-The modal is intentionally small and static. It provides keyboard close and focus return, but it does not implement a full focus trap because this report is a static review artefact rather than the primary service application.
+No known residual accessibility issue remains from the Codex comment. The static report lightbox now keeps keyboard focus inside the modal while it is open.
