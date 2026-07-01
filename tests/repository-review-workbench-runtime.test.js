@@ -245,6 +245,12 @@ function baseArtefact(overrides = {}) {
 		payload_json: JSON.stringify({
 			queueReason: 'Needs curator review before publication.',
 			publicationGate: { reviewStatus: 'submitted' },
+			impactSource: {
+				impactRecordId: 'IMPCT-RCD-review-001',
+				impactSummary: 'Impact context awaiting curator review.',
+				decisionSummary: 'Decision context awaiting curator review.',
+				outcomeSummary: 'Outcome context awaiting curator review.',
+			},
 		}),
 		...overrides,
 	};
@@ -349,6 +355,12 @@ async function assertCandidateQueueIsCuratorOnlyAndHydrated() {
 	const firstPagePayload = await responseJson(firstPageResponse);
 	assert.equal(firstPagePayload.items[0].id, 'candidate-001');
 	assert.equal(firstPagePayload.items[0].queueReason, 'Needs curator review before publication.');
+	assert.deepEqual(firstPagePayload.items[0].impactSource, {
+		impactRecordId: 'IMPCT-RCD-review-001',
+		impactSummary: 'Impact context awaiting curator review.',
+		decisionSummary: 'Decision context awaiting curator review.',
+		outcomeSummary: 'Outcome context awaiting curator review.',
+	});
 	assert.equal(
 		firstPagePayload.items[0].tags.some((tag) => tag.text === 'Plain language'),
 		true

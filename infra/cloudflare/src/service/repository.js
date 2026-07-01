@@ -110,6 +110,21 @@ function payloadText(payload = {}, key, fallback = "") {
 	return cleanText(payload[key] ?? fallback);
 }
 
+function impactSourceFromPayload(payload = {}) {
+	const source = payload.impactSource || payload.sourceImpact || {};
+	const impactRecordId = cleanText(source.impactRecordId || source.recordId || payload.impactRecordId);
+	const impactSummary = cleanText(source.impactSummary || payload.impactSummary);
+	const decisionSummary = cleanText(source.decisionSummary || payload.decisionSummary || payload.decisionContextSummary);
+	const outcomeSummary = cleanText(source.outcomeSummary || payload.outcomeSummary || payload.outcomeContextSummary);
+	if (!impactRecordId && !impactSummary && !decisionSummary && !outcomeSummary) return null;
+	return {
+		impactRecordId,
+		impactSummary,
+		decisionSummary,
+		outcomeSummary
+	};
+}
+
 function actorId(authContext = {}) {
 	return authContext?.user?.id || authContext?.user?.email || "authenticated-user";
 }
@@ -390,6 +405,8 @@ function repositoryTag(tag, row) {
 
 function rowToArtefact(row, tags = [], options = {}) {
 	const { includeLimits = false, includeProvenanceIds = false } = options;
+	const payload = parseJson(row.payload_json, {});
+	const impactSource = impactSourceFromPayload(payload);
 	const repositoryTags = tags.map((tag) => repositoryTag(tag, row)).filter(Boolean);
 	const artefact = {
 		id: row.id,
@@ -425,6 +442,7 @@ function rowToArtefact(row, tags = [], options = {}) {
 			reuseGuidance: row.reuse_guidance || "",
 			doNotUseFor: row.do_not_use_for || ""
 		};
+		if (impactSource) artefact.impactSource = impactSource;
 	}
 	return artefact;
 }
@@ -632,6 +650,7 @@ function reviewNavigation(queues = [], currentQueue) {
 function reviewItem(row, tags = [], auditRows = []) {
 	const payload = parseJson(row.payload_json, {});
 	const queueKey = reviewQueueForStatus(row);
+	const impactSource = impactSourceFromPayload(payload);
 	return {
 		id: row.id,
 		queue: queueKey,
@@ -659,6 +678,7 @@ function reviewItem(row, tags = [], auditRows = []) {
 		queueReason: cleanText(payload.queueReason || payload.reviewWorkflow?.queueReason || ""),
 		withdrawalReason: cleanText(payload.withdrawalReason || payload.reviewWorkflow?.withdrawalReason || ""),
 		publicationGate: payload.publicationGate || {},
+		impactSource: impactSource || {},
 		tags: [
 			{ text: `${row.confidence} confidence`, classes: tagClassFor("confidence", row.confidence) },
 			{ text: labelFromSlug(row.evidence_maturity), classes: tagClassFor("maturity", row.evidence_maturity) },
@@ -1257,6 +1277,7 @@ export async function createRepositoryCandidate(svc, request, origin, authContex
 	const limitations = payloadText(payload, "limitations");
 	const reuseGuidance = payloadText(payload, "reuseGuidance");
 	const doNotUseFor = payloadText(payload, "doNotUseFor");
+	const impactSource = impactSourceFromPayload(payload);
 	const payloadJson = JSON.stringify({
 		publicationGate: {
 			piiCleared: false,
@@ -1279,7 +1300,8 @@ export async function createRepositoryCandidate(svc, request, origin, authContex
 			limitations,
 			reuseGuidance,
 			doNotUseFor
-		}
+		},
+		impactSource
 	});
 
 	await d1Run(svc.env, `

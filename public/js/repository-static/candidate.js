@@ -43,31 +43,40 @@ function prefillValue(params, key) {
 	return text(params.get(key) || "").trim();
 }
 
+function prefillAlias(params, keys) {
+	const key = keys.find((candidate) => params.has(candidate));
+	return key ? prefillValue(params, key) : "";
+}
+
 function applyCandidatePrefill() {
 	const params = new URLSearchParams(window.location.search);
-	const sourceSynthesisId = prefillValue(params, "sourceSynthesisId");
-	const sourceRecommendationId = prefillValue(params, "sourceRecommendationId");
+	const sourceSynthesisId = prefillAlias(params, ["sourceSynthesisId", "synthesisId"]);
+	const sourceRecommendationId = prefillAlias(params, ["sourceRecommendationId", "recommendationId"]);
 	const sourceContextType = prefillValue(params, "sourceContextType") || (sourceSynthesisId ? "reviewed-synthesis" : sourceRecommendationId ? "recommendation" : "");
 
-	setFieldValue("candidate-title", prefillValue(params, "title"));
-	setFieldValue("candidate-summary", prefillValue(params, "summary"));
+	setFieldValue("candidate-title", prefillAlias(params, ["title", "candidateTitle"]));
+	setFieldValue("candidate-summary", prefillAlias(params, ["summary", "candidateSummary"]));
 	setFieldValue("candidate-limitations", prefillValue(params, "limitations"));
-	setFieldValue("candidate-reuse-guidance", prefillValue(params, "reuseGuidance"));
-	setFieldValue("candidate-do-not-use-for", prefillValue(params, "doNotUseFor"));
-	setFieldValue("candidate-source-study-id", prefillValue(params, "sourceStudyId"));
-	setFieldValue("candidate-evidence-basis", prefillValue(params, "sampleSummary"));
+	setFieldValue("candidate-reuse-guidance", prefillAlias(params, ["reuseGuidance", "reuse"]));
+	setFieldValue("candidate-do-not-use-for", prefillAlias(params, ["doNotUseFor", "doNotUse"]));
+	setFieldValue("candidate-source-study-id", prefillAlias(params, ["sourceStudyId", "sid", "studyId"]));
+	setFieldValue("candidate-evidence-basis", prefillAlias(params, ["sampleSummary", "evidenceBasis"]));
 	setFieldValue("candidate-source-synthesis-id", sourceSynthesisId);
 	setFieldValue("candidate-source-recommendation-id", sourceRecommendationId);
 	setFieldValue("candidate-source-context-type", sourceContextType);
+	setFieldValue("candidate-impact-record-id", prefillAlias(params, ["impactRecordId", "impactId", "impactRef"]));
+	setFieldValue("candidate-impact-summary", prefillAlias(params, ["impactSummary", "impactContext"]));
+	setFieldValue("candidate-decision-summary", prefillAlias(params, ["decisionSummary", "decisionContextSummary", "decisionContext"]));
+	setFieldValue("candidate-outcome-summary", prefillAlias(params, ["outcomeSummary", "outcomeContextSummary", "outcomeContext"]));
 
-	setSelectValue(document.getElementById("candidate-source-project-id"), prefillValue(params, "sourceProjectId"));
-	setSelectValue(document.getElementById("candidate-evidence-type"), prefillValue(params, "evidenceType"));
-	setSelectValue(document.getElementById("candidate-service-area"), prefillValue(params, "serviceArea"));
-	setSelectValue(document.getElementById("candidate-user-group"), prefillValue(params, "userGroup"));
+	setSelectValue(document.getElementById("candidate-source-project-id"), prefillAlias(params, ["sourceProjectId", "pid", "projectId"]));
+	setSelectValue(document.getElementById("candidate-evidence-type"), prefillAlias(params, ["evidenceType", "sourceType"]));
+	setSelectValue(document.getElementById("candidate-service-area"), prefillAlias(params, ["serviceArea", "service_area"]));
+	setSelectValue(document.getElementById("candidate-user-group"), prefillAlias(params, ["userGroup", "user_group"]));
 	setSelectValue(document.getElementById("candidate-method"), prefillValue(params, "method"));
-	setSelectValue(document.getElementById("candidate-risk-area"), prefillValue(params, "riskArea"));
+	setSelectValue(document.getElementById("candidate-risk-area"), prefillAlias(params, ["riskArea", "risk_area"]));
 	setSelectValue(document.getElementById("candidate-confidence"), prefillValue(params, "confidence"));
-	setSelectValue(document.getElementById("candidate-evidence-maturity"), prefillValue(params, "evidenceMaturity"));
+	setSelectValue(document.getElementById("candidate-evidence-maturity"), prefillAlias(params, ["evidenceMaturity", "maturity"]));
 
 	const summary = document.getElementById("repository-candidate-prefill-summary");
 	if (summary && (sourceSynthesisId || sourceRecommendationId)) {

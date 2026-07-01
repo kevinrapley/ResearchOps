@@ -281,6 +281,32 @@
 					</div>
 				</div>
 			</section>
+			<section class="repository-section" aria-labelledby="repository-candidate-impact-title">
+				<h3 class="govuk-heading-m" id="repository-candidate-impact-title">Impact source metadata (optional)</h3>
+				<p class="govuk-body">Add summarised impact, decision and outcome context only. Do not paste sensitive internal decision links or participant personal data.</p>
+				<div class="govuk-grid-row">
+					<div class="govuk-grid-column-one-half">
+						<div class="govuk-form-group">
+							<label class="govuk-label govuk-label--s" for="candidate-impact-record-id">Impact record reference</label>
+							<input class="govuk-input" id="candidate-impact-record-id" name="impactRecordId" type="text" autocomplete="off">
+						</div>
+						<div class="govuk-form-group">
+							<label class="govuk-label govuk-label--s" for="candidate-impact-summary">Impact context summary</label>
+							<textarea class="govuk-textarea" id="candidate-impact-summary" name="impactSummary" rows="3"></textarea>
+						</div>
+					</div>
+					<div class="govuk-grid-column-one-half">
+						<div class="govuk-form-group">
+							<label class="govuk-label govuk-label--s" for="candidate-decision-summary">Decision context summary</label>
+							<textarea class="govuk-textarea" id="candidate-decision-summary" name="decisionSummary" rows="3"></textarea>
+						</div>
+						<div class="govuk-form-group">
+							<label class="govuk-label govuk-label--s" for="candidate-outcome-summary">Outcome context summary</label>
+							<textarea class="govuk-textarea" id="candidate-outcome-summary" name="outcomeSummary" rows="3"></textarea>
+						</div>
+					</div>
+				</div>
+			</section>
 			<section class="repository-section" aria-labelledby="repository-candidate-gates-title">
 				<h3 class="govuk-heading-m" id="repository-candidate-gates-title">Publication gate</h3>
 				<div class="govuk-inset-text">This submission creates a candidate only. It will not be published until PII clearance, consent-scope confirmation and curator review are complete.</div>

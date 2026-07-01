@@ -124,6 +124,11 @@ has(files.staticTemplate, 'repository-selected-state', 'static repository templa
 lacks(files.staticTemplate, 'researchops-repository-front-page', 'static repository template');
 has(files.staticTemplate, 'repository-sort-form', 'static repository template');
 has(files.staticTemplate, 'repository-pagination', 'static repository template');
+has(files.staticTemplate, 'id="candidate-confidence" name="confidence"', 'static repository template');
+has(files.staticTemplate, 'id="candidate-evidence-maturity" name="evidenceMaturity"', 'static repository template');
+has(files.staticTemplate, 'id="candidate-source-synthesis-id" name="sourceSynthesisId"', 'static repository template');
+has(files.staticTemplate, 'id="candidate-impact-record-id" name="impactRecordId"', 'static repository template');
+has(files.staticTemplate, 'Do not paste sensitive internal decision links', 'static repository template');
 has(files.staticTemplate, "{{ resultsHeading or 'Published artefacts' }}", 'static repository template');
 lacks(files.staticTemplate, 'Published evidence', 'static repository template');
 
@@ -167,6 +172,10 @@ has(files.staticScript, 'window.__repositoryPrefetch', 'static page script');
 has(files.staticScript, 'repositoryJson(requestPath)', 'static page script');
 has(files.staticScript, 'window.history.pushState', 'static page script');
 has(files.staticScript, 'window.addEventListener("popstate"', 'static page script');
+has(files.staticScript, 'function prefillAlias(params, keys)', 'static page script');
+has(files.staticScript, '["sourceSynthesisId", "synthesisId"]', 'static page script');
+has(files.staticScript, '["impactRecordId", "impactId", "impactRef"]', 'static page script');
+has(files.staticScript, '["outcomeSummary", "outcomeContextSummary", "outcomeContext"]', 'static page script');
 has(files.staticScript, '["frontline-staff", "Frontline staff"]', 'static page script');
 has(files.staticScript, '["assisted-digital-users", "Assisted digital users"]', 'static page script');
 has(files.staticScript, '["research-operations-staff", "Research operations staff"]', 'static page script');
@@ -188,6 +197,16 @@ has(files.service, 'catalogue: hydrate === HYDRATE_FULL_MODE ? { artefacts: allA
 has(files.service, 'const HYDRATE_FULL_MODE = "full"', 'repository service');
 has(files.service, 'const snapshot = await publishedRepositorySnapshot(svc);', 'repository service');
 has(files.service, 'invalidateRepositorySnapshotCache(svc);', 'repository service');
+has(files.service, 'sourceEvidence: {', 'repository service');
+has(files.service, 'synthesisId: sourceSynthesisId', 'repository service');
+has(files.service, 'impactSourceFromPayload(payload)', 'repository service');
+has(files.service, 'if (impactSource) artefact.impactSource = impactSource;', 'repository service');
+has(files.service, 'impactSource', 'repository service');
+has(files.staticScript, 'Impact record', 'static repository review script');
+has(files.staticScript, 'item.impactSource?.impactRecordId', 'static repository review script');
+has(files.staticScript, 'Impact context', 'static repository review script');
+has(files.staticScript, 'Decision context', 'static repository review script');
+has(files.staticScript, 'Outcome context', 'static repository review script');
 has(files.service, 'const method = searchValues(url, "method")', 'repository service');
 has(
 	files.service,

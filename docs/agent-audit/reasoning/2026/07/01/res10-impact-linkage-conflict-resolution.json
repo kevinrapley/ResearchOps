@@ -1,0 +1,47 @@
+{
+  "schemaVersion": "agent-trace-promotion/v1",
+  "title": "Resolve PR #439 merge conflicts under GitHub Diamond Standard.",
+  "sourceTrace": ".agent-traces/raw/res10-impact-linkage-conflict-resolution.jsonl",
+  "markdownReport": "docs/agent-audit/reasoning/2026/07/01/res10-impact-linkage-conflict-resolution.md",
+  "jsonSummary": "docs/agent-audit/reasoning/2026/07/01/res10-impact-linkage-conflict-resolution.json",
+  "promotedAt": "2026-07-01T05:43:53.954Z",
+  "eventCount": 26,
+  "run": {
+    "startedAt": "2026-07-01T05:32:10.000Z",
+    "completedAt": "2026-07-01T05:32:35.000Z",
+    "taskSummary": "Resolve PR #439 merge conflicts under GitHub Diamond Standard."
+  },
+  "bundles": [
+    "github-diamond",
+    "researchops-developer-control",
+    "multi-functional-team",
+    "govuk-design-system",
+    "cloudflare"
+  ],
+  "filesRead": [
+    "AGENTS.md",
+    ".agent-operating-model/orchestration.xml",
+    ".agent-operating-model/bundle-registry.json",
+    ".agent-operating-model/task-signal-catalog.json",
+    ".agent-operating-model/selection-rules.json",
+    ".agent-operating-model/github-mutation-policy.md"
+  ],
+  "filesWritten": [
+    "infra/cloudflare/src/service/repository.js",
+    "public/js/repository-static/candidate.js",
+    "tests/repository-front-page-route-state.test.js"
+  ],
+  "validations": [
+    "git fetch origin main feature/res-10-impact-to-repository-linkage — exit 0",
+    "git merge origin/main — exit 1",
+    "npm test -- tests/repository-impact-linkage-runtime.test.js tests/repository-front-page-route-state.test.js — exit 0",
+    "npm run build — exit 0",
+    "npm run trace:coverage — exit 0"
+  ],
+  "issues": [
+    "Merge conflicts in infra/cloudflare/src/service/repository.js, public/js/repository-static/candidate.js, tests/repository-front-page-route-state.test.js."
+  ],
+  "warnings": [
+    "A command failed but no pivot.recorded event was recorded."
+  ]
+}

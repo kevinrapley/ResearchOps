@@ -1,0 +1,49 @@
+{
+  "date": "2026-07-01",
+  "branch": "feature/res-10-impact-to-repository-linkage",
+  "task": "RES-10 impact-to-repository linkage",
+  "traceRequired": true,
+  "traceLayer": "operational",
+  "selectedBundles": [
+    "github-diamond",
+    "researchops-developer-control",
+    "multi-functional-team",
+    "govuk-design-system",
+    "cloudflare"
+  ],
+  "skippedBundles": [
+    "openai-platform",
+    "mcp-agent-tooling",
+    "airtable-public-api",
+    "mural-public-api"
+  ],
+  "filesModified": [
+    "infra/cloudflare/src/service/repository.js",
+    "public/js/repository-static/candidate.js",
+    "public/js/repository-artefact-page.js",
+    "src/govuk/templates/pages/repository-static.njk",
+    "tests/repository-front-page-route-state.test.js",
+    "tests/repository-impact-linkage-runtime.test.js"
+  ],
+  "validation": [
+    {
+      "command": "npm test -- tests/repository-impact-linkage-runtime.test.js tests/repository-front-page-route-state.test.js",
+      "status": "passed",
+      "summary": "3/3 tests passed"
+    },
+    {
+      "command": "npm run build:govuk-pages",
+      "status": "passed",
+      "summary": "Repository pages rendered"
+    },
+    {
+      "command": "npx eslint infra/cloudflare/src/service/repository.js public/js/repository-static/candidate.js public/js/repository-artefact-page.js tests/repository-impact-linkage-runtime.test.js tests/repository-front-page-route-state.test.js",
+      "status": "passed_with_warnings",
+      "summary": "No errors; existing unused-function warnings reported"
+    }
+  ],
+  "residualRisks": [
+    "No upstream impact table link was added in this first increment.",
+    "Existing artefacts without impact metadata continue to show Not recorded context rows."
+  ]
+}
