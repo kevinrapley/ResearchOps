@@ -43,7 +43,8 @@
   "evidence": [
     "Attached GitHub Actions log showed reports-site validation passed.",
     "Attached GitHub Actions log showed wrangler pages deploy failed with Cloudflare authentication error 10000.",
-    "Failure occurred on the main push workflow created by PR #440."
+    "Failure occurred on the main push workflow created by PR #440.",
+    "Codex review thread PRRT_kwDOP3Td2M6NnV5g identified a valid risk that workflow_dispatch from a non-main ref could deploy unmerged reports-site content to the shared reopsreporting Pages project."
   ],
   "filesModified": [
     ".github/workflows/deploy-reporting-site.yml",
@@ -78,5 +79,14 @@
   "residualRisks": [
     "Manual Cloudflare Pages deploy still requires a corrected CF_API_TOKEN permission set.",
     "Live reopsreporting.pages.dev may remain stale or wrong until a manual dispatch succeeds."
+  ],
+  "reviewThreads": [
+    {
+      "threadId": "PRRT_kwDOP3Td2M6NnV5g",
+      "commentId": 3506644755,
+      "author": "chatgpt-codex-connector",
+      "classification": "valid",
+      "action": "Added a +1 reaction and guarded manual deploys to main before deploy-capable steps."
+    }
   ]
 }

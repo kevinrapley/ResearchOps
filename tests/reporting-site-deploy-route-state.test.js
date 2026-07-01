@@ -25,6 +25,15 @@ test('reporting Pages project deploys only on manual dispatch', () => {
 	assert.match(reportingDeployWorkflow, /pages deploy reports-site\s+\\/);
 	assert.match(reportingDeployWorkflow, /--project-name=\$\{REPORTING_PAGES_PROJECT\}/);
 	assert.match(reportingDeployWorkflow, /Run started: \$\{expected_started_at\}/);
+	assert.match(reportingDeployWorkflow, /Require main for manual reporting deploys/);
+	assert.match(
+		reportingDeployWorkflow,
+		/github\.event_name == 'workflow_dispatch' && github\.ref != 'refs\/heads\/main'/
+	);
+	assert.match(
+		reportingDeployWorkflow,
+		/Manual reporting-site deploys must be dispatched from main\./
+	);
 	assert.match(reportingDeployWorkflow, /if: github\.event_name == 'workflow_dispatch'/);
 	assert.match(
 		reportingDeployWorkflow,

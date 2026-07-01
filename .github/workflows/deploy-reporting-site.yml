@@ -50,6 +50,14 @@ jobs:
             exit 1
           fi
 
+      - name: Require main for manual reporting deploys
+        if: github.event_name == 'workflow_dispatch' && github.ref != 'refs/heads/main'
+        shell: bash
+        run: |
+          echo "Manual reporting-site deploys must be dispatched from main."
+          echo "Selected ref: ${GITHUB_REF}"
+          exit 1
+
       - name: Record Wrangler toolchain version
         if: github.event_name == 'workflow_dispatch'
         run: npx --yes wrangler@${WRANGLER_VERSION} --version

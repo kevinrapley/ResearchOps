@@ -46,9 +46,11 @@ Precedence decision: GitHub Diamond governs branch, trace, CI and PR handling. R
 
 - Keep `.github/workflows/deploy-reporting-site.yml` on `push` to `main`, but use that path for repository-side reporting-site validation only.
 - Gate Wrangler version logging, `wrangler pages deploy`, and live timestamp verification behind `workflow_dispatch`.
+- Added a manual-dispatch branch guard so reporting-site deployments fail before any deploy-capable step unless the selected ref is `refs/heads/main`.
 - Update `tests/reporting-site-deploy-route-state.test.js` to assert that push validation and manual deployment are distinct.
 - Update `docs/qa/visual-walkthrough.md` to document the manual deploy boundary.
 - Add a `RECENT_LEARNINGS.md` entry so future deploy workflows do not make unproven external credentials a required push gate.
+- Addressed a valid Codex review comment on PR #441 about accidental feature-branch manual dispatches publishing unmerged `reports-site/` content to the shared reporting project.
 
 ## Validation
 
