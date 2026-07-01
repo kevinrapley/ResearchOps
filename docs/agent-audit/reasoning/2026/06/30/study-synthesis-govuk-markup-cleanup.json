@@ -1,0 +1,86 @@
+{
+  "date": "2026-06-30",
+  "branch": "feature/res-8-study-evidence-summary",
+  "traceRequired": true,
+  "taskSummary": "Tidy the Study synthesis page to use fuller GOV.UK Frontend HTML markup and styles.",
+  "operatingModelFilesLoaded": [
+    "AGENTS.md",
+    ".agent-operating-model/orchestration.xml",
+    ".agent-operating-model/bundle-registry.json",
+    ".agent-operating-model/task-signal-catalog.json",
+    ".agent-operating-model/selection-rules.json",
+    ".agent-operating-model/bootstrap-checklist.md",
+    ".agent-operating-model/precedence-policy.md",
+    ".agent-operating-model/trace-policy.md",
+    ".agent-operating-model/trace-layers.md",
+    ".agent-operating-model/behavioural-evals.json",
+    ".agent-operating-model/github-mutation-policy.md"
+  ],
+  "selectedBundles": [
+    {
+      "id": "github-diamond",
+      "canonicalPath": ".agent-operating-model/bundles/github/"
+    },
+    {
+      "id": "researchops-developer-control",
+      "canonicalPath": ".agent-operating-model/bundles/researchops-developer-control/"
+    },
+    {
+      "id": "multi-functional-team",
+      "canonicalPath": ".agent-operating-model/bundles/multi-functional-team/"
+    },
+    {
+      "id": "govuk-design-system",
+      "canonicalPath": ".agent-operating-model/bundles/govuk-design-system/"
+    }
+  ],
+  "skippedBundles": [
+    "cloudflare",
+    "openai-platform",
+    "mcp-agent-tooling",
+    "airtable-public-api",
+    "mural-public-api"
+  ],
+  "filesModified": [
+    "src/govuk/templates/pages/study-synthesis.njk",
+    "public/js/synthesize-page.js",
+    "public/css/synthesize.css",
+    "public/pages/study/synthesis/index.html",
+    "tests/synthesize-page-route-state.test.js",
+    "docs/agent-audit/reasoning/2026/06/30/study-synthesis-govuk-markup-cleanup.md",
+    "docs/agent-audit/reasoning/2026/06/30/study-synthesis-govuk-markup-cleanup.json"
+  ],
+  "validation": [
+    {
+      "command": "npm run build:govuk-pages",
+      "result": "passed"
+    },
+    {
+      "command": "npx prettier -w public/js/synthesize-page.js public/css/synthesize.css public/pages/study/synthesis/index.html tests/synthesize-page-route-state.test.js",
+      "result": "passed"
+    },
+    {
+      "command": "npm test -- tests/synthesize-page-route-state.test.js",
+      "result": "passed"
+    },
+    {
+      "command": "Playwright desktop visual check",
+      "result": "passed",
+      "evidence": "Rendered 4 evidence checkbox rows, 4 GOV.UK summary cards, 5 summary lists, 13 tags and 2 Submit to repository links."
+    },
+    {
+      "command": "Playwright candidate-link prefill check",
+      "result": "passed",
+      "evidence": "First Submit to repository link prefilled source project, study, synthesis ID, evidence type and evidence maturity."
+    },
+    {
+      "command": "Playwright mobile visual check",
+      "result": "passed",
+      "evidence": "390px viewport had no horizontal overflow and no oversized card, evidence or form-group elements."
+    }
+  ],
+  "residualRisks": [
+    "The visible local site is served from /Users/kevin.rapley/ResearchOps, separate from the Codex thread worktree path.",
+    "Existing unrelated dirty files in the served checkout were not reverted."
+  ]
+}

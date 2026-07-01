@@ -73,6 +73,8 @@ for (const [label, source] of Object.entries(pages)) {
 		includes(source, "?v=study-guides-delete-confirmation-20260605", label);
 	} else if (label === "noteTakersObservers") {
 		includes(source, "?v=study-note-takers-observers-20260606", label);
+	} else if (label === "synthesis") {
+		includes(source, "?v=study-synthesis-20260701-cache-refresh", label);
 	} else {
 		includes(source, "?v=study-record-id-routing-20260518", label);
 	}
@@ -87,7 +89,7 @@ includes(pages.noteTakersObservers, "/js/note-takers-observers-route-loader.js?v
 includes(pages.participantConsent, "/js/participant-consent-route-loader.js?v=study-record-id-routing-20260518", "participant consent page");
 excludes(pages.participantConsent, "/js/participant-consent-page.js?v=study-record-id-routing-20260518", "participant consent page");
 includes(pages.participants, "/js/participants-route-loader.js?v=study-record-id-routing-20260518", "participants page");
-includes(pages.synthesis, "/js/synthesis-route-loader.js?v=study-record-id-routing-20260518", "synthesis page");
+includes(pages.synthesis, "/js/synthesis-route-loader.js?v=study-synthesis-20260701-cache-refresh", "synthesis page");
 excludes(pages.synthesis, "/js/synthesize-page.js?v=study-record-id-routing-20260518", "synthesis page");
 
 for (const [label, source] of Object.entries(loaders)) {
@@ -110,4 +112,4 @@ includes(loaders.noteTakersObservers, "await import(`/js/note-takers-observers-p
 includes(loaders.participantConsent, "await import('/js/participant-consent-page.js?v=study-record-id-routing-20260518')", "participant consent loader");
 includes(loaders.participants, "await import('/components/participants/participants-page.js?v=study-record-id-routing-20260518')", "participants loader");
 includes(loaders.participants, "await import('/pages/study/participants/scheduler.js?v=study-record-id-routing-20260518')", "participants loader");
-includes(loaders.synthesis, "await import('/js/synthesize-page.js?v=study-record-id-routing-20260518')", "synthesis loader");
+includes(loaders.synthesis, "await import('/js/synthesize-page.js?v=study-synthesis-20260701-cache-refresh')", "synthesis loader");

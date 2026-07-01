@@ -115,7 +115,7 @@ function impactSourceFromPayload(payload = {}) {
 	const impactRecordId = cleanText(source.impactRecordId || source.recordId || payload.impactRecordId);
 	const impactSummary = cleanText(source.impactSummary || payload.impactSummary);
 	const decisionSummary = cleanText(source.decisionSummary || payload.decisionSummary || payload.decisionContextSummary);
-	const outcomeSummary = cleanText(source.outcomeSummary || payload.outcomeSummary);
+	const outcomeSummary = cleanText(source.outcomeSummary || payload.outcomeSummary || payload.outcomeContextSummary);
 	if (!impactRecordId && !impactSummary && !decisionSummary && !outcomeSummary) return null;
 	return {
 		impactRecordId,
@@ -1261,45 +1261,45 @@ export async function createRepositoryCandidate(svc, request, origin, authContex
 	const actor = authContext?.user?.id || authContext?.user?.email || "authenticated-user";
 	const sourceProjectId = payloadText(payload, "sourceProjectId");
 	const sourceStudyId = payloadText(payload, "sourceStudyId");
-	const sourceSynthesisId = payloadText(payload, "sourceSynthesisId") || payloadText(payload, "sourceRecommendationId");
+	const sourceSynthesisId = payloadText(payload, "sourceSynthesisId");
+	const sourceRecommendationId = payloadText(payload, "sourceRecommendationId");
+	const sourceContextType = cleanSlug(payloadText(payload, "sourceContextType"));
 	const evidenceType = cleanSlug(payloadText(payload, "evidenceType"));
 	const method = cleanSlug(payloadText(payload, "method"));
 	const confidence = cleanSlug(payloadText(payload, "confidence", "low")) || "low";
 	const evidenceMaturity = cleanSlug(payloadText(payload, "evidenceMaturity", "early-signal")) || "early-signal";
-	const limitations = payloadText(payload, "limitations");
-	const reuseGuidance = payloadText(payload, "reuseGuidance");
-	const doNotUseFor = payloadText(payload, "doNotUseFor");
-	const evidenceBasis = payloadText(payload, "sampleSummary");
 	const serviceArea = cleanSlug(payloadText(payload, "serviceArea"));
 	const userGroup = cleanSlug(payloadText(payload, "userGroup"));
 	const riskArea = cleanSlug(payloadText(payload, "riskArea"));
+	const evidenceBasis = payloadText(payload, "sampleSummary");
+	const limitations = payloadText(payload, "limitations");
+	const reuseGuidance = payloadText(payload, "reuseGuidance");
+	const doNotUseFor = payloadText(payload, "doNotUseFor");
 	const impactSource = impactSourceFromPayload(payload);
 	const payloadJson = JSON.stringify({
-		sourceProvenance: {
-			sourceProjectId,
-			sourceStudyId,
-			sourceSynthesisOrRecommendationId: sourceSynthesisId,
-			sourceType: evidenceType || "candidate",
+		publicationGate: {
+			piiCleared: false,
+			consentScopeConfirmed: false,
+			piiAndConsentGateStatus: "pending",
+			reviewerAssigned: false,
+			reviewStatus: "pending_review"
+		},
+		sourceEvidence: {
+			projectId: sourceProjectId,
+			studyId: sourceStudyId,
+			synthesisId: sourceSynthesisId,
+			recommendationId: sourceRecommendationId,
+			sourceContextType,
+			evidenceType,
 			method,
 			evidenceBasis,
-			impactSource
-		},
-		impactSource,
-		candidateDraft: {
 			confidence,
 			evidenceMaturity,
 			limitations,
 			reuseGuidance,
 			doNotUseFor
 		},
-		publicationGate: {
-			pii: "pending",
-			consent: "pending",
-			piiCleared: false,
-			consentScopeConfirmed: false,
-			reviewerAssigned: false,
-			reviewStatus: "pending_review"
-		}
+		impactSource
 	});
 
 	await d1Run(svc.env, `
@@ -1323,7 +1323,7 @@ export async function createRepositoryCandidate(svc, request, origin, authContex
 		riskArea,
 		sourceProjectId,
 		sourceStudyId,
-		payloadText(payload, "sourceMethod", method),
+		cleanSlug(payloadText(payload, "sourceMethod", method)),
 		evidenceBasis,
 		limitations,
 		reuseGuidance,

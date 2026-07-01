@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import {
 	applyRepositoryReviewAction,
+	createRepositoryCandidate,
 	listRepositoryReviewQueue,
 } from '../infra/cloudflare/src/service/repository.js';
 
@@ -93,14 +94,48 @@ function createRepositoryMockD1({ artefacts = [], tags = [], audits = [] } = {})
 					}
 				}
 
+				if (/INSERT INTO rops_repository_artefacts/i.test(sql)) {
+					state.artefacts.push({
+						id: args[0],
+						title: args[1],
+						summary: args[2],
+						artefact_type: args[3],
+						status: 'candidate',
+						confidence: args[4],
+						evidence_maturity: args[5],
+						service_area: args[6],
+						user_group: args[7],
+						method: args[8],
+						risk_area: args[9],
+						source_project_id: args[10],
+						source_study_id: args[11],
+						source_method: args[12],
+						sample_summary: args[13],
+						limitations: args[14],
+						reuse_guidance: args[15],
+						do_not_use_for: args[16],
+						owner_user_id: args[17],
+						reviewed_by_user_id: null,
+						pii_cleared: 0,
+						consent_scope_confirmed: 0,
+						active: 1,
+						created_at: args[18],
+						updated_at: args[19],
+						published_at: null,
+						review_due_at: args[20],
+						payload_json: args[21],
+					});
+				}
+
 				if (/INSERT INTO rops_repository_audit/i.test(sql)) {
+					const candidateSubmitted = /'candidate\.submitted'/i.test(sql);
 					state.audits.push({
 						id: args[0],
 						artefact_id: args[1],
-						action: args[2],
-						actor_user_id: args[3],
-						created_at: args[4],
-						payload_json: args[5],
+						action: candidateSubmitted ? 'candidate.submitted' : args[2],
+						actor_user_id: candidateSubmitted ? args[2] : args[3],
+						created_at: candidateSubmitted ? args[3] : args[4],
+						payload_json: candidateSubmitted ? args[4] : args[5],
 					});
 				}
 
@@ -510,8 +545,72 @@ async function assertWithdrawRequiresReasonAndNotes() {
 	);
 }
 
+async function assertSourceLinkedCandidateDraftStoresProvenance() {
+	const d1 = createRepositoryMockD1();
+	const svc = createService(d1);
+	const request = new Request('https://worker.test/api/repository/artefacts', {
+		method: 'POST',
+		headers: { 'content-type': 'application/json' },
+		body: JSON.stringify({
+			title: 'Submit reviewed synthesis to repository',
+			summary: 'Reviewed theme about safer reuse boundaries.',
+			artefactType: 'finding',
+			sourceProjectId: 'proj-123',
+			sourceStudyId: 'study-456',
+			sourceSynthesisId: 'theme-789',
+			sourceRecommendationId: 'rec-012',
+			sourceContextType: 'reviewed-synthesis',
+			evidenceType: 'reviewed-synthesis',
+			confidence: 'medium',
+			evidenceMaturity: 'reviewed-synthesis',
+			method: 'moderated-interviews',
+			sampleSummary: 'Based on 6 evidence notes linked to theme-789.',
+			limitations: 'Small sample, not yet validated across all services.',
+			reuseGuidance: 'Use as a prompt for curator-reviewed design decisions.',
+			doNotUseFor: 'Do not use as policy evidence without further review.',
+		}),
+	});
+
+	const response = await createRepositoryCandidate(svc, request, '', {
+		user: { id: 'user_researcher' },
+	});
+	assert.equal(response.status, 201);
+	const payload = await responseJson(response);
+	assert.equal(payload.status, 'candidate');
+
+	const artefact = d1.state.artefacts.find((row) => row.id === payload.id);
+	assert.equal(artefact.status, 'candidate');
+	assert.equal(artefact.confidence, 'medium');
+	assert.equal(artefact.evidence_maturity, 'reviewed-synthesis');
+	assert.equal(artefact.source_project_id, 'proj-123');
+	assert.equal(artefact.source_study_id, 'study-456');
+	assert.equal(artefact.pii_cleared, 0);
+	assert.equal(artefact.consent_scope_confirmed, 0);
+	const storedPayload = JSON.parse(artefact.payload_json);
+	assert.equal(storedPayload.publicationGate.piiAndConsentGateStatus, 'pending');
+	assert.equal(storedPayload.sourceEvidence.synthesisId, 'theme-789');
+	assert.equal(storedPayload.sourceEvidence.recommendationId, 'rec-012');
+	assert.equal(
+		storedPayload.sourceEvidence.evidenceBasis,
+		'Based on 6 evidence notes linked to theme-789.'
+	);
+	assert.equal(
+		storedPayload.sourceEvidence.limitations,
+		'Small sample, not yet validated across all services.'
+	);
+	assert.equal(
+		storedPayload.sourceEvidence.reuseGuidance,
+		'Use as a prompt for curator-reviewed design decisions.'
+	);
+	assert.equal(
+		storedPayload.sourceEvidence.doNotUseFor,
+		'Do not use as policy evidence without further review.'
+	);
+}
+
 await assertCandidateQueueIsCuratorOnlyAndHydrated();
 await assertCandidatePublishWritesAuditAndReviewState();
 await assertWithdrawnRecordsCanBeReinstated();
 await assertStaleConfirmCurrentRenewsOverdueReviewDate();
 await assertWithdrawRequiresReasonAndNotes();
+await assertSourceLinkedCandidateDraftStoresProvenance();

@@ -34,7 +34,11 @@ const requiredWorkflowSnippets = [
 	'src/govuk/templates/pages/*.njk',
 	'No changed GOV.UK page templates to render.',
 	'No GOV.UK renderer page registration found for:',
-	"const pagePattern = /{\\s*template:\\s*'([^']+)'\\s*,\\s*output:\\s*'([^']+)'/g;",
+	"import { govukPages } from './scripts/govuk/render-govuk-pages.mjs';",
+	'for (const page of govukPages) {',
+	'byTemplate.get(page.template).push(page.output);',
+	'const changedOutputs = new Set();',
+	'for (const output of [...changedOutputs].sort()) {',
 	'output_paths',
 	'npm run build:govuk-pages',
 	'if [ "$render_all" = "true" ]; then',
@@ -66,6 +70,7 @@ excludes(
 	'git diff --binary -- public/index.html public/pages',
 	'GOV.UK pages render workflow'
 );
+excludes(workflow, 'const pagePattern = /', 'GOV.UK pages render workflow');
 
 for (const snippet of ['public/**', '!public/', '!public/index.html', '!public/pages/']) {
 	excludes(gitignore, snippet, 'gitignore rendered GOV.UK HTML policy');

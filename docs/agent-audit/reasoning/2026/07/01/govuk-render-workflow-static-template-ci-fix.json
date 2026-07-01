@@ -1,0 +1,74 @@
+{
+  "date": "2026-07-01",
+  "branch": "feature/res-9-source-linked-candidate-drafting",
+  "traceRequired": true,
+  "taskSummary": "Fix the failing Render and commit static GOV.UK pages workflow on PR #437.",
+  "operatingModelFilesLoaded": [
+    "AGENTS.md",
+    ".agent-operating-model/orchestration.xml",
+    ".agent-operating-model/bundle-registry.json",
+    ".agent-operating-model/task-signal-catalog.json",
+    ".agent-operating-model/selection-rules.json",
+    ".agent-operating-model/precedence-policy.md",
+    ".agent-operating-model/trace-policy.md",
+    ".agent-operating-model/github-mutation-policy.md"
+  ],
+  "selectedBundles": [
+    {
+      "id": "github-diamond",
+      "canonicalPath": ".agent-operating-model/bundles/github/"
+    },
+    {
+      "id": "researchops-developer-control",
+      "canonicalPath": ".agent-operating-model/bundles/researchops-developer-control/"
+    },
+    {
+      "id": "multi-functional-team",
+      "canonicalPath": ".agent-operating-model/bundles/multi-functional-team/"
+    },
+    {
+      "id": "govuk-design-system",
+      "canonicalPath": ".agent-operating-model/bundles/govuk-design-system/"
+    }
+  ],
+  "skippedBundles": [
+    "cloudflare",
+    "openai-platform",
+    "mcp-agent-tooling",
+    "airtable-public-api",
+    "mural-public-api"
+  ],
+  "failure": {
+    "workflow": ".github/workflows/render-govuk-pages.yml",
+    "job": "Render and commit static GOV.UK pages",
+    "message": "No GOV.UK renderer page registration found for: pages/repository-static.njk",
+    "cause": "The workflow parsed the renderer source with a regex and missed templates expanded through repositoryStaticPages.map(...)."
+  },
+  "filesChanged": [
+    ".github/workflows/render-govuk-pages.yml",
+    "tests/govuk-pages-render-workflow-state.test.js",
+    "docs/agent-audit/reasoning/2026/07/01/govuk-render-workflow-static-template-ci-fix.md",
+    "docs/agent-audit/reasoning/2026/07/01/govuk-render-workflow-static-template-ci-fix.json"
+  ],
+  "validation": [
+    {
+      "command": "Local simulation of changed-template detector with pages/repository-static.njk and pages/study-synthesis.njk",
+      "result": "passed"
+    },
+    {
+      "command": "npm run build:govuk-pages",
+      "result": "passed"
+    },
+    {
+      "command": "npm test -- tests/govuk-pages-render-workflow-state.test.js tests/synthesize-page-route-state.test.js tests/study-child-route-state.test.js tests/synthesis-api-route-state.test.js tests/govuk-forms-application-route-state.test.js tests/govuk-breadcrumb-back-link-route-state.test.js",
+      "result": "passed"
+    },
+    {
+      "command": "npm run generated-css:check",
+      "result": "passed"
+    }
+  ],
+  "residualRisks": [
+    "The hosted GitHub Actions job needs to rerun after push to confirm the workflow passes in CI."
+  ]
+}

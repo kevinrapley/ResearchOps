@@ -161,6 +161,10 @@
 		<h2 class="govuk-heading-l" id="repository-candidate-title">Candidate details</h2>
 		<p class="govuk-body">Create a candidate record from reviewed evidence. The record is held in the publication queue until a curator confirms PII clearance, consent scope, confidence and reuse boundaries.</p>
 		<form class="repository-candidate-form" id="repository-candidate-form" method="post" action="/api/repository/artefacts" novalidate>
+			<input id="candidate-source-synthesis-id" name="sourceSynthesisId" type="hidden" value="">
+			<input id="candidate-source-recommendation-id" name="sourceRecommendationId" type="hidden" value="">
+			<input id="candidate-source-context-type" name="sourceContextType" type="hidden" value="">
+			<div id="repository-candidate-prefill-summary" class="govuk-inset-text" hidden></div>
 			<div class="govuk-grid-row">
 				<div class="govuk-grid-column-two-thirds">
 					<div class="govuk-form-group">
@@ -217,6 +221,23 @@
 						<div class="govuk-form-group">
 							<label class="govuk-label govuk-label--s" for="candidate-risk-area">Risk or constraint</label>
 							<select class="govuk-select" id="candidate-risk-area" name="riskArea"></select>
+						</div>
+						<div class="govuk-form-group">
+							<label class="govuk-label govuk-label--s" for="candidate-confidence">Confidence</label>
+							<select class="govuk-select" id="candidate-confidence" name="confidence">
+								<option value="low">Low</option>
+								<option value="medium">Medium</option>
+								<option value="high">High</option>
+							</select>
+						</div>
+						<div class="govuk-form-group">
+							<label class="govuk-label govuk-label--s" for="candidate-evidence-maturity">Evidence maturity</label>
+							<select class="govuk-select" id="candidate-evidence-maturity" name="evidenceMaturity">
+								<option value="early-signal">Early signal</option>
+								<option value="reviewed-synthesis">Reviewed synthesis</option>
+								<option value="reviewed-evidence">Reviewed evidence</option>
+								<option value="validated-pattern">Validated pattern</option>
+							</select>
 						</div>
 					</div>
 				</div>

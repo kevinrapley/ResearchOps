@@ -1,0 +1,119 @@
+{
+  "date": "2026-07-01",
+  "branch": "fix/restore-synthesis-task-list-overview",
+  "traceRequired": true,
+  "taskSummary": "Restore the missing GOV.UK task-list overview titled How synthesis works, make its status column reflect synthesis counts and restore GOV.UK select styling including select arrow placement.",
+  "operatingModelFilesLoaded": [
+    "AGENTS.md",
+    ".agent-operating-model/orchestration.xml",
+    ".agent-operating-model/bundle-registry.json",
+    ".agent-operating-model/task-signal-catalog.json",
+    ".agent-operating-model/selection-rules.json",
+    ".agent-operating-model/precedence-policy.md",
+    ".agent-operating-model/trace-policy.md",
+    ".agent-operating-model/github-mutation-policy.md"
+  ],
+  "selectedBundles": [
+    {
+      "id": "github-diamond",
+      "canonicalPath": ".agent-operating-model/bundles/github/"
+    },
+    {
+      "id": "researchops-developer-control",
+      "canonicalPath": ".agent-operating-model/bundles/researchops-developer-control/"
+    },
+    {
+      "id": "multi-functional-team",
+      "canonicalPath": ".agent-operating-model/bundles/multi-functional-team/"
+    },
+    {
+      "id": "govuk-design-system",
+      "canonicalPath": ".agent-operating-model/bundles/govuk-design-system/"
+    }
+  ],
+  "skippedBundles": [
+    "cloudflare",
+    "openai-platform",
+    "mcp-agent-tooling",
+    "airtable-public-api",
+    "mural-public-api"
+  ],
+  "issue": "The earlier trace recorded a How synthesis works GOV.UK task-list overview, but the committed template and generated HTML on main did not contain it and tests did not assert it. The initial restoration used static Step 1, Step 2 and Step 3 status text and the page still loaded old form CSS that overrode GOV.UK Frontend select presentation.",
+  "filesChanged": [
+    "src/govuk/templates/pages/study-synthesis.njk",
+    "src/styles/govuk.scss",
+    "src/styles/synthesize.scss",
+    "public/assets/govuk/govuk-frontend.css",
+    "public/css/govuk/govuk-forms.css",
+    "public/js/synthesize-page.js",
+    "public/js/synthesis-route-loader.js",
+    "public/css/synthesize.css",
+    "public/pages/study/synthesis/index.html",
+    "tests/govuk-design-system-baseline-route-state.test.js",
+    "tests/study-child-route-state.test.js",
+    "tests/synthesize-page-route-state.test.js",
+    "docs/agent-audit/reasoning/2026/07/01/restore-synthesis-task-list-overview.md",
+    "docs/agent-audit/reasoning/2026/07/01/restore-synthesis-task-list-overview.json"
+  ],
+  "validation": [
+    {
+      "command": "npm run build:govuk-pages",
+      "result": "passed"
+    },
+    {
+      "command": "npm run build:govuk",
+      "result": "passed"
+    },
+    {
+      "command": "npm run build:generated-css",
+      "result": "passed"
+    },
+    {
+      "command": "npm test -- tests/govuk-design-system-baseline-route-state.test.js tests/synthesize-page-route-state.test.js tests/govuk-pages-render-workflow-state.test.js",
+      "result": "passed"
+    },
+    {
+      "command": "npm test -- tests/synthesize-page-route-state.test.js",
+      "result": "passed"
+    },
+    {
+      "command": "npm test -- tests/synthesize-page-route-state.test.js tests/study-child-route-state.test.js tests/govuk-pages-render-workflow-state.test.js",
+      "result": "passed"
+    },
+    {
+      "command": "npm test -- tests/synthesize-page-route-state.test.js tests/govuk-pages-render-workflow-state.test.js",
+      "result": "passed"
+    },
+    {
+      "command": "npm run generated-css:check",
+      "result": "passed"
+    },
+    {
+      "command": "Playwright browser check against https://research-operations/pages/study/synthesis/?id=recLEDSOpsNeeds01&project=recLEDSResearch01#themes-section",
+      "result": "passed; task list showed 2 working groups, 4 evidence notes and 2 themes; selects retained GOV.UK classes and styling; site-wide shared select arrow styling used appearance none, a centred chevron background, 40px right padding and 20px background size"
+    },
+    {
+      "command": "Playwright browser check against https://research-operations/pages/study/synthesis/?id=recLEDSOpsNeeds01&project=recLEDSResearch01#evidence-section",
+      "result": "passed; evidence cards computed to 15px top, 15px right, 20px bottom and 15px left padding; synthesis tags computed to 5px row and column gaps when wrapping; synthesis tag margins computed to 0px; measured visual row gap between wrapped tag rows was 5px"
+    }
+  ],
+  "codexReviewThreadsHandled": [
+    {
+      "threadId": "PRRT_kwDOP3Td2M6Nc8Wb",
+      "commentId": 3502896436,
+      "classification": "valid",
+      "remedy": "Bumped the synthesis controller import cache key in public/js/synthesis-route-loader.js to study-synthesis-20260701-cache-refresh and updated route-state assertions.",
+      "reaction": "+1 added"
+    },
+    {
+      "threadId": "PRRT_kwDOP3Td2M6Nc8We",
+      "commentId": 3502896440,
+      "classification": "valid",
+      "remedy": "Bumped the synthesis stylesheet cache key in src/govuk/templates/pages/study-synthesis.njk and regenerated public/pages/study/synthesis/index.html.",
+      "reaction": "+1 added"
+    }
+  ],
+  "residualRisks": [
+    "The browser check was run against the local research-operations HTTPS server backed by /Users/kevin.rapley/ResearchOps/public; the same changes are present in this fix branch and were mirrored to that served checkout for immediate review."
+  ]
+}

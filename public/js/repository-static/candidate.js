@@ -7,53 +7,6 @@ function populateSelect(select, filters, filterName) {
 	for (const item of filter?.items || []) select.appendChild(option(item.value, titleFromSlug(item.label || item.value)));
 }
 
-function setFieldValue(form, name, value) {
-	const field = form?.elements?.[name];
-	const cleaned = text(value);
-	if (!field || !cleaned) return;
-	if (field instanceof HTMLSelectElement && !Array.from(field.options).some((item) => item.value === cleaned)) {
-		field.appendChild(option(cleaned, titleFromSlug(cleaned)));
-	}
-	field.value = cleaned;
-}
-
-function candidatePrefillFromQuery() {
-	const params = new URLSearchParams(window.location.search);
-	const aliases = new Map([
-		["title", ["title", "candidateTitle"]],
-		["summary", ["summary", "candidateSummary"]],
-		["limitations", ["limitations"]],
-		["reuseGuidance", ["reuseGuidance", "reuse"]],
-		["doNotUseFor", ["doNotUseFor", "doNotUse"]],
-		["confidence", ["confidence"]],
-		["evidenceMaturity", ["evidenceMaturity", "maturity"]],
-		["serviceArea", ["serviceArea", "service_area"]],
-		["userGroup", ["userGroup", "user_group"]],
-		["method", ["method"]],
-		["riskArea", ["riskArea", "risk_area"]],
-		["sourceProjectId", ["sourceProjectId", "pid", "projectId"]],
-		["sourceStudyId", ["sourceStudyId", "sid", "studyId"]],
-		["sourceSynthesisId", ["sourceSynthesisId", "sourceRecommendationId", "synthesisId", "recommendationId"]],
-		["evidenceType", ["evidenceType", "sourceType"]],
-		["sampleSummary", ["sampleSummary", "evidenceBasis"]],
-		["impactRecordId", ["impactRecordId", "impactId", "impactRef"]],
-		["impactSummary", ["impactSummary", "impactContext"]],
-		["decisionSummary", ["decisionSummary", "decisionContextSummary", "decisionContext"]],
-		["outcomeSummary", ["outcomeSummary", "outcomeContextSummary", "outcomeContext"]],
-	]);
-	const prefill = {};
-	for (const [name, keys] of aliases.entries()) {
-		const key = keys.find((candidate) => params.has(candidate));
-		if (key) prefill[name] = params.get(key);
-	}
-	return prefill;
-}
-
-function applyCandidatePrefill(form) {
-	const prefill = candidatePrefillFromQuery();
-	for (const [name, value] of Object.entries(prefill)) setFieldValue(form, name, value);
-}
-
 async function populateProjectSelect() {
 	const select = document.getElementById("candidate-source-project-id");
 	if (!select) return;
@@ -73,6 +26,67 @@ async function populateProjectSelect() {
 	}
 }
 
+function setSelectValue(select, value, label = value) {
+	if (!select || !value) return;
+	if (!Array.from(select.options).some((item) => item.value === value)) {
+		select.appendChild(option(value, titleFromSlug(label || value)));
+	}
+	select.value = value;
+}
+
+function setFieldValue(id, value) {
+	const field = document.getElementById(id);
+	if (field && value) field.value = value;
+}
+
+function prefillValue(params, key) {
+	return text(params.get(key) || "").trim();
+}
+
+function prefillAlias(params, keys) {
+	const key = keys.find((candidate) => params.has(candidate));
+	return key ? prefillValue(params, key) : "";
+}
+
+function applyCandidatePrefill() {
+	const params = new URLSearchParams(window.location.search);
+	const sourceSynthesisId = prefillAlias(params, ["sourceSynthesisId", "synthesisId"]);
+	const sourceRecommendationId = prefillAlias(params, ["sourceRecommendationId", "recommendationId"]);
+	const sourceContextType = prefillValue(params, "sourceContextType") || (sourceSynthesisId ? "reviewed-synthesis" : sourceRecommendationId ? "recommendation" : "");
+
+	setFieldValue("candidate-title", prefillAlias(params, ["title", "candidateTitle"]));
+	setFieldValue("candidate-summary", prefillAlias(params, ["summary", "candidateSummary"]));
+	setFieldValue("candidate-limitations", prefillValue(params, "limitations"));
+	setFieldValue("candidate-reuse-guidance", prefillAlias(params, ["reuseGuidance", "reuse"]));
+	setFieldValue("candidate-do-not-use-for", prefillAlias(params, ["doNotUseFor", "doNotUse"]));
+	setFieldValue("candidate-source-study-id", prefillAlias(params, ["sourceStudyId", "sid", "studyId"]));
+	setFieldValue("candidate-evidence-basis", prefillAlias(params, ["sampleSummary", "evidenceBasis"]));
+	setFieldValue("candidate-source-synthesis-id", sourceSynthesisId);
+	setFieldValue("candidate-source-recommendation-id", sourceRecommendationId);
+	setFieldValue("candidate-source-context-type", sourceContextType);
+	setFieldValue("candidate-impact-record-id", prefillAlias(params, ["impactRecordId", "impactId", "impactRef"]));
+	setFieldValue("candidate-impact-summary", prefillAlias(params, ["impactSummary", "impactContext"]));
+	setFieldValue("candidate-decision-summary", prefillAlias(params, ["decisionSummary", "decisionContextSummary", "decisionContext"]));
+	setFieldValue("candidate-outcome-summary", prefillAlias(params, ["outcomeSummary", "outcomeContextSummary", "outcomeContext"]));
+
+	setSelectValue(document.getElementById("candidate-source-project-id"), prefillAlias(params, ["sourceProjectId", "pid", "projectId"]));
+	setSelectValue(document.getElementById("candidate-evidence-type"), prefillAlias(params, ["evidenceType", "sourceType"]));
+	setSelectValue(document.getElementById("candidate-service-area"), prefillAlias(params, ["serviceArea", "service_area"]));
+	setSelectValue(document.getElementById("candidate-user-group"), prefillAlias(params, ["userGroup", "user_group"]));
+	setSelectValue(document.getElementById("candidate-method"), prefillValue(params, "method"));
+	setSelectValue(document.getElementById("candidate-risk-area"), prefillAlias(params, ["riskArea", "risk_area"]));
+	setSelectValue(document.getElementById("candidate-confidence"), prefillValue(params, "confidence"));
+	setSelectValue(document.getElementById("candidate-evidence-maturity"), prefillAlias(params, ["evidenceMaturity", "maturity"]));
+
+	const summary = document.getElementById("repository-candidate-prefill-summary");
+	if (summary && (sourceSynthesisId || sourceRecommendationId)) {
+		summary.hidden = false;
+		summary.textContent = sourceSynthesisId
+			? `Prefilled from reviewed synthesis ${sourceSynthesisId}. PII and consent gates remain pending until curator review.`
+			: `Prefilled from recommendation ${sourceRecommendationId}. PII and consent gates remain pending until curator review.`;
+	}
+}
+
 export async function initialiseCandidatePage() {
 	const form = document.getElementById("repository-candidate-form");
 	if (!form) return;
@@ -83,7 +97,7 @@ export async function initialiseCandidatePage() {
 	populateSelect(document.getElementById("candidate-user-group"), filters, "user_group");
 	populateSelect(document.getElementById("candidate-method"), filters, "method");
 	populateSelect(document.getElementById("candidate-risk-area"), filters, "risk_area");
-	applyCandidatePrefill(form);
+	applyCandidatePrefill();
 
 	form.addEventListener("submit", async (event) => {
 		event.preventDefault();
