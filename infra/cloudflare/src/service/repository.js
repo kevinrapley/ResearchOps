@@ -110,6 +110,21 @@ function payloadText(payload = {}, key, fallback = "") {
 	return cleanText(payload[key] ?? fallback);
 }
 
+function impactSourceFromPayload(payload = {}) {
+	const source = payload.impactSource || payload.sourceImpact || {};
+	const impactRecordId = cleanText(source.impactRecordId || source.recordId || payload.impactRecordId);
+	const impactSummary = cleanText(source.impactSummary || payload.impactSummary);
+	const decisionSummary = cleanText(source.decisionSummary || payload.decisionSummary || payload.decisionContextSummary);
+	const outcomeSummary = cleanText(source.outcomeSummary || payload.outcomeSummary);
+	if (!impactRecordId && !impactSummary && !decisionSummary && !outcomeSummary) return null;
+	return {
+		impactRecordId,
+		impactSummary,
+		decisionSummary,
+		outcomeSummary
+	};
+}
+
 function actorId(authContext = {}) {
 	return authContext?.user?.id || authContext?.user?.email || "authenticated-user";
 }
@@ -390,6 +405,8 @@ function repositoryTag(tag, row) {
 
 function rowToArtefact(row, tags = [], options = {}) {
 	const { includeLimits = false, includeProvenanceIds = false } = options;
+	const payload = parseJson(row.payload_json, {});
+	const impactSource = impactSourceFromPayload(payload);
 	const repositoryTags = tags.map((tag) => repositoryTag(tag, row)).filter(Boolean);
 	const artefact = {
 		id: row.id,
@@ -425,6 +442,7 @@ function rowToArtefact(row, tags = [], options = {}) {
 			reuseGuidance: row.reuse_guidance || "",
 			doNotUseFor: row.do_not_use_for || ""
 		};
+		if (impactSource) artefact.impactSource = impactSource;
 	}
 	return artefact;
 }
@@ -1255,6 +1273,7 @@ export async function createRepositoryCandidate(svc, request, origin, authContex
 	const serviceArea = cleanSlug(payloadText(payload, "serviceArea"));
 	const userGroup = cleanSlug(payloadText(payload, "userGroup"));
 	const riskArea = cleanSlug(payloadText(payload, "riskArea"));
+	const impactSource = impactSourceFromPayload(payload);
 	const payloadJson = JSON.stringify({
 		sourceProvenance: {
 			sourceProjectId,
@@ -1262,8 +1281,10 @@ export async function createRepositoryCandidate(svc, request, origin, authContex
 			sourceSynthesisOrRecommendationId: sourceSynthesisId,
 			sourceType: evidenceType || "candidate",
 			method,
-			evidenceBasis
+			evidenceBasis,
+			impactSource
 		},
+		impactSource,
 		candidateDraft: {
 			confidence,
 			evidenceMaturity,

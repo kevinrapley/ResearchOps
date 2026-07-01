@@ -127,6 +127,8 @@ has(files.staticTemplate, 'repository-pagination', 'static repository template')
 has(files.staticTemplate, 'id="candidate-confidence" name="confidence"', 'static repository template');
 has(files.staticTemplate, 'id="candidate-evidence-maturity" name="evidenceMaturity"', 'static repository template');
 has(files.staticTemplate, 'id="candidate-source-synthesis-id" name="sourceSynthesisId"', 'static repository template');
+has(files.staticTemplate, 'id="candidate-impact-record-id" name="impactRecordId"', 'static repository template');
+has(files.staticTemplate, 'Do not paste sensitive internal decision links', 'static repository template');
 has(files.staticTemplate, "{{ resultsHeading or 'Published artefacts' }}", 'static repository template');
 lacks(files.staticTemplate, 'Published evidence', 'static repository template');
 
@@ -162,6 +164,7 @@ has(files.staticScript, 'window.history.pushState', 'static page script');
 has(files.staticScript, 'window.addEventListener("popstate"', 'static page script');
 has(files.staticScript, 'function candidatePrefillFromQuery()', 'static page script');
 has(files.staticScript, '["sourceSynthesisId", ["sourceSynthesisId", "sourceRecommendationId", "synthesisId", "recommendationId"]]', 'static page script');
+has(files.staticScript, '["impactRecordId", ["impactRecordId", "impactId", "impactRef"]]', 'static page script');
 has(files.staticScript, 'applyCandidatePrefill(form)', 'static page script');
 has(files.staticScript, '["frontline-staff", "Frontline staff"]', 'static page script');
 has(files.staticScript, '["assisted-digital-users", "Assisted digital users"]', 'static page script');
@@ -186,6 +189,8 @@ has(files.service, 'const snapshot = await publishedRepositorySnapshot(svc);', '
 has(files.service, 'invalidateRepositorySnapshotCache(svc);', 'repository service');
 has(files.service, 'sourceProvenance: {', 'repository service');
 has(files.service, 'sourceSynthesisOrRecommendationId: sourceSynthesisId', 'repository service');
+has(files.service, 'impactSourceFromPayload(payload)', 'repository service');
+has(files.service, 'if (impactSource) artefact.impactSource = impactSource;', 'repository service');
 has(files.service, 'candidateDraft: {', 'repository service');
 has(files.service, 'pii: "pending"', 'repository service');
 has(files.service, 'consent: "pending"', 'repository service');

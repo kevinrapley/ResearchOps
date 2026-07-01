@@ -36,6 +36,10 @@ function candidatePrefillFromQuery() {
 		["sourceSynthesisId", ["sourceSynthesisId", "sourceRecommendationId", "synthesisId", "recommendationId"]],
 		["evidenceType", ["evidenceType", "sourceType"]],
 		["sampleSummary", ["sampleSummary", "evidenceBasis"]],
+		["impactRecordId", ["impactRecordId", "impactId", "impactRef"]],
+		["impactSummary", ["impactSummary", "impactContext"]],
+		["decisionSummary", ["decisionSummary", "decisionContextSummary", "decisionContext"]],
+		["outcomeSummary", ["outcomeSummary", "outcomeContext"]],
 	]);
 	const prefill = {};
 	for (const [name, keys] of aliases.entries()) {
