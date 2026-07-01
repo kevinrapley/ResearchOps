@@ -88,7 +88,7 @@
     },
     {
       "command": "Playwright browser check against https://research-operations/pages/study/synthesis/?id=recLEDSOpsNeeds01&project=recLEDSResearch01#evidence-section",
-      "result": "passed; evidence cards computed to 15px top, 15px right, 20px bottom and 15px left padding; synthesis tags computed to 5px row and column gaps when wrapping"
+      "result": "passed; evidence cards computed to 15px top, 15px right, 20px bottom and 15px left padding; synthesis tags computed to 5px row and column gaps when wrapping; synthesis tag margins computed to 0px; measured visual row gap between wrapped tag rows was 5px"
     }
   ],
   "residualRisks": [

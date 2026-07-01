@@ -179,6 +179,8 @@ includes(sassSource, "padding: 15px 15px 20px 15px", "synthesis Sass source");
 includes(stylesheetSource, "padding: 15px 15px 20px 15px", "synthesis stylesheet");
 includes(sassSource, "row-gap: 5px", "synthesis Sass source");
 includes(stylesheetSource, "row-gap: 5px", "synthesis stylesheet");
+includes(sassSource, ".synthesis-tag {\n\tmax-width: 100%;\n\tmargin-top: 0;\n\tmargin-bottom: 0;\n\twhite-space: normal;\n}", "synthesis Sass source");
+includes(stylesheetSource, ".synthesis-tag {\n\tmax-width: 100%;\n\tmargin-top: 0;\n\tmargin-bottom: 0;\n\twhite-space: normal;\n\t}", "synthesis stylesheet");
 includes(stylesheetSource, "/* transparency begins in the cascade */", "synthesis stylesheet");
 excludes(sassSource, ".study-synthesis-page .govuk-select", "synthesis Sass source");
 excludes(stylesheetSource, ".study-synthesis-page .govuk-select", "synthesis stylesheet");

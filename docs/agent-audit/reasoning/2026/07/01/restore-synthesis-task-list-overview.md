@@ -75,7 +75,7 @@ Precedence decision:
 - Removed the route-level `.govuk-select:disabled` override from `synthesize.scss`.
 - Added the select chevron background to the shared GOV.UK stylesheet source in `src/styles/govuk.scss`, regenerated `public/assets/govuk/govuk-frontend.css`, and mirrored the same fix into legacy `public/css/govuk/govuk-forms.css` so the down arrow is centred vertically and inset from the right edge site-wide.
 - Kept synthesis-specific CSS free of `.govuk-select` arrow ownership.
-- Set evidence cards to `padding: 15px 15px 20px 15px` and made wrapped synthesis tag spacing explicit with `row-gap: 5px` and `column-gap: 5px`.
+- Set evidence cards to `padding: 15px 15px 20px 15px`, made wrapped synthesis tag spacing explicit with `row-gap: 5px` and `column-gap: 5px`, and neutralised the GOV.UK tag component's negative vertical margins for `.synthesis-tag` so the visible row gap is actually 5px.
 - Added route-state assertions for the macro, title, exact step text, status hooks, anchors, controller count logic, shared GOV.UK select styling and absence of old synthesis select overrides.
 - Regenerated the committed static synthesis page.
 
@@ -107,7 +107,9 @@ Results:
   - select arrow CSS used `appearance: none`, `background-position: calc(100% - 10px) 50%`, `background-size: 20px 20px` and `padding-right: 40px`
   - screenshot at `/tmp/synthesis-select-arrow-sitewide.png` showed the down arrow centred inside the select
   - evidence cards computed to `15px 15px 20px 15px` padding
-  - synthesis tags computed to `row-gap: 5px` and `column-gap: 5px`, with screenshot crop at `/tmp/synthesis-evidence-card-tags.png`
+  - initial screenshot crop at `/tmp/synthesis-evidence-card-tags.png` did not show reliable visible separation because GOV.UK tag margins still collapsed the apparent row gap
+  - corrected screenshot crop at `/tmp/synthesis-evidence-card-tags-fixed.png` showed the stacked tags separated
+  - synthesis tags computed to `row-gap: 5px`, `column-gap: 5px`, `margin-top: 0` and `margin-bottom: 0`; Playwright measured the visual row gap between tag rows as `5`
 
 ## Residual Risk
 
