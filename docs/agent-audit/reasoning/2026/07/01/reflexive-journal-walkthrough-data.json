@@ -1,0 +1,128 @@
+{
+  "date": "2026-07-01",
+  "branch": "fix/reflexive-journal-walkthrough-data",
+  "traceRequired": true,
+  "taskSummary": "Capture full Reflexive Journal & Analysis walkthrough states with realistic journal entries, codes, memos and analysis data.",
+  "operatingModelFilesLoaded": [
+    "AGENTS.md",
+    ".agent-operating-model/orchestration.xml",
+    ".agent-operating-model/bundle-registry.json",
+    ".agent-operating-model/task-signal-catalog.json",
+    ".agent-operating-model/selection-rules.json",
+    ".agent-operating-model/bootstrap-checklist.md",
+    ".agent-operating-model/precedence-policy.md",
+    ".agent-operating-model/trace-policy.md",
+    ".agent-operating-model/trace-layers.md",
+    ".agent-operating-model/behavioural-evals.json",
+    ".agent-operating-model/github-mutation-policy.md"
+  ],
+  "selectedBundles": [
+    {
+      "id": "github-diamond",
+      "canonicalPath": ".agent-operating-model/bundles/github/"
+    },
+    {
+      "id": "researchops-developer-control",
+      "canonicalPath": ".agent-operating-model/bundles/researchops-developer-control/"
+    },
+    {
+      "id": "multi-functional-team",
+      "canonicalPath": ".agent-operating-model/bundles/multi-functional-team/"
+    },
+    {
+      "id": "govuk-design-system",
+      "canonicalPath": ".agent-operating-model/bundles/govuk-design-system/"
+    }
+  ],
+  "skippedBundles": [
+    "cloudflare",
+    "openai-platform",
+    "mcp-agent-tooling",
+    "airtable-public-api",
+    "mural-public-api"
+  ],
+  "filesModified": [
+    "visual-walkthrough.config.mjs",
+    "visual-walkthrough.operational-fixtures.mjs",
+    "tests/qa-bdd-authenticated-walkthrough-route-state.test.js",
+    "tests/reports-site-validation.test.js",
+    "reports-site/index.html",
+    "reports-site/manifest.json",
+    "reports-site/screenshots/**",
+    "docs/agent-audit/reasoning/2026/07/01/reflexive-journal-walkthrough-data.md",
+    "docs/agent-audit/reasoning/2026/07/01/reflexive-journal-walkthrough-data.json"
+  ],
+  "validation": [
+    {
+      "command": "node --check visual-walkthrough.config.mjs",
+      "result": "passed"
+    },
+    {
+      "command": "node --check visual-walkthrough.operational-fixtures.mjs",
+      "result": "passed"
+    },
+    {
+      "command": "node --import ./tests/helpers/generated-govuk-page-source.mjs --test tests/qa-bdd-authenticated-walkthrough-route-state.test.js",
+      "result": "passed"
+    },
+    {
+      "command": "npm run lint -- --quiet",
+      "result": "passed",
+      "evidence": "Existing ESLint flat-config eslint-env warnings only."
+    },
+    {
+      "command": "npm run format -c",
+      "result": "passed"
+    },
+    {
+      "command": "node --import ./tests/helpers/generated-govuk-page-source.mjs --test tests/qa-bdd-authenticated-walkthrough-route-state.test.js tests/journal-cooccurrence-display-route-state.test.js tests/journal-secondary-actions-route-state.test.js",
+      "result": "passed"
+    },
+    {
+      "command": "Local Playwright walkthrough-state smoke check",
+      "result": "passed",
+      "evidence": "Verified all journals default and named states completed their walkthrough actions."
+    },
+    {
+      "command": "WALKTHROUGH_LOCAL_ASSETS=true npm run qa:visual-walkthrough",
+      "result": "passed",
+      "evidence": "Regenerated reports-site with 81 states and 162 captures, including all new journal states."
+    },
+    {
+      "command": "npm run validate",
+      "result": "passed"
+    },
+    {
+      "command": "node scripts/validate-reports-site.mjs",
+      "result": "passed"
+    },
+    {
+      "command": "node --import ./tests/helpers/generated-govuk-page-source.mjs --test tests/reports-site-validation.test.js tests/qa-bdd-authenticated-walkthrough-route-state.test.js tests/journal-cooccurrence-display-route-state.test.js tests/journal-secondary-actions-route-state.test.js",
+      "result": "passed"
+    },
+    {
+      "command": "npm test",
+      "result": "passed",
+      "evidence": "268 tests passed."
+    },
+    {
+      "command": "npm run lint -- --quiet",
+      "result": "passed",
+      "evidence": "Existing ESLint flat-config eslint-env warnings only."
+    },
+    {
+      "command": "npm test -- --runTestsByPath tests/qa-bdd-authenticated-walkthrough-route-state.test.js",
+      "result": "failed",
+      "evidence": "--runTestsByPath is not a Node test runner option; rerun with the repository Node test command passed."
+    },
+    {
+      "command": "npm run format -c -- visual-walkthrough.config.mjs visual-walkthrough.operational-fixtures.mjs tests/qa-bdd-authenticated-walkthrough-route-state.test.js",
+      "result": "failed",
+      "evidence": "The format wrapper treated filenames as generated-CSS targets; normal repository format check passed."
+    }
+  ],
+  "residualRisks": [
+    "The static walkthrough report was regenerated locally with deterministic mocks rather than against the live Pages deployment.",
+    "Regenerating reports-site rewrote existing screenshot artefacts as well as adding the new journal captures."
+  ]
+}

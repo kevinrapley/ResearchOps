@@ -3,7 +3,13 @@ import fs from 'node:fs';
 import test from 'node:test';
 
 import { visualWalkthroughConfig } from '../visual-walkthrough.config.mjs';
-import { operationalPaths } from '../visual-walkthrough.operational-fixtures.mjs';
+import {
+	operationalJournalAnalysis,
+	operationalJournalCodes,
+	operationalJournalEntries,
+	operationalJournalMemos,
+	operationalPaths,
+} from '../visual-walkthrough.operational-fixtures.mjs';
 import { repositoryStaticPages } from '../src/govuk/data/repository-page.mjs';
 
 const featureSource = fs.readFileSync('features/authenticated-walkthrough.feature', 'utf8');
@@ -192,6 +198,23 @@ test('data-dependent walkthrough pages keep operational defaults and explicit er
 	assert.equal(pages.get('journal-entry-edit').defaultState.path, operationalPaths.journalEntryEdit);
 	assert.equal(stateIds('journal-entry-edit').has('missing-journal-entry-id-error'), true);
 
+	assert.equal(pages.get('journals').defaultState.path, operationalPaths.journals);
+	for (const stateId of [
+		'codes-with-realistic-data',
+		'memos-with-realistic-data',
+		'analysis-timeline',
+		'analysis-cooccurrence-table',
+		'analysis-cooccurrence-ranked-bar-chart',
+		'analysis-cooccurrence-matrix-heatmap',
+		'analysis-cooccurrence-small-multiples',
+		'analysis-cooccurrence-stacked-summary',
+		'analysis-cooccurrence-clustered-summary',
+		'analysis-code-retrieval',
+		'analysis-export',
+	]) {
+		assert.equal(stateIds('journals').has(stateId), true, `Expected journals state ${stateId}`);
+	}
+
 	assert.equal(pages.get('study-guides').defaultState.path, operationalPaths.studyGuides);
 	assert.equal(stateIds('study-guides').has('empty-guide-source-error'), true);
 
@@ -203,4 +226,22 @@ test('data-dependent walkthrough pages keep operational defaults and explicit er
 
 	assert.equal(pages.get('team-access-requests').defaultState.path, operationalPaths.teamAccessRequests);
 	assert.equal(stateIds('team-access-requests').has('decision-error'), true);
+});
+
+test('journal walkthrough fixtures contain realistic entries, codes, memos and analysis data', () => {
+	const entryCategories = new Set(operationalJournalEntries.map((entry) => entry.category));
+	const codeNames = new Set(operationalJournalCodes.map((code) => code.name));
+	const memoTypes = new Set(operationalJournalMemos.map((memo) => memo.memoType));
+	const nodeLabels = new Set(operationalJournalAnalysis.nodes.map((node) => node.label));
+
+	assert.ok(operationalJournalEntries.length >= 12);
+	assert.deepEqual(entryCategories, new Set(['perceptions', 'procedures', 'decisions', 'introspections']));
+	assert.ok(operationalJournalCodes.length >= 10);
+	assert.equal(codeNames.has('Analysis confidence'), true);
+	assert.equal(codeNames.has('Reflexive practice'), true);
+	assert.equal(codeNames.has('Traceable decisions'), true);
+	assert.deepEqual(memoTypes, new Set(['analytical', 'reflexive', 'methodological', 'theoretical']));
+	assert.ok(operationalJournalAnalysis.links.length >= 12);
+	assert.equal(nodeLabels.has('Negative case'), true);
+	assert.equal(nodeLabels.has('Evidence readiness'), true);
 });

@@ -165,6 +165,148 @@ const addStudyPage = {
 	],
 };
 
+function journalStatePath(hash) {
+	return `${operationalPaths.journals}${hash}`;
+}
+
+const journalAnalysisBaseActions = [
+	{ type: 'waitForSelector', selector: '#analysis-panel', state: 'visible' },
+	{ type: 'click', selector: '[data-analysis="co-occurrence"]' },
+	{ type: 'waitForText', text: 'Code co-occurrence updated.' },
+];
+
+const journalsPage = {
+	id: 'journals',
+	title: 'Project journals',
+	group: 'Projects',
+	path: '/pages/projects/journals/index.html',
+	description: 'Reflexive journal page.',
+	defaultState: {
+		id: 'default',
+		title: 'Journal entries with realistic reflexive data',
+		description: 'Journal entries captured with project context and a full set of realistic reflections.',
+		path: operationalPaths.journals,
+		actions: [{ type: 'waitForText', text: 'The team is beginning to see research evidence' }],
+	},
+	states: [
+		{
+			id: 'codes-with-realistic-data',
+			title: 'Codes with realistic data',
+			description: 'Codebook captured with thematic, second-order and first-order reflexive analysis codes.',
+			path: journalStatePath('#codes'),
+			actions: [{ type: 'waitForText', text: 'Analysis confidence' }],
+		},
+		{
+			id: 'memos-with-realistic-data',
+			title: 'Memos with realistic data',
+			description: 'Research memos captured with analytical, methodological, theoretical and reflexive memo types.',
+			path: journalStatePath('#memos'),
+			actions: [{ type: 'waitForText', text: 'Confidence threshold and evidence readiness' }],
+		},
+		{
+			id: 'analysis-timeline',
+			title: 'Analysis timeline with realistic journal entries',
+			description: 'Analysis timeline captured with the same reflexive entries used by the journal list.',
+			path: journalStatePath('#analysis'),
+			actions: [
+				{ type: 'waitForSelector', selector: '#analysis-panel', state: 'visible' },
+				{ type: 'click', selector: '[data-analysis="timeline"]' },
+				{ type: 'waitForText', text: 'Timeline view updated.' },
+				{ type: 'waitForText', text: 'Procedures journal entry' },
+			],
+		},
+		{
+			id: 'analysis-cooccurrence-table',
+			title: 'Analysis code co-occurrence table',
+			description: 'Co-occurring code pairs captured as a GOV.UK table with realistic pair weights.',
+			path: journalStatePath('#analysis'),
+			actions: [
+				...journalAnalysisBaseActions,
+				{ type: 'waitForText', text: 'Code pairs by strength' },
+			],
+		},
+		{
+			id: 'analysis-cooccurrence-ranked-bar-chart',
+			title: 'Analysis ranked co-occurrence bar chart',
+			description: 'Highest weighted code pairs captured as a ranked bar chart.',
+			path: journalStatePath('#analysis'),
+			actions: [
+				...journalAnalysisBaseActions,
+				{ type: 'check', selector: '#cooccurrence-view-chart' },
+				{ type: 'waitForText', text: 'Highest weighted code pairs' },
+			],
+		},
+		{
+			id: 'analysis-cooccurrence-matrix-heatmap',
+			title: 'Analysis co-occurrence matrix heatmap',
+			description: 'Code co-occurrence captured as a matrix heatmap.',
+			path: journalStatePath('#analysis'),
+			actions: [
+				...journalAnalysisBaseActions,
+				{ type: 'check', selector: '#cooccurrence-view-heatmap' },
+				{ type: 'waitForText', text: 'Code co-occurrence matrix' },
+			],
+		},
+		{
+			id: 'analysis-cooccurrence-small-multiples',
+			title: 'Analysis co-occurrence small multiples',
+			description: 'Code co-occurrence captured as small multiple bar charts.',
+			path: journalStatePath('#analysis'),
+			actions: [
+				...journalAnalysisBaseActions,
+				{ type: 'check', selector: '#cooccurrence-view-small-multiples' },
+				{ type: 'waitForText', text: 'Small multiple bar charts' },
+			],
+		},
+		{
+			id: 'analysis-cooccurrence-stacked-summary',
+			title: 'Analysis co-occurrence stacked summary',
+			description: 'Code co-occurrence captured as stacked bar summaries.',
+			path: journalStatePath('#analysis'),
+			actions: [
+				...journalAnalysisBaseActions,
+				{ type: 'check', selector: '#cooccurrence-view-stacked' },
+				{ type: 'waitForText', text: 'Stacked bar summary' },
+			],
+		},
+		{
+			id: 'analysis-cooccurrence-clustered-summary',
+			title: 'Analysis co-occurrence clustered summary',
+			description: 'Code co-occurrence captured as clustered bar comparisons.',
+			path: journalStatePath('#analysis'),
+			actions: [
+				...journalAnalysisBaseActions,
+				{ type: 'check', selector: '#cooccurrence-view-clustered' },
+				{ type: 'waitForText', text: 'Clustered bar comparison' },
+			],
+		},
+		{
+			id: 'analysis-code-retrieval',
+			title: 'Analysis code retrieval',
+			description: 'Code retrieval captured with a realistic search result backed by journal data.',
+			path: journalStatePath('#analysis'),
+			actions: [
+				{ type: 'waitForSelector', selector: '#analysis-panel', state: 'visible' },
+				{ type: 'click', selector: '[data-analysis="retrieval"]' },
+				{ type: 'fill', selector: '#retrieval-q', value: 'confidence' },
+				{ type: 'click', selector: '#retrieval-form button[type="submit"]' },
+				{ type: 'waitForText', text: 'Code retrieval updated.' },
+			],
+		},
+		{
+			id: 'analysis-export',
+			title: 'Analysis export',
+			description: 'Analysis export captured with populated timeline and co-occurrence JSON.',
+			path: journalStatePath('#analysis'),
+			actions: [
+				{ type: 'waitForSelector', selector: '#analysis-panel', state: 'visible' },
+				{ type: 'click', selector: '[data-analysis="export"]' },
+				{ type: 'waitForText', text: 'Export analysis is ready in the JSON panel.' },
+			],
+		},
+	],
+};
+
 const journalEntryPage = {
 	id: 'journal-entry',
 	title: 'Journal entry',
@@ -176,7 +318,7 @@ const journalEntryPage = {
 		title: 'Journal entry with saved content',
 		description: 'Journal entry detail captured with deterministic project and entry context.',
 		path: operationalPaths.journalEntry,
-		actions: [{ type: 'waitForText', text: 'Reflection on support handoffs' }],
+		actions: [{ type: 'waitForText', text: 'The team is beginning to see research evidence' }],
 	},
 	states: [
 		{
@@ -481,7 +623,7 @@ export const visualWalkthroughConfig = {
 		statefulPage('project-dashboard-add-participant', 'Add participant', 'Projects', '/pages/project-dashboard/participants/index.html', 'Add a study-linked participant from the project dashboard action workflow.', 'Add participant with parent context', 'Participant workflow captured with the project ID present.', operationalPaths.addParticipant, 'Add participant'),
 		statefulPage('project-dashboard-import-participants', 'Import participants', 'Projects', '/pages/project-dashboard/participants/import/index.html', 'Import study-linked participants from CSV.', 'Import participants with parent context', 'CSV import workflow captured with the project ID present.', operationalPaths.importParticipants, 'Import participants'),
 		statefulPage('outcomes', 'Project outcomes', 'Projects', '/pages/projects/outcomes/index.html', 'Outcomes page for project-level findings and outputs.', 'Project outcomes with project context', 'Outcomes page captured with a deterministic project ID.', operationalPaths.outcomes, 'Impact & ROI'),
-		statefulPage('journals', 'Project journals', 'Projects', '/pages/projects/journals/index.html', 'Reflexive journal page.', 'Project journals with project context', 'Reflexive journal page captured with project context.', operationalPaths.journals, 'Reflexive Journal & Analysis'),
+		journalsPage,
 		journalEntryPage,
 		journalEntryEditPage,
 		statefulPage('study', 'Study overview', 'Study', '/pages/study/index.html', 'Study overview and readiness controls.', 'Study overview with readiness context', 'Study overview captured with the canonical Study record ID.', operationalPaths.study, 'Assisted digital support interview round 1'),

@@ -170,11 +170,393 @@ export const operationalJournalEntries = [
 		local_project_id: operationalProjectId,
 		category: 'perceptions',
 		content:
-			'Reflection on support handoffs: participants may see assisted digital support as part of the main service rather than a separate channel.',
-		tags: ['assisted-digital', 'handoff', 'researcher-reflection'],
+			'The team is beginning to see research evidence as an operating model rather than a set of documents. People trust findings more when they can see where an observation came from, what is still uncertain and which decision it was meant to support.',
+		tags: ['reflexive-practice', 'analysis-confidence', 'shared-interpretation'],
 		createdAt: '2026-05-07T13:20:00.000Z',
 	},
+	{
+		id: 'recVisualJournal002',
+		project: operationalProjectId,
+		projectId: operationalProjectId,
+		localProjectId: operationalProjectId,
+		local_project_id: operationalProjectId,
+		category: 'procedures',
+		content:
+			'The weekly intake meeting now checks every new research request for the decision it supports, the evidence already available, the recruitment route and any delivery deadline before work is accepted.',
+		tags: ['evidence-readiness', 'traceable-decisions', 'governance-tempo'],
+		createdAt: '2026-05-08T09:40:00.000Z',
+	},
+	{
+		id: 'recVisualJournal003',
+		project: operationalProjectId,
+		projectId: operationalProjectId,
+		localProjectId: operationalProjectId,
+		local_project_id: operationalProjectId,
+		category: 'decisions',
+		content:
+			'We decided to keep operations tracking separate from qualitative synthesis. Recruitment status and scheduling need to stay visible, but coding and memo writing should remain in the analysis space with links back to decisions.',
+		tags: ['operational-rhythm', 'analysis-confidence', 'traceable-decisions'],
+		createdAt: '2026-05-10T11:05:00.000Z',
+	},
+	{
+		id: 'recVisualJournal004',
+		project: operationalProjectId,
+		projectId: operationalProjectId,
+		localProjectId: operationalProjectId,
+		local_project_id: operationalProjectId,
+		category: 'introspections',
+		content:
+			'The strongest value of the platform may be that it slows down the right decisions while making routine research administration easier to manage. That slower pace is uncomfortable, but it is also where the quality improves.',
+		tags: ['reflexive-practice', 'confidence-threshold', 'decision-confidence'],
+		createdAt: '2026-05-11T14:20:00.000Z',
+	},
+	{
+		id: 'recVisualJournal005',
+		project: operationalProjectId,
+		projectId: operationalProjectId,
+		localProjectId: operationalProjectId,
+		local_project_id: operationalProjectId,
+		category: 'procedures',
+		content:
+			'Recruitment planning exposed a gap between the participant access needs recorded by delivery teams and the practical adjustments researchers need before a session. We added a check for access needs before diary invitations are sent.',
+		tags: ['inclusive-engagement', 'evidence-handover', 'provenance-gaps'],
+		createdAt: '2026-05-12T10:30:00.000Z',
+	},
+	{
+		id: 'recVisualJournal006',
+		project: operationalProjectId,
+		projectId: operationalProjectId,
+		localProjectId: operationalProjectId,
+		local_project_id: operationalProjectId,
+		category: 'perceptions',
+		content:
+			'Several researchers described losing the thread when they moved between the project dashboard, notes, spreadsheets and mural boards. The issue is not only tool count; it is the mental effort of rebuilding context every time.',
+		tags: ['provenance-gaps', 'operational-rhythm', 'reflexive-practice'],
+		createdAt: '2026-05-13T15:10:00.000Z',
+	},
+	{
+		id: 'recVisualJournal007',
+		project: operationalProjectId,
+		projectId: operationalProjectId,
+		localProjectId: operationalProjectId,
+		local_project_id: operationalProjectId,
+		category: 'introspections',
+		content:
+			'I noticed that I was treating missing provenance as a delivery inconvenience rather than an analytical risk. If we cannot tell who contributed an insight or when it was last reviewed, we should lower our confidence in decisions that depend on it.',
+		tags: ['researcher-positionality', 'analysis-confidence', 'provenance-gaps'],
+		createdAt: '2026-05-14T12:45:00.000Z',
+	},
+	{
+		id: 'recVisualJournal008',
+		project: operationalProjectId,
+		projectId: operationalProjectId,
+		localProjectId: operationalProjectId,
+		local_project_id: operationalProjectId,
+		category: 'decisions',
+		content:
+			'The team agreed that high-risk service decisions need an evidence handover note before they move to implementation. The note should capture the decision, supporting findings, known gaps and the researcher confidence level.',
+		tags: ['evidence-handover', 'traceable-decisions', 'confidence-threshold'],
+		createdAt: '2026-05-15T16:25:00.000Z',
+	},
+	{
+		id: 'recVisualJournal009',
+		project: operationalProjectId,
+		projectId: operationalProjectId,
+		localProjectId: operationalProjectId,
+		local_project_id: operationalProjectId,
+		category: 'procedures',
+		content:
+			'We added a short pause before contacting participants whose circumstances may make participation burdensome. The pause gives the researcher time to review consent wording, support options and whether the invitation should be delayed.',
+		tags: ['risk-threshold', 'inclusive-engagement', 'governance-tempo'],
+		createdAt: '2026-05-17T09:15:00.000Z',
+	},
+	{
+		id: 'recVisualJournal010',
+		project: operationalProjectId,
+		projectId: operationalProjectId,
+		localProjectId: operationalProjectId,
+		local_project_id: operationalProjectId,
+		category: 'perceptions',
+		content:
+			'The dashboard is useful when it shows what changed since the last visit. Researchers do not need another place to duplicate updates; they need a way to re-enter the project without reading every artefact again.',
+		tags: ['pattern-noticed', 'operational-rhythm', 'analysis-confidence'],
+		createdAt: '2026-05-18T10:55:00.000Z',
+	},
+	{
+		id: 'recVisualJournal011',
+		project: operationalProjectId,
+		projectId: operationalProjectId,
+		localProjectId: operationalProjectId,
+		local_project_id: operationalProjectId,
+		category: 'decisions',
+		content:
+			'We agreed to show code co-occurrence as a prompt for interpretation, not as proof of a relationship. The graph should help researchers notice patterns, then return to journal entries and memos to check the meaning.',
+		tags: ['negative-case', 'shared-interpretation', 'analysis-confidence'],
+		createdAt: '2026-05-19T08:40:00.000Z',
+	},
+	{
+		id: 'recVisualJournal012',
+		project: operationalProjectId,
+		projectId: operationalProjectId,
+		localProjectId: operationalProjectId,
+		local_project_id: operationalProjectId,
+		category: 'perceptions',
+		content:
+			'Researchers are asking for a clearer distinction between an observation, an interpretation and a theme. The current language is familiar to analysts, but less clear to delivery colleagues who read the codebook later.',
+		tags: ['shared-interpretation', 'follow-up-question', 'pattern-noticed'],
+		createdAt: '2026-05-20T13:20:00.000Z',
+	},
+	{
+		id: 'recVisualJournal013',
+		project: operationalProjectId,
+		projectId: operationalProjectId,
+		localProjectId: operationalProjectId,
+		local_project_id: operationalProjectId,
+		category: 'procedures',
+		content:
+			'The research team added a short evidence review before every show-and-tell. The review checks whether quoted findings still have a source, whether the finding has been challenged and whether a memo records the interpretation.',
+		tags: ['evidence-readiness', 'shared-interpretation', 'traceable-decisions'],
+		createdAt: '2026-05-21T14:00:00.000Z',
+	},
+	{
+		id: 'recVisualJournal014',
+		project: operationalProjectId,
+		projectId: operationalProjectId,
+		localProjectId: operationalProjectId,
+		local_project_id: operationalProjectId,
+		category: 'introspections',
+		content:
+			"I found myself defending a pattern because it supported a design idea I already preferred. The negative case in yesterday's interview helped me separate the participant's account from my own product instinct.",
+		tags: ['negative-case', 'researcher-positionality', 'reflexive-practice'],
+		createdAt: '2026-05-22T11:15:00.000Z',
+	},
+	{
+		id: 'recVisualJournal015',
+		project: operationalProjectId,
+		projectId: operationalProjectId,
+		localProjectId: operationalProjectId,
+		local_project_id: operationalProjectId,
+		category: 'procedures',
+		content:
+			'Consent wording is being checked earlier in recruitment planning. The change has reduced late rework because accessibility needs, support options and participant burden are visible before invitations are drafted.',
+		tags: ['inclusive-engagement', 'evidence-readiness', 'operational-rhythm'],
+		createdAt: '2026-05-23T10:30:00.000Z',
+	},
+	{
+		id: 'recVisualJournal016',
+		project: operationalProjectId,
+		projectId: operationalProjectId,
+		localProjectId: operationalProjectId,
+		local_project_id: operationalProjectId,
+		category: 'decisions',
+		content:
+			'We will keep first-order codes close to the language of the entry, second-order codes for interpretation and thematic codes for aggregate themes. The UI should show this hierarchy without requiring users to infer it from indentation.',
+		tags: ['code-hierarchy', 'shared-interpretation', 'analysis-confidence'],
+		createdAt: '2026-05-24T12:15:00.000Z',
+	},
 ];
+
+export const operationalJournalCodes = [
+	{
+		id: 'code-analysis-confidence',
+		projectId: operationalProjectId,
+		name: 'Analysis confidence',
+		path: 'Analysis confidence',
+		description:
+			'Where the team explicitly records how much confidence it has in an interpretation or decision.',
+		tags: ['confidence', 'synthesis'],
+		colour: '#1d70b8ff',
+	},
+	{
+		id: 'code-confidence-threshold',
+		projectId: operationalProjectId,
+		parentId: 'code-analysis-confidence',
+		name: 'Confidence threshold',
+		path: 'Analysis confidence / Confidence threshold',
+		description:
+			'The level of evidence needed before the team is comfortable making or slowing a decision.',
+		tags: ['decision-readiness', 'risk'],
+		colour: '#00703cff',
+	},
+	{
+		id: 'code-evidence-readiness',
+		projectId: operationalProjectId,
+		parentId: 'code-confidence-threshold',
+		name: 'Evidence readiness',
+		path: 'Analysis confidence / Confidence threshold / Evidence readiness',
+		description: 'Signals that evidence is complete enough to support the next action.',
+		tags: ['evidence', 'handover'],
+		colour: '#4c2c92ff',
+	},
+	{
+		id: 'code-reflexive-practice',
+		projectId: operationalProjectId,
+		name: 'Reflexive practice',
+		path: 'Reflexive practice',
+		description:
+			'Moments where the researcher notices how assumptions, position or workflow shape interpretation.',
+		tags: ['researcher-position', 'quality'],
+		colour: '#801650ff',
+	},
+	{
+		id: 'code-researcher-positionality',
+		projectId: operationalProjectId,
+		parentId: 'code-reflexive-practice',
+		name: 'Researcher positionality',
+		path: 'Reflexive practice / Researcher positionality',
+		description:
+			'How the researcher role, preferences or institutional context may influence the analysis.',
+		tags: ['bias', 'reflexivity'],
+		colour: '#912b88ff',
+	},
+	{
+		id: 'code-pattern-noticed',
+		projectId: operationalProjectId,
+		name: 'Pattern noticed',
+		path: 'Pattern noticed',
+		description:
+			'A recurring observation that may become a theme after checking against evidence and negative cases.',
+		tags: ['pattern', 'theme-development'],
+		colour: '#5694c2ff',
+	},
+	{
+		id: 'code-shared-interpretation',
+		projectId: operationalProjectId,
+		parentId: 'code-pattern-noticed',
+		name: 'Shared interpretation',
+		path: 'Pattern noticed / Shared interpretation',
+		description: 'Evidence that the meaning of a pattern has been tested with the wider team.',
+		tags: ['collaboration', 'interpretation'],
+		colour: '#28a197ff',
+	},
+	{
+		id: 'code-negative-case',
+		projectId: operationalProjectId,
+		parentId: 'code-pattern-noticed',
+		name: 'Negative case',
+		path: 'Pattern noticed / Negative case',
+		description: 'An observation that challenges or limits a current interpretation.',
+		tags: ['challenge', 'confidence'],
+		colour: '#d4351cff',
+	},
+	{
+		id: 'code-traceable-decisions',
+		projectId: operationalProjectId,
+		name: 'Traceable decisions',
+		path: 'Traceable decisions',
+		description: 'Decisions that retain links to evidence, confidence and known gaps.',
+		tags: ['decision-log', 'governance'],
+		colour: '#0b0c0cff',
+	},
+	{
+		id: 'code-evidence-handover',
+		projectId: operationalProjectId,
+		parentId: 'code-traceable-decisions',
+		name: 'Evidence handover',
+		path: 'Traceable decisions / Evidence handover',
+		description:
+			'A short handover that helps delivery teams understand what the evidence supports.',
+		tags: ['handover', 'delivery'],
+		colour: '#2b8cc4ff',
+	},
+	{
+		id: 'code-inclusive-engagement',
+		projectId: operationalProjectId,
+		name: 'Inclusive engagement',
+		path: 'Inclusive engagement',
+		description:
+			'Research planning choices that reduce participation burden and make access needs visible.',
+		tags: ['access-needs', 'consent'],
+		colour: '#006435ff',
+	},
+	{
+		id: 'code-provenance-gaps',
+		projectId: operationalProjectId,
+		parentId: 'code-traceable-decisions',
+		name: 'Provenance gaps',
+		path: 'Traceable decisions / Provenance gaps',
+		description:
+			'Places where the team cannot see enough source context to trust or reuse an insight.',
+		tags: ['source', 'audit'],
+		colour: '#b58840ff',
+	},
+	{
+		id: 'code-operational-rhythm',
+		projectId: operationalProjectId,
+		name: 'Operational rhythm',
+		path: 'Operational rhythm',
+		description:
+			'How recurring ceremonies, intake checks and delivery deadlines shape research work.',
+		tags: ['delivery', 'workflow'],
+		colour: '#85994bff',
+	},
+];
+
+export const operationalJournalMemos = [
+	{
+		id: 'memo-confidence-handover',
+		projectId: operationalProjectId,
+		memoType: 'analytical',
+		content:
+			'Confidence threshold and evidence readiness are appearing together whenever the team prepares an evidence handover. This suggests the handover is becoming a decision-quality control rather than a reporting artefact.',
+		createdAt: '2026-05-16T10:30:00.000Z',
+	},
+	{
+		id: 'memo-reflexive-practice',
+		projectId: operationalProjectId,
+		memoType: 'reflexive',
+		content:
+			'Reflexive practice is most useful when it is attached to a concrete decision. Free-floating reflections are being skipped; decision-linked reflections are changing what the team does next.',
+		createdAt: '2026-05-18T14:45:00.000Z',
+	},
+	{
+		id: 'memo-codebook-language',
+		projectId: operationalProjectId,
+		memoType: 'methodological',
+		content:
+			'The codebook should separate first-order language from second-order interpretation and thematic aggregation. This helps delivery colleagues understand which claims are close to the data and which are analytical constructs.',
+		createdAt: '2026-05-21T09:15:00.000Z',
+	},
+	{
+		id: 'memo-negative-case',
+		projectId: operationalProjectId,
+		memoType: 'theoretical',
+		content:
+			'Negative cases are doing two jobs: challenging the strongest emerging themes and revealing where the service design assumption is too narrow. They should remain visible in analysis export.',
+		createdAt: '2026-05-23T13:05:00.000Z',
+	},
+];
+
+export const operationalJournalAnalysis = {
+	timeline: operationalJournalEntries,
+	nodes: operationalJournalCodes.map((code) => ({
+		id: code.id,
+		label: code.name,
+		name: code.name,
+	})),
+	links: [
+		{ source: 'code-analysis-confidence', target: 'code-reflexive-practice', weight: 14 },
+		{ source: 'code-pattern-noticed', target: 'code-reflexive-practice', weight: 8 },
+		{ source: 'code-analysis-confidence', target: 'code-pattern-noticed', weight: 7 },
+		{ source: 'code-analysis-confidence', target: 'code-shared-interpretation', weight: 7 },
+		{ source: 'code-shared-interpretation', target: 'code-reflexive-practice', weight: 7 },
+		{ source: 'code-analysis-confidence', target: 'code-negative-case', weight: 6 },
+		{ source: 'code-evidence-readiness', target: 'code-traceable-decisions', weight: 6 },
+		{ source: 'code-negative-case', target: 'code-reflexive-practice', weight: 6 },
+		{ source: 'code-pattern-noticed', target: 'code-shared-interpretation', weight: 6 },
+		{ source: 'code-researcher-positionality', target: 'code-reflexive-practice', weight: 5 },
+		{ source: 'code-confidence-threshold', target: 'code-evidence-readiness', weight: 3 },
+		{ source: 'code-confidence-threshold', target: 'code-reflexive-practice', weight: 3 },
+		{ source: 'code-confidence-threshold', target: 'code-traceable-decisions', weight: 3 },
+		{ source: 'code-evidence-handover', target: 'code-traceable-decisions', weight: 4 },
+		{ source: 'code-evidence-handover', target: 'code-evidence-readiness', weight: 3 },
+		{ source: 'code-evidence-handover', target: 'code-pattern-noticed', weight: 2 },
+		{ source: 'code-inclusive-engagement', target: 'code-evidence-readiness', weight: 3 },
+		{ source: 'code-provenance-gaps', target: 'code-analysis-confidence', weight: 2 },
+		{ source: 'code-operational-rhythm', target: 'code-traceable-decisions', weight: 3 },
+		{ source: 'code-operational-rhythm', target: 'code-reflexive-practice', weight: 2 },
+	],
+};
 
 export const operationalConsentForms = [
 	{
@@ -674,6 +1056,83 @@ export function operationalMockRoutes() {
 			body: {
 				ok: true,
 				entries: operationalJournalEntries,
+			},
+		},
+		{
+			url: /\/api\/mural\/journal-sync(?:\?.*)?$/,
+			method: 'POST',
+			body: {
+				ok: true,
+				pending: 0,
+				synced: operationalJournalEntries.length,
+				total: operationalJournalEntries.length,
+				after: {
+					pending: 0,
+					synced: operationalJournalEntries.length,
+					total: operationalJournalEntries.length,
+				},
+				createdOrUpdated: 0,
+				alreadySynced: operationalJournalEntries.length,
+			},
+		},
+		{
+			url: /\/api\/codes(?:\?.*)?$/,
+			method: 'GET',
+			body: {
+				ok: true,
+				codes: operationalJournalCodes,
+			},
+		},
+		{
+			url: /\/api\/memos(?:\?.*)?$/,
+			method: 'GET',
+			body: {
+				ok: true,
+				memos: operationalJournalMemos,
+			},
+		},
+		{
+			url: /\/api\/analysis\/timeline(?:\?.*)?$/,
+			method: 'GET',
+			body: {
+				ok: true,
+				timeline: operationalJournalAnalysis.timeline,
+			},
+		},
+		{
+			url: /\/api\/analysis\/cooccurrence(?:\?.*)?$/,
+			method: 'GET',
+			body: {
+				ok: true,
+				nodes: operationalJournalAnalysis.nodes,
+				links: operationalJournalAnalysis.links,
+			},
+		},
+		{
+			url: /\/api\/analysis\/retrieval(?:\?.*)?$/,
+			method: 'GET',
+			body: ({ url }) => {
+				const term = String(new URL(url).searchParams.get('q') || '').toLowerCase();
+				const matches = operationalJournalEntries
+					.filter((entry) => {
+						const haystack = [entry.content, ...(entry.tags || [])].join(' ').toLowerCase();
+						return !term || haystack.includes(term);
+					})
+					.slice(0, 8)
+					.map((entry) => ({
+						id: entry.id,
+						snippet: entry.content,
+						codes: (entry.tags || []).slice(0, 3).map((tag) => ({
+							name: tag
+								.split('-')
+								.map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+								.join(' '),
+						})),
+					}));
+				return {
+					ok: true,
+					results: matches,
+				};
 			},
 		},
 		{
