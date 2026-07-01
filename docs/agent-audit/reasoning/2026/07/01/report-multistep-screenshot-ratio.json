@@ -1,0 +1,81 @@
+{
+	"date": "2026-07-01",
+	"branch": "fix/report-multistep-screenshot-ratio",
+	"traceRequired": true,
+	"taskSummary": "Update report-site screenshots inside multi-flow process pages so each image fills its state-card column and crops to a 3:2 landscape ratio.",
+	"operatingModelFilesLoaded": [
+		"AGENTS.md",
+		".agent-operating-model/orchestration.xml",
+		".agent-operating-model/bundle-registry.json",
+		".agent-operating-model/task-signal-catalog.json",
+		".agent-operating-model/selection-rules.json",
+		".agent-operating-model/bootstrap-checklist.md",
+		".agent-operating-model/precedence-policy.md",
+		".agent-operating-model/trace-policy.md",
+		".agent-operating-model/trace-layers.md",
+		".agent-operating-model/behavioural-evals.json",
+		".agent-operating-model/github-mutation-policy.md",
+		"/Users/kevin.rapley/.hermes/skills/github/github-diamond-standard/SKILL.md"
+	],
+	"selectedBundles": [
+		{
+			"id": "github-diamond",
+			"canonicalPath": ".agent-operating-model/bundles/github/"
+		},
+		{
+			"id": "researchops-developer-control",
+			"canonicalPath": ".agent-operating-model/bundles/researchops-developer-control/"
+		},
+		{
+			"id": "multi-functional-team",
+			"canonicalPath": ".agent-operating-model/bundles/multi-functional-team/"
+		},
+		{
+			"id": "govuk-design-system",
+			"canonicalPath": ".agent-operating-model/bundles/govuk-design-system/"
+		}
+	],
+	"skippedBundles": [
+		"cloudflare",
+		"openai-platform",
+		"mcp-agent-tooling",
+		"airtable-public-api",
+		"mural-public-api"
+	],
+	"filesModified": [
+		"scripts/render-reporting-review-site.mjs",
+		"scripts/visual-walkthrough.mjs",
+		"reports-site/index.html",
+		"tests/reporting-review-generation-model.test.js",
+		"docs/agent-audit/reasoning/2026/07/01/report-multistep-screenshot-ratio.md",
+		"docs/agent-audit/reasoning/2026/07/01/report-multistep-screenshot-ratio.json"
+	],
+	"validation": [
+		{
+			"command": "node --test tests/reporting-review-generation-model.test.js tests/reports-site-validation.test.js tests/reporting-site-deploy-route-state.test.js",
+			"result": "passed"
+		},
+		{
+			"command": "node scripts/validate-reports-site.mjs",
+			"result": "passed",
+			"evidence": "Validated 46 pages, 81 states and 162 captures."
+		},
+		{
+			"command": "Playwright browser measurement against reports-site/index.html",
+			"result": "passed",
+			"evidence": "Ordinary thumbnails remained 665px high; the first multi-step thumbnail rendered 353px wide by 235px high with a 1.5 ratio and filled its crop link."
+		},
+		{
+			"command": "npm run lint -- --quiet",
+			"result": "passed",
+			"notes": "Existing ESLint-env deprecation warnings were reported."
+		},
+		{
+			"command": "npm run validate",
+			"result": "passed"
+		}
+	],
+	"residualRisks": [
+		"The 3:2 crop cuts vertical full-page screenshots more aggressively, but the full image remains available in the lightbox."
+	]
+}
