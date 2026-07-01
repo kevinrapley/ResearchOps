@@ -1,9 +1,14 @@
 import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { applyReportingReviewEvidenceToManifest } from '../scripts/reporting-review-evidence.mjs';
-import { renderReportingReviewHtml } from '../scripts/render-reporting-review-site.mjs';
+import {
+	renderReportingReviewHtml,
+	renderReportingReviewSite,
+} from '../scripts/render-reporting-review-site.mjs';
 
 function captureFixture(profile, title) {
 	return {
@@ -184,6 +189,24 @@ test('walkthrough workflow restores source-derived criteria sync before renderin
 	assert.ok(walkthroughIndex > -1);
 	assert.ok(syncIndex > walkthroughIndex);
 	assert.ok(renderIndex > syncIndex);
+});
+
+test('rendered reporting site includes its own Cloudflare Pages config', () => {
+	const rootDir = fs.mkdtempSync(path.join(os.tmpdir(), 'reporting-review-render-'));
+	const siteDir = path.join(rootDir, 'reports-site');
+	fs.mkdirSync(siteDir, { recursive: true });
+	fs.writeFileSync(
+		path.join(siteDir, 'manifest.json'),
+		`${JSON.stringify(manifestFixture(), null, 2)}\n`,
+		'utf8'
+	);
+
+	const result = renderReportingReviewSite({ siteDir });
+	const pagesConfig = fs.readFileSync(result.wranglerPath, 'utf8');
+
+	assert.equal(result.wranglerPath, path.join(siteDir, 'wrangler.toml'));
+	assert.match(pagesConfig, /^name\s*=\s*["']reopsreporting["']$/m);
+	assert.match(pagesConfig, /^pages_build_output_dir\s*=\s*["']\.[\"']$/m);
 });
 
 test('rendered report preserves profile filtering controls and capture targets', () => {

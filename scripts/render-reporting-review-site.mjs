@@ -11,6 +11,10 @@ import { fileURLToPath } from 'node:url';
 import { applyReportingReviewEvidenceToManifest } from './reporting-review-evidence.mjs';
 
 const DEFAULT_SITE_DIR = 'reports-site';
+const PAGES_WRANGLER_CONFIG = `name = "reopsreporting"
+pages_build_output_dir = "."
+compatibility_date = "2026-05-21"
+`;
 
 function escapeHtml(value = '') {
 	return String(value)
@@ -292,13 +296,15 @@ export function renderReportingReviewSite(options = {}) {
 	const siteDir = typeof options === 'string' ? options : options.siteDir || DEFAULT_SITE_DIR;
 	const manifestPath = path.join(siteDir, 'manifest.json');
 	const indexPath = path.join(siteDir, 'index.html');
+	const wranglerPath = path.join(siteDir, 'wrangler.toml');
 	const manifest = applyReportingReviewEvidenceToManifest(JSON.parse(fs.readFileSync(manifestPath, 'utf8')));
 	const html = renderReportingReviewHtml(manifest);
 
 	fs.writeFileSync(indexPath, html, 'utf8');
 	fs.writeFileSync(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`, 'utf8');
+	fs.writeFileSync(wranglerPath, PAGES_WRANGLER_CONFIG, 'utf8');
 
-	return { indexPath, manifestPath };
+	return { indexPath, manifestPath, wranglerPath };
 }
 
 const currentFile = fileURLToPath(import.meta.url);
