@@ -61,6 +61,11 @@ export const generatedCssTargets = [
 		output: 'public/css/participants.css',
 	},
 	{
+		name: 'Participant consent stylesheet',
+		source: 'src/styles/participant-consent.scss',
+		output: 'public/css/participant-consent.css',
+	},
+	{
 		name: 'Study note takers and observers stylesheet',
 		source: 'src/styles/note-takers-observers.scss',
 		output: 'public/css/note-takers-observers.css',
