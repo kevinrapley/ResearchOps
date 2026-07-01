@@ -50,7 +50,7 @@ Precedence decision: GitHub Diamond governs branch, trace, CI and PR handling. R
 - Update `tests/reporting-site-deploy-route-state.test.js` to assert that push validation and manual deployment are distinct.
 - Update `docs/qa/visual-walkthrough.md` to document the manual deploy boundary.
 - Add a `RECENT_LEARNINGS.md` entry so future deploy workflows do not make unproven external credentials a required push gate.
-- Addressed a valid Codex review comment on PR #441 about accidental feature-branch manual dispatches publishing unmerged `reports-site/` content to the shared reporting project.
+- Addressed a valid Codex review comment on PR #441 about accidental feature-branch manual dispatches publishing unmerged `reports-site/` content to the shared reporting project. The comment was acknowledged with `+1`, replied to with the remediation and validation evidence, and resolved in GitHub.
 
 ## Validation
 
