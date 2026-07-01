@@ -142,6 +142,185 @@ const teamRoleAssignmentsPage = {
 	},
 };
 
+const addStudyPage = {
+	...statefulPage(
+		'project-dashboard-add-study',
+		'Add study',
+		'Projects',
+		'/pages/study/new/index.html',
+		'Create a study from the project dashboard action workflow.',
+		'Add study with parent project context',
+		'Add-study workflow captured with the parent project ID present.',
+		operationalPaths.addStudy,
+		'Assisted Digital Support Discovery'
+	),
+	states: [
+		{
+			id: 'missing-project-id-error',
+			title: 'Missing project ID error',
+			description: 'Validation state shown when the add-study route is opened without parent project context.',
+			path: '/pages/study/new/index.html',
+			actions: [{ type: 'waitForText', text: 'Missing project ID' }],
+		},
+	],
+};
+
+const journalEntryPage = {
+	id: 'journal-entry',
+	title: 'Journal entry',
+	group: 'Projects',
+	path: '/pages/journal/entry/index.html',
+	description: 'Journal entry detail page.',
+	defaultState: {
+		id: 'default',
+		title: 'Journal entry with saved content',
+		description: 'Journal entry detail captured with deterministic project and entry context.',
+		path: operationalPaths.journalEntry,
+		actions: [{ type: 'waitForText', text: 'Reflection on support handoffs' }],
+	},
+	states: [
+		{
+			id: 'missing-journal-entry-id-error',
+			title: 'Missing journal entry ID error',
+			description: 'Error state shown when the journal detail route is opened without an entry ID.',
+			path: '/pages/journal/entry/index.html',
+			actions: [{ type: 'waitForText', text: 'Missing journal entry ID.' }],
+		},
+	],
+};
+
+const journalEntryEditPage = {
+	id: 'journal-entry-edit',
+	title: 'Edit journal entry',
+	group: 'Projects',
+	path: '/pages/journal/edit/index.html',
+	description: 'Journal entry edit page.',
+	defaultState: {
+		id: 'default',
+		title: 'Edit journal entry with saved content',
+		description: 'Journal entry edit form captured with deterministic project and entry context.',
+		path: operationalPaths.journalEntryEdit,
+		actions: [{ type: 'waitForSelector', selector: '#journal-entry-edit-form', state: 'visible' }],
+	},
+	states: [
+		{
+			id: 'missing-journal-entry-id-error',
+			title: 'Missing journal entry ID error',
+			description: 'Error state shown when the journal edit route is opened without an entry ID.',
+			path: '/pages/journal/edit/index.html',
+			actions: [{ type: 'waitForText', text: 'Missing journal entry ID.' }],
+		},
+	],
+};
+
+const studyGuidesPage = {
+	...statefulPage(
+		'study-guides',
+		'Discussion guides',
+		'Study',
+		'/pages/study/guides/index.html',
+		'Discussion guide list and editor page.',
+		'Discussion guides with saved source',
+		'Discussion guides page captured with the canonical Study record ID and opened guide source.',
+		operationalPaths.studyGuides,
+		'Opening and consent'
+	),
+	defaultState: {
+		id: 'default',
+		title: 'Discussion guides with saved source',
+		description: 'Discussion guides page captured with the canonical Study record ID and opened guide source.',
+		path: operationalPaths.studyGuides,
+		actions: [{ type: 'waitForSelector', selector: '#guide-preview h2:first-of-type' }],
+	},
+	states: [
+		{
+			id: 'empty-guide-source-error',
+			title: 'Empty guide source validation',
+			description: 'Guide editor validation state shown when a publish action is attempted without guide source.',
+			path: operationalPaths.studyGuides,
+			actions: [
+				{ type: 'waitForSelector', selector: '#guide-source', state: 'visible' },
+				{ type: 'fill', selector: '#guide-source', value: '' },
+				{ type: 'click', selector: '#btn-publish' },
+				{ type: 'waitForText', text: 'Enter guide source' },
+			],
+		},
+	],
+};
+
+const studySessionPage = {
+	...statefulPage(
+		'study-session',
+		'Study session',
+		'Study',
+		'/pages/study/session/index.html',
+		'Session running and note capture page.',
+		'Study session with participant ready',
+		'Session workspace captured with a selected participant and ready consent status.',
+		operationalPaths.studySession,
+		'Begin a session'
+	),
+	defaultState: {
+		id: 'default',
+		title: 'Study session with participant ready',
+		description: 'Session workspace captured with a selected participant and ready consent status.',
+		path: operationalPaths.studySession,
+		actions: [
+			{ type: 'waitForSelector', selector: '#participant-select option[value="ptp_001"]', state: 'attached' },
+			{ type: 'select', selector: '#participant-select', value: 'ptp_001' },
+			{ type: 'waitForText', text: 'Ready for session' },
+		],
+	},
+	states: [
+		{
+			id: 'participant-consent-gate',
+			title: 'Participant consent gate',
+			description: 'Session warning state shown before a participant has been selected.',
+			path: operationalPaths.studySession,
+			actions: [{ type: 'waitForText', text: 'Choose a participant to review consent status before starting a session.' }],
+		},
+	],
+};
+
+const teamAccessRequestsPage = {
+	id: 'team-access-requests',
+	title: 'Review team access requests',
+	group: 'Team administration',
+	path: '/pages/team/access-requests/index.html',
+	description: 'Team Admin review page for pending team access requests.',
+	defaultState: {
+		id: 'default',
+		title: 'Pending team access requests',
+		description: 'Team access review page captured with a deterministic pending request.',
+		path: operationalPaths.teamAccessRequests,
+		actions: [{ type: 'waitForText', text: 'Request from Morgan Lee' }],
+	},
+	states: [
+		{
+			id: 'decision-error',
+			title: 'Team access decision error',
+			description: 'Error state shown when a pending team access decision cannot be completed.',
+			path: operationalPaths.teamAccessRequests,
+			mockRoutes: [
+				{
+					url: /\/api\/team-access\/requests\/approve(?:\?.*)?$/,
+					method: 'POST',
+					status: 500,
+					body: {
+						ok: false,
+						message: 'Team access request could not be completed.',
+					},
+				},
+			],
+			actions: [
+				{ type: 'waitForSelector', selector: '[data-approve-request="tar_visual_001"]' },
+				{ type: 'click', selector: '[data-approve-request="tar_visual_001"]' },
+				{ type: 'waitForText', text: 'Team access request could not be completed.' },
+			],
+		},
+	],
+};
+
 const accountSignInPage = {
 	id: 'account-sign-in',
 	title: 'Sign in to ResearchOps',
@@ -298,23 +477,23 @@ export const visualWalkthroughConfig = {
 			},
 		},
 		statefulPage('project-dashboard', 'Project dashboard', 'Projects', '/pages/project-dashboard/index.html', 'Project dashboard page.', 'Project dashboard with operational project context', 'Dashboard captured with a deterministic project ID.', operationalPaths.projectDashboard, 'Assisted Digital Support Discovery'),
-		statefulPage('project-dashboard-add-study', 'Add study', 'Projects', '/pages/study/new/index.html', 'Create a study from the project dashboard action workflow.', 'Add study with parent project context', 'Add-study workflow captured with the parent project ID present.', operationalPaths.addStudy, 'Add study'),
+		addStudyPage,
 		statefulPage('project-dashboard-add-participant', 'Add participant', 'Projects', '/pages/project-dashboard/participants/index.html', 'Add a study-linked participant from the project dashboard action workflow.', 'Add participant with parent context', 'Participant workflow captured with the project ID present.', operationalPaths.addParticipant, 'Add participant'),
 		statefulPage('project-dashboard-import-participants', 'Import participants', 'Projects', '/pages/project-dashboard/participants/import/index.html', 'Import study-linked participants from CSV.', 'Import participants with parent context', 'CSV import workflow captured with the project ID present.', operationalPaths.importParticipants, 'Import participants'),
 		statefulPage('outcomes', 'Project outcomes', 'Projects', '/pages/projects/outcomes/index.html', 'Outcomes page for project-level findings and outputs.', 'Project outcomes with project context', 'Outcomes page captured with a deterministic project ID.', operationalPaths.outcomes, 'Impact & ROI'),
 		statefulPage('journals', 'Project journals', 'Projects', '/pages/projects/journals/index.html', 'Reflexive journal page.', 'Project journals with project context', 'Reflexive journal page captured with project context.', operationalPaths.journals, 'Reflexive Journal & Analysis'),
-		statefulPage('journal-entry', 'Journal entry', 'Projects', '/pages/journal/entry/index.html', 'Journal entry detail page.', 'Journal entry route', 'Journal entry detail route captured before API hydration.', '/pages/journal/entry/index.html', 'Journal entry'),
-		statefulPage('journal-entry-edit', 'Edit journal entry', 'Projects', '/pages/journal/edit/index.html', 'Journal entry edit page.', 'Journal entry edit route', 'Journal entry edit route captured before API hydration.', '/pages/journal/edit/index.html', 'Edit journal entry'),
+		journalEntryPage,
+		journalEntryEditPage,
 		statefulPage('study', 'Study overview', 'Study', '/pages/study/index.html', 'Study overview and readiness controls.', 'Study overview with readiness context', 'Study overview captured with the canonical Study record ID.', operationalPaths.study, 'Assisted digital support interview round 1'),
-		statefulPage('study-guides', 'Discussion guides', 'Study', '/pages/study/guides/index.html', 'Discussion guide list and editor page.', 'Discussion guides with study context', 'Discussion guides page captured with the canonical Study record ID.', operationalPaths.studyGuides, 'Guides for this study'),
+		studyGuidesPage,
 		statefulPage('study-note-takers-observers', 'Note takers and observers', 'Study', '/pages/study/note-takers-observers/index.html', 'Study support roles setup page.', 'Note takers and observers with study context', 'Support roles setup captured with the canonical Study record ID.', operationalPaths.studyNoteTakersObservers, 'Note takers and observers'),
 		statefulPage('study-participants', 'Participants', 'Study', '/pages/study/participants/index.html', 'Participants page for a study.', 'Study participants with records', 'Participants page captured with the canonical Study record ID.', operationalPaths.studyParticipants, 'Participants'),
-		statefulPage('study-session', 'Study session', 'Study', '/pages/study/session/index.html', 'Session running and note capture page.', 'Study session with study context', 'Session workspace captured with the canonical Study record ID.', operationalPaths.studySession, 'Begin a session'),
+		studySessionPage,
 		statefulPage('study-consent-forms', 'Study consent forms', 'Study', '/pages/study/consent-forms/index.html', 'Study-specific consent form configuration page.', 'Study consent forms with study context', 'Consent form configuration captured with the canonical Study record ID.', operationalPaths.studyConsentForms, 'Consent forms'),
 		registeredPage('study-participant-consent', 'Participant consent', 'Study', '/pages/study/participant-consent/index.html', 'Study-scoped participant consent recording and review page.'),
 		registeredPage('synthesize', 'Study synthesis', 'Study', '/pages/study/synthesis/index.html', 'Study-scoped evidence grouping and theme creation page.'),
 		statefulPage('team-registration-requests', 'Review account requests', 'Team administration', '/pages/team/registration-requests/index.html', 'Team Admin review page for pending account registration requests.', 'Pending account requests', 'Registration request review page captured with a deterministic pending request.', operationalPaths.teamRegistrationRequests, 'Pending account requests'),
-		registeredPage('team-access-requests', 'Review team access requests', 'Team administration', '/pages/team/access-requests/index.html', 'Team Admin review page for pending team access requests.'),
+		teamAccessRequestsPage,
 		teamRoleAssignmentsPage,
 		registeredPage('search', 'Search', 'Utilities', '/pages/search/index.html', 'Search page.'),
 		registeredPage('notes', 'Notes', 'Utilities', '/pages/notes/index.html', 'Notes page.'),

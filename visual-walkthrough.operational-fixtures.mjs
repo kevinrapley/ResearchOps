@@ -8,6 +8,7 @@
 export const operationalProjectId = 'recVisualProject001';
 export const operationalStudyId = 'recVisualStudy001';
 export const operationalParticipantId = 'recVisualParticipant001';
+export const operationalJournalEntryId = 'recVisualJournal001';
 export const operationalAuthUserId = 'usr_visual_team_admin';
 export const operationalAuthTeamId = 'team_researchops_core';
 export const operationalAuthTeamName = 'ResearchOps Core';
@@ -16,11 +17,13 @@ export const operationalPaths = {
 	accountSignIn: '/pages/account/sign-in/index.html',
 	accountRegistration: '/pages/account/register/index.html',
 	projectDashboard: `/pages/project-dashboard/?id=${operationalProjectId}`,
-	addStudy: `/pages/study/new/?pid=${operationalProjectId}`,
+	addStudy: `/pages/study/new/?id=${operationalProjectId}`,
 	addParticipant: `/pages/project-dashboard/participants/?id=${operationalProjectId}`,
 	importParticipants: `/pages/project-dashboard/participants/import/?id=${operationalProjectId}`,
 	outcomes: `/pages/projects/outcomes/?id=${operationalProjectId}`,
 	journals: `/pages/projects/journals/?id=${operationalProjectId}`,
+	journalEntry: `/pages/journal/entry/?id=${operationalJournalEntryId}&project=${operationalProjectId}`,
+	journalEntryEdit: `/pages/journal/edit/?id=${operationalJournalEntryId}&project=${operationalProjectId}`,
 	study: `/pages/study/?pid=${operationalProjectId}&sid=${operationalStudyId}`,
 	studyGuides: `/pages/study/guides/?pid=${operationalProjectId}&sid=${operationalStudyId}`,
 	studyNoteTakersObservers: `/pages/study/note-takers-observers/?pid=${operationalProjectId}&sid=${operationalStudyId}`,
@@ -28,6 +31,7 @@ export const operationalPaths = {
 	studySession: `/pages/study/session/?pid=${operationalProjectId}&sid=${operationalStudyId}`,
 	studyConsentForms: `/pages/study/consent-forms/?pid=${operationalProjectId}&sid=${operationalStudyId}`,
 	teamRegistrationRequests: '/pages/team/registration-requests/',
+	teamAccessRequests: '/pages/team/access-requests/',
 	teamRoleAssignments: '/pages/team/role-assignments/',
 };
 
@@ -131,7 +135,44 @@ export const operationalGuides = [
 		studyId: operationalStudyId,
 		title: 'Assisted digital support discussion guide',
 		status: 'Published',
+		version: 0,
 		updatedAt: '2026-04-26T11:00:00.000Z',
+		createdBy: {
+			name: 'Alex Morgan',
+		},
+		sourceMarkdown: `# Assisted digital support discussion guide
+
+## Opening and consent
+Confirm the participant understands the research purpose, recording choices and how their contribution will be used.
+
+## Current journey
+Ask the participant to describe the last time they needed help with a digital service.
+
+## Support handoff
+Explore where they expected support, where they found it and what would have reduced uncertainty.
+
+## Wrap-up
+Check whether there is anything else they expected from the service before, during or after the handoff.`,
+		variables: {
+			study: {
+				title: 'Assisted digital support interview round 1',
+			},
+		},
+	},
+];
+
+export const operationalJournalEntries = [
+	{
+		id: operationalJournalEntryId,
+		project: operationalProjectId,
+		projectId: operationalProjectId,
+		localProjectId: operationalProjectId,
+		local_project_id: operationalProjectId,
+		category: 'perceptions',
+		content:
+			'Reflection on support handoffs: participants may see assisted digital support as part of the main service rather than a separate channel.',
+		tags: ['assisted-digital', 'handoff', 'researcher-reflection'],
+		createdAt: '2026-05-07T13:20:00.000Z',
 	},
 ];
 
@@ -157,6 +198,21 @@ export const operationalParticipantConsentRecords = [
 		status: 'Ready for session',
 		withdrawn: false,
 		updatedAt: '2026-05-01T09:45:00.000Z',
+	},
+	{
+		id: 'recVisualParticipantConsentSession001',
+		studyId: operationalStudyId,
+		participantId: 'recPARTICIPANT001',
+		status: 'Ready for session',
+		withdrawn: false,
+		captureMethod: 'Recorded in ResearchOps',
+		consentFormVersion: 1,
+		responses: {
+			recording: 'agreed',
+			observers: 'agreed',
+			transcription: 'agreed',
+		},
+		updatedAt: '2026-05-01T10:15:00.000Z',
 	},
 ];
 
@@ -258,6 +314,21 @@ export const operationalRegistrationRequests = [
 		requestedReason: 'Planning and analysing the assisted digital support study.',
 		status: 'pending_review',
 		submittedAt: '2026-05-13T09:00:00.000Z',
+	},
+];
+
+export const operationalTeamAccessReviewRequests = [
+	{
+		id: 'tar_visual_001',
+		requesterUserId: 'usr_visual_researcher',
+		requesterName: 'Morgan Lee',
+		requesterEmail: 'morgan.lee@example.gov.uk',
+		teamId: operationalAuthTeamId,
+		teamName: operationalAuthTeamName,
+		message:
+			'I need to contribute to the assisted digital support discovery and review repository evidence.',
+		status: 'pending',
+		requestedAt: '2026-05-14T08:45:00.000Z',
 	},
 ];
 
@@ -506,6 +577,14 @@ export function operationalMockRoutes() {
 			},
 		},
 		{
+			url: /\/api\/team-access\/requests\/review(?:\?.*)?$/,
+			method: 'GET',
+			body: {
+				ok: true,
+				requests: operationalTeamAccessReviewRequests,
+			},
+		},
+		{
 			url: /\/api\/projects(?:\?.*)?$/,
 			method: 'GET',
 			body: {
@@ -560,6 +639,41 @@ export function operationalMockRoutes() {
 			body: {
 				ok: true,
 				guides: operationalGuides,
+			},
+		},
+		{
+			url: /\/api\/guides\/[^/?]+(?:\?.*)?$/,
+			method: 'GET',
+			body: ({ url }) => {
+				const guideId = decodeURIComponent(new URL(url).pathname.split('/').pop() || '');
+				const guide =
+					operationalGuides.find((entry) => entry.id === guideId) || operationalGuides[0];
+				return {
+					ok: true,
+					guide,
+				};
+			},
+		},
+		{
+			url: /\/api\/journal-entries\/[^/?]+(?:\?.*)?$/,
+			method: 'GET',
+			body: ({ url }) => {
+				const entryId = decodeURIComponent(new URL(url).pathname.split('/').pop() || '');
+				const entry =
+					operationalJournalEntries.find((item) => item.id === entryId) ||
+					operationalJournalEntries[0];
+				return {
+					ok: true,
+					entry,
+				};
+			},
+		},
+		{
+			url: /\/api\/journal-entries(?:\?.*)?$/,
+			method: 'GET',
+			body: {
+				ok: true,
+				entries: operationalJournalEntries,
 			},
 		},
 		{

@@ -85,9 +85,10 @@ includes(renderWorkflow, 'No GOV.UK renderer page registration found for:', 'GOV
 includes(renderWorkflow, 'output_paths < "$changed_outputs_path"', 'GOV.UK render workflow');
 excludes(renderWorkflow, 'git add -A public/index.html public/pages', 'GOV.UK render workflow');
 
-includes(walkthroughConfig, "registeredPage('team-access-requests'", 'visual walkthrough registry');
+includes(walkthroughConfig, "id: 'team-access-requests'", 'visual walkthrough registry');
 includes(walkthroughConfig, "'Review team access requests'", 'visual walkthrough registry');
 includes(walkthroughConfig, "'/pages/team/access-requests/index.html'", 'visual walkthrough registry');
+includes(walkthroughConfig, 'operationalPaths.teamAccessRequests', 'visual walkthrough registry');
 
 for (const source of [template, page]) {
 	includesText(source, 'Review team access requests', 'team access review page');

@@ -3,6 +3,7 @@ import fs from 'node:fs';
 import test from 'node:test';
 
 import { visualWalkthroughConfig } from '../visual-walkthrough.config.mjs';
+import { operationalPaths } from '../visual-walkthrough.operational-fixtures.mjs';
 import { repositoryStaticPages } from '../src/govuk/data/repository-page.mjs';
 
 const featureSource = fs.readFileSync('features/authenticated-walkthrough.feature', 'utf8');
@@ -176,4 +177,30 @@ test('participant consent same-origin API URLs are valid during walkthrough capt
 	assert.match(participantConsentSource, /hasStudyContextParams/);
 	assert.match(participantConsentSource, /renderLoadError\(error\)/);
 	assert.doesNotMatch(participantConsentSource, /new URL\(apiUrl\(path\)\)/);
+});
+
+test('data-dependent walkthrough pages keep operational defaults and explicit error states', () => {
+	const pages = new Map(visualWalkthroughConfig.pages.map((page) => [page.id, page]));
+	const stateIds = (pageId) => new Set((pages.get(pageId)?.states || []).map((state) => state.id));
+
+	assert.match(operationalPaths.addStudy, /\/pages\/study\/new\/\?id=recVisualProject001$/);
+	assert.equal(pages.get('project-dashboard-add-study').defaultState.path, operationalPaths.addStudy);
+	assert.equal(stateIds('project-dashboard-add-study').has('missing-project-id-error'), true);
+
+	assert.equal(pages.get('journal-entry').defaultState.path, operationalPaths.journalEntry);
+	assert.equal(stateIds('journal-entry').has('missing-journal-entry-id-error'), true);
+	assert.equal(pages.get('journal-entry-edit').defaultState.path, operationalPaths.journalEntryEdit);
+	assert.equal(stateIds('journal-entry-edit').has('missing-journal-entry-id-error'), true);
+
+	assert.equal(pages.get('study-guides').defaultState.path, operationalPaths.studyGuides);
+	assert.equal(stateIds('study-guides').has('empty-guide-source-error'), true);
+
+	assert.deepEqual(pages.get('study-session').defaultState.actions.slice(0, 2), [
+		{ type: 'waitForSelector', selector: '#participant-select option[value="ptp_001"]', state: 'attached' },
+		{ type: 'select', selector: '#participant-select', value: 'ptp_001' },
+	]);
+	assert.equal(stateIds('study-session').has('participant-consent-gate'), true);
+
+	assert.equal(pages.get('team-access-requests').defaultState.path, operationalPaths.teamAccessRequests);
+	assert.equal(stateIds('team-access-requests').has('decision-error'), true);
 });
