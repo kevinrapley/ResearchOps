@@ -75,11 +75,16 @@ test('main service and reporting site have distinct deployment roots', () => {
 	assert.doesNotMatch(reportsSiteIndex, /<title>ResearchOps Demo Suite<\/title>/);
 });
 
-test('manual walkthrough still deploys the generated report when requested', () => {
+test('manual walkthrough verifies the live report only when the report is persisted', () => {
 	assert.match(qaBddWorkflow, /publish_reporting_site:/);
 	assert.doesNotMatch(qaBddWorkflow, /pages deploy reports-site\s+\\/);
 	assert.doesNotMatch(qaBddWorkflow, /CLOUDFLARE_API_TOKEN: \$\{\{ secrets\.CF_API_TOKEN \}\}/);
 	assert.match(qaBddWorkflow, /Cloudflare Pages GitHub deployment/);
+	assert.match(qaBddWorkflow, /steps\.persist_target\.outputs\.enabled == 'true'/);
 	assert.match(qaBddWorkflow, /attempt in \{1\.\.30\}/);
 	assert.match(qaBddWorkflow, /Run started: \$\{expected_started_at\}/);
+	assert.match(
+		qaBddWorkflow,
+		/Cloudflare Pages live timestamp verification was skipped because this run did not persist/,
+	);
 });

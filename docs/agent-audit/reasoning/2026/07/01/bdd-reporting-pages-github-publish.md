@@ -40,6 +40,8 @@ Precedence decision: GitHub Diamond governs CI, branch, trace and pull-request b
 ## Evidence
 
 - Manual `qa-bdd` run `28534365361` on `main` failed in the `walkthrough` job.
+- PR #443 CI run `28537142269` failed unit tests because `tests/reports-site-validation.test.js` still expected the previous committed report shape after the latest report contained 46 pages, 64 states and 128 captures.
+- PR #443 Codex review thread `PRRT_kwDOP3Td2M6NrFyK` correctly identified that branch-dispatched manual walkthroughs cannot verify a Cloudflare Pages GitHub publish unless the generated `reports-site` was persisted to `main`.
 - The `bdd-smoke` job passed.
 - The visual walkthrough completed, uploaded the `visual-walkthrough-site` artifact and committed `reports-site` back to `main` as `eec87a0b` with `startedAt` `2026-07-01T17:04:12.316Z`.
 - The failing step was `Deploy visual walkthrough to Cloudflare Pages reporting site`.
@@ -60,6 +62,9 @@ Precedence decision: GitHub Diamond governs CI, branch, trace and pull-request b
 - Extended the live verification polling window to 30 attempts.
 - Added generated `reports-site/wrangler.toml` support to `scripts/render-reporting-review-site.mjs` so the reporting project has its own Pages config.
 - Updated route-state tests to assert `qa-bdd` no longer depends on `CF_API_TOKEN` for reporting-site publication.
+- Gated manual live timestamp verification on `steps.persist_target.outputs.enabled == 'true'` so branch-dispatched walkthroughs do not wait for a publish that cannot be triggered.
+- Added job-summary messaging for skipped live verification when publish was requested but the run did not persist `reports-site` to `main`.
+- Updated committed report validation expectations to the current report manifest: 46 pages, 64 states and 128 captures.
 - Updated route-state and renderer tests to assert the committed and regenerated reporting artefacts have `pages_build_output_dir = "."`.
 - Updated `docs/qa/visual-walkthrough.md` to document that Cloudflare Pages must publish `reports-site` through its GitHub integration.
 
@@ -68,6 +73,8 @@ Precedence decision: GitHub Diamond governs CI, branch, trace and pull-request b
 Validation to run before PR readiness:
 
 - `node --test tests/reporting-site-deploy-route-state.test.js`
+- `node --test tests/reports-site-validation.test.js`
+- `node --test tests/*.test.js`
 - `node --test tests/reporting-review-generation-model.test.js`
 - `node scripts/validate-reports-site.mjs`
 - `npx prettier -c .github/workflows/qa-bdd.yml scripts/render-reporting-review-site.mjs tests/reporting-site-deploy-route-state.test.js tests/reporting-review-generation-model.test.js docs/qa/visual-walkthrough.md reports-site/wrangler.toml docs/agent-audit/reasoning/2026/07/01/bdd-reporting-pages-github-publish.md docs/agent-audit/reasoning/2026/07/01/bdd-reporting-pages-github-publish.json`

@@ -386,6 +386,7 @@ jobs:
           ${{
             steps.detect_site.outputs.present == 'true' &&
             github.event_name == 'workflow_dispatch' &&
+            steps.persist_target.outputs.enabled == 'true' &&
             inputs.publish_reporting_site == true
           }}
         shell: bash
@@ -418,6 +419,9 @@ jobs:
           if [ "${{ steps.persist_target.outputs.enabled }}" = "true" ]; then
             echo "The \`reports-site\` directory was persisted to the repository when changes were present." >> "$GITHUB_STEP_SUMMARY"
           fi
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ inputs.publish_reporting_site }}" = "true" ]; then
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ inputs.publish_reporting_site }}" = "true" ] && [ "${{ steps.persist_target.outputs.enabled }}" = "true" ]; then
             echo "Cloudflare Pages was expected to publish the committed report via the project GitHub integration, and the live timestamp was verified at ${REPORTING_PAGES_URL}." >> "$GITHUB_STEP_SUMMARY"
+          fi
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ inputs.publish_reporting_site }}" = "true" ] && [ "${{ steps.persist_target.outputs.enabled }}" != "true" ]; then
+            echo "Cloudflare Pages live timestamp verification was skipped because this run did not persist \`reports-site\` to main." >> "$GITHUB_STEP_SUMMARY"
           fi

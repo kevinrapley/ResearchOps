@@ -44,6 +44,8 @@
   ],
   "evidence": [
     "Manual qa-bdd run 28534365361 failed in the walkthrough job.",
+    "PR #443 CI run 28537142269 failed unit tests because tests/reports-site-validation.test.js expected the previous committed report shape after the latest report contained 46 pages, 64 states and 128 captures.",
+    "PR #443 Codex review thread PRRT_kwDOP3Td2M6NrFyK correctly identified that branch-dispatched manual walkthroughs cannot verify a Cloudflare Pages GitHub publish unless reports-site was persisted to main.",
     "BDD smoke passed and the visual walkthrough generated the report.",
     "The workflow persisted reports-site to main at eec87a0b with startedAt 2026-07-01T17:04:12.316Z.",
     "Wrangler direct upload failed with Cloudflare authentication error 10000 while reading pages/projects/reopsreporting.",
@@ -59,6 +61,7 @@
     ".github/workflows/qa-bdd.yml",
     "scripts/render-reporting-review-site.mjs",
     "tests/reporting-site-deploy-route-state.test.js",
+    "tests/reports-site-validation.test.js",
     "tests/reporting-review-generation-model.test.js",
     "docs/qa/visual-walkthrough.md",
     "reports-site/wrangler.toml",
@@ -68,6 +71,14 @@
   "validation": [
     {
       "command": "node --test tests/reporting-site-deploy-route-state.test.js",
+      "status": "passed"
+    },
+    {
+      "command": "node --test tests/reports-site-validation.test.js",
+      "status": "passed"
+    },
+    {
+      "command": "node --test tests/*.test.js",
       "status": "passed"
     },
     {
