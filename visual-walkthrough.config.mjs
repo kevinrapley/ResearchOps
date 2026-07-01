@@ -118,7 +118,7 @@ const startPage = {
 				...stepTwoFilledActions,
 				{ type: 'waitForSelector', selector: '#ai-objectives-tools:not(.hidden)' },
 				{ type: 'click', selector: '#btn-obj-ai-rewrite' },
-				{ type: 'waitForText', text: 'Concise rewrite (optional):' },
+				{ type: 'waitForSelector', selector: '#apply-ai-obj-rewrite' },
 			],
 		},
 		{ id: 'step-3-default', title: 'Step 3 default state', description: 'Final data-entry step.', actions: stepThreeActions },
