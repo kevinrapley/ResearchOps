@@ -165,6 +165,7 @@ has(files.staticScript, 'window.addEventListener("popstate"', 'static page scrip
 has(files.staticScript, 'function candidatePrefillFromQuery()', 'static page script');
 has(files.staticScript, '["sourceSynthesisId", ["sourceSynthesisId", "sourceRecommendationId", "synthesisId", "recommendationId"]]', 'static page script');
 has(files.staticScript, '["impactRecordId", ["impactRecordId", "impactId", "impactRef"]]', 'static page script');
+has(files.staticScript, '["outcomeSummary", ["outcomeSummary", "outcomeContextSummary", "outcomeContext"]]', 'static page script');
 has(files.staticScript, 'applyCandidatePrefill(form)', 'static page script');
 has(files.staticScript, '["frontline-staff", "Frontline staff"]', 'static page script');
 has(files.staticScript, '["assisted-digital-users", "Assisted digital users"]', 'static page script');

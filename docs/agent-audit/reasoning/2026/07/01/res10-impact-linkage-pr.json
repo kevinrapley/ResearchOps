@@ -1,0 +1,44 @@
+{
+  "schemaVersion": "agent-trace-promotion/v1",
+  "title": "Open a PR for the RES-10 impact-to-repository linkage branch after local build and normal-host verification.",
+  "sourceTrace": ".agent-traces/raw/res10-impact-linkage-pr.jsonl",
+  "markdownReport": "docs/agent-audit/reasoning/2026/07/01/res10-impact-linkage-pr.md",
+  "jsonSummary": "docs/agent-audit/reasoning/2026/07/01/res10-impact-linkage-pr.json",
+  "promotedAt": "2026-07-01T05:35:27.522Z",
+  "eventCount": 26,
+  "run": {
+    "startedAt": "2026-07-01T05:26:50.000Z",
+    "completedAt": "2026-07-01T05:27:15.000Z",
+    "taskSummary": "Open a PR for the RES-10 impact-to-repository linkage branch after local build and normal-host verification."
+  },
+  "bundles": [
+    "github",
+    "researchops-developer-control",
+    "multi-functional-team",
+    "govuk-design-system",
+    "cloudflare"
+  ],
+  "filesRead": [
+    "AGENTS.md",
+    ".agent-operating-model/orchestration.xml",
+    ".agent-operating-model/bundle-registry.json",
+    ".agent-operating-model/task-signal-catalog.json",
+    ".agent-operating-model/selection-rules.json",
+    ".agent-operating-model/trace-policy.md",
+    ".agent-operating-model/precedence-policy.md",
+    ".agent-operating-model/github-mutation-policy.md"
+  ],
+  "filesWritten": [
+    "public/js/repository-static/candidate.js",
+    "tests/repository-front-page-route-state.test.js"
+  ],
+  "validations": [
+    "npm test -- tests/repository-impact-linkage-runtime.test.js tests/repository-front-page-route-state.test.js — exit 0",
+    "npm run build — exit 0",
+    "Playwright normal-host repository/detail/candidate/mobile verification — exit 0"
+  ],
+  "issues": [
+    "Candidate prefill aliases omitted outcomeContextSummary even though RES-10 expected that upstream alias."
+  ],
+  "warnings": []
+}

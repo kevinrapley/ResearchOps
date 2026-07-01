@@ -39,7 +39,7 @@ function candidatePrefillFromQuery() {
 		["impactRecordId", ["impactRecordId", "impactId", "impactRef"]],
 		["impactSummary", ["impactSummary", "impactContext"]],
 		["decisionSummary", ["decisionSummary", "decisionContextSummary", "decisionContext"]],
-		["outcomeSummary", ["outcomeSummary", "outcomeContext"]],
+		["outcomeSummary", ["outcomeSummary", "outcomeContextSummary", "outcomeContext"]],
 	]);
 	const prefill = {};
 	for (const [name, keys] of aliases.entries()) {
