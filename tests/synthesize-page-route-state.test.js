@@ -161,7 +161,6 @@ for (const selector of [
 	".synthesis-step-controls",
 	".synthesis-step-output",
 	".synthesis-output-heading",
-	".study-synthesis-page .govuk-select",
 	".evidence-card",
 	".cluster-card",
 	".theme-card",
@@ -177,11 +176,9 @@ includes(stylesheetSource, "grid-template-columns: minmax(0, 1fr) minmax(0, 1fr)
 includes(sassSource, "font-size: 16px", "synthesis Sass source");
 includes(stylesheetSource, "font-size: 16px", "synthesis stylesheet");
 includes(stylesheetSource, "/* transparency begins in the cascade */", "synthesis stylesheet");
-includes(sassSource, "appearance: none", "synthesis Sass source");
-includes(stylesheetSource, "appearance: none", "synthesis stylesheet");
-includes(sassSource, "background-position: right 10px center", "synthesis Sass source");
-includes(stylesheetSource, "background-position: right 10px center", "synthesis stylesheet");
-includes(sassSource, "background-size: 20px 20px", "synthesis Sass source");
-includes(stylesheetSource, "background-size: 20px 20px", "synthesis stylesheet");
+excludes(sassSource, ".study-synthesis-page .govuk-select", "synthesis Sass source");
+excludes(stylesheetSource, ".study-synthesis-page .govuk-select", "synthesis stylesheet");
+excludes(sassSource, "appearance: none", "synthesis Sass source");
+excludes(stylesheetSource, "appearance: none", "synthesis stylesheet");
 excludes(sassSource, ".govuk-select:disabled", "synthesis Sass source");
 excludes(stylesheetSource, ".govuk-select:disabled", "synthesis stylesheet");

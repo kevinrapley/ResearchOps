@@ -41,10 +41,14 @@
   "issue": "The earlier trace recorded a How synthesis works GOV.UK task-list overview, but the committed template and generated HTML on main did not contain it and tests did not assert it. The initial restoration used static Step 1, Step 2 and Step 3 status text and the page still loaded old form CSS that overrode GOV.UK Frontend select presentation.",
   "filesChanged": [
     "src/govuk/templates/pages/study-synthesis.njk",
+    "src/styles/govuk.scss",
     "src/styles/synthesize.scss",
+    "public/assets/govuk/govuk-frontend.css",
+    "public/css/govuk/govuk-forms.css",
     "public/js/synthesize-page.js",
     "public/css/synthesize.css",
     "public/pages/study/synthesis/index.html",
+    "tests/govuk-design-system-baseline-route-state.test.js",
     "tests/synthesize-page-route-state.test.js",
     "docs/agent-audit/reasoning/2026/07/01/restore-synthesis-task-list-overview.md",
     "docs/agent-audit/reasoning/2026/07/01/restore-synthesis-task-list-overview.json"
@@ -55,7 +59,15 @@
       "result": "passed"
     },
     {
+      "command": "npm run build:govuk",
+      "result": "passed"
+    },
+    {
       "command": "npm run build:generated-css",
+      "result": "passed"
+    },
+    {
+      "command": "npm test -- tests/govuk-design-system-baseline-route-state.test.js tests/synthesize-page-route-state.test.js tests/govuk-pages-render-workflow-state.test.js",
       "result": "passed"
     },
     {
@@ -68,7 +80,7 @@
     },
     {
       "command": "Playwright browser check against https://research-operations/pages/study/synthesis/?id=recLEDSOpsNeeds01&project=recLEDSResearch01#themes-section",
-      "result": "passed; task list showed 2 working groups, 4 evidence notes and 2 themes; old forms CSS was not loaded; selects retained GOV.UK classes and styling; select arrow used appearance none, a centred chevron background, 40px right padding and 20px background size"
+      "result": "passed; task list showed 2 working groups, 4 evidence notes and 2 themes; selects retained GOV.UK classes and styling; site-wide shared select arrow styling used appearance none, a centred chevron background, 40px right padding and 20px background size"
     }
   ],
   "residualRisks": [
