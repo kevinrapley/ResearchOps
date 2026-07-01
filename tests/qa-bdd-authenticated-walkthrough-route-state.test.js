@@ -67,6 +67,15 @@ test('visual walkthrough uses local assets and deterministic authenticated mocks
 	assert.match(helperSource, /SIGN_IN_EMAIL = 'qa-bdd\.walkthrough@example\.gov\.uk'/);
 });
 
+test('visual walkthrough loads below-the-fold lazy media before full-page screenshots', () => {
+	assert.match(visualWalkthroughSource, /async function loadFullPageImages\(page\)/);
+	assert.match(visualWalkthroughSource, /document\.images/);
+	assert.match(visualWalkthroughSource, /image\.loading = 'eager'/);
+	assert.match(visualWalkthroughSource, /window\.scrollTo\(0, y\)/);
+	assert.match(visualWalkthroughSource, /await loadFullPageImages\(page\);\n\t\tawait page\.screenshot/);
+	assert.match(visualWalkthroughSource, /loadFullPageImages,/);
+});
+
 test('visual walkthrough is a manual job with QA auth secret wiring', () => {
 	const walkthroughJobIndex = qaBddWorkflowSource.indexOf('  walkthrough:');
 	const walkthroughJob = qaBddWorkflowSource.slice(walkthroughJobIndex);
