@@ -141,7 +141,6 @@ function redirectToAccount() {
 function resetStatusPresentation() {
 	if (!dom.status || !dom.statusTitle) return;
 	dom.status.classList.remove('govuk-panel', 'govuk-panel--confirmation');
-	dom.status.classList.add('account-registration-status');
 	dom.statusTitle.classList.remove('govuk-panel__title');
 	dom.statusTitle.classList.add('govuk-heading-m');
 }
@@ -422,9 +421,9 @@ function showSuccess(message) {
 	}
 	if (dom.statusBody) {
 		dom.statusBody.innerHTML = `
-<p class="govuk-body">${escapeHtml(message || 'Your request has been sent to a team admin for review.')}</p>
-<p class="govuk-body">You will not be given any ResearchOps access until a team admin has reviewed and approved your request.</p>
-<p class="govuk-body"><a class="govuk-link" href="/pages/account/sign-in/">Go to sign in</a></p>
+<p class="govuk-panel__body">${escapeHtml(message || 'Your request has been sent to a team admin for review.')}</p>
+<p class="govuk-panel__body">You will not be given any ResearchOps access until a team admin has reviewed and approved your request.</p>
+<p class="govuk-panel__body"><a class="govuk-link govuk-link--inverse" href="/pages/account/sign-in/">Go to sign in</a></p>
 `;
 	}
 	dom.status?.scrollIntoView({ block: 'start' });

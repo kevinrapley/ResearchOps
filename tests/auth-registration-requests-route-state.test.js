@@ -8,7 +8,6 @@ const migrationSource = fs.readFileSync('infra/cloudflare/migrations/0005_auth_r
 const routeSource = fs.readFileSync('infra/cloudflare/src/core/auth/registration-requests.js', 'utf8');
 const registrationPageSource = fs.readFileSync('public/pages/account/register/index.html', 'utf8');
 const registrationPageScript = fs.readFileSync('public/js/auth-registration-page.js', 'utf8');
-const registrationPageCss = fs.readFileSync('public/css/auth-registration.css', 'utf8');
 const reviewPageSource = fs.readFileSync('public/pages/team/registration-requests/index.html', 'utf8');
 const reviewPageScript = fs.readFileSync('public/js/auth-registration-requests-page.js', 'utf8');
 const signInPageSource = fs.readFileSync('public/pages/account/sign-in/index.html', 'utf8');
@@ -114,16 +113,20 @@ function assertRegistrationPageUsesReviewLanguage() {
 }
 
 function assertRegistrationPageUsesSensibleFormWidthsAndRhythm() {
-	assert.ok(registrationPageSource.includes('/css/auth-registration.css'));
-	assert.ok(registrationPageSource.includes('account-registration-page__intro'));
-	assert.ok(registrationPageSource.includes('account-registration-form'));
+	assert.ok(registrationPageSource.includes('/assets/govuk/govuk-frontend.css'));
+	assert.ok(registrationPageSource.includes('/js/govuk-frontend-init.js'));
+	assert.doesNotMatch(registrationPageSource, /\/css\/govuk\/govuk-/);
 	for (const fieldId of ['display-name', 'registration-email', 'team-or-service', 'other-role']) {
-		assertElementHasClasses(registrationPageSource, fieldId, ['govuk-!-width-two-thirds', 'account-registration-input']);
+		assertElementHasClasses(registrationPageSource, fieldId, ['govuk-!-width-two-thirds']);
 	}
 	assertElementHasClasses(registrationPageSource, 'requested-reason', ['govuk-!-width-two-thirds']);
-	assert.match(registrationPageCss, /account-registration-page__intro[\s\S]*margin-bottom:\s*30px/);
-	assert.match(registrationPageCss, /account-registration-form[\s\S]*margin-top:\s*30px/);
-	assert.match(registrationPageCss, /govuk-inset-text[\s\S]*border-left:\s*10px solid #b1b4b6/);
+	assertElementHasClasses(registrationPageSource, 'requested-role-group', ['govuk-fieldset']);
+	assert.ok(registrationPageSource.includes('class="govuk-radios govuk-!-margin-bottom-6"'));
+	assert.doesNotMatch(registrationPageSource, /auth-registration\.css/);
+	assert.doesNotMatch(registrationPageSource, /account-registration-/);
+	assert.doesNotMatch(registrationPageScript, /account-registration-/);
+	assert.ok(registrationPageSource.includes('class="govuk-!-margin-bottom-6"'));
+	assert.ok(registrationPageSource.includes('class="govuk-!-margin-top-6"'));
 }
 
 function assertRegistrationErrorsAreUserFacing() {
@@ -159,6 +162,9 @@ function assertCheckAnswersBehaviourExists() {
 	assert.match(registrationPageScript, /Sending this request will not give you access/);
 	assert.match(registrationPageScript, /A team admin will review it and decide what access you need/);
 	assert.match(registrationPageScript, /govuk-panel--confirmation/);
+	assert.match(registrationPageScript, /govuk-panel__body/);
+	assert.match(registrationPageScript, /govuk-link govuk-link--inverse/);
+	assert.doesNotMatch(registrationPageScript, /<p class="govuk-body"><a class="govuk-link" href="\/pages\/account\/sign-in\/">Go to sign in<\/a><\/p>/);
 	assert.doesNotMatch(elementForId(registrationPageSource, 'registration-check-answers'), /tabindex=/);
 	assert.doesNotMatch(registrationPageScript, /registration-check-answers-title'\)\?\.focus/);
 }
