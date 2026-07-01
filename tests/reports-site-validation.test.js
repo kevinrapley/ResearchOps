@@ -9,10 +9,10 @@ test('committed reporting site manifest and screenshots are coherent', () => {
 	const result = validateReportsSite();
 
 	assert.equal(result.pages, 46);
-	assert.equal(result.states, 64);
-	assert.equal(result.captures, 128);
+	assert.equal(result.states, 81);
+	assert.equal(result.captures, 162);
 	assert.deepEqual(result.profiles.sort(), ['desktop', 'mobile']);
-	assert.equal(result.screenshots, 128);
+	assert.equal(result.screenshots, 162);
 });
 
 test('failed capture reports match visual walkthrough failure semantics', () => {
