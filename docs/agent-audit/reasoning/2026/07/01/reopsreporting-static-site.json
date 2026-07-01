@@ -1,0 +1,101 @@
+{
+  "traceId": "reopsreporting-static-site",
+  "date": "2026-07-01",
+  "branch": "fix/reopsreporting-static-site",
+  "task": "Fix reopsreporting.pages.dev serving the GOV.UK-branded ResearchOps service instead of the committed static reports-site walkthrough.",
+  "traceRequired": true,
+  "operatingModelFilesLoaded": [
+    "AGENTS.md",
+    ".agent-operating-model/orchestration.xml",
+    ".agent-operating-model/bundle-registry.json",
+    ".agent-operating-model/task-signal-catalog.json",
+    ".agent-operating-model/selection-rules.json",
+    ".agent-operating-model/bootstrap-checklist.md",
+    ".agent-operating-model/precedence-policy.md",
+    ".agent-operating-model/trace-policy.md",
+    ".agent-operating-model/trace-layers.md",
+    ".agent-operating-model/behavioural-evals.json",
+    ".agent-operating-model/github-mutation-policy.md"
+  ],
+  "selectedBundles": [
+    {
+      "id": "github-diamond",
+      "canonicalPath": ".agent-operating-model/bundles/github/"
+    },
+    {
+      "id": "researchops-developer-control",
+      "canonicalPath": ".agent-operating-model/bundles/researchops-developer-control/"
+    },
+    {
+      "id": "multi-functional-team",
+      "canonicalPath": ".agent-operating-model/bundles/multi-functional-team/"
+    },
+    {
+      "id": "govuk-design-system",
+      "canonicalPath": ".agent-operating-model/bundles/govuk-design-system/"
+    },
+    {
+      "id": "cloudflare",
+      "canonicalPath": ".agent-operating-model/bundles/cloudflare/"
+    }
+  ],
+  "skippedBundles": [
+    "openai-platform",
+    "mcp-agent-tooling",
+    "airtable-public-api",
+    "mural-public-api"
+  ],
+  "evidence": [
+    "Live reopsreporting.pages.dev returned x-researchops-brand: govuk and ResearchOps Demo Suite.",
+    "reports-site/index.html contains ResearchOps application visual walkthrough.",
+    "root wrangler.toml keeps public as the main ResearchOps Pages output.",
+    "qa-bdd deploys reports-site only on manual workflow_dispatch when publish_reporting_site is true."
+  ],
+  "filesModified": [
+    ".github/workflows/deploy-reporting-site.yml",
+    "tests/reporting-site-deploy-route-state.test.js",
+    "docs/qa/visual-walkthrough.md",
+    "docs/agent-audit/reasoning/2026/07/01/reopsreporting-static-site.md",
+    "docs/agent-audit/reasoning/2026/07/01/reopsreporting-static-site.json"
+  ],
+  "validation": [
+    {
+      "command": "node --test tests/reporting-site-deploy-route-state.test.js tests/reporting-review-generation-model.test.js tests/cloudflare-pages-output-dir.test.js",
+      "status": "passed",
+      "details": "Final focused route-state and reporting tests passed."
+    },
+    {
+      "command": "node --test tests/reporting-site-deploy-route-state.test.js tests/reporting-review-generation-model.test.js tests/cloudflare-pages-output-dir.test.js",
+      "status": "failed",
+      "details": "The new ES module test used the test runner global without importing node:test."
+    },
+    {
+      "command": "node scripts/validate-reports-site.mjs",
+      "status": "passed"
+    },
+    {
+      "command": "npx prettier -c .github/workflows/deploy-reporting-site.yml tests/reporting-site-deploy-route-state.test.js docs/qa/visual-walkthrough.md docs/agent-audit/reasoning/2026/07/01/reopsreporting-static-site.md docs/agent-audit/reasoning/2026/07/01/reopsreporting-static-site.json",
+      "status": "passed"
+    },
+    {
+      "command": "npm run trace:coverage",
+      "status": "passed"
+    },
+    {
+      "command": "npx --yes wrangler@4.34.0 pages deploy reports-site --project-name=reopsreporting --branch=main --commit-hash=$(git rev-parse HEAD) --commit-message=\"Restore reporting site static reports-site\"",
+      "status": "failed",
+      "details": "Wrangler reported that CLOUDFLARE_API_TOKEN is required in this non-interactive environment."
+    },
+    {
+      "command": "npm run validate",
+      "status": "passed"
+    }
+  ],
+  "residualRisks": [
+    "Cloudflare dashboard Git integration may still need correction if it is independently publishing public to the reopsreporting Pages project.",
+    "Production deployment cannot be proven locally without GitHub Actions secrets and Cloudflare deploy execution."
+  ],
+  "pivots": [
+    "Narrowed the public-app guard from any ResearchOps Demo Suite text to the exact public app title because the static report includes captured acceptance criteria that mention that service name."
+  ]
+}
