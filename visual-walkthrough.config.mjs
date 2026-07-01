@@ -287,7 +287,16 @@ export const visualWalkthroughConfig = {
 		},
 		registeredPage('start-overview', 'Start a research project', 'Core', '/pages/start/overview/index.html', 'Overview page for creating a research project.'),
 		startPage,
-		registeredPage('projects', 'Projects', 'Projects', '/pages/projects/index.html', 'Project list page.'),
+		{
+			...registeredPage('projects', 'Projects', 'Projects', '/pages/projects/index.html', 'Project list page.'),
+			defaultState: {
+				id: 'default',
+				title: 'Projects list with authenticated project context',
+				description: 'Projects page captured through the Worker-protected route.',
+				path: '/pages/projects/',
+				actions: [{ type: 'waitForText', text: 'Assisted Digital Support Discovery' }],
+			},
+		},
 		statefulPage('project-dashboard', 'Project dashboard', 'Projects', '/pages/project-dashboard/index.html', 'Project dashboard page.', 'Project dashboard with operational project context', 'Dashboard captured with a deterministic project ID.', operationalPaths.projectDashboard, 'Assisted Digital Support Discovery'),
 		statefulPage('project-dashboard-add-study', 'Add study', 'Projects', '/pages/study/new/index.html', 'Create a study from the project dashboard action workflow.', 'Add study with parent project context', 'Add-study workflow captured with the parent project ID present.', operationalPaths.addStudy, 'Add study'),
 		statefulPage('project-dashboard-add-participant', 'Add participant', 'Projects', '/pages/project-dashboard/participants/index.html', 'Add a study-linked participant from the project dashboard action workflow.', 'Add participant with parent context', 'Participant workflow captured with the project ID present.', operationalPaths.addParticipant, 'Add participant'),

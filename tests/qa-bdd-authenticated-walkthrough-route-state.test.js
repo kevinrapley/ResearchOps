@@ -54,6 +54,12 @@ test('visual walkthrough uses local assets and deterministic authenticated mocks
 		visualWalkthroughSource,
 		/SERVER_PROTECTED_PAGE_IDS = new Set\(\['projects', 'project-dashboard', 'repository'\]\)/,
 	);
+	const projectsPage = visualWalkthroughConfig.pages.find((page) => page.id === 'projects');
+	assert.equal(projectsPage.path, '/pages/projects/index.html');
+	assert.equal(projectsPage.defaultState.path, '/pages/projects/');
+	assert.deepEqual(projectsPage.defaultState.actions, [
+		{ type: 'waitForText', text: 'Assisted Digital Support Discovery' },
+	]);
 	assert.match(visualWalkthroughConfigSource, /selector: '#apply-ai-obj-rewrite'/);
 	assert.doesNotMatch(visualWalkthroughConfigSource, /Concise rewrite \(optional\):/);
 	assert.match(helperSource, /operationalMockRoutes/);

@@ -45,11 +45,13 @@ Precedence decision: GitHub Diamond governs branch, trace and validation handlin
 - Two failures waited for `Assisted Digital Support Discovery` on `/pages/project-dashboard/?id=recVisualProject001`.
 - A targeted Playwright reproduction against `https://researchops.pages.dev/` showed that project-dashboard redirected to `/pages/account/sign-in/?returnTo=...` before mocked project API routes could render the fixture.
 - `public/_worker.js` protects `/pages/projects`, `/pages/project-dashboard` and `/pages/repository`; the visual walkthrough only used QA server auth for `repository`.
+- Codex review threads `PRRT_kwDOP3Td2M6NqBfg` and `PRRT_kwDOP3Td2M6NqBgU` correctly identified that the `projects` registry entry still captured `/pages/projects/index.html`, which bypasses the Worker-protected `/pages/projects/` URL.
 
 ## Changes
 
 - Updated `scripts/visual-walkthrough.mjs` so the remote visual walkthrough uses the QA BDD auth bypass for `projects`, `project-dashboard` and `repository`.
 - Updated `visual-walkthrough.config.mjs` so the AI rewrite state waits for `#apply-ai-obj-rewrite` instead of stale copy.
+- Updated the Projects default walkthrough state so it keeps `/pages/projects/index.html` as the generated-file registry path but captures `/pages/projects/`, the Worker-protected URL, and waits for `Assisted Digital Support Discovery`.
 - Updated `tests/qa-bdd-authenticated-walkthrough-route-state.test.js` to lock both behaviours into the route-state contract.
 
 ## Validation
@@ -57,6 +59,7 @@ Precedence decision: GitHub Diamond governs branch, trace and validation handlin
 Passed checks:
 
 - Targeted Playwright check for the local static `step-2-ai-rewrite-shown` state: `ai-rewrite-state=ok`
+- Targeted Playwright check for the local static `/pages/projects/` state: `projects-protected-state=ok`
 - Static protected-page contract check: `protected-page-set=ok`
 - `BASE_URL=https://researchops.pages.dev/ npm run qa:cucumber:ci`
 - `npm run qa:cucumber:walkthrough`
@@ -70,5 +73,10 @@ Validation note:
 
 ## Risks And Limits
 
-- The remote authenticated project-dashboard path could not be fully verified locally because `RESEARCHOPS_QA_BDD_AUTH_CODE` was not available in the local secure env. The workflow already supplies that secret, and the code path now includes project-dashboard in the set that requests authenticated storage state.
+- The remote authenticated project-dashboard and projects paths could not be fully verified locally because `RESEARCHOPS_QA_BDD_AUTH_CODE` was not available in the local secure env. The workflow already supplies that secret, and the code path now includes both pages in the set that requests authenticated storage state.
 - The fix assumes the Worker protection contract remains the three routes currently encoded in `public/_worker.js`: `/pages/projects`, `/pages/project-dashboard` and `/pages/repository`.
+
+## Codex Review Threads
+
+- `PRRT_kwDOP3Td2M6NqBfg` / comment `3507616452`: valid. Added `+1`, updated the Projects walkthrough state to capture `/pages/projects/`, validated, replied, and resolved.
+- `PRRT_kwDOP3Td2M6NqBgU` / comment `3507616541`: valid duplicate. Added `+1`, covered by the same code and test change, validated, replied, and resolved.

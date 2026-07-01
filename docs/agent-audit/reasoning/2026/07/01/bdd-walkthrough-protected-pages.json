@@ -44,7 +44,8 @@
     "Attached logs_77064295337.zip showed visual walkthrough failed for 4 captures.",
     "The AI rewrite state waited for stale copy: Concise rewrite (optional):.",
     "The project-dashboard state was redirected to sign-in before mocked project API routes could render Assisted Digital Support Discovery.",
-    "public/_worker.js protects /pages/projects, /pages/project-dashboard and /pages/repository."
+    "public/_worker.js protects /pages/projects, /pages/project-dashboard and /pages/repository.",
+    "Codex review threads PRRT_kwDOP3Td2M6NqBfg and PRRT_kwDOP3Td2M6NqBgU correctly identified that /pages/projects/index.html bypassed the Worker-protected /pages/projects/ route."
   ],
   "filesModified": [
     "scripts/visual-walkthrough.mjs",
@@ -56,6 +57,10 @@
   "validation": [
     {
       "command": "targeted Playwright check for step-2-ai-rewrite-shown",
+      "status": "passed"
+    },
+    {
+      "command": "targeted Playwright check for /pages/projects/",
       "status": "passed"
     },
     {
@@ -85,10 +90,28 @@
   ],
   "validationNotes": [
     "npm run qa:cucumber:ci failed when first run without a local server or BASE_URL because http://localhost:8788/ refused connections; it passed when rerun with the deployed base URL used by the workflow.",
-    "Remote authenticated project-dashboard verification needs the GitHub RESEARCHOPS_QA_BDD_AUTH_CODE secret, which was not available locally."
+    "Remote authenticated project-dashboard and projects verification needs the GitHub RESEARCHOPS_QA_BDD_AUTH_CODE secret, which was not available locally."
   ],
   "residualRisks": [
     "The workflow secret-backed remote auth path was not fully reproduced locally.",
     "Future Worker protection changes must keep SERVER_PROTECTED_PAGE_IDS aligned with public/_worker.js."
+  ],
+  "reviewThreads": [
+    {
+      "threadId": "PRRT_kwDOP3Td2M6NqBfg",
+      "commentId": 3507616452,
+      "author": "chatgpt-codex-connector",
+      "classification": "valid",
+      "action": "Added a +1 reaction, updated the Projects walkthrough state to capture /pages/projects/, validated the fix, replied with evidence and resolved the thread.",
+      "resolved": true
+    },
+    {
+      "threadId": "PRRT_kwDOP3Td2M6NqBgU",
+      "commentId": 3507616541,
+      "author": "chatgpt-codex-connector",
+      "classification": "valid-duplicate",
+      "action": "Added a +1 reaction, covered by the same Projects walkthrough state and test update, replied with evidence and resolved the thread.",
+      "resolved": true
+    }
   ]
 }
