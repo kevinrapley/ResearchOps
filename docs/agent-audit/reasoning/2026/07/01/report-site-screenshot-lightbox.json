@@ -1,0 +1,80 @@
+{
+	"date": "2026-07-01",
+	"branch": "fix/report-site-screenshot-lightbox",
+	"traceRequired": true,
+	"taskSummary": "Crop reporting site screenshot previews to a visible 665px height and open full screenshots in a scrollable modal lightbox.",
+	"operatingModelFilesLoaded": [
+		"AGENTS.md",
+		".agent-operating-model/orchestration.xml",
+		".agent-operating-model/bundle-registry.json",
+		".agent-operating-model/task-signal-catalog.json",
+		".agent-operating-model/selection-rules.json",
+		".agent-operating-model/bootstrap-checklist.md",
+		".agent-operating-model/precedence-policy.md",
+		".agent-operating-model/trace-policy.md",
+		".agent-operating-model/trace-layers.md",
+		".agent-operating-model/behavioural-evals.json",
+		".agent-operating-model/github-mutation-policy.md"
+	],
+	"selectedBundles": [
+		{
+			"id": "github-diamond",
+			"canonicalPath": ".agent-operating-model/bundles/github/"
+		},
+		{
+			"id": "researchops-developer-control",
+			"canonicalPath": ".agent-operating-model/bundles/researchops-developer-control/"
+		},
+		{
+			"id": "multi-functional-team",
+			"canonicalPath": ".agent-operating-model/bundles/multi-functional-team/"
+		},
+		{
+			"id": "govuk-design-system",
+			"canonicalPath": ".agent-operating-model/bundles/govuk-design-system/"
+		}
+	],
+	"skippedBundles": [
+		"cloudflare",
+		"openai-platform",
+		"mcp-agent-tooling",
+		"airtable-public-api",
+		"mural-public-api"
+	],
+	"filesModified": [
+		"scripts/render-reporting-review-site.mjs",
+		"scripts/visual-walkthrough.mjs",
+		"reports-site/index.html",
+		"tests/reporting-review-generation-model.test.js",
+		"docs/agent-audit/reasoning/2026/07/01/report-site-screenshot-lightbox.md",
+		"docs/agent-audit/reasoning/2026/07/01/report-site-screenshot-lightbox.json"
+	],
+	"validation": [
+		{
+			"command": "node --test tests/reporting-review-generation-model.test.js tests/reports-site-validation.test.js tests/reporting-site-deploy-route-state.test.js",
+			"result": "passed"
+		},
+		{
+			"command": "node scripts/validate-reports-site.mjs",
+			"result": "passed",
+			"evidence": "Validated 46 pages, 81 states and 162 captures."
+		},
+		{
+			"command": "Playwright browser check against reports-site/index.html",
+			"result": "passed",
+			"evidence": "First thumbnail rendered at exactly 665px, the modal opened, the full image was taller than the modal body and the modal body used overflow:auto."
+		},
+		{
+			"command": "npm run lint -- --quiet",
+			"result": "passed",
+			"notes": "Existing ESLint-env deprecation warnings were reported."
+		},
+		{
+			"command": "npm run validate",
+			"result": "passed"
+		}
+	],
+	"residualRisks": [
+		"The static report lightbox supports close, Escape and focus return but does not implement a full focus trap."
+	]
+}
