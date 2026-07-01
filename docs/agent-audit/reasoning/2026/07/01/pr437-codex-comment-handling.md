@@ -53,7 +53,9 @@ Results:
 - Focused route-state tests passed.
 - Generated CSS check passed.
 
-## Pending GitHub Actions
+## GitHub Actions Completed
 
-- Reply to each original Codex thread with the remedy and validation after the fix is pushed.
-- Resolve each handled thread after GitHub accepts the replies.
+- Replied to comment `3502164257` with the remedy and validation evidence.
+- Replied to comment `3502164261` with the remedy and validation evidence.
+- Resolved thread `PRRT_kwDOP3Td2M6Na58l`.
+- Resolved thread `PRRT_kwDOP3Td2M6Na58n`.

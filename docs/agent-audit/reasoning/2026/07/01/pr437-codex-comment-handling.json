@@ -10,7 +10,9 @@
       "author": "chatgpt-codex-connector",
       "classification": "valid",
       "remedy": "Changed repositoryCandidateHref(theme) so candidate URL sampleSummary uses source evidence IDs and counts, not evidence excerpts or contentPlain.",
-      "reaction": "+1"
+      "reaction": "+1",
+      "replyPosted": true,
+      "resolved": true
     },
     {
       "threadId": "PRRT_kwDOP3Td2M6Na58n",
@@ -18,7 +20,9 @@
       "author": "chatgpt-codex-connector",
       "classification": "valid_outdated_line",
       "remedy": "Bumped synthesis page and controller cache keys to study-synthesis-20260701-codex-comment-fixes.",
-      "reaction": "+1"
+      "reaction": "+1",
+      "replyPosted": true,
+      "resolved": true
     }
   ],
   "validation": [
