@@ -143,9 +143,15 @@ function renderState(page = {}, state = {}) {
 	</article>`;
 }
 
+function isMultiStepPage(page = {}) {
+	return (page.states || []).length > 1;
+}
+
 function renderPage(page = {}) {
+	const pageClass = isMultiStepPage(page) ? 'page-card page-card--multi-step' : 'page-card';
+
 	return `
-	<article class="page-card" id="${escapeHtml(page.id)}" data-review-group-id="${escapeHtml(page.reviewGroupId || '')}" data-review-evidence-level="${escapeHtml(page.reviewEvidenceLevel || 'generated')}">
+	<article class="${pageClass}" id="${escapeHtml(page.id)}" data-review-group-id="${escapeHtml(page.reviewGroupId || '')}" data-review-evidence-level="${escapeHtml(page.reviewEvidenceLevel || 'generated')}">
 		<div class="page-card__header">
 			<h3>${escapeHtml(page.title)}</h3>
 			<p class="meta">${escapeHtml(page.path)}</p>
@@ -156,6 +162,33 @@ function renderPage(page = {}) {
 			${(page.states || []).map((state) => renderState(page, state)).join('')}
 		</div>
 	</article>`;
+}
+
+function renderPageGrid(pages = []) {
+	const blocks = [];
+	let singlePages = [];
+
+	function flushSinglePages() {
+		if (singlePages.length === 0) return;
+		blocks.push(`
+			<div class="group__pages">
+				${singlePages.map(renderPage).join('')}
+			</div>`);
+		singlePages = [];
+	}
+
+	for (const page of pages) {
+		if (isMultiStepPage(page)) {
+			flushSinglePages();
+			blocks.push(renderPage(page));
+		} else {
+			singlePages.push(page);
+		}
+	}
+
+	flushSinglePages();
+
+	return blocks.join('');
 }
 
 function renderProfileSwitcher(profiles = []) {
@@ -235,7 +268,9 @@ h3, h4, h5 { margin: 0 0 6px; }
 .profile-switcher__button[aria-pressed="true"] { background: #1d70b8; color: #fff; }
 .profile-switcher__button:focus { outline: 3px solid #ffdd00; outline-offset: 2px; }
 .group { margin-bottom: 40px; }
-.page-card { border: 1px solid #d8d8d8; border-radius: 8px; margin: 18px 0; overflow: hidden; }
+.group__pages { display: grid; gap: 18px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.page-card { border: 1px solid #d8d8d8; border-radius: 8px; margin: 0; overflow: hidden; }
+.page-card--multi-step { grid-column: 1 / -1; }
 .page-card__header { background: #f7f7f7; border-bottom: 1px solid #d8d8d8; padding: 14px 16px; }
 .states { display: grid; gap: 18px; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); padding: 16px; }
 .state { border: 1px solid #e5e5e5; border-radius: 6px; overflow: hidden; background: #fff; }
@@ -255,7 +290,10 @@ h3, h4, h5 { margin: 0 0 6px; }
 .review-risk-list dd { margin: 0; }
 .capture { border-top: 1px solid #e5e5e5; padding: 10px 12px; }
 .capture__figure { margin: 10px 0 0; }
-.capture__figure img { border: 1px solid #d8d8d8; height: auto; max-width: 100%; }`;
+.capture__figure img { border: 1px solid #d8d8d8; height: auto; max-width: 100%; }
+@media (max-width: 900px) {
+	.group__pages { grid-template-columns: 1fr; }
+}`;
 }
 
 export function renderReportingReviewHtml(manifest = {}) {
@@ -284,7 +322,7 @@ export function renderReportingReviewHtml(manifest = {}) {
 		${groups.map(([group, pages]) => `
 		<section class="group" aria-labelledby="group-${escapeHtml(group)}">
 			<h2 id="group-${escapeHtml(group)}">${escapeHtml(group)}</h2>
-			${pages.map(renderPage).join('')}
+			${renderPageGrid(pages)}
 		</section>`).join('')}
 	</main>
 	${renderProfileSwitcherScript(reviewedManifest.profiles)}

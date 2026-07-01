@@ -18,7 +18,9 @@ h3, h4, h5 { margin: 0 0 6px; }
 .profile-switcher__button[aria-pressed="true"] { background: #1d70b8; color: #fff; }
 .profile-switcher__button:focus { outline: 3px solid #ffdd00; outline-offset: 2px; }
 .group { margin-bottom: 40px; }
-.page-card { border: 1px solid #d8d8d8; border-radius: 8px; margin: 18px 0; overflow: hidden; }
+.group__pages { display: grid; gap: 18px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.page-card { border: 1px solid #d8d8d8; border-radius: 8px; margin: 0; overflow: hidden; }
+.page-card--multi-step { grid-column: 1 / -1; }
 .page-card__header { background: #f7f7f7; border-bottom: 1px solid #d8d8d8; padding: 14px 16px; }
 .states { display: grid; gap: 18px; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); padding: 16px; }
 .state { border: 1px solid #e5e5e5; border-radius: 6px; overflow: hidden; background: #fff; }
@@ -38,7 +40,10 @@ h3, h4, h5 { margin: 0 0 6px; }
 .review-risk-list dd { margin: 0; }
 .capture { border-top: 1px solid #e5e5e5; padding: 10px 12px; }
 .capture__figure { margin: 10px 0 0; }
-.capture__figure img { border: 1px solid #d8d8d8; height: auto; max-width: 100%; }</style>
+.capture__figure img { border: 1px solid #d8d8d8; height: auto; max-width: 100%; }
+@media (max-width: 900px) {
+	.group__pages { grid-template-columns: 1fr; }
+}</style>
 </head>
 <body>
 	<header>
@@ -70,6 +75,8 @@ h3, h4, h5 { margin: 0 0 6px; }
 		<section class="group" aria-labelledby="group-Core">
 			<h2 id="group-Core">Core</h2>
 			
+			<div class="group__pages">
+				
 	<article class="page-card" id="home" data-review-group-id="" data-review-evidence-level="generated">
 		<div class="page-card__header">
 			<h3>Home</h3>
@@ -406,7 +413,8 @@ h3, h4, h5 { margin: 0 0 6px; }
 	</article>
 		</div>
 	</article>
-	<article class="page-card" id="start" data-review-group-id="start" data-review-evidence-level="group">
+			</div>
+	<article class="page-card page-card--multi-step" id="start" data-review-group-id="start" data-review-evidence-level="group">
 		<div class="page-card__header">
 			<h3>Start research project</h3>
 			<p class="meta">/pages/start/index.html</p>
@@ -865,7 +873,7 @@ h3, h4, h5 { margin: 0 0 6px; }
 		<section class="group" aria-labelledby="group-Account">
 			<h2 id="group-Account">Account</h2>
 			
-	<article class="page-card" id="account-sign-in" data-review-group-id="" data-review-evidence-level="generated">
+	<article class="page-card page-card--multi-step" id="account-sign-in" data-review-group-id="" data-review-evidence-level="generated">
 		<div class="page-card__header">
 			<h3>Sign in to ResearchOps</h3>
 			<p class="meta">/pages/account/sign-in/index.html</p>
@@ -1031,6 +1039,8 @@ h3, h4, h5 { margin: 0 0 6px; }
 	</article>
 		</div>
 	</article>
+			<div class="group__pages">
+				
 	<article class="page-card" id="account-registration" data-review-group-id="" data-review-evidence-level="generated">
 		<div class="page-card__header">
 			<h3>Request a ResearchOps account</h3>
@@ -1291,10 +1301,13 @@ h3, h4, h5 { margin: 0 0 6px; }
 	</article>
 		</div>
 	</article>
+			</div>
 		</section>
 		<section class="group" aria-labelledby="group-Projects">
 			<h2 id="group-Projects">Projects</h2>
 			
+			<div class="group__pages">
+				
 	<article class="page-card" id="projects" data-review-group-id="" data-review-evidence-level="generated">
 		<div class="page-card__header">
 			<h3>Projects</h3>
@@ -1534,7 +1547,8 @@ h3, h4, h5 { margin: 0 0 6px; }
 	</article>
 		</div>
 	</article>
-	<article class="page-card" id="project-dashboard-add-study" data-review-group-id="" data-review-evidence-level="generated">
+			</div>
+	<article class="page-card page-card--multi-step" id="project-dashboard-add-study" data-review-group-id="" data-review-evidence-level="generated">
 		<div class="page-card__header">
 			<h3>Add study</h3>
 			<p class="meta">/pages/study/new/index.html</p>
@@ -1697,6 +1711,8 @@ h3, h4, h5 { margin: 0 0 6px; }
 	</article>
 		</div>
 	</article>
+			<div class="group__pages">
+				
 	<article class="page-card" id="project-dashboard-add-participant" data-review-group-id="" data-review-evidence-level="generated">
 		<div class="page-card__header">
 			<h3>Add participant</h3>
@@ -1958,7 +1974,8 @@ h3, h4, h5 { margin: 0 0 6px; }
 	</article>
 		</div>
 	</article>
-	<article class="page-card" id="journals" data-review-group-id="" data-review-evidence-level="generated">
+			</div>
+	<article class="page-card page-card--multi-step" id="journals" data-review-group-id="" data-review-evidence-level="generated">
 		<div class="page-card__header">
 			<h3>Project journals</h3>
 			<p class="meta">/pages/projects/journals/index.html</p>
@@ -2913,7 +2930,7 @@ h3, h4, h5 { margin: 0 0 6px; }
 	</article>
 		</div>
 	</article>
-	<article class="page-card" id="journal-entry" data-review-group-id="" data-review-evidence-level="generated">
+	<article class="page-card page-card--multi-step" id="journal-entry" data-review-group-id="" data-review-evidence-level="generated">
 		<div class="page-card__header">
 			<h3>Journal entry</h3>
 			<p class="meta">/pages/journal/entry/index.html</p>
@@ -3076,7 +3093,7 @@ h3, h4, h5 { margin: 0 0 6px; }
 	</article>
 		</div>
 	</article>
-	<article class="page-card" id="journal-entry-edit" data-review-group-id="" data-review-evidence-level="generated">
+	<article class="page-card page-card--multi-step" id="journal-entry-edit" data-review-group-id="" data-review-evidence-level="generated">
 		<div class="page-card__header">
 			<h3>Edit journal entry</h3>
 			<p class="meta">/pages/journal/edit/index.html</p>
@@ -3243,6 +3260,8 @@ h3, h4, h5 { margin: 0 0 6px; }
 		<section class="group" aria-labelledby="group-Study">
 			<h2 id="group-Study">Study</h2>
 			
+			<div class="group__pages">
+				
 	<article class="page-card" id="study" data-review-group-id="" data-review-evidence-level="generated">
 		<div class="page-card__header">
 			<h3>Study overview</h3>
@@ -3330,7 +3349,8 @@ h3, h4, h5 { margin: 0 0 6px; }
 	</article>
 		</div>
 	</article>
-	<article class="page-card" id="study-guides" data-review-group-id="" data-review-evidence-level="generated">
+			</div>
+	<article class="page-card page-card--multi-step" id="study-guides" data-review-group-id="" data-review-evidence-level="generated">
 		<div class="page-card__header">
 			<h3>Discussion guides</h3>
 			<p class="meta">/pages/study/guides/index.html</p>
@@ -3496,6 +3516,8 @@ h3, h4, h5 { margin: 0 0 6px; }
 	</article>
 		</div>
 	</article>
+			<div class="group__pages">
+				
 	<article class="page-card" id="study-note-takers-observers" data-review-group-id="" data-review-evidence-level="generated">
 		<div class="page-card__header">
 			<h3>Note takers and observers</h3>
@@ -3670,7 +3692,8 @@ h3, h4, h5 { margin: 0 0 6px; }
 	</article>
 		</div>
 	</article>
-	<article class="page-card" id="study-session" data-review-group-id="" data-review-evidence-level="generated">
+			</div>
+	<article class="page-card page-card--multi-step" id="study-session" data-review-group-id="" data-review-evidence-level="generated">
 		<div class="page-card__header">
 			<h3>Study session</h3>
 			<p class="meta">/pages/study/session/index.html</p>
@@ -3835,6 +3858,8 @@ h3, h4, h5 { margin: 0 0 6px; }
 	</article>
 		</div>
 	</article>
+			<div class="group__pages">
+				
 	<article class="page-card" id="study-consent-forms" data-review-group-id="" data-review-evidence-level="generated">
 		<div class="page-card__header">
 			<h3>Study consent forms</h3>
@@ -3922,7 +3947,8 @@ h3, h4, h5 { margin: 0 0 6px; }
 	</article>
 		</div>
 	</article>
-	<article class="page-card" id="study-participant-consent" data-review-group-id="participant-consent" data-review-evidence-level="group">
+			</div>
+	<article class="page-card page-card--multi-step" id="study-participant-consent" data-review-group-id="participant-consent" data-review-evidence-level="group">
 		<div class="page-card__header">
 			<h3>Participant consent</h3>
 			<p class="meta">/pages/study/participant-consent/index.html</p>
@@ -4214,7 +4240,7 @@ h3, h4, h5 { margin: 0 0 6px; }
 	</article>
 		</div>
 	</article>
-	<article class="page-card" id="synthesize" data-review-group-id="analysis" data-review-evidence-level="group">
+	<article class="page-card page-card--multi-step" id="synthesize" data-review-group-id="analysis" data-review-evidence-level="group">
 		<div class="page-card__header">
 			<h3>Study synthesis</h3>
 			<p class="meta">/pages/study/synthesis/index.html</p>
@@ -4615,6 +4641,8 @@ h3, h4, h5 { margin: 0 0 6px; }
 		<section class="group" aria-labelledby="group-Team administration">
 			<h2 id="group-Team administration">Team administration</h2>
 			
+			<div class="group__pages">
+				
 	<article class="page-card" id="team-registration-requests" data-review-group-id="" data-review-evidence-level="generated">
 		<div class="page-card__header">
 			<h3>Review account requests</h3>
@@ -4702,7 +4730,8 @@ h3, h4, h5 { margin: 0 0 6px; }
 	</article>
 		</div>
 	</article>
-	<article class="page-card" id="team-access-requests" data-review-group-id="" data-review-evidence-level="generated">
+			</div>
+	<article class="page-card page-card--multi-step" id="team-access-requests" data-review-group-id="" data-review-evidence-level="generated">
 		<div class="page-card__header">
 			<h3>Review team access requests</h3>
 			<p class="meta">/pages/team/access-requests/index.html</p>
@@ -4867,6 +4896,8 @@ h3, h4, h5 { margin: 0 0 6px; }
 	</article>
 		</div>
 	</article>
+			<div class="group__pages">
+				
 	<article class="page-card" id="team-role-assignments" data-review-group-id="" data-review-evidence-level="generated">
 		<div class="page-card__header">
 			<h3>Assign a role to a team member</h3>
@@ -4954,10 +4985,13 @@ h3, h4, h5 { margin: 0 0 6px; }
 	</article>
 		</div>
 	</article>
+			</div>
 		</section>
 		<section class="group" aria-labelledby="group-Utilities">
 			<h2 id="group-Utilities">Utilities</h2>
 			
+			<div class="group__pages">
+				
 	<article class="page-card" id="search" data-review-group-id="" data-review-evidence-level="generated">
 		<div class="page-card__header">
 			<h3>Search</h3>
@@ -5302,10 +5336,13 @@ h3, h4, h5 { margin: 0 0 6px; }
 	</article>
 		</div>
 	</article>
+			</div>
 		</section>
 		<section class="group" aria-labelledby="group-Research repository">
 			<h2 id="group-Research repository">Research repository</h2>
 			
+			<div class="group__pages">
+				
 	<article class="page-card" id="repository" data-review-group-id="" data-review-evidence-level="generated">
 		<div class="page-card__header">
 			<h3>Research repository</h3>
@@ -6524,6 +6561,7 @@ h3, h4, h5 { margin: 0 0 6px; }
 	</article>
 		</div>
 	</article>
+			</div>
 		</section>
 	</main>
 	

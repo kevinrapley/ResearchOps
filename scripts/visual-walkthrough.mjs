@@ -715,6 +715,103 @@ function renderCapture(page, state, capture) {
 					</section>`;
 }
 
+function isMultiStepPage(page = {}) {
+	return (page.states || []).length > 1;
+}
+
+function renderPageGrid(pages = []) {
+	const blocks = [];
+	let singlePages = [];
+
+	function flushSinglePages() {
+		if (singlePages.length === 0) return;
+		blocks.push(`
+		<div class="group__pages">
+			${singlePages
+				.map(
+					(page) => `
+		<article class="page-card" id="${escapeHtml(page.id)}">
+			<div class="page-card__header">
+				<h3>${escapeHtml(page.title)}</h3>
+				<p class="meta">${escapeHtml(page.path)}</p>
+				<p class="meta">${escapeHtml(page.description)}</p>
+			</div>
+			<div class="states">
+				${page.states
+					.map(
+						(state) => `
+				<section class="state ${state.status === 'failed' ? 'failed' : ''}" id="${escapeHtml(
+							slugify(`${page.id}-${state.id}`)
+						)}" data-state-id="${escapeHtml(state.id)}">
+					<div class="state__header">
+						<h4>${escapeHtml(state.title)}</h4>
+						<p class="meta">${escapeHtml(state.status)} · ${escapeHtml(state.url)}</p>
+						${state.description ? `<p>${escapeHtml(state.description)}</p>` : ''}
+						${renderEvidenceTypes(state)}
+					</div>
+					${renderStateAcceptanceCriteria(state)}
+					${renderDesignRisk(state)}
+					<div class="state__captures">
+						${state.captures.map((capture) => renderCapture(page, state, capture)).join('')}
+					</div>
+				</section>`
+					)
+					.join('')}
+			</div>
+		</article>`
+				)
+				.join('')}
+		</div>`);
+		singlePages = [];
+	}
+
+	function renderMultiStepPage(page) {
+		return `
+		<article class="page-card page-card--multi-step" id="${escapeHtml(page.id)}">
+			<div class="page-card__header">
+				<h3>${escapeHtml(page.title)}</h3>
+				<p class="meta">${escapeHtml(page.path)}</p>
+				<p class="meta">${escapeHtml(page.description)}</p>
+			</div>
+			<div class="states">
+				${page.states
+					.map(
+						(state) => `
+				<section class="state ${state.status === 'failed' ? 'failed' : ''}" id="${escapeHtml(
+							slugify(`${page.id}-${state.id}`)
+						)}" data-state-id="${escapeHtml(state.id)}">
+					<div class="state__header">
+						<h4>${escapeHtml(state.title)}</h4>
+						<p class="meta">${escapeHtml(state.status)} · ${escapeHtml(state.url)}</p>
+						${state.description ? `<p>${escapeHtml(state.description)}</p>` : ''}
+						${renderEvidenceTypes(state)}
+					</div>
+					${renderStateAcceptanceCriteria(state)}
+					${renderDesignRisk(state)}
+					<div class="state__captures">
+						${state.captures.map((capture) => renderCapture(page, state, capture)).join('')}
+					</div>
+				</section>`
+					)
+					.join('')}
+			</div>
+		</article>`;
+	}
+
+	for (const page of pages) {
+		if (isMultiStepPage(page)) {
+			flushSinglePages();
+			blocks.push(renderMultiStepPage(page));
+		} else {
+			singlePages.push(page);
+		}
+	}
+
+	flushSinglePages();
+
+	return blocks.join('');
+}
+
 function renderHtml(manifest) {
 	const groups = groupPages(manifest.pages);
 
@@ -749,7 +846,9 @@ function renderHtml(manifest) {
 		.profile-switcher__button { background: #f3f2f1; border: 2px solid #0b0c0c; border-radius: 0; cursor: pointer; font: inherit; padding: 8px 12px; }
 		.profile-switcher__button[aria-pressed="true"] { background: #1d70b8; color: #fff; }
 		.profile-switcher__button:focus { outline: 3px solid #ffdd00; outline-offset: 2px; }
-		.page-card { border: 1px solid #d8d8d8; border-radius: 8px; margin: 18px 0; overflow: hidden; }
+		.group__pages { display: grid; gap: 18px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+		.page-card { border: 1px solid #d8d8d8; border-radius: 8px; margin: 0; overflow: hidden; }
+		.page-card--multi-step { grid-column: 1 / -1; }
 		.page-card__header { background: #f7f7f7; border-bottom: 1px solid #d8d8d8; padding: 14px 16px; }
 		.states { display: grid; gap: 18px; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); padding: 16px; }
 		.state { border: 1px solid #e5e5e5; border-radius: 6px; overflow: hidden; background: #fff; }
@@ -787,6 +886,9 @@ function renderHtml(manifest) {
 		.failed .state__header, .failed .capture__header { background: #fff4f2; }
 		.summary { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
 		[hidden] { display: none !important; }
+		@media (max-width: 900px) {
+			.group__pages { grid-template-columns: 1fr; }
+		}
 	</style>
 </head>
 <body>
@@ -811,40 +913,7 @@ function renderHtml(manifest) {
 			([group, pages]) => `
 	<section class="group" id="${escapeHtml(slugify(group))}">
 		<h2>${escapeHtml(group)}</h2>
-		${pages
-			.map(
-				(page) => `
-		<article class="page-card" id="${escapeHtml(page.id)}">
-			<div class="page-card__header">
-				<h3>${escapeHtml(page.title)}</h3>
-				<p class="meta">${escapeHtml(page.path)}</p>
-				<p class="meta">${escapeHtml(page.description)}</p>
-			</div>
-			<div class="states">
-				${page.states
-					.map(
-						(state) => `
-				<section class="state ${state.status === 'failed' ? 'failed' : ''}" id="${escapeHtml(
-						slugify(`${page.id}-${state.id}`)
-					)}" data-state-id="${escapeHtml(state.id)}">
-					<div class="state__header">
-						<h4>${escapeHtml(state.title)}</h4>
-						<p class="meta">${escapeHtml(state.status)} · ${escapeHtml(state.url)}</p>
-						${state.description ? `<p>${escapeHtml(state.description)}</p>` : ''}
-						${renderEvidenceTypes(state)}
-					</div>
-					${renderStateAcceptanceCriteria(state)}
-					${renderDesignRisk(state)}
-					<div class="state__captures">
-						${state.captures.map((capture) => renderCapture(page, state, capture)).join('')}
-					</div>
-				</section>`
-					)
-					.join('')}
-			</div>
-		</article>`
-			)
-			.join('')}
+		${renderPageGrid(pages)}
 	</section>`
 		)
 		.join('')}
