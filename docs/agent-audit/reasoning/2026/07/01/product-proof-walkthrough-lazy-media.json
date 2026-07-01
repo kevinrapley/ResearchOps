@@ -1,0 +1,87 @@
+{
+  "traceId": "product-proof-walkthrough-lazy-media",
+  "date": "2026-07-01",
+  "branch": "fix/bdd-reporting-pages-github-publish",
+  "task": "Fix the BDD visual walkthrough so Product Proof real UI examples appear in captured screenshots.",
+  "traceRequired": true,
+  "operatingModelFilesLoaded": [
+    "AGENTS.md",
+    ".agent-operating-model/orchestration.xml",
+    ".agent-operating-model/bundle-registry.json",
+    ".agent-operating-model/task-signal-catalog.json",
+    ".agent-operating-model/selection-rules.json",
+    ".agent-operating-model/bootstrap-checklist.md",
+    ".agent-operating-model/precedence-policy.md",
+    ".agent-operating-model/trace-policy.md",
+    ".agent-operating-model/trace-layers.md",
+    ".agent-operating-model/github-mutation-policy.md"
+  ],
+  "selectedBundles": [
+    {
+      "id": "github-diamond",
+      "canonicalPath": ".agent-operating-model/bundles/github/"
+    },
+    {
+      "id": "researchops-developer-control",
+      "canonicalPath": ".agent-operating-model/bundles/researchops-developer-control/"
+    },
+    {
+      "id": "multi-functional-team",
+      "canonicalPath": ".agent-operating-model/bundles/multi-functional-team/"
+    },
+    {
+      "id": "govuk-design-system",
+      "canonicalPath": ".agent-operating-model/bundles/govuk-design-system/"
+    }
+  ],
+  "skippedBundles": [
+    "cloudflare",
+    "openai-platform",
+    "mcp-agent-tooling",
+    "airtable-public-api",
+    "mural-public-api"
+  ],
+  "evidence": [
+    "The Product Proof page renders eight real UI example images from public/assets/researchops/product-proof/.",
+    "The Product Proof template marks those images with loading=\"lazy\".",
+    "The visual walkthrough captured full-page screenshots after DOM, network and font settling but did not scroll the page before screenshot capture.",
+    "Full-page screenshots can include below-the-fold lazy image frames before the browser has requested those images."
+  ],
+  "filesModified": [
+    "scripts/visual-walkthrough.mjs",
+    "tests/qa-bdd-authenticated-walkthrough-route-state.test.js",
+    "docs/agent-audit/reasoning/2026/07/01/product-proof-walkthrough-lazy-media.md",
+    "docs/agent-audit/reasoning/2026/07/01/product-proof-walkthrough-lazy-media.json"
+  ],
+  "validation": [
+    {
+      "command": "node --test tests/qa-bdd-authenticated-walkthrough-route-state.test.js tests/product-proof-route-state.test.js",
+      "status": "passed"
+    },
+    {
+      "command": "Product Proof capture smoke check with local assets",
+      "status": "passed",
+      "details": "All eight data-product-proof-media images completed at 1365 by 900 before screenshot capture; the temporary screenshot /tmp/researchops-product-proof-loaded.png showed the real UI examples."
+    },
+    {
+      "command": "npx prettier -c scripts/visual-walkthrough.mjs tests/qa-bdd-authenticated-walkthrough-route-state.test.js docs/agent-audit/reasoning/2026/07/01/product-proof-walkthrough-lazy-media.md docs/agent-audit/reasoning/2026/07/01/product-proof-walkthrough-lazy-media.json",
+      "status": "passed"
+    },
+    {
+      "command": "git diff --check",
+      "status": "passed"
+    },
+    {
+      "command": "npm run trace:coverage -- --date 2026-07-01",
+      "status": "passed"
+    },
+    {
+      "command": "npm run validate",
+      "status": "passed"
+    }
+  ],
+  "residualRisks": [
+    "The change keeps public-page lazy loading intact for users and changes only the evidence-capture flow.",
+    "The helper waits on image completion with a timeout so a broken image cannot hang the walkthrough indefinitely."
+  ]
+}
