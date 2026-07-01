@@ -166,6 +166,32 @@ test('rendered report emits group evidence above states without runtime grouping
 	assert.doesNotMatch(html, /insertAdjacentElement/);
 });
 
+test('rendered report lays out non-multi-step pages in a two-column group grid', () => {
+	const html = renderReportingReviewHtml(manifestFixture());
+	const homePageIndex = html.indexOf('<article class="page-card" id="home"');
+	const startPageIndex = html.indexOf(
+		'<article class="page-card page-card--multi-step" id="start"'
+	);
+
+	assert.match(
+		html,
+		/\.group__pages \{ display: grid; gap: 18px; grid-template-columns: repeat\(2, minmax\(0, 1fr\)\); \}/
+	);
+	assert.match(html, /@media \(max-width: 900px\)/);
+	assert.ok(homePageIndex > -1, 'Single-state pages should keep the ordinary page-card class.');
+	assert.ok(startPageIndex > -1, 'Pages with multiple states should be marked as multi-step.');
+	assert.match(
+		html,
+		/<\/div>\s*<article class="page-card page-card--multi-step" id="start"/,
+		'Multi-step pages should sit outside the two-column page grid.'
+	);
+	assert.doesNotMatch(
+		html.slice(homePageIndex, startPageIndex),
+		/page-card--multi-step/,
+		'Non-multi-step pages should not be forced full-width.'
+	);
+});
+
 test('non-curated pages keep generated screen-state criteria', () => {
 	const html = renderReportingReviewHtml(manifestFixture());
 	const homeIndex = html.indexOf('Home page');

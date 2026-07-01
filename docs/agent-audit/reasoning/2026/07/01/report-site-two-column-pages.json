@@ -1,0 +1,87 @@
+{
+  "date": "2026-07-01",
+  "branch": "fix/report-site-two-column-pages",
+  "traceRequired": true,
+  "taskSummary": "Arrange ordinary single-state report-site pages in a two-column grid while keeping multi-state walkthrough sections outside that grid.",
+  "operatingModelFilesLoaded": [
+    "AGENTS.md",
+    ".agent-operating-model/orchestration.xml",
+    ".agent-operating-model/bundle-registry.json",
+    ".agent-operating-model/task-signal-catalog.json",
+    ".agent-operating-model/selection-rules.json",
+    ".agent-operating-model/bootstrap-checklist.md",
+    ".agent-operating-model/precedence-policy.md",
+    ".agent-operating-model/trace-policy.md",
+    ".agent-operating-model/trace-layers.md",
+    ".agent-operating-model/behavioural-evals.json",
+    ".agent-operating-model/github-mutation-policy.md"
+  ],
+  "selectedBundles": [
+    {
+      "id": "github-diamond",
+      "canonicalPath": ".agent-operating-model/bundles/github/"
+    },
+    {
+      "id": "researchops-developer-control",
+      "canonicalPath": ".agent-operating-model/bundles/researchops-developer-control/"
+    },
+    {
+      "id": "multi-functional-team",
+      "canonicalPath": ".agent-operating-model/bundles/multi-functional-team/"
+    },
+    {
+      "id": "govuk-design-system",
+      "canonicalPath": ".agent-operating-model/bundles/govuk-design-system/"
+    }
+  ],
+  "skippedBundles": [
+    "cloudflare",
+    "openai-platform",
+    "mcp-agent-tooling",
+    "airtable-public-api",
+    "mural-public-api"
+  ],
+  "filesModified": [
+    "scripts/render-reporting-review-site.mjs",
+    "scripts/visual-walkthrough.mjs",
+    "tests/reporting-review-generation-model.test.js",
+    "reports-site/index.html",
+    "docs/agent-audit/reasoning/2026/07/01/report-site-two-column-pages.md",
+    "docs/agent-audit/reasoning/2026/07/01/report-site-two-column-pages.json"
+  ],
+  "validation": [
+    {
+      "command": "node --test tests/reporting-review-generation-model.test.js tests/reports-site-validation.test.js tests/reporting-site-deploy-route-state.test.js",
+      "result": "passed"
+    },
+    {
+      "command": "node scripts/validate-reports-site.mjs",
+      "result": "passed"
+    },
+    {
+      "command": "npx playwright screenshot --viewport-size=1440,1600 file://$PWD/reports-site/index.html /tmp/report-site-two-column.png",
+      "result": "passed"
+    },
+    {
+      "command": "DOM structure check for synthesize outside .group__pages and repository inside .group__pages",
+      "result": "passed"
+    },
+    {
+      "command": "npm run lint -- --quiet",
+      "result": "passed",
+      "evidence": "Existing ESLint flat-config eslint-env warnings only."
+    },
+    {
+      "command": "npm run validate",
+      "result": "passed"
+    },
+    {
+      "command": "npm run format -- tests/reporting-review-generation-model.test.js",
+      "result": "failed",
+      "evidence": "The repository format wrapper treated the file argument as a generated-CSS target; direct Prettier formatting and the normal lint/format gate passed."
+    }
+  ],
+  "residualRisks": [
+    "The change updates report layout only; screenshots were not recaptured."
+  ]
+}
