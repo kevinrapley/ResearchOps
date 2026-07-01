@@ -216,11 +216,7 @@ function clustersWithEvidence() {
 
 function repositoryCandidateHref(theme) {
   const study = state.study || {};
-  const sourceEvidence = (theme.evidenceIds || []).map(evidenceById).filter(Boolean);
-  const evidenceBasis = sourceEvidence
-    .map((item) => item.excerpt || item.contentPlain || item.id)
-    .filter(Boolean)
-    .join("; ");
+  const evidenceIds = Array.isArray(theme.evidenceIds) ? theme.evidenceIds : [];
   const sourceProjectId = state.pid || study.projectId || "";
   return route("/pages/repository/review/candidates/new/", {
     sourceProjectId,
@@ -229,8 +225,8 @@ function repositoryCandidateHref(theme) {
     evidenceType: "reviewed-synthesis",
     title: theme.label,
     summary: truncateText(theme.description || theme.label, 280),
-    sampleSummary: truncateText(evidenceBasis || `Synthesis theme ${theme.label} from ${studyDisplayName(study)}.`, 700),
-    confidence: sourceEvidence.length >= 3 ? "medium" : "low",
+    sampleSummary: `${theme.label || "Theme"} is based on ${pluralise(evidenceIds.length, "source evidence item")}: ${evidenceIds.join(", ")}`,
+    confidence: evidenceIds.length >= 3 ? "medium" : "low",
     evidenceMaturity: "reviewed-synthesis",
     limitations: "Check the source study context, sample and evidence spread before reuse. PII and consent gates are pending curator confirmation.",
     reuseGuidance: "Reuse only after curator review confirms the evidence basis, confidence, limitations and consent scope.",

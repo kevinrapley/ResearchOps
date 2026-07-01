@@ -29,7 +29,7 @@ includes(pageSource, "/components/layout.js", "synthesis page");
 includes(pageSource, "/js/govuk-frontend-init.js", "synthesis page");
 includes(pageSource, "src=\"/partials/header.html\"", "synthesis page");
 includes(pageSource, "src=\"/partials/footer.html\"", "synthesis page");
-includes(pageSource, "/js/synthesis-route-loader.js?v=study-record-id-routing-20260518", "synthesis page");
+includes(pageSource, "/js/synthesis-route-loader.js?v=study-synthesis-20260701-codex-comment-fixes", "synthesis page");
 includes(pageSource, "href=\"/css/synthesize.css?v=study-synthesis-20260701-step-output-polish\"", "synthesis page");
 includes(pageSource, "data-study-subpage-template=\"synthesis\"", "synthesis page");
 includes(generatedCssTargetsSource, "source: 'src/styles/synthesize.scss'", "generated CSS targets");
@@ -102,7 +102,7 @@ excludes(pageSource, "href=\"/css/screen.css\"", "synthesis page");
 
 includes(loaderSource, "study-canonical-url-bridge.js?v=study-record-id-routing-20260518", "synthesis loader");
 includes(loaderSource, "components/layout.js", "synthesis loader");
-includes(loaderSource, "synthesize-page.js?v=study-record-id-routing-20260518", "synthesis loader");
+includes(loaderSource, "synthesize-page.js?v=study-synthesis-20260701-codex-comment-fixes", "synthesis loader");
 
 for (const marker of [
 	"const API_ORIGIN",
@@ -117,6 +117,7 @@ for (const marker of [
 	"/api/synthesis/themes",
 	"window.__ropsSynthesize",
 	"function repositoryCandidateHrefForTheme",
+	"function repositoryCandidateHref",
 	"data-submit-to-repository",
 	"govuk-summary-card",
 	"govuk-summary-list govuk-summary-list--no-border",
@@ -129,6 +130,9 @@ for (const marker of [
 ]) {
 	includes(controllerSource, marker, "synthesis controller");
 }
+
+includes(controllerSource, "sampleSummary: `${theme.label || \"Theme\"} is based on ${pluralise(evidenceIds.length, \"source evidence item\")}: ${evidenceIds.join(\", \")}`", "synthesis controller");
+excludes(controllerSource, ".map((item) => item.excerpt || item.contentPlain || item.id)", "synthesis controller");
 
 for (const selector of [
 	".synthesis-hero",

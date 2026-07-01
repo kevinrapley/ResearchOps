@@ -1,0 +1,38 @@
+{
+  "date": "2026-07-01",
+  "branch": "feature/res-9-source-linked-candidate-drafting",
+  "pullRequest": 437,
+  "traceRequired": true,
+  "commentsHandled": [
+    {
+      "threadId": "PRRT_kwDOP3Td2M6Na58l",
+      "commentId": 3502164257,
+      "author": "chatgpt-codex-connector",
+      "classification": "valid",
+      "remedy": "Changed repositoryCandidateHref(theme) so candidate URL sampleSummary uses source evidence IDs and counts, not evidence excerpts or contentPlain.",
+      "reaction": "+1"
+    },
+    {
+      "threadId": "PRRT_kwDOP3Td2M6Na58n",
+      "commentId": 3502164261,
+      "author": "chatgpt-codex-connector",
+      "classification": "valid_outdated_line",
+      "remedy": "Bumped synthesis page and controller cache keys to study-synthesis-20260701-codex-comment-fixes.",
+      "reaction": "+1"
+    }
+  ],
+  "validation": [
+    {
+      "command": "npm run build:govuk-pages",
+      "result": "passed"
+    },
+    {
+      "command": "npm test -- tests/synthesis-api-route-state.test.js tests/synthesize-page-route-state.test.js tests/study-child-route-state.test.js tests/govuk-forms-application-route-state.test.js tests/govuk-breadcrumb-back-link-route-state.test.js",
+      "result": "passed"
+    },
+    {
+      "command": "npm run generated-css:check",
+      "result": "passed"
+    }
+  ]
+}
