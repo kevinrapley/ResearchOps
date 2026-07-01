@@ -2,6 +2,14 @@
 
 This file records repeatable repository-specific lessons for ResearchOps agents and maintainers. It is not a changelog.
 
+## 2026-07-01 — Credential-sensitive Pages deploys should be manual until token scope is proven
+
+Context: PR #440 added a dedicated `Deploy reporting site` workflow to publish the committed `reports-site/` directory to the `reopsreporting` Cloudflare Pages project. After merge, the workflow passed the local reporting-site validation and artefact guard, but failed on `main` during `wrangler pages deploy` because Cloudflare returned authentication error `10000` for the Pages project API call. The workflow therefore made normal post-merge `main` status depend on a secret permission that had not been proven for Pages deployment.
+
+Learning: A workflow can be structurally correct and still be unsuitable as an automatic push gate if it depends on external credentials whose project-specific permissions are unverified. Deployment workflows that call Cloudflare Pages, Workers or other external APIs should separate repository validation from credential-sensitive mutation until the token scope is known-good.
+
+Action: For new deployment workflows, run artefact validation on `push` and keep the first live deployment behind `workflow_dispatch` or another deliberate release gate unless an existing workflow already proves the same secret can perform the same operation. Promote deployment to an automatic push path only after the token, account and project permissions have succeeded in CI.
+
 ## 2026-06-24 — Header hidden states need visual CSS assertions and cache-busted shared CSS
 
 Context: PR #425 changed the shared masthead so signed-out users saw a `Sign in` account link and the `Sign out` link used the HTML `hidden` attribute. After merge, the live masthead visually showed both `Sign in` and `Sign out` even though the sign-out link was intended to be hidden. The route-state test only checked the markup and broad account-nav hidden CSS, and the local browser check used accessibility-role visibility rather than also checking computed display and layout dimensions for the hidden anchor. The shared header stylesheet was also loaded without a cache-busting query string.
