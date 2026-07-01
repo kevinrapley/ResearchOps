@@ -182,6 +182,27 @@
 		return errors;
 	}
 
+	function candidateHrefForRecommendation(item = {}) {
+		const recordId = item.id || item.recordId || "";
+		const displayRef = item.displayRef || item.insightId || recordId || "Recommendation";
+		const params = new URLSearchParams({
+			sourceContextType: "recommendation",
+			evidenceType: "recommendation",
+			sourceProjectId: projectId,
+			sourceStudyId: studyId || "",
+			sourceRecommendationId: recordId,
+			title: item.metricName || displayRef,
+			summary: item.notes || item.decisionLink || displayRef,
+			sampleSummary: `Recommendation or impact record ${displayRef}.`,
+			confidence: "low",
+			evidenceMaturity: "early-signal",
+			limitations: "Curator must confirm the recommendation evidence basis before reuse.",
+			reuseGuidance: "Use only after checking the source recommendation, decision context and curator review notes.",
+			doNotUseFor: "Do not use as published repository evidence until PII clearance and consent scope are confirmed."
+		});
+		return `/pages/repository/review/candidates/new/?${params.toString()}`;
+	}
+
 	function renderTable(nextItems) {
 		items = Array.isArray(nextItems) ? nextItems : [];
 		tableBody.innerHTML = "";
@@ -219,6 +240,7 @@
 <td class="govuk-table__cell impact-record-action-cell" colspan="7">
 <div class="impact-record-actions" data-impact-actions="${escapeHtml(recordId)}">
 <button type="button" class="govuk-button govuk-button--secondary" data-impact-edit="${escapeHtml(recordId)}">Edit impact record ${escapeHtml(displayRef)}</button>
+<a class="govuk-button govuk-button--secondary" href="${escapeHtml(candidateHrefForRecommendation(item))}" data-submit-recommendation-to-repository="${escapeHtml(recordId)}">Submit to repository</a>
 <button type="button" class="govuk-button govuk-button--warning" data-impact-delete="${escapeHtml(recordId)}">Delete impact record ${escapeHtml(displayRef)}</button>
 </div>
 <div class="impact-record-delete-confirmation" data-impact-confirm="${escapeHtml(recordId)}" hidden>

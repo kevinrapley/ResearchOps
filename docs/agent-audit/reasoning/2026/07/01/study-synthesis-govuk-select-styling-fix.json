@@ -1,0 +1,74 @@
+{
+	"date": "2026-07-01",
+	"branch": "feature/res-9-source-linked-candidate-drafting",
+	"traceRequired": true,
+	"taskSummary": "Fix the Study synthesis page dropdown lists so they use the correct GOV.UK Frontend select styling.",
+	"operatingModelFilesLoaded": [
+		"AGENTS.md",
+		".agent-operating-model/orchestration.xml",
+		".agent-operating-model/bundle-registry.json",
+		".agent-operating-model/task-signal-catalog.json",
+		".agent-operating-model/selection-rules.json",
+		".agent-operating-model/bootstrap-checklist.md",
+		".agent-operating-model/precedence-policy.md",
+		".agent-operating-model/trace-policy.md",
+		".agent-operating-model/github-mutation-policy.md"
+	],
+	"selectedBundles": [
+		{
+			"id": "github-diamond",
+			"canonicalPath": ".agent-operating-model/bundles/github/"
+		},
+		{
+			"id": "researchops-developer-control",
+			"canonicalPath": ".agent-operating-model/bundles/researchops-developer-control/"
+		},
+		{
+			"id": "multi-functional-team",
+			"canonicalPath": ".agent-operating-model/bundles/multi-functional-team/"
+		},
+		{
+			"id": "govuk-design-system",
+			"canonicalPath": ".agent-operating-model/bundles/govuk-design-system/"
+		}
+	],
+	"skippedBundles": [
+		"cloudflare",
+		"openai-platform",
+		"mcp-agent-tooling",
+		"airtable-public-api",
+		"mural-public-api"
+	],
+	"filesModified": [
+		"src/govuk/templates/pages/study-synthesis.njk",
+		"public/css/synthesize.css",
+		"public/pages/study/synthesis/index.html",
+		"tests/synthesize-page-route-state.test.js",
+		"tests/govuk-forms-application-route-state.test.js",
+		"docs/agent-audit/reasoning/2026/07/01/study-synthesis-govuk-select-styling-fix.md",
+		"docs/agent-audit/reasoning/2026/07/01/study-synthesis-govuk-select-styling-fix.json"
+	],
+	"validation": [
+		{
+			"command": "npm run build:govuk-pages",
+			"result": "passed"
+		},
+		{
+			"command": "npx prettier -w public/css/synthesize.css public/pages/study/synthesis/index.html tests/synthesize-page-route-state.test.js tests/govuk-forms-application-route-state.test.js",
+			"result": "passed"
+		},
+		{
+			"command": "npm test -- tests/synthesize-page-route-state.test.js tests/govuk-forms-application-route-state.test.js",
+			"result": "passed"
+		},
+		{
+			"command": "Playwright computed-style check",
+			"result": "passed",
+			"evidence": "The reported URL loaded GOV.UK Frontend CSS, did not load the legacy govuk-forms stylesheet, and both dropdowns used GOV.UK select computed styles."
+		}
+	],
+	"residualRisks": [
+		"The visible local site is served from /Users/kevin.rapley/ResearchOps, separate from the Codex thread worktree path.",
+		"Existing unrelated dirty files in the served checkout were not reverted."
+	]
+}

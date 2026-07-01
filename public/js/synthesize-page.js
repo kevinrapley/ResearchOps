@@ -21,7 +21,6 @@ const els = {
   context: $("#study-context-text"),
   breadcrumbProject: $("#breadcrumb-project"),
   breadcrumbStudy: $("#breadcrumb-study"),
-  backToStudy: $("#back-to-study"),
   summaryProject: $("#summary-project"),
   summaryStudy: $("#summary-study"),
   summaryEvidenceCount: $("#summary-evidence-count"),
@@ -79,6 +78,11 @@ function route(path, params = {}) {
   return `${url.pathname}${url.search}`;
 }
 
+function truncateText(value, maxLength = 600) {
+  const cleaned = String(value || "").replace(/\s+/g, " ").trim();
+  return cleaned.length > maxLength ? `${cleaned.slice(0, maxLength - 1)}…` : cleaned;
+}
+
 function escapeHtml(value) {
   return String(value ?? "")
     .replace(/&/g, "&amp;")
@@ -98,6 +102,22 @@ function studyDisplayName(study = {}) {
 
 function normaliseTag(value) {
   return String(value || "").trim().toLowerCase();
+}
+
+function tagClass(tag) {
+  const normalised = normaliseTag(tag);
+  if (normalised.includes("risk") || normalised.includes("data gaps")) return "govuk-tag--red";
+  if (normalised.includes("recommendation") || normalised.includes("reuse")) return "govuk-tag--green";
+  if (normalised.includes("confidence") || normalised.includes("assurance")) return "govuk-tag--blue";
+  return "govuk-tag--grey";
+}
+
+function sourceDisplayLabel(value) {
+  return String(value || "")
+    .replace(/^Force intelligence interview 1$/, "Force intelligence interview")
+    .replace(/^Service operator interview 2$/, "Service operator interview")
+    .replace(/^Data assurance session 3$/, "Data assurance session")
+    .replace(/^Policy and product review 4$/, "Policy and product review");
 }
 
 function clearErrors() {
@@ -170,8 +190,48 @@ function clusterEvidence(cluster) {
   return (cluster?.evidenceIds || []).map(evidenceById).filter(Boolean);
 }
 
+function repositoryCandidateHrefForTheme(theme) {
+  const evidenceIds = Array.isArray(theme.evidenceIds) ? theme.evidenceIds : [];
+  const params = new URLSearchParams({
+    sourceContextType: "reviewed-synthesis",
+    evidenceType: "reviewed-synthesis",
+    sourceProjectId: state.pid || state.study?.projectId || "",
+    sourceStudyId: state.sid,
+    sourceSynthesisId: theme.id || "",
+    title: theme.label || "Reviewed synthesis theme",
+    summary: theme.description || theme.label || "Reviewed synthesis theme",
+    sampleSummary: `${theme.label || "Theme"} is based on ${pluralise(evidenceIds.length, "source evidence item")}: ${evidenceIds.join(", ")}`,
+    confidence: "low",
+    evidenceMaturity: "reviewed-synthesis",
+    limitations: "Curator must confirm the evidence limits before reuse.",
+    reuseGuidance: "Use only after checking the source study, evidence basis and curator review notes.",
+    doNotUseFor: "Do not use as published repository evidence until PII clearance and consent scope are confirmed."
+  });
+  return `/pages/repository/review/candidates/new/?${params.toString()}`;
+}
+
 function clustersWithEvidence() {
   return state.clusters.filter((cluster) => (cluster.evidenceIds || []).length > 0);
+}
+
+function repositoryCandidateHref(theme) {
+  const study = state.study || {};
+  const evidenceIds = Array.isArray(theme.evidenceIds) ? theme.evidenceIds : [];
+  const sourceProjectId = state.pid || study.projectId || "";
+  return route("/pages/repository/review/candidates/new/", {
+    sourceProjectId,
+    sourceStudyId: state.sid,
+    sourceSynthesisId: theme.id,
+    evidenceType: "reviewed-synthesis",
+    title: theme.label,
+    summary: truncateText(theme.description || theme.label, 280),
+    sampleSummary: `${theme.label || "Theme"} is based on ${pluralise(evidenceIds.length, "source evidence item")}: ${evidenceIds.join(", ")}`,
+    confidence: evidenceIds.length >= 3 ? "medium" : "low",
+    evidenceMaturity: "reviewed-synthesis",
+    limitations: "Check the source study context, sample and evidence spread before reuse. PII and consent gates are pending curator confirmation.",
+    reuseGuidance: "Reuse only after curator review confirms the evidence basis, confidence, limitations and consent scope.",
+    doNotUseFor: "Do not use as a published repository artefact until PII clearance and consent-scope confirmation are recorded."
+  });
 }
 
 function workflowState() {
@@ -283,7 +343,6 @@ function renderContext() {
     els.breadcrumbStudy.textContent = title;
     els.breadcrumbStudy.href = studyHref;
   }
-  if (els.backToStudy) els.backToStudy.href = studyHref;
   if (els.captureEvidenceLink) els.captureEvidenceLink.href = sessionHref;
   updateSummary();
 }
@@ -306,19 +365,20 @@ function renderEvidence() {
 
   els.evidenceList.innerHTML = visibleEvidence
     .map((item) => {
-      const tags = (item.tags || []).map((tag) => `<span class="synthesis-tag">${escapeHtml(tag)}</span>`).join("");
-      const source = item.sourceLabel || item.sessionId || "Session note";
-      return `<article class="evidence-card" data-evidence-id="${escapeHtml(item.id)}">
-  <div class="govuk-checkboxes__item evidence-card__select">
+      const tags = (item.tags || [])
+        .map((tag) => `<strong class="govuk-tag ${tagClass(tag)} synthesis-tag">${escapeHtml(tag)}</strong>`)
+        .join("");
+      const source = sourceDisplayLabel(item.sourceLabel || item.sessionId || "Session note");
+      return `<div class="govuk-checkboxes evidence-card" data-module="govuk-checkboxes" data-evidence-id="${escapeHtml(item.id)}">
+  <div class="govuk-checkboxes__item">
     <input class="govuk-checkboxes__input" id="evidence-${escapeHtml(item.id)}" name="evidence-id" type="checkbox" value="${escapeHtml(item.id)}">
-    <label class="govuk-label govuk-checkboxes__label" for="evidence-${escapeHtml(item.id)}">Select this evidence</label>
+    <label class="govuk-label govuk-checkboxes__label evidence-card__label" for="evidence-${escapeHtml(item.id)}">
+      <span class="govuk-body-s evidence-card__source">${escapeHtml(source)}</span>
+      <span class="govuk-body evidence-card__excerpt">${escapeHtml(item.excerpt || item.contentPlain || "No note text available.")}</span>
+      ${tags ? `<span class="synthesis-tags">${tags}</span>` : ""}
+    </label>
   </div>
-  <div class="evidence-card__body">
-    <p class="evidence-card__source">${escapeHtml(source)}</p>
-    <p class="govuk-body">${escapeHtml(item.excerpt || item.contentPlain || "No note text available.")}</p>
-    ${tags ? `<div class="synthesis-tags">${tags}</div>` : ""}
-  </div>
-</article>`;
+</div>`;
     })
     .join("");
 }
@@ -367,12 +427,31 @@ function renderClusters() {
             .join("")}</ul>`
         : '<p class="govuk-hint">No evidence added yet.</p>';
 
-      return `<article class="cluster-card" data-cluster-id="${escapeHtml(cluster.id)}">
-  <h3 class="govuk-heading-s">${escapeHtml(cluster.label)}</h3>
-  ${cluster.description ? `<p class="govuk-body">${escapeHtml(cluster.description)}</p>` : ""}
-  <p class="govuk-hint">${pluralise(evidenceItems.length, "evidence item")}</p>
-  ${evidenceList}
-</article>`;
+      return `<div class="govuk-summary-card cluster-card" data-cluster-id="${escapeHtml(cluster.id)}">
+  <div class="govuk-summary-card__title-wrapper">
+    <h3 class="govuk-summary-card__title">${escapeHtml(cluster.label)}</h3>
+  </div>
+  <div class="govuk-summary-card__content">
+    <dl class="govuk-summary-list govuk-summary-list--no-border">
+      ${
+        cluster.description
+          ? `<div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">Description</dt>
+        <dd class="govuk-summary-list__value">${escapeHtml(cluster.description)}</dd>
+      </div>`
+          : ""
+      }
+      <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">Evidence</dt>
+        <dd class="govuk-summary-list__value">${pluralise(evidenceItems.length, "evidence item")}</dd>
+      </div>
+      <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">Source notes</dt>
+        <dd class="govuk-summary-list__value">${evidenceList}</dd>
+      </div>
+    </dl>
+  </div>
+</div>`;
     })
     .join("");
 }
@@ -388,15 +467,41 @@ function renderThemes() {
 
   els.themeList.innerHTML = state.themes
     .map(
-      (theme) => `<article class="theme-card" data-theme-id="${escapeHtml(theme.id)}">
-  <h3 class="govuk-heading-s">${escapeHtml(theme.label)}</h3>
-  ${theme.description ? `<p class="govuk-body">${escapeHtml(theme.description)}</p>` : ""}
-  <p class="govuk-hint">${pluralise((theme.evidenceIds || []).length, "source evidence item")}</p>
-  <details class="govuk-details">
-    <summary class="govuk-details__summary"><span class="govuk-details__summary-text">Evidence used for this theme</span></summary>
-    <div class="govuk-details__text"><code>${escapeHtml((theme.evidenceIds || []).join(", "))}</code></div>
-  </details>
-</article>`
+      (theme) => `<div class="govuk-summary-card theme-card" data-theme-id="${escapeHtml(theme.id)}">
+  <div class="govuk-summary-card__title-wrapper">
+    <h3 class="govuk-summary-card__title">${escapeHtml(theme.label)}</h3>
+    <ul class="govuk-summary-card__actions">
+      <li class="govuk-summary-card__action">
+        <a class="govuk-link" href="${escapeHtml(repositoryCandidateHrefForTheme(theme))}" data-submit-to-repository="${escapeHtml(theme.id)}">Submit to repository<span class="govuk-visually-hidden"> ${escapeHtml(theme.label)}</span></a>
+      </li>
+    </ul>
+  </div>
+  <div class="govuk-summary-card__content">
+    <dl class="govuk-summary-list govuk-summary-list--no-border">
+      ${
+        theme.description
+          ? `<div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">Theme</dt>
+        <dd class="govuk-summary-list__value">${escapeHtml(theme.description)}</dd>
+      </div>`
+          : ""
+      }
+      <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">Evidence</dt>
+        <dd class="govuk-summary-list__value">${pluralise((theme.evidenceIds || []).length, "source evidence item")}</dd>
+      </div>
+      <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">Source IDs</dt>
+        <dd class="govuk-summary-list__value">
+          <details class="govuk-details govuk-!-margin-bottom-0">
+            <summary class="govuk-details__summary"><span class="govuk-details__summary-text">Evidence used for this theme</span></summary>
+            <div class="govuk-details__text"><code>${escapeHtml((theme.evidenceIds || []).join(", "))}</code></div>
+          </details>
+        </dd>
+      </div>
+    </dl>
+  </div>
+</div>`
     )
     .join("");
 }
@@ -575,8 +680,10 @@ await init();
 window.__ropsSynthesize = Object.freeze({
   apiUrl,
   route,
+  repositoryCandidateHrefForTheme,
   evidenceMatchesFilter,
   workflowState,
+  repositoryCandidateHref,
   updateWorkflowVisibility,
   createCluster,
   addSelectedEvidenceToCluster,

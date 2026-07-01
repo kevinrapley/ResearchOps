@@ -1,0 +1,67 @@
+{
+	"date": "2026-06-28",
+	"branch": "fix/remove-home-phase-banner-border",
+	"taskSummary": "Seed the local project dashboard database for recdMo80h1QaNQCBk with realistic study examples only on this computer.",
+	"traceRequired": true,
+	"traceDecision": "Branch prefix fix/ requires an auditable trace.",
+	"operatingModelFilesLoaded": [
+		"AGENTS.md",
+		".agent-operating-model/orchestration.xml",
+		".agent-operating-model/bundle-registry.json",
+		".agent-operating-model/task-signal-catalog.json",
+		".agent-operating-model/selection-rules.json",
+		".agent-operating-model/bootstrap-checklist.md",
+		".agent-operating-model/precedence-policy.md",
+		".agent-operating-model/trace-policy.md",
+		".agent-operating-model/trace-layers.md",
+		".agent-operating-model/behavioural-evals.json",
+		".agent-operating-model/github-mutation-policy.md"
+	],
+	"selectedBundles": [
+		{
+			"id": "github-diamond",
+			"canonicalPath": ".agent-operating-model/bundles/github/"
+		},
+		{
+			"id": "researchops-developer-control",
+			"canonicalPath": ".agent-operating-model/bundles/researchops-developer-control/"
+		},
+		{
+			"id": "multi-functional-team",
+			"canonicalPath": ".agent-operating-model/bundles/multi-functional-team/"
+		},
+		{
+			"id": "cloudflare",
+			"canonicalPath": ".agent-operating-model/bundles/cloudflare/"
+		}
+	],
+	"skippedBundles": [
+		"govuk-design-system",
+		"airtable-public-api",
+		"mural-public-api",
+		"openai-platform",
+		"mcp-agent-tooling"
+	],
+	"localOnlyChanges": [
+		"/Users/kevin.rapley/.hermes/data/research-operations-local.sqlite3",
+		"/Users/kevin.rapley/.hermes/scripts/serve_research_operations.py"
+	],
+	"repositoryFilesCreated": [
+		"docs/agent-audit/reasoning/2026/06/28/local-project-dashboard-study-seed.md",
+		"docs/agent-audit/reasoning/2026/06/28/local-project-dashboard-study-seed.json"
+	],
+	"seededStudies": [
+		"ECRIS-TCN result review prototype testing",
+		"Matching confidence review for third country national records",
+		"As-is workflow mapping for UK and EU conviction data exchange",
+		"TCN conviction data request walkthroughs with operational teams"
+	],
+	"validation": [
+		"python3 -m py_compile /Users/kevin.rapley/.hermes/scripts/serve_research_operations.py",
+		"SQLite query confirmed four project_studies rows for recdMo80h1QaNQCBk.",
+		"https://research-operations/api/studies?project=recdMo80h1QaNQCBk returned four local records.",
+		"Playwright verified desktop 1366x900 and mobile 390x844 rendering without missing titles, study errors or mobile horizontal overflow."
+	],
+	"remoteSystemsChanged": false,
+	"residualRisk": "The local helper script is outside this repository checkout and may need reapplying if overwritten by another local automation."
+}

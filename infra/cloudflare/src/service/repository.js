@@ -1243,25 +1243,42 @@ export async function createRepositoryCandidate(svc, request, origin, authContex
 	const actor = authContext?.user?.id || authContext?.user?.email || "authenticated-user";
 	const sourceProjectId = payloadText(payload, "sourceProjectId");
 	const sourceStudyId = payloadText(payload, "sourceStudyId");
+	const sourceSynthesisId = payloadText(payload, "sourceSynthesisId");
+	const sourceRecommendationId = payloadText(payload, "sourceRecommendationId");
+	const sourceContextType = cleanSlug(payloadText(payload, "sourceContextType"));
 	const evidenceType = cleanSlug(payloadText(payload, "evidenceType"));
 	const method = cleanSlug(payloadText(payload, "method"));
+	const confidence = cleanSlug(payloadText(payload, "confidence", "low")) || "low";
 	const evidenceMaturity = cleanSlug(payloadText(payload, "evidenceMaturity", "early-signal")) || "early-signal";
 	const serviceArea = cleanSlug(payloadText(payload, "serviceArea"));
 	const userGroup = cleanSlug(payloadText(payload, "userGroup"));
 	const riskArea = cleanSlug(payloadText(payload, "riskArea"));
+	const evidenceBasis = payloadText(payload, "sampleSummary");
+	const limitations = payloadText(payload, "limitations");
+	const reuseGuidance = payloadText(payload, "reuseGuidance");
+	const doNotUseFor = payloadText(payload, "doNotUseFor");
 	const payloadJson = JSON.stringify({
 		publicationGate: {
 			piiCleared: false,
 			consentScopeConfirmed: false,
+			piiAndConsentGateStatus: "pending",
 			reviewerAssigned: false,
 			reviewStatus: "pending_review"
 		},
 		sourceEvidence: {
 			projectId: sourceProjectId,
 			studyId: sourceStudyId,
+			synthesisId: sourceSynthesisId,
+			recommendationId: sourceRecommendationId,
+			sourceContextType,
 			evidenceType,
 			method,
-			evidenceBasis: payloadText(payload, "sampleSummary")
+			evidenceBasis,
+			confidence,
+			evidenceMaturity,
+			limitations,
+			reuseGuidance,
+			doNotUseFor
 		}
 	});
 
@@ -1278,7 +1295,7 @@ export async function createRepositoryCandidate(svc, request, origin, authContex
 		title,
 		summary,
 		payloadText(payload, "artefactType", "Candidate artefact"),
-		cleanSlug(payloadText(payload, "confidence", "low")) || "low",
+		confidence,
 		evidenceMaturity,
 		serviceArea,
 		userGroup,
@@ -1286,11 +1303,11 @@ export async function createRepositoryCandidate(svc, request, origin, authContex
 		riskArea,
 		sourceProjectId,
 		sourceStudyId,
-		payloadText(payload, "sourceMethod", method),
-		payloadText(payload, "sampleSummary"),
-		payloadText(payload, "limitations"),
-		payloadText(payload, "reuseGuidance"),
-		payloadText(payload, "doNotUseFor"),
+		cleanSlug(payloadText(payload, "sourceMethod", method)),
+		evidenceBasis,
+		limitations,
+		reuseGuidance,
+		doNotUseFor,
 		actor,
 		now,
 		now,

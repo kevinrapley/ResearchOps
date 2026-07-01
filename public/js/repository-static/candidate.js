@@ -26,6 +26,58 @@ async function populateProjectSelect() {
 	}
 }
 
+function setSelectValue(select, value, label = value) {
+	if (!select || !value) return;
+	if (!Array.from(select.options).some((item) => item.value === value)) {
+		select.appendChild(option(value, titleFromSlug(label || value)));
+	}
+	select.value = value;
+}
+
+function setFieldValue(id, value) {
+	const field = document.getElementById(id);
+	if (field && value) field.value = value;
+}
+
+function prefillValue(params, key) {
+	return text(params.get(key) || "").trim();
+}
+
+function applyCandidatePrefill() {
+	const params = new URLSearchParams(window.location.search);
+	const sourceSynthesisId = prefillValue(params, "sourceSynthesisId");
+	const sourceRecommendationId = prefillValue(params, "sourceRecommendationId");
+	const sourceContextType = prefillValue(params, "sourceContextType") || (sourceSynthesisId ? "reviewed-synthesis" : sourceRecommendationId ? "recommendation" : "");
+
+	setFieldValue("candidate-title", prefillValue(params, "title"));
+	setFieldValue("candidate-summary", prefillValue(params, "summary"));
+	setFieldValue("candidate-limitations", prefillValue(params, "limitations"));
+	setFieldValue("candidate-reuse-guidance", prefillValue(params, "reuseGuidance"));
+	setFieldValue("candidate-do-not-use-for", prefillValue(params, "doNotUseFor"));
+	setFieldValue("candidate-source-study-id", prefillValue(params, "sourceStudyId"));
+	setFieldValue("candidate-evidence-basis", prefillValue(params, "sampleSummary"));
+	setFieldValue("candidate-source-synthesis-id", sourceSynthesisId);
+	setFieldValue("candidate-source-recommendation-id", sourceRecommendationId);
+	setFieldValue("candidate-source-context-type", sourceContextType);
+
+	setSelectValue(document.getElementById("candidate-source-project-id"), prefillValue(params, "sourceProjectId"));
+	setSelectValue(document.getElementById("candidate-evidence-type"), prefillValue(params, "evidenceType"));
+	setSelectValue(document.getElementById("candidate-service-area"), prefillValue(params, "serviceArea"));
+	setSelectValue(document.getElementById("candidate-user-group"), prefillValue(params, "userGroup"));
+	setSelectValue(document.getElementById("candidate-method"), prefillValue(params, "method"));
+	setSelectValue(document.getElementById("candidate-risk-area"), prefillValue(params, "riskArea"));
+	setSelectValue(document.getElementById("candidate-confidence"), prefillValue(params, "confidence"));
+	setSelectValue(document.getElementById("candidate-evidence-maturity"), prefillValue(params, "evidenceMaturity"));
+
+	const summary = document.getElementById("repository-candidate-prefill-summary");
+	if (summary && (sourceSynthesisId || sourceRecommendationId)) {
+		summary.hidden = false;
+		summary.textContent = sourceSynthesisId
+			? `Prefilled from reviewed synthesis ${sourceSynthesisId}. PII and consent gates remain pending until curator review.`
+			: `Prefilled from recommendation ${sourceRecommendationId}. PII and consent gates remain pending until curator review.`;
+	}
+}
+
 export async function initialiseCandidatePage() {
 	const form = document.getElementById("repository-candidate-form");
 	if (!form) return;
@@ -36,6 +88,7 @@ export async function initialiseCandidatePage() {
 	populateSelect(document.getElementById("candidate-user-group"), filters, "user_group");
 	populateSelect(document.getElementById("candidate-method"), filters, "method");
 	populateSelect(document.getElementById("candidate-risk-area"), filters, "risk_area");
+	applyCandidatePrefill();
 
 	form.addEventListener("submit", async (event) => {
 		event.preventDefault();

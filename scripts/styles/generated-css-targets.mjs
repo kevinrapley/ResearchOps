@@ -76,6 +76,11 @@ export const generatedCssTargets = [
 		output: 'public/css/outcomes.css',
 	},
 	{
+		name: 'Study synthesis stylesheet',
+		source: 'src/styles/synthesize.scss',
+		output: 'public/css/synthesize.css',
+	},
+	{
 		name: 'Role assignment stylesheet',
 		source: 'src/styles/auth-role-assignments.scss',
 		output: 'public/css/auth-role-assignments.css',

@@ -1,0 +1,84 @@
+{
+	"date": "2026-07-01",
+	"branch": "feature/res-9-source-linked-candidate-drafting",
+	"traceRequired": true,
+	"taskSummary": "Update the Study synthesis stepped regions to use a two-column desktop layout with controls on the left and outputs on the right.",
+	"operatingModelFilesLoaded": [
+		"AGENTS.md",
+		".agent-operating-model/orchestration.xml",
+		".agent-operating-model/bundle-registry.json",
+		".agent-operating-model/task-signal-catalog.json",
+		".agent-operating-model/selection-rules.json",
+		".agent-operating-model/bootstrap-checklist.md",
+		".agent-operating-model/precedence-policy.md",
+		".agent-operating-model/trace-policy.md",
+		".agent-operating-model/trace-layers.md",
+		".agent-operating-model/behavioural-evals.json",
+		".agent-operating-model/github-mutation-policy.md"
+	],
+	"selectedBundles": [
+		{
+			"id": "github-diamond",
+			"canonicalPath": ".agent-operating-model/bundles/github/"
+		},
+		{
+			"id": "researchops-developer-control",
+			"canonicalPath": ".agent-operating-model/bundles/researchops-developer-control/"
+		},
+		{
+			"id": "multi-functional-team",
+			"canonicalPath": ".agent-operating-model/bundles/multi-functional-team/"
+		},
+		{
+			"id": "govuk-design-system",
+			"canonicalPath": ".agent-operating-model/bundles/govuk-design-system/"
+		}
+	],
+	"skippedBundles": [
+		"cloudflare",
+		"openai-platform",
+		"mcp-agent-tooling",
+		"airtable-public-api",
+		"mural-public-api"
+	],
+	"filesModified": [
+		"src/govuk/templates/pages/study-synthesis.njk",
+		"public/css/synthesize.css",
+		"public/pages/study/synthesis/index.html",
+		"tests/synthesize-page-route-state.test.js",
+		"docs/agent-audit/reasoning/2026/07/01/study-synthesis-two-column-steps.md",
+		"docs/agent-audit/reasoning/2026/07/01/study-synthesis-two-column-steps.json"
+	],
+	"validation": [
+		{
+			"command": "npm run build:govuk-pages",
+			"result": "passed"
+		},
+		{
+			"command": "npx prettier -w public/css/synthesize.css tests/synthesize-page-route-state.test.js",
+			"result": "passed"
+		},
+		{
+			"command": "npx prettier -w public/pages/study/synthesis/index.html",
+			"result": "passed"
+		},
+		{
+			"command": "npm test -- tests/synthesize-page-route-state.test.js tests/govuk-forms-application-route-state.test.js",
+			"result": "passed"
+		},
+		{
+			"command": "Playwright desktop visual and layout check",
+			"result": "passed",
+			"evidence": "At 1366px all three stepped regions rendered as two columns with controls on the left and outputs on the right."
+		},
+		{
+			"command": "Playwright mobile visual and overflow check",
+			"result": "passed",
+			"evidence": "At 390px all stepped regions stacked into one column with no horizontal overflow."
+		}
+	],
+	"residualRisks": [
+		"The visible local site is served from /Users/kevin.rapley/ResearchOps, separate from the Codex thread worktree path.",
+		"Existing unrelated dirty files in the served checkout were not reverted."
+	]
+}

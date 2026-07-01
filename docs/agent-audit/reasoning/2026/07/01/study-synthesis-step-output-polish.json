@@ -1,0 +1,99 @@
+{
+  "date": "2026-07-01",
+  "branch": "feature/res-9-source-linked-candidate-drafting",
+  "traceRequired": true,
+  "taskSummary": "Refine the study synthesis stepped layout, output typography, checkbox alignment, sticky controls and LEDS evidence source labels.",
+  "operatingModelFilesLoaded": [
+    "AGENTS.md",
+    ".agent-operating-model/orchestration.xml",
+    ".agent-operating-model/bundle-registry.json",
+    ".agent-operating-model/task-signal-catalog.json",
+    ".agent-operating-model/selection-rules.json",
+    ".agent-operating-model/bootstrap-checklist.md",
+    ".agent-operating-model/precedence-policy.md",
+    ".agent-operating-model/trace-policy.md",
+    ".agent-operating-model/trace-layers.md",
+    ".agent-operating-model/behavioural-evals.json",
+    ".agent-operating-model/github-mutation-policy.md"
+  ],
+  "selectedBundles": [
+    {
+      "id": "github-diamond",
+      "canonicalPath": ".agent-operating-model/bundles/github/"
+    },
+    {
+      "id": "researchops-developer-control",
+      "canonicalPath": ".agent-operating-model/bundles/researchops-developer-control/"
+    },
+    {
+      "id": "multi-functional-team",
+      "canonicalPath": ".agent-operating-model/bundles/multi-functional-team/"
+    },
+    {
+      "id": "govuk-design-system",
+      "canonicalPath": ".agent-operating-model/bundles/govuk-design-system/"
+    }
+  ],
+  "skippedBundles": [
+    "cloudflare",
+    "openai-platform",
+    "mcp-agent-tooling",
+    "airtable-public-api",
+    "mural-public-api"
+  ],
+  "filesChanged": [
+    "src/govuk/templates/pages/study-synthesis.njk",
+    "src/styles/synthesize.scss",
+    "scripts/styles/generated-css-targets.mjs",
+    "public/css/synthesize.css",
+    "public/pages/study/synthesis/index.html",
+    "public/js/synthesize-page.js",
+    "tests/synthesize-page-route-state.test.js",
+    "docs/agent-audit/reasoning/2026/07/01/study-synthesis-step-output-polish.md",
+    "docs/agent-audit/reasoning/2026/07/01/study-synthesis-step-output-polish.json"
+  ],
+  "validation": [
+    {
+      "command": "node scripts/styles/build-generated-css.mjs public/css/synthesize.css",
+      "result": "passed"
+    },
+    {
+      "command": "npm run build:govuk-pages",
+      "result": "passed"
+    },
+    {
+      "command": "npm test -- tests/synthesize-page-route-state.test.js tests/govuk-forms-application-route-state.test.js",
+      "result": "passed"
+    },
+    {
+      "command": "npm run generated-css:check",
+      "result": "passed"
+    },
+    {
+      "command": "Playwright local visual verification at 1280x900 and 390x844 with mocked LEDS synthesis API data",
+      "result": "passed"
+    }
+  ],
+  "visualVerification": {
+    "desktopViewport": "1280x900",
+    "mobileViewport": "390x844",
+    "desktopMeasurements": {
+      "controlsWidth": 495,
+      "outputWidth": 495,
+      "controlsPosition": "sticky",
+      "outputFontSize": "16px",
+      "themeTitleFontSize": "16px",
+      "themeActionFontSize": "16px",
+      "checkboxSize": "44x44",
+      "horizontalOverflow": false
+    },
+    "mobileMeasurements": {
+      "singleColumn": true,
+      "outputFontSize": "16px",
+      "horizontalOverflow": false
+    }
+  },
+  "residualRisks": [
+    "Local visual verification used mocked Worker API responses because the static preview server does not serve API endpoints."
+  ]
+}

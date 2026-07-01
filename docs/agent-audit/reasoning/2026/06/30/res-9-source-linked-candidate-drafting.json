@@ -1,0 +1,42 @@
+{
+  "slug": "res-9-source-linked-candidate-drafting",
+  "date": "2026-06-30",
+  "branch": "feature/res-9-source-linked-candidate-drafting",
+  "task": "RES-9 03 Source-linked repository candidate drafting",
+  "traceLayer": "operational",
+  "traceRequired": true,
+  "selectedBundles": [
+    "github-diamond",
+    "researchops-developer-control",
+    "multi-functional-team",
+    "govuk-design-system",
+    "cloudflare"
+  ],
+  "skippedBundles": [
+    "openai-platform",
+    "mcp-agent-tooling",
+    "airtable-public-api",
+    "mural-public-api"
+  ],
+  "filesModified": [
+    "public/js/synthesize-page.js",
+    "public/js/repository-static/candidate.js",
+    "src/govuk/templates/pages/repository-static.njk",
+    "infra/cloudflare/src/service/repository.js",
+    "tests/repository-front-page-route-state.test.js",
+    "tests/synthesis-api-route-state.test.js"
+  ],
+  "validation": [
+    { "command": "npm ci", "status": "passed", "note": "npm reported existing audit findings: 1 low, 2 moderate, 2 high" },
+    { "command": "npm run build:generated-css", "status": "passed" },
+    { "command": "npm test -- tests/synthesis-api-route-state.test.js tests/repository-front-page-route-state.test.js", "status": "passed_after_setup" },
+    { "command": "npm run build:govuk-pages", "status": "passed" },
+    { "command": "npm run format:check", "status": "passed" },
+    { "command": "npm run lint", "status": "passed_with_existing_warnings" },
+    { "command": "npm run typecheck --if-present", "status": "passed" }
+  ],
+  "residualRisks": [
+    "Implemented synthesis theme path; a distinct recommendation page path was not identified in this increment.",
+    "PII and consent gates intentionally remain pending until curator confirmation."
+  ]
+}

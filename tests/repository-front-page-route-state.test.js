@@ -146,6 +146,16 @@ has(files.pageScript, 'renderRepositoryState(localRepositoryState(params))', 're
 has(files.pageScript, 'window.__repositoryPrefetch', 'repository page script');
 has(files.pageScript, 'window.history.pushState', 'repository page script');
 has(files.pageScript, 'params.append(input.name, input.value)', 'repository page script');
+has(files.staticTemplate, 'repository-candidate-prefill-summary', 'static repository template');
+has(files.staticTemplate, 'candidate-source-synthesis-id', 'static repository template');
+has(files.staticTemplate, 'candidate-confidence', 'static repository template');
+has(files.staticTemplate, 'candidate-evidence-maturity', 'static repository template');
+has(files.staticScript, 'function applyCandidatePrefill', 'static page script');
+has(files.staticScript, 'sourceSynthesisId', 'static page script');
+has(files.staticScript, 'sourceRecommendationId', 'static page script');
+has(files.service, 'piiAndConsentGateStatus', 'repository service');
+has(files.staticScript, 'PII and consent gates remain pending', 'static page script');
+has(files.service, 'sourceSynthesisId', 'repository service');
 has(files.staticScript, 'selectedValueFor(type)', 'static page script');
 has(files.staticScript, 'renderSelectedState(selected)', 'static page script');
 has(files.staticScript, 'renderPagination(type, value', 'static page script');
