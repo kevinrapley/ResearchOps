@@ -194,6 +194,26 @@ test('rendered report lays out non-multi-step pages in a two-column group grid',
 	);
 });
 
+test('rendered report crops screenshot thumbnails and opens full images in a lightbox', () => {
+	const html = renderReportingReviewHtml(manifestFixture());
+
+	assert.match(
+		html,
+		/\.capture__figure img \{[^}]*height: 665px;[^}]*object-fit: cover;[^}]*object-position: top center;[^}]*\}/
+	);
+	assert.match(html, /class="capture__lightbox-link" data-lightbox-image/);
+	assert.match(html, /class="lightbox" role="dialog" aria-modal="true"/);
+	assert.match(html, /\.lightbox__body \{ flex: 1; overflow: auto; padding: 16px; \}/);
+	assert.match(html, /event\.preventDefault\(\);\s*openLightbox\(link\);/);
+	assert.match(html, /image\.src = link\.href/);
+	assert.match(html, /event\.key === 'Escape'/);
+	assert.match(html, /function trapLightboxFocus\(event\)/);
+	assert.match(html, /event\.key !== 'Tab'/);
+	assert.match(html, /!lightbox\.contains\(document\.activeElement\)/);
+	assert.match(html, /event\.shiftKey && document\.activeElement === first/);
+	assert.match(html, /!event\.shiftKey && document\.activeElement === last/);
+});
+
 test('non-curated pages keep generated screen-state criteria', () => {
 	const html = renderReportingReviewHtml(manifestFixture());
 	const homeIndex = html.indexOf('Home page');

@@ -114,7 +114,7 @@ function renderEvidenceTypes(state = {}) {
 function renderCapture(page = {}, state = {}, capture = {}) {
 	const alt = `Screenshot of ${page.title} in the ${state.title} state for ${capture.profileTitle || capture.profile}.`;
 	const image = capture.screenshot
-		? `<figure class="capture__figure"><a href="${escapeHtml(capture.screenshot)}"><img loading="lazy" src="${escapeHtml(capture.screenshot)}" alt="${escapeHtml(alt)}" /></a><figcaption>${escapeHtml(page.title)} — ${escapeHtml(state.title)} — ${escapeHtml(capture.profileTitle || capture.profile)}</figcaption></figure>`
+		? `<figure class="capture__figure"><a class="capture__lightbox-link" data-lightbox-image href="${escapeHtml(capture.screenshot)}" aria-label="Open full screenshot for ${escapeHtml(page.title)} — ${escapeHtml(state.title)} — ${escapeHtml(capture.profileTitle || capture.profile)}"><img loading="lazy" src="${escapeHtml(capture.screenshot)}" alt="${escapeHtml(alt)}" /></a><figcaption>${escapeHtml(page.title)} — ${escapeHtml(state.title)} — ${escapeHtml(capture.profileTitle || capture.profile)}</figcaption></figure>`
 		: '';
 
 	return `
@@ -217,6 +217,21 @@ function renderProfileSwitcher(profiles = []) {
 	</nav>`;
 }
 
+function renderLightbox() {
+	return `
+	<div class="lightbox" role="dialog" aria-modal="true" aria-labelledby="lightbox-title" hidden>
+		<div class="lightbox__panel">
+			<div class="lightbox__header">
+				<h2 id="lightbox-title">Screenshot evidence</h2>
+				<button type="button" class="lightbox__close" data-lightbox-close>Close</button>
+			</div>
+			<div class="lightbox__body">
+				<img class="lightbox__image" alt="" />
+			</div>
+		</div>
+	</div>`;
+}
+
 function renderProfileSwitcherScript(profiles = []) {
 	if (!Array.isArray(profiles) || profiles.length === 0) return '';
 
@@ -249,6 +264,89 @@ function renderProfileSwitcherScript(profiles = []) {
 		}
 
 		applyProfileFilter(defaultProfile);
+	})();
+	</script>`;
+}
+
+function renderLightboxScript() {
+	return `
+	<script>
+	(function () {
+		const lightbox = document.querySelector('.lightbox');
+		if (!lightbox) return;
+
+		const image = lightbox.querySelector('.lightbox__image');
+		const closeButton = lightbox.querySelector('[data-lightbox-close]');
+		let lastFocusedElement = null;
+
+		function focusableElements() {
+			return Array.from(
+				lightbox.querySelectorAll(
+					'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])'
+				)
+			).filter((element) => element.offsetParent !== null);
+		}
+
+		function closeLightbox() {
+			lightbox.hidden = true;
+			document.documentElement.classList.remove('has-lightbox');
+			image.removeAttribute('src');
+			image.alt = '';
+			if (lastFocusedElement) lastFocusedElement.focus();
+		}
+
+		function openLightbox(link) {
+			const thumbnail = link.querySelector('img');
+			lastFocusedElement = document.activeElement;
+			image.src = link.href;
+			image.alt = thumbnail ? thumbnail.alt : 'Full screenshot evidence';
+			lightbox.hidden = false;
+			document.documentElement.classList.add('has-lightbox');
+			closeButton.focus();
+		}
+
+		function trapLightboxFocus(event) {
+			if (event.key !== 'Tab' || lightbox.hidden) return;
+
+			const focusable = focusableElements();
+			if (focusable.length === 0) return;
+
+			const first = focusable[0];
+			const last = focusable[focusable.length - 1];
+
+			if (!lightbox.contains(document.activeElement)) {
+				event.preventDefault();
+				first.focus();
+				return;
+			}
+
+			if (event.shiftKey && document.activeElement === first) {
+				event.preventDefault();
+				last.focus();
+				return;
+			}
+
+			if (!event.shiftKey && document.activeElement === last) {
+				event.preventDefault();
+				first.focus();
+			}
+		}
+
+		for (const link of document.querySelectorAll('[data-lightbox-image]')) {
+			link.addEventListener('click', (event) => {
+				event.preventDefault();
+				openLightbox(link);
+			});
+		}
+
+		closeButton.addEventListener('click', closeLightbox);
+		lightbox.addEventListener('click', (event) => {
+			if (event.target === lightbox) closeLightbox();
+		});
+		document.addEventListener('keydown', (event) => {
+			if (!lightbox.hidden && event.key === 'Escape') closeLightbox();
+			trapLightboxFocus(event);
+		});
 	})();
 	</script>`;
 }
@@ -290,9 +388,21 @@ h3, h4, h5 { margin: 0 0 6px; }
 .review-risk-list dd { margin: 0; }
 .capture { border-top: 1px solid #e5e5e5; padding: 10px 12px; }
 .capture__figure { margin: 10px 0 0; }
-.capture__figure img { border: 1px solid #d8d8d8; height: auto; max-width: 100%; }
+.capture__lightbox-link { display: block; }
+.capture__lightbox-link:focus { outline: 3px solid #ffdd00; outline-offset: 2px; }
+.capture__figure img { border: 1px solid #d8d8d8; box-sizing: border-box; display: block; height: 665px; max-width: 100%; object-fit: cover; object-position: top center; width: 100%; }
+.has-lightbox { overflow: hidden; }
+.lightbox { background: rgba(11, 12, 12, 0.75); bottom: 0; left: 0; padding: 24px; position: fixed; right: 0; top: 0; z-index: 1000; }
+.lightbox__panel { background: #fff; display: flex; flex-direction: column; height: 100%; margin: 0 auto; max-width: 1200px; }
+.lightbox__header { align-items: center; border-bottom: 1px solid #d8d8d8; display: flex; gap: 16px; justify-content: space-between; padding: 12px 16px; }
+.lightbox__header h2 { border-bottom: 0; margin: 0; padding: 0; }
+.lightbox__close { background: #f3f2f1; border: 2px solid #0b0c0c; cursor: pointer; font: inherit; padding: 8px 12px; }
+.lightbox__close:focus { outline: 3px solid #ffdd00; outline-offset: 2px; }
+.lightbox__body { flex: 1; overflow: auto; padding: 16px; }
+.lightbox__image { display: block; height: auto; max-width: 100%; }
 @media (max-width: 900px) {
 	.group__pages { grid-template-columns: 1fr; }
+	.lightbox { padding: 12px; }
 }`;
 }
 
@@ -325,7 +435,9 @@ export function renderReportingReviewHtml(manifest = {}) {
 			${renderPageGrid(pages)}
 		</section>`).join('')}
 	</main>
+	${renderLightbox()}
 	${renderProfileSwitcherScript(reviewedManifest.profiles)}
+	${renderLightboxScript()}
 </body>
 </html>`;
 }
