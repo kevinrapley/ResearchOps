@@ -262,6 +262,67 @@ async function settlePage(page) {
 	await page.waitForTimeout(200);
 }
 
+async function loadFullPageImages(page) {
+	await page.evaluate(async () => {
+		const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+		const images = Array.from(document.images);
+
+		for (const image of images) {
+			if (image.loading === 'lazy') image.loading = 'eager';
+		}
+
+		const documentHeight = () =>
+			Math.max(
+				document.body.scrollHeight,
+				document.body.offsetHeight,
+				document.body.clientHeight,
+				document.documentElement.scrollHeight,
+				document.documentElement.offsetHeight,
+				document.documentElement.clientHeight
+			);
+		const viewportHeight = window.innerHeight || document.documentElement.clientHeight || 800;
+		const scrollStep = Math.max(200, Math.floor(viewportHeight * 0.75));
+
+		for (let y = 0; y < documentHeight(); y += scrollStep) {
+			window.scrollTo(0, y);
+			await sleep(75);
+		}
+
+		window.scrollTo(0, documentHeight());
+		await sleep(100);
+
+		await Promise.all(
+			images.map(
+				(image) =>
+					new Promise((resolve) => {
+						if (image.complete) {
+							resolve();
+							return;
+						}
+
+						const timeout = window.setTimeout(resolve, 2000);
+						const done = () => {
+							window.clearTimeout(timeout);
+							resolve();
+						};
+
+						image.addEventListener('load', done, { once: true });
+						image.addEventListener('error', done, { once: true });
+					})
+			)
+		);
+
+		window.scrollTo(0, 0);
+	});
+
+	try {
+		await page.waitForLoadState('networkidle', { timeout: 3000 });
+	} catch {
+		// Pages can keep network work open. The screenshot should still include loaded media.
+	}
+	await page.waitForTimeout(100);
+}
+
 async function runAction(page, action) {
 	const timeout = action.timeout ?? 5000;
 
@@ -375,6 +436,7 @@ async function captureState(browser, pageConfig, stateConfig, profile) {
 			await settlePage(page);
 		}
 
+		await loadFullPageImages(page);
 		await page.screenshot({ path: screenshotPath, fullPage: true, animations: 'disabled' });
 
 		return {
@@ -824,6 +886,7 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
 export {
 	captureReport,
 	captureState,
+	loadFullPageImages,
 	pageCaptureConfig,
 	registerMockRoutes,
 	runAction,
