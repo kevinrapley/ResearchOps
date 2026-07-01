@@ -30,8 +30,8 @@ includes(pageSource, "/js/govuk-frontend-init.js", "synthesis page");
 includes(pageSource, "src=\"/partials/header.html\"", "synthesis page");
 includes(pageSource, "src=\"/partials/footer.html\"", "synthesis page");
 excludes(pageSource, "/css/govuk/govuk-forms.css", "synthesis page");
-includes(pageSource, "/js/synthesis-route-loader.js?v=study-synthesis-20260701-codex-comment-fixes", "synthesis page");
-includes(pageSource, "href=\"/css/synthesize.css?v=study-synthesis-20260701-step-output-polish\"", "synthesis page");
+includes(pageSource, "/js/synthesis-route-loader.js?v=study-synthesis-20260701-cache-refresh", "synthesis page");
+includes(pageSource, "href=\"/css/synthesize.css?v=study-synthesis-20260701-cache-refresh\"", "synthesis page");
 includes(pageSource, "data-study-subpage-template=\"synthesis\"", "synthesis page");
 includes(generatedCssTargetsSource, "source: 'src/styles/synthesize.scss'", "generated CSS targets");
 includes(generatedCssTargetsSource, "output: 'public/css/synthesize.css'", "generated CSS targets");
@@ -116,7 +116,7 @@ excludes(pageSource, "href=\"/css/screen.css\"", "synthesis page");
 
 includes(loaderSource, "study-canonical-url-bridge.js?v=study-record-id-routing-20260518", "synthesis loader");
 includes(loaderSource, "components/layout.js", "synthesis loader");
-includes(loaderSource, "synthesize-page.js?v=study-synthesis-20260701-codex-comment-fixes", "synthesis loader");
+includes(loaderSource, "synthesize-page.js?v=study-synthesis-20260701-cache-refresh", "synthesis loader");
 
 for (const marker of [
 	"const API_ORIGIN",

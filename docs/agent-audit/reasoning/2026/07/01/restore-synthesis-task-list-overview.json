@@ -46,9 +46,11 @@
     "public/assets/govuk/govuk-frontend.css",
     "public/css/govuk/govuk-forms.css",
     "public/js/synthesize-page.js",
+    "public/js/synthesis-route-loader.js",
     "public/css/synthesize.css",
     "public/pages/study/synthesis/index.html",
     "tests/govuk-design-system-baseline-route-state.test.js",
+    "tests/study-child-route-state.test.js",
     "tests/synthesize-page-route-state.test.js",
     "docs/agent-audit/reasoning/2026/07/01/restore-synthesis-task-list-overview.md",
     "docs/agent-audit/reasoning/2026/07/01/restore-synthesis-task-list-overview.json"
@@ -75,6 +77,10 @@
       "result": "passed"
     },
     {
+      "command": "npm test -- tests/synthesize-page-route-state.test.js tests/study-child-route-state.test.js tests/govuk-pages-render-workflow-state.test.js",
+      "result": "passed"
+    },
+    {
       "command": "npm test -- tests/synthesize-page-route-state.test.js tests/govuk-pages-render-workflow-state.test.js",
       "result": "passed"
     },
@@ -89,6 +95,22 @@
     {
       "command": "Playwright browser check against https://research-operations/pages/study/synthesis/?id=recLEDSOpsNeeds01&project=recLEDSResearch01#evidence-section",
       "result": "passed; evidence cards computed to 15px top, 15px right, 20px bottom and 15px left padding; synthesis tags computed to 5px row and column gaps when wrapping; synthesis tag margins computed to 0px; measured visual row gap between wrapped tag rows was 5px"
+    }
+  ],
+  "codexReviewThreadsHandled": [
+    {
+      "threadId": "PRRT_kwDOP3Td2M6Nc8Wb",
+      "commentId": 3502896436,
+      "classification": "valid",
+      "remedy": "Bumped the synthesis controller import cache key in public/js/synthesis-route-loader.js to study-synthesis-20260701-cache-refresh and updated route-state assertions.",
+      "reaction": "+1 added"
+    },
+    {
+      "threadId": "PRRT_kwDOP3Td2M6Nc8We",
+      "commentId": 3502896440,
+      "classification": "valid",
+      "remedy": "Bumped the synthesis stylesheet cache key in src/govuk/templates/pages/study-synthesis.njk and regenerated public/pages/study/synthesis/index.html.",
+      "reaction": "+1 added"
     }
   ],
   "residualRisks": [

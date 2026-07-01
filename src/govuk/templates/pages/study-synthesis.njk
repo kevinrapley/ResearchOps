@@ -8,11 +8,12 @@
 {% from "govuk/components/textarea/macro.njk" import govukTextarea %}
 {% from "macros/daas-brand-panel.njk" import daasBrandPanel %}
 
-{% set studyPageScriptVersion = "study-synthesis-20260701-codex-comment-fixes" %}
+{% set studyPageScriptVersion = "study-synthesis-20260701-cache-refresh" %}
+{% set studyPageStylesheetVersion = "study-synthesis-20260701-cache-refresh" %}
 
 {% block head %}
 	<meta property="schema:name" content="Study synthesis - ResearchOps">
-	<link rel="stylesheet" href="/css/synthesize.css?v=study-synthesis-20260701-step-output-polish" media="screen">
+	<link rel="stylesheet" href="/css/synthesize.css?v={{ studyPageStylesheetVersion }}" media="screen">
 	<link rel="stylesheet" href="/css/daas-brand-panel.css?v=leds-brand-panel-20260624" media="screen">
 	<link rel="modulepreload" href="/js/study-route-context.js">
 	<link rel="modulepreload" href="/js/daas-brand-panel.js?v=leds-brand-panel-20260624">

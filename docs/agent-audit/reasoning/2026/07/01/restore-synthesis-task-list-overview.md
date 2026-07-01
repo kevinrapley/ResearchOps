@@ -55,7 +55,9 @@ Precedence decision:
 - `src/styles/synthesize.scss`
 - `public/css/synthesize.css`
 - `public/js/synthesize-page.js`
+- `public/js/synthesis-route-loader.js`
 - `tests/synthesize-page-route-state.test.js`
+- `tests/study-child-route-state.test.js`
 - `tests/govuk-design-system-baseline-route-state.test.js`
 - `docs/agent-audit/reasoning/2026/07/01/restore-synthesis-task-list-overview.md`
 - `docs/agent-audit/reasoning/2026/07/01/restore-synthesis-task-list-overview.json`
@@ -76,6 +78,10 @@ Precedence decision:
 - Added the select chevron background to the shared GOV.UK stylesheet source in `src/styles/govuk.scss`, regenerated `public/assets/govuk/govuk-frontend.css`, and mirrored the same fix into legacy `public/css/govuk/govuk-forms.css` so the down arrow is centred vertically and inset from the right edge site-wide.
 - Kept synthesis-specific CSS free of `.govuk-select` arrow ownership.
 - Set evidence cards to `padding: 15px 15px 20px 15px`, made wrapped synthesis tag spacing explicit with `row-gap: 5px` and `column-gap: 5px`, and neutralised the GOV.UK tag component's negative vertical margins for `.synthesis-tag` so the visible row gap is actually 5px.
+- Handled Codex review thread `PRRT_kwDOP3Td2M6Nc8Wb` as valid: the route loader still imported `synthesize-page.js` with the earlier `study-synthesis-20260701-codex-comment-fixes` key, so cached controllers could miss task-list status logic.
+- Handled Codex review thread `PRRT_kwDOP3Td2M6Nc8We` as valid: the synthesis page still linked `synthesize.css` with the earlier `study-synthesis-20260701-step-output-polish` key, so cached styles could miss the latest spacing and select fixes.
+- Added `+1` reactions to both valid Codex comments before remediation.
+- Bumped the synthesis script and stylesheet cache keys to `study-synthesis-20260701-cache-refresh` in the Nunjucks template, generated HTML, route loader and route-state tests.
 - Added route-state assertions for the macro, title, exact step text, status hooks, anchors, controller count logic, shared GOV.UK select styling and absence of old synthesis select overrides.
 - Regenerated the committed static synthesis page.
 
@@ -89,6 +95,7 @@ Commands run:
 - `npm run build:generated-css`
 - `npm run generated-css:check`
 - `npm test -- tests/synthesize-page-route-state.test.js`
+- `npm test -- tests/synthesize-page-route-state.test.js tests/study-child-route-state.test.js tests/govuk-pages-render-workflow-state.test.js`
 - `npm test -- tests/govuk-design-system-baseline-route-state.test.js tests/synthesize-page-route-state.test.js tests/govuk-pages-render-workflow-state.test.js`
 - Playwright browser check against `https://research-operations/pages/study/synthesis/?id=recLEDSOpsNeeds01&project=recLEDSResearch01#themes-section`
 - Playwright browser check against `https://research-operations/pages/study/synthesis/?id=recLEDSOpsNeeds01&project=recLEDSResearch01#evidence-section`
