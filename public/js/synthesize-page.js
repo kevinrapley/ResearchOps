@@ -21,7 +21,6 @@ const els = {
   context: $("#study-context-text"),
   breadcrumbProject: $("#breadcrumb-project"),
   breadcrumbStudy: $("#breadcrumb-study"),
-  backToStudy: $("#back-to-study"),
   summaryProject: $("#summary-project"),
   summaryStudy: $("#summary-study"),
   summaryEvidenceCount: $("#summary-evidence-count"),
@@ -111,6 +110,14 @@ function tagClass(tag) {
   if (normalised.includes("recommendation") || normalised.includes("reuse")) return "govuk-tag--green";
   if (normalised.includes("confidence") || normalised.includes("assurance")) return "govuk-tag--blue";
   return "govuk-tag--grey";
+}
+
+function sourceDisplayLabel(value) {
+  return String(value || "")
+    .replace(/^Force intelligence interview 1$/, "Force intelligence interview")
+    .replace(/^Service operator interview 2$/, "Service operator interview")
+    .replace(/^Data assurance session 3$/, "Data assurance session")
+    .replace(/^Policy and product review 4$/, "Policy and product review");
 }
 
 function clearErrors() {
@@ -340,7 +347,6 @@ function renderContext() {
     els.breadcrumbStudy.textContent = title;
     els.breadcrumbStudy.href = studyHref;
   }
-  if (els.backToStudy) els.backToStudy.href = studyHref;
   if (els.captureEvidenceLink) els.captureEvidenceLink.href = sessionHref;
   updateSummary();
 }
@@ -366,7 +372,7 @@ function renderEvidence() {
       const tags = (item.tags || [])
         .map((tag) => `<strong class="govuk-tag ${tagClass(tag)} synthesis-tag">${escapeHtml(tag)}</strong>`)
         .join("");
-      const source = item.sourceLabel || item.sessionId || "Session note";
+      const source = sourceDisplayLabel(item.sourceLabel || item.sessionId || "Session note");
       return `<div class="govuk-checkboxes evidence-card" data-module="govuk-checkboxes" data-evidence-id="${escapeHtml(item.id)}">
   <div class="govuk-checkboxes__item">
     <input class="govuk-checkboxes__input" id="evidence-${escapeHtml(item.id)}" name="evidence-id" type="checkbox" value="${escapeHtml(item.id)}">

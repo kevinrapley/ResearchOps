@@ -6,7 +6,6 @@ const legacyFormRoutes = [
 	"public/pages/notes/index.html",
 	"public/pages/consent/index.html",
 	"public/pages/sessions/index.html",
-	"public/pages/study/synthesis/index.html",
 	"public/pages/study/index.html",
 	"public/pages/study/guides/index.html",
 	"public/pages/study/consent-forms/index.html",
@@ -74,11 +73,11 @@ const synthesizeTemplate = read("src/govuk/templates/pages/study-synthesis.njk")
 includes(synthesizeTemplate, 'id: "tag-filter"', "Synthesize template");
 includes(synthesizeTemplate, 'text: "Filter by tag"', "Synthesize template");
 includes(synthesizePage, "<label class=\"govuk-label\" for=\"target-cluster\">", "Synthesize route");
-includes(synthesizePage, "Add selected evidence to", "Synthesize route");
+includes(synthesizePage, "Choose the group to add evidence to", "Synthesize route");
 includes(synthesizeTemplate, 'id: "cluster-label"', "Synthesize template");
 includes(synthesizeTemplate, 'text: "Cluster grouping name"', "Synthesize template");
 includes(synthesizePage, "<label class=\"govuk-label\" for=\"theme-cluster\">", "Synthesize route");
-includes(synthesizePage, "Working cluster grouping", "Synthesize route");
+includes(synthesizePage, "Choose the group to turn into a theme", "Synthesize route");
 includes(synthesizePage, "aria-describedby=\"add-selected-evidence-hint\"", "Synthesize route");
 includes(synthesizePage, "aria-describedby=\"create-cluster-hint\"", "Synthesize route");
 includes(synthesizePage, "aria-describedby=\"create-theme-hint\"", "Synthesize route");
