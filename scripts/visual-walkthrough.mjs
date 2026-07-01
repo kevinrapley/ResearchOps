@@ -846,9 +846,9 @@ function renderHtml(manifest) {
 		.profile-switcher__button { background: #f3f2f1; border: 2px solid #0b0c0c; border-radius: 0; cursor: pointer; font: inherit; padding: 8px 12px; }
 		.profile-switcher__button[aria-pressed="true"] { background: #1d70b8; color: #fff; }
 		.profile-switcher__button:focus { outline: 3px solid #ffdd00; outline-offset: 2px; }
-		.group__pages { display: grid; gap: 18px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+		.group__pages { display: grid; gap: 18px; grid-template-columns: repeat(2, minmax(0, 1fr)); margin: 18px 0; }
 		.page-card { border: 1px solid #d8d8d8; border-radius: 8px; margin: 0; overflow: hidden; }
-		.page-card--multi-step { grid-column: 1 / -1; }
+		.page-card--multi-step { grid-column: 1 / -1; margin: 18px 0; }
 		.page-card__header { background: #f7f7f7; border-bottom: 1px solid #d8d8d8; padding: 14px 16px; }
 		.states { display: grid; gap: 18px; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); padding: 16px; }
 		.state { border: 1px solid #e5e5e5; border-radius: 6px; overflow: hidden; background: #fff; }

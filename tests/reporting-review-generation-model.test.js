@@ -161,6 +161,7 @@ test('rendered report emits group evidence above states without runtime grouping
 	assert.match(html, /data-review-evidence-level="group"/);
 	assert.match(html, /data-suppress-generated-state-criteria="true"/);
 	assert.match(html, /What this grouping should support/);
+	assert.doesNotMatch(html, /<details open>\s*<summary>What this grouping should support/);
 	assert.match(html, /What this state should support/);
 	assert.doesNotMatch(html, /reporting-review-grouping-script/);
 	assert.doesNotMatch(html, /insertAdjacentElement/);
@@ -175,8 +176,9 @@ test('rendered report lays out non-multi-step pages in a two-column group grid',
 
 	assert.match(
 		html,
-		/\.group__pages \{ display: grid; gap: 18px; grid-template-columns: repeat\(2, minmax\(0, 1fr\)\); \}/
+		/\.group__pages \{ display: grid; gap: 18px; grid-template-columns: repeat\(2, minmax\(0, 1fr\)\); margin: 18px 0; \}/
 	);
+	assert.match(html, /\.page-card--multi-step \{ grid-column: 1 \/ -1; margin: 18px 0; \}/);
 	assert.match(html, /@media \(max-width: 900px\)/);
 	assert.ok(homePageIndex > -1, 'Single-state pages should keep the ordinary page-card class.');
 	assert.ok(startPageIndex > -1, 'Pages with multiple states should be marked as multi-step.');
