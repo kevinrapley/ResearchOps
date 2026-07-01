@@ -214,6 +214,19 @@ test('rendered report crops screenshot thumbnails and opens full images in a lig
 	assert.match(html, /!event\.shiftKey && document\.activeElement === last/);
 });
 
+test('rendered report constrains multi-step screenshots to their column ratio', () => {
+	const html = renderReportingReviewHtml(manifestFixture());
+
+	assert.match(
+		html,
+		/\.page-card--multi-step \.capture__lightbox-link \{ aspect-ratio: 3 \/ 2; overflow: hidden; width: 100%; \}/
+	);
+	assert.match(
+		html,
+		/\.page-card--multi-step \.capture__figure img \{ height: 100%; max-width: none; \}/
+	);
+});
+
 test('non-curated pages keep generated screen-state criteria', () => {
 	const html = renderReportingReviewHtml(manifestFixture());
 	const homeIndex = html.indexOf('Home page');

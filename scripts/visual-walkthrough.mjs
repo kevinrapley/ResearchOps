@@ -883,6 +883,8 @@ function renderHtml(manifest) {
 		.capture__lightbox-link { display: block; }
 		.capture__lightbox-link:focus { outline: 3px solid #ffdd00; outline-offset: 2px; }
 		.capture img { box-sizing: border-box; display: block; width: 100%; height: 665px; object-fit: cover; object-position: top center; }
+		.page-card--multi-step .capture__lightbox-link { aspect-ratio: 3 / 2; overflow: hidden; width: 100%; }
+		.page-card--multi-step .capture img { height: 100%; }
 		.capture figcaption { border-top: 1px solid #e5e5e5; color: #444; font-weight: 700; padding: 8px 12px; }
 		.failed { border-color: #d4351c; }
 		.failed .state__header, .failed .capture__header { background: #fff4f2; }
