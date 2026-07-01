@@ -1,7 +1,7 @@
 {
   "title": "ResearchOps application visual walkthrough",
   "description": "Generated evidence of the current application build, covering registered pages and important interaction states.",
-  "startedAt": "2026-07-01T18:18:13.587Z",
+  "startedAt": "2026-07-01T19:28:34.873Z",
   "baseURL": "https://research-operations.com/",
   "profiles": [
     {
@@ -78,8 +78,8 @@
     }
   ],
   "pageCount": 46,
-  "stateCount": 64,
-  "captureCount": 128,
+  "stateCount": 70,
+  "captureCount": 140,
   "failureCount": 0,
   "pages": [
     {
@@ -101,7 +101,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://research-operations.com/",
-              "durationMs": 1355,
+              "durationMs": 1744,
               "screenshot": "screenshots/desktop/core__home__default.png"
             },
             {
@@ -109,7 +109,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://research-operations.com/",
-              "durationMs": 1563,
+              "durationMs": 2291,
               "screenshot": "screenshots/mobile/core__home__default.png"
             }
           ],
@@ -161,7 +161,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://research-operations.com/pages/product-proof/index.html",
-              "durationMs": 2152,
+              "durationMs": 3763,
               "screenshot": "screenshots/desktop/core__product-proof__default.png"
             },
             {
@@ -169,7 +169,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://research-operations.com/pages/product-proof/index.html",
-              "durationMs": 3568,
+              "durationMs": 6034,
               "screenshot": "screenshots/mobile/core__product-proof__default.png"
             }
           ],
@@ -216,7 +216,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://research-operations.com/pages/account/sign-in/index.html",
-              "durationMs": 1329,
+              "durationMs": 1632,
               "screenshot": "screenshots/desktop/account__account-sign-in__default.png"
             },
             {
@@ -224,7 +224,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://research-operations.com/pages/account/sign-in/index.html",
-              "durationMs": 1597,
+              "durationMs": 1845,
               "screenshot": "screenshots/mobile/account__account-sign-in__default.png"
             }
           ],
@@ -262,7 +262,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://research-operations.com/pages/account/sign-in/index.html",
-              "durationMs": 2093,
+              "durationMs": 2308,
               "screenshot": "screenshots/desktop/account__account-sign-in__code-requested.png"
             },
             {
@@ -270,7 +270,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://research-operations.com/pages/account/sign-in/index.html",
-              "durationMs": 2263,
+              "durationMs": 2581,
               "screenshot": "screenshots/mobile/account__account-sign-in__code-requested.png"
             }
           ],
@@ -317,7 +317,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://research-operations.com/pages/account/register/index.html",
-              "durationMs": 1499,
+              "durationMs": 1829,
               "screenshot": "screenshots/desktop/account__account-registration__default.png"
             },
             {
@@ -325,7 +325,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://research-operations.com/pages/account/register/index.html",
-              "durationMs": 1846,
+              "durationMs": 2129,
               "screenshot": "screenshots/mobile/account__account-registration__default.png"
             }
           ],
@@ -372,7 +372,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://research-operations.com/pages/account/team-access/index.html",
-              "durationMs": 1146,
+              "durationMs": 1472,
               "screenshot": "screenshots/desktop/account__account-team-access__default.png"
             },
             {
@@ -380,7 +380,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://research-operations.com/pages/account/team-access/index.html",
-              "durationMs": 1205,
+              "durationMs": 1650,
               "screenshot": "screenshots/mobile/account__account-team-access__default.png"
             }
           ],
@@ -427,7 +427,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://research-operations.com/pages/account/index.html",
-              "durationMs": 1432,
+              "durationMs": 1743,
               "screenshot": "screenshots/desktop/account__account-dashboard__default.png"
             },
             {
@@ -435,7 +435,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://research-operations.com/pages/account/index.html",
-              "durationMs": 1505,
+              "durationMs": 1969,
               "screenshot": "screenshots/mobile/account__account-dashboard__default.png"
             }
           ],
@@ -482,7 +482,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://research-operations.com/pages/start/overview/index.html",
-              "durationMs": 1099,
+              "durationMs": 1496,
               "screenshot": "screenshots/desktop/core__start-overview__default.png"
             },
             {
@@ -490,7 +490,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://research-operations.com/pages/start/overview/index.html",
-              "durationMs": 1159,
+              "durationMs": 1606,
               "screenshot": "screenshots/mobile/core__start-overview__default.png"
             }
           ],
@@ -537,7 +537,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://research-operations.com/pages/start/index.html",
-              "durationMs": 1256,
+              "durationMs": 1460,
               "screenshot": "screenshots/desktop/core__start__default.png"
             },
             {
@@ -545,7 +545,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://research-operations.com/pages/start/index.html",
-              "durationMs": 1236,
+              "durationMs": 1601,
               "screenshot": "screenshots/mobile/core__start__default.png"
             }
           ],
@@ -585,7 +585,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://research-operations.com/pages/start/index.html",
-              "durationMs": 1516,
+              "durationMs": 1848,
               "screenshot": "screenshots/desktop/core__start__step-1-filled.png"
             },
             {
@@ -593,7 +593,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://research-operations.com/pages/start/index.html",
-              "durationMs": 1631,
+              "durationMs": 2138,
               "screenshot": "screenshots/mobile/core__start__step-1-filled.png"
             }
           ],
@@ -633,7 +633,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://research-operations.com/pages/start/index.html",
-              "durationMs": 1987,
+              "durationMs": 2402,
               "screenshot": "screenshots/desktop/core__start__step-2-default.png"
             },
             {
@@ -641,7 +641,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://research-operations.com/pages/start/index.html",
-              "durationMs": 2076,
+              "durationMs": 2610,
               "screenshot": "screenshots/mobile/core__start__step-2-default.png"
             }
           ],
@@ -681,7 +681,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://research-operations.com/pages/start/index.html",
-              "durationMs": 2645,
+              "durationMs": 3047,
               "screenshot": "screenshots/desktop/core__start__step-2-filled-no-ai.png"
             },
             {
@@ -689,7 +689,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://research-operations.com/pages/start/index.html",
-              "durationMs": 2837,
+              "durationMs": 3468,
               "screenshot": "screenshots/mobile/core__start__step-2-filled-no-ai.png"
             }
           ],
@@ -729,7 +729,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://research-operations.com/pages/start/index.html",
-              "durationMs": 3408,
+              "durationMs": 3715,
               "screenshot": "screenshots/desktop/core__start__step-2-ai-rewrite-shown.png"
             },
             {
@@ -737,7 +737,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://research-operations.com/pages/start/index.html",
-              "durationMs": 3502,
+              "durationMs": 4198,
               "screenshot": "screenshots/mobile/core__start__step-2-ai-rewrite-shown.png"
             }
           ],
@@ -777,7 +777,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://research-operations.com/pages/start/index.html",
-              "durationMs": 3003,
+              "durationMs": 3381,
               "screenshot": "screenshots/desktop/core__start__step-3-default.png"
             },
             {
@@ -785,7 +785,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://research-operations.com/pages/start/index.html",
-              "durationMs": 3170,
+              "durationMs": 3516,
               "screenshot": "screenshots/mobile/core__start__step-3-default.png"
             }
           ],
@@ -825,7 +825,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://research-operations.com/pages/start/index.html",
-              "durationMs": 3668,
+              "durationMs": 3986,
               "screenshot": "screenshots/desktop/core__start__step-3-filled.png"
             },
             {
@@ -833,7 +833,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://research-operations.com/pages/start/index.html",
-              "durationMs": 3774,
+              "durationMs": 4155,
               "screenshot": "screenshots/mobile/core__start__step-3-filled.png"
             }
           ],
@@ -873,7 +873,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://research-operations.com/pages/start/index.html",
-              "durationMs": 4182,
+              "durationMs": 4404,
               "screenshot": "screenshots/desktop/core__start__step-4-check-answers.png"
             },
             {
@@ -881,7 +881,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://research-operations.com/pages/start/index.html",
-              "durationMs": 4222,
+              "durationMs": 4702,
               "screenshot": "screenshots/mobile/core__start__step-4-check-answers.png"
             }
           ],
@@ -1053,7 +1053,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://research-operations.com/pages/projects/",
-              "durationMs": 2180,
+              "durationMs": 2791,
               "screenshot": "screenshots/desktop/projects__projects__default.png"
             },
             {
@@ -1061,7 +1061,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://research-operations.com/pages/projects/",
-              "durationMs": 2261,
+              "durationMs": 2791,
               "screenshot": "screenshots/mobile/projects__projects__default.png"
             }
           ],
@@ -1113,7 +1113,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://research-operations.com/pages/project-dashboard/?id=recVisualProject001",
-              "durationMs": 6060,
+              "durationMs": 7161,
               "screenshot": "screenshots/desktop/projects__project-dashboard__default.png"
             },
             {
@@ -1121,7 +1121,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://research-operations.com/pages/project-dashboard/?id=recVisualProject001",
-              "durationMs": 3106,
+              "durationMs": 4241,
               "screenshot": "screenshots/mobile/projects__project-dashboard__default.png"
             }
           ],
@@ -1160,23 +1160,23 @@
           "id": "default",
           "title": "Add study with parent project context",
           "description": "Add-study workflow captured with the parent project ID present.",
-          "url": "https://research-operations.com/pages/study/new/?pid=recVisualProject001",
+          "url": "https://research-operations.com/pages/study/new/?id=recVisualProject001",
           "status": "captured",
           "captures": [
             {
               "profile": "desktop",
               "profileTitle": "Desktop",
               "status": "captured",
-              "url": "https://research-operations.com/pages/study/new/?pid=recVisualProject001",
-              "durationMs": 1361,
+              "url": "https://research-operations.com/pages/study/new/?id=recVisualProject001",
+              "durationMs": 1651,
               "screenshot": "screenshots/desktop/projects__project-dashboard-add-study__default.png"
             },
             {
               "profile": "mobile",
               "profileTitle": "Mobile",
               "status": "captured",
-              "url": "https://research-operations.com/pages/study/new/?pid=recVisualProject001",
-              "durationMs": 1453,
+              "url": "https://research-operations.com/pages/study/new/?id=recVisualProject001",
+              "durationMs": 1840,
               "screenshot": "screenshots/mobile/projects__project-dashboard-add-study__default.png"
             }
           ],
@@ -1195,7 +1195,53 @@
             "Design-risk notes"
           ],
           "screenshot": "screenshots/desktop/projects__project-dashboard-add-study__default.png",
-          "acceptanceCriteria": "Feature: Add a study to a research project\n\n  As a user researcher\n  I want to add a study to the correct project\n  So that study planning remains traceable to the project context\n\n  Background:\n    Given I am a user researcher\n    When I visit the add study journey\n\n  Scenario: Understand the page purpose\n    Then I should see content that supports create a study from the project dashboard action workflow\n    And I should understand what ResearchOps task I can complete from this page\n\n  Scenario: Use \"Add study with parent project context\" in the ResearchOps journey\n    Given I am using the add study journey\n    Then I should understand the research value of this part of the journey\n    And I should see that add-study workflow captured with the parent project ID present\n    And I should be given enough service context to decide what to do next\n\n  Scenario: Complete the interaction needed for this ResearchOps task\n    Given I am ready to continue this ResearchOps journey\n    Then I should see \"Add study\"\n    Then I should be able to continue the ResearchOps journey with confidence\n\n  Scenario: Use this part of the journey accessibly\n    Then the page should have one clear main heading\n    And headings, labels and controls should be exposed in a logical reading order\n    And I should be able to move through the available controls using a keyboard\n    And I should be able to activate links, buttons and form controls without a mouse",
+          "acceptanceCriteria": "Feature: Add a study to a research project\n\n  As a user researcher\n  I want to add a study to the correct project\n  So that study planning remains traceable to the project context\n\n  Background:\n    Given I am a user researcher\n    When I visit the add study journey\n\n  Scenario: Understand the page purpose\n    Then I should see content that supports create a study from the project dashboard action workflow\n    And I should understand what ResearchOps task I can complete from this page\n\n  Scenario: Use \"Add study with parent project context\" in the ResearchOps journey\n    Given I am using the add study journey\n    Then I should understand the research value of this part of the journey\n    And I should see that add-study workflow captured with the parent project ID present\n    And I should be given enough service context to decide what to do next\n\n  Scenario: Complete the interaction needed for this ResearchOps task\n    Given I am ready to continue this ResearchOps journey\n    Then I should see \"Assisted Digital Support Discovery\"\n    Then I should be able to continue the ResearchOps journey with confidence\n\n  Scenario: Use this part of the journey accessibly\n    Then the page should have one clear main heading\n    And headings, labels and controls should be exposed in a logical reading order\n    And I should be able to move through the available controls using a keyboard\n    And I should be able to activate links, buttons and form controls without a mouse",
+          "criteriaMaturity": {
+            "label": "Needs review",
+            "slug": "needs-review",
+            "description": "This state uses generated acceptance criteria that require UCD review before approval."
+          }
+        },
+        {
+          "id": "missing-project-id-error",
+          "title": "Missing project ID error",
+          "description": "Validation state shown when the add-study route is opened without parent project context.",
+          "url": "https://research-operations.com/pages/study/new/index.html",
+          "status": "captured",
+          "captures": [
+            {
+              "profile": "desktop",
+              "profileTitle": "Desktop",
+              "status": "captured",
+              "url": "https://research-operations.com/pages/study/new/index.html",
+              "durationMs": 1652,
+              "screenshot": "screenshots/desktop/projects__project-dashboard-add-study__missing-project-id-error.png"
+            },
+            {
+              "profile": "mobile",
+              "profileTitle": "Mobile",
+              "status": "captured",
+              "url": "https://research-operations.com/pages/study/new/index.html",
+              "durationMs": 1870,
+              "screenshot": "screenshots/mobile/projects__project-dashboard-add-study__missing-project-id-error.png"
+            }
+          ],
+          "designRisk": {
+            "risk": "No specific design risk recorded for this state.",
+            "impact": "No additional impact has been identified beyond the standard route review.",
+            "recommendedChange": "Review this state during the next design critique and update the walkthrough registry if a risk is found.",
+            "owner": "UCD team",
+            "status": "No risk recorded"
+          },
+          "evidenceTypes": [
+            "Screenshot evidence",
+            "Route-level Cucumber evidence",
+            "State-level acceptance criteria",
+            "Accessibility evidence",
+            "Design-risk notes"
+          ],
+          "screenshot": "screenshots/desktop/projects__project-dashboard-add-study__missing-project-id-error.png",
+          "acceptanceCriteria": "Feature: Add a study to a research project\n\n  As a user researcher\n  I want to add a study to the correct project\n  So that study planning remains traceable to the project context\n\n  Background:\n    Given I am a user researcher\n    When I visit the add study journey\n\n  Scenario: Understand the page purpose\n    Then I should see content that supports create a study from the project dashboard action workflow\n    And I should understand what ResearchOps task I can complete from this page\n\n  Scenario: Use \"Missing project ID error\" in the ResearchOps journey\n    Given I am using the add study journey\n    Then I should understand the research value of this part of the journey\n    And I should see that validation state shown when the add-study route is opened without parent project context\n    And I should be given enough service context to decide what to do next\n\n  Scenario: Complete the interaction needed for this ResearchOps task\n    Given I am ready to continue this ResearchOps journey\n    Then I should see \"Missing project ID\"\n    Then I should be able to continue the ResearchOps journey with confidence\n\n  Scenario: Use this part of the journey accessibly\n    Then the page should have one clear main heading\n    And headings, labels and controls should be exposed in a logical reading order\n    And I should be able to move through the available controls using a keyboard\n    And I should be able to activate links, buttons and form controls without a mouse",
           "criteriaMaturity": {
             "label": "Needs review",
             "slug": "needs-review",
@@ -1223,7 +1269,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://research-operations.com/pages/project-dashboard/participants/?id=recVisualProject001",
-              "durationMs": 1347,
+              "durationMs": 1816,
               "screenshot": "screenshots/desktop/projects__project-dashboard-add-participant__default.png"
             },
             {
@@ -1231,7 +1277,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://research-operations.com/pages/project-dashboard/participants/?id=recVisualProject001",
-              "durationMs": 1479,
+              "durationMs": 2038,
               "screenshot": "screenshots/mobile/projects__project-dashboard-add-participant__default.png"
             }
           ],
@@ -1278,7 +1324,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://research-operations.com/pages/project-dashboard/participants/import/?id=recVisualProject001",
-              "durationMs": 1254,
+              "durationMs": 1600,
               "screenshot": "screenshots/desktop/projects__project-dashboard-import-participants__default.png"
             },
             {
@@ -1286,7 +1332,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://research-operations.com/pages/project-dashboard/participants/import/?id=recVisualProject001",
-              "durationMs": 1361,
+              "durationMs": 1791,
               "screenshot": "screenshots/mobile/projects__project-dashboard-import-participants__default.png"
             }
           ],
@@ -1333,7 +1379,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://research-operations.com/pages/projects/outcomes/?id=recVisualProject001",
-              "durationMs": 1865,
+              "durationMs": 2640,
               "screenshot": "screenshots/desktop/projects__outcomes__default.png"
             },
             {
@@ -1341,7 +1387,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://research-operations.com/pages/projects/outcomes/?id=recVisualProject001",
-              "durationMs": 2081,
+              "durationMs": 3012,
               "screenshot": "screenshots/mobile/projects__outcomes__default.png"
             }
           ],
@@ -1388,7 +1434,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://research-operations.com/pages/projects/journals/?id=recVisualProject001",
-              "durationMs": 2471,
+              "durationMs": 2836,
               "screenshot": "screenshots/desktop/projects__journals__default.png"
             },
             {
@@ -1396,7 +1442,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://research-operations.com/pages/projects/journals/?id=recVisualProject001",
-              "durationMs": 1904,
+              "durationMs": 3576,
               "screenshot": "screenshots/mobile/projects__journals__default.png"
             }
           ],
@@ -1433,25 +1479,25 @@
       "states": [
         {
           "id": "default",
-          "title": "Journal entry route",
-          "description": "Journal entry detail route captured before API hydration.",
-          "url": "https://research-operations.com/pages/journal/entry/index.html",
+          "title": "Journal entry with saved content",
+          "description": "Journal entry detail captured with deterministic project and entry context.",
+          "url": "https://research-operations.com/pages/journal/entry/?id=recVisualJournal001&project=recVisualProject001",
           "status": "captured",
           "captures": [
             {
               "profile": "desktop",
               "profileTitle": "Desktop",
               "status": "captured",
-              "url": "https://research-operations.com/pages/journal/entry/index.html",
-              "durationMs": 1270,
+              "url": "https://research-operations.com/pages/journal/entry/?id=recVisualJournal001&project=recVisualProject001",
+              "durationMs": 1611,
               "screenshot": "screenshots/desktop/projects__journal-entry__default.png"
             },
             {
               "profile": "mobile",
               "profileTitle": "Mobile",
               "status": "captured",
-              "url": "https://research-operations.com/pages/journal/entry/index.html",
-              "durationMs": 1347,
+              "url": "https://research-operations.com/pages/journal/entry/?id=recVisualJournal001&project=recVisualProject001",
+              "durationMs": 1736,
               "screenshot": "screenshots/mobile/projects__journal-entry__default.png"
             }
           ],
@@ -1470,7 +1516,53 @@
             "Design-risk notes"
           ],
           "screenshot": "screenshots/desktop/projects__journal-entry__default.png",
-          "acceptanceCriteria": "Feature: Use the Journal entry page\n\n  As a user researcher\n  I want to use the journal entry page\n  So that I can continue the right ResearchOps task with confidence\n\n  Background:\n    Given I am a user researcher\n    When I visit the journal entry page\n\n  Scenario: Understand the page purpose\n    Then I should see content that supports journal entry detail page\n    And I should understand what ResearchOps task I can complete from this page\n\n  Scenario: Use \"Journal entry route\" in the ResearchOps journey\n    Given I am using the journal entry page\n    Then I should understand the research value of this part of the journey\n    And I should see that journal entry detail route captured before API hydration\n    And I should be given enough service context to decide what to do next\n\n  Scenario: Complete the interaction needed for this ResearchOps task\n    Given I am ready to continue this ResearchOps journey\n    Then I should see \"Journal entry\"\n    Then I should be able to continue the ResearchOps journey with confidence\n\n  Scenario: Use this part of the journey accessibly\n    Then the page should have one clear main heading\n    And headings, labels and controls should be exposed in a logical reading order\n    And I should be able to move through the available controls using a keyboard\n    And I should be able to activate links, buttons and form controls without a mouse",
+          "acceptanceCriteria": "Feature: Use the Journal entry page\n\n  As a user researcher\n  I want to use the journal entry page\n  So that I can continue the right ResearchOps task with confidence\n\n  Background:\n    Given I am a user researcher\n    When I visit the journal entry page\n\n  Scenario: Understand the page purpose\n    Then I should see content that supports journal entry detail page\n    And I should understand what ResearchOps task I can complete from this page\n\n  Scenario: Use \"Journal entry with saved content\" in the ResearchOps journey\n    Given I am using the journal entry page\n    Then I should understand the research value of this part of the journey\n    And I should see that journal entry detail captured with deterministic project and entry context\n    And I should be given enough service context to decide what to do next\n\n  Scenario: Complete the interaction needed for this ResearchOps task\n    Given I am ready to continue this ResearchOps journey\n    Then I should see \"Reflection on support handoffs\"\n    Then I should be able to continue the ResearchOps journey with confidence\n\n  Scenario: Use this part of the journey accessibly\n    Then the page should have one clear main heading\n    And headings, labels and controls should be exposed in a logical reading order\n    And I should be able to move through the available controls using a keyboard\n    And I should be able to activate links, buttons and form controls without a mouse",
+          "criteriaMaturity": {
+            "label": "Needs review",
+            "slug": "needs-review",
+            "description": "This state uses generated acceptance criteria that require UCD review before approval."
+          }
+        },
+        {
+          "id": "missing-journal-entry-id-error",
+          "title": "Missing journal entry ID error",
+          "description": "Error state shown when the journal detail route is opened without an entry ID.",
+          "url": "https://research-operations.com/pages/journal/entry/index.html",
+          "status": "captured",
+          "captures": [
+            {
+              "profile": "desktop",
+              "profileTitle": "Desktop",
+              "status": "captured",
+              "url": "https://research-operations.com/pages/journal/entry/index.html",
+              "durationMs": 1658,
+              "screenshot": "screenshots/desktop/projects__journal-entry__missing-journal-entry-id-error.png"
+            },
+            {
+              "profile": "mobile",
+              "profileTitle": "Mobile",
+              "status": "captured",
+              "url": "https://research-operations.com/pages/journal/entry/index.html",
+              "durationMs": 1733,
+              "screenshot": "screenshots/mobile/projects__journal-entry__missing-journal-entry-id-error.png"
+            }
+          ],
+          "designRisk": {
+            "risk": "No specific design risk recorded for this state.",
+            "impact": "No additional impact has been identified beyond the standard route review.",
+            "recommendedChange": "Review this state during the next design critique and update the walkthrough registry if a risk is found.",
+            "owner": "UCD team",
+            "status": "No risk recorded"
+          },
+          "evidenceTypes": [
+            "Screenshot evidence",
+            "Route-level Cucumber evidence",
+            "State-level acceptance criteria",
+            "Accessibility evidence",
+            "Design-risk notes"
+          ],
+          "screenshot": "screenshots/desktop/projects__journal-entry__missing-journal-entry-id-error.png",
+          "acceptanceCriteria": "Feature: Use the Journal entry page\n\n  As a user researcher\n  I want to use the journal entry page\n  So that I can continue the right ResearchOps task with confidence\n\n  Background:\n    Given I am a user researcher\n    When I visit the journal entry page\n\n  Scenario: Understand the page purpose\n    Then I should see content that supports journal entry detail page\n    And I should understand what ResearchOps task I can complete from this page\n\n  Scenario: Use \"Missing journal entry ID error\" in the ResearchOps journey\n    Given I am using the journal entry page\n    Then I should understand the research value of this part of the journey\n    And I should see that error state shown when the journal detail route is opened without an entry ID\n    And I should be given enough service context to decide what to do next\n\n  Scenario: Complete the interaction needed for this ResearchOps task\n    Given I am ready to continue this ResearchOps journey\n    Then I should see \"Missing journal entry ID.\"\n    Then I should be able to continue the ResearchOps journey with confidence\n\n  Scenario: Use this part of the journey accessibly\n    Then the page should have one clear main heading\n    And headings, labels and controls should be exposed in a logical reading order\n    And I should be able to move through the available controls using a keyboard\n    And I should be able to activate links, buttons and form controls without a mouse",
           "criteriaMaturity": {
             "label": "Needs review",
             "slug": "needs-review",
@@ -1488,25 +1580,25 @@
       "states": [
         {
           "id": "default",
-          "title": "Journal entry edit route",
-          "description": "Journal entry edit route captured before API hydration.",
-          "url": "https://research-operations.com/pages/journal/edit/index.html",
+          "title": "Edit journal entry with saved content",
+          "description": "Journal entry edit form captured with deterministic project and entry context.",
+          "url": "https://research-operations.com/pages/journal/edit/?id=recVisualJournal001&project=recVisualProject001",
           "status": "captured",
           "captures": [
             {
               "profile": "desktop",
               "profileTitle": "Desktop",
               "status": "captured",
-              "url": "https://research-operations.com/pages/journal/edit/index.html",
-              "durationMs": 1373,
+              "url": "https://research-operations.com/pages/journal/edit/?id=recVisualJournal001&project=recVisualProject001",
+              "durationMs": 1696,
               "screenshot": "screenshots/desktop/projects__journal-entry-edit__default.png"
             },
             {
               "profile": "mobile",
               "profileTitle": "Mobile",
               "status": "captured",
-              "url": "https://research-operations.com/pages/journal/edit/index.html",
-              "durationMs": 1375,
+              "url": "https://research-operations.com/pages/journal/edit/?id=recVisualJournal001&project=recVisualProject001",
+              "durationMs": 1808,
               "screenshot": "screenshots/mobile/projects__journal-entry-edit__default.png"
             }
           ],
@@ -1525,7 +1617,53 @@
             "Design-risk notes"
           ],
           "screenshot": "screenshots/desktop/projects__journal-entry-edit__default.png",
-          "acceptanceCriteria": "Feature: Use the Edit journal entry page\n\n  As a user researcher\n  I want to use the edit journal entry page\n  So that I can continue the right ResearchOps task with confidence\n\n  Background:\n    Given I am a user researcher\n    When I visit the edit journal entry page\n\n  Scenario: Understand the page purpose\n    Then I should see content that supports journal entry edit page\n    And I should understand what ResearchOps task I can complete from this page\n\n  Scenario: Use \"Journal entry edit route\" in the ResearchOps journey\n    Given I am using the edit journal entry page\n    Then I should understand the research value of this part of the journey\n    And I should see that journal entry edit route captured before API hydration\n    And I should be given enough service context to decide what to do next\n\n  Scenario: Complete the interaction needed for this ResearchOps task\n    Given I am ready to continue this ResearchOps journey\n    Then I should see \"Edit journal entry\"\n    Then I should be able to continue the ResearchOps journey with confidence\n\n  Scenario: Use this part of the journey accessibly\n    Then the page should have one clear main heading\n    And headings, labels and controls should be exposed in a logical reading order\n    And I should be able to move through the available controls using a keyboard\n    And I should be able to activate links, buttons and form controls without a mouse",
+          "acceptanceCriteria": "Feature: Use the Edit journal entry page\n\n  As a user researcher\n  I want to use the edit journal entry page\n  So that I can continue the right ResearchOps task with confidence\n\n  Background:\n    Given I am a user researcher\n    When I visit the edit journal entry page\n\n  Scenario: Understand the page purpose\n    Then I should see content that supports journal entry edit page\n    And I should understand what ResearchOps task I can complete from this page\n\n  Scenario: Use \"Edit journal entry with saved content\" in the ResearchOps journey\n    Given I am using the edit journal entry page\n    Then I should understand the research value of this part of the journey\n    And I should see that journal entry edit form captured with deterministic project and entry context\n    And I should be given enough service context to decide what to do next\n\n  Scenario: Complete the interaction needed for this ResearchOps task\n    Given I am ready to continue this ResearchOps journey\n    Then the \"journal entry edit form\" section should be available\n    Then I should be able to continue the ResearchOps journey with confidence\n\n  Scenario: Use this part of the journey accessibly\n    Then the page should have one clear main heading\n    And headings, labels and controls should be exposed in a logical reading order\n    And I should be able to move through the available controls using a keyboard\n    And I should be able to activate links, buttons and form controls without a mouse",
+          "criteriaMaturity": {
+            "label": "Needs review",
+            "slug": "needs-review",
+            "description": "This state uses generated acceptance criteria that require UCD review before approval."
+          }
+        },
+        {
+          "id": "missing-journal-entry-id-error",
+          "title": "Missing journal entry ID error",
+          "description": "Error state shown when the journal edit route is opened without an entry ID.",
+          "url": "https://research-operations.com/pages/journal/edit/index.html",
+          "status": "captured",
+          "captures": [
+            {
+              "profile": "desktop",
+              "profileTitle": "Desktop",
+              "status": "captured",
+              "url": "https://research-operations.com/pages/journal/edit/index.html",
+              "durationMs": 1681,
+              "screenshot": "screenshots/desktop/projects__journal-entry-edit__missing-journal-entry-id-error.png"
+            },
+            {
+              "profile": "mobile",
+              "profileTitle": "Mobile",
+              "status": "captured",
+              "url": "https://research-operations.com/pages/journal/edit/index.html",
+              "durationMs": 1734,
+              "screenshot": "screenshots/mobile/projects__journal-entry-edit__missing-journal-entry-id-error.png"
+            }
+          ],
+          "designRisk": {
+            "risk": "No specific design risk recorded for this state.",
+            "impact": "No additional impact has been identified beyond the standard route review.",
+            "recommendedChange": "Review this state during the next design critique and update the walkthrough registry if a risk is found.",
+            "owner": "UCD team",
+            "status": "No risk recorded"
+          },
+          "evidenceTypes": [
+            "Screenshot evidence",
+            "Route-level Cucumber evidence",
+            "State-level acceptance criteria",
+            "Accessibility evidence",
+            "Design-risk notes"
+          ],
+          "screenshot": "screenshots/desktop/projects__journal-entry-edit__missing-journal-entry-id-error.png",
+          "acceptanceCriteria": "Feature: Use the Edit journal entry page\n\n  As a user researcher\n  I want to use the edit journal entry page\n  So that I can continue the right ResearchOps task with confidence\n\n  Background:\n    Given I am a user researcher\n    When I visit the edit journal entry page\n\n  Scenario: Understand the page purpose\n    Then I should see content that supports journal entry edit page\n    And I should understand what ResearchOps task I can complete from this page\n\n  Scenario: Use \"Missing journal entry ID error\" in the ResearchOps journey\n    Given I am using the edit journal entry page\n    Then I should understand the research value of this part of the journey\n    And I should see that error state shown when the journal edit route is opened without an entry ID\n    And I should be given enough service context to decide what to do next\n\n  Scenario: Complete the interaction needed for this ResearchOps task\n    Given I am ready to continue this ResearchOps journey\n    Then I should see \"Missing journal entry ID.\"\n    Then I should be able to continue the ResearchOps journey with confidence\n\n  Scenario: Use this part of the journey accessibly\n    Then the page should have one clear main heading\n    And headings, labels and controls should be exposed in a logical reading order\n    And I should be able to move through the available controls using a keyboard\n    And I should be able to activate links, buttons and form controls without a mouse",
           "criteriaMaturity": {
             "label": "Needs review",
             "slug": "needs-review",
@@ -1553,7 +1691,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://research-operations.com/pages/study/?pid=recVisualProject001&sid=recVisualStudy001",
-              "durationMs": 1659,
+              "durationMs": 2224,
               "screenshot": "screenshots/desktop/study__study__default.png"
             },
             {
@@ -1561,7 +1699,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://research-operations.com/pages/study/?pid=recVisualProject001&sid=recVisualStudy001",
-              "durationMs": 1932,
+              "durationMs": 2613,
               "screenshot": "screenshots/mobile/study__study__default.png"
             }
           ],
@@ -1598,8 +1736,8 @@
       "states": [
         {
           "id": "default",
-          "title": "Discussion guides with study context",
-          "description": "Discussion guides page captured with the canonical Study record ID.",
+          "title": "Discussion guides with saved source",
+          "description": "Discussion guides page captured with the canonical Study record ID and opened guide source.",
           "url": "https://research-operations.com/pages/study/guides/?pid=recVisualProject001&sid=recVisualStudy001",
           "status": "captured",
           "captures": [
@@ -1608,7 +1746,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://research-operations.com/pages/study/guides/?pid=recVisualProject001&sid=recVisualStudy001",
-              "durationMs": 2362,
+              "durationMs": 2265,
               "screenshot": "screenshots/desktop/study__study-guides__default.png"
             },
             {
@@ -1616,7 +1754,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://research-operations.com/pages/study/guides/?pid=recVisualProject001&sid=recVisualStudy001",
-              "durationMs": 2273,
+              "durationMs": 2457,
               "screenshot": "screenshots/mobile/study__study-guides__default.png"
             }
           ],
@@ -1635,7 +1773,53 @@
             "Design-risk notes"
           ],
           "screenshot": "screenshots/desktop/study__study-guides__default.png",
-          "acceptanceCriteria": "Feature: Manage discussion guides\n\n  As a user researcher\n  I want to create, review and organise discussion guides for a study\n  So that sessions are run with consistent and purposeful research prompts\n\n  Background:\n    Given I am a user researcher\n    When I visit the discussion guides page\n\n  Scenario: Understand the page purpose\n    Then I should see content that supports discussion guide list and editor page\n    And I should understand what ResearchOps task I can complete from this page\n\n  Scenario: Use \"Discussion guides with study context\" in the ResearchOps journey\n    Given I am using the discussion guides page\n    Then I should understand the research value of this part of the journey\n    And I should see that discussion guides page captured with the canonical Study record ID\n    And I should be given enough service context to decide what to do next\n\n  Scenario: Complete the interaction needed for this ResearchOps task\n    Given I am ready to continue this ResearchOps journey\n    Then I should see \"Guides for this study\"\n    Then I should be able to continue the ResearchOps journey with confidence\n\n  Scenario: Use this part of the journey accessibly\n    Then the page should have one clear main heading\n    And headings, labels and controls should be exposed in a logical reading order\n    And I should be able to move through the available controls using a keyboard\n    And I should be able to activate links, buttons and form controls without a mouse",
+          "acceptanceCriteria": "Feature: Manage discussion guides\n\n  As a user researcher\n  I want to create, review and organise discussion guides for a study\n  So that sessions are run with consistent and purposeful research prompts\n\n  Background:\n    Given I am a user researcher\n    When I visit the discussion guides page\n\n  Scenario: Understand the page purpose\n    Then I should see content that supports discussion guide list and editor page\n    And I should understand what ResearchOps task I can complete from this page\n\n  Scenario: Use \"Discussion guides with saved source\" in the ResearchOps journey\n    Given I am using the discussion guides page\n    Then I should understand the research value of this part of the journey\n    And I should see that discussion guides page captured with the canonical Study record ID and opened guide source\n    And I should be given enough service context to decide what to do next\n\n  Scenario: Complete the interaction needed for this ResearchOps task\n    Given I am ready to continue this ResearchOps journey\n    Then the \"guide preview h2:first of type\" section should be available\n    Then I should be able to continue the ResearchOps journey with confidence\n\n  Scenario: Use this part of the journey accessibly\n    Then the page should have one clear main heading\n    And headings, labels and controls should be exposed in a logical reading order\n    And I should be able to move through the available controls using a keyboard\n    And I should be able to activate links, buttons and form controls without a mouse",
+          "criteriaMaturity": {
+            "label": "Needs review",
+            "slug": "needs-review",
+            "description": "This state uses generated acceptance criteria that require UCD review before approval."
+          }
+        },
+        {
+          "id": "empty-guide-source-error",
+          "title": "Empty guide source validation",
+          "description": "Guide editor validation state shown when a publish action is attempted without guide source.",
+          "url": "https://research-operations.com/pages/study/guides/?pid=recVisualProject001&sid=recVisualStudy001",
+          "status": "captured",
+          "captures": [
+            {
+              "profile": "desktop",
+              "profileTitle": "Desktop",
+              "status": "captured",
+              "url": "https://research-operations.com/pages/study/guides/?pid=recVisualProject001&sid=recVisualStudy001",
+              "durationMs": 2749,
+              "screenshot": "screenshots/desktop/study__study-guides__empty-guide-source-error.png"
+            },
+            {
+              "profile": "mobile",
+              "profileTitle": "Mobile",
+              "status": "captured",
+              "url": "https://research-operations.com/pages/study/guides/?pid=recVisualProject001&sid=recVisualStudy001",
+              "durationMs": 3209,
+              "screenshot": "screenshots/mobile/study__study-guides__empty-guide-source-error.png"
+            }
+          ],
+          "designRisk": {
+            "risk": "No specific design risk recorded for this state.",
+            "impact": "No additional impact has been identified beyond the standard route review.",
+            "recommendedChange": "Review this state during the next design critique and update the walkthrough registry if a risk is found.",
+            "owner": "UCD team",
+            "status": "No risk recorded"
+          },
+          "evidenceTypes": [
+            "Screenshot evidence",
+            "Route-level Cucumber evidence",
+            "State-level acceptance criteria",
+            "Accessibility evidence",
+            "Design-risk notes"
+          ],
+          "screenshot": "screenshots/desktop/study__study-guides__empty-guide-source-error.png",
+          "acceptanceCriteria": "Feature: Manage discussion guides\n\n  As a user researcher\n  I want to create, review and organise discussion guides for a study\n  So that sessions are run with consistent and purposeful research prompts\n\n  Background:\n    Given I am a user researcher\n    When I visit the discussion guides page\n\n  Scenario: Understand the page purpose\n    Then I should see content that supports discussion guide list and editor page\n    And I should understand what ResearchOps task I can complete from this page\n\n  Scenario: Use \"Empty guide source validation\" in the ResearchOps journey\n    Given I am using the discussion guides page\n    Then I should understand the research value of this part of the journey\n    And I should see that guide editor validation state shown when a publish action is attempted without guide source\n    And I should be given enough service context to decide what to do next\n\n  Scenario: Complete the interaction needed for this ResearchOps task\n    Given I am ready to continue this ResearchOps journey\n    Then the \"guide source\" section should be available\n    And I enter \"\" into the \"guide source\" field\n    And I select \"btn publish\"\n    Then I should see \"Enter guide source\"\n    Then I should be able to continue the ResearchOps journey with confidence\n\n  Scenario: Use this part of the journey accessibly\n    Then the page should have one clear main heading\n    And headings, labels and controls should be exposed in a logical reading order\n    And I should be able to move through the available controls using a keyboard\n    And I should be able to activate links, buttons and form controls without a mouse",
           "criteriaMaturity": {
             "label": "Needs review",
             "slug": "needs-review",
@@ -1663,7 +1847,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://research-operations.com/pages/study/note-takers-observers/?pid=recVisualProject001&sid=recVisualStudy001",
-              "durationMs": 1450,
+              "durationMs": 1830,
               "screenshot": "screenshots/desktop/study__study-note-takers-observers__default.png"
             },
             {
@@ -1671,7 +1855,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://research-operations.com/pages/study/note-takers-observers/?pid=recVisualProject001&sid=recVisualStudy001",
-              "durationMs": 1575,
+              "durationMs": 3073,
               "screenshot": "screenshots/mobile/study__study-note-takers-observers__default.png"
             }
           ],
@@ -1718,7 +1902,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://research-operations.com/pages/study/participants/?pid=recVisualProject001&sid=recVisualStudy001",
-              "durationMs": 1503,
+              "durationMs": 2303,
               "screenshot": "screenshots/desktop/study__study-participants__default.png"
             },
             {
@@ -1726,7 +1910,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://research-operations.com/pages/study/participants/?pid=recVisualProject001&sid=recVisualStudy001",
-              "durationMs": 1791,
+              "durationMs": 2698,
               "screenshot": "screenshots/mobile/study__study-participants__default.png"
             }
           ],
@@ -1763,8 +1947,8 @@
       "states": [
         {
           "id": "default",
-          "title": "Study session with study context",
-          "description": "Session workspace captured with the canonical Study record ID.",
+          "title": "Study session with participant ready",
+          "description": "Session workspace captured with a selected participant and ready consent status.",
           "url": "https://research-operations.com/pages/study/session/?pid=recVisualProject001&sid=recVisualStudy001",
           "status": "captured",
           "captures": [
@@ -1773,7 +1957,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://research-operations.com/pages/study/session/?pid=recVisualProject001&sid=recVisualStudy001",
-              "durationMs": 1335,
+              "durationMs": 2159,
               "screenshot": "screenshots/desktop/study__study-session__default.png"
             },
             {
@@ -1781,7 +1965,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://research-operations.com/pages/study/session/?pid=recVisualProject001&sid=recVisualStudy001",
-              "durationMs": 1478,
+              "durationMs": 2356,
               "screenshot": "screenshots/mobile/study__study-session__default.png"
             }
           ],
@@ -1800,7 +1984,53 @@
             "Design-risk notes"
           ],
           "screenshot": "screenshots/desktop/study__study-session__default.png",
-          "acceptanceCriteria": "Feature: Run a research session\n\n  As a user researcher\n  I want to run a research session and capture notes\n  So that session evidence is recorded consistently and safely\n\n  Background:\n    Given I am a user researcher\n    When I visit the study session page\n\n  Scenario: Understand the page purpose\n    Then I should see content that supports session running and note capture page\n    And I should understand what ResearchOps task I can complete from this page\n\n  Scenario: Use \"Study session with study context\" in the ResearchOps journey\n    Given I am using the study session page\n    Then I should understand the research value of this part of the journey\n    And I should see that session workspace captured with the canonical Study record ID\n    And I should be given enough service context to decide what to do next\n\n  Scenario: Complete the interaction needed for this ResearchOps task\n    Given I am ready to continue this ResearchOps journey\n    Then I should see \"Begin a session\"\n    Then I should be able to continue the ResearchOps journey with confidence\n\n  Scenario: Use this part of the journey accessibly\n    Then the page should have one clear main heading\n    And headings, labels and controls should be exposed in a logical reading order\n    And I should be able to move through the available controls using a keyboard\n    And I should be able to activate links, buttons and form controls without a mouse",
+          "acceptanceCriteria": "Feature: Run a research session\n\n  As a user researcher\n  I want to run a research session and capture notes\n  So that session evidence is recorded consistently and safely\n\n  Background:\n    Given I am a user researcher\n    When I visit the study session page\n\n  Scenario: Understand the page purpose\n    Then I should see content that supports session running and note capture page\n    And I should understand what ResearchOps task I can complete from this page\n\n  Scenario: Use \"Study session with participant ready\" in the ResearchOps journey\n    Given I am using the study session page\n    Then I should understand the research value of this part of the journey\n    And I should see that session workspace captured with a selected participant and ready consent status\n    And I should be given enough service context to decide what to do next\n\n  Scenario: Complete the interaction needed for this ResearchOps task\n    Given I am ready to continue this ResearchOps journey\n    Then the \"participant select option[value=\\\"ptp 001\\\"]\" section should be available\n    And I choose \"ptp_001\" from the \"participant select\" field\n    Then I should see \"Ready for session\"\n    Then I should be able to continue the ResearchOps journey with confidence\n\n  Scenario: Use this part of the journey accessibly\n    Then the page should have one clear main heading\n    And headings, labels and controls should be exposed in a logical reading order\n    And I should be able to move through the available controls using a keyboard\n    And I should be able to activate links, buttons and form controls without a mouse",
+          "criteriaMaturity": {
+            "label": "Needs review",
+            "slug": "needs-review",
+            "description": "This state uses generated acceptance criteria that require UCD review before approval."
+          }
+        },
+        {
+          "id": "participant-consent-gate",
+          "title": "Participant consent gate",
+          "description": "Session warning state shown before a participant has been selected.",
+          "url": "https://research-operations.com/pages/study/session/?pid=recVisualProject001&sid=recVisualStudy001",
+          "status": "captured",
+          "captures": [
+            {
+              "profile": "desktop",
+              "profileTitle": "Desktop",
+              "status": "captured",
+              "url": "https://research-operations.com/pages/study/session/?pid=recVisualProject001&sid=recVisualStudy001",
+              "durationMs": 1718,
+              "screenshot": "screenshots/desktop/study__study-session__participant-consent-gate.png"
+            },
+            {
+              "profile": "mobile",
+              "profileTitle": "Mobile",
+              "status": "captured",
+              "url": "https://research-operations.com/pages/study/session/?pid=recVisualProject001&sid=recVisualStudy001",
+              "durationMs": 1973,
+              "screenshot": "screenshots/mobile/study__study-session__participant-consent-gate.png"
+            }
+          ],
+          "designRisk": {
+            "risk": "No specific design risk recorded for this state.",
+            "impact": "No additional impact has been identified beyond the standard route review.",
+            "recommendedChange": "Review this state during the next design critique and update the walkthrough registry if a risk is found.",
+            "owner": "UCD team",
+            "status": "No risk recorded"
+          },
+          "evidenceTypes": [
+            "Screenshot evidence",
+            "Route-level Cucumber evidence",
+            "State-level acceptance criteria",
+            "Accessibility evidence",
+            "Design-risk notes"
+          ],
+          "screenshot": "screenshots/desktop/study__study-session__participant-consent-gate.png",
+          "acceptanceCriteria": "Feature: Run a research session\n\n  As a user researcher\n  I want to run a research session and capture notes\n  So that session evidence is recorded consistently and safely\n\n  Background:\n    Given I am a user researcher\n    When I visit the study session page\n\n  Scenario: Understand the page purpose\n    Then I should see content that supports session running and note capture page\n    And I should understand what ResearchOps task I can complete from this page\n\n  Scenario: Use \"Participant consent gate\" in the ResearchOps journey\n    Given I am using the study session page\n    Then I should understand the research value of this part of the journey\n    And I should see that session warning state shown before a participant has been selected\n    And I should be given enough service context to decide what to do next\n\n  Scenario: Complete the interaction needed for this ResearchOps task\n    Given I am ready to continue this ResearchOps journey\n    Then I should see \"Choose a participant to review consent status before starting a session.\"\n    Then I should be able to continue the ResearchOps journey with confidence\n\n  Scenario: Use this part of the journey accessibly\n    Then the page should have one clear main heading\n    And headings, labels and controls should be exposed in a logical reading order\n    And I should be able to move through the available controls using a keyboard\n    And I should be able to activate links, buttons and form controls without a mouse",
           "criteriaMaturity": {
             "label": "Needs review",
             "slug": "needs-review",
@@ -1828,7 +2058,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://research-operations.com/pages/study/consent-forms/?pid=recVisualProject001&sid=recVisualStudy001",
-              "durationMs": 1444,
+              "durationMs": 1879,
               "screenshot": "screenshots/desktop/study__study-consent-forms__default.png"
             },
             {
@@ -1836,7 +2066,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://research-operations.com/pages/study/consent-forms/?pid=recVisualProject001&sid=recVisualStudy001",
-              "durationMs": 1806,
+              "durationMs": 2469,
               "screenshot": "screenshots/mobile/study__study-consent-forms__default.png"
             }
           ],
@@ -1883,7 +2113,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://research-operations.com/pages/study/participant-consent/?pid=recVisualConsentProject001&sid=recVisualConsentStudy001",
-              "durationMs": 1745,
+              "durationMs": 2050,
               "screenshot": "screenshots/desktop/study__study-participant-consent__default.png"
             },
             {
@@ -1891,7 +2121,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://research-operations.com/pages/study/participant-consent/?pid=recVisualConsentProject001&sid=recVisualConsentStudy001",
-              "durationMs": 1952,
+              "durationMs": 2552,
               "screenshot": "screenshots/mobile/study__study-participant-consent__default.png"
             }
           ],
@@ -1931,7 +2161,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://research-operations.com/pages/study/participant-consent/index.html",
-              "durationMs": 1289,
+              "durationMs": 1701,
               "screenshot": "screenshots/desktop/study__study-participant-consent__missing-context-error.png"
             },
             {
@@ -1939,7 +2169,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://research-operations.com/pages/study/participant-consent/index.html",
-              "durationMs": 1354,
+              "durationMs": 1718,
               "screenshot": "screenshots/mobile/study__study-participant-consent__missing-context-error.png"
             }
           ],
@@ -1979,7 +2209,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://research-operations.com/pages/study/participant-consent/?pid=recVisualConsentProject001&sid=recVisualConsentStudy001",
-              "durationMs": 1460,
+              "durationMs": 1767,
               "screenshot": "screenshots/desktop/study__study-participant-consent__no-published-consent-form.png"
             },
             {
@@ -1987,7 +2217,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://research-operations.com/pages/study/participant-consent/?pid=recVisualConsentProject001&sid=recVisualConsentStudy001",
-              "durationMs": 1579,
+              "durationMs": 3059,
               "screenshot": "screenshots/mobile/study__study-participant-consent__no-published-consent-form.png"
             }
           ],
@@ -2027,7 +2257,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://research-operations.com/pages/study/participant-consent/?pid=recVisualConsentProject001&sid=recVisualConsentStudy001",
-              "durationMs": 1438,
+              "durationMs": 1825,
               "screenshot": "screenshots/desktop/study__study-participant-consent__no-participants.png"
             },
             {
@@ -2035,7 +2265,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://research-operations.com/pages/study/participant-consent/?pid=recVisualConsentProject001&sid=recVisualConsentStudy001",
-              "durationMs": 1667,
+              "durationMs": 1994,
               "screenshot": "screenshots/mobile/study__study-participant-consent__no-participants.png"
             }
           ],
@@ -2075,7 +2305,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://research-operations.com/pages/study/participant-consent/?pid=recVisualConsentProject001&sid=recVisualConsentStudy001",
-              "durationMs": 2033,
+              "durationMs": 2515,
               "screenshot": "screenshots/desktop/study__study-participant-consent__participant-selected.png"
             },
             {
@@ -2083,7 +2313,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://research-operations.com/pages/study/participant-consent/?pid=recVisualConsentProject001&sid=recVisualConsentStudy001",
-              "durationMs": 2545,
+              "durationMs": 3387,
               "screenshot": "screenshots/mobile/study__study-participant-consent__participant-selected.png"
             }
           ],
@@ -2216,7 +2446,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://research-operations.com/pages/study/synthesis/index.html",
-              "durationMs": 1139,
+              "durationMs": 1458,
               "screenshot": "screenshots/desktop/study__synthesize__missing-sid-error.png"
             },
             {
@@ -2224,7 +2454,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://research-operations.com/pages/study/synthesis/index.html",
-              "durationMs": 1186,
+              "durationMs": 1617,
               "screenshot": "screenshots/mobile/study__synthesize__missing-sid-error.png"
             }
           ],
@@ -2264,7 +2494,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://research-operations.com/pages/study/synthesis/?id=recVisualStudy001",
-              "durationMs": 1510,
+              "durationMs": 1890,
               "screenshot": "screenshots/desktop/study__synthesize__empty-evidence.png"
             },
             {
@@ -2272,7 +2502,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://research-operations.com/pages/study/synthesis/?id=recVisualStudy001",
-              "durationMs": 1690,
+              "durationMs": 2123,
               "screenshot": "screenshots/mobile/study__synthesize__empty-evidence.png"
             }
           ],
@@ -2312,7 +2542,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://research-operations.com/pages/study/synthesis/?id=recVisualStudy001",
-              "durationMs": 1313,
+              "durationMs": 1680,
               "screenshot": "screenshots/desktop/study__synthesize__evidence-loaded.png"
             },
             {
@@ -2320,7 +2550,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://research-operations.com/pages/study/synthesis/?id=recVisualStudy001",
-              "durationMs": 1461,
+              "durationMs": 1982,
               "screenshot": "screenshots/mobile/study__synthesize__evidence-loaded.png"
             }
           ],
@@ -2360,7 +2590,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://research-operations.com/pages/study/synthesis/?id=recVisualStudy001",
-              "durationMs": 2188,
+              "durationMs": 2757,
               "screenshot": "screenshots/desktop/study__synthesize__working-cluster-created.png"
             },
             {
@@ -2368,7 +2598,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://research-operations.com/pages/study/synthesis/?id=recVisualStudy001",
-              "durationMs": 2459,
+              "durationMs": 3194,
               "screenshot": "screenshots/mobile/study__synthesize__working-cluster-created.png"
             }
           ],
@@ -2408,7 +2638,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://research-operations.com/pages/study/synthesis/?id=recVisualStudy001",
-              "durationMs": 2319,
+              "durationMs": 2822,
               "screenshot": "screenshots/desktop/study__synthesize__evidence-added-to-cluster.png"
             },
             {
@@ -2416,7 +2646,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://research-operations.com/pages/study/synthesis/?id=recVisualStudy001",
-              "durationMs": 2563,
+              "durationMs": 3344,
               "screenshot": "screenshots/mobile/study__synthesize__evidence-added-to-cluster.png"
             }
           ],
@@ -2456,7 +2686,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://research-operations.com/pages/study/synthesis/?id=recVisualStudy001",
-              "durationMs": 1560,
+              "durationMs": 2044,
               "screenshot": "screenshots/desktop/study__synthesize__theme-blocked-without-evidence.png"
             },
             {
@@ -2464,7 +2694,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://research-operations.com/pages/study/synthesis/?id=recVisualStudy001",
-              "durationMs": 1840,
+              "durationMs": 2556,
               "screenshot": "screenshots/mobile/study__synthesize__theme-blocked-without-evidence.png"
             }
           ],
@@ -2504,7 +2734,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://research-operations.com/pages/study/synthesis/?id=recVisualStudy001",
-              "durationMs": 2476,
+              "durationMs": 2967,
               "screenshot": "screenshots/desktop/study__synthesize__theme-created.png"
             },
             {
@@ -2512,7 +2742,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://research-operations.com/pages/study/synthesis/?id=recVisualStudy001",
-              "durationMs": 2752,
+              "durationMs": 3569,
               "screenshot": "screenshots/mobile/study__synthesize__theme-created.png"
             }
           ],
@@ -2671,7 +2901,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://research-operations.com/pages/team/registration-requests/",
-              "durationMs": 1305,
+              "durationMs": 1642,
               "screenshot": "screenshots/desktop/team-administration__team-registration-requests__default.png"
             },
             {
@@ -2679,7 +2909,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://research-operations.com/pages/team/registration-requests/",
-              "durationMs": 1635,
+              "durationMs": 2001,
               "screenshot": "screenshots/mobile/team-administration__team-registration-requests__default.png"
             }
           ],
@@ -2716,25 +2946,25 @@
       "states": [
         {
           "id": "default",
-          "title": "Default state",
-          "description": "Initial loaded page state.",
-          "url": "https://research-operations.com/pages/team/access-requests/index.html",
+          "title": "Pending team access requests",
+          "description": "Team access review page captured with a deterministic pending request.",
+          "url": "https://research-operations.com/pages/team/access-requests/",
           "status": "captured",
           "captures": [
             {
               "profile": "desktop",
               "profileTitle": "Desktop",
               "status": "captured",
-              "url": "https://research-operations.com/pages/team/access-requests/index.html",
-              "durationMs": 1060,
+              "url": "https://research-operations.com/pages/team/access-requests/",
+              "durationMs": 1705,
               "screenshot": "screenshots/desktop/team-administration__team-access-requests__default.png"
             },
             {
               "profile": "mobile",
               "profileTitle": "Mobile",
               "status": "captured",
-              "url": "https://research-operations.com/pages/team/access-requests/index.html",
-              "durationMs": 1505,
+              "url": "https://research-operations.com/pages/team/access-requests/",
+              "durationMs": 1907,
               "screenshot": "screenshots/mobile/team-administration__team-access-requests__default.png"
             }
           ],
@@ -2753,7 +2983,53 @@
             "Design-risk notes"
           ],
           "screenshot": "screenshots/desktop/team-administration__team-access-requests__default.png",
-          "acceptanceCriteria": "Feature: Use the Review team access requests page\n\n  As a user researcher\n  I want to use the review team access requests page\n  So that I can continue the right ResearchOps task with confidence\n\n  Background:\n    Given I am a user researcher\n    When I visit the review team access requests page\n\n  Scenario: Understand the page purpose\n    Then I should see content that supports team Admin review page for pending team access requests\n    And I should understand what ResearchOps task I can complete from this page\n\n  Scenario: Use \"Default state\" in the ResearchOps journey\n    Given I am using the review team access requests page\n    Then I should understand the research value of this part of the journey\n    And I should see that initial loaded page state\n    And I should be given enough service context to decide what to do next\n\n  Scenario: Understand the default view\n    Then I should understand what ResearchOps task this page supports\n    And I should be able to choose an appropriate next action for my work\n\n  Scenario: Use this part of the journey accessibly\n    Then the page should have one clear main heading\n    And headings, labels and controls should be exposed in a logical reading order\n    And I should be able to move through the available controls using a keyboard\n    And I should be able to activate links, buttons and form controls without a mouse",
+          "acceptanceCriteria": "Feature: Use the Review team access requests page\n\n  As a user researcher\n  I want to use the review team access requests page\n  So that I can continue the right ResearchOps task with confidence\n\n  Background:\n    Given I am a user researcher\n    When I visit the review team access requests page\n\n  Scenario: Understand the page purpose\n    Then I should see content that supports team Admin review page for pending team access requests\n    And I should understand what ResearchOps task I can complete from this page\n\n  Scenario: Use \"Pending team access requests\" in the ResearchOps journey\n    Given I am using the review team access requests page\n    Then I should understand the research value of this part of the journey\n    And I should see that team access review page captured with a deterministic pending request\n    And I should be given enough service context to decide what to do next\n\n  Scenario: Complete the interaction needed for this ResearchOps task\n    Given I am ready to continue this ResearchOps journey\n    Then I should see \"Request from Morgan Lee\"\n    Then I should be able to continue the ResearchOps journey with confidence\n\n  Scenario: Use this part of the journey accessibly\n    Then the page should have one clear main heading\n    And headings, labels and controls should be exposed in a logical reading order\n    And I should be able to move through the available controls using a keyboard\n    And I should be able to activate links, buttons and form controls without a mouse",
+          "criteriaMaturity": {
+            "label": "Needs review",
+            "slug": "needs-review",
+            "description": "This state uses generated acceptance criteria that require UCD review before approval."
+          }
+        },
+        {
+          "id": "decision-error",
+          "title": "Team access decision error",
+          "description": "Error state shown when a pending team access decision cannot be completed.",
+          "url": "https://research-operations.com/pages/team/access-requests/",
+          "status": "captured",
+          "captures": [
+            {
+              "profile": "desktop",
+              "profileTitle": "Desktop",
+              "status": "captured",
+              "url": "https://research-operations.com/pages/team/access-requests/",
+              "durationMs": 2124,
+              "screenshot": "screenshots/desktop/team-administration__team-access-requests__decision-error.png"
+            },
+            {
+              "profile": "mobile",
+              "profileTitle": "Mobile",
+              "status": "captured",
+              "url": "https://research-operations.com/pages/team/access-requests/",
+              "durationMs": 2365,
+              "screenshot": "screenshots/mobile/team-administration__team-access-requests__decision-error.png"
+            }
+          ],
+          "designRisk": {
+            "risk": "No specific design risk recorded for this state.",
+            "impact": "No additional impact has been identified beyond the standard route review.",
+            "recommendedChange": "Review this state during the next design critique and update the walkthrough registry if a risk is found.",
+            "owner": "UCD team",
+            "status": "No risk recorded"
+          },
+          "evidenceTypes": [
+            "Screenshot evidence",
+            "Route-level Cucumber evidence",
+            "State-level acceptance criteria",
+            "Accessibility evidence",
+            "Design-risk notes"
+          ],
+          "screenshot": "screenshots/desktop/team-administration__team-access-requests__decision-error.png",
+          "acceptanceCriteria": "Feature: Use the Review team access requests page\n\n  As a user researcher\n  I want to use the review team access requests page\n  So that I can continue the right ResearchOps task with confidence\n\n  Background:\n    Given I am a user researcher\n    When I visit the review team access requests page\n\n  Scenario: Understand the page purpose\n    Then I should see content that supports team Admin review page for pending team access requests\n    And I should understand what ResearchOps task I can complete from this page\n\n  Scenario: Use \"Team access decision error\" in the ResearchOps journey\n    Given I am using the review team access requests page\n    Then I should understand the research value of this part of the journey\n    And I should see that error state shown when a pending team access decision cannot be completed\n    And I should be given enough service context to decide what to do next\n\n  Scenario: Complete the interaction needed for this ResearchOps task\n    Given I am ready to continue this ResearchOps journey\n    Then the \"[data-approve-request=\\\"tar_visual_001\\\"]\" section should be available\n    And I select \"[data-approve-request=\\\"tar_visual_001\\\"]\"\n    Then I should see \"Team access request could not be completed.\"\n    Then I should be able to continue the ResearchOps journey with confidence\n\n  Scenario: Use this part of the journey accessibly\n    Then the page should have one clear main heading\n    And headings, labels and controls should be exposed in a logical reading order\n    And I should be able to move through the available controls using a keyboard\n    And I should be able to activate links, buttons and form controls without a mouse",
           "criteriaMaturity": {
             "label": "Needs review",
             "slug": "needs-review",
@@ -2781,7 +3057,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://research-operations.com/pages/team/role-assignments/index.html",
-              "durationMs": 1487,
+              "durationMs": 1916,
               "screenshot": "screenshots/desktop/team-administration__team-role-assignments__default.png"
             },
             {
@@ -2789,7 +3065,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://research-operations.com/pages/team/role-assignments/index.html",
-              "durationMs": 1651,
+              "durationMs": 2301,
               "screenshot": "screenshots/mobile/team-administration__team-role-assignments__default.png"
             }
           ],
@@ -2836,7 +3112,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://research-operations.com/pages/search/index.html",
-              "durationMs": 1060,
+              "durationMs": 1397,
               "screenshot": "screenshots/desktop/utilities__search__default.png"
             },
             {
@@ -2844,7 +3120,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://research-operations.com/pages/search/index.html",
-              "durationMs": 1171,
+              "durationMs": 1469,
               "screenshot": "screenshots/mobile/utilities__search__default.png"
             }
           ],
@@ -2891,7 +3167,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://research-operations.com/pages/notes/index.html",
-              "durationMs": 1105,
+              "durationMs": 1439,
               "screenshot": "screenshots/desktop/utilities__notes__default.png"
             },
             {
@@ -2899,7 +3175,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://research-operations.com/pages/notes/index.html",
-              "durationMs": 1144,
+              "durationMs": 1591,
               "screenshot": "screenshots/mobile/utilities__notes__default.png"
             }
           ],
@@ -2946,7 +3222,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://research-operations.com/pages/consent/index.html",
-              "durationMs": 1141,
+              "durationMs": 1460,
               "screenshot": "screenshots/desktop/utilities__consent__default.png"
             },
             {
@@ -2954,7 +3230,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://research-operations.com/pages/consent/index.html",
-              "durationMs": 1167,
+              "durationMs": 1665,
               "screenshot": "screenshots/mobile/utilities__consent__default.png"
             }
           ],
@@ -3001,7 +3277,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://research-operations.com/pages/sessions/index.html",
-              "durationMs": 1245,
+              "durationMs": 1425,
               "screenshot": "screenshots/desktop/utilities__sessions__default.png"
             },
             {
@@ -3009,7 +3285,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://research-operations.com/pages/sessions/index.html",
-              "durationMs": 1140,
+              "durationMs": 1625,
               "screenshot": "screenshots/mobile/utilities__sessions__default.png"
             }
           ],
@@ -3056,7 +3332,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://research-operations.com/pages/repository/",
-              "durationMs": 2382,
+              "durationMs": 2649,
               "screenshot": "screenshots/desktop/research-repository__repository__default.png"
             },
             {
@@ -3064,7 +3340,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://research-operations.com/pages/repository/",
-              "durationMs": 2424,
+              "durationMs": 3293,
               "screenshot": "screenshots/mobile/research-repository__repository__default.png"
             }
           ],
@@ -3111,7 +3387,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://research-operations.com/pages/repository/service-areas/?service_area=assisted-digital-support",
-              "durationMs": 1387,
+              "durationMs": 1741,
               "screenshot": "screenshots/desktop/research-repository__repository-service-areas__default.png"
             },
             {
@@ -3119,7 +3395,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://research-operations.com/pages/repository/service-areas/?service_area=assisted-digital-support",
-              "durationMs": 1504,
+              "durationMs": 2167,
               "screenshot": "screenshots/mobile/research-repository__repository-service-areas__default.png"
             }
           ],
@@ -3166,7 +3442,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://research-operations.com/pages/repository/user-groups/?user_group=frontline-staff",
-              "durationMs": 1315,
+              "durationMs": 1721,
               "screenshot": "screenshots/desktop/research-repository__repository-user-groups__default.png"
             },
             {
@@ -3174,7 +3450,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://research-operations.com/pages/repository/user-groups/?user_group=frontline-staff",
-              "durationMs": 1517,
+              "durationMs": 2032,
               "screenshot": "screenshots/mobile/research-repository__repository-user-groups__default.png"
             }
           ],
@@ -3221,7 +3497,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://research-operations.com/pages/repository/methods/?method=interviews",
-              "durationMs": 1338,
+              "durationMs": 1741,
               "screenshot": "screenshots/desktop/research-repository__repository-methods__default.png"
             },
             {
@@ -3229,7 +3505,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://research-operations.com/pages/repository/methods/?method=interviews",
-              "durationMs": 1516,
+              "durationMs": 2033,
               "screenshot": "screenshots/mobile/research-repository__repository-methods__default.png"
             }
           ],
@@ -3276,7 +3552,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://research-operations.com/pages/repository/risks/?risk_area=evidence-boundaries",
-              "durationMs": 1456,
+              "durationMs": 1722,
               "screenshot": "screenshots/desktop/research-repository__repository-risks__default.png"
             },
             {
@@ -3284,7 +3560,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://research-operations.com/pages/repository/risks/?risk_area=evidence-boundaries",
-              "durationMs": 1515,
+              "durationMs": 2048,
               "screenshot": "screenshots/mobile/research-repository__repository-risks__default.png"
             }
           ],
@@ -3331,7 +3607,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://research-operations.com/pages/repository/artefacts/",
-              "durationMs": 1296,
+              "durationMs": 1598,
               "screenshot": "screenshots/desktop/research-repository__repository-artefacts__default.png"
             },
             {
@@ -3339,7 +3615,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://research-operations.com/pages/repository/artefacts/",
-              "durationMs": 1378,
+              "durationMs": 1828,
               "screenshot": "screenshots/mobile/research-repository__repository-artefacts__default.png"
             }
           ],
@@ -3386,7 +3662,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://research-operations.com/pages/repository/artefacts/staff-evidence-boundaries/",
-              "durationMs": 1215,
+              "durationMs": 1584,
               "screenshot": "screenshots/desktop/research-repository__repository-artefacts-staff-evidence-boundaries__default.png"
             },
             {
@@ -3394,7 +3670,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://research-operations.com/pages/repository/artefacts/staff-evidence-boundaries/",
-              "durationMs": 1363,
+              "durationMs": 1813,
               "screenshot": "screenshots/mobile/research-repository__repository-artefacts-staff-evidence-boundaries__default.png"
             }
           ],
@@ -3441,7 +3717,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://research-operations.com/pages/repository/artefacts/check-answers-review-anxiety/",
-              "durationMs": 1283,
+              "durationMs": 1648,
               "screenshot": "screenshots/desktop/research-repository__repository-artefacts-check-answers-review-anxiety__default.png"
             },
             {
@@ -3449,7 +3725,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://research-operations.com/pages/repository/artefacts/check-answers-review-anxiety/",
-              "durationMs": 1383,
+              "durationMs": 1747,
               "screenshot": "screenshots/mobile/research-repository__repository-artefacts-check-answers-review-anxiety__default.png"
             }
           ],
@@ -3496,7 +3772,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://research-operations.com/pages/repository/artefacts/consent-state-workarounds/",
-              "durationMs": 1358,
+              "durationMs": 1577,
               "screenshot": "screenshots/desktop/research-repository__repository-artefacts-consent-state-workarounds__default.png"
             },
             {
@@ -3504,7 +3780,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://research-operations.com/pages/repository/artefacts/consent-state-workarounds/",
-              "durationMs": 1382,
+              "durationMs": 1747,
               "screenshot": "screenshots/mobile/research-repository__repository-artefacts-consent-state-workarounds__default.png"
             }
           ],
@@ -3551,7 +3827,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://research-operations.com/pages/repository/artefacts/lightweight-capture-before-tagging/",
-              "durationMs": 1206,
+              "durationMs": 1589,
               "screenshot": "screenshots/desktop/research-repository__repository-artefacts-lightweight-capture-before-tagging__default.png"
             },
             {
@@ -3559,7 +3835,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://research-operations.com/pages/repository/artefacts/lightweight-capture-before-tagging/",
-              "durationMs": 1314,
+              "durationMs": 1748,
               "screenshot": "screenshots/mobile/research-repository__repository-artefacts-lightweight-capture-before-tagging__default.png"
             }
           ],
@@ -3606,7 +3882,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://research-operations.com/pages/repository/review/candidates/new/",
-              "durationMs": 1329,
+              "durationMs": 1842,
               "screenshot": "screenshots/desktop/research-repository__repository-review-candidates-new__default.png"
             },
             {
@@ -3614,7 +3890,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://research-operations.com/pages/repository/review/candidates/new/",
-              "durationMs": 1598,
+              "durationMs": 2351,
               "screenshot": "screenshots/mobile/research-repository__repository-review-candidates-new__default.png"
             }
           ],
@@ -3661,7 +3937,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://research-operations.com/pages/repository/review/candidates/",
-              "durationMs": 1407,
+              "durationMs": 1825,
               "screenshot": "screenshots/desktop/research-repository__repository-review-candidates__default.png"
             },
             {
@@ -3669,7 +3945,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://research-operations.com/pages/repository/review/candidates/",
-              "durationMs": 1634,
+              "durationMs": 2625,
               "screenshot": "screenshots/mobile/research-repository__repository-review-candidates__default.png"
             }
           ],
@@ -3716,7 +3992,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://research-operations.com/pages/repository/review/stale/",
-              "durationMs": 1314,
+              "durationMs": 1826,
               "screenshot": "screenshots/desktop/research-repository__repository-review-stale__default.png"
             },
             {
@@ -3724,7 +4000,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://research-operations.com/pages/repository/review/stale/",
-              "durationMs": 1632,
+              "durationMs": 2486,
               "screenshot": "screenshots/mobile/research-repository__repository-review-stale__default.png"
             }
           ],
@@ -3771,7 +4047,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://research-operations.com/pages/repository/review/withdrawn/",
-              "durationMs": 1332,
+              "durationMs": 1870,
               "screenshot": "screenshots/desktop/research-repository__repository-review-withdrawn__default.png"
             },
             {
@@ -3779,7 +4055,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://research-operations.com/pages/repository/review/withdrawn/",
-              "durationMs": 1657,
+              "durationMs": 2405,
               "screenshot": "screenshots/mobile/research-repository__repository-review-withdrawn__default.png"
             }
           ],

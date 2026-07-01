@@ -45,7 +45,7 @@ h3, h4, h5 { margin: 0 0 6px; }
 		<div>
 			<h1>ResearchOps application visual walkthrough</h1>
 			<p>Generated evidence of the current application build, covering registered pages and important interaction states.</p>
-			<p class="meta">Run started: 2026-07-01T18:18:13.587Z · Base URL: https://research-operations.com/</p>
+			<p class="meta">Run started: 2026-07-01T19:28:34.873Z · Base URL: https://research-operations.com/</p>
 		</div>
 		<p class="badge">0 failures</p>
 	</header>
@@ -1546,7 +1546,7 @@ h3, h4, h5 { margin: 0 0 6px; }
 	<article class="state" id="project-dashboard-add-study-default" data-review-group-id="" data-review-evidence-level="generated" data-suppress-generated-state-criteria="false">
 		<div class="state__header">
 			<h4>Add study with parent project context</h4>
-			<p class="meta">captured · https://research-operations.com/pages/study/new/?pid=recVisualProject001</p>
+			<p class="meta">captured · https://research-operations.com/pages/study/new/?id=recVisualProject001</p>
 			<p>Add-study workflow captured with the parent project ID present.</p>
 			
 		<div class="evidence-types" aria-label="Evidence types for this state">
@@ -1582,7 +1582,7 @@ h3, h4, h5 { margin: 0 0 6px; }
 
   Scenario: Complete the interaction needed for this ResearchOps task
     Given I am ready to continue this ResearchOps journey
-    Then I should see &quot;Add study&quot;
+    Then I should see &quot;Assisted Digital Support Discovery&quot;
     Then I should be able to continue the ResearchOps journey with confidence
 
   Scenario: Use this part of the journey accessibly
@@ -1607,15 +1607,91 @@ h3, h4, h5 { margin: 0 0 6px; }
 			
 		<section class="capture" data-profile="desktop">
 			<h5>Screenshot evidence</h5>
-			<p class="meta">Desktop · captured · https://research-operations.com/pages/study/new/?pid=recVisualProject001</p>
+			<p class="meta">Desktop · captured · https://research-operations.com/pages/study/new/?id=recVisualProject001</p>
 			
 			<figure class="capture__figure"><a href="screenshots/desktop/projects__project-dashboard-add-study__default.png"><img loading="lazy" src="screenshots/desktop/projects__project-dashboard-add-study__default.png" alt="Screenshot of Add study in the Add study with parent project context state for Desktop." /></a><figcaption>Add study — Add study with parent project context — Desktop</figcaption></figure>
 		</section>
 		<section class="capture" data-profile="mobile">
 			<h5>Screenshot evidence</h5>
-			<p class="meta">Mobile · captured · https://research-operations.com/pages/study/new/?pid=recVisualProject001</p>
+			<p class="meta">Mobile · captured · https://research-operations.com/pages/study/new/?id=recVisualProject001</p>
 			
 			<figure class="capture__figure"><a href="screenshots/mobile/projects__project-dashboard-add-study__default.png"><img loading="lazy" src="screenshots/mobile/projects__project-dashboard-add-study__default.png" alt="Screenshot of Add study in the Add study with parent project context state for Mobile." /></a><figcaption>Add study — Add study with parent project context — Mobile</figcaption></figure>
+		</section>
+		</div>
+	</article>
+	<article class="state" id="project-dashboard-add-study-missing-project-id-error" data-review-group-id="" data-review-evidence-level="generated" data-suppress-generated-state-criteria="false">
+		<div class="state__header">
+			<h4>Missing project ID error</h4>
+			<p class="meta">captured · https://research-operations.com/pages/study/new/index.html</p>
+			<p>Validation state shown when the add-study route is opened without parent project context.</p>
+			
+		<div class="evidence-types" aria-label="Evidence types for this state">
+			<span>Screenshot evidence</span><span>Route-level Cucumber evidence</span><span>State-level acceptance criteria</span><span>Accessibility evidence</span><span>Design-risk notes</span>
+		</div>
+		</div>
+		
+		<details class="state-acceptance-criteria" data-acceptance-criteria-source="generated">
+			<summary>What this screen state should support</summary>
+			<div class="state-acceptance-criteria__meta">
+				<strong class="criteria-tag criteria-tag--needs-review">Needs review</strong>
+				<span>Format: Gherkin acceptance criteria</span>
+			</div>
+			<pre class="gherkin-criteria"><code>Feature: Add a study to a research project
+
+  As a user researcher
+  I want to add a study to the correct project
+  So that study planning remains traceable to the project context
+
+  Background:
+    Given I am a user researcher
+    When I visit the add study journey
+
+  Scenario: Understand the page purpose
+    Then I should see content that supports create a study from the project dashboard action workflow
+    And I should understand what ResearchOps task I can complete from this page
+
+  Scenario: Use &quot;Missing project ID error&quot; in the ResearchOps journey
+    Given I am using the add study journey
+    Then I should understand the research value of this part of the journey
+    And I should see that validation state shown when the add-study route is opened without parent project context
+    And I should be given enough service context to decide what to do next
+
+  Scenario: Complete the interaction needed for this ResearchOps task
+    Given I am ready to continue this ResearchOps journey
+    Then I should see &quot;Missing project ID&quot;
+    Then I should be able to continue the ResearchOps journey with confidence
+
+  Scenario: Use this part of the journey accessibly
+    Then the page should have one clear main heading
+    And headings, labels and controls should be exposed in a logical reading order
+    And I should be able to move through the available controls using a keyboard
+    And I should be able to activate links, buttons and form controls without a mouse</code></pre>
+		</details>
+		
+		<section class="design-risk" aria-label="Design-risk notes">
+			<h5>Design-risk notes</h5>
+			
+		<dl class="review-risk-list">
+			<div><dt>Design risk</dt><dd>No specific design risk recorded for this state.</dd></div>
+			<div><dt>Impact</dt><dd>No additional impact has been identified beyond the standard route review.</dd></div>
+			<div><dt>Recommended change</dt><dd>Review this state during the next design critique and update the walkthrough registry if a risk is found.</dd></div>
+			<div><dt>Owner</dt><dd>UCD team</dd></div>
+			<div><dt>Status</dt><dd>No risk recorded</dd></div>
+		</dl>
+		</section>
+		<div class="state__captures">
+			
+		<section class="capture" data-profile="desktop">
+			<h5>Screenshot evidence</h5>
+			<p class="meta">Desktop · captured · https://research-operations.com/pages/study/new/index.html</p>
+			
+			<figure class="capture__figure"><a href="screenshots/desktop/projects__project-dashboard-add-study__missing-project-id-error.png"><img loading="lazy" src="screenshots/desktop/projects__project-dashboard-add-study__missing-project-id-error.png" alt="Screenshot of Add study in the Missing project ID error state for Desktop." /></a><figcaption>Add study — Missing project ID error — Desktop</figcaption></figure>
+		</section>
+		<section class="capture" data-profile="mobile">
+			<h5>Screenshot evidence</h5>
+			<p class="meta">Mobile · captured · https://research-operations.com/pages/study/new/index.html</p>
+			
+			<figure class="capture__figure"><a href="screenshots/mobile/projects__project-dashboard-add-study__missing-project-id-error.png"><img loading="lazy" src="screenshots/mobile/projects__project-dashboard-add-study__missing-project-id-error.png" alt="Screenshot of Add study in the Missing project ID error state for Mobile." /></a><figcaption>Add study — Missing project ID error — Mobile</figcaption></figure>
 		</section>
 		</div>
 	</article>
@@ -1980,9 +2056,9 @@ h3, h4, h5 { margin: 0 0 6px; }
 			
 	<article class="state" id="journal-entry-default" data-review-group-id="" data-review-evidence-level="generated" data-suppress-generated-state-criteria="false">
 		<div class="state__header">
-			<h4>Journal entry route</h4>
-			<p class="meta">captured · https://research-operations.com/pages/journal/entry/index.html</p>
-			<p>Journal entry detail route captured before API hydration.</p>
+			<h4>Journal entry with saved content</h4>
+			<p class="meta">captured · https://research-operations.com/pages/journal/entry/?id=recVisualJournal001&amp;project=recVisualProject001</p>
+			<p>Journal entry detail captured with deterministic project and entry context.</p>
 			
 		<div class="evidence-types" aria-label="Evidence types for this state">
 			<span>Screenshot evidence</span><span>Route-level Cucumber evidence</span><span>State-level acceptance criteria</span><span>Accessibility evidence</span><span>Design-risk notes</span>
@@ -2009,15 +2085,91 @@ h3, h4, h5 { margin: 0 0 6px; }
     Then I should see content that supports journal entry detail page
     And I should understand what ResearchOps task I can complete from this page
 
-  Scenario: Use &quot;Journal entry route&quot; in the ResearchOps journey
+  Scenario: Use &quot;Journal entry with saved content&quot; in the ResearchOps journey
     Given I am using the journal entry page
     Then I should understand the research value of this part of the journey
-    And I should see that journal entry detail route captured before API hydration
+    And I should see that journal entry detail captured with deterministic project and entry context
     And I should be given enough service context to decide what to do next
 
   Scenario: Complete the interaction needed for this ResearchOps task
     Given I am ready to continue this ResearchOps journey
-    Then I should see &quot;Journal entry&quot;
+    Then I should see &quot;Reflection on support handoffs&quot;
+    Then I should be able to continue the ResearchOps journey with confidence
+
+  Scenario: Use this part of the journey accessibly
+    Then the page should have one clear main heading
+    And headings, labels and controls should be exposed in a logical reading order
+    And I should be able to move through the available controls using a keyboard
+    And I should be able to activate links, buttons and form controls without a mouse</code></pre>
+		</details>
+		
+		<section class="design-risk" aria-label="Design-risk notes">
+			<h5>Design-risk notes</h5>
+			
+		<dl class="review-risk-list">
+			<div><dt>Design risk</dt><dd>No specific design risk recorded for this state.</dd></div>
+			<div><dt>Impact</dt><dd>No additional impact has been identified beyond the standard route review.</dd></div>
+			<div><dt>Recommended change</dt><dd>Review this state during the next design critique and update the walkthrough registry if a risk is found.</dd></div>
+			<div><dt>Owner</dt><dd>UCD team</dd></div>
+			<div><dt>Status</dt><dd>No risk recorded</dd></div>
+		</dl>
+		</section>
+		<div class="state__captures">
+			
+		<section class="capture" data-profile="desktop">
+			<h5>Screenshot evidence</h5>
+			<p class="meta">Desktop · captured · https://research-operations.com/pages/journal/entry/?id=recVisualJournal001&amp;project=recVisualProject001</p>
+			
+			<figure class="capture__figure"><a href="screenshots/desktop/projects__journal-entry__default.png"><img loading="lazy" src="screenshots/desktop/projects__journal-entry__default.png" alt="Screenshot of Journal entry in the Journal entry with saved content state for Desktop." /></a><figcaption>Journal entry — Journal entry with saved content — Desktop</figcaption></figure>
+		</section>
+		<section class="capture" data-profile="mobile">
+			<h5>Screenshot evidence</h5>
+			<p class="meta">Mobile · captured · https://research-operations.com/pages/journal/entry/?id=recVisualJournal001&amp;project=recVisualProject001</p>
+			
+			<figure class="capture__figure"><a href="screenshots/mobile/projects__journal-entry__default.png"><img loading="lazy" src="screenshots/mobile/projects__journal-entry__default.png" alt="Screenshot of Journal entry in the Journal entry with saved content state for Mobile." /></a><figcaption>Journal entry — Journal entry with saved content — Mobile</figcaption></figure>
+		</section>
+		</div>
+	</article>
+	<article class="state" id="journal-entry-missing-journal-entry-id-error" data-review-group-id="" data-review-evidence-level="generated" data-suppress-generated-state-criteria="false">
+		<div class="state__header">
+			<h4>Missing journal entry ID error</h4>
+			<p class="meta">captured · https://research-operations.com/pages/journal/entry/index.html</p>
+			<p>Error state shown when the journal detail route is opened without an entry ID.</p>
+			
+		<div class="evidence-types" aria-label="Evidence types for this state">
+			<span>Screenshot evidence</span><span>Route-level Cucumber evidence</span><span>State-level acceptance criteria</span><span>Accessibility evidence</span><span>Design-risk notes</span>
+		</div>
+		</div>
+		
+		<details class="state-acceptance-criteria" data-acceptance-criteria-source="generated">
+			<summary>What this screen state should support</summary>
+			<div class="state-acceptance-criteria__meta">
+				<strong class="criteria-tag criteria-tag--needs-review">Needs review</strong>
+				<span>Format: Gherkin acceptance criteria</span>
+			</div>
+			<pre class="gherkin-criteria"><code>Feature: Use the Journal entry page
+
+  As a user researcher
+  I want to use the journal entry page
+  So that I can continue the right ResearchOps task with confidence
+
+  Background:
+    Given I am a user researcher
+    When I visit the journal entry page
+
+  Scenario: Understand the page purpose
+    Then I should see content that supports journal entry detail page
+    And I should understand what ResearchOps task I can complete from this page
+
+  Scenario: Use &quot;Missing journal entry ID error&quot; in the ResearchOps journey
+    Given I am using the journal entry page
+    Then I should understand the research value of this part of the journey
+    And I should see that error state shown when the journal detail route is opened without an entry ID
+    And I should be given enough service context to decide what to do next
+
+  Scenario: Complete the interaction needed for this ResearchOps task
+    Given I am ready to continue this ResearchOps journey
+    Then I should see &quot;Missing journal entry ID.&quot;
     Then I should be able to continue the ResearchOps journey with confidence
 
   Scenario: Use this part of the journey accessibly
@@ -2044,13 +2196,13 @@ h3, h4, h5 { margin: 0 0 6px; }
 			<h5>Screenshot evidence</h5>
 			<p class="meta">Desktop · captured · https://research-operations.com/pages/journal/entry/index.html</p>
 			
-			<figure class="capture__figure"><a href="screenshots/desktop/projects__journal-entry__default.png"><img loading="lazy" src="screenshots/desktop/projects__journal-entry__default.png" alt="Screenshot of Journal entry in the Journal entry route state for Desktop." /></a><figcaption>Journal entry — Journal entry route — Desktop</figcaption></figure>
+			<figure class="capture__figure"><a href="screenshots/desktop/projects__journal-entry__missing-journal-entry-id-error.png"><img loading="lazy" src="screenshots/desktop/projects__journal-entry__missing-journal-entry-id-error.png" alt="Screenshot of Journal entry in the Missing journal entry ID error state for Desktop." /></a><figcaption>Journal entry — Missing journal entry ID error — Desktop</figcaption></figure>
 		</section>
 		<section class="capture" data-profile="mobile">
 			<h5>Screenshot evidence</h5>
 			<p class="meta">Mobile · captured · https://research-operations.com/pages/journal/entry/index.html</p>
 			
-			<figure class="capture__figure"><a href="screenshots/mobile/projects__journal-entry__default.png"><img loading="lazy" src="screenshots/mobile/projects__journal-entry__default.png" alt="Screenshot of Journal entry in the Journal entry route state for Mobile." /></a><figcaption>Journal entry — Journal entry route — Mobile</figcaption></figure>
+			<figure class="capture__figure"><a href="screenshots/mobile/projects__journal-entry__missing-journal-entry-id-error.png"><img loading="lazy" src="screenshots/mobile/projects__journal-entry__missing-journal-entry-id-error.png" alt="Screenshot of Journal entry in the Missing journal entry ID error state for Mobile." /></a><figcaption>Journal entry — Missing journal entry ID error — Mobile</figcaption></figure>
 		</section>
 		</div>
 	</article>
@@ -2067,9 +2219,9 @@ h3, h4, h5 { margin: 0 0 6px; }
 			
 	<article class="state" id="journal-entry-edit-default" data-review-group-id="" data-review-evidence-level="generated" data-suppress-generated-state-criteria="false">
 		<div class="state__header">
-			<h4>Journal entry edit route</h4>
-			<p class="meta">captured · https://research-operations.com/pages/journal/edit/index.html</p>
-			<p>Journal entry edit route captured before API hydration.</p>
+			<h4>Edit journal entry with saved content</h4>
+			<p class="meta">captured · https://research-operations.com/pages/journal/edit/?id=recVisualJournal001&amp;project=recVisualProject001</p>
+			<p>Journal entry edit form captured with deterministic project and entry context.</p>
 			
 		<div class="evidence-types" aria-label="Evidence types for this state">
 			<span>Screenshot evidence</span><span>Route-level Cucumber evidence</span><span>State-level acceptance criteria</span><span>Accessibility evidence</span><span>Design-risk notes</span>
@@ -2096,15 +2248,91 @@ h3, h4, h5 { margin: 0 0 6px; }
     Then I should see content that supports journal entry edit page
     And I should understand what ResearchOps task I can complete from this page
 
-  Scenario: Use &quot;Journal entry edit route&quot; in the ResearchOps journey
+  Scenario: Use &quot;Edit journal entry with saved content&quot; in the ResearchOps journey
     Given I am using the edit journal entry page
     Then I should understand the research value of this part of the journey
-    And I should see that journal entry edit route captured before API hydration
+    And I should see that journal entry edit form captured with deterministic project and entry context
     And I should be given enough service context to decide what to do next
 
   Scenario: Complete the interaction needed for this ResearchOps task
     Given I am ready to continue this ResearchOps journey
-    Then I should see &quot;Edit journal entry&quot;
+    Then the &quot;journal entry edit form&quot; section should be available
+    Then I should be able to continue the ResearchOps journey with confidence
+
+  Scenario: Use this part of the journey accessibly
+    Then the page should have one clear main heading
+    And headings, labels and controls should be exposed in a logical reading order
+    And I should be able to move through the available controls using a keyboard
+    And I should be able to activate links, buttons and form controls without a mouse</code></pre>
+		</details>
+		
+		<section class="design-risk" aria-label="Design-risk notes">
+			<h5>Design-risk notes</h5>
+			
+		<dl class="review-risk-list">
+			<div><dt>Design risk</dt><dd>No specific design risk recorded for this state.</dd></div>
+			<div><dt>Impact</dt><dd>No additional impact has been identified beyond the standard route review.</dd></div>
+			<div><dt>Recommended change</dt><dd>Review this state during the next design critique and update the walkthrough registry if a risk is found.</dd></div>
+			<div><dt>Owner</dt><dd>UCD team</dd></div>
+			<div><dt>Status</dt><dd>No risk recorded</dd></div>
+		</dl>
+		</section>
+		<div class="state__captures">
+			
+		<section class="capture" data-profile="desktop">
+			<h5>Screenshot evidence</h5>
+			<p class="meta">Desktop · captured · https://research-operations.com/pages/journal/edit/?id=recVisualJournal001&amp;project=recVisualProject001</p>
+			
+			<figure class="capture__figure"><a href="screenshots/desktop/projects__journal-entry-edit__default.png"><img loading="lazy" src="screenshots/desktop/projects__journal-entry-edit__default.png" alt="Screenshot of Edit journal entry in the Edit journal entry with saved content state for Desktop." /></a><figcaption>Edit journal entry — Edit journal entry with saved content — Desktop</figcaption></figure>
+		</section>
+		<section class="capture" data-profile="mobile">
+			<h5>Screenshot evidence</h5>
+			<p class="meta">Mobile · captured · https://research-operations.com/pages/journal/edit/?id=recVisualJournal001&amp;project=recVisualProject001</p>
+			
+			<figure class="capture__figure"><a href="screenshots/mobile/projects__journal-entry-edit__default.png"><img loading="lazy" src="screenshots/mobile/projects__journal-entry-edit__default.png" alt="Screenshot of Edit journal entry in the Edit journal entry with saved content state for Mobile." /></a><figcaption>Edit journal entry — Edit journal entry with saved content — Mobile</figcaption></figure>
+		</section>
+		</div>
+	</article>
+	<article class="state" id="journal-entry-edit-missing-journal-entry-id-error" data-review-group-id="" data-review-evidence-level="generated" data-suppress-generated-state-criteria="false">
+		<div class="state__header">
+			<h4>Missing journal entry ID error</h4>
+			<p class="meta">captured · https://research-operations.com/pages/journal/edit/index.html</p>
+			<p>Error state shown when the journal edit route is opened without an entry ID.</p>
+			
+		<div class="evidence-types" aria-label="Evidence types for this state">
+			<span>Screenshot evidence</span><span>Route-level Cucumber evidence</span><span>State-level acceptance criteria</span><span>Accessibility evidence</span><span>Design-risk notes</span>
+		</div>
+		</div>
+		
+		<details class="state-acceptance-criteria" data-acceptance-criteria-source="generated">
+			<summary>What this screen state should support</summary>
+			<div class="state-acceptance-criteria__meta">
+				<strong class="criteria-tag criteria-tag--needs-review">Needs review</strong>
+				<span>Format: Gherkin acceptance criteria</span>
+			</div>
+			<pre class="gherkin-criteria"><code>Feature: Use the Edit journal entry page
+
+  As a user researcher
+  I want to use the edit journal entry page
+  So that I can continue the right ResearchOps task with confidence
+
+  Background:
+    Given I am a user researcher
+    When I visit the edit journal entry page
+
+  Scenario: Understand the page purpose
+    Then I should see content that supports journal entry edit page
+    And I should understand what ResearchOps task I can complete from this page
+
+  Scenario: Use &quot;Missing journal entry ID error&quot; in the ResearchOps journey
+    Given I am using the edit journal entry page
+    Then I should understand the research value of this part of the journey
+    And I should see that error state shown when the journal edit route is opened without an entry ID
+    And I should be given enough service context to decide what to do next
+
+  Scenario: Complete the interaction needed for this ResearchOps task
+    Given I am ready to continue this ResearchOps journey
+    Then I should see &quot;Missing journal entry ID.&quot;
     Then I should be able to continue the ResearchOps journey with confidence
 
   Scenario: Use this part of the journey accessibly
@@ -2131,13 +2359,13 @@ h3, h4, h5 { margin: 0 0 6px; }
 			<h5>Screenshot evidence</h5>
 			<p class="meta">Desktop · captured · https://research-operations.com/pages/journal/edit/index.html</p>
 			
-			<figure class="capture__figure"><a href="screenshots/desktop/projects__journal-entry-edit__default.png"><img loading="lazy" src="screenshots/desktop/projects__journal-entry-edit__default.png" alt="Screenshot of Edit journal entry in the Journal entry edit route state for Desktop." /></a><figcaption>Edit journal entry — Journal entry edit route — Desktop</figcaption></figure>
+			<figure class="capture__figure"><a href="screenshots/desktop/projects__journal-entry-edit__missing-journal-entry-id-error.png"><img loading="lazy" src="screenshots/desktop/projects__journal-entry-edit__missing-journal-entry-id-error.png" alt="Screenshot of Edit journal entry in the Missing journal entry ID error state for Desktop." /></a><figcaption>Edit journal entry — Missing journal entry ID error — Desktop</figcaption></figure>
 		</section>
 		<section class="capture" data-profile="mobile">
 			<h5>Screenshot evidence</h5>
 			<p class="meta">Mobile · captured · https://research-operations.com/pages/journal/edit/index.html</p>
 			
-			<figure class="capture__figure"><a href="screenshots/mobile/projects__journal-entry-edit__default.png"><img loading="lazy" src="screenshots/mobile/projects__journal-entry-edit__default.png" alt="Screenshot of Edit journal entry in the Journal entry edit route state for Mobile." /></a><figcaption>Edit journal entry — Journal entry edit route — Mobile</figcaption></figure>
+			<figure class="capture__figure"><a href="screenshots/mobile/projects__journal-entry-edit__missing-journal-entry-id-error.png"><img loading="lazy" src="screenshots/mobile/projects__journal-entry-edit__missing-journal-entry-id-error.png" alt="Screenshot of Edit journal entry in the Missing journal entry ID error state for Mobile." /></a><figcaption>Edit journal entry — Missing journal entry ID error — Mobile</figcaption></figure>
 		</section>
 		</div>
 	</article>
@@ -2245,9 +2473,9 @@ h3, h4, h5 { margin: 0 0 6px; }
 			
 	<article class="state" id="study-guides-default" data-review-group-id="" data-review-evidence-level="generated" data-suppress-generated-state-criteria="false">
 		<div class="state__header">
-			<h4>Discussion guides with study context</h4>
+			<h4>Discussion guides with saved source</h4>
 			<p class="meta">captured · https://research-operations.com/pages/study/guides/?pid=recVisualProject001&amp;sid=recVisualStudy001</p>
-			<p>Discussion guides page captured with the canonical Study record ID.</p>
+			<p>Discussion guides page captured with the canonical Study record ID and opened guide source.</p>
 			
 		<div class="evidence-types" aria-label="Evidence types for this state">
 			<span>Screenshot evidence</span><span>Route-level Cucumber evidence</span><span>State-level acceptance criteria</span><span>Accessibility evidence</span><span>Design-risk notes</span>
@@ -2274,15 +2502,15 @@ h3, h4, h5 { margin: 0 0 6px; }
     Then I should see content that supports discussion guide list and editor page
     And I should understand what ResearchOps task I can complete from this page
 
-  Scenario: Use &quot;Discussion guides with study context&quot; in the ResearchOps journey
+  Scenario: Use &quot;Discussion guides with saved source&quot; in the ResearchOps journey
     Given I am using the discussion guides page
     Then I should understand the research value of this part of the journey
-    And I should see that discussion guides page captured with the canonical Study record ID
+    And I should see that discussion guides page captured with the canonical Study record ID and opened guide source
     And I should be given enough service context to decide what to do next
 
   Scenario: Complete the interaction needed for this ResearchOps task
     Given I am ready to continue this ResearchOps journey
-    Then I should see &quot;Guides for this study&quot;
+    Then the &quot;guide preview h2:first of type&quot; section should be available
     Then I should be able to continue the ResearchOps journey with confidence
 
   Scenario: Use this part of the journey accessibly
@@ -2309,13 +2537,92 @@ h3, h4, h5 { margin: 0 0 6px; }
 			<h5>Screenshot evidence</h5>
 			<p class="meta">Desktop · captured · https://research-operations.com/pages/study/guides/?pid=recVisualProject001&amp;sid=recVisualStudy001</p>
 			
-			<figure class="capture__figure"><a href="screenshots/desktop/study__study-guides__default.png"><img loading="lazy" src="screenshots/desktop/study__study-guides__default.png" alt="Screenshot of Discussion guides in the Discussion guides with study context state for Desktop." /></a><figcaption>Discussion guides — Discussion guides with study context — Desktop</figcaption></figure>
+			<figure class="capture__figure"><a href="screenshots/desktop/study__study-guides__default.png"><img loading="lazy" src="screenshots/desktop/study__study-guides__default.png" alt="Screenshot of Discussion guides in the Discussion guides with saved source state for Desktop." /></a><figcaption>Discussion guides — Discussion guides with saved source — Desktop</figcaption></figure>
 		</section>
 		<section class="capture" data-profile="mobile">
 			<h5>Screenshot evidence</h5>
 			<p class="meta">Mobile · captured · https://research-operations.com/pages/study/guides/?pid=recVisualProject001&amp;sid=recVisualStudy001</p>
 			
-			<figure class="capture__figure"><a href="screenshots/mobile/study__study-guides__default.png"><img loading="lazy" src="screenshots/mobile/study__study-guides__default.png" alt="Screenshot of Discussion guides in the Discussion guides with study context state for Mobile." /></a><figcaption>Discussion guides — Discussion guides with study context — Mobile</figcaption></figure>
+			<figure class="capture__figure"><a href="screenshots/mobile/study__study-guides__default.png"><img loading="lazy" src="screenshots/mobile/study__study-guides__default.png" alt="Screenshot of Discussion guides in the Discussion guides with saved source state for Mobile." /></a><figcaption>Discussion guides — Discussion guides with saved source — Mobile</figcaption></figure>
+		</section>
+		</div>
+	</article>
+	<article class="state" id="study-guides-empty-guide-source-error" data-review-group-id="" data-review-evidence-level="generated" data-suppress-generated-state-criteria="false">
+		<div class="state__header">
+			<h4>Empty guide source validation</h4>
+			<p class="meta">captured · https://research-operations.com/pages/study/guides/?pid=recVisualProject001&amp;sid=recVisualStudy001</p>
+			<p>Guide editor validation state shown when a publish action is attempted without guide source.</p>
+			
+		<div class="evidence-types" aria-label="Evidence types for this state">
+			<span>Screenshot evidence</span><span>Route-level Cucumber evidence</span><span>State-level acceptance criteria</span><span>Accessibility evidence</span><span>Design-risk notes</span>
+		</div>
+		</div>
+		
+		<details class="state-acceptance-criteria" data-acceptance-criteria-source="generated">
+			<summary>What this screen state should support</summary>
+			<div class="state-acceptance-criteria__meta">
+				<strong class="criteria-tag criteria-tag--needs-review">Needs review</strong>
+				<span>Format: Gherkin acceptance criteria</span>
+			</div>
+			<pre class="gherkin-criteria"><code>Feature: Manage discussion guides
+
+  As a user researcher
+  I want to create, review and organise discussion guides for a study
+  So that sessions are run with consistent and purposeful research prompts
+
+  Background:
+    Given I am a user researcher
+    When I visit the discussion guides page
+
+  Scenario: Understand the page purpose
+    Then I should see content that supports discussion guide list and editor page
+    And I should understand what ResearchOps task I can complete from this page
+
+  Scenario: Use &quot;Empty guide source validation&quot; in the ResearchOps journey
+    Given I am using the discussion guides page
+    Then I should understand the research value of this part of the journey
+    And I should see that guide editor validation state shown when a publish action is attempted without guide source
+    And I should be given enough service context to decide what to do next
+
+  Scenario: Complete the interaction needed for this ResearchOps task
+    Given I am ready to continue this ResearchOps journey
+    Then the &quot;guide source&quot; section should be available
+    And I enter &quot;&quot; into the &quot;guide source&quot; field
+    And I select &quot;btn publish&quot;
+    Then I should see &quot;Enter guide source&quot;
+    Then I should be able to continue the ResearchOps journey with confidence
+
+  Scenario: Use this part of the journey accessibly
+    Then the page should have one clear main heading
+    And headings, labels and controls should be exposed in a logical reading order
+    And I should be able to move through the available controls using a keyboard
+    And I should be able to activate links, buttons and form controls without a mouse</code></pre>
+		</details>
+		
+		<section class="design-risk" aria-label="Design-risk notes">
+			<h5>Design-risk notes</h5>
+			
+		<dl class="review-risk-list">
+			<div><dt>Design risk</dt><dd>No specific design risk recorded for this state.</dd></div>
+			<div><dt>Impact</dt><dd>No additional impact has been identified beyond the standard route review.</dd></div>
+			<div><dt>Recommended change</dt><dd>Review this state during the next design critique and update the walkthrough registry if a risk is found.</dd></div>
+			<div><dt>Owner</dt><dd>UCD team</dd></div>
+			<div><dt>Status</dt><dd>No risk recorded</dd></div>
+		</dl>
+		</section>
+		<div class="state__captures">
+			
+		<section class="capture" data-profile="desktop">
+			<h5>Screenshot evidence</h5>
+			<p class="meta">Desktop · captured · https://research-operations.com/pages/study/guides/?pid=recVisualProject001&amp;sid=recVisualStudy001</p>
+			
+			<figure class="capture__figure"><a href="screenshots/desktop/study__study-guides__empty-guide-source-error.png"><img loading="lazy" src="screenshots/desktop/study__study-guides__empty-guide-source-error.png" alt="Screenshot of Discussion guides in the Empty guide source validation state for Desktop." /></a><figcaption>Discussion guides — Empty guide source validation — Desktop</figcaption></figure>
+		</section>
+		<section class="capture" data-profile="mobile">
+			<h5>Screenshot evidence</h5>
+			<p class="meta">Mobile · captured · https://research-operations.com/pages/study/guides/?pid=recVisualProject001&amp;sid=recVisualStudy001</p>
+			
+			<figure class="capture__figure"><a href="screenshots/mobile/study__study-guides__empty-guide-source-error.png"><img loading="lazy" src="screenshots/mobile/study__study-guides__empty-guide-source-error.png" alt="Screenshot of Discussion guides in the Empty guide source validation state for Mobile." /></a><figcaption>Discussion guides — Empty guide source validation — Mobile</figcaption></figure>
 		</section>
 		</div>
 	</article>
@@ -2506,9 +2813,9 @@ h3, h4, h5 { margin: 0 0 6px; }
 			
 	<article class="state" id="study-session-default" data-review-group-id="" data-review-evidence-level="generated" data-suppress-generated-state-criteria="false">
 		<div class="state__header">
-			<h4>Study session with study context</h4>
+			<h4>Study session with participant ready</h4>
 			<p class="meta">captured · https://research-operations.com/pages/study/session/?pid=recVisualProject001&amp;sid=recVisualStudy001</p>
-			<p>Session workspace captured with the canonical Study record ID.</p>
+			<p>Session workspace captured with a selected participant and ready consent status.</p>
 			
 		<div class="evidence-types" aria-label="Evidence types for this state">
 			<span>Screenshot evidence</span><span>Route-level Cucumber evidence</span><span>State-level acceptance criteria</span><span>Accessibility evidence</span><span>Design-risk notes</span>
@@ -2535,15 +2842,17 @@ h3, h4, h5 { margin: 0 0 6px; }
     Then I should see content that supports session running and note capture page
     And I should understand what ResearchOps task I can complete from this page
 
-  Scenario: Use &quot;Study session with study context&quot; in the ResearchOps journey
+  Scenario: Use &quot;Study session with participant ready&quot; in the ResearchOps journey
     Given I am using the study session page
     Then I should understand the research value of this part of the journey
-    And I should see that session workspace captured with the canonical Study record ID
+    And I should see that session workspace captured with a selected participant and ready consent status
     And I should be given enough service context to decide what to do next
 
   Scenario: Complete the interaction needed for this ResearchOps task
     Given I am ready to continue this ResearchOps journey
-    Then I should see &quot;Begin a session&quot;
+    Then the &quot;participant select option[value=\&quot;ptp 001\&quot;]&quot; section should be available
+    And I choose &quot;ptp_001&quot; from the &quot;participant select&quot; field
+    Then I should see &quot;Ready for session&quot;
     Then I should be able to continue the ResearchOps journey with confidence
 
   Scenario: Use this part of the journey accessibly
@@ -2570,13 +2879,89 @@ h3, h4, h5 { margin: 0 0 6px; }
 			<h5>Screenshot evidence</h5>
 			<p class="meta">Desktop · captured · https://research-operations.com/pages/study/session/?pid=recVisualProject001&amp;sid=recVisualStudy001</p>
 			
-			<figure class="capture__figure"><a href="screenshots/desktop/study__study-session__default.png"><img loading="lazy" src="screenshots/desktop/study__study-session__default.png" alt="Screenshot of Study session in the Study session with study context state for Desktop." /></a><figcaption>Study session — Study session with study context — Desktop</figcaption></figure>
+			<figure class="capture__figure"><a href="screenshots/desktop/study__study-session__default.png"><img loading="lazy" src="screenshots/desktop/study__study-session__default.png" alt="Screenshot of Study session in the Study session with participant ready state for Desktop." /></a><figcaption>Study session — Study session with participant ready — Desktop</figcaption></figure>
 		</section>
 		<section class="capture" data-profile="mobile">
 			<h5>Screenshot evidence</h5>
 			<p class="meta">Mobile · captured · https://research-operations.com/pages/study/session/?pid=recVisualProject001&amp;sid=recVisualStudy001</p>
 			
-			<figure class="capture__figure"><a href="screenshots/mobile/study__study-session__default.png"><img loading="lazy" src="screenshots/mobile/study__study-session__default.png" alt="Screenshot of Study session in the Study session with study context state for Mobile." /></a><figcaption>Study session — Study session with study context — Mobile</figcaption></figure>
+			<figure class="capture__figure"><a href="screenshots/mobile/study__study-session__default.png"><img loading="lazy" src="screenshots/mobile/study__study-session__default.png" alt="Screenshot of Study session in the Study session with participant ready state for Mobile." /></a><figcaption>Study session — Study session with participant ready — Mobile</figcaption></figure>
+		</section>
+		</div>
+	</article>
+	<article class="state" id="study-session-participant-consent-gate" data-review-group-id="" data-review-evidence-level="generated" data-suppress-generated-state-criteria="false">
+		<div class="state__header">
+			<h4>Participant consent gate</h4>
+			<p class="meta">captured · https://research-operations.com/pages/study/session/?pid=recVisualProject001&amp;sid=recVisualStudy001</p>
+			<p>Session warning state shown before a participant has been selected.</p>
+			
+		<div class="evidence-types" aria-label="Evidence types for this state">
+			<span>Screenshot evidence</span><span>Route-level Cucumber evidence</span><span>State-level acceptance criteria</span><span>Accessibility evidence</span><span>Design-risk notes</span>
+		</div>
+		</div>
+		
+		<details class="state-acceptance-criteria" data-acceptance-criteria-source="generated">
+			<summary>What this screen state should support</summary>
+			<div class="state-acceptance-criteria__meta">
+				<strong class="criteria-tag criteria-tag--needs-review">Needs review</strong>
+				<span>Format: Gherkin acceptance criteria</span>
+			</div>
+			<pre class="gherkin-criteria"><code>Feature: Run a research session
+
+  As a user researcher
+  I want to run a research session and capture notes
+  So that session evidence is recorded consistently and safely
+
+  Background:
+    Given I am a user researcher
+    When I visit the study session page
+
+  Scenario: Understand the page purpose
+    Then I should see content that supports session running and note capture page
+    And I should understand what ResearchOps task I can complete from this page
+
+  Scenario: Use &quot;Participant consent gate&quot; in the ResearchOps journey
+    Given I am using the study session page
+    Then I should understand the research value of this part of the journey
+    And I should see that session warning state shown before a participant has been selected
+    And I should be given enough service context to decide what to do next
+
+  Scenario: Complete the interaction needed for this ResearchOps task
+    Given I am ready to continue this ResearchOps journey
+    Then I should see &quot;Choose a participant to review consent status before starting a session.&quot;
+    Then I should be able to continue the ResearchOps journey with confidence
+
+  Scenario: Use this part of the journey accessibly
+    Then the page should have one clear main heading
+    And headings, labels and controls should be exposed in a logical reading order
+    And I should be able to move through the available controls using a keyboard
+    And I should be able to activate links, buttons and form controls without a mouse</code></pre>
+		</details>
+		
+		<section class="design-risk" aria-label="Design-risk notes">
+			<h5>Design-risk notes</h5>
+			
+		<dl class="review-risk-list">
+			<div><dt>Design risk</dt><dd>No specific design risk recorded for this state.</dd></div>
+			<div><dt>Impact</dt><dd>No additional impact has been identified beyond the standard route review.</dd></div>
+			<div><dt>Recommended change</dt><dd>Review this state during the next design critique and update the walkthrough registry if a risk is found.</dd></div>
+			<div><dt>Owner</dt><dd>UCD team</dd></div>
+			<div><dt>Status</dt><dd>No risk recorded</dd></div>
+		</dl>
+		</section>
+		<div class="state__captures">
+			
+		<section class="capture" data-profile="desktop">
+			<h5>Screenshot evidence</h5>
+			<p class="meta">Desktop · captured · https://research-operations.com/pages/study/session/?pid=recVisualProject001&amp;sid=recVisualStudy001</p>
+			
+			<figure class="capture__figure"><a href="screenshots/desktop/study__study-session__participant-consent-gate.png"><img loading="lazy" src="screenshots/desktop/study__study-session__participant-consent-gate.png" alt="Screenshot of Study session in the Participant consent gate state for Desktop." /></a><figcaption>Study session — Participant consent gate — Desktop</figcaption></figure>
+		</section>
+		<section class="capture" data-profile="mobile">
+			<h5>Screenshot evidence</h5>
+			<p class="meta">Mobile · captured · https://research-operations.com/pages/study/session/?pid=recVisualProject001&amp;sid=recVisualStudy001</p>
+			
+			<figure class="capture__figure"><a href="screenshots/mobile/study__study-session__participant-consent-gate.png"><img loading="lazy" src="screenshots/mobile/study__study-session__participant-consent-gate.png" alt="Screenshot of Study session in the Participant consent gate state for Mobile." /></a><figcaption>Study session — Participant consent gate — Mobile</figcaption></figure>
 		</section>
 		</div>
 	</article>
@@ -3460,9 +3845,9 @@ h3, h4, h5 { margin: 0 0 6px; }
 			
 	<article class="state" id="team-access-requests-default" data-review-group-id="" data-review-evidence-level="generated" data-suppress-generated-state-criteria="false">
 		<div class="state__header">
-			<h4>Default state</h4>
-			<p class="meta">captured · https://research-operations.com/pages/team/access-requests/index.html</p>
-			<p>Initial loaded page state.</p>
+			<h4>Pending team access requests</h4>
+			<p class="meta">captured · https://research-operations.com/pages/team/access-requests/</p>
+			<p>Team access review page captured with a deterministic pending request.</p>
 			
 		<div class="evidence-types" aria-label="Evidence types for this state">
 			<span>Screenshot evidence</span><span>Route-level Cucumber evidence</span><span>State-level acceptance criteria</span><span>Accessibility evidence</span><span>Design-risk notes</span>
@@ -3489,15 +3874,16 @@ h3, h4, h5 { margin: 0 0 6px; }
     Then I should see content that supports team Admin review page for pending team access requests
     And I should understand what ResearchOps task I can complete from this page
 
-  Scenario: Use &quot;Default state&quot; in the ResearchOps journey
+  Scenario: Use &quot;Pending team access requests&quot; in the ResearchOps journey
     Given I am using the review team access requests page
     Then I should understand the research value of this part of the journey
-    And I should see that initial loaded page state
+    And I should see that team access review page captured with a deterministic pending request
     And I should be given enough service context to decide what to do next
 
-  Scenario: Understand the default view
-    Then I should understand what ResearchOps task this page supports
-    And I should be able to choose an appropriate next action for my work
+  Scenario: Complete the interaction needed for this ResearchOps task
+    Given I am ready to continue this ResearchOps journey
+    Then I should see &quot;Request from Morgan Lee&quot;
+    Then I should be able to continue the ResearchOps journey with confidence
 
   Scenario: Use this part of the journey accessibly
     Then the page should have one clear main heading
@@ -3521,15 +3907,93 @@ h3, h4, h5 { margin: 0 0 6px; }
 			
 		<section class="capture" data-profile="desktop">
 			<h5>Screenshot evidence</h5>
-			<p class="meta">Desktop · captured · https://research-operations.com/pages/team/access-requests/index.html</p>
+			<p class="meta">Desktop · captured · https://research-operations.com/pages/team/access-requests/</p>
 			
-			<figure class="capture__figure"><a href="screenshots/desktop/team-administration__team-access-requests__default.png"><img loading="lazy" src="screenshots/desktop/team-administration__team-access-requests__default.png" alt="Screenshot of Review team access requests in the Default state state for Desktop." /></a><figcaption>Review team access requests — Default state — Desktop</figcaption></figure>
+			<figure class="capture__figure"><a href="screenshots/desktop/team-administration__team-access-requests__default.png"><img loading="lazy" src="screenshots/desktop/team-administration__team-access-requests__default.png" alt="Screenshot of Review team access requests in the Pending team access requests state for Desktop." /></a><figcaption>Review team access requests — Pending team access requests — Desktop</figcaption></figure>
 		</section>
 		<section class="capture" data-profile="mobile">
 			<h5>Screenshot evidence</h5>
-			<p class="meta">Mobile · captured · https://research-operations.com/pages/team/access-requests/index.html</p>
+			<p class="meta">Mobile · captured · https://research-operations.com/pages/team/access-requests/</p>
 			
-			<figure class="capture__figure"><a href="screenshots/mobile/team-administration__team-access-requests__default.png"><img loading="lazy" src="screenshots/mobile/team-administration__team-access-requests__default.png" alt="Screenshot of Review team access requests in the Default state state for Mobile." /></a><figcaption>Review team access requests — Default state — Mobile</figcaption></figure>
+			<figure class="capture__figure"><a href="screenshots/mobile/team-administration__team-access-requests__default.png"><img loading="lazy" src="screenshots/mobile/team-administration__team-access-requests__default.png" alt="Screenshot of Review team access requests in the Pending team access requests state for Mobile." /></a><figcaption>Review team access requests — Pending team access requests — Mobile</figcaption></figure>
+		</section>
+		</div>
+	</article>
+	<article class="state" id="team-access-requests-decision-error" data-review-group-id="" data-review-evidence-level="generated" data-suppress-generated-state-criteria="false">
+		<div class="state__header">
+			<h4>Team access decision error</h4>
+			<p class="meta">captured · https://research-operations.com/pages/team/access-requests/</p>
+			<p>Error state shown when a pending team access decision cannot be completed.</p>
+			
+		<div class="evidence-types" aria-label="Evidence types for this state">
+			<span>Screenshot evidence</span><span>Route-level Cucumber evidence</span><span>State-level acceptance criteria</span><span>Accessibility evidence</span><span>Design-risk notes</span>
+		</div>
+		</div>
+		
+		<details class="state-acceptance-criteria" data-acceptance-criteria-source="generated">
+			<summary>What this screen state should support</summary>
+			<div class="state-acceptance-criteria__meta">
+				<strong class="criteria-tag criteria-tag--needs-review">Needs review</strong>
+				<span>Format: Gherkin acceptance criteria</span>
+			</div>
+			<pre class="gherkin-criteria"><code>Feature: Use the Review team access requests page
+
+  As a user researcher
+  I want to use the review team access requests page
+  So that I can continue the right ResearchOps task with confidence
+
+  Background:
+    Given I am a user researcher
+    When I visit the review team access requests page
+
+  Scenario: Understand the page purpose
+    Then I should see content that supports team Admin review page for pending team access requests
+    And I should understand what ResearchOps task I can complete from this page
+
+  Scenario: Use &quot;Team access decision error&quot; in the ResearchOps journey
+    Given I am using the review team access requests page
+    Then I should understand the research value of this part of the journey
+    And I should see that error state shown when a pending team access decision cannot be completed
+    And I should be given enough service context to decide what to do next
+
+  Scenario: Complete the interaction needed for this ResearchOps task
+    Given I am ready to continue this ResearchOps journey
+    Then the &quot;[data-approve-request=\&quot;tar_visual_001\&quot;]&quot; section should be available
+    And I select &quot;[data-approve-request=\&quot;tar_visual_001\&quot;]&quot;
+    Then I should see &quot;Team access request could not be completed.&quot;
+    Then I should be able to continue the ResearchOps journey with confidence
+
+  Scenario: Use this part of the journey accessibly
+    Then the page should have one clear main heading
+    And headings, labels and controls should be exposed in a logical reading order
+    And I should be able to move through the available controls using a keyboard
+    And I should be able to activate links, buttons and form controls without a mouse</code></pre>
+		</details>
+		
+		<section class="design-risk" aria-label="Design-risk notes">
+			<h5>Design-risk notes</h5>
+			
+		<dl class="review-risk-list">
+			<div><dt>Design risk</dt><dd>No specific design risk recorded for this state.</dd></div>
+			<div><dt>Impact</dt><dd>No additional impact has been identified beyond the standard route review.</dd></div>
+			<div><dt>Recommended change</dt><dd>Review this state during the next design critique and update the walkthrough registry if a risk is found.</dd></div>
+			<div><dt>Owner</dt><dd>UCD team</dd></div>
+			<div><dt>Status</dt><dd>No risk recorded</dd></div>
+		</dl>
+		</section>
+		<div class="state__captures">
+			
+		<section class="capture" data-profile="desktop">
+			<h5>Screenshot evidence</h5>
+			<p class="meta">Desktop · captured · https://research-operations.com/pages/team/access-requests/</p>
+			
+			<figure class="capture__figure"><a href="screenshots/desktop/team-administration__team-access-requests__decision-error.png"><img loading="lazy" src="screenshots/desktop/team-administration__team-access-requests__decision-error.png" alt="Screenshot of Review team access requests in the Team access decision error state for Desktop." /></a><figcaption>Review team access requests — Team access decision error — Desktop</figcaption></figure>
+		</section>
+		<section class="capture" data-profile="mobile">
+			<h5>Screenshot evidence</h5>
+			<p class="meta">Mobile · captured · https://research-operations.com/pages/team/access-requests/</p>
+			
+			<figure class="capture__figure"><a href="screenshots/mobile/team-administration__team-access-requests__decision-error.png"><img loading="lazy" src="screenshots/mobile/team-administration__team-access-requests__decision-error.png" alt="Screenshot of Review team access requests in the Team access decision error state for Mobile." /></a><figcaption>Review team access requests — Team access decision error — Mobile</figcaption></figure>
 		</section>
 		</div>
 	</article>
