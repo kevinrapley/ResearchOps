@@ -315,21 +315,47 @@ jobs:
           cp "${WRANGLER_CONFIG}" "${WRANGLER_PREVIEW_CONFIG}"
           python - <<'PY'
           import os
+          import re
           from pathlib import Path
+
+          def replace_once(content, old, new):
+              if old not in content:
+                  raise RuntimeError(f"Expected preview config source to contain: {old}")
+              return content.replace(old, new, 1)
+
+          def replace_pattern_once(content, pattern, replacement):
+              updated, count = re.subn(pattern, replacement, content, count=1)
+              if count != 1:
+                  raise RuntimeError(f"Expected exactly one preview config match for: {pattern}")
+              return updated
 
           preview_database_id = os.environ["PREVIEW_D1_DATABASE_ID"]
           path = Path(os.environ["WRANGLER_PREVIEW_CONFIG"])
           content = path.read_text()
-          content = content.replace('name                = "rops-api"', 'name                = "rops-api-passwordless-preview"')
-          content = content.replace('database_name = "researchops-d1"', 'database_name = "researchops-d1-preview"')
-          content = content.replace('database_id = "48b35a2e-52e8-4bc0-a8cf-88a7a1536f04"', f'database_id = "{preview_database_id}"')
-          content = content.replace('RESEARCHOPS_BUILD_SHA = "local"', f'RESEARCHOPS_BUILD_SHA = "{os.environ["GITHUB_SHA"]}"')
-          content = content.replace('RESEARCHOPS_BUILD_BRANCH = "local"', f'RESEARCHOPS_BUILD_BRANCH = "{os.environ["GITHUB_REF_NAME"]}"')
-          content = content.replace(
-              'https://researchops.pages.dev,https://rops-api.digikev-kevin-rapley.workers.dev,http://localhost:8080,https://reops-sourcebook.pages.dev',
-              'https://researchops.pages.dev,https://rops-api-passwordless-preview.digikev-kevin-rapley.workers.dev,https://rops-api.digikev-kevin-rapley.workers.dev,http://localhost:8080,https://reops-sourcebook.pages.dev'
+          content = replace_once(content, 'name                = "rops-api"', 'name                = "rops-api-passwordless-preview"')
+          content = replace_once(content, 'database_name = "researchops-d1"', 'database_name = "researchops-d1-preview"')
+          content = replace_once(content, 'database_id = "48b35a2e-52e8-4bc0-a8cf-88a7a1536f04"', f'database_id = "{preview_database_id}"')
+          content = replace_once(content, 'RESEARCHOPS_BUILD_SHA = "local"', f'RESEARCHOPS_BUILD_SHA = "{os.environ["GITHUB_SHA"]}"')
+          content = replace_once(content, 'RESEARCHOPS_BUILD_BRANCH = "local"', f'RESEARCHOPS_BUILD_BRANCH = "{os.environ["GITHUB_REF_NAME"]}"')
+          preview_allowed_origins = (
+              'https://researchops.pages.dev,'
+              'https://rops-api-passwordless-preview.digikev-kevin-rapley.workers.dev,'
+              'https://rops-api.digikev-kevin-rapley.workers.dev,'
+              'http://localhost:8080,'
+              'https://reops-sourcebook.pages.dev'
           )
-          content = content.replace(
+          content = replace_pattern_once(
+              content,
+              r'ALLOWED_ORIGINS\s*=\s*"[^"]*"',
+              f'ALLOWED_ORIGINS = "{preview_allowed_origins}"',
+          )
+          content = replace_pattern_once(
+              content,
+              r'RESEARCHOPS_QA_BDD_AUTH_ENABLED\s*=\s*"[^"]*"',
+              'RESEARCHOPS_QA_BDD_AUTH_ENABLED = "true"',
+          )
+          content = replace_once(
+              content,
               'MURAL_REDIRECT_URI = "https://rops-api.digikev-kevin-rapley.workers.dev/api/mural/callback"',
               'MURAL_REDIRECT_URI = "https://rops-api-passwordless-preview.digikev-kevin-rapley.workers.dev/api/mural/callback"'
           )

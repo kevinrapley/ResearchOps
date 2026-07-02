@@ -15,6 +15,7 @@
   - `.agent-operating-model/bundles/github/`
   - `.agent-operating-model/bundles/researchops-developer-control/`
   - `.agent-operating-model/bundles/multi-functional-team/`
+  - `.agent-operating-model/bundles/cloudflare/`
 - Read `.agent-operating-model/precedence-policy.md`.
 - Read `.agent-operating-model/trace-policy.md`.
 
@@ -24,9 +25,9 @@
   - `github-diamond`
   - `researchops-developer-control`
   - `multi-functional-team`
+  - `cloudflare`
 - Conditional bundles skipped by the model command:
   - `govuk-design-system`
-  - `cloudflare`
   - `openai-platform`
   - `mcp-agent-tooling`
   - `airtable-public-api`
@@ -38,6 +39,7 @@
 - GitHub Diamond governed branch naming, trace requirement, validation evidence, and PR readiness.
 - ResearchOps Developer Control governed the Worker/service boundaries and D1 migration approach.
 - Multi-Functional Team governed the security and PII/GDPR assurance framing.
+- Cloudflare governed the preview Worker deployment configuration follow-up.
 - No instruction conflicts were identified.
 
 ## Files read
@@ -53,6 +55,7 @@
 - `public/_headers`
 - `infra/cloudflare/wrangler.toml`
 - `.github/workflows/security.yml`
+- `.github/workflows/deploy-worker.yml`
 - `github-settings.yaml`
 - `scripts/release-provenance.mjs`
 - Relevant route-state tests under `tests/`
@@ -60,6 +63,7 @@
 ## Files modified
 
 - `.github/workflows/security.yml`
+- `.github/workflows/deploy-worker.yml`
 - `docs/deployment/d1-migration-ordering.md`
 - `github-settings.yaml`
 - `infra/cloudflare/src/core/auth/access.js`
@@ -90,6 +94,7 @@
 - Added a scheduled, disabled-by-default D1 retention enforcement service that anonymises old participant contact data and deletes expired participant consent and session notes.
 - Tightened production Worker defaults by disabling QA BDD auth bypass and removing localhost from `ALLOWED_ORIGINS`.
 - Added release SBOM generation and retained intended repository settings for code scanning and dependency review. Code scanning remains repository-level evidence through GitHub code scanning/default setup.
+- Updated preview Worker config generation after Codex review so preview deployments explicitly re-enable QA BDD auth and rewrite the full allowed-origin setting from the current production allowlist.
 
 ## Validation attempted
 
@@ -103,6 +108,9 @@
 - `npm run format:check`
 - `npm run lint`
 - `npm test`
+- `npm test -- tests/qa-bdd-authenticated-walkthrough-route-state.test.js tests/security-hardening-controls-route-state.test.js`
+- `npm run trace:coverage`
+- `npm run validate`
 
 ## Validation results
 
@@ -113,6 +121,8 @@
 - Format check passed.
 - Lint passed with existing repository warnings and no errors.
 - Full Node test suite passed: 297 tests, 0 failures.
+- Focused preview deploy and security route-state tests passed after addressing Codex review comments.
+- Trace coverage and repository validation passed after the preview deploy workflow update.
 
 ## Issues and pivots
 
@@ -120,6 +130,7 @@
 - An existing QA BDD test expected production config to enable the bypass. It was updated to reflect the hardened production default while leaving preview config expectations intact.
 - The first PR run showed that GitHub CodeQL default setup is enabled for the repository, so an added advanced CodeQL workflow could not upload SARIF. The explicit CodeQL job was removed and repo-level `code_scanning: true` evidence retained.
 - The next PR run showed that GitHub dependency review is unsupported until the dependency graph is enabled for the repository. The explicit dependency-review job was removed and repo-level `dependency_review: true` intended-setting evidence retained.
+- Codex review identified that the preview deploy workflow inherited the new production QA-auth-disabled default and still tried to rewrite an old `ALLOWED_ORIGINS` string containing localhost. The preview generator now performs explicit regex replacements for those preview-only values and fails if the expected settings are missing.
 
 ## Residual risks
 
