@@ -103,7 +103,8 @@
 	}
 
 .participant-consent-tag-list {
-	gap: 6px;
+	row-gap: 12px;
+	column-gap: 6px;
 	}
 
 .participant-consent-page .govuk-select, .participant-consent-page .govuk-input {
