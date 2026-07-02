@@ -6,6 +6,7 @@
 
 const queryInput = document.getElementById("q");
 const typeSelect = document.getElementById("type");
+const searchForm = document.getElementById("search-form");
 const searchButton = document.getElementById("go");
 const resultsSection = document.getElementById("search-results-section");
 const resultsContainer = document.getElementById("results");
@@ -88,8 +89,15 @@ function runSearch() {
 }
 
 searchButton?.addEventListener("click", runSearch);
+searchForm?.addEventListener("submit", event => {
+	event.preventDefault();
+	runSearch();
+});
 queryInput?.addEventListener("keydown", event => {
-	if (event.key === "Enter") runSearch();
+	if (event.key === "Enter") {
+		event.preventDefault();
+		runSearch();
+	}
 });
 
 window.__ropsSearch = Object.freeze({

@@ -61,6 +61,9 @@ includes(controllerSource, "function readStoredEntities", "search page controlle
 includes(controllerSource, "function searchEntities", "search page controller");
 includes(controllerSource, "function renderItem", "search page controller");
 includes(controllerSource, "function runSearch", "search page controller");
+includes(controllerSource, "search-form", "search page controller");
+includes(controllerSource, "searchForm?.addEventListener(\"submit\"", "search page controller");
+includes(controllerSource, "event.preventDefault();", "search page controller");
 includes(controllerSource, "search-results-section", "search page controller");
 includes(controllerSource, "resultsSection.hidden = false", "search page controller");
 includes(controllerSource, "localStorage", "search page controller");

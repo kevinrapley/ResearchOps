@@ -182,6 +182,26 @@
     {
       "command": "npm run lint && npm run build && npm run typecheck --if-present && npm test",
       "result": "passed: lint reported existing repository warnings only, build completed, no typecheck script was present, and the Node test suite passed with 273 tests passing and 0 failing"
+    },
+    {
+      "command": "Codex review follow-up for PR #455",
+      "result": "Validated two unresolved Codex comments. Both were valid and acknowledged with +1 reactions."
+    },
+    {
+      "command": "Codex review fix for /pages/search/",
+      "result": "Prevented implicit form submission on submit and Enter keydown so keyboard search keeps rendered results instead of navigating with query-string form submission."
+    },
+    {
+      "command": "Codex review fix for /pages/sessions/",
+      "result": "Added split date/time validation before saving so impossible calendar dates and out-of-range hours/minutes are rejected instead of normalised by the Date constructor."
+    },
+    {
+      "command": "node --test tests/search-page-route-state.test.js tests/study-session-route-state.test.js tests/govuk-forms-application-route-state.test.js",
+      "result": "passed with 3 tests passing and 0 failing"
+    },
+    {
+      "command": "Playwright preview check at http://127.0.0.1:4174/pages/search/ and /pages/sessions/",
+      "result": "passed: Enter search stayed on /pages/search/, rendered results were visible, invalid date/time values did not save sessions, and a corrected valid date saved one session"
     }
   ]
 }

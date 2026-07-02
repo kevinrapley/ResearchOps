@@ -74,3 +74,8 @@ Conditional bundles not selected:
 - PR-readiness follow-up: made GOV.UK form route-state label assertions resilient to generated Nunjucks macro whitespace while still requiring `govuk-label`, the correct `for` target and expected label text.
 - `node --import ./tests/helpers/generated-govuk-page-source.mjs --test tests/govuk-forms-application-route-state.test.js`: passed with 1 test passing and 0 failing.
 - `npm run lint && npm run build && npm run typecheck --if-present && npm test`: passed. Lint reported existing repository warnings only, build completed, no typecheck script was present, and the Node test suite passed with 273 tests passing and 0 failing.
+- Codex review follow-up for PR #455: validated two unresolved Codex comments. Both were valid and acknowledged with `+1` reactions.
+- Codex review fix for `/pages/search/`: prevented implicit form submission on submit and Enter keydown so keyboard search keeps rendered results instead of navigating with query-string form submission.
+- Codex review fix for `/pages/sessions/`: added split date/time validation before saving so impossible calendar dates and out-of-range hours/minutes are rejected instead of normalised by the `Date` constructor.
+- `node --test tests/search-page-route-state.test.js tests/study-session-route-state.test.js tests/govuk-forms-application-route-state.test.js`: passed with 3 tests passing and 0 failing.
+- Playwright preview check at `http://127.0.0.1:4174/pages/search/` and `/pages/sessions/`: passed. Enter search stayed on `/pages/search/`, rendered results were visible, invalid date/time values did not save sessions, and a corrected valid date saved one session.
