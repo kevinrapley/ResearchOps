@@ -101,6 +101,7 @@ includes(serviceSource, "readD1ParticipantConsent", "participant consent service
 includes(serviceSource, "createD1ParticipantConsent", "participant consent service");
 includes(serviceSource, "updateD1ParticipantConsent", "participant consent service");
 includes(serviceSource, "createAirtableParticipantConsent", "participant consent service");
+includes(serviceSource, "participantConsentRecords.length > 0 || !airtableConfigured(svc)", "participant consent service");
 includes(serviceSource, "export async function listParticipantConsent", "participant consent service");
 includes(serviceSource, "export async function createParticipantConsent", "participant consent service");
 includes(serviceSource, "export async function updateParticipantConsent", "participant consent service");

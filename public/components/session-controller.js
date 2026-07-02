@@ -72,7 +72,12 @@ function msToISODuration(ms) {
 async function postJson(url, body) {
 	const res = await fetch(url, {
 		method: "POST",
-		headers: { "Content-Type": "application/json; charset=utf-8" },
+		cache: "no-store",
+		credentials: "include",
+		headers: {
+			Accept: "application/json",
+			"Content-Type": "application/json; charset=utf-8"
+		},
 		body: JSON.stringify(body)
 	});
 	const txt = await res.text();
@@ -88,7 +93,11 @@ function apiUrl(path) {
 }
 
 async function jsonFetch(url) {
-	const response = await fetch(url, { cache: "no-store" });
+	const response = await fetch(url, {
+		cache: "no-store",
+		credentials: "include",
+		headers: { Accept: "application/json" }
+	});
 	const text = await response.text();
 	const body = text ? JSON.parse(text) : {};
 	if (!response.ok) throw new Error(body?.message || body?.error || `Request failed (${response.status})`);
@@ -104,8 +113,6 @@ function getSessionAirtableId() {
 	const url = new URL(location.href);
 	const q = url.searchParams.get("session");
 	if (q) return q;
-	const legacyStudySessionId = url.searchParams.get("sid");
-	if (legacyStudySessionId) return legacyStudySessionId;
 	const sess = $("#session-entity");
 	const m = sess?.querySelector('meta[property="schema:identifier"]');
 	return m?.content?.trim() || null;
@@ -406,7 +413,7 @@ async function saveNote(){
 
 	let createdId=null;
 	try{
-		const res=await postJson("/api/session-notes",payload);
+		const res=await postJson(apiUrl("/api/session-notes"),payload);
 		if(!res?.ok) throw new Error(res?.error||"Unknown error");
 		createdId=res.id||res.note?.id||null;
 		announce("Note saved.");

@@ -89,13 +89,15 @@ includes(controllerSource, "timer-display", "session controller");
 includes(controllerSource, "btn-save-note", "session controller");
 includes(controllerSource, "note-editor", "session controller");
 includes(controllerSource, "apiUrl(\"/api/participants\")", "session controller");
+includes(controllerSource, "apiUrl(\"/api/session-notes\")", "session controller");
+includes(controllerSource, "credentials: \"include\"", "session controller");
 includes(controllerSource, "loadParticipantsForStudy", "session controller");
 includes(controllerSource, "session_participant_id", "session controller");
 includes(controllerSource, "participant_airtable_id", "session controller");
 includes(controllerSource, "url.searchParams.get(\"id\")", "session controller");
 includes(controllerSource, "url.searchParams.get(\"sid\")", "session controller");
 includes(controllerSource, "url.searchParams.get(\"session\")", "session controller");
-includes(controllerSource, "legacyStudySessionId", "session controller");
+excludes(controllerSource, "legacyStudySessionId", "session controller");
 includes(controllerSource, "govuk-summary-list__row", "session controller");
 includes(controllerSource, "savedNotesSection.hidden=false", "session controller");
 includes(controllerSource, "setSessionError", "session controller");
@@ -124,6 +126,7 @@ includes(participantConsentServiceSource, "readD1ParticipantConsent", "participa
 includes(participantConsentServiceSource, "createD1ParticipantConsent", "participant consent service");
 includes(participantConsentServiceSource, "updateD1ParticipantConsent", "participant consent service");
 includes(participantConsentServiceSource, "createAirtableParticipantConsent", "participant consent service");
+includes(participantConsentServiceSource, "participantConsentRecords.length > 0 || !airtableConfigured(svc)", "participant consent service");
 
 includes(sessionNotesServiceSource, "rops_session_notes", "session notes service");
 includes(sessionNotesServiceSource, "listD1SessionNotes", "session notes service");

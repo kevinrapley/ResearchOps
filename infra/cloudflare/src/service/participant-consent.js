@@ -398,7 +398,9 @@ export async function listParticipantConsent(svc, origin, url) {
 	if (hasD1(svc)) {
 		try {
 			const participantConsentRecords = await readD1ParticipantConsent(svc, studyId);
-			return svc.json({ ok: true, participantConsentRecords }, 200, svc.corsHeaders(origin));
+			if (participantConsentRecords.length > 0 || !airtableConfigured(svc)) {
+				return svc.json({ ok: true, participantConsentRecords }, 200, svc.corsHeaders(origin));
+			}
 		} catch (err) {
 			svc.log.error("d1.participant_consent.list.fail", { detail: err.message });
 		}
