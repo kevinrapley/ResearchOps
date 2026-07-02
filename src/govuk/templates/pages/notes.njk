@@ -1,0 +1,95 @@
+{% extends "layouts/researchops.njk" %}
+{% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/input/macro.njk" import govukInput %}
+{% from "govuk/components/select/macro.njk" import govukSelect %}
+{% from "govuk/components/textarea/macro.njk" import govukTextarea %}
+
+{% block head %}
+	<link rel="stylesheet" href="/css/notes.css" media="screen">
+	<link rel="modulepreload" href="/js/notes-page.js">
+{% endblock %}
+
+{% block content %}
+<div class="govuk-width-container researchops-utility-page researchops-notes-page">
+	{{ govukBreadcrumbs({
+		items: [
+			{ text: "Home", href: "/" },
+			{ text: "Notes" }
+		]
+	}) }}
+
+	<header class="researchops-utility-page__intro">
+		<div class="govuk-grid-row">
+			<div class="govuk-grid-column-two-thirds">
+				<h1 class="govuk-heading-xl">Notes</h1>
+				<p class="govuk-body-l">Add notes to a research session stored in this browser.</p>
+				<p class="govuk-body">Keep notes focused on observed behaviour, quotes and research evidence. Do not include unnecessary participant personal data.</p>
+			</div>
+		</div>
+	</header>
+
+	<section class="researchops-utility-page__section" aria-labelledby="notes-session-title">
+		<div class="govuk-grid-row">
+			<div class="govuk-grid-column-two-thirds">
+				<h2 class="govuk-heading-l" id="notes-session-title">Select a session</h2>
+				{{ govukSelect({
+					id: "session",
+					name: "session",
+					classes: "notes-session-select govuk-!-width-two-thirds",
+					label: { text: "Session" },
+					hint: { text: "Create a session first if this list is empty." },
+					items: []
+				}) }}
+			</div>
+		</div>
+	</section>
+
+	<section class="researchops-utility-page__section researchops-utility-page__section--secondary" aria-labelledby="add-note-title">
+		<div class="govuk-grid-row">
+			<div class="govuk-grid-column-two-thirds">
+				<h2 class="govuk-heading-l" id="add-note-title">Add a note</h2>
+				<form id="note-form" class="researchops-utility-page__form notes-editor" novalidate>
+					{{ govukTextarea({
+						id: "text",
+						name: "text",
+						value: "",
+						rows: 7,
+						label: { text: "Note" },
+						hint: { text: "Avoid personal data unless it is necessary for the research record." }
+					}) }}
+
+					{{ govukInput({
+						id: "tags",
+						name: "tags",
+						classes: "govuk-!-width-two-thirds",
+						label: { text: "Tags" },
+						hint: { text: "Separate tags with commas, for example usability, navigation." },
+						attributes: {
+							autocomplete: "off"
+						}
+					}) }}
+
+					<div class="govuk-button-group">
+						{{ govukButton({
+							text: "Save note",
+							type: "button",
+							attributes: { id: "save" }
+						}) }}
+						<p id="status" class="govuk-hint researchops-utility-page__status notes-status" role="status" aria-live="polite"></p>
+					</div>
+				</form>
+			</div>
+		</div>
+	</section>
+
+	<section id="session-notes-section" class="researchops-utility-page__section researchops-utility-page__section--secondary" aria-labelledby="session-notes-title" hidden>
+		<h2 class="govuk-heading-l" id="session-notes-title">Notes in this session</h2>
+		<div id="notes" class="researchops-utility-page__results notes-list" aria-live="polite"></div>
+	</section>
+</div>
+{% endblock %}
+
+{% block scripts %}
+	<script type="module" src="/js/notes-page.js"></script>
+{% endblock %}

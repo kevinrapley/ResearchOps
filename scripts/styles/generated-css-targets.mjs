@@ -90,6 +90,26 @@ export const generatedCssTargets = [
 		source: 'src/styles/auth-role-assignments.scss',
 		output: 'public/css/auth-role-assignments.css',
 	},
+	{
+		name: 'Search utility route stylesheet',
+		source: 'src/styles/researchops-utility-pages.scss',
+		output: 'public/css/search.css',
+	},
+	{
+		name: 'Notes utility route stylesheet',
+		source: 'src/styles/researchops-utility-pages.scss',
+		output: 'public/css/notes.css',
+	},
+	{
+		name: 'Consent utility route stylesheet',
+		source: 'src/styles/researchops-utility-pages.scss',
+		output: 'public/css/consent.css',
+	},
+	{
+		name: 'Sessions utility route stylesheet',
+		source: 'src/styles/researchops-utility-pages.scss',
+		output: 'public/css/sessions.css',
+	},
 ];
 
 export const generatedCssPaths = generatedCssTargets.map((target) => target.output);

@@ -7,6 +7,7 @@
 const queryInput = document.getElementById("q");
 const typeSelect = document.getElementById("type");
 const searchButton = document.getElementById("go");
+const resultsSection = document.getElementById("search-results-section");
 const resultsContainer = document.getElementById("results");
 
 function escapeHtml(value) {
@@ -52,16 +53,30 @@ function renderItem(entity) {
 	const raw = escapeHtml(JSON.stringify(entity, null, 2));
 	const title = entity.name || entity.description || entity.hasBody || entity.id || "Untitled result";
 
-	return `<div class="result">
-	<div class="type">${escapeHtml(entity.entityType)}</div>
-	<div class="govuk-body"><strong>${escapeHtml(title)}</strong></div>
-	<details><summary class="govuk-link">Raw</summary><pre>${raw}</pre></details>
+	return `<div class="govuk-summary-card researchops-utility-card">
+	<div class="govuk-summary-card__title-wrapper">
+		<h3 class="govuk-summary-card__title">${escapeHtml(title)}</h3>
+		<ul class="govuk-summary-card__actions">
+			<li class="govuk-summary-card__action">
+				<strong class="govuk-tag govuk-tag--blue">${escapeHtml(entity.entityType)}</strong>
+			</li>
+		</ul>
+	</div>
+	<div class="govuk-summary-card__content">
+		<details class="govuk-details" data-module="govuk-details">
+			<summary class="govuk-details__summary">
+				<span class="govuk-details__summary-text">Raw record</span>
+			</summary>
+			<div class="govuk-details__text"><pre class="researchops-utility-page__raw">${raw}</pre></div>
+		</details>
+	</div>
 </div>`;
 }
 
 function renderResults(results) {
 	if (!resultsContainer) return;
 
+	if (resultsSection) resultsSection.hidden = false;
 	resultsContainer.innerHTML = results.map(renderItem).join("") || '<div class="govuk-hint">No results.</div>';
 }
 

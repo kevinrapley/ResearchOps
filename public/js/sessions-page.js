@@ -5,10 +5,15 @@
  */
 
 const titleInput = document.getElementById("title");
-const whenInput = document.getElementById("when");
+const sessionDateDayInput = document.getElementById("session-date-day");
+const sessionDateMonthInput = document.getElementById("session-date-month");
+const sessionDateYearInput = document.getElementById("session-date-year");
+const sessionTimeHourInput = document.getElementById("session-time-hour");
+const sessionTimeMinuteInput = document.getElementById("session-time-minute");
 const participantsInput = document.getElementById("participants");
 const createButton = document.getElementById("create");
 const statusMessage = document.getElementById("status");
+const sessionsSection = document.getElementById("sessions-list-section");
 const sessionsContainer = document.getElementById("sessions");
 
 function escapeHtml(value) {
@@ -100,12 +105,40 @@ function createSession({ title, when, participants = [], id } = {}) {
 	return saveEntity("session", session);
 }
 
+function composeSessionStartIso() {
+	const day = Number.parseInt(sessionDateDayInput?.value || "", 10);
+	const month = Number.parseInt(sessionDateMonthInput?.value || "", 10);
+	const year = Number.parseInt(sessionDateYearInput?.value || "", 10);
+	const hour = Number.parseInt(sessionTimeHourInput?.value || "0", 10);
+	const minute = Number.parseInt(sessionTimeMinuteInput?.value || "0", 10);
+
+	if (!day || !month || !year) return new Date().toISOString();
+
+	return new Date(year, month - 1, day, hour || 0, minute || 0).toISOString();
+}
+
 function renderSession(session) {
 	const element = document.createElement("div");
-	element.className = "item govuk-body";
-	element.innerHTML = `<strong>${escapeHtml(session.name || "(Untitled)")}</strong>
-<div class="govuk-hint">${escapeHtml(formatDate(session["schema:startDate"] || session.created))} — ${escapeHtml(session.id)}</div>
-<div class="govuk-hint">Participants: ${escapeHtml((session.participants || []).join(", ") || "—")}</div>`;
+	element.className = "govuk-summary-card researchops-utility-card";
+	element.innerHTML = `<div class="govuk-summary-card__title-wrapper">
+	<h3 class="govuk-summary-card__title">${escapeHtml(session.name || "(Untitled)")}</h3>
+</div>
+<div class="govuk-summary-card__content">
+	<dl class="govuk-summary-list govuk-summary-list--no-border">
+		<div class="govuk-summary-list__row">
+			<dt class="govuk-summary-list__key">When</dt>
+			<dd class="govuk-summary-list__value">${escapeHtml(formatDate(session["schema:startDate"] || session.created))}</dd>
+		</div>
+		<div class="govuk-summary-list__row">
+			<dt class="govuk-summary-list__key">Session ID</dt>
+			<dd class="govuk-summary-list__value">${escapeHtml(session.id)}</dd>
+		</div>
+		<div class="govuk-summary-list__row">
+			<dt class="govuk-summary-list__key">Participants</dt>
+			<dd class="govuk-summary-list__value">${escapeHtml((session.participants || []).join(", ") || "—")}</dd>
+		</div>
+	</dl>
+</div>`;
 	return element;
 }
 
@@ -117,8 +150,8 @@ async function loadSessions() {
 
 	sessionsContainer.innerHTML = "";
 
+	if (sessionsSection) sessionsSection.hidden = sessions.length === 0;
 	if (!sessions.length) {
-		sessionsContainer.innerHTML = '<div class="govuk-hint">No sessions yet.</div>';
 		return;
 	}
 
@@ -135,7 +168,7 @@ async function handleCreateSession() {
 
 	const session = createSession({
 		title: titleInput?.value || "Untitled session",
-		when: whenInput?.value || new Date().toISOString(),
+		when: composeSessionStartIso(),
 		participants
 	});
 
@@ -149,6 +182,7 @@ await loadSessions();
 
 window.__ropsSessions = Object.freeze({
 	createSession,
+	composeSessionStartIso,
 	readStoredEntities,
 	searchEntities
 });

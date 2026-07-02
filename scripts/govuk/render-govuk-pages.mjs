@@ -463,6 +463,46 @@ export const govukPages = [
 			navigation: projectNavigation,
 		},
 	},
+	{
+		template: 'pages/search.njk',
+		output: 'public/pages/search/index.html',
+		context: {
+			pageTitle: 'Search - ResearchOps Demo Suite',
+			serviceName: 'ResearchOps Demo Suite',
+			activeNavigation: 'Research Repository',
+			navigation: repositoryNavigation,
+		},
+	},
+	{
+		template: 'pages/notes.njk',
+		output: 'public/pages/notes/index.html',
+		context: {
+			pageTitle: 'Notes - ResearchOps Demo Suite',
+			serviceName: 'ResearchOps Demo Suite',
+			activeNavigation: 'Projects',
+			navigation: projectNavigation,
+		},
+	},
+	{
+		template: 'pages/consent.njk',
+		output: 'public/pages/consent/index.html',
+		context: {
+			pageTitle: 'Consent - ResearchOps Demo Suite',
+			serviceName: 'ResearchOps Demo Suite',
+			activeNavigation: 'Projects',
+			navigation: projectNavigation,
+		},
+	},
+	{
+		template: 'pages/sessions.njk',
+		output: 'public/pages/sessions/index.html',
+		context: {
+			pageTitle: 'Sessions - ResearchOps Demo Suite',
+			serviceName: 'ResearchOps Demo Suite',
+			activeNavigation: 'Projects',
+			navigation: projectNavigation,
+		},
+	},
 ];
 
 export async function renderGovukPage(page) {

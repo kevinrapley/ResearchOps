@@ -9,6 +9,7 @@ const noteText = document.getElementById("text");
 const tagsInput = document.getElementById("tags");
 const saveButton = document.getElementById("save");
 const statusMessage = document.getElementById("status");
+const notesSection = document.getElementById("session-notes-section");
 const notesContainer = document.getElementById("notes");
 
 function escapeHtml(value) {
@@ -136,18 +137,26 @@ async function populateSessions() {
 async function loadNotes(sessionId) {
 	if (!notesContainer) return;
 
+	if (notesSection) notesSection.hidden = false;
+
 	const allNotes = searchEntities({ type: "Note" });
 	const allTags = searchEntities({ type: "Tag" });
 	const filtered = allNotes.filter(note => note.hasTarget === sessionId);
 
 	notesContainer.innerHTML = filtered.map(note => {
 		const tags = allTags.filter(tag => tag.hasTarget === note.id);
-		const tagsHtml = tags.map(tag => `<span class="tag">${escapeHtml(tag.name)}</span>`).join("");
+		const tagsHtml = tags
+			.map(tag => `<strong class="govuk-tag govuk-tag--blue">${escapeHtml(tag.name)}</strong>`)
+			.join("");
 
-		return `<div class="item">
-	<strong>${escapeHtml(formatDate(note.created))}</strong>
-	<div class="govuk-body">${escapeHtml(note.hasBody)}</div>
-	<div>${tagsHtml || '<span class="govuk-hint">No tags</span>'}</div>
+		return `<div class="govuk-summary-card researchops-utility-card">
+	<div class="govuk-summary-card__title-wrapper">
+		<h3 class="govuk-summary-card__title">${escapeHtml(formatDate(note.created))}</h3>
+	</div>
+	<div class="govuk-summary-card__content">
+		<p class="govuk-body">${escapeHtml(note.hasBody)}</p>
+		<div class="researchops-utility-page__tag-list">${tagsHtml || '<span class="govuk-hint">No tags</span>'}</div>
+	</div>
 </div>`;
 	}).join("") || '<div class="govuk-hint">No notes yet.</div>';
 }

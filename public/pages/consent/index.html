@@ -1,69 +1,176 @@
 <!doctype html>
 <html class="govuk-template" lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>Consent - ResearchOps Demo Suite</title>
+		<link rel="stylesheet" href="/assets/govuk/govuk-frontend.css" media="screen" />
 
-<head>
-	<meta charset="utf-8" />
-	<meta name="viewport" content="width=device-width, initial-scale=1" />
-	<title>Consent — ResearchOps</title>
+		<link rel="stylesheet" href="/css/consent.css" media="screen" />
+		<link rel="modulepreload" href="/js/consent-page.js" />
 
-	<link rel="stylesheet" href="/css/govuk/govuk-typography.css" media="screen" />
-	<link rel="stylesheet" href="/css/govuk/govuk-colours.css" media="screen" />
-	<link rel="stylesheet" href="/css/screen.css" media="screen" />
-	<link rel="stylesheet" href="/css/govuk/govuk-buttons.css" media="screen" />
-	<link rel="stylesheet" href="/css/govuk/govuk-forms.css" media="screen" />
-	<link rel="stylesheet" href="/css/consent.css" media="screen" />
-	<link rel="modulepreload" href="/js/consent-page.js" />
-	<script type="module" src="/components/layout.js" defer></script>
-	<link rel="stylesheet" href="/assets/govuk/govuk-frontend.css" media="screen">
-	<script type="module" src="/js/govuk-frontend-init.js" defer></script>
-</head>
+		<script type="module" src="/components/layout.js" defer></script>
+		<script type="module" src="/js/govuk-frontend-init.js" defer></script>
+	</head>
+	<body class="govuk-template__body">
+		<script>
+			document.body.className +=
+				" js-enabled" + ("noModule" in HTMLScriptElement.prototype ? " govuk-frontend-supported" : "");
+		</script>
+		<x-include src="/partials/header.html" vars='{"active":"Projects"}'></x-include>
+		<main class="govuk-main-wrapper" id="main-content" role="main" tabindex="-1">
+			<div class="govuk-width-container researchops-utility-page researchops-consent-page">
+				<nav class="govuk-breadcrumbs" aria-label="Breadcrumb">
+					<ol class="govuk-breadcrumbs__list">
+						<li class="govuk-breadcrumbs__list-item">
+							<a class="govuk-breadcrumbs__link" href="/">Home</a>
+						</li>
 
-<body class="govuk-template__body">
-	<script>document.body.className += ' js-enabled' + ('noModule' in HTMLScriptElement.prototype ? ' govuk-frontend-supported' : '');</script>
-	<x-include src="/partials/debug-boot.html" debug-only></x-include>
-	<x-include src="/partials/header.html" vars='{"active":"Consent","subtitle":"Consent"}'>
-	</x-include>
+						<li class="govuk-breadcrumbs__list-item" aria-current="page">Consent</li>
+					</ol>
+				</nav>
 
-	<main id="main-content" class="govuk-body govuk-main-wrapper" role="main" tabindex="-1">
-		<div class="card consent-panel">
-			<h2 class="govuk-heading-m">Link consent to a session</h2>
-			<div class="consent-form">
-				<div class="govuk-form-group consent-field">
-					<label class="govuk-label" for="session">Session</label>
-					<select id="session" class="govuk-select"></select>
-				</div>
-				<div class="govuk-form-group consent-field">
-					<label class="govuk-label" for="basis">Lawful basis</label>
-					<select id="basis" class="govuk-select">
-						<option value="dpv:PublicInterest">Public task / Public interest</option>
-						<option value="dpv:Consent">Consent</option>
-					</select>
-				</div>
-				<div class="govuk-form-group consent-field">
-					<label class="govuk-label" for="ret">Retention</label>
-					<div id="ret-hint" class="govuk-hint">Use ISO 8601 duration format, for example P12M.</div>
-					<input id="ret" class="govuk-input" value="P12M" aria-describedby="ret-hint" />
-				</div>
-				<div class="govuk-form-group consent-field">
-					<label class="govuk-label" for="notes">Notes</label>
-					<input id="notes" class="govuk-input" placeholder="e.g., verbal consent recorded at start" />
-				</div>
-				<div class="govuk-button-group">
-					<button id="link" class="govuk-button">Link consent</button>
-				</div>
-				<div id="status" class="govuk-hint consent-status"></div>
+				<header class="researchops-utility-page__intro">
+					<div class="govuk-grid-row">
+						<div class="govuk-grid-column-two-thirds">
+							<h1 class="govuk-heading-xl">Consent</h1>
+							<p class="govuk-body-l">Link a consent record to a research session.</p>
+							<p class="govuk-body">Use the study-scoped participant consent page for auditable consent management.</p>
+						</div>
+					</div>
+				</header>
+
+				<section class="researchops-utility-page__section" aria-labelledby="link-consent-title">
+					<div class="govuk-grid-row">
+						<div class="govuk-grid-column-two-thirds">
+							<h2 class="govuk-heading-l" id="link-consent-title">Link consent to a session</h2>
+							<form id="consent-form" class="researchops-utility-page__form consent-form" novalidate>
+								<div class="govuk-form-group">
+									<label class="govuk-label" for="session">Session</label>
+
+									<div id="session-hint" class="govuk-hint">Create a session first if this list is empty.</div>
+
+									<select
+										class="govuk-select govuk-!-width-two-thirds"
+										id="session"
+										name="session"
+										aria-describedby="session-hint"
+									></select>
+								</div>
+
+								<div class="govuk-form-group">
+									<label class="govuk-label" for="basis">Lawful basis</label>
+
+									<select class="govuk-select govuk-!-width-two-thirds" id="basis" name="basis">
+										<option value="dpv:PublicInterest" selected>Public task / Public interest</option>
+
+										<option value="dpv:Consent">Consent</option>
+									</select>
+								</div>
+
+								<div class="govuk-form-group">
+									<label class="govuk-label" for="ret">Retention</label>
+
+									<div id="ret-hint" class="govuk-hint">Use ISO 8601 duration format, for example P12M.</div>
+
+									<input
+										class="govuk-input govuk-input--width-10"
+										id="ret"
+										name="retention"
+										type="text"
+										value="P12M"
+										aria-describedby="ret-hint"
+									/>
+								</div>
+
+								<details class="govuk-details">
+									<summary class="govuk-details__summary">
+										<span class="govuk-details__summary-text">How to write retention duration</span>
+									</summary>
+									<div class="govuk-details__text">
+										<p class="govuk-body">
+											Use
+											<code>P</code>
+											followed by a number and a unit.
+										</p>
+										<ul class="govuk-list govuk-list--bullet">
+											<li>
+												<code>D</code>
+												for days, for example
+												<code>P30D</code>
+											</li>
+											<li>
+												<code>W</code>
+												for weeks, for example
+												<code>P8W</code>
+											</li>
+											<li>
+												<code>M</code>
+												for months, for example
+												<code>P12M</code>
+											</li>
+											<li>
+												<code>Y</code>
+												for years, for example
+												<code>P2Y</code>
+											</li>
+										</ul>
+										<p class="govuk-body">
+											You can combine date units in order, for example
+											<code>P1Y6M</code>
+											. If you need hours, minutes or seconds, add
+											<code>T</code>
+											before the time part, for example
+											<code>PT2H</code>
+											or
+											<code>P1DT12H</code>
+											.
+										</p>
+									</div>
+								</details>
+
+								<div class="govuk-form-group">
+									<label class="govuk-label" for="notes">Notes</label>
+
+									<div id="notes-hint" class="govuk-hint">For example, verbal consent recorded at the start.</div>
+
+									<input
+										class="govuk-input govuk-!-width-two-thirds"
+										id="notes"
+										name="notes"
+										type="text"
+										aria-describedby="notes-hint"
+									/>
+								</div>
+
+								<div class="govuk-button-group">
+									<button type="button" class="govuk-button" data-module="govuk-button" id="link">Link consent</button>
+
+									<p
+										id="status"
+										class="govuk-hint researchops-utility-page__status consent-status"
+										role="status"
+										aria-live="polite"
+									></p>
+								</div>
+							</form>
+						</div>
+					</div>
+				</section>
+
+				<section
+					id="consent-records-section"
+					class="researchops-utility-page__section researchops-utility-page__section--secondary"
+					aria-labelledby="consent-records-title"
+					hidden
+				>
+					<h2 class="govuk-heading-l" id="consent-records-title">Existing consent records</h2>
+					<div id="consents" class="researchops-utility-page__results consent-records" aria-live="polite"></div>
+				</section>
 			</div>
-		</div>
+		</main>
+		<x-include src="/partials/footer.html"></x-include>
 
-		<div class="card consent-panel">
-			<h2 class="govuk-heading-m">Existing consent records</h2>
-			<div id="consents" class="govuk-body consent-records"></div>
-		</div>
-	</main>
-
-	<x-include src="/partials/footer.html"></x-include>
-
-	<script type="module" src="/js/consent-page.js"></script>
-</body>
-
+		<script type="module" src="/js/consent-page.js"></script>
+	</body>
 </html>

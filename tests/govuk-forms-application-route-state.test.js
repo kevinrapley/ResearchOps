@@ -2,14 +2,17 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 
 const legacyFormRoutes = [
-	"public/pages/search/index.html",
-	"public/pages/notes/index.html",
-	"public/pages/consent/index.html",
-	"public/pages/sessions/index.html",
 	"public/pages/study/index.html",
 	"public/pages/study/guides/index.html",
 	"public/pages/study/consent-forms/index.html",
 	"public/pages/study/participants/index.html",
+];
+
+const generatedGovukFormRoutes = [
+	"public/pages/search/index.html",
+	"public/pages/notes/index.html",
+	"public/pages/consent/index.html",
+	"public/pages/sessions/index.html",
 ];
 
 function read(path) {
@@ -24,9 +27,25 @@ function excludes(source, text, label) {
 	assert.equal(source.includes(text), false, `Expected ${label} not to include: ${text}`);
 }
 
+function includesLabel(source, htmlFor, text, label) {
+	assert.match(
+		source,
+		new RegExp(`<label class="govuk-label" for="${htmlFor}">\\s*${text}\\s*</label>`),
+		`Expected ${label} to include GOV.UK label ${text} for ${htmlFor}`
+	);
+}
+
 for (const route of legacyFormRoutes) {
 	const source = read(route);
 	includes(source, "href=\"/css/govuk/govuk-forms.css\"", route);
+	includes(source, "govuk-form-group", route);
+	includes(source, "govuk-label", route);
+}
+
+for (const route of generatedGovukFormRoutes) {
+	const source = read(route);
+	includes(source, "href=\"/assets/govuk/govuk-frontend.css\"", route);
+	excludes(source, "href=\"/css/govuk/govuk-forms.css\"", route);
 	includes(source, "govuk-form-group", route);
 	includes(source, "govuk-label", route);
 }
@@ -47,23 +66,28 @@ excludes(startPage, "<label class=\"govuk-body\"", "Start route");
 excludes(startPage, "class=\"form-group\"", "Start route");
 
 const searchPage = read("public/pages/search/index.html");
-includes(searchPage, "<label class=\"govuk-label\" for=\"q\">Search text</label>", "Search route");
-includes(searchPage, "<select id=\"type\" class=\"govuk-select\">", "Search route");
+includesLabel(searchPage, "q", "Search text", "Search route");
+includes(searchPage, "class=\"govuk-select\"", "Search route");
+includes(searchPage, "id=\"type\"", "Search route");
 excludes(searchPage, "class=\"govuk-body search-type-label\"", "Search route");
 
 const notesPage = read("public/pages/notes/index.html");
-includes(notesPage, "<label class=\"govuk-label\" for=\"session\">Session</label>", "Notes route");
-includes(notesPage, "<textarea id=\"text\" class=\"govuk-textarea\"", "Notes route");
+includesLabel(notesPage, "session", "Session", "Notes route");
+includes(notesPage, "class=\"govuk-textarea\"", "Notes route");
+includes(notesPage, "id=\"text\"", "Notes route");
 excludes(notesPage, "<textarea id=\"text\" placeholder", "Notes route");
 
 const consentPage = read("public/pages/consent/index.html");
-includes(consentPage, "<label class=\"govuk-label\" for=\"basis\">Lawful basis</label>", "Consent route");
+includesLabel(consentPage, "basis", "Lawful basis", "Consent route");
 includes(consentPage, "aria-describedby=\"ret-hint\"", "Consent route");
 excludes(consentPage, "<label class=\"govuk-body consent-field\">", "Consent route");
 
 const sessionsPage = read("public/pages/sessions/index.html");
-includes(sessionsPage, "<label class=\"govuk-label\" for=\"when\">When</label>", "Sessions route");
-includes(sessionsPage, "aria-describedby=\"when-hint\"", "Sessions route");
+includes(sessionsPage, "class=\"govuk-date-input\"", "Sessions route");
+includes(sessionsPage, "id=\"session-date-day\"", "Sessions route");
+includes(sessionsPage, "id=\"session-time-hour\"", "Sessions route");
+includes(sessionsPage, "id=\"session-time-minute\"", "Sessions route");
+excludes(sessionsPage, "Use an ISO timestamp", "Sessions route");
 excludes(sessionsPage, "<label class=\"govuk-body sessions-field\">", "Sessions route");
 
 const studySessionPage = read("public/pages/study/session/index.html");

@@ -1,0 +1,85 @@
+{% extends "layouts/researchops.njk" %}
+{% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/input/macro.njk" import govukInput %}
+{% from "govuk/components/select/macro.njk" import govukSelect %}
+
+{% block head %}
+	<link rel="stylesheet" href="/css/search.css" media="screen">
+	<link rel="modulepreload" href="/js/search-page.js">
+{% endblock %}
+
+{% block content %}
+<div class="govuk-width-container researchops-utility-page researchops-search-page">
+	{{ govukBreadcrumbs({
+		items: [
+			{ text: "Home", href: "/" },
+			{ text: "Search" }
+		]
+	}) }}
+
+	<header class="researchops-utility-page__intro">
+		<div class="govuk-grid-row">
+			<div class="govuk-grid-column-two-thirds">
+				<h1 class="govuk-heading-xl">Search</h1>
+				<p class="govuk-body-l">Search locally saved ResearchOps records.</p>
+				<p class="govuk-body">Use this page to find sessions, consent records, notes, tags, clusters and themes stored in this browser.</p>
+			</div>
+		</div>
+	</header>
+
+	<section class="researchops-utility-page__section" aria-labelledby="search-query-title">
+		<div class="govuk-grid-row">
+			<div class="govuk-grid-column-two-thirds">
+				<h2 class="govuk-heading-l" id="search-query-title">Search records</h2>
+				<form id="search-form" class="researchops-utility-page__form" novalidate>
+					<div class="researchops-utility-page__form-row">
+						{{ govukInput({
+							id: "q",
+							name: "q",
+							classes: "govuk-!-width-full",
+							label: { text: "Search text" },
+							hint: { text: "For example, contrast or navigation." },
+							attributes: {
+								autocomplete: "off"
+							}
+						}) }}
+
+						{{ govukSelect({
+							id: "type",
+							name: "type",
+							label: { text: "Type" },
+							items: [
+								{ value: "", text: "Any" },
+								{ value: "ResearchSession", text: "Research session" },
+								{ value: "Consent", text: "Consent" },
+								{ value: "Note", text: "Note" },
+								{ value: "Tag", text: "Tag" },
+								{ value: "Cluster", text: "Cluster" },
+								{ value: "Theme", text: "Theme" }
+							]
+						}) }}
+					</div>
+
+					<div class="govuk-button-group">
+						{{ govukButton({
+							text: "Search",
+							type: "button",
+							attributes: { id: "go" }
+						}) }}
+					</div>
+				</form>
+			</div>
+		</div>
+	</section>
+
+	<section id="search-results-section" class="researchops-utility-page__section researchops-utility-page__section--secondary" aria-labelledby="search-results-title" hidden>
+		<h2 class="govuk-heading-l" id="search-results-title">Results</h2>
+		<div id="results" class="researchops-utility-page__results search-results" aria-live="polite"></div>
+	</section>
+</div>
+{% endblock %}
+
+{% block scripts %}
+	<script type="module" src="/js/search-page.js"></script>
+{% endblock %}
