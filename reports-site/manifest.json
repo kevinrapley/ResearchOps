@@ -1,7 +1,7 @@
 {
   "title": "ResearchOps application visual walkthrough",
   "description": "Generated evidence of the current application build, covering registered pages and important interaction states.",
-  "startedAt": "2026-07-02T00:59:03.455Z",
+  "startedAt": "2026-07-02T02:44:30.720Z",
   "baseURL": "https://research-operations.com/",
   "profiles": [
     {
@@ -101,7 +101,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://research-operations.com/",
-              "durationMs": 1976,
+              "durationMs": 1765,
               "screenshot": "screenshots/desktop/core__home__default.png"
             },
             {
@@ -109,7 +109,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://research-operations.com/",
-              "durationMs": 2408,
+              "durationMs": 2290,
               "screenshot": "screenshots/mobile/core__home__default.png"
             }
           ],
@@ -161,7 +161,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://research-operations.com/pages/product-proof/index.html",
-              "durationMs": 3980,
+              "durationMs": 3727,
               "screenshot": "screenshots/desktop/core__product-proof__default.png"
             },
             {
@@ -169,7 +169,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://research-operations.com/pages/product-proof/index.html",
-              "durationMs": 6178,
+              "durationMs": 6040,
               "screenshot": "screenshots/mobile/core__product-proof__default.png"
             }
           ],
@@ -216,7 +216,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://research-operations.com/pages/account/sign-in/index.html",
-              "durationMs": 1759,
+              "durationMs": 1668,
               "screenshot": "screenshots/desktop/account__account-sign-in__default.png"
             },
             {
@@ -224,7 +224,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://research-operations.com/pages/account/sign-in/index.html",
-              "durationMs": 1963,
+              "durationMs": 1834,
               "screenshot": "screenshots/mobile/account__account-sign-in__default.png"
             }
           ],
@@ -262,7 +262,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://research-operations.com/pages/account/sign-in/index.html",
-              "durationMs": 2546,
+              "durationMs": 2358,
               "screenshot": "screenshots/desktop/account__account-sign-in__code-requested.png"
             },
             {
@@ -270,7 +270,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://research-operations.com/pages/account/sign-in/index.html",
-              "durationMs": 2704,
+              "durationMs": 2740,
               "screenshot": "screenshots/mobile/account__account-sign-in__code-requested.png"
             }
           ],
@@ -317,7 +317,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://research-operations.com/pages/account/register/index.html",
-              "durationMs": 1889,
+              "durationMs": 1759,
               "screenshot": "screenshots/desktop/account__account-registration__default.png"
             },
             {
@@ -325,7 +325,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://research-operations.com/pages/account/register/index.html",
-              "durationMs": 2227,
+              "durationMs": 2071,
               "screenshot": "screenshots/mobile/account__account-registration__default.png"
             }
           ],
@@ -372,7 +372,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://research-operations.com/pages/account/team-access/index.html",
-              "durationMs": 1580,
+              "durationMs": 1432,
               "screenshot": "screenshots/desktop/account__account-team-access__default.png"
             },
             {
@@ -380,7 +380,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://research-operations.com/pages/account/team-access/index.html",
-              "durationMs": 1798,
+              "durationMs": 1722,
               "screenshot": "screenshots/mobile/account__account-team-access__default.png"
             }
           ],
@@ -427,7 +427,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://research-operations.com/pages/account/index.html",
-              "durationMs": 1920,
+              "durationMs": 1738,
               "screenshot": "screenshots/desktop/account__account-dashboard__default.png"
             },
             {
@@ -435,7 +435,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://research-operations.com/pages/account/index.html",
-              "durationMs": 2105,
+              "durationMs": 1970,
               "screenshot": "screenshots/mobile/account__account-dashboard__default.png"
             }
           ],
@@ -482,7 +482,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://research-operations.com/pages/start/overview/index.html",
-              "durationMs": 1579,
+              "durationMs": 1497,
               "screenshot": "screenshots/desktop/core__start-overview__default.png"
             },
             {
@@ -490,7 +490,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://research-operations.com/pages/start/overview/index.html",
-              "durationMs": 1743,
+              "durationMs": 1770,
               "screenshot": "screenshots/mobile/core__start-overview__default.png"
             }
           ],
@@ -537,7 +537,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://research-operations.com/pages/start/index.html",
-              "durationMs": 1546,
+              "durationMs": 1442,
               "screenshot": "screenshots/desktop/core__start__default.png"
             },
             {
@@ -545,7 +545,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://research-operations.com/pages/start/index.html",
-              "durationMs": 1769,
+              "durationMs": 1608,
               "screenshot": "screenshots/mobile/core__start__default.png"
             }
           ],
@@ -585,7 +585,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://research-operations.com/pages/start/index.html",
-              "durationMs": 2001,
+              "durationMs": 1861,
               "screenshot": "screenshots/desktop/core__start__step-1-filled.png"
             },
             {
@@ -593,7 +593,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://research-operations.com/pages/start/index.html",
-              "durationMs": 2146,
+              "durationMs": 2047,
               "screenshot": "screenshots/mobile/core__start__step-1-filled.png"
             }
           ],
@@ -633,7 +633,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://research-operations.com/pages/start/index.html",
-              "durationMs": 2440,
+              "durationMs": 2371,
               "screenshot": "screenshots/desktop/core__start__step-2-default.png"
             },
             {
@@ -641,7 +641,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://research-operations.com/pages/start/index.html",
-              "durationMs": 2709,
+              "durationMs": 2584,
               "screenshot": "screenshots/mobile/core__start__step-2-default.png"
             }
           ],
@@ -681,7 +681,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://research-operations.com/pages/start/index.html",
-              "durationMs": 3145,
+              "durationMs": 3098,
               "screenshot": "screenshots/desktop/core__start__step-2-filled-no-ai.png"
             },
             {
@@ -689,7 +689,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://research-operations.com/pages/start/index.html",
-              "durationMs": 3648,
+              "durationMs": 3483,
               "screenshot": "screenshots/mobile/core__start__step-2-filled-no-ai.png"
             }
           ],
@@ -729,7 +729,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://research-operations.com/pages/start/index.html",
-              "durationMs": 3876,
+              "durationMs": 3906,
               "screenshot": "screenshots/desktop/core__start__step-2-ai-rewrite-shown.png"
             },
             {
@@ -737,7 +737,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://research-operations.com/pages/start/index.html",
-              "durationMs": 4300,
+              "durationMs": 4200,
               "screenshot": "screenshots/mobile/core__start__step-2-ai-rewrite-shown.png"
             }
           ],
@@ -777,7 +777,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://research-operations.com/pages/start/index.html",
-              "durationMs": 3513,
+              "durationMs": 3350,
               "screenshot": "screenshots/desktop/core__start__step-3-default.png"
             },
             {
@@ -785,7 +785,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://research-operations.com/pages/start/index.html",
-              "durationMs": 3700,
+              "durationMs": 3529,
               "screenshot": "screenshots/mobile/core__start__step-3-default.png"
             }
           ],
@@ -825,7 +825,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://research-operations.com/pages/start/index.html",
-              "durationMs": 4116,
+              "durationMs": 3995,
               "screenshot": "screenshots/desktop/core__start__step-3-filled.png"
             },
             {
@@ -833,7 +833,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://research-operations.com/pages/start/index.html",
-              "durationMs": 4322,
+              "durationMs": 4162,
               "screenshot": "screenshots/mobile/core__start__step-3-filled.png"
             }
           ],
@@ -873,7 +873,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://research-operations.com/pages/start/index.html",
-              "durationMs": 4589,
+              "durationMs": 4433,
               "screenshot": "screenshots/desktop/core__start__step-4-check-answers.png"
             },
             {
@@ -881,7 +881,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://research-operations.com/pages/start/index.html",
-              "durationMs": 4876,
+              "durationMs": 4806,
               "screenshot": "screenshots/mobile/core__start__step-4-check-answers.png"
             }
           ],
@@ -1053,7 +1053,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://research-operations.com/pages/projects/",
-              "durationMs": 2663,
+              "durationMs": 2477,
               "screenshot": "screenshots/desktop/projects__projects__default.png"
             },
             {
@@ -1061,7 +1061,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://research-operations.com/pages/projects/",
-              "durationMs": 2856,
+              "durationMs": 2779,
               "screenshot": "screenshots/mobile/projects__projects__default.png"
             }
           ],
@@ -1113,7 +1113,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://research-operations.com/pages/project-dashboard/?id=recVisualProject001",
-              "durationMs": 9360,
+              "durationMs": 7808,
               "screenshot": "screenshots/desktop/projects__project-dashboard__default.png"
             },
             {
@@ -1121,7 +1121,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://research-operations.com/pages/project-dashboard/?id=recVisualProject001",
-              "durationMs": 8643,
+              "durationMs": 4334,
               "screenshot": "screenshots/mobile/projects__project-dashboard__default.png"
             }
           ],
@@ -1168,7 +1168,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://research-operations.com/pages/study/new/?id=recVisualProject001",
-              "durationMs": 1753,
+              "durationMs": 1700,
               "screenshot": "screenshots/desktop/projects__project-dashboard-add-study__default.png"
             },
             {
@@ -1176,7 +1176,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://research-operations.com/pages/study/new/?id=recVisualProject001",
-              "durationMs": 1946,
+              "durationMs": 1788,
               "screenshot": "screenshots/mobile/projects__project-dashboard-add-study__default.png"
             }
           ],
@@ -1214,7 +1214,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://research-operations.com/pages/study/new/index.html",
-              "durationMs": 1774,
+              "durationMs": 1706,
               "screenshot": "screenshots/desktop/projects__project-dashboard-add-study__missing-project-id-error.png"
             },
             {
@@ -1222,7 +1222,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://research-operations.com/pages/study/new/index.html",
-              "durationMs": 2002,
+              "durationMs": 1847,
               "screenshot": "screenshots/mobile/projects__project-dashboard-add-study__missing-project-id-error.png"
             }
           ],
@@ -1269,7 +1269,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://research-operations.com/pages/project-dashboard/participants/?id=recVisualProject001",
-              "durationMs": 1881,
+              "durationMs": 1790,
               "screenshot": "screenshots/desktop/projects__project-dashboard-add-participant__default.png"
             },
             {
@@ -1277,7 +1277,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://research-operations.com/pages/project-dashboard/participants/?id=recVisualProject001",
-              "durationMs": 2262,
+              "durationMs": 2060,
               "screenshot": "screenshots/mobile/projects__project-dashboard-add-participant__default.png"
             }
           ],
@@ -1324,7 +1324,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://research-operations.com/pages/project-dashboard/participants/import/?id=recVisualProject001",
-              "durationMs": 1740,
+              "durationMs": 1583,
               "screenshot": "screenshots/desktop/projects__project-dashboard-import-participants__default.png"
             },
             {
@@ -1332,7 +1332,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://research-operations.com/pages/project-dashboard/participants/import/?id=recVisualProject001",
-              "durationMs": 1891,
+              "durationMs": 1883,
               "screenshot": "screenshots/mobile/projects__project-dashboard-import-participants__default.png"
             }
           ],
@@ -1379,7 +1379,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://research-operations.com/pages/projects/outcomes/?id=recVisualProject001",
-              "durationMs": 2621,
+              "durationMs": 2454,
               "screenshot": "screenshots/desktop/projects__outcomes__default.png"
             },
             {
@@ -1387,7 +1387,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://research-operations.com/pages/projects/outcomes/?id=recVisualProject001",
-              "durationMs": 3080,
+              "durationMs": 2861,
               "screenshot": "screenshots/mobile/projects__outcomes__default.png"
             }
           ],
@@ -1434,7 +1434,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://research-operations.com/pages/projects/journals/?id=recVisualProject001",
-              "durationMs": 2695,
+              "durationMs": 2525,
               "screenshot": "screenshots/desktop/projects__journals__default.png"
             },
             {
@@ -1442,7 +1442,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://research-operations.com/pages/projects/journals/?id=recVisualProject001",
-              "durationMs": 4180,
+              "durationMs": 4004,
               "screenshot": "screenshots/mobile/projects__journals__default.png"
             }
           ],
@@ -1480,7 +1480,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://research-operations.com/pages/projects/journals/?id=recVisualProject001#codes",
-              "durationMs": 2300,
+              "durationMs": 2261,
               "screenshot": "screenshots/desktop/projects__journals__codes-with-realistic-data.png"
             },
             {
@@ -1488,7 +1488,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://research-operations.com/pages/projects/journals/?id=recVisualProject001#codes",
-              "durationMs": 3314,
+              "durationMs": 3160,
               "screenshot": "screenshots/mobile/projects__journals__codes-with-realistic-data.png"
             }
           ],
@@ -1526,7 +1526,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://research-operations.com/pages/projects/journals/?id=recVisualProject001#memos",
-              "durationMs": 1923,
+              "durationMs": 1786,
               "screenshot": "screenshots/desktop/projects__journals__memos-with-realistic-data.png"
             },
             {
@@ -1534,7 +1534,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://research-operations.com/pages/projects/journals/?id=recVisualProject001#memos",
-              "durationMs": 2271,
+              "durationMs": 2091,
               "screenshot": "screenshots/mobile/projects__journals__memos-with-realistic-data.png"
             }
           ],
@@ -1572,7 +1572,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://research-operations.com/pages/projects/journals/?id=recVisualProject001#analysis",
-              "durationMs": 2767,
+              "durationMs": 2683,
               "screenshot": "screenshots/desktop/projects__journals__analysis-timeline.png"
             },
             {
@@ -1580,7 +1580,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://research-operations.com/pages/projects/journals/?id=recVisualProject001#analysis",
-              "durationMs": 3561,
+              "durationMs": 3394,
               "screenshot": "screenshots/mobile/projects__journals__analysis-timeline.png"
             }
           ],
@@ -1618,7 +1618,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://research-operations.com/pages/projects/journals/?id=recVisualProject001#analysis",
-              "durationMs": 2651,
+              "durationMs": 2523,
               "screenshot": "screenshots/desktop/projects__journals__analysis-cooccurrence-table.png"
             },
             {
@@ -1626,7 +1626,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://research-operations.com/pages/projects/journals/?id=recVisualProject001#analysis",
-              "durationMs": 2984,
+              "durationMs": 2848,
               "screenshot": "screenshots/mobile/projects__journals__analysis-cooccurrence-table.png"
             }
           ],
@@ -1664,7 +1664,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://research-operations.com/pages/projects/journals/?id=recVisualProject001#analysis",
-              "durationMs": 2846,
+              "durationMs": 2719,
               "screenshot": "screenshots/desktop/projects__journals__analysis-cooccurrence-ranked-bar-chart.png"
             },
             {
@@ -1672,7 +1672,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://research-operations.com/pages/projects/journals/?id=recVisualProject001#analysis",
-              "durationMs": 3205,
+              "durationMs": 3056,
               "screenshot": "screenshots/mobile/projects__journals__analysis-cooccurrence-ranked-bar-chart.png"
             }
           ],
@@ -1710,7 +1710,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://research-operations.com/pages/projects/journals/?id=recVisualProject001#analysis",
-              "durationMs": 2720,
+              "durationMs": 2589,
               "screenshot": "screenshots/desktop/projects__journals__analysis-cooccurrence-matrix-heatmap.png"
             },
             {
@@ -1718,7 +1718,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://research-operations.com/pages/projects/journals/?id=recVisualProject001#analysis",
-              "durationMs": 3086,
+              "durationMs": 2964,
               "screenshot": "screenshots/mobile/projects__journals__analysis-cooccurrence-matrix-heatmap.png"
             }
           ],
@@ -1756,7 +1756,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://research-operations.com/pages/projects/journals/?id=recVisualProject001#analysis",
-              "durationMs": 2727,
+              "durationMs": 2662,
               "screenshot": "screenshots/desktop/projects__journals__analysis-cooccurrence-small-multiples.png"
             },
             {
@@ -1764,7 +1764,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://research-operations.com/pages/projects/journals/?id=recVisualProject001#analysis",
-              "durationMs": 3179,
+              "durationMs": 3025,
               "screenshot": "screenshots/mobile/projects__journals__analysis-cooccurrence-small-multiples.png"
             }
           ],
@@ -1802,7 +1802,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://research-operations.com/pages/projects/journals/?id=recVisualProject001#analysis",
-              "durationMs": 2934,
+              "durationMs": 2743,
               "screenshot": "screenshots/desktop/projects__journals__analysis-cooccurrence-stacked-summary.png"
             },
             {
@@ -1810,7 +1810,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://research-operations.com/pages/projects/journals/?id=recVisualProject001#analysis",
-              "durationMs": 3088,
+              "durationMs": 2944,
               "screenshot": "screenshots/mobile/projects__journals__analysis-cooccurrence-stacked-summary.png"
             }
           ],
@@ -1848,7 +1848,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://research-operations.com/pages/projects/journals/?id=recVisualProject001#analysis",
-              "durationMs": 2847,
+              "durationMs": 2762,
               "screenshot": "screenshots/desktop/projects__journals__analysis-cooccurrence-clustered-summary.png"
             },
             {
@@ -1856,7 +1856,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://research-operations.com/pages/projects/journals/?id=recVisualProject001#analysis",
-              "durationMs": 3111,
+              "durationMs": 2999,
               "screenshot": "screenshots/mobile/projects__journals__analysis-cooccurrence-clustered-summary.png"
             }
           ],
@@ -1894,7 +1894,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://research-operations.com/pages/projects/journals/?id=recVisualProject001#analysis",
-              "durationMs": 2792,
+              "durationMs": 2713,
               "screenshot": "screenshots/desktop/projects__journals__analysis-code-retrieval.png"
             },
             {
@@ -1902,7 +1902,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://research-operations.com/pages/projects/journals/?id=recVisualProject001#analysis",
-              "durationMs": 3259,
+              "durationMs": 3145,
               "screenshot": "screenshots/mobile/projects__journals__analysis-code-retrieval.png"
             }
           ],
@@ -1940,7 +1940,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://research-operations.com/pages/projects/journals/?id=recVisualProject001#analysis",
-              "durationMs": 2194,
+              "durationMs": 2061,
               "screenshot": "screenshots/desktop/projects__journals__analysis-export.png"
             },
             {
@@ -1948,7 +1948,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://research-operations.com/pages/projects/journals/?id=recVisualProject001#analysis",
-              "durationMs": 2404,
+              "durationMs": 2242,
               "screenshot": "screenshots/mobile/projects__journals__analysis-export.png"
             }
           ],
@@ -1995,7 +1995,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://research-operations.com/pages/journal/entry/?id=recVisualJournal001&project=recVisualProject001",
-              "durationMs": 1664,
+              "durationMs": 1599,
               "screenshot": "screenshots/desktop/projects__journal-entry__default.png"
             },
             {
@@ -2003,7 +2003,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://research-operations.com/pages/journal/entry/?id=recVisualJournal001&project=recVisualProject001",
-              "durationMs": 1869,
+              "durationMs": 1809,
               "screenshot": "screenshots/mobile/projects__journal-entry__default.png"
             }
           ],
@@ -2041,7 +2041,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://research-operations.com/pages/journal/entry/index.html",
-              "durationMs": 1730,
+              "durationMs": 1655,
               "screenshot": "screenshots/desktop/projects__journal-entry__missing-journal-entry-id-error.png"
             },
             {
@@ -2049,7 +2049,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://research-operations.com/pages/journal/entry/index.html",
-              "durationMs": 1818,
+              "durationMs": 1682,
               "screenshot": "screenshots/mobile/projects__journal-entry__missing-journal-entry-id-error.png"
             }
           ],
@@ -2096,7 +2096,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://research-operations.com/pages/journal/edit/?id=recVisualJournal001&project=recVisualProject001",
-              "durationMs": 1778,
+              "durationMs": 1658,
               "screenshot": "screenshots/desktop/projects__journal-entry-edit__default.png"
             },
             {
@@ -2104,7 +2104,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://research-operations.com/pages/journal/edit/?id=recVisualJournal001&project=recVisualProject001",
-              "durationMs": 1912,
+              "durationMs": 1834,
               "screenshot": "screenshots/mobile/projects__journal-entry-edit__default.png"
             }
           ],
@@ -2142,7 +2142,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://research-operations.com/pages/journal/edit/index.html",
-              "durationMs": 1653,
+              "durationMs": 1609,
               "screenshot": "screenshots/desktop/projects__journal-entry-edit__missing-journal-entry-id-error.png"
             },
             {
@@ -2150,7 +2150,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://research-operations.com/pages/journal/edit/index.html",
-              "durationMs": 1825,
+              "durationMs": 1662,
               "screenshot": "screenshots/mobile/projects__journal-entry-edit__missing-journal-entry-id-error.png"
             }
           ],
@@ -2197,7 +2197,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://research-operations.com/pages/study/?pid=recVisualProject001&sid=recVisualStudy001",
-              "durationMs": 2572,
+              "durationMs": 2167,
               "screenshot": "screenshots/desktop/study__study__default.png"
             },
             {
@@ -2205,7 +2205,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://research-operations.com/pages/study/?pid=recVisualProject001&sid=recVisualStudy001",
-              "durationMs": 2746,
+              "durationMs": 2579,
               "screenshot": "screenshots/mobile/study__study__default.png"
             }
           ],
@@ -2252,7 +2252,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://research-operations.com/pages/study/guides/?pid=recVisualProject001&sid=recVisualStudy001",
-              "durationMs": 2726,
+              "durationMs": 2150,
               "screenshot": "screenshots/desktop/study__study-guides__default.png"
             },
             {
@@ -2260,7 +2260,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://research-operations.com/pages/study/guides/?pid=recVisualProject001&sid=recVisualStudy001",
-              "durationMs": 2974,
+              "durationMs": 2502,
               "screenshot": "screenshots/mobile/study__study-guides__default.png"
             }
           ],
@@ -2298,7 +2298,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://research-operations.com/pages/study/guides/?pid=recVisualProject001&sid=recVisualStudy001",
-              "durationMs": 3559,
+              "durationMs": 2832,
               "screenshot": "screenshots/desktop/study__study-guides__empty-guide-source-error.png"
             },
             {
@@ -2306,7 +2306,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://research-operations.com/pages/study/guides/?pid=recVisualProject001&sid=recVisualStudy001",
-              "durationMs": 3508,
+              "durationMs": 3144,
               "screenshot": "screenshots/mobile/study__study-guides__empty-guide-source-error.png"
             }
           ],
@@ -2353,7 +2353,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://research-operations.com/pages/study/note-takers-observers/?pid=recVisualProject001&sid=recVisualStudy001",
-              "durationMs": 1884,
+              "durationMs": 1835,
               "screenshot": "screenshots/desktop/study__study-note-takers-observers__default.png"
             },
             {
@@ -2361,7 +2361,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://research-operations.com/pages/study/note-takers-observers/?pid=recVisualProject001&sid=recVisualStudy001",
-              "durationMs": 2170,
+              "durationMs": 2078,
               "screenshot": "screenshots/mobile/study__study-note-takers-observers__default.png"
             }
           ],
@@ -2408,7 +2408,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://research-operations.com/pages/study/participants/?pid=recVisualProject001&sid=recVisualStudy001",
-              "durationMs": 2190,
+              "durationMs": 2078,
               "screenshot": "screenshots/desktop/study__study-participants__default.png"
             },
             {
@@ -2416,7 +2416,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://research-operations.com/pages/study/participants/?pid=recVisualProject001&sid=recVisualStudy001",
-              "durationMs": 2808,
+              "durationMs": 2669,
               "screenshot": "screenshots/mobile/study__study-participants__default.png"
             }
           ],
@@ -2463,7 +2463,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://research-operations.com/pages/study/session/?pid=recVisualProject001&sid=recVisualStudy001",
-              "durationMs": 2302,
+              "durationMs": 2164,
               "screenshot": "screenshots/desktop/study__study-session__default.png"
             },
             {
@@ -2471,7 +2471,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://research-operations.com/pages/study/session/?pid=recVisualProject001&sid=recVisualStudy001",
-              "durationMs": 2531,
+              "durationMs": 2486,
               "screenshot": "screenshots/mobile/study__study-session__default.png"
             }
           ],
@@ -2509,7 +2509,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://research-operations.com/pages/study/session/?pid=recVisualProject001&sid=recVisualStudy001",
-              "durationMs": 1814,
+              "durationMs": 1777,
               "screenshot": "screenshots/desktop/study__study-session__participant-consent-gate.png"
             },
             {
@@ -2517,7 +2517,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://research-operations.com/pages/study/session/?pid=recVisualProject001&sid=recVisualStudy001",
-              "durationMs": 2039,
+              "durationMs": 1944,
               "screenshot": "screenshots/mobile/study__study-session__participant-consent-gate.png"
             }
           ],
@@ -2564,7 +2564,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://research-operations.com/pages/study/consent-forms/?pid=recVisualProject001&sid=recVisualStudy001",
-              "durationMs": 1974,
+              "durationMs": 1888,
               "screenshot": "screenshots/desktop/study__study-consent-forms__default.png"
             },
             {
@@ -2572,7 +2572,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://research-operations.com/pages/study/consent-forms/?pid=recVisualProject001&sid=recVisualStudy001",
-              "durationMs": 2581,
+              "durationMs": 2473,
               "screenshot": "screenshots/mobile/study__study-consent-forms__default.png"
             }
           ],
@@ -2619,7 +2619,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://research-operations.com/pages/study/participant-consent/?id=recVisualConsentStudy001",
-              "durationMs": 2199,
+              "durationMs": 2067,
               "screenshot": "screenshots/desktop/study__study-participant-consent__default.png"
             },
             {
@@ -2627,7 +2627,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://research-operations.com/pages/study/participant-consent/?id=recVisualConsentStudy001",
-              "durationMs": 2574,
+              "durationMs": 2540,
               "screenshot": "screenshots/mobile/study__study-participant-consent__default.png"
             }
           ],
@@ -2667,7 +2667,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://research-operations.com/pages/study/participant-consent/index.html",
-              "durationMs": 1752,
+              "durationMs": 1610,
               "screenshot": "screenshots/desktop/study__study-participant-consent__missing-context-error.png"
             },
             {
@@ -2675,7 +2675,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://research-operations.com/pages/study/participant-consent/index.html",
-              "durationMs": 1969,
+              "durationMs": 1712,
               "screenshot": "screenshots/mobile/study__study-participant-consent__missing-context-error.png"
             }
           ],
@@ -2715,7 +2715,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://research-operations.com/pages/study/participant-consent/?id=recVisualConsentStudy001",
-              "durationMs": 1900,
+              "durationMs": 1806,
               "screenshot": "screenshots/desktop/study__study-participant-consent__no-published-consent-form.png"
             },
             {
@@ -2723,7 +2723,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://research-operations.com/pages/study/participant-consent/?id=recVisualConsentStudy001",
-              "durationMs": 2108,
+              "durationMs": 1990,
               "screenshot": "screenshots/mobile/study__study-participant-consent__no-published-consent-form.png"
             }
           ],
@@ -2763,7 +2763,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://research-operations.com/pages/study/participant-consent/?id=recVisualConsentStudy001",
-              "durationMs": 1868,
+              "durationMs": 1805,
               "screenshot": "screenshots/desktop/study__study-participant-consent__no-participants.png"
             },
             {
@@ -2771,7 +2771,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://research-operations.com/pages/study/participant-consent/?id=recVisualConsentStudy001",
-              "durationMs": 2056,
+              "durationMs": 2046,
               "screenshot": "screenshots/mobile/study__study-participant-consent__no-participants.png"
             }
           ],
@@ -2811,7 +2811,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://research-operations.com/pages/study/participant-consent/?id=recVisualConsentStudy001",
-              "durationMs": 2636,
+              "durationMs": 2542,
               "screenshot": "screenshots/desktop/study__study-participant-consent__participant-selected.png"
             },
             {
@@ -2819,7 +2819,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://research-operations.com/pages/study/participant-consent/?id=recVisualConsentStudy001",
-              "durationMs": 3036,
+              "durationMs": 2965,
               "screenshot": "screenshots/mobile/study__study-participant-consent__participant-selected.png"
             }
           ],
@@ -2952,7 +2952,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://research-operations.com/pages/study/synthesis/index.html",
-              "durationMs": 1505,
+              "durationMs": 1467,
               "screenshot": "screenshots/desktop/study__synthesize__missing-sid-error.png"
             },
             {
@@ -2960,7 +2960,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://research-operations.com/pages/study/synthesis/index.html",
-              "durationMs": 1784,
+              "durationMs": 1605,
               "screenshot": "screenshots/mobile/study__synthesize__missing-sid-error.png"
             }
           ],
@@ -3000,7 +3000,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://research-operations.com/pages/study/synthesis/?id=recVisualStudy001",
-              "durationMs": 1909,
+              "durationMs": 1839,
               "screenshot": "screenshots/desktop/study__synthesize__empty-evidence.png"
             },
             {
@@ -3008,7 +3008,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://research-operations.com/pages/study/synthesis/?id=recVisualStudy001",
-              "durationMs": 2188,
+              "durationMs": 2111,
               "screenshot": "screenshots/mobile/study__synthesize__empty-evidence.png"
             }
           ],
@@ -3048,7 +3048,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://research-operations.com/pages/study/synthesis/?id=recVisualStudy001",
-              "durationMs": 1881,
+              "durationMs": 1746,
               "screenshot": "screenshots/desktop/study__synthesize__evidence-loaded.png"
             },
             {
@@ -3056,7 +3056,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://research-operations.com/pages/study/synthesis/?id=recVisualStudy001",
-              "durationMs": 2015,
+              "durationMs": 1932,
               "screenshot": "screenshots/mobile/study__synthesize__evidence-loaded.png"
             }
           ],
@@ -3096,7 +3096,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://research-operations.com/pages/study/synthesis/?id=recVisualStudy001",
-              "durationMs": 2907,
+              "durationMs": 2780,
               "screenshot": "screenshots/desktop/study__synthesize__working-cluster-created.png"
             },
             {
@@ -3104,7 +3104,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://research-operations.com/pages/study/synthesis/?id=recVisualStudy001",
-              "durationMs": 3395,
+              "durationMs": 3157,
               "screenshot": "screenshots/mobile/study__synthesize__working-cluster-created.png"
             }
           ],
@@ -3144,7 +3144,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://research-operations.com/pages/study/synthesis/?id=recVisualStudy001",
-              "durationMs": 2923,
+              "durationMs": 2741,
               "screenshot": "screenshots/desktop/study__synthesize__evidence-added-to-cluster.png"
             },
             {
@@ -3152,7 +3152,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://research-operations.com/pages/study/synthesis/?id=recVisualStudy001",
-              "durationMs": 3445,
+              "durationMs": 3322,
               "screenshot": "screenshots/mobile/study__synthesize__evidence-added-to-cluster.png"
             }
           ],
@@ -3192,7 +3192,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://research-operations.com/pages/study/synthesis/?id=recVisualStudy001",
-              "durationMs": 2156,
+              "durationMs": 2118,
               "screenshot": "screenshots/desktop/study__synthesize__theme-blocked-without-evidence.png"
             },
             {
@@ -3200,7 +3200,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://research-operations.com/pages/study/synthesis/?id=recVisualStudy001",
-              "durationMs": 2627,
+              "durationMs": 2520,
               "screenshot": "screenshots/mobile/study__synthesize__theme-blocked-without-evidence.png"
             }
           ],
@@ -3240,7 +3240,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://research-operations.com/pages/study/synthesis/?id=recVisualStudy001",
-              "durationMs": 3077,
+              "durationMs": 2996,
               "screenshot": "screenshots/desktop/study__synthesize__theme-created.png"
             },
             {
@@ -3248,7 +3248,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://research-operations.com/pages/study/synthesis/?id=recVisualStudy001",
-              "durationMs": 3680,
+              "durationMs": 3662,
               "screenshot": "screenshots/mobile/study__synthesize__theme-created.png"
             }
           ],
@@ -3407,7 +3407,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://research-operations.com/pages/team/registration-requests/",
-              "durationMs": 1757,
+              "durationMs": 1684,
               "screenshot": "screenshots/desktop/team-administration__team-registration-requests__default.png"
             },
             {
@@ -3415,7 +3415,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://research-operations.com/pages/team/registration-requests/",
-              "durationMs": 2032,
+              "durationMs": 1936,
               "screenshot": "screenshots/mobile/team-administration__team-registration-requests__default.png"
             }
           ],
@@ -3462,7 +3462,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://research-operations.com/pages/team/access-requests/",
-              "durationMs": 1795,
+              "durationMs": 1694,
               "screenshot": "screenshots/desktop/team-administration__team-access-requests__default.png"
             },
             {
@@ -3470,7 +3470,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://research-operations.com/pages/team/access-requests/",
-              "durationMs": 2025,
+              "durationMs": 1944,
               "screenshot": "screenshots/mobile/team-administration__team-access-requests__default.png"
             }
           ],
@@ -3508,7 +3508,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://research-operations.com/pages/team/access-requests/",
-              "durationMs": 2319,
+              "durationMs": 2187,
               "screenshot": "screenshots/desktop/team-administration__team-access-requests__decision-error.png"
             },
             {
@@ -3516,7 +3516,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://research-operations.com/pages/team/access-requests/",
-              "durationMs": 2447,
+              "durationMs": 2369,
               "screenshot": "screenshots/mobile/team-administration__team-access-requests__decision-error.png"
             }
           ],
@@ -3563,7 +3563,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://research-operations.com/pages/team/role-assignments/index.html",
-              "durationMs": 1990,
+              "durationMs": 1926,
               "screenshot": "screenshots/desktop/team-administration__team-role-assignments__default.png"
             },
             {
@@ -3571,7 +3571,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://research-operations.com/pages/team/role-assignments/index.html",
-              "durationMs": 2396,
+              "durationMs": 2253,
               "screenshot": "screenshots/mobile/team-administration__team-role-assignments__default.png"
             }
           ],
@@ -3618,7 +3618,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://research-operations.com/pages/search/index.html",
-              "durationMs": 1514,
+              "durationMs": 1494,
               "screenshot": "screenshots/desktop/utilities__search__default.png"
             },
             {
@@ -3626,7 +3626,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://research-operations.com/pages/search/index.html",
-              "durationMs": 1551,
+              "durationMs": 1545,
               "screenshot": "screenshots/mobile/utilities__search__default.png"
             }
           ],
@@ -3673,7 +3673,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://research-operations.com/pages/notes/index.html",
-              "durationMs": 1593,
+              "durationMs": 1529,
               "screenshot": "screenshots/desktop/utilities__notes__default.png"
             },
             {
@@ -3681,7 +3681,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://research-operations.com/pages/notes/index.html",
-              "durationMs": 1721,
+              "durationMs": 1602,
               "screenshot": "screenshots/mobile/utilities__notes__default.png"
             }
           ],
@@ -3728,7 +3728,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://research-operations.com/pages/consent/index.html",
-              "durationMs": 1511,
+              "durationMs": 1541,
               "screenshot": "screenshots/desktop/utilities__consent__default.png"
             },
             {
@@ -3736,7 +3736,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://research-operations.com/pages/consent/index.html",
-              "durationMs": 1731,
+              "durationMs": 1599,
               "screenshot": "screenshots/mobile/utilities__consent__default.png"
             }
           ],
@@ -3783,7 +3783,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://research-operations.com/pages/sessions/index.html",
-              "durationMs": 1573,
+              "durationMs": 1597,
               "screenshot": "screenshots/desktop/utilities__sessions__default.png"
             },
             {
@@ -3791,7 +3791,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://research-operations.com/pages/sessions/index.html",
-              "durationMs": 1727,
+              "durationMs": 1628,
               "screenshot": "screenshots/mobile/utilities__sessions__default.png"
             }
           ],
@@ -3838,7 +3838,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://research-operations.com/pages/repository/",
-              "durationMs": 3915,
+              "durationMs": 2910,
               "screenshot": "screenshots/desktop/research-repository__repository__default.png"
             },
             {
@@ -3846,7 +3846,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://research-operations.com/pages/repository/",
-              "durationMs": 3556,
+              "durationMs": 2798,
               "screenshot": "screenshots/mobile/research-repository__repository__default.png"
             }
           ],
@@ -3893,7 +3893,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://research-operations.com/pages/repository/service-areas/?service_area=assisted-digital-support",
-              "durationMs": 1837,
+              "durationMs": 1833,
               "screenshot": "screenshots/desktop/research-repository__repository-service-areas__default.png"
             },
             {
@@ -3901,7 +3901,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://research-operations.com/pages/repository/service-areas/?service_area=assisted-digital-support",
-              "durationMs": 2134,
+              "durationMs": 2087,
               "screenshot": "screenshots/mobile/research-repository__repository-service-areas__default.png"
             }
           ],
@@ -3948,7 +3948,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://research-operations.com/pages/repository/user-groups/?user_group=frontline-staff",
-              "durationMs": 1819,
+              "durationMs": 1798,
               "screenshot": "screenshots/desktop/research-repository__repository-user-groups__default.png"
             },
             {
@@ -3956,7 +3956,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://research-operations.com/pages/repository/user-groups/?user_group=frontline-staff",
-              "durationMs": 2199,
+              "durationMs": 2037,
               "screenshot": "screenshots/mobile/research-repository__repository-user-groups__default.png"
             }
           ],
@@ -4003,7 +4003,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://research-operations.com/pages/repository/methods/?method=interviews",
-              "durationMs": 1875,
+              "durationMs": 1772,
               "screenshot": "screenshots/desktop/research-repository__repository-methods__default.png"
             },
             {
@@ -4011,7 +4011,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://research-operations.com/pages/repository/methods/?method=interviews",
-              "durationMs": 2128,
+              "durationMs": 2079,
               "screenshot": "screenshots/mobile/research-repository__repository-methods__default.png"
             }
           ],
@@ -4058,7 +4058,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://research-operations.com/pages/repository/risks/?risk_area=evidence-boundaries",
-              "durationMs": 1847,
+              "durationMs": 1760,
               "screenshot": "screenshots/desktop/research-repository__repository-risks__default.png"
             },
             {
@@ -4066,7 +4066,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://research-operations.com/pages/repository/risks/?risk_area=evidence-boundaries",
-              "durationMs": 2230,
+              "durationMs": 2070,
               "screenshot": "screenshots/mobile/research-repository__repository-risks__default.png"
             }
           ],
@@ -4113,7 +4113,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://research-operations.com/pages/repository/artefacts/",
-              "durationMs": 1749,
+              "durationMs": 1597,
               "screenshot": "screenshots/desktop/research-repository__repository-artefacts__default.png"
             },
             {
@@ -4121,7 +4121,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://research-operations.com/pages/repository/artefacts/",
-              "durationMs": 1860,
+              "durationMs": 1817,
               "screenshot": "screenshots/mobile/research-repository__repository-artefacts__default.png"
             }
           ],
@@ -4168,7 +4168,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://research-operations.com/pages/repository/artefacts/staff-evidence-boundaries/",
-              "durationMs": 1693,
+              "durationMs": 1613,
               "screenshot": "screenshots/desktop/research-repository__repository-artefacts-staff-evidence-boundaries__default.png"
             },
             {
@@ -4176,7 +4176,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://research-operations.com/pages/repository/artefacts/staff-evidence-boundaries/",
-              "durationMs": 1883,
+              "durationMs": 1800,
               "screenshot": "screenshots/mobile/research-repository__repository-artefacts-staff-evidence-boundaries__default.png"
             }
           ],
@@ -4223,7 +4223,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://research-operations.com/pages/repository/artefacts/check-answers-review-anxiety/",
-              "durationMs": 1717,
+              "durationMs": 1582,
               "screenshot": "screenshots/desktop/research-repository__repository-artefacts-check-answers-review-anxiety__default.png"
             },
             {
@@ -4231,7 +4231,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://research-operations.com/pages/repository/artefacts/check-answers-review-anxiety/",
-              "durationMs": 1899,
+              "durationMs": 1757,
               "screenshot": "screenshots/mobile/research-repository__repository-artefacts-check-answers-review-anxiety__default.png"
             }
           ],
@@ -4278,7 +4278,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://research-operations.com/pages/repository/artefacts/consent-state-workarounds/",
-              "durationMs": 1672,
+              "durationMs": 1590,
               "screenshot": "screenshots/desktop/research-repository__repository-artefacts-consent-state-workarounds__default.png"
             },
             {
@@ -4286,7 +4286,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://research-operations.com/pages/repository/artefacts/consent-state-workarounds/",
-              "durationMs": 1860,
+              "durationMs": 1787,
               "screenshot": "screenshots/mobile/research-repository__repository-artefacts-consent-state-workarounds__default.png"
             }
           ],
@@ -4333,7 +4333,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://research-operations.com/pages/repository/artefacts/lightweight-capture-before-tagging/",
-              "durationMs": 1723,
+              "durationMs": 1622,
               "screenshot": "screenshots/desktop/research-repository__repository-artefacts-lightweight-capture-before-tagging__default.png"
             },
             {
@@ -4341,7 +4341,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://research-operations.com/pages/repository/artefacts/lightweight-capture-before-tagging/",
-              "durationMs": 1832,
+              "durationMs": 1790,
               "screenshot": "screenshots/mobile/research-repository__repository-artefacts-lightweight-capture-before-tagging__default.png"
             }
           ],
@@ -4388,7 +4388,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://research-operations.com/pages/repository/review/candidates/new/",
-              "durationMs": 1975,
+              "durationMs": 1851,
               "screenshot": "screenshots/desktop/research-repository__repository-review-candidates-new__default.png"
             },
             {
@@ -4396,7 +4396,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://research-operations.com/pages/repository/review/candidates/new/",
-              "durationMs": 2498,
+              "durationMs": 2328,
               "screenshot": "screenshots/mobile/research-repository__repository-review-candidates-new__default.png"
             }
           ],
@@ -4443,7 +4443,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://research-operations.com/pages/repository/review/candidates/",
-              "durationMs": 1975,
+              "durationMs": 1848,
               "screenshot": "screenshots/desktop/research-repository__repository-review-candidates__default.png"
             },
             {
@@ -4451,7 +4451,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://research-operations.com/pages/repository/review/candidates/",
-              "durationMs": 2610,
+              "durationMs": 2420,
               "screenshot": "screenshots/mobile/research-repository__repository-review-candidates__default.png"
             }
           ],
@@ -4498,7 +4498,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://research-operations.com/pages/repository/review/stale/",
-              "durationMs": 1972,
+              "durationMs": 1809,
               "screenshot": "screenshots/desktop/research-repository__repository-review-stale__default.png"
             },
             {
@@ -4506,7 +4506,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://research-operations.com/pages/repository/review/stale/",
-              "durationMs": 2499,
+              "durationMs": 2429,
               "screenshot": "screenshots/mobile/research-repository__repository-review-stale__default.png"
             }
           ],
@@ -4553,7 +4553,7 @@
               "profileTitle": "Desktop",
               "status": "captured",
               "url": "https://research-operations.com/pages/repository/review/withdrawn/",
-              "durationMs": 1957,
+              "durationMs": 1880,
               "screenshot": "screenshots/desktop/research-repository__repository-review-withdrawn__default.png"
             },
             {
@@ -4561,7 +4561,7 @@
               "profileTitle": "Mobile",
               "status": "captured",
               "url": "https://research-operations.com/pages/repository/review/withdrawn/",
-              "durationMs": 2618,
+              "durationMs": 2400,
               "screenshot": "screenshots/mobile/research-repository__repository-review-withdrawn__default.png"
             }
           ],
