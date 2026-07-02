@@ -1,73 +1,85 @@
+@charset "UTF-8";
+
 /* ==========================================================================
-   ResearchOps UI • Notes route stylesheet
+   ResearchOps UI • Utility route stylesheet source
    Service:    Home Office Biometrics — ResearchOps
-   Route:      /pages/notes/
-   Build:      GOV.UK typography + colours; mobile-first
-   Repo:       /css/notes.css
+   Routes:     /pages/search/, /pages/notes/, /pages/consent/, /pages/sessions/
+   Build:      GOV.UK Frontend components with shared route support
+   Repo:       /src/styles/researchops-utility-pages.scss
    License:    All rights reserved
    ========================================================================== */
 
-/* Notes panels */
-
-.notes-panel {
-	margin-bottom: 24px;
+.researchops-utility-page [hidden] {
+	display: none;
 	}
 
-.notes-panel .govuk-heading-m {
-	margin-top: 0;
+.researchops-utility-page__intro {
+	margin-bottom: 30px;
 	}
 
-.notes-session-select {
-	min-height: 40px;
-	border: 2px solid #0b0c0c;
-	padding: 5px;
-	font: inherit;
+.researchops-utility-page__section {
+	border-top: 5px solid #1d70b8;
+	margin-bottom: 40px;
+	padding-top: 20px;
 	}
 
-.notes-editor {
+.researchops-utility-page__section--secondary {
+	border-top-width: 1px;
+	border-top-color: #b1b4b6;
+	}
+
+.researchops-utility-page__form {
+	margin-top: 30px;
+	}
+
+.researchops-utility-page__status {
+	margin-bottom: 0;
+	}
+
+.researchops-utility-page__results {
 	display: grid;
-	gap: 12px;
+	gap: 20px;
 	}
 
-.notes-editor textarea {
-	min-height: 160px;
-	border: 2px solid #0b0c0c;
-	padding: 8px;
-	font: inherit;
-	resize: vertical;
+.researchops-utility-page__results > .govuk-summary-card {
+	margin-bottom: 0;
 	}
 
-.notes-status {
-	margin: 0;
+.researchops-utility-page__tag-list {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 5px 8px;
 	}
 
-/* Rendered notes */
-
-.notes-list {
-	display: grid;
-	gap: 12px;
+.researchops-utility-page__time-inputs {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0 20px;
 	}
 
-.notes-list .item {
-	border-top: 1px solid #b1b4b6;
-	padding-top: 12px;
-	}
-
-.notes-list .item:first-child {
-	border-top: 0;
-	padding-top: 0;
-	}
-
-.notes-list .tag {
-	display: inline-block;
-	margin: 4px 4px 0 0;
-	padding: 2px 8px;
+.researchops-utility-page__raw {
+	max-width: 100%;
+	overflow: auto;
+	padding: 15px;
+	background: #f3f2f1;
 	border: 1px solid #b1b4b6;
-	border-radius: 14px;
-	background: #ffffff;
-	font-size: 12px;
-	font-weight: 700;
-	color: #0b0c0c;
+	white-space: pre-wrap;
+	}
+
+.researchops-utility-page .govuk-summary-card__content .govuk-details {
+	margin-bottom: 0;
+	}
+
+@media (min-width: 40.0625em) {
+	.researchops-utility-page__form-row {
+		display: grid;
+		align-items: end;
+		column-gap: 30px;
+		grid-template-columns: minmax(0, 2fr) minmax(180px, 1fr);
+		}
+	.researchops-utility-page__form-row > .govuk-form-group {
+		margin-bottom: 20px;
+		}
 	}
 
 /* transparency begins in the cascade */

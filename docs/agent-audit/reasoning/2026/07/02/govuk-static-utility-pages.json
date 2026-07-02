@@ -1,0 +1,207 @@
+{
+  "date": "2026-07-02",
+  "branch": "feature/govuk-static-utility-pages",
+  "traceRequired": true,
+  "taskSummary": "Create GOV.UK/Nunjucks templates and SASS-owned route styles for the search, notes, consent and sessions utility pages.",
+  "implementationHighlights": [
+    "Added Nunjucks templates for search, notes, consent and sessions under src/govuk/templates/pages/.",
+    "Registered the four pages in scripts/govuk/render-govuk-pages.mjs.",
+    "Added src/styles/researchops-utility-pages.scss and generated CSS targets for public/css/search.css, public/css/notes.css, public/css/consent.css and public/css/sessions.css.",
+    "Reworked dynamic route output to use GOV.UK summary cards, summary lists, details and tags.",
+    "Updated route-state tests to cover Nunjucks ownership, GOV.UK macro usage and generated SASS stylesheet ownership."
+  ],
+  "selectedBundles": [
+    {
+      "id": "github-diamond",
+      "canonicalPath": ".agent-operating-model/bundles/github/"
+    },
+    {
+      "id": "researchops-developer-control",
+      "canonicalPath": ".agent-operating-model/bundles/researchops-developer-control/"
+    },
+    {
+      "id": "multi-functional-team",
+      "canonicalPath": ".agent-operating-model/bundles/multi-functional-team/"
+    },
+    {
+      "id": "govuk-design-system",
+      "canonicalPath": ".agent-operating-model/bundles/govuk-design-system/"
+    }
+  ],
+  "conditionalBundlesNotSelected": [
+    {
+      "id": "cloudflare",
+      "reason": "No Worker, D1, binding or deployment code was changed."
+    },
+    {
+      "id": "airtable-public-api",
+      "reason": "No Airtable API behaviour was changed."
+    },
+    {
+      "id": "openai",
+      "reason": "No OpenAI API behaviour was changed."
+    },
+    {
+      "id": "mcp-agent-tooling",
+      "reason": "No MCP contract or tool integration was changed."
+    },
+    {
+      "id": "mural-public-api",
+      "reason": "No Mural API behaviour was changed."
+    }
+  ],
+  "validation": [
+    {
+      "command": "npm run build:generated-css -- public/css/search.css public/css/notes.css public/css/consent.css public/css/sessions.css",
+      "result": "passed"
+    },
+    {
+      "command": "npm run build:govuk-pages",
+      "result": "passed"
+    },
+    {
+      "command": "node --test tests/search-page-route-state.test.js tests/notes-page-route-state.test.js tests/consent-page-route-state.test.js tests/study-session-route-state.test.js tests/govuk-forms-application-route-state.test.js tests/govuk-page-chrome-navigation-route-state.test.js tests/sass-migration-route-state.test.js",
+      "result": "passed with 7 tests passing and 0 failing"
+    },
+    {
+      "command": "npm run format -c",
+      "result": "passed"
+    },
+    {
+      "command": "npm run trace:coverage -- --date 2026-07-02",
+      "result": "passed"
+    },
+    {
+      "command": "curl local preview checks for /pages/search/, /pages/notes/, /pages/consent/ and /pages/sessions/ on http://127.0.0.1:4174",
+      "result": "passed with HTTP 200"
+    },
+    {
+      "command": "Playwright DOM smoke check against http://127.0.0.1:4174",
+      "result": "passed for all four pages with route container, form, results container and GOV.UK frontend stylesheet present"
+    },
+    {
+      "command": "git diff --check",
+      "result": "passed"
+    },
+    {
+      "command": "npm run lint",
+      "result": "passed with existing repository warnings and 0 errors"
+    },
+    {
+      "command": "Final node --test tests/search-page-route-state.test.js tests/notes-page-route-state.test.js tests/consent-page-route-state.test.js tests/study-session-route-state.test.js tests/govuk-forms-application-route-state.test.js tests/govuk-page-chrome-navigation-route-state.test.js tests/sass-migration-route-state.test.js",
+      "result": "passed with 7 tests passing and 0 failing"
+    },
+    {
+      "command": "Browser-comment follow-up for /pages/search/",
+      "result": "Added bottom alignment to utility form rows and hid the search results section until a search has run."
+    },
+    {
+      "command": "npm run build:generated-css -- public/css/search.css public/css/notes.css public/css/consent.css public/css/sessions.css && npm run build:govuk-pages",
+      "result": "passed"
+    },
+    {
+      "command": "node --test tests/search-page-route-state.test.js tests/govuk-forms-application-route-state.test.js tests/govuk-page-chrome-navigation-route-state.test.js",
+      "result": "passed with 3 tests passing and 0 failing"
+    },
+    {
+      "command": "Playwright preview check at http://127.0.0.1:4174/pages/search/",
+      "result": "passed: results section hidden initially, visible after clicking Search, and search input/type select shared the same bottom baseline"
+    },
+    {
+      "command": "Final shared-utility route-state sweep: node --test tests/search-page-route-state.test.js tests/notes-page-route-state.test.js tests/consent-page-route-state.test.js tests/study-session-route-state.test.js tests/govuk-forms-application-route-state.test.js tests/govuk-page-chrome-navigation-route-state.test.js tests/sass-migration-route-state.test.js",
+      "result": "passed with 7 tests passing and 0 failing"
+    },
+    {
+      "command": "Browser-comment follow-up for /pages/notes/",
+      "result": "Hid the session notes section until notes are loaded for a selected session."
+    },
+    {
+      "command": "npm run build:govuk-pages && node --test tests/notes-page-route-state.test.js tests/govuk-forms-application-route-state.test.js tests/govuk-page-chrome-navigation-route-state.test.js",
+      "result": "passed with 3 tests passing and 0 failing"
+    },
+    {
+      "command": "Playwright preview check at http://127.0.0.1:4174/pages/notes/",
+      "result": "passed: session notes section hidden initially and visible after a session was available and notes loaded"
+    },
+    {
+      "command": "Browser-comment follow-up for /pages/consent/",
+      "result": "Added a GOV.UK details helper for ISO 8601 retention duration syntax and hid existing consent records until records are available."
+    },
+    {
+      "command": "npm run build:govuk-pages && node --test tests/consent-page-route-state.test.js tests/govuk-forms-application-route-state.test.js tests/govuk-page-chrome-navigation-route-state.test.js",
+      "result": "passed with 3 tests passing and 0 failing"
+    },
+    {
+      "command": "Playwright preview check at http://127.0.0.1:4174/pages/consent/",
+      "result": "passed: retention helper present, records section hidden with no records and visible after linking consent"
+    },
+    {
+      "command": "Browser-comment follow-up for /pages/sessions/",
+      "result": "Replaced the ISO timestamp text input with GOV.UK date input and 24-hour time fields, with ISO conversion handled by the controller, and hid the sessions list until sessions are available."
+    },
+    {
+      "command": "npm run build:generated-css -- public/css/search.css public/css/notes.css public/css/consent.css public/css/sessions.css && npm run build:govuk-pages && node --test tests/study-session-route-state.test.js tests/govuk-forms-application-route-state.test.js tests/govuk-page-chrome-navigation-route-state.test.js",
+      "result": "passed with 3 tests passing and 0 failing"
+    },
+    {
+      "command": "Playwright preview check at http://127.0.0.1:4174/pages/sessions/",
+      "result": "passed: sessions list hidden initially, shown after creating a session, ISO timestamp hint absent and stored session start date ISO-formatted internally"
+    },
+    {
+      "command": "Browser-comment follow-up for /pages/consent/",
+      "result": "Removed the incorrect 'stored in this browser' and 'local prototype records' copy from the consent page intro."
+    },
+    {
+      "command": "npm run build:govuk-pages && node --test tests/consent-page-route-state.test.js tests/govuk-forms-application-route-state.test.js",
+      "result": "passed with 2 tests passing and 0 failing"
+    },
+    {
+      "command": "Browser-comment follow-up for /pages/sessions/",
+      "result": "Made the Title field label bold using the GOV.UK govuk-label--s label class in the Nunjucks input macro."
+    },
+    {
+      "command": "npm run build:govuk-pages && node --test tests/study-session-route-state.test.js tests/govuk-forms-application-route-state.test.js",
+      "result": "passed with 2 tests passing and 0 failing"
+    },
+    {
+      "command": "Browser-comment follow-up for /pages/sessions/",
+      "result": "Made the Participants field label bold using the GOV.UK govuk-label--s label class in the Nunjucks input macro."
+    },
+    {
+      "command": "npm run build:govuk-pages && node --test tests/study-session-route-state.test.js tests/govuk-forms-application-route-state.test.js",
+      "result": "passed with 2 tests passing and 0 failing"
+    },
+    {
+      "command": "PR-readiness follow-up",
+      "result": "Made GOV.UK form route-state label assertions resilient to generated Nunjucks macro whitespace while still requiring govuk-label, the correct for target and expected label text."
+    },
+    {
+      "command": "node --import ./tests/helpers/generated-govuk-page-source.mjs --test tests/govuk-forms-application-route-state.test.js",
+      "result": "passed with 1 test passing and 0 failing"
+    },
+    {
+      "command": "npm run lint && npm run build && npm run typecheck --if-present && npm test",
+      "result": "passed: lint reported existing repository warnings only, build completed, no typecheck script was present, and the Node test suite passed with 273 tests passing and 0 failing"
+    },
+    {
+      "command": "Codex review follow-up for PR #455",
+      "result": "Validated two unresolved Codex comments. Both were valid and acknowledged with +1 reactions."
+    },
+    {
+      "command": "Codex review fix for /pages/search/",
+      "result": "Prevented implicit form submission on submit and Enter keydown so keyboard search keeps rendered results instead of navigating with query-string form submission."
+    },
+    {
+      "command": "Codex review fix for /pages/sessions/",
+      "result": "Added split date/time validation before saving so impossible calendar dates and out-of-range hours/minutes are rejected instead of normalised by the Date constructor."
+    },
+    {
+      "command": "node --test tests/search-page-route-state.test.js tests/study-session-route-state.test.js tests/govuk-forms-application-route-state.test.js",
+      "result": "passed with 3 tests passing and 0 failing"
+    },
+    {
+      "command": "Playwright preview check at http://127.0.0.1:4174/pages/search/ and /pages/sessions/",
+      "result": "passed: Enter search stayed on /pages/search/, rendered results were visible, invalid date/time values did not save sessions, and a corrected valid date saved one session"
+    }
+  ]
+}

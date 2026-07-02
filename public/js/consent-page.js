@@ -10,6 +10,7 @@ const retentionInput = document.getElementById("ret");
 const notesInput = document.getElementById("notes");
 const linkButton = document.getElementById("link");
 const statusMessage = document.getElementById("status");
+const consentsSection = document.getElementById("consent-records-section");
 const consentsContainer = document.getElementById("consents");
 
 function escapeHtml(value) {
@@ -122,13 +123,38 @@ async function loadConsents() {
 
 	const consents = searchEntities({ type: "Consent" });
 
+	if (consentsSection) consentsSection.hidden = consents.length === 0;
+	if (!consents.length) {
+		consentsContainer.innerHTML = "";
+		return;
+	}
+
 	consentsContainer.innerHTML = consents.map(consent => `
-<div style="border-top:1px solid #b1b4b6; padding:8px 0">
-	<strong>${escapeHtml(consent.id)}</strong>
-	<div class="govuk-hint">Session: ${escapeHtml(consent.hasTarget)}</div>
-	<div class="govuk-hint">Basis: ${escapeHtml(consent.LawfulBasis)} • Retention: ${escapeHtml(consent.RetentionSchedule)}</div>
-	<div class="govuk-hint">${escapeHtml(consent.description || "")}</div>
-</div>`).join("") || '<div class="govuk-hint">No consent records yet.</div>';
+<div class="govuk-summary-card researchops-utility-card">
+	<div class="govuk-summary-card__title-wrapper">
+		<h3 class="govuk-summary-card__title">${escapeHtml(consent.id)}</h3>
+	</div>
+	<div class="govuk-summary-card__content">
+		<dl class="govuk-summary-list govuk-summary-list--no-border">
+			<div class="govuk-summary-list__row">
+				<dt class="govuk-summary-list__key">Session</dt>
+				<dd class="govuk-summary-list__value">${escapeHtml(consent.hasTarget)}</dd>
+			</div>
+			<div class="govuk-summary-list__row">
+				<dt class="govuk-summary-list__key">Basis</dt>
+				<dd class="govuk-summary-list__value">${escapeHtml(consent.LawfulBasis)}</dd>
+			</div>
+			<div class="govuk-summary-list__row">
+				<dt class="govuk-summary-list__key">Retention</dt>
+				<dd class="govuk-summary-list__value">${escapeHtml(consent.RetentionSchedule)}</dd>
+			</div>
+			<div class="govuk-summary-list__row">
+				<dt class="govuk-summary-list__key">Notes</dt>
+				<dd class="govuk-summary-list__value">${escapeHtml(consent.description || "No notes")}</dd>
+			</div>
+		</dl>
+	</div>
+</div>`).join("");
 }
 
 async function saveConsent() {

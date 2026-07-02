@@ -1,5 +1,3 @@
-@charset "UTF-8";
-
 /* ==========================================================================
    ResearchOps UI • Utility route stylesheet source
    Service:    Home Office Biometrics — ResearchOps
@@ -11,51 +9,51 @@
 
 .researchops-utility-page [hidden] {
 	display: none;
-	}
+}
 
 .researchops-utility-page__intro {
 	margin-bottom: 30px;
-	}
+}
 
 .researchops-utility-page__section {
 	border-top: 5px solid #1d70b8;
 	margin-bottom: 40px;
 	padding-top: 20px;
-	}
+}
 
 .researchops-utility-page__section--secondary {
 	border-top-width: 1px;
 	border-top-color: #b1b4b6;
-	}
+}
 
 .researchops-utility-page__form {
 	margin-top: 30px;
-	}
+}
 
 .researchops-utility-page__status {
 	margin-bottom: 0;
-	}
+}
 
 .researchops-utility-page__results {
 	display: grid;
 	gap: 20px;
-	}
+}
 
 .researchops-utility-page__results > .govuk-summary-card {
 	margin-bottom: 0;
-	}
+}
 
 .researchops-utility-page__tag-list {
 	display: flex;
 	flex-wrap: wrap;
 	gap: 5px 8px;
-	}
+}
 
 .researchops-utility-page__time-inputs {
 	display: flex;
 	flex-wrap: wrap;
 	gap: 0 20px;
-	}
+}
 
 .researchops-utility-page__raw {
 	max-width: 100%;
@@ -64,11 +62,11 @@
 	background: #f3f2f1;
 	border: 1px solid #b1b4b6;
 	white-space: pre-wrap;
-	}
+}
 
 .researchops-utility-page .govuk-summary-card__content .govuk-details {
 	margin-bottom: 0;
-	}
+}
 
 @media (min-width: 40.0625em) {
 	.researchops-utility-page__form-row {
@@ -76,10 +74,11 @@
 		align-items: end;
 		column-gap: 30px;
 		grid-template-columns: minmax(0, 2fr) minmax(180px, 1fr);
-		}
+	}
+
 	.researchops-utility-page__form-row > .govuk-form-group {
 		margin-bottom: 20px;
-		}
 	}
+}
 
 /* transparency begins in the cascade */

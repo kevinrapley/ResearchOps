@@ -1,0 +1,126 @@
+{% extends "layouts/researchops.njk" %}
+{% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/date-input/macro.njk" import govukDateInput %}
+{% from "govuk/components/input/macro.njk" import govukInput %}
+
+{% block head %}
+	<link rel="stylesheet" href="/css/sessions.css" media="screen">
+	<link rel="modulepreload" href="/js/sessions-page.js">
+{% endblock %}
+
+{% block content %}
+<div class="govuk-width-container researchops-utility-page researchops-sessions-page">
+	{{ govukBreadcrumbs({
+		items: [
+			{ text: "Home", href: "/" },
+			{ text: "Sessions" }
+		]
+	}) }}
+
+	<header class="researchops-utility-page__intro">
+		<div class="govuk-grid-row">
+			<div class="govuk-grid-column-two-thirds">
+				<h1 class="govuk-heading-xl">Sessions</h1>
+				<p class="govuk-body-l">Create a local research session record for prototype notes and consent.</p>
+				<p class="govuk-body">Use study-scoped sessions for live ResearchOps work. This page keeps local browser records for prototype workflows.</p>
+			</div>
+		</div>
+	</header>
+
+	<section class="researchops-utility-page__section" aria-labelledby="create-session-title">
+		<div class="govuk-grid-row">
+			<div class="govuk-grid-column-two-thirds">
+				<h2 class="govuk-heading-l" id="create-session-title">Create a session</h2>
+				<form id="session-form" class="researchops-utility-page__form sessions-form" novalidate>
+					{{ govukInput({
+						id: "title",
+						name: "title",
+						classes: "govuk-!-width-two-thirds",
+						label: { text: "Title", classes: "govuk-label--s" },
+						hint: { text: "For example, Interview 01 - immigration officer." },
+						attributes: {
+							autocomplete: "off"
+						}
+					}) }}
+
+					{{ govukDateInput({
+						id: "session-date",
+						namePrefix: "session-date",
+						fieldset: {
+							legend: {
+								text: "Date",
+								classes: "govuk-fieldset__legend--s"
+							}
+						},
+						hint: {
+							text: "For example, 19 9 2025."
+						}
+					}) }}
+
+					<div class="govuk-form-group">
+						<fieldset class="govuk-fieldset" role="group" aria-describedby="session-time-hint">
+							<legend class="govuk-fieldset__legend govuk-fieldset__legend--s">Time</legend>
+							<div id="session-time-hint" class="govuk-hint">Use 24-hour time, for example 10 00.</div>
+							<div class="researchops-utility-page__time-inputs">
+								{{ govukInput({
+									id: "session-time-hour",
+									name: "session_time_hour",
+									classes: "govuk-input--width-2",
+									label: { text: "Hour", classes: "govuk-label--s" },
+									inputmode: "numeric",
+									attributes: {
+										pattern: "[0-9]*",
+										autocomplete: "off"
+									}
+								}) }}
+
+								{{ govukInput({
+									id: "session-time-minute",
+									name: "session_time_minute",
+									classes: "govuk-input--width-2",
+									label: { text: "Minute", classes: "govuk-label--s" },
+									inputmode: "numeric",
+									attributes: {
+										pattern: "[0-9]*",
+										autocomplete: "off"
+									}
+								}) }}
+							</div>
+						</fieldset>
+					</div>
+
+					{{ govukInput({
+						id: "participants",
+						name: "participants",
+						classes: "govuk-!-width-two-thirds",
+						label: { text: "Participants", classes: "govuk-label--s" },
+						hint: { text: "Enter pseudonyms as a comma-separated list." },
+						attributes: {
+							autocomplete: "off"
+						}
+					}) }}
+
+					<div class="govuk-button-group">
+						{{ govukButton({
+							text: "Create session",
+							type: "button",
+							attributes: { id: "create" }
+						}) }}
+						<p id="status" class="govuk-hint researchops-utility-page__status sessions-status" role="status" aria-live="polite"></p>
+					</div>
+				</form>
+			</div>
+		</div>
+	</section>
+
+	<section id="sessions-list-section" class="researchops-utility-page__section researchops-utility-page__section--secondary" aria-labelledby="sessions-list-title" hidden>
+		<h2 class="govuk-heading-l" id="sessions-list-title">Your sessions</h2>
+		<div id="sessions" class="researchops-utility-page__results sessions-list" aria-live="polite"></div>
+	</section>
+</div>
+{% endblock %}
+
+{% block scripts %}
+	<script type="module" src="/js/sessions-page.js"></script>
+{% endblock %}

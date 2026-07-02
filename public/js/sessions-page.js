@@ -5,10 +5,15 @@
  */
 
 const titleInput = document.getElementById("title");
-const whenInput = document.getElementById("when");
+const sessionDateDayInput = document.getElementById("session-date-day");
+const sessionDateMonthInput = document.getElementById("session-date-month");
+const sessionDateYearInput = document.getElementById("session-date-year");
+const sessionTimeHourInput = document.getElementById("session-time-hour");
+const sessionTimeMinuteInput = document.getElementById("session-time-minute");
 const participantsInput = document.getElementById("participants");
 const createButton = document.getElementById("create");
 const statusMessage = document.getElementById("status");
+const sessionsSection = document.getElementById("sessions-list-section");
 const sessionsContainer = document.getElementById("sessions");
 
 function escapeHtml(value) {
@@ -100,12 +105,95 @@ function createSession({ title, when, participants = [], id } = {}) {
 	return saveEntity("session", session);
 }
 
+function parseWholeNumber(value) {
+	const text = String(value ?? "").trim();
+	if (!/^\d+$/.test(text)) return null;
+	return Number.parseInt(text, 10);
+}
+
+function readSessionDateTimeParts() {
+	return {
+		dayText: sessionDateDayInput?.value || "",
+		monthText: sessionDateMonthInput?.value || "",
+		yearText: sessionDateYearInput?.value || "",
+		hourText: sessionTimeHourInput?.value || "",
+		minuteText: sessionTimeMinuteInput?.value || ""
+	};
+}
+
+function validateSessionDateTime() {
+	const { dayText, monthText, yearText, hourText, minuteText } = readSessionDateTimeParts();
+	const hasDatePart = Boolean(dayText.trim() || monthText.trim() || yearText.trim());
+	const hasTimePart = Boolean(hourText.trim() || minuteText.trim());
+
+	if (!hasDatePart && !hasTimePart) {
+		return { valid: true, iso: new Date().toISOString() };
+	}
+
+	if (!hasDatePart && hasTimePart) {
+		return { valid: false, error: "Enter a date when adding a time." };
+	}
+
+	const day = parseWholeNumber(dayText);
+	const month = parseWholeNumber(monthText);
+	const year = parseWholeNumber(yearText);
+
+	if (!day || !month || !year) {
+		return { valid: false, error: "Enter a complete date." };
+	}
+
+	const hour = hourText.trim() ? parseWholeNumber(hourText) : 0;
+	const minute = minuteText.trim() ? parseWholeNumber(minuteText) : 0;
+
+	if (hour === null || hour < 0 || hour > 23) {
+		return { valid: false, error: "Enter an hour between 0 and 23." };
+	}
+
+	if (minute === null || minute < 0 || minute > 59) {
+		return { valid: false, error: "Enter minutes between 0 and 59." };
+	}
+
+	const date = new Date(year, month - 1, day, hour, minute);
+	if (
+		date.getFullYear() !== year ||
+		date.getMonth() !== month - 1 ||
+		date.getDate() !== day ||
+		date.getHours() !== hour ||
+		date.getMinutes() !== minute
+	) {
+		return { valid: false, error: "Enter a real date and time." };
+	}
+
+	return { valid: true, iso: date.toISOString() };
+}
+
+function composeSessionStartIso() {
+	const result = validateSessionDateTime();
+	return result.valid ? result.iso : null;
+}
+
 function renderSession(session) {
 	const element = document.createElement("div");
-	element.className = "item govuk-body";
-	element.innerHTML = `<strong>${escapeHtml(session.name || "(Untitled)")}</strong>
-<div class="govuk-hint">${escapeHtml(formatDate(session["schema:startDate"] || session.created))} — ${escapeHtml(session.id)}</div>
-<div class="govuk-hint">Participants: ${escapeHtml((session.participants || []).join(", ") || "—")}</div>`;
+	element.className = "govuk-summary-card researchops-utility-card";
+	element.innerHTML = `<div class="govuk-summary-card__title-wrapper">
+	<h3 class="govuk-summary-card__title">${escapeHtml(session.name || "(Untitled)")}</h3>
+</div>
+<div class="govuk-summary-card__content">
+	<dl class="govuk-summary-list govuk-summary-list--no-border">
+		<div class="govuk-summary-list__row">
+			<dt class="govuk-summary-list__key">When</dt>
+			<dd class="govuk-summary-list__value">${escapeHtml(formatDate(session["schema:startDate"] || session.created))}</dd>
+		</div>
+		<div class="govuk-summary-list__row">
+			<dt class="govuk-summary-list__key">Session ID</dt>
+			<dd class="govuk-summary-list__value">${escapeHtml(session.id)}</dd>
+		</div>
+		<div class="govuk-summary-list__row">
+			<dt class="govuk-summary-list__key">Participants</dt>
+			<dd class="govuk-summary-list__value">${escapeHtml((session.participants || []).join(", ") || "—")}</dd>
+		</div>
+	</dl>
+</div>`;
 	return element;
 }
 
@@ -117,8 +205,8 @@ async function loadSessions() {
 
 	sessionsContainer.innerHTML = "";
 
+	if (sessionsSection) sessionsSection.hidden = sessions.length === 0;
 	if (!sessions.length) {
-		sessionsContainer.innerHTML = '<div class="govuk-hint">No sessions yet.</div>';
 		return;
 	}
 
@@ -128,6 +216,12 @@ async function loadSessions() {
 }
 
 async function handleCreateSession() {
+	const sessionStart = validateSessionDateTime();
+	if (!sessionStart.valid) {
+		if (statusMessage) statusMessage.textContent = sessionStart.error;
+		return;
+	}
+
 	const participants = (participantsInput?.value || "")
 		.split(",")
 		.map(participant => participant.trim())
@@ -135,7 +229,7 @@ async function handleCreateSession() {
 
 	const session = createSession({
 		title: titleInput?.value || "Untitled session",
-		when: whenInput?.value || new Date().toISOString(),
+		when: sessionStart.iso,
 		participants
 	});
 
@@ -149,6 +243,8 @@ await loadSessions();
 
 window.__ropsSessions = Object.freeze({
 	createSession,
+	composeSessionStartIso,
+	validateSessionDateTime,
 	readStoredEntities,
 	searchEntities
 });

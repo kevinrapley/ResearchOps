@@ -1,63 +1,201 @@
 <!doctype html>
 <html class="govuk-template" lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>Sessions - ResearchOps Demo Suite</title>
+		<link rel="stylesheet" href="/assets/govuk/govuk-frontend.css" media="screen" />
 
-<head>
-	<meta charset="utf-8" />
-	<meta name="viewport" content="width=device-width, initial-scale=1" />
-	<title>Sessions — ResearchOps</title>
+		<link rel="stylesheet" href="/css/sessions.css" media="screen" />
+		<link rel="modulepreload" href="/js/sessions-page.js" />
 
-	<link rel="stylesheet" href="/css/govuk/govuk-typography.css" media="screen" />
-	<link rel="stylesheet" href="/css/govuk/govuk-colours.css" media="screen" />
-	<link rel="stylesheet" href="/css/screen.css" media="screen" />
-	<link rel="stylesheet" href="/css/govuk/govuk-buttons.css" media="screen" />
-	<link rel="stylesheet" href="/css/govuk/govuk-forms.css" media="screen" />
-	<link rel="stylesheet" href="/css/sessions.css" media="screen" />
-	<link rel="modulepreload" href="/js/sessions-page.js" />
-	<script type="module" src="/components/layout.js" defer></script>
-	<link rel="stylesheet" href="/assets/govuk/govuk-frontend.css" media="screen">
-	<script type="module" src="/js/govuk-frontend-init.js" defer></script>
-</head>
+		<script type="module" src="/components/layout.js" defer></script>
+		<script type="module" src="/js/govuk-frontend-init.js" defer></script>
+	</head>
+	<body class="govuk-template__body">
+		<script>
+			document.body.className +=
+				" js-enabled" + ("noModule" in HTMLScriptElement.prototype ? " govuk-frontend-supported" : "");
+		</script>
+		<x-include src="/partials/header.html" vars='{"active":"Projects"}'></x-include>
+		<main class="govuk-main-wrapper" id="main-content" role="main" tabindex="-1">
+			<div class="govuk-width-container researchops-utility-page researchops-sessions-page">
+				<nav class="govuk-breadcrumbs" aria-label="Breadcrumb">
+					<ol class="govuk-breadcrumbs__list">
+						<li class="govuk-breadcrumbs__list-item">
+							<a class="govuk-breadcrumbs__link" href="/">Home</a>
+						</li>
 
-<body class="govuk-template__body">
-	<script>document.body.className += ' js-enabled' + ('noModule' in HTMLScriptElement.prototype ? ' govuk-frontend-supported' : '');</script>
-	<x-include src="/partials/debug-boot.html" debug-only></x-include>
-	<x-include src="/partials/header.html" vars='{"active":"Notes","subtitle":"Sessions"}'>
-	</x-include>
+						<li class="govuk-breadcrumbs__list-item" aria-current="page">Sessions</li>
+					</ol>
+				</nav>
 
-	<main id="main-content" class="govuk-body govuk-main-wrapper" role="main" tabindex="-1">
-		<div class="card sessions-panel">
-			<h2 class="govuk-heading-m">Create a session</h2>
-			<div class="sessions-form">
-				<div class="govuk-form-group sessions-field">
-					<label class="govuk-label" for="title">Title</label>
-					<input id="title" class="govuk-input" placeholder="e.g., Interview 01 — Immigration officer" />
-				</div>
-				<div class="govuk-form-group sessions-field">
-					<label class="govuk-label" for="when">When</label>
-					<div id="when-hint" class="govuk-hint">Use an ISO timestamp, for example 2025-09-19T10:00:00Z.</div>
-					<input id="when" class="govuk-input" placeholder="2025-09-19T10:00:00Z" aria-describedby="when-hint" />
-				</div>
-				<div class="govuk-form-group sessions-field">
-					<label class="govuk-label" for="participants">Participants</label>
-					<div id="participants-hint" class="govuk-hint">Enter pseudonyms as a comma-separated list.</div>
-					<input id="participants" class="govuk-input" placeholder="P001, P002" aria-describedby="participants-hint" />
-				</div>
-				<div class="govuk-button-group">
-					<button id="create" class="govuk-button">Create session</button>
-				</div>
-				<div id="status" class="govuk-hint sessions-status"></div>
+				<header class="researchops-utility-page__intro">
+					<div class="govuk-grid-row">
+						<div class="govuk-grid-column-two-thirds">
+							<h1 class="govuk-heading-xl">Sessions</h1>
+							<p class="govuk-body-l">Create a local research session record for prototype notes and consent.</p>
+							<p class="govuk-body">
+								Use study-scoped sessions for live ResearchOps work. This page keeps local browser records for prototype
+								workflows.
+							</p>
+						</div>
+					</div>
+				</header>
+
+				<section class="researchops-utility-page__section" aria-labelledby="create-session-title">
+					<div class="govuk-grid-row">
+						<div class="govuk-grid-column-two-thirds">
+							<h2 class="govuk-heading-l" id="create-session-title">Create a session</h2>
+							<form id="session-form" class="researchops-utility-page__form sessions-form" novalidate>
+								<div class="govuk-form-group">
+									<label class="govuk-label govuk-label--s" for="title">Title</label>
+
+									<div id="title-hint" class="govuk-hint">For example, Interview 01 - immigration officer.</div>
+
+									<input
+										class="govuk-input govuk-!-width-two-thirds"
+										id="title"
+										name="title"
+										type="text"
+										aria-describedby="title-hint"
+										autocomplete="off"
+									/>
+								</div>
+
+								<div class="govuk-form-group">
+									<fieldset class="govuk-fieldset" role="group" aria-describedby="session-date-hint">
+										<legend class="govuk-fieldset__legend govuk-fieldset__legend--s">Date</legend>
+
+										<div id="session-date-hint" class="govuk-hint">For example, 19 9 2025.</div>
+
+										<div class="govuk-date-input" id="session-date">
+											<div class="govuk-date-input__item">
+												<div class="govuk-form-group">
+													<label class="govuk-label govuk-date-input__label" for="session-date-day">Day</label>
+
+													<input
+														class="govuk-input govuk-date-input__input govuk-input--width-2"
+														id="session-date-day"
+														name="session-date-day"
+														type="text"
+														inputmode="numeric"
+													/>
+												</div>
+											</div>
+
+											<div class="govuk-date-input__item">
+												<div class="govuk-form-group">
+													<label class="govuk-label govuk-date-input__label" for="session-date-month">Month</label>
+
+													<input
+														class="govuk-input govuk-date-input__input govuk-input--width-2"
+														id="session-date-month"
+														name="session-date-month"
+														type="text"
+														inputmode="numeric"
+													/>
+												</div>
+											</div>
+
+											<div class="govuk-date-input__item">
+												<div class="govuk-form-group">
+													<label class="govuk-label govuk-date-input__label" for="session-date-year">Year</label>
+
+													<input
+														class="govuk-input govuk-date-input__input govuk-input--width-4"
+														id="session-date-year"
+														name="session-date-year"
+														type="text"
+														inputmode="numeric"
+													/>
+												</div>
+											</div>
+										</div>
+									</fieldset>
+								</div>
+
+								<div class="govuk-form-group">
+									<fieldset class="govuk-fieldset" role="group" aria-describedby="session-time-hint">
+										<legend class="govuk-fieldset__legend govuk-fieldset__legend--s">Time</legend>
+										<div id="session-time-hint" class="govuk-hint">Use 24-hour time, for example 10 00.</div>
+										<div class="researchops-utility-page__time-inputs">
+											<div class="govuk-form-group">
+												<label class="govuk-label govuk-label--s" for="session-time-hour">Hour</label>
+
+												<input
+													class="govuk-input govuk-input--width-2"
+													id="session-time-hour"
+													name="session_time_hour"
+													type="text"
+													inputmode="numeric"
+													pattern="[0-9]*"
+													autocomplete="off"
+												/>
+											</div>
+
+											<div class="govuk-form-group">
+												<label class="govuk-label govuk-label--s" for="session-time-minute">Minute</label>
+
+												<input
+													class="govuk-input govuk-input--width-2"
+													id="session-time-minute"
+													name="session_time_minute"
+													type="text"
+													inputmode="numeric"
+													pattern="[0-9]*"
+													autocomplete="off"
+												/>
+											</div>
+										</div>
+									</fieldset>
+								</div>
+
+								<div class="govuk-form-group">
+									<label class="govuk-label govuk-label--s" for="participants">Participants</label>
+
+									<div id="participants-hint" class="govuk-hint">Enter pseudonyms as a comma-separated list.</div>
+
+									<input
+										class="govuk-input govuk-!-width-two-thirds"
+										id="participants"
+										name="participants"
+										type="text"
+										aria-describedby="participants-hint"
+										autocomplete="off"
+									/>
+								</div>
+
+								<div class="govuk-button-group">
+									<button type="button" class="govuk-button" data-module="govuk-button" id="create">
+										Create session
+									</button>
+
+									<p
+										id="status"
+										class="govuk-hint researchops-utility-page__status sessions-status"
+										role="status"
+										aria-live="polite"
+									></p>
+								</div>
+							</form>
+						</div>
+					</div>
+				</section>
+
+				<section
+					id="sessions-list-section"
+					class="researchops-utility-page__section researchops-utility-page__section--secondary"
+					aria-labelledby="sessions-list-title"
+					hidden
+				>
+					<h2 class="govuk-heading-l" id="sessions-list-title">Your sessions</h2>
+					<div id="sessions" class="researchops-utility-page__results sessions-list" aria-live="polite"></div>
+				</section>
 			</div>
-		</div>
+		</main>
+		<x-include src="/partials/footer.html"></x-include>
 
-		<div class="card sessions-panel">
-			<h2 class="govuk-heading-m">Your sessions</h2>
-			<div id="sessions" class="list sessions-list"></div>
-		</div>
-	</main>
-
-	<x-include src="/partials/footer.html"></x-include>
-
-	<script type="module" src="/js/sessions-page.js"></script>
-</body>
-
+		<script type="module" src="/js/sessions-page.js"></script>
+	</body>
 </html>

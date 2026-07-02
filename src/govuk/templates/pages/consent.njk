@@ -1,0 +1,103 @@
+{% extends "layouts/researchops.njk" %}
+{% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/details/macro.njk" import govukDetails %}
+{% from "govuk/components/input/macro.njk" import govukInput %}
+{% from "govuk/components/select/macro.njk" import govukSelect %}
+
+{% block head %}
+	<link rel="stylesheet" href="/css/consent.css" media="screen">
+	<link rel="modulepreload" href="/js/consent-page.js">
+{% endblock %}
+
+{% block content %}
+<div class="govuk-width-container researchops-utility-page researchops-consent-page">
+	{{ govukBreadcrumbs({
+		items: [
+			{ text: "Home", href: "/" },
+			{ text: "Consent" }
+		]
+	}) }}
+
+	<header class="researchops-utility-page__intro">
+		<div class="govuk-grid-row">
+			<div class="govuk-grid-column-two-thirds">
+				<h1 class="govuk-heading-xl">Consent</h1>
+				<p class="govuk-body-l">Link a consent record to a research session.</p>
+				<p class="govuk-body">Use the study-scoped participant consent page for auditable consent management.</p>
+			</div>
+		</div>
+	</header>
+
+	<section class="researchops-utility-page__section" aria-labelledby="link-consent-title">
+		<div class="govuk-grid-row">
+			<div class="govuk-grid-column-two-thirds">
+				<h2 class="govuk-heading-l" id="link-consent-title">Link consent to a session</h2>
+				<form id="consent-form" class="researchops-utility-page__form consent-form" novalidate>
+					{{ govukSelect({
+						id: "session",
+						name: "session",
+						classes: "govuk-!-width-two-thirds",
+						label: { text: "Session" },
+						hint: { text: "Create a session first if this list is empty." },
+						items: []
+					}) }}
+
+					{{ govukSelect({
+						id: "basis",
+						name: "basis",
+						classes: "govuk-!-width-two-thirds",
+						label: { text: "Lawful basis" },
+						items: [
+							{ value: "dpv:PublicInterest", text: "Public task / Public interest", selected: true },
+							{ value: "dpv:Consent", text: "Consent" }
+						]
+					}) }}
+
+					{{ govukInput({
+						id: "ret",
+						name: "retention",
+						classes: "govuk-input--width-10",
+						value: "P12M",
+						label: { text: "Retention" },
+						hint: {
+							text: "Use ISO 8601 duration format, for example P12M."
+						}
+					}) }}
+
+					{{ govukDetails({
+						summaryText: "How to write retention duration",
+						html: '<p class="govuk-body">Use <code>P</code> followed by a number and a unit.</p><ul class="govuk-list govuk-list--bullet"><li><code>D</code> for days, for example <code>P30D</code></li><li><code>W</code> for weeks, for example <code>P8W</code></li><li><code>M</code> for months, for example <code>P12M</code></li><li><code>Y</code> for years, for example <code>P2Y</code></li></ul><p class="govuk-body">You can combine date units in order, for example <code>P1Y6M</code>. If you need hours, minutes or seconds, add <code>T</code> before the time part, for example <code>PT2H</code> or <code>P1DT12H</code>.</p>'
+					}) }}
+
+					{{ govukInput({
+						id: "notes",
+						name: "notes",
+						classes: "govuk-!-width-two-thirds",
+						label: { text: "Notes" },
+						hint: { text: "For example, verbal consent recorded at the start." }
+					}) }}
+
+					<div class="govuk-button-group">
+						{{ govukButton({
+							text: "Link consent",
+							type: "button",
+							attributes: { id: "link" }
+						}) }}
+						<p id="status" class="govuk-hint researchops-utility-page__status consent-status" role="status" aria-live="polite"></p>
+					</div>
+				</form>
+			</div>
+		</div>
+	</section>
+
+	<section id="consent-records-section" class="researchops-utility-page__section researchops-utility-page__section--secondary" aria-labelledby="consent-records-title" hidden>
+		<h2 class="govuk-heading-l" id="consent-records-title">Existing consent records</h2>
+		<div id="consents" class="researchops-utility-page__results consent-records" aria-live="polite"></div>
+	</section>
+</div>
+{% endblock %}
+
+{% block scripts %}
+	<script type="module" src="/js/consent-page.js"></script>
+{% endblock %}

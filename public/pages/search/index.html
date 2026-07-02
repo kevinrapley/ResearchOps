@@ -1,67 +1,111 @@
 <!doctype html>
 <html class="govuk-template" lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>Search - ResearchOps Demo Suite</title>
+		<link rel="stylesheet" href="/assets/govuk/govuk-frontend.css" media="screen" />
 
-<head>
-	<meta charset="utf-8" />
-	<meta name="viewport" content="width=device-width, initial-scale=1" />
-	<title>Search — ResearchOps</title>
+		<link rel="stylesheet" href="/css/search.css" media="screen" />
+		<link rel="modulepreload" href="/js/search-page.js" />
 
-	<link rel="stylesheet" href="/css/govuk/govuk-typography.css" media="screen" />
-	<link rel="stylesheet" href="/css/govuk/govuk-colours.css" media="screen" />
-	<link rel="stylesheet" href="/css/screen.css" media="screen" />
-	<link rel="stylesheet" href="/css/govuk/govuk-buttons.css" media="screen" />
-	<link rel="stylesheet" href="/css/govuk/govuk-forms.css" media="screen" />
-	<link rel="stylesheet" href="/css/search.css" media="screen" />
-	<link rel="modulepreload" href="/js/search-page.js" />
-	<script type="module" src="/components/layout.js" defer></script>
-	<link rel="stylesheet" href="/assets/govuk/govuk-frontend.css" media="screen">
-	<script type="module" src="/js/govuk-frontend-init.js" defer></script>
-</head>
+		<script type="module" src="/components/layout.js" defer></script>
+		<script type="module" src="/js/govuk-frontend-init.js" defer></script>
+	</head>
+	<body class="govuk-template__body">
+		<script>
+			document.body.className +=
+				" js-enabled" + ("noModule" in HTMLScriptElement.prototype ? " govuk-frontend-supported" : "");
+		</script>
+		<x-include src="/partials/header.html" vars='{"active":"Research Repository"}'></x-include>
+		<main class="govuk-main-wrapper" id="main-content" role="main" tabindex="-1">
+			<div class="govuk-width-container researchops-utility-page researchops-search-page">
+				<nav class="govuk-breadcrumbs" aria-label="Breadcrumb">
+					<ol class="govuk-breadcrumbs__list">
+						<li class="govuk-breadcrumbs__list-item">
+							<a class="govuk-breadcrumbs__link" href="/">Home</a>
+						</li>
 
-<body class="govuk-template__body">
-	<script>document.body.className += ' js-enabled' + ('noModule' in HTMLScriptElement.prototype ? ' govuk-frontend-supported' : '');</script>
-	<x-include src="/partials/debug-boot.html" debug-only></x-include>
-	<x-include src="/partials/header.html" vars='{
-			"active":"Search",
-			"subtitle":"Search"
-		}'>
-	</x-include>
+						<li class="govuk-breadcrumbs__list-item" aria-current="page">Search</li>
+					</ol>
+				</nav>
 
-	<main id="main-content" class="govuk-body govuk-main-wrapper" role="main" tabindex="-1">
-		<div class="card search-panel">
-			<h2 class="govuk-heading-m">Query</h2>
-			<div class="search-controls">
-				<div class="govuk-form-group">
-					<label class="govuk-label" for="q">Search text</label>
-					<input id="q" class="govuk-input" placeholder="Search text (e.g., contrast, navigation)" />
-				</div>
-				<div class="govuk-form-group">
-					<label class="govuk-label search-type-label" for="type">Type</label>
-					<select id="type" class="govuk-select">
-						<option value="">Any</option>
-						<option>ResearchSession</option>
-						<option>Consent</option>
-						<option>Note</option>
-						<option>Tag</option>
-						<option>Cluster</option>
-						<option>Theme</option>
-					</select>
-				</div>
-				<div class="govuk-button-group">
-					<button id="go" class="govuk-button">Search</button>
-				</div>
+				<header class="researchops-utility-page__intro">
+					<div class="govuk-grid-row">
+						<div class="govuk-grid-column-two-thirds">
+							<h1 class="govuk-heading-xl">Search</h1>
+							<p class="govuk-body-l">Search locally saved ResearchOps records.</p>
+							<p class="govuk-body">
+								Use this page to find sessions, consent records, notes, tags, clusters and themes stored in this
+								browser.
+							</p>
+						</div>
+					</div>
+				</header>
+
+				<section class="researchops-utility-page__section" aria-labelledby="search-query-title">
+					<div class="govuk-grid-row">
+						<div class="govuk-grid-column-two-thirds">
+							<h2 class="govuk-heading-l" id="search-query-title">Search records</h2>
+							<form id="search-form" class="researchops-utility-page__form" novalidate>
+								<div class="researchops-utility-page__form-row">
+									<div class="govuk-form-group">
+										<label class="govuk-label" for="q">Search text</label>
+
+										<div id="q-hint" class="govuk-hint">For example, contrast or navigation.</div>
+
+										<input
+											class="govuk-input govuk-!-width-full"
+											id="q"
+											name="q"
+											type="text"
+											aria-describedby="q-hint"
+											autocomplete="off"
+										/>
+									</div>
+
+									<div class="govuk-form-group">
+										<label class="govuk-label" for="type">Type</label>
+
+										<select class="govuk-select" id="type" name="type">
+											<option value="">Any</option>
+
+											<option value="ResearchSession">Research session</option>
+
+											<option value="Consent">Consent</option>
+
+											<option value="Note">Note</option>
+
+											<option value="Tag">Tag</option>
+
+											<option value="Cluster">Cluster</option>
+
+											<option value="Theme">Theme</option>
+										</select>
+									</div>
+								</div>
+
+								<div class="govuk-button-group">
+									<button type="button" class="govuk-button" data-module="govuk-button" id="go">Search</button>
+								</div>
+							</form>
+						</div>
+					</div>
+				</section>
+
+				<section
+					id="search-results-section"
+					class="researchops-utility-page__section researchops-utility-page__section--secondary"
+					aria-labelledby="search-results-title"
+					hidden
+				>
+					<h2 class="govuk-heading-l" id="search-results-title">Results</h2>
+					<div id="results" class="researchops-utility-page__results search-results" aria-live="polite"></div>
+				</section>
 			</div>
-		</div>
+		</main>
+		<x-include src="/partials/footer.html"></x-include>
 
-		<div class="card search-panel">
-			<h2 class="govuk-heading-m">Results</h2>
-			<div id="results" class="search-results"></div>
-		</div>
-	</main>
-
-	<x-include src="/partials/footer.html"></x-include>
-
-	<script type="module" src="/js/search-page.js"></script>
-</body>
-
+		<script type="module" src="/js/search-page.js"></script>
+	</body>
 </html>
