@@ -1,0 +1,208 @@
+{% extends "layouts/researchops.njk" %}
+
+{% block head %}
+	<link rel="stylesheet" href="/css/sourcebook.css?v=sourcebook-20260702" media="screen">
+	<meta name="description" content="{{ sourcebook.description }}">
+	<meta property="dc:title" content="{{ sourcebook.title }}">
+	<meta property="dc:description" content="{{ sourcebook.description }}">
+	<meta property="dc:isPartOf" content="{{ sourcebook.metadata.dublinCore.isPartOf }}">
+	<meta property="dc:type" content="{{ sourcebook.metadata.dublinCore.type }}">
+	<meta property="dc:format" content="{{ sourcebook.metadata.dublinCore.format }}">
+	<meta property="dc:language" content="{{ sourcebook.language }}">
+	<meta property="dc:creator" content="{{ sourcebook.creator }}">
+	<meta property="dc:created" content="{{ sourcebook.created }}">
+	<meta property="dc:modified" content="{{ sourcebook.modified }}">
+	<meta property="dc:rights" content="{{ sourcebook.rights }}">
+{% endblock %}
+
+{% block content %}
+<div class="govuk-width-container sourcebook-page">
+	<nav class="govuk-breadcrumbs" aria-label="Breadcrumb">
+		<ol class="govuk-breadcrumbs__list">
+			<li class="govuk-breadcrumbs__list-item">
+				<a class="govuk-breadcrumbs__link" href="/">Home</a>
+			</li>
+			<li class="govuk-breadcrumbs__list-item" aria-current="page">Sourcebook</li>
+		</ol>
+	</nav>
+
+	<article vocab="http://www.w3.org/2004/02/skos/core#" prefix="dc: http://purl.org/dc/terms/ skos: http://www.w3.org/2004/02/skos/core#" typeof="skos:ConceptScheme" resource="#sourcebook">
+		<span class="govuk-caption-xl">Research Operations</span>
+		<h1 class="govuk-heading-xl" property="dc:title skos:prefLabel">{{ sourcebook.title }}</h1>
+		<p class="govuk-body-l sourcebook-lede" property="dc:description skos:definition">{{ sourcebook.description }}</p>
+
+		<div class="govuk-grid-row sourcebook-meta-row">
+			<div class="govuk-grid-column-two-thirds">
+				<section class="sourcebook-section sourcebook-section--lead" aria-labelledby="sourcebook-purpose">
+					<h2 class="govuk-heading-m" id="sourcebook-purpose">How to use the sourcebook</h2>
+					<p class="govuk-body">
+						The sourcebook is organised like an operating manual. Each pillar contains numbered clauses with a
+						clear marker for rules, principles, guidance or conduct standards.
+					</p>
+					<dl class="sourcebook-type-list">
+						{% for key, type in sourcebook.contentTypes %}
+							<div class="sourcebook-type-list__item">
+								<dt>
+									<span class="sourcebook-clause-badge sourcebook-clause-badge--{{ key }}">{{ type.notation }}</span>
+									{{ type.label }}
+								</dt>
+								<dd>{{ type.definition }}</dd>
+							</div>
+						{% endfor %}
+					</dl>
+				</section>
+			</div>
+			<div class="govuk-grid-column-one-third">
+				<aside class="sourcebook-aside" aria-labelledby="sourcebook-status">
+					<h2 class="govuk-heading-s" id="sourcebook-status">Status</h2>
+					<p class="govuk-body">
+						<strong class="govuk-tag govuk-tag--yellow">{{ sourcebook.status }}</strong>
+					</p>
+					<p class="govuk-body govuk-!-margin-bottom-1">Last updated</p>
+					<p class="govuk-body">{{ sourcebook.modified }}</p>
+				</aside>
+			</div>
+		</div>
+
+		<section class="sourcebook-section" aria-labelledby="sourcebook-positioning" typeof="skos:Concept" resource="#{{ sourcebook.positioning.id | lower }}">
+			<p class="sourcebook-section__id" property="skos:notation">{{ sourcebook.positioning.id }}</p>
+			<h2 class="govuk-heading-l" id="sourcebook-positioning" property="skos:prefLabel">{{ sourcebook.positioning.title }}</h2>
+			<p class="govuk-body-l" property="skos:definition">{{ sourcebook.positioning.summary }}</p>
+
+			<div class="govuk-grid-row">
+				<div class="govuk-grid-column-one-half">
+					<h3 class="govuk-heading-m">Community foundation</h3>
+					<ul class="govuk-list govuk-list--bullet">
+						{% for item in sourcebook.positioning.foundation %}
+							<li>{{ item }}</li>
+						{% endfor %}
+					</ul>
+				</div>
+				<div class="govuk-grid-column-one-half">
+					<h3 class="govuk-heading-m">Sourcebook contribution</h3>
+					<ul class="govuk-list govuk-list--bullet">
+						{% for item in sourcebook.positioning.sourcebookContribution %}
+							<li>{{ item }}</li>
+						{% endfor %}
+					</ul>
+				</div>
+			</div>
+		</section>
+
+		<section class="sourcebook-section" aria-labelledby="sourcebook-pillars">
+			<h2 class="govuk-heading-l" id="sourcebook-pillars">The 8 pillars</h2>
+			<div class="sourcebook-pillar-grid">
+				{% for pillar in sourcebook.pillars %}
+					<a class="sourcebook-pillar-card" href="{{ pillar.route }}" typeof="skos:Concept" resource="#{{ pillar.code | lower }}">
+						<span class="sourcebook-pillar-card__code" property="skos:notation">{{ pillar.code }}</span>
+						<span class="sourcebook-pillar-card__title" property="skos:prefLabel">{{ pillar.title }}</span>
+						<span class="sourcebook-pillar-card__text" property="skos:definition">{{ pillar.operatingQuestion }}</span>
+					</a>
+				{% endfor %}
+			</div>
+		</section>
+
+		<section class="sourcebook-section" aria-labelledby="sourcebook-adoption-method" typeof="skos:Concept" resource="#{{ sourcebook.adoptionMethod.id | lower }}">
+			<p class="sourcebook-section__id" property="skos:notation">{{ sourcebook.adoptionMethod.id }}</p>
+			<h2 class="govuk-heading-l" id="sourcebook-adoption-method" property="skos:prefLabel">{{ sourcebook.adoptionMethod.title }}</h2>
+			<p class="govuk-body-l" property="skos:definition">{{ sourcebook.adoptionMethod.summary }}</p>
+
+			<div class="govuk-table__container">
+				<table class="govuk-table sourcebook-adoption-table">
+					<caption class="govuk-table__caption govuk-table__caption--m">How to prioritise sourcebook adoption</caption>
+					<thead class="govuk-table__head">
+						<tr class="govuk-table__row">
+							<th scope="col" class="govuk-table__header">Pace layer</th>
+							<th scope="col" class="govuk-table__header">Pillars</th>
+							<th scope="col" class="govuk-table__header">Adoption question</th>
+							<th scope="col" class="govuk-table__header">Sourcebook use</th>
+						</tr>
+					</thead>
+					<tbody class="govuk-table__body">
+						{% for layer in sourcebook.adoptionMethod.layers %}
+							<tr class="govuk-table__row" typeof="skos:Concept" resource="#{{ layer.id | lower }}">
+								<th scope="row" class="govuk-table__header">
+									<span class="sourcebook-adoption-table__pace">{{ layer.pace }}</span>
+									<span property="skos:prefLabel">{{ layer.layer }}</span>
+								</th>
+								<td class="govuk-table__cell">
+									{% for code in layer.pillarCodes %}
+										<span class="sourcebook-pill">{{ code }}</span>{% if not loop.last %} {% endif %}
+									{% endfor %}
+								</td>
+								<td class="govuk-table__cell" property="skos:definition">{{ layer.adoptionQuestion }}</td>
+								<td class="govuk-table__cell">{{ layer.sourcebookUse }}</td>
+							</tr>
+						{% endfor %}
+					</tbody>
+				</table>
+			</div>
+
+			<h3 class="govuk-heading-m">Using the matrix</h3>
+			<ol class="govuk-list govuk-list--number">
+				{% for step in sourcebook.adoptionMethod.steps %}
+					<li>{{ step }}</li>
+				{% endfor %}
+			</ol>
+		</section>
+
+		{% if sourcebook.operatingPatterns is defined and sourcebook.operatingPatterns.length %}
+			<section class="sourcebook-section" aria-labelledby="sourcebook-operating-patterns">
+				<h2 class="govuk-heading-l" id="sourcebook-operating-patterns">Operating patterns</h2>
+				<div class="sourcebook-gate-list">
+					{% for pattern in sourcebook.operatingPatterns %}
+						<div class="sourcebook-gate" typeof="skos:Concept" resource="#{{ pattern.id | lower }}">
+							<p class="sourcebook-gate__id" property="skos:notation">{{ pattern.id }}</p>
+							<h3 class="govuk-heading-s" property="skos:prefLabel">{{ pattern.title }}</h3>
+							<p class="govuk-body" property="skos:definition">{{ pattern.summary }}</p>
+							<dl class="govuk-summary-list govuk-summary-list--no-border sourcebook-summary-list">
+								<div class="govuk-summary-list__row">
+									<dt class="govuk-summary-list__key">Related pillars</dt>
+									<dd class="govuk-summary-list__value">{{ pattern.relatedPillars | join(', ') }}</dd>
+								</div>
+								<div class="govuk-summary-list__row">
+									<dt class="govuk-summary-list__key">Operating intent</dt>
+									<dd class="govuk-summary-list__value">{{ pattern.operatingIntent }}</dd>
+								</div>
+								<div class="govuk-summary-list__row">
+									<dt class="govuk-summary-list__key">Source</dt>
+									<dd class="govuk-summary-list__value">{{ pattern.source }}</dd>
+								</div>
+							</dl>
+						</div>
+					{% endfor %}
+				</div>
+			</section>
+		{% endif %}
+
+		<section class="sourcebook-section" aria-labelledby="sourcebook-quality-gates">
+			<h2 class="govuk-heading-l" id="sourcebook-quality-gates">Sourcebook quality gates</h2>
+			<div class="sourcebook-gate-list">
+				{% for gate in sourcebook.qualityGates %}
+					<div class="sourcebook-gate" typeof="skos:Concept" resource="#{{ gate.id | lower }}">
+						<p class="sourcebook-gate__id" property="skos:notation">{{ gate.id }}</p>
+						<h3 class="govuk-heading-s" property="skos:prefLabel">{{ gate.title }}</h3>
+						<p class="govuk-body" property="skos:definition">{{ gate.rule }}</p>
+					</div>
+				{% endfor %}
+			</div>
+		</section>
+
+		<section class="sourcebook-section sourcebook-section--secondary" aria-labelledby="sourcebook-attribution">
+			<h2 class="govuk-heading-m" id="sourcebook-attribution">Attribution</h2>
+			<ul class="govuk-list govuk-list--bullet">
+				{% for item in sourcebook.attribution %}
+					<li>
+						{% if item.url is defined and item.url %}
+							<a class="govuk-link" href="{{ item.url }}">{{ item.name }}</a>
+						{% else %}
+							{{ item.name }}
+						{% endif %}
+						- {{ item.relationship }}
+					</li>
+				{% endfor %}
+			</ul>
+		</section>
+	</article>
+</div>
+{% endblock %}

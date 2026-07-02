@@ -7,6 +7,7 @@
 
 import { SIGN_IN_EMAIL, signInMockRoutes } from './scripts/walkthrough-playwright.mjs';
 import { repositoryStaticPages } from './src/govuk/data/repository-page.mjs';
+import { sourcebookIndex, sourcebookPillarPages } from './src/govuk/data/sourcebook.mjs';
 import { operationalPaths } from './visual-walkthrough.operational-fixtures.mjs';
 
 const desktopProfile = {
@@ -542,6 +543,47 @@ const repositoryPages = [
 	...repositoryStaticPages.map(repositoryStaticPageEntry),
 ];
 
+function routeToGeneratedHtmlPath(route) {
+	return `${route.replace(/\/$/, '')}/index.html`;
+}
+
+function sourcebookStaticPageEntry(page) {
+	return {
+		id: `sourcebook-${page.slug}`,
+		title: page.title,
+		group: 'Sourcebook',
+		path: routeToGeneratedHtmlPath(page.route),
+		description: page.operatingQuestion || page.definition,
+		authenticated: false,
+		defaultState: {
+			id: 'default',
+			title: `${page.title} sourcebook pillar`,
+			description: `Sourcebook pillar page captured for ${page.code}.`,
+			path: page.route,
+			actions: [{ type: 'waitForText', text: page.title }],
+		},
+	};
+}
+
+const sourcebookPages = [
+	{
+		id: 'sourcebook',
+		title: sourcebookIndex.title,
+		group: 'Sourcebook',
+		path: routeToGeneratedHtmlPath(sourcebookIndex.canonicalRoute),
+		description: sourcebookIndex.description,
+		authenticated: false,
+		defaultState: {
+			id: 'default',
+			title: 'Sourcebook index',
+			description: 'Research Operations Sourcebook index captured as the public operating manual.',
+			path: sourcebookIndex.canonicalRoute,
+			actions: [{ type: 'waitForText', text: 'The 8 pillars' }],
+		},
+	},
+	...sourcebookPillarPages.map(sourcebookStaticPageEntry),
+];
+
 export const visualWalkthroughConfig = {
 	title: 'ResearchOps application visual walkthrough',
 	description: 'Generated evidence of the current application build, covering registered pages and important interaction states.',
@@ -642,6 +684,7 @@ export const visualWalkthroughConfig = {
 		registeredPage('consent', 'Consent', 'Utilities', '/pages/consent/index.html', 'Consent page.'),
 		registeredPage('sessions', 'Sessions', 'Utilities', '/pages/sessions/index.html', 'Sessions list page.'),
 		...repositoryPages,
+		...sourcebookPages,
 	],
 };
 

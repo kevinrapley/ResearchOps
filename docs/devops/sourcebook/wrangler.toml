@@ -1,0 +1,6 @@
+name = "reops-sourcebook"
+pages_build_output_dir = "."
+compatibility_date = "2026-05-21"
+
+[vars]
+NODE_VERSION = "20"

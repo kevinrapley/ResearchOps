@@ -1,0 +1,546 @@
+<!doctype html>
+<html class="govuk-template" lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>Research Operations Sourcebook - ResearchOps Demo Suite</title>
+		<link rel="stylesheet" href="/assets/govuk/govuk-frontend.css" media="screen" />
+
+		<link rel="stylesheet" href="/css/sourcebook.css?v=sourcebook-20260702" media="screen" />
+		<meta
+			name="description"
+			content="An operating manual for user research operations, organised as rules, principles, guidance and conduct standards across the 8 pillars of ResearchOps."
+		/>
+		<meta property="dc:title" content="Research Operations Sourcebook" />
+		<meta
+			property="dc:description"
+			content="An operating manual for user research operations, organised as rules, principles, guidance and conduct standards across the 8 pillars of ResearchOps."
+		/>
+		<meta property="dc:isPartOf" content="Research Operations" />
+		<meta property="dc:type" content="Text" />
+		<meta property="dc:format" content="text/html" />
+		<meta property="dc:language" content="en-GB" />
+		<meta property="dc:creator" content="ResearchOps Governance Team" />
+		<meta property="dc:created" content="2026-07-02" />
+		<meta property="dc:modified" content="2026-07-02" />
+		<meta
+			property="dc:rights"
+			content="Draft sourcebook content. ReOps Community 8-pillar model used with attribution under Creative Commons Attribution-ShareAlike 4.0 International."
+		/>
+
+		<script type="module" src="/components/layout.js" defer></script>
+		<script type="module" src="/js/govuk-frontend-init.js" defer></script>
+	</head>
+	<body class="govuk-template__body researchops-sourcebook-page">
+		<script>
+			document.body.className +=
+				" js-enabled" + ("noModule" in HTMLScriptElement.prototype ? " govuk-frontend-supported" : "");
+		</script>
+		<x-include src="/partials/header.html" vars='{"active":"Sourcebook"}'></x-include>
+		<main class="govuk-main-wrapper" id="main-content" role="main" tabindex="-1">
+			<div class="govuk-width-container sourcebook-page">
+				<nav class="govuk-breadcrumbs" aria-label="Breadcrumb">
+					<ol class="govuk-breadcrumbs__list">
+						<li class="govuk-breadcrumbs__list-item">
+							<a class="govuk-breadcrumbs__link" href="/">Home</a>
+						</li>
+						<li class="govuk-breadcrumbs__list-item" aria-current="page">Sourcebook</li>
+					</ol>
+				</nav>
+
+				<article
+					vocab="http://www.w3.org/2004/02/skos/core#"
+					prefix="dc: http://purl.org/dc/terms/ skos: http://www.w3.org/2004/02/skos/core#"
+					typeof="skos:ConceptScheme"
+					resource="#sourcebook"
+				>
+					<span class="govuk-caption-xl">Research Operations</span>
+					<h1 class="govuk-heading-xl" property="dc:title skos:prefLabel">Research Operations Sourcebook</h1>
+					<p class="govuk-body-l sourcebook-lede" property="dc:description skos:definition">
+						An operating manual for user research operations, organised as rules, principles, guidance and conduct
+						standards across the 8 pillars of ResearchOps.
+					</p>
+
+					<div class="govuk-grid-row sourcebook-meta-row">
+						<div class="govuk-grid-column-two-thirds">
+							<section class="sourcebook-section sourcebook-section--lead" aria-labelledby="sourcebook-purpose">
+								<h2 class="govuk-heading-m" id="sourcebook-purpose">How to use the sourcebook</h2>
+								<p class="govuk-body">
+									The sourcebook is organised like an operating manual. Each pillar contains numbered clauses with a
+									clear marker for rules, principles, guidance or conduct standards.
+								</p>
+								<dl class="sourcebook-type-list">
+									<div class="sourcebook-type-list__item">
+										<dt>
+											<span class="sourcebook-clause-badge sourcebook-clause-badge--rule">R</span>
+											Rule
+										</dt>
+										<dd>
+											A mandatory operating requirement. Teams must either comply or record an approved exception.
+										</dd>
+									</div>
+
+									<div class="sourcebook-type-list__item">
+										<dt>
+											<span class="sourcebook-clause-badge sourcebook-clause-badge--principle">P</span>
+											Principle
+										</dt>
+										<dd>
+											A durable judgement standard used to interpret the sourcebook when a specific rule does not cover
+											the situation.
+										</dd>
+									</div>
+
+									<div class="sourcebook-type-list__item">
+										<dt>
+											<span class="sourcebook-clause-badge sourcebook-clause-badge--guidance">G</span>
+											Guidance
+										</dt>
+										<dd>Recommended practice that helps teams meet rules and principles consistently.</dd>
+									</div>
+
+									<div class="sourcebook-type-list__item">
+										<dt>
+											<span class="sourcebook-clause-badge sourcebook-clause-badge--conduct">C</span>
+											Conduct
+										</dt>
+										<dd>A behavioural expectation for people planning, running, supporting or using research.</dd>
+									</div>
+								</dl>
+							</section>
+						</div>
+						<div class="govuk-grid-column-one-third">
+							<aside class="sourcebook-aside" aria-labelledby="sourcebook-status">
+								<h2 class="govuk-heading-s" id="sourcebook-status">Status</h2>
+								<p class="govuk-body">
+									<strong class="govuk-tag govuk-tag--yellow">draft</strong>
+								</p>
+								<p class="govuk-body govuk-!-margin-bottom-1">Last updated</p>
+								<p class="govuk-body">2026-07-02</p>
+							</aside>
+						</div>
+					</div>
+
+					<section
+						class="sourcebook-section"
+						aria-labelledby="sourcebook-positioning"
+						typeof="skos:Concept"
+						resource="#sb-pos-001"
+					>
+						<p class="sourcebook-section__id" property="skos:notation">SB-POS-001</p>
+						<h2 class="govuk-heading-l" id="sourcebook-positioning" property="skos:prefLabel">
+							Formal codification layer
+						</h2>
+						<p class="govuk-body-l" property="skos:definition">
+							The sourcebook is the formal layer on top of existing ReOps community assets. The community provides the
+							pillars, templates, maturity approaches, repository guidance, toolbox thinking and capability material.
+							The sourcebook turns that material into an operating manual with stable provisions and reviewable
+							obligations.
+						</p>
+
+						<div class="govuk-grid-row">
+							<div class="govuk-grid-column-one-half">
+								<h3 class="govuk-heading-m">Community foundation</h3>
+								<ul class="govuk-list govuk-list--bullet">
+									<li>8 pillars of ResearchOps</li>
+
+									<li>templates and reusable artefacts</li>
+
+									<li>maturity and capability approaches</li>
+
+									<li>repository and knowledge-management guidance</li>
+
+									<li>toolbox and infrastructure thinking</li>
+
+									<li>community practice material</li>
+								</ul>
+							</div>
+							<div class="govuk-grid-column-one-half">
+								<h3 class="govuk-heading-m">Sourcebook contribution</h3>
+								<ul class="govuk-list govuk-list--bullet">
+									<li>stable provision identifiers</li>
+
+									<li>rule, principle, guidance and conduct types</li>
+
+									<li>applicability and owner expectations</li>
+
+									<li>evidence expectations</li>
+
+									<li>related templates and app routes</li>
+
+									<li>change history and metadata continuity</li>
+								</ul>
+							</div>
+						</div>
+					</section>
+
+					<section class="sourcebook-section" aria-labelledby="sourcebook-pillars">
+						<h2 class="govuk-heading-l" id="sourcebook-pillars">The 8 pillars</h2>
+						<div class="sourcebook-pillar-grid">
+							<a
+								class="sourcebook-pillar-card"
+								href="/pages/sourcebook/environment/"
+								typeof="skos:Concept"
+								resource="#enviro"
+							>
+								<span class="sourcebook-pillar-card__code" property="skos:notation">ENVIRO</span>
+								<span class="sourcebook-pillar-card__title" property="skos:prefLabel">Environment</span>
+								<span class="sourcebook-pillar-card__text" property="skos:definition">
+									Where and under what conditions can research happen safely, inclusively and effectively?
+								</span>
+							</a>
+
+							<a class="sourcebook-pillar-card" href="/pages/sourcebook/scope/" typeof="skos:Concept" resource="#scope">
+								<span class="sourcebook-pillar-card__code" property="skos:notation">SCOPE</span>
+								<span class="sourcebook-pillar-card__title" property="skos:prefLabel">Scope</span>
+								<span class="sourcebook-pillar-card__text" property="skos:definition">
+									What research should happen, who may do it and what level of support or review does it need?
+								</span>
+							</a>
+
+							<a
+								class="sourcebook-pillar-card"
+								href="/pages/sourcebook/people/"
+								typeof="skos:Concept"
+								resource="#peop-comm"
+							>
+								<span class="sourcebook-pillar-card__code" property="skos:notation">PEOP-COMM</span>
+								<span class="sourcebook-pillar-card__title" property="skos:prefLabel">People</span>
+								<span class="sourcebook-pillar-card__text" property="skos:definition">
+									What roles, skills, communities and support are needed for responsible research practice?
+								</span>
+							</a>
+
+							<a
+								class="sourcebook-pillar-card"
+								href="/pages/sourcebook/organisational-context/"
+								typeof="skos:Concept"
+								resource="#org-cont"
+							>
+								<span class="sourcebook-pillar-card__code" property="skos:notation">ORG-CONT</span>
+								<span class="sourcebook-pillar-card__title" property="skos:prefLabel">Organisational context</span>
+								<span class="sourcebook-pillar-card__text" property="skos:definition">
+									How does research fit the organisation&#39;s strategy, governance, funding, decision-making and
+									delivery rhythm?
+								</span>
+							</a>
+
+							<a
+								class="sourcebook-pillar-card"
+								href="/pages/sourcebook/recruitment-and-administration/"
+								typeof="skos:Concept"
+								resource="#rec-admn"
+							>
+								<span class="sourcebook-pillar-card__code" property="skos:notation">REC-ADMN</span>
+								<span class="sourcebook-pillar-card__title" property="skos:prefLabel">
+									Recruitment and administration
+								</span>
+								<span class="sourcebook-pillar-card__text" property="skos:definition">
+									How are participants sourced, invited, consented, supported, paid, tracked and protected throughout
+									the research lifecycle?
+								</span>
+							</a>
+
+							<a
+								class="sourcebook-pillar-card"
+								href="/pages/sourcebook/data-and-knowledge-management/"
+								typeof="skos:Concept"
+								resource="#data-sto-acc"
+							>
+								<span class="sourcebook-pillar-card__code" property="skos:notation">DATA-STO-ACC</span>
+								<span class="sourcebook-pillar-card__title" property="skos:prefLabel">
+									Data and knowledge management
+								</span>
+								<span class="sourcebook-pillar-card__text" property="skos:definition">
+									How is research evidence stored, protected, retrieved, reused and connected to decisions?
+								</span>
+							</a>
+
+							<a
+								class="sourcebook-pillar-card"
+								href="/pages/sourcebook/governance/"
+								typeof="skos:Concept"
+								resource="#govern"
+							>
+								<span class="sourcebook-pillar-card__code" property="skos:notation">GOVERN</span>
+								<span class="sourcebook-pillar-card__title" property="skos:prefLabel">Governance</span>
+								<span class="sourcebook-pillar-card__text" property="skos:definition">
+									What rules, review gates and escalation routes make research ethical, useful, lawful and consistent?
+								</span>
+							</a>
+
+							<a
+								class="sourcebook-pillar-card"
+								href="/pages/sourcebook/tools-and-infrastructure/"
+								typeof="skos:Concept"
+								resource="#infra-prov"
+							>
+								<span class="sourcebook-pillar-card__code" property="skos:notation">INFRA-PROV</span>
+								<span class="sourcebook-pillar-card__title" property="skos:prefLabel">Tools and infrastructure</span>
+								<span class="sourcebook-pillar-card__text" property="skos:definition">
+									What tools, platforms, integrations and support processes make research reliable, secure and scalable?
+								</span>
+							</a>
+						</div>
+					</section>
+
+					<section
+						class="sourcebook-section"
+						aria-labelledby="sourcebook-adoption-method"
+						typeof="skos:Concept"
+						resource="#sb-am-001"
+					>
+						<p class="sourcebook-section__id" property="skos:notation">SB-AM-001</p>
+						<h2 class="govuk-heading-l" id="sourcebook-adoption-method" property="skos:prefLabel">
+							Pace Layers Matrix
+						</h2>
+						<p class="govuk-body-l" property="skos:definition">
+							Use pace-layer thinking to decide how to adopt the sourcebook. Start with the slower layers that set
+							direction and constraints, then use faster layers to learn, improve and feed evidence back into the
+							operating system.
+						</p>
+
+						<div class="govuk-table__container">
+							<table class="govuk-table sourcebook-adoption-table">
+								<caption class="govuk-table__caption govuk-table__caption--m">
+									How to prioritise sourcebook adoption
+								</caption>
+								<thead class="govuk-table__head">
+									<tr class="govuk-table__row">
+										<th scope="col" class="govuk-table__header">Pace layer</th>
+										<th scope="col" class="govuk-table__header">Pillars</th>
+										<th scope="col" class="govuk-table__header">Adoption question</th>
+										<th scope="col" class="govuk-table__header">Sourcebook use</th>
+									</tr>
+								</thead>
+								<tbody class="govuk-table__body">
+									<tr class="govuk-table__row" typeof="skos:Concept" resource="#am-pl-001">
+										<th scope="row" class="govuk-table__header">
+											<span class="sourcebook-adoption-table__pace">Slow</span>
+											<span property="skos:prefLabel">Purpose and strategic intent</span>
+										</th>
+										<td class="govuk-table__cell">
+											<span class="sourcebook-pill">ORG-CONT</span>
+
+											<span class="sourcebook-pill">GOVERN</span>
+										</td>
+										<td class="govuk-table__cell" property="skos:definition">
+											What must research operations make possible for the organisation, and what risk must it reduce?
+										</td>
+										<td class="govuk-table__cell">
+											Adopt organisational context and governance clauses first when research lacks sponsorship,
+											authority, funding or ethical boundaries.
+										</td>
+									</tr>
+
+									<tr class="govuk-table__row" typeof="skos:Concept" resource="#am-pl-002">
+										<th scope="row" class="govuk-table__header">
+											<span class="sourcebook-adoption-table__pace">Slow to medium</span>
+											<span property="skos:prefLabel">Rules, decision rights and scope</span>
+										</th>
+										<td class="govuk-table__cell">
+											<span class="sourcebook-pill">GOVERN</span>
+
+											<span class="sourcebook-pill">SCOPE</span>
+										</td>
+										<td class="govuk-table__cell" property="skos:definition">
+											Which decisions need clearer rules before teams can move faster with confidence?
+										</td>
+										<td class="govuk-table__cell">
+											Use governance and scope clauses to set intake, triage, approval, exception and escalation routes.
+										</td>
+									</tr>
+
+									<tr class="govuk-table__row" typeof="skos:Concept" resource="#am-pl-003">
+										<th scope="row" class="govuk-table__header">
+											<span class="sourcebook-adoption-table__pace">Medium</span>
+											<span property="skos:prefLabel">Infrastructure and knowledge systems</span>
+										</th>
+										<td class="govuk-table__cell">
+											<span class="sourcebook-pill">INFRA-PROV</span>
+
+											<span class="sourcebook-pill">DATA-STO-ACC</span>
+										</td>
+										<td class="govuk-table__cell" property="skos:definition">
+											Which shared systems need to become stable before research can be reused or scaled?
+										</td>
+										<td class="govuk-table__cell">
+											Use infrastructure and data clauses to prioritise tooling, repository, access, retention, taxonomy
+											and integration work.
+										</td>
+									</tr>
+
+									<tr class="govuk-table__row" typeof="skos:Concept" resource="#am-pl-004">
+										<th scope="row" class="govuk-table__header">
+											<span class="sourcebook-adoption-table__pace">Medium to fast</span>
+											<span property="skos:prefLabel">Participant operations and research settings</span>
+										</th>
+										<td class="govuk-table__cell">
+											<span class="sourcebook-pill">REC-ADMN</span>
+
+											<span class="sourcebook-pill">ENVIRO</span>
+										</td>
+										<td class="govuk-table__cell" property="skos:definition">
+											Where are participants, researchers or delivery teams feeling avoidable friction or risk?
+										</td>
+										<td class="govuk-table__cell">
+											Use recruitment and environment clauses to improve sourcing, consent, scheduling, participant
+											care, accessibility, fieldwork and remote settings.
+										</td>
+									</tr>
+
+									<tr class="govuk-table__row" typeof="skos:Concept" resource="#am-pl-005">
+										<th scope="row" class="govuk-table__header">
+											<span class="sourcebook-adoption-table__pace">Fast</span>
+											<span property="skos:prefLabel">Practice, support and habits</span>
+										</th>
+										<td class="govuk-table__cell">
+											<span class="sourcebook-pill">PEOP-COMM</span>
+
+											<span class="sourcebook-pill">SCOPE</span>
+										</td>
+										<td class="govuk-table__cell" property="skos:definition">
+											What can teams practise, learn or standardise now while slower operating decisions mature?
+										</td>
+										<td class="govuk-table__cell">
+											Use people and scope clauses to shape coaching, community standards, self-service support, methods
+											guidance and visible operating learning.
+										</td>
+									</tr>
+								</tbody>
+							</table>
+						</div>
+
+						<h3 class="govuk-heading-m">Using the matrix</h3>
+						<ol class="govuk-list govuk-list--number">
+							<li>Map the current research operations pressure points against the 8 pillars.</li>
+
+							<li>
+								Decide which pace layer each pressure point belongs to: strategic intent, governance, infrastructure,
+								service workflow or day-to-day practice.
+							</li>
+
+							<li>Prioritise slow-layer work when teams lack direction, decision rights or safe constraints.</li>
+
+							<li>
+								Prioritise fast-layer work when teams need quick learning, visible relief or evidence for a larger
+								operating change.
+							</li>
+
+							<li>
+								Review the matrix every quarter so learning from fast work updates slower rules, standards and
+								investment decisions.
+							</li>
+						</ol>
+					</section>
+
+					<section class="sourcebook-section" aria-labelledby="sourcebook-operating-patterns">
+						<h2 class="govuk-heading-l" id="sourcebook-operating-patterns">Operating patterns</h2>
+						<div class="sourcebook-gate-list">
+							<div class="sourcebook-gate" typeof="skos:Concept" resource="#sb-op-001">
+								<p class="sourcebook-gate__id" property="skos:notation">SB-OP-001</p>
+								<h3 class="govuk-heading-s" property="skos:prefLabel">Consent and privacy statement generator</h3>
+								<p class="govuk-body" property="skos:definition">
+									Use structured questions to produce clear participant-facing consent and privacy statements, so
+									researchers spend less time translating governance requirements and participants receive better
+									explanations.
+								</p>
+								<dl class="govuk-summary-list govuk-summary-list--no-border sourcebook-summary-list">
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Related pillars</dt>
+										<dd class="govuk-summary-list__value">GOVERN, REC-ADMN, DATA-STO-ACC</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Operating intent</dt>
+										<dd class="govuk-summary-list__value">
+											Make consent and privacy review faster without weakening human accountability, legal review or
+											participant agency.
+										</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Source</dt>
+										<dd class="govuk-summary-list__value">researchops/consentform</dd>
+									</div>
+								</dl>
+							</div>
+						</div>
+					</section>
+
+					<section class="sourcebook-section" aria-labelledby="sourcebook-quality-gates">
+						<h2 class="govuk-heading-l" id="sourcebook-quality-gates">Sourcebook quality gates</h2>
+						<div class="sourcebook-gate-list">
+							<div class="sourcebook-gate" typeof="skos:Concept" resource="#sb-qg-001">
+								<p class="sourcebook-gate__id" property="skos:notation">SB-QG-001</p>
+								<h3 class="govuk-heading-s" property="skos:prefLabel">8-pillar completeness</h3>
+								<p class="govuk-body" property="skos:definition">
+									The sourcebook must contain exactly the 8 ResearchOps pillars, each with a code, route, definition,
+									owner, operating question, sections and clauses.
+								</p>
+							</div>
+
+							<div class="sourcebook-gate" typeof="skos:Concept" resource="#sb-qg-002">
+								<p class="sourcebook-gate__id" property="skos:notation">SB-QG-002</p>
+								<h3 class="govuk-heading-s" property="skos:prefLabel">Clause model integrity</h3>
+								<p class="govuk-body" property="skos:definition">
+									Every clause must have a stable identifier, content type, status, effective date, title, text,
+									applies-to audience and evidence expectation.
+								</p>
+							</div>
+
+							<div class="sourcebook-gate" typeof="skos:Concept" resource="#sb-qg-003">
+								<p class="sourcebook-gate__id" property="skos:notation">SB-QG-003</p>
+								<h3 class="govuk-heading-s" property="skos:prefLabel">Metadata continuity</h3>
+								<p class="govuk-body" property="skos:definition">
+									Sourcebook pages must render Dublin Core, RDFa and SKOS metadata for the sourcebook, pillar, section
+									and clause concepts.
+								</p>
+							</div>
+
+							<div class="sourcebook-gate" typeof="skos:Concept" resource="#sb-qg-004">
+								<p class="sourcebook-gate__id" property="skos:notation">SB-QG-004</p>
+								<h3 class="govuk-heading-s" property="skos:prefLabel">Handbook readability</h3>
+								<p class="govuk-body" property="skos:definition">
+									Rules, principles, guidance and conduct standards must be distinguishable in navigation, page headings
+									and clause badges.
+								</p>
+							</div>
+
+							<div class="sourcebook-gate" typeof="skos:Concept" resource="#sb-qg-005">
+								<p class="sourcebook-gate__id" property="skos:notation">SB-QG-005</p>
+								<h3 class="govuk-heading-s" property="skos:prefLabel">REC-ADMN reference quality</h3>
+								<p class="govuk-body" property="skos:definition">
+									REC-ADMN must include the full operating cycle for recruitment: operating model, sourcing, consent,
+									privacy, incentives, scheduling, participant care, reporting and learning.
+								</p>
+							</div>
+						</div>
+					</section>
+
+					<section class="sourcebook-section sourcebook-section--secondary" aria-labelledby="sourcebook-attribution">
+						<h2 class="govuk-heading-m" id="sourcebook-attribution">Attribution</h2>
+						<ul class="govuk-list govuk-list--bullet">
+							<li>
+								<a class="govuk-link" href="https://researchops.community/about/">ResearchOps Community</a>
+
+								- The 8 pillars of ResearchOps are used as the sourcebook&#39;s primary taxonomy.
+							</li>
+
+							<li>
+								Research That Scales by Kate Towsey - Conceptual benchmark for operating-system language, planning,
+								value framing, maturity and scale. No source text is reproduced.
+							</li>
+
+							<li>
+								<a class="govuk-link" href="https://github.com/researchops/consentform">researchops/consentform</a>
+
+								- Conceptual benchmark for simplifying privacy and consent statements through structured questions and
+								generated participant-facing wording. No source text is reproduced.
+							</li>
+						</ul>
+					</section>
+				</article>
+			</div>
+		</main>
+		<x-include src="/partials/footer.html"></x-include>
+	</body>
+</html>

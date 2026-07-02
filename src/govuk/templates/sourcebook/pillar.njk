@@ -1,0 +1,174 @@
+{% extends "layouts/researchops.njk" %}
+
+{% block head %}
+	<link rel="stylesheet" href="/css/sourcebook.css?v=sourcebook-20260702" media="screen">
+	<meta name="description" content="{{ pillar.definition }}">
+	<meta property="dc:title" content="{{ pillar.title }} - {{ sourcebookTitle }}">
+	<meta property="dc:description" content="{{ pillar.definition }}">
+	<meta property="dc:isPartOf" content="{{ sourcebookTitle }}">
+	<meta property="dc:type" content="{{ metadata.dublinCore.type }}">
+	<meta property="dc:format" content="{{ metadata.dublinCore.format }}">
+	<meta property="dc:language" content="en-GB">
+	<meta property="dc:creator" content="ResearchOps Governance Team">
+	<meta property="dc:modified" content="2026-07-02">
+	<meta property="dc:identifier" content="{{ pillar.code }}">
+{% endblock %}
+
+{% block content %}
+<div class="govuk-width-container sourcebook-page sourcebook-pillar-page">
+	<nav class="govuk-breadcrumbs" aria-label="Breadcrumb">
+		<ol class="govuk-breadcrumbs__list">
+			<li class="govuk-breadcrumbs__list-item">
+				<a class="govuk-breadcrumbs__link" href="/">Home</a>
+			</li>
+			<li class="govuk-breadcrumbs__list-item">
+				<a class="govuk-breadcrumbs__link" href="/pages/sourcebook/">Sourcebook</a>
+			</li>
+			<li class="govuk-breadcrumbs__list-item" aria-current="page">{{ pillar.title }}</li>
+		</ol>
+	</nav>
+
+	<article vocab="http://www.w3.org/2004/02/skos/core#" prefix="dc: http://purl.org/dc/terms/ skos: http://www.w3.org/2004/02/skos/core#" typeof="skos:Concept" resource="#{{ pillar.code | lower }}">
+		<span class="govuk-caption-xl" property="skos:notation">{{ pillar.code }}</span>
+		<h1 class="govuk-heading-xl" property="dc:title skos:prefLabel">{{ pillar.title }}</h1>
+		<p class="govuk-body-l sourcebook-lede" property="skos:definition">{{ pillar.definition }}</p>
+
+		<div class="govuk-grid-row sourcebook-meta-row">
+			<div class="govuk-grid-column-two-thirds">
+				<section class="sourcebook-section sourcebook-section--lead" aria-labelledby="operating-question">
+					<h2 class="govuk-heading-m" id="operating-question">Operating question</h2>
+					<p class="govuk-body-l">{{ pillar.operatingQuestion }}</p>
+					<p class="govuk-body">{{ pillar.valueFrame }}</p>
+				</section>
+			</div>
+			<div class="govuk-grid-column-one-third">
+				<aside class="sourcebook-aside" aria-labelledby="pillar-details">
+					<h2 class="govuk-heading-s" id="pillar-details">Pillar details</h2>
+					<dl class="govuk-summary-list govuk-summary-list--no-border sourcebook-summary-list">
+						<div class="govuk-summary-list__row">
+							<dt class="govuk-summary-list__key">Owner</dt>
+							<dd class="govuk-summary-list__value">{{ pillar.owner }}</dd>
+						</div>
+						<div class="govuk-summary-list__row">
+							<dt class="govuk-summary-list__key">Legacy path</dt>
+							<dd class="govuk-summary-list__value">{{ pillar.legacySlug }}</dd>
+						</div>
+						<div class="govuk-summary-list__row">
+							<dt class="govuk-summary-list__key">Status</dt>
+							<dd class="govuk-summary-list__value">
+								<strong class="govuk-tag govuk-tag--yellow">draft</strong>
+							</dd>
+						</div>
+					</dl>
+				</aside>
+			</div>
+		</div>
+
+		<nav class="sourcebook-contents" aria-labelledby="pillar-contents">
+			<h2 class="govuk-heading-m" id="pillar-contents">Contents</h2>
+			<ol class="govuk-list govuk-list--number">
+				{% for section in pillar.sections %}
+					<li><a class="govuk-link" href="#{{ section.id | lower | replace(' ', '-') | replace('.', '-') }}">{{ section.title }}</a></li>
+				{% endfor %}
+				{% if pillar.glossary is defined and pillar.glossary.length %}
+					<li><a class="govuk-link" href="#glossary">Glossary</a></li>
+				{% endif %}
+				{% if pillar.changeHistory is defined and pillar.changeHistory.length %}
+					<li><a class="govuk-link" href="#change-history">Change history</a></li>
+				{% endif %}
+			</ol>
+		</nav>
+
+		{% for section in pillar.sections %}
+			<section class="sourcebook-section" id="{{ section.id | lower | replace(' ', '-') | replace('.', '-') }}" typeof="skos:Concept" resource="#{{ section.id | lower | replace(' ', '-') | replace('.', '-') }}">
+				<p class="sourcebook-section__id" property="skos:notation">{{ section.id }}</p>
+				<h2 class="govuk-heading-l" property="skos:prefLabel">{{ section.title }}</h2>
+				<p class="govuk-body" property="skos:definition">{{ section.definition }}</p>
+
+				<div class="sourcebook-clause-list">
+					{% for clause in section.clauses %}
+						{% set clauseType = contentTypes[clause.type] %}
+						<section class="sourcebook-clause sourcebook-clause--{{ clause.type }}" id="{{ clause.id | lower | replace(' ', '-') | replace('.', '-') }}" typeof="skos:Concept" resource="#{{ clause.id | lower | replace(' ', '-') | replace('.', '-') }}">
+							<div class="sourcebook-clause__header">
+								<span class="sourcebook-clause-badge sourcebook-clause-badge--{{ clause.type }}" aria-label="{{ clauseType.label }}">{{ clauseType.notation }}</span>
+								<div>
+									<p class="sourcebook-clause__id" property="skos:notation">{{ clause.id }}</p>
+									<h3 class="govuk-heading-m" property="skos:prefLabel">{{ clause.title }}</h3>
+								</div>
+							</div>
+							<p class="govuk-body sourcebook-clause__text" property="skos:definition">{{ clause.text }}</p>
+
+							<dl class="govuk-summary-list sourcebook-clause__meta">
+								<div class="govuk-summary-list__row">
+									<dt class="govuk-summary-list__key">Type</dt>
+									<dd class="govuk-summary-list__value">{{ clauseType.label }}</dd>
+								</div>
+								<div class="govuk-summary-list__row">
+									<dt class="govuk-summary-list__key">Status</dt>
+									<dd class="govuk-summary-list__value">{{ clause.status }}</dd>
+								</div>
+								<div class="govuk-summary-list__row">
+									<dt class="govuk-summary-list__key">Effective date</dt>
+									<dd class="govuk-summary-list__value">{{ clause.effectiveDate }}</dd>
+								</div>
+								<div class="govuk-summary-list__row">
+									<dt class="govuk-summary-list__key">Applies to</dt>
+									<dd class="govuk-summary-list__value">{{ clause.appliesTo | join(', ') }}</dd>
+								</div>
+								<div class="govuk-summary-list__row">
+									<dt class="govuk-summary-list__key">Evidence</dt>
+									<dd class="govuk-summary-list__value">{{ clause.evidence | join(', ') }}</dd>
+								</div>
+								{% if clause.relatedTemplates is defined and clause.relatedTemplates.length %}
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Templates</dt>
+										<dd class="govuk-summary-list__value">{{ clause.relatedTemplates | join(', ') }}</dd>
+									</div>
+								{% endif %}
+								{% if clause.relatedAppRoutes is defined and clause.relatedAppRoutes.length %}
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Related routes</dt>
+										<dd class="govuk-summary-list__value">
+											{% for route in clause.relatedAppRoutes %}
+												<a class="govuk-link" href="{{ route }}">{{ route }}</a>{% if not loop.last %}, {% endif %}
+											{% endfor %}
+										</dd>
+									</div>
+								{% endif %}
+							</dl>
+						</section>
+					{% endfor %}
+				</div>
+			</section>
+		{% endfor %}
+
+		{% if pillar.glossary is defined and pillar.glossary.length %}
+			<section class="sourcebook-section sourcebook-section--secondary" id="glossary" aria-labelledby="glossary-heading">
+				<h2 class="govuk-heading-l" id="glossary-heading">Glossary</h2>
+				<dl class="sourcebook-glossary">
+					{% for item in pillar.glossary %}
+						<div class="sourcebook-glossary__item">
+							<dt>{{ item.term }}</dt>
+							<dd>{{ item.definition }}</dd>
+						</div>
+					{% endfor %}
+				</dl>
+			</section>
+		{% endif %}
+
+		{% if pillar.changeHistory is defined and pillar.changeHistory.length %}
+			<section class="sourcebook-section sourcebook-section--secondary" id="change-history" aria-labelledby="change-history-heading">
+				<h2 class="govuk-heading-l" id="change-history-heading">Change history</h2>
+				<ol class="govuk-list sourcebook-change-history">
+					{% for item in pillar.changeHistory %}
+						<li>
+							<p class="sourcebook-change-history__date">{{ item.date }}</p>
+							<p class="govuk-body">{{ item.summary }}</p>
+						</li>
+					{% endfor %}
+				</ol>
+			</section>
+		{% endif %}
+	</article>
+</div>
+{% endblock %}

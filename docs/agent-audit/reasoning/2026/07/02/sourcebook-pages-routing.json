@@ -1,0 +1,75 @@
+{
+  "date": "2026-07-02",
+  "branch": "feature/govuk-static-utility-pages",
+  "traceRequired": true,
+  "task": "Point reops-sourcebook.pages.dev and sourcebook.research-operations.com at docs/devops/sourcebook.",
+  "selectedBundles": [
+    {
+      "id": "github-diamond",
+      "path": ".agent-operating-model/bundles/github/"
+    },
+    {
+      "id": "researchops-developer-control",
+      "path": ".agent-operating-model/bundles/researchops-developer-control/"
+    },
+    {
+      "id": "multi-functional-team",
+      "path": ".agent-operating-model/bundles/multi-functional-team/"
+    },
+    {
+      "id": "cloudflare",
+      "path": ".agent-operating-model/bundles/cloudflare/"
+    }
+  ],
+  "skippedBundles": [
+    "govuk-design-system",
+    "openai-platform",
+    "mcp-agent-tooling",
+    "airtable-public-api",
+    "mural-public-api"
+  ],
+  "cloudflareChanges": {
+    "accountId": "0ddc438a2ef4d10f6309bd10ae6702c6",
+    "zoneId": "bfdb2432fee203150fd3c7774c9d66d3",
+    "pagesProject": "reops-sourcebook",
+    "pagesProjectId": "600ffed4-b245-4eab-8bb5-0e724b0d089a",
+    "buildConfig": {
+      "root_dir": "docs/devops/sourcebook",
+      "destination_dir": "."
+    },
+    "deploymentId": "466a217d-6867-43c2-926b-fd71a6150ca3",
+    "customDomain": {
+      "name": "sourcebook.research-operations.com",
+      "domainId": "89869820-3736-42d6-8313-cf5d8e46b289",
+      "status": "pending",
+      "blocker": "CNAME record not set"
+    }
+  },
+  "filesModified": [
+    "docs/devops/sourcebook/wrangler.toml",
+    "tests/cloudflare-pages-output-dir.test.js",
+    "docs/agent-audit/reasoning/2026/07/02/sourcebook-pages-routing.md",
+    "docs/agent-audit/reasoning/2026/07/02/sourcebook-pages-routing.json"
+  ],
+  "validation": [
+    {
+      "command": "npm run sourcebook:validate",
+      "result": "passed"
+    },
+    {
+      "command": "node --test tests/cloudflare-pages-output-dir.test.js",
+      "result": "passed"
+    },
+    {
+      "command": "curl https://reops-sourcebook.pages.dev/",
+      "result": "passed",
+      "evidence": "Research Operations Sourcebook title returned"
+    },
+    {
+      "command": "curl https://sourcebook.research-operations.com/",
+      "result": "blocked",
+      "evidence": "Host does not resolve"
+    }
+  ],
+  "residualRisk": "DNS write was blocked by Cloudflare API authentication errors, so the custom domain remains pending until the CNAME is created."
+}

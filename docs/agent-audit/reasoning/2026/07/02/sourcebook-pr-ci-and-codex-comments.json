@@ -1,0 +1,77 @@
+{
+  "date": "2026-07-02",
+  "branch": "feature/govuk-static-utility-pages",
+  "traceRequired": true,
+  "task": "Fix failing CI checks and unresolved Codex review comments on PR 456.",
+  "selectedBundles": [
+    {
+      "id": "github-diamond",
+      "path": ".agent-operating-model/bundles/github/"
+    },
+    {
+      "id": "researchops-developer-control",
+      "path": ".agent-operating-model/bundles/researchops-developer-control/"
+    },
+    {
+      "id": "multi-functional-team",
+      "path": ".agent-operating-model/bundles/multi-functional-team/"
+    }
+  ],
+  "comments": [
+    {
+      "databaseId": 3510921236,
+      "author": "chatgpt-codex-connector",
+      "classification": "valid",
+      "action": "Added thumbs-up reaction and added sourcebook model inputs to GOV.UK render workflow triggers and diff detection."
+    },
+    {
+      "databaseId": 3510921239,
+      "author": "chatgpt-codex-connector",
+      "classification": "valid",
+      "action": "Added thumbs-up reaction and added public/css/sourcebook.css to generated CSS workflow staging paths."
+    }
+  ],
+  "failuresAddressed": [
+    {
+      "check": "Node 20, Node 22, Release gate, Validate Cloudflare Workers",
+      "failure": "tests/visual-walkthrough-registry-coverage.test.js did not know about generated sourcebook pages.",
+      "fix": "Registered sourcebook index and pillar routes in visual-walkthrough.config.mjs and added sourcebook-specific test coverage."
+    }
+  ],
+  "filesModified": [
+    ".github/workflows/render-govuk-pages.yml",
+    ".github/workflows/format-pr.yml",
+    "visual-walkthrough.config.mjs",
+    "tests/govuk-pages-render-workflow-state.test.js",
+    "tests/sourcebook-clause-model.test.js",
+    "docs/agent-audit/reasoning/2026/07/02/sourcebook-pr-ci-and-codex-comments.md",
+    "docs/agent-audit/reasoning/2026/07/02/sourcebook-pr-ci-and-codex-comments.json"
+  ],
+  "validation": [
+    {
+      "command": "npm test -- tests/visual-walkthrough-registry-coverage.test.js",
+      "status": "passed"
+    },
+    {
+      "command": "npm test -- tests/sourcebook-clause-model.test.js",
+      "status": "passed"
+    },
+    {
+      "command": "npm test -- tests/govuk-pages-render-workflow-state.test.js",
+      "status": "passed"
+    },
+    {
+      "command": "npm run format:check",
+      "status": "passed"
+    },
+    {
+      "command": "npm run sourcebook:validate",
+      "status": "passed"
+    },
+    {
+      "command": "npm test",
+      "status": "passed"
+    }
+  ],
+  "residualRisk": "GitHub Actions must rerun on the pushed branch before the PR can be considered fully green."
+}

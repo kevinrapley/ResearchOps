@@ -1,0 +1,2925 @@
+{
+	"schemaVersion": "2026-07-02.sourcebook.1",
+	"title": "Research Operations Sourcebook",
+	"shortTitle": "ResearchOps Sourcebook",
+	"description": "An operating manual for user research operations, organised as rules, principles, guidance and conduct standards across the 8 pillars of ResearchOps.",
+	"status": "draft",
+	"language": "en-GB",
+	"created": "2026-07-02",
+	"modified": "2026-07-02",
+	"publisher": "Research Operations",
+	"creator": "ResearchOps Governance Team",
+	"rights": "Draft sourcebook content. ReOps Community 8-pillar model used with attribution under Creative Commons Attribution-ShareAlike 4.0 International.",
+	"canonicalRoute": "/pages/sourcebook/",
+	"metadata": {
+		"dublinCore": {
+			"type": "Text",
+			"format": "text/html",
+			"isPartOf": "Research Operations"
+		},
+		"rdfaVocabularies": ["http://purl.org/dc/terms/", "http://www.w3.org/2004/02/skos/core#"],
+		"skosConceptScheme": "Research Operations Sourcebook"
+	},
+	"attribution": [
+		{
+			"name": "ResearchOps Community",
+			"url": "https://researchops.community/about/",
+			"relationship": "The 8 pillars of ResearchOps are used as the sourcebook's primary taxonomy.",
+			"licence": "Creative Commons Attribution-ShareAlike 4.0 International",
+			"licenceUrl": "https://creativecommons.org/licenses/by-sa/4.0/"
+		},
+		{
+			"name": "Research That Scales by Kate Towsey",
+			"relationship": "Conceptual benchmark for operating-system language, planning, value framing, maturity and scale. No source text is reproduced."
+		},
+		{
+			"name": "researchops/consentform",
+			"url": "https://github.com/researchops/consentform",
+			"relationship": "Conceptual benchmark for simplifying privacy and consent statements through structured questions and generated participant-facing wording. No source text is reproduced.",
+			"licence": "MIT License"
+		}
+	],
+	"contentTypes": {
+		"rule": {
+			"notation": "R",
+			"label": "Rule",
+			"definition": "A mandatory operating requirement. Teams must either comply or record an approved exception."
+		},
+		"principle": {
+			"notation": "P",
+			"label": "Principle",
+			"definition": "A durable judgement standard used to interpret the sourcebook when a specific rule does not cover the situation."
+		},
+		"guidance": {
+			"notation": "G",
+			"label": "Guidance",
+			"definition": "Recommended practice that helps teams meet rules and principles consistently."
+		},
+		"conduct": {
+			"notation": "C",
+			"label": "Conduct",
+			"definition": "A behavioural expectation for people planning, running, supporting or using research."
+		}
+	},
+	"clauseModel": {
+		"identifierPattern": "PILLAR-CODE n.n.n",
+		"requiredFields": [
+			"id",
+			"type",
+			"status",
+			"effectiveDate",
+			"title",
+			"text",
+			"appliesTo",
+			"evidence"
+		],
+		"statuses": ["draft", "active", "withdrawn", "superseded"],
+		"numbering": "Sections use n.0.0 and clauses use n.n.n, following the FCA handbook pattern of a stable identifier plus a separate content-type marker."
+	},
+	"operatingModel": {
+		"serviceModels": ["self-service", "full-service", "hybrid"],
+		"maturityPhases": ["build-or-buy", "standardise-and-operate", "specialise-and-optimise"],
+		"valueFrame": "Each pillar must show how it reduces risk, improves research quality, protects participants, saves operational effort or increases the value of research evidence."
+	},
+	"positioning": {
+		"id": "SB-POS-001",
+		"title": "Formal codification layer",
+		"summary": "The sourcebook is the formal layer on top of existing ReOps community assets. The community provides the pillars, templates, maturity approaches, repository guidance, toolbox thinking and capability material. The sourcebook turns that material into an operating manual with stable provisions and reviewable obligations.",
+		"foundation": [
+			"8 pillars of ResearchOps",
+			"templates and reusable artefacts",
+			"maturity and capability approaches",
+			"repository and knowledge-management guidance",
+			"toolbox and infrastructure thinking",
+			"community practice material"
+		],
+		"sourcebookContribution": [
+			"stable provision identifiers",
+			"rule, principle, guidance and conduct types",
+			"applicability and owner expectations",
+			"evidence expectations",
+			"related templates and app routes",
+			"change history and metadata continuity"
+		]
+	},
+	"adoptionMethod": {
+		"id": "SB-AM-001",
+		"title": "Pace Layers Matrix",
+		"summary": "Use pace-layer thinking to decide how to adopt the sourcebook. Start with the slower layers that set direction and constraints, then use faster layers to learn, improve and feed evidence back into the operating system.",
+		"source": "researchops/pace_layers_matrix",
+		"relatedTemplates": ["TPL-PACE-LAYERS-MATRIX"],
+		"steps": [
+			"Map the current research operations pressure points against the 8 pillars.",
+			"Decide which pace layer each pressure point belongs to: strategic intent, governance, infrastructure, service workflow or day-to-day practice.",
+			"Prioritise slow-layer work when teams lack direction, decision rights or safe constraints.",
+			"Prioritise fast-layer work when teams need quick learning, visible relief or evidence for a larger operating change.",
+			"Review the matrix every quarter so learning from fast work updates slower rules, standards and investment decisions."
+		],
+		"layers": [
+			{
+				"id": "AM-PL-001",
+				"pace": "Slow",
+				"layer": "Purpose and strategic intent",
+				"pillarCodes": ["ORG-CONT", "GOVERN"],
+				"adoptionQuestion": "What must research operations make possible for the organisation, and what risk must it reduce?",
+				"sourcebookUse": "Adopt organisational context and governance clauses first when research lacks sponsorship, authority, funding or ethical boundaries."
+			},
+			{
+				"id": "AM-PL-002",
+				"pace": "Slow to medium",
+				"layer": "Rules, decision rights and scope",
+				"pillarCodes": ["GOVERN", "SCOPE"],
+				"adoptionQuestion": "Which decisions need clearer rules before teams can move faster with confidence?",
+				"sourcebookUse": "Use governance and scope clauses to set intake, triage, approval, exception and escalation routes."
+			},
+			{
+				"id": "AM-PL-003",
+				"pace": "Medium",
+				"layer": "Infrastructure and knowledge systems",
+				"pillarCodes": ["INFRA-PROV", "DATA-STO-ACC"],
+				"adoptionQuestion": "Which shared systems need to become stable before research can be reused or scaled?",
+				"sourcebookUse": "Use infrastructure and data clauses to prioritise tooling, repository, access, retention, taxonomy and integration work."
+			},
+			{
+				"id": "AM-PL-004",
+				"pace": "Medium to fast",
+				"layer": "Participant operations and research settings",
+				"pillarCodes": ["REC-ADMN", "ENVIRO"],
+				"adoptionQuestion": "Where are participants, researchers or delivery teams feeling avoidable friction or risk?",
+				"sourcebookUse": "Use recruitment and environment clauses to improve sourcing, consent, scheduling, participant care, accessibility, fieldwork and remote settings."
+			},
+			{
+				"id": "AM-PL-005",
+				"pace": "Fast",
+				"layer": "Practice, support and habits",
+				"pillarCodes": ["PEOP-COMM", "SCOPE"],
+				"adoptionQuestion": "What can teams practise, learn or standardise now while slower operating decisions mature?",
+				"sourcebookUse": "Use people and scope clauses to shape coaching, community standards, self-service support, methods guidance and visible operating learning."
+			}
+		]
+	},
+	"operatingPatterns": [
+		{
+			"id": "SB-OP-001",
+			"title": "Consent and privacy statement generator",
+			"source": "researchops/consentform",
+			"summary": "Use structured questions to produce clear participant-facing consent and privacy statements, so researchers spend less time translating governance requirements and participants receive better explanations.",
+			"relatedPillars": ["GOVERN", "REC-ADMN", "DATA-STO-ACC"],
+			"relatedTemplates": ["TPL-CONSENT-PRIVACY-STATEMENT"],
+			"operatingIntent": "Make consent and privacy review faster without weakening human accountability, legal review or participant agency.",
+			"minimumQuestions": [
+				"What is the purpose of the research and what will participants be asked to do?",
+				"What personal information, recordings or screen/device data will be collected?",
+				"Who can access the material and will anything be shared outside the immediate study team?",
+				"Where will the material be stored, how long will it be retained and how can withdrawal or deletion be handled?",
+				"Who can participants contact about the research, privacy or data rights?"
+			],
+			"governanceUse": [
+				"Use generated wording as a draft that researchers and governance reviewers can check, not as automatic approval.",
+				"Keep the question set, generated statement, reviewer decision and participant-facing copy in the study record.",
+				"Review the pattern whenever privacy law, organisational policy, tooling or research methods change."
+			]
+		}
+	],
+	"qualityGates": [
+		{
+			"id": "SB-QG-001",
+			"title": "8-pillar completeness",
+			"rule": "The sourcebook must contain exactly the 8 ResearchOps pillars, each with a code, route, definition, owner, operating question, sections and clauses."
+		},
+		{
+			"id": "SB-QG-002",
+			"title": "Clause model integrity",
+			"rule": "Every clause must have a stable identifier, content type, status, effective date, title, text, applies-to audience and evidence expectation."
+		},
+		{
+			"id": "SB-QG-003",
+			"title": "Metadata continuity",
+			"rule": "Sourcebook pages must render Dublin Core, RDFa and SKOS metadata for the sourcebook, pillar, section and clause concepts."
+		},
+		{
+			"id": "SB-QG-004",
+			"title": "Handbook readability",
+			"rule": "Rules, principles, guidance and conduct standards must be distinguishable in navigation, page headings and clause badges."
+		},
+		{
+			"id": "SB-QG-005",
+			"title": "REC-ADMN reference quality",
+			"rule": "REC-ADMN must include the full operating cycle for recruitment: operating model, sourcing, consent, privacy, incentives, scheduling, participant care, reporting and learning."
+		}
+	],
+	"templates": [
+		{
+			"id": "TPL-RESEARCH-INTAKE",
+			"title": "Research intake form",
+			"path": "/sourcebook/templates/research-intake-form.docx"
+		},
+		{
+			"id": "TPL-RESEARCH-PLAN",
+			"title": "Research plan template",
+			"path": "/sourcebook/templates/research-plan-template.docx"
+		},
+		{
+			"id": "TPL-CONSENT-FORM",
+			"title": "Consent form template",
+			"path": "/sourcebook/templates/consent-form-template.docx"
+		},
+		{
+			"id": "TPL-CONSENT-LOG",
+			"title": "Consent log template",
+			"path": "/sourcebook/templates/consent-log-template.csv"
+		},
+		{
+			"id": "TPL-RECRUITMENT-STATUS",
+			"title": "Participant recruitment status log",
+			"path": "/sourcebook/templates/participant-recruitment-status-log.csv"
+		},
+		{
+			"id": "TPL-INCENTIVE-POLICY",
+			"title": "Incentive policy guidance",
+			"path": "/sourcebook/templates/incentive-policy-guidance.md"
+		},
+		{
+			"id": "TPL-RISK-ASSESSMENT",
+			"title": "Research risk assessment form",
+			"path": "/sourcebook/templates/research-risk-assessment-form.docx"
+		},
+		{
+			"id": "TPL-REPOSITORY-ENTRY",
+			"title": "Repository entry template",
+			"path": "/sourcebook/templates/repository-entry-template.md"
+		},
+		{
+			"id": "TPL-TOOL-EVALUATION",
+			"title": "Tool evaluation matrix",
+			"path": "/sourcebook/templates/tool-evaluation-matrix.md"
+		},
+		{
+			"id": "TPL-ETHICS-REVIEW",
+			"title": "Ethics review application form",
+			"path": "/sourcebook/templates/ethics-review-application-form.docx"
+		},
+		{
+			"id": "TPL-COMPLIANCE-CHECKLIST",
+			"title": "Research compliance checklist",
+			"path": "/sourcebook/templates/research-compliance-checklist.docx"
+		},
+		{
+			"id": "TPL-GOVERNANCE-RACI",
+			"title": "Research governance roles RACI",
+			"path": "/sourcebook/templates/research-governance-roles-raci.md"
+		},
+		{
+			"id": "TPL-INCIDENT-REGISTER",
+			"title": "Incident register template",
+			"path": "/sourcebook/templates/incident-register-template.csv"
+		},
+		{
+			"id": "TPL-DATA-RETENTION",
+			"title": "Data retention policy excerpt",
+			"path": "/sourcebook/templates/data-retention-policy-excerpt.md"
+		},
+		{
+			"id": "TPL-DECISION-LOG",
+			"title": "Decision log template",
+			"path": "/sourcebook/templates/decision-log-template.md"
+		},
+		{
+			"id": "TPL-RESEARCH-BACKLOG",
+			"title": "Research backlog board guidance",
+			"path": "/sourcebook/templates/research-backlog-board-guidance.md"
+		},
+		{
+			"id": "TPL-RESEARCH-ROADMAP",
+			"title": "Research roadmap template",
+			"path": "/sourcebook/templates/research-roadmap-template.md"
+		},
+		{
+			"id": "TPL-METHOD-PLAYBOOK",
+			"title": "Method playbook index",
+			"path": "/sourcebook/templates/method-playbook-index.md"
+		},
+		{
+			"id": "TPL-MATURITY-ASSESSMENT",
+			"title": "Research maturity self-assessment",
+			"path": "/sourcebook/templates/research-maturity-self-assessment.md"
+		},
+		{
+			"id": "TPL-STAKEHOLDER-MAPPING",
+			"title": "Stakeholder mapping template",
+			"path": "/sourcebook/templates/stakeholder-mapping-template.md"
+		},
+		{
+			"id": "TPL-ROLE-DESCRIPTIONS",
+			"title": "Research role descriptions",
+			"path": "/sourcebook/templates/research-role-descriptions.md"
+		},
+		{
+			"id": "TPL-CAPABILITY-FRAMEWORK",
+			"title": "Research capability framework",
+			"path": "/sourcebook/templates/research-capability-framework.xlsx"
+		},
+		{
+			"id": "TPL-COMMUNITY-CHARTER",
+			"title": "Community of practice charter",
+			"path": "/sourcebook/templates/community-of-practice-charter.md"
+		},
+		{
+			"id": "TPL-MENTORING-AGREEMENT",
+			"title": "Mentoring agreement template",
+			"path": "/sourcebook/templates/mentoring-agreement-template.docx"
+		},
+		{
+			"id": "TPL-WELLBEING-RISK",
+			"title": "Researcher wellbeing risk assessment",
+			"path": "/sourcebook/templates/researcher-wellbeing-risk-assessment.docx"
+		},
+		{
+			"id": "TPL-SHAREBACK-PATTERNS",
+			"title": "Research shareback patterns",
+			"path": "/sourcebook/templates/research-shareback-patterns.md"
+		},
+		{
+			"id": "TPL-LIFECYCLE-MANAGEMENT",
+			"title": "Lifecycle management template",
+			"path": "/sourcebook/templates/lifecycle-management-template.md"
+		},
+		{
+			"id": "TPL-INTEGRATION-WORKFLOW",
+			"title": "Integration workflow template",
+			"path": "/sourcebook/templates/integration-workflow-template.md"
+		},
+		{
+			"id": "TPL-GDPR-CHECKLIST",
+			"title": "GDPR compliance checklist for research",
+			"path": "/sourcebook/templates/gdpr-compliance-checklist-research.docx"
+		},
+		{
+			"id": "TPL-INSIGHT-BRIEF",
+			"title": "Insight brief template",
+			"path": "/sourcebook/templates/insight-brief-template.docx"
+		},
+		{
+			"id": "TPL-PARTICIPANT-PANEL-SCHEMA",
+			"title": "Participant panel database schema",
+			"path": "/sourcebook/templates/participant-panel-database-schema.md"
+		},
+		{
+			"id": "TPL-REMOTE-SETUP",
+			"title": "Remote research setup guide",
+			"path": "/sourcebook/templates/remote-research-setup-guide.md"
+		},
+		{
+			"id": "TPL-RESEARCH-ETHICS-GUIDANCE",
+			"title": "Research ethics guidance",
+			"path": "/sourcebook/templates/research-ethics-guidance.md"
+		},
+		{
+			"id": "TPL-RESEARCH-INCIDENT-LOG",
+			"title": "Research incident log template",
+			"path": "/sourcebook/templates/research-incident-log-template.csv"
+		},
+		{
+			"id": "TPL-RESEARCH-SPACE-CHECKLIST",
+			"title": "Research space checklist",
+			"path": "/sourcebook/templates/research-space-checklist.md"
+		},
+		{
+			"id": "TPL-TAXONOMY-REFERENCE",
+			"title": "Research taxonomy reference",
+			"path": "/sourcebook/templates/research-taxonomy-reference.md"
+		},
+		{
+			"id": "TPL-PACE-LAYERS-MATRIX",
+			"title": "Pace layers matrix",
+			"path": "/sourcebook/templates/pace-layers-matrix.md"
+		},
+		{
+			"id": "TPL-CONSENT-PRIVACY-STATEMENT",
+			"title": "Consent and privacy statement generator",
+			"path": "/sourcebook/templates/consent-privacy-statement-generator.md"
+		}
+	],
+	"pillars": [
+		{
+			"code": "ENVIRO",
+			"slug": "environment",
+			"legacySlug": "enviro",
+			"title": "Environment",
+			"route": "/pages/sourcebook/environment/",
+			"owner": "ResearchOps lead",
+			"operatingQuestion": "Where and under what conditions can research happen safely, inclusively and effectively?",
+			"definition": "The Environment pillar covers research spaces, fieldwork conditions, remote research settings, accessibility, researcher safety and participant comfort.",
+			"valueFrame": "Good environments reduce session risk, improve participant trust and make high-quality research repeatable across locations and channels.",
+			"sections": [
+				{
+					"id": "ENVIRO 1.0.0",
+					"title": "Environment operating model",
+					"definition": "How research settings, channels, safety, inclusion and readiness are governed across the research lifecycle.",
+					"clauses": [
+						{
+							"id": "ENVIRO 1.1.1",
+							"type": "principle",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "The research environment is part of the method",
+							"text": "Research environments should be chosen, prepared and reviewed as part of research quality, participant care and researcher safety rather than treated as logistics.",
+							"appliesTo": ["Researchers", "ResearchOps", "Study leads"],
+							"evidence": ["environment-operating-model", "method-rationale"],
+							"relatedTemplates": ["TPL-LIFECYCLE-MANAGEMENT"]
+						},
+						{
+							"id": "ENVIRO 1.1.2",
+							"type": "rule",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Assess the setting before research starts",
+							"text": "Every study must assess whether the physical, remote or field setting supports the method, participant needs, confidentiality, safeguarding and researcher safety before sessions begin.",
+							"appliesTo": ["Researchers", "ResearchOps", "Study leads"],
+							"evidence": ["environment-risk-assessment", "access-needs-check"],
+							"relatedTemplates": ["TPL-RISK-ASSESSMENT"]
+						},
+						{
+							"id": "ENVIRO 1.1.3",
+							"type": "guidance",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Choose the lowest-friction setting that still protects quality",
+							"text": "Use remote, lab, office or field settings according to the research question, participant context, privacy risk and access needs rather than team convenience alone.",
+							"appliesTo": ["Researchers", "Delivery teams"],
+							"evidence": ["method-rationale", "environment-risk-notes"]
+						},
+						{
+							"id": "ENVIRO 1.1.4",
+							"type": "conduct",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Do not make people absorb environmental risk",
+							"text": "People planning research must not expect participants, researchers or observers to compensate for unsafe, inaccessible, noisy, exposed or poorly prepared settings.",
+							"appliesTo": ["Researchers", "Observers", "ResearchOps"],
+							"evidence": ["environment-risk-notes", "adjustment-record"]
+						}
+					]
+				},
+				{
+					"id": "ENVIRO 2.0.0",
+					"title": "Accessibility, inclusion and reasonable adjustments",
+					"definition": "How research settings support access needs, inclusive participation and reasonable adjustments.",
+					"clauses": [
+						{
+							"id": "ENVIRO 2.1.1",
+							"type": "rule",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Offer and record environment adjustments",
+							"text": "Participants must be offered a clear route to request environment adjustments before research, and agreed adjustments must be recorded and prepared before the session.",
+							"appliesTo": ["Researchers", "Recruitment coordinators", "ResearchOps"],
+							"evidence": ["access-needs-check", "adjustment-record"],
+							"relatedTemplates": ["TPL-RESEARCH-PLAN"]
+						},
+						{
+							"id": "ENVIRO 2.1.2",
+							"type": "principle",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Inclusive settings improve evidence quality",
+							"text": "Research settings should reduce avoidable barriers so participants can take part in ways that reflect their real experience, not the constraints of the research setup.",
+							"appliesTo": ["Researchers", "ResearchOps", "Research leaders"],
+							"evidence": ["inclusion-review", "participant-feedback"]
+						},
+						{
+							"id": "ENVIRO 2.1.3",
+							"type": "guidance",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Check accessibility across the whole journey",
+							"text": "Consider travel, arrival, waiting, sign-in, digital access, assistive technology, breaks, captions, interpreters, support people and follow-up rather than only the interview room or video call.",
+							"appliesTo": ["Researchers", "ResearchOps", "Recruitment coordinators"],
+							"evidence": ["participant-journey-check", "accessibility-checklist"]
+						}
+					]
+				},
+				{
+					"id": "ENVIRO 3.0.0",
+					"title": "Physical spaces and controlled research settings",
+					"definition": "How labs, offices, usability rooms and other controlled spaces are prepared for research.",
+					"clauses": [
+						{
+							"id": "ENVIRO 3.1.1",
+							"type": "rule",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Prepare the physical space before participants arrive",
+							"text": "Physical research spaces must be checked for privacy, accessibility, comfort, recording setup, observer arrangements, emergency routes and participant arrival before participants arrive.",
+							"appliesTo": ["Researchers", "ResearchOps", "Facilities teams"],
+							"evidence": ["research-space-checklist", "arrival-plan"],
+							"relatedTemplates": ["TPL-RESEARCH-SPACE-CHECKLIST"]
+						},
+						{
+							"id": "ENVIRO 3.1.2",
+							"type": "guidance",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Make observers visible in the consent model",
+							"text": "If observers are present physically or remotely, explain who they are, why they are there, what they can see or hear and how participants can object.",
+							"appliesTo": ["Researchers", "Observers", "ResearchOps"],
+							"evidence": ["participant-information", "observer-brief"],
+							"relatedTemplates": ["TPL-CONSENT-FORM"]
+						},
+						{
+							"id": "ENVIRO 3.1.3",
+							"type": "conduct",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Protect participant comfort in controlled spaces",
+							"text": "People supporting research must make it easy for participants to pause, ask for adjustments, decline recording or leave without pressure.",
+							"appliesTo": ["Researchers", "Observers", "ResearchOps"],
+							"evidence": ["participant-information", "session-brief"]
+						}
+					]
+				},
+				{
+					"id": "ENVIRO 4.0.0",
+					"title": "Remote and digital research settings",
+					"definition": "How remote research environments, digital access and recording conditions are managed.",
+					"clauses": [
+						{
+							"id": "ENVIRO 4.1.1",
+							"type": "rule",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Check remote readiness before the session",
+							"text": "Remote research must confirm participant access, device needs, platform familiarity, privacy conditions, recording consent, backup contact route and support for technical issues before the session.",
+							"appliesTo": ["Researchers", "ResearchOps", "Recruitment coordinators"],
+							"evidence": ["remote-readiness-check", "technical-support-plan"],
+							"relatedTemplates": ["TPL-REMOTE-SETUP"]
+						},
+						{
+							"id": "ENVIRO 4.1.2",
+							"type": "principle",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Remote research should not lower care standards",
+							"text": "Remote sessions should provide the same clarity, consent, access, confidentiality and participant care as physical sessions, adapted to the channel.",
+							"appliesTo": ["Researchers", "ResearchOps", "Study leads"],
+							"evidence": ["remote-session-brief", "consent-record"]
+						},
+						{
+							"id": "ENVIRO 4.1.3",
+							"type": "guidance",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Have a fallback when technology fails",
+							"text": "For remote research, prepare a fallback route for joining, contacting the participant, rescheduling, preserving consent choices and recording any data quality limitations.",
+							"appliesTo": ["Researchers", "ResearchOps"],
+							"evidence": ["fallback-plan", "session-issue-log"]
+						}
+					]
+				},
+				{
+					"id": "ENVIRO 5.0.0",
+					"title": "Fieldwork, community and high-variability settings",
+					"definition": "How research outside controlled spaces is planned, supported and reviewed.",
+					"clauses": [
+						{
+							"id": "ENVIRO 5.1.1",
+							"type": "rule",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Complete fieldwork risk planning",
+							"text": "Fieldwork and community research must have a risk plan covering location, travel, lone working, safeguarding, confidentiality, local permission, participant distress and escalation routes.",
+							"appliesTo": ["Researchers", "ResearchOps", "Study leads"],
+							"evidence": ["fieldwork-risk-plan", "escalation-route"],
+							"relatedTemplates": ["TPL-RISK-ASSESSMENT"]
+						},
+						{
+							"id": "ENVIRO 5.1.2",
+							"type": "guidance",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Work with local context rather than around it",
+							"text": "When research happens in a participant's home, workplace, community setting or public place, adapt the plan to local norms, power dynamics, privacy and safety conditions.",
+							"appliesTo": ["Researchers", "ResearchOps"],
+							"evidence": ["context-notes", "fieldwork-brief"]
+						},
+						{
+							"id": "ENVIRO 5.1.3",
+							"type": "conduct",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Do not trade safety for access",
+							"text": "People planning fieldwork must not accept unsafe conditions, weak safeguarding or unclear permission simply because a setting gives access to a hard-to-reach group.",
+							"appliesTo": ["Researchers", "ResearchOps", "Research leaders"],
+							"evidence": ["risk-acceptance-record", "escalation-decision"]
+						}
+					]
+				},
+				{
+					"id": "ENVIRO 6.0.0",
+					"title": "Researcher safety, wellbeing and session support",
+					"definition": "How the environment protects researchers, facilitators, note-takers and support roles.",
+					"clauses": [
+						{
+							"id": "ENVIRO 6.1.1",
+							"type": "rule",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Plan safety for people running research",
+							"text": "Research plans must identify safety, emotional load, lone working, observer conduct, escalation and debrief needs for people running or supporting sessions.",
+							"appliesTo": ["Researchers", "ResearchOps", "Research leaders"],
+							"evidence": ["researcher-safety-plan", "debrief-plan"],
+							"relatedTemplates": ["TPL-WELLBEING-RISK"]
+						},
+						{
+							"id": "ENVIRO 6.1.2",
+							"type": "guidance",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Match support to session risk",
+							"text": "Use co-facilitation, observer limits, check-ins, safeguarding support or post-session debriefs where topic sensitivity, location, participant distress or researcher experience increases risk.",
+							"appliesTo": ["Researchers", "ResearchOps", "Research leaders"],
+							"evidence": ["support-model-decision", "risk-rating"]
+						},
+						{
+							"id": "ENVIRO 6.1.3",
+							"type": "principle",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "A safe environment protects research quality",
+							"text": "Researchers who feel safe and supported are better able to listen, adapt, notice risk and protect participants during research.",
+							"appliesTo": ["Research leaders", "ResearchOps", "Researchers"],
+							"evidence": ["debrief-record", "wellbeing-review"]
+						}
+					]
+				},
+				{
+					"id": "ENVIRO 7.0.0",
+					"title": "Environment review and operating learning",
+					"definition": "How environment issues, participant feedback and session learning improve future research settings.",
+					"clauses": [
+						{
+							"id": "ENVIRO 7.1.1",
+							"type": "rule",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Record material environment issues",
+							"text": "Material issues with access, safety, privacy, technology, comfort, observer behaviour or setting suitability must be recorded and reviewed after the research activity.",
+							"appliesTo": ["Researchers", "ResearchOps", "Study leads"],
+							"evidence": ["environment-issue-log", "retrospective-notes"]
+						},
+						{
+							"id": "ENVIRO 7.1.2",
+							"type": "guidance",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Turn repeated environment issues into standards",
+							"text": "When the same setting problems recur, update checklists, guidance, templates, supplier choices or support models rather than relying on individual memory.",
+							"appliesTo": ["ResearchOps", "Researchers", "Research leaders"],
+							"evidence": ["improvement-backlog", "standard-update"],
+							"relatedTemplates": ["TPL-RESEARCH-BACKLOG"]
+						},
+						{
+							"id": "ENVIRO 7.1.3",
+							"type": "principle",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Good environments make research safer, fairer and easier to repeat",
+							"text": "A mature environment system should reduce avoidable risk, improve inclusion, strengthen participant trust and make high-quality research repeatable across channels.",
+							"appliesTo": ["ResearchOps", "Research leaders", "Researchers"],
+							"evidence": ["environment-retrospective", "participant-feedback", "quality-review"]
+						}
+					]
+				}
+			],
+			"glossary": [
+				{
+					"term": "Research environment",
+					"definition": "The physical, remote, digital, fieldwork or community setting in which research is planned, run, observed or supported."
+				},
+				{
+					"term": "Environment adjustment",
+					"definition": "A change to the setting, channel, timing, support or tools that helps a participant or researcher take part safely and effectively."
+				},
+				{
+					"term": "Fieldwork setting",
+					"definition": "A research setting outside a controlled research space, including homes, workplaces, public places and community locations."
+				},
+				{
+					"term": "Environment issue",
+					"definition": "A material problem with access, safety, privacy, comfort, technology or setting suitability that affects research quality or care."
+				}
+			],
+			"changeHistory": [
+				{
+					"date": "2026-07-02",
+					"summary": "Expanded ENVIRO into an end-to-end environment lifecycle covering operating model, accessibility, controlled spaces, remote research, fieldwork, researcher safety and operating learning."
+				}
+			]
+		},
+		{
+			"code": "SCOPE",
+			"slug": "scope",
+			"legacySlug": "scope",
+			"title": "Scope",
+			"route": "/pages/sourcebook/scope/",
+			"owner": "Head of user research",
+			"operatingQuestion": "What research should happen, who may do it and what level of support or review does it need?",
+			"definition": "The Scope pillar defines the boundaries of research work, request intake, prioritisation, risk classification, method choice and support model.",
+			"valueFrame": "Clear scope directs limited research capacity towards the highest-value questions and stops low-quality or unsafe research from entering delivery unnoticed.",
+			"sections": [
+				{
+					"id": "SCOPE 1.0.0",
+					"title": "Scope operating model",
+					"definition": "How the organisation defines what counts as research work, who can do it and what level of operating support it needs.",
+					"clauses": [
+						{
+							"id": "SCOPE 1.1.1",
+							"type": "principle",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Research scope is an operating decision",
+							"text": "Research scope should connect organisational priorities, decision needs, participant risk, available capability and the operating support needed to run the work well.",
+							"appliesTo": ["Research leaders", "ResearchOps", "Delivery leaders"],
+							"evidence": ["scope-model", "research-service-definition"],
+							"relatedTemplates": ["TPL-MATURITY-ASSESSMENT"]
+						},
+						{
+							"id": "SCOPE 1.1.2",
+							"type": "rule",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Define the boundary between research and adjacent activity",
+							"text": "The practice must define which activities are governed as user research, which are adjacent discovery or engagement activities and which require research leadership review before proceeding.",
+							"appliesTo": ["Research leaders", "Product managers", "Delivery leaders"],
+							"evidence": ["scope-boundary", "activity-classification"],
+							"relatedTemplates": ["TPL-GOVERNANCE-RACI"]
+						},
+						{
+							"id": "SCOPE 1.1.3",
+							"type": "guidance",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Use scope to choose the operating model",
+							"text": "Scope decisions should identify whether work is best supported through self-service, coaching, full-service research, specialist governance or a mixed model.",
+							"appliesTo": ["ResearchOps", "Research leaders", "Study leads"],
+							"evidence": ["support-model-decision", "scope-triage"]
+						},
+						{
+							"id": "SCOPE 1.1.4",
+							"type": "conduct",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Do not relabel weak research to avoid governance",
+							"text": "Teams must not describe research as feedback, validation, engagement or discovery to avoid required review, participant protections or evidence standards.",
+							"appliesTo": ["Researchers", "Product managers", "Delivery teams"],
+							"evidence": ["activity-classification", "governance-triage"]
+						}
+					]
+				},
+				{
+					"id": "SCOPE 2.0.0",
+					"title": "Research intake and problem framing",
+					"definition": "How research demand enters the system and is shaped into a clear decision need.",
+					"clauses": [
+						{
+							"id": "SCOPE 2.1.1",
+							"type": "rule",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Record a research rationale before work starts",
+							"text": "Every research activity must have a recorded problem, decision need, user group, method rationale and expected use of findings before recruitment or fieldwork starts.",
+							"appliesTo": ["Researchers", "Product managers", "Study leads"],
+							"evidence": ["research-intake", "research-plan"],
+							"relatedTemplates": ["TPL-RESEARCH-INTAKE", "TPL-RESEARCH-PLAN"]
+						},
+						{
+							"id": "SCOPE 2.1.2",
+							"type": "rule",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Name the decision the research will inform",
+							"text": "Research requests must state the decision, risk, policy question, service assumption or design choice that evidence is expected to inform.",
+							"appliesTo": ["Product managers", "Researchers", "Delivery leaders"],
+							"evidence": ["decision-need", "stakeholder-map", "decision-log"],
+							"relatedTemplates": ["TPL-DECISION-LOG", "TPL-STAKEHOLDER-MAPPING"]
+						},
+						{
+							"id": "SCOPE 2.1.3",
+							"type": "guidance",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Separate symptoms from researchable questions",
+							"text": "When an intake request describes a solution, complaint or vague learning goal, reframe it into the decision, user group, uncertainty and evidence need before accepting it as research work.",
+							"appliesTo": ["Researchers", "ResearchOps", "Product managers"],
+							"evidence": ["intake-triage-notes", "reframed-question"]
+						}
+					]
+				},
+				{
+					"id": "SCOPE 3.0.0",
+					"title": "Prioritisation and capacity",
+					"definition": "How research effort is matched to strategy, risk, value and available capability.",
+					"clauses": [
+						{
+							"id": "SCOPE 3.1.1",
+							"type": "principle",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Research capacity is a strategic resource",
+							"text": "Research effort should be directed to decisions where user evidence can reduce material risk, improve outcomes or change what the organisation does.",
+							"appliesTo": ["Research leaders", "Delivery leaders"],
+							"evidence": ["prioritisation-record", "decision-log"],
+							"relatedTemplates": ["TPL-DECISION-LOG"]
+						},
+						{
+							"id": "SCOPE 3.1.2",
+							"type": "rule",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Prioritise demand using visible criteria",
+							"text": "Research demand must be prioritised using recorded criteria such as user risk, service impact, legal or policy dependency, learning value, urgency, effort and strategic fit.",
+							"appliesTo": ["Research leaders", "ResearchOps", "Portfolio leads"],
+							"evidence": ["prioritisation-criteria", "research-backlog"],
+							"relatedTemplates": ["TPL-RESEARCH-BACKLOG"]
+						},
+						{
+							"id": "SCOPE 3.1.3",
+							"type": "guidance",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Make trade-offs explicit when deprioritising work",
+							"text": "When research is deferred or declined, record the reason, the risk accepted, the alternative evidence available and the point at which the decision should be revisited.",
+							"appliesTo": ["Research leaders", "Product managers", "Delivery leaders"],
+							"evidence": ["deprioritisation-note", "accepted-risk", "review-trigger"]
+						}
+					]
+				},
+				{
+					"id": "SCOPE 4.0.0",
+					"title": "Risk, review and support levels",
+					"definition": "How the scope of work determines governance, ResearchOps support and delivery controls.",
+					"clauses": [
+						{
+							"id": "SCOPE 4.1.1",
+							"type": "rule",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Classify support level before delivery starts",
+							"text": "A study must be classified for support level before delivery starts, using risk, method complexity, participant sensitivity, capability and operational dependency.",
+							"appliesTo": ["Study leads", "ResearchOps", "Research leaders"],
+							"evidence": ["support-level", "risk-rating", "capability-check"],
+							"relatedTemplates": ["TPL-RISK-ASSESSMENT"]
+						},
+						{
+							"id": "SCOPE 4.1.2",
+							"type": "guidance",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Use a hybrid support model",
+							"text": "Provide self-service templates for low-risk routine work and full-service ResearchOps support for high-risk, high-priority or specialist studies.",
+							"appliesTo": ["ResearchOps", "Research leaders"],
+							"evidence": ["support-model-decision", "risk-rating"]
+						},
+						{
+							"id": "SCOPE 4.1.3",
+							"type": "conduct",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Escalate when scope grows beyond approval",
+							"text": "People running research must pause and recheck scope when participants, topics, methods, data collection, incentives or intended use expand beyond the approved plan.",
+							"appliesTo": ["Researchers", "Study leads", "ResearchOps"],
+							"evidence": ["scope-change-record", "reapproval-note"]
+						}
+					]
+				},
+				{
+					"id": "SCOPE 5.0.0",
+					"title": "Method boundaries and evidence standards",
+					"definition": "How method choice, evidence quality and research claims stay within scope.",
+					"clauses": [
+						{
+							"id": "SCOPE 5.1.1",
+							"type": "rule",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Match method to decision risk",
+							"text": "The selected method must be proportionate to the decision risk and capable of producing evidence strong enough for the intended use.",
+							"appliesTo": ["Researchers", "Study leads", "Research reviewers"],
+							"evidence": ["method-rationale", "decision-risk", "limitations-statement"],
+							"relatedTemplates": ["TPL-METHOD-PLAYBOOK", "TPL-RESEARCH-PLAN"]
+						},
+						{
+							"id": "SCOPE 5.1.2",
+							"type": "principle",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Scope should protect evidence from overreach",
+							"text": "Research claims should stay within the population, context, method, sample and confidence level covered by the study.",
+							"appliesTo": ["Researchers", "Research leaders", "Decision makers"],
+							"evidence": ["limitations-statement", "findings-review"]
+						},
+						{
+							"id": "SCOPE 5.1.3",
+							"type": "guidance",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Use method playbooks as guardrails, not scripts",
+							"text": "Method playbooks should help teams choose and run suitable approaches while still requiring researchers to adapt responsibly to context and risk.",
+							"appliesTo": ["Researchers", "ResearchOps", "Coaches"],
+							"evidence": ["method-playbook-reference", "contextual-adaptation"],
+							"relatedTemplates": ["TPL-METHOD-PLAYBOOK"]
+						}
+					]
+				},
+				{
+					"id": "SCOPE 6.0.0",
+					"title": "Self-service, coaching and non-researcher activity",
+					"definition": "How low-risk research-adjacent work is enabled without weakening standards.",
+					"clauses": [
+						{
+							"id": "SCOPE 6.1.1",
+							"type": "rule",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Limit self-service research to approved low-risk patterns",
+							"text": "Self-service research or research-adjacent activity must stay within approved methods, participant groups, data handling rules and review thresholds.",
+							"appliesTo": ["Non-researchers", "Product managers", "ResearchOps"],
+							"evidence": ["self-service-pattern", "approved-method", "risk-threshold"]
+						},
+						{
+							"id": "SCOPE 6.1.2",
+							"type": "conduct",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Ask for help before quality or safety is compromised",
+							"text": "People using self-service patterns must seek research or governance support when the work becomes sensitive, ambiguous, high-impact or beyond their competence.",
+							"appliesTo": ["Non-researchers", "Delivery teams", "Coaches"],
+							"evidence": ["support-request", "coaching-record"]
+						},
+						{
+							"id": "SCOPE 6.1.3",
+							"type": "guidance",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Use coaching to grow capability without hiding risk",
+							"text": "Coaching should help teams frame questions, choose safe methods and understand limits, while keeping accountability for high-risk research with qualified researchers.",
+							"appliesTo": ["Research coaches", "Research leaders", "ResearchOps"],
+							"evidence": ["coaching-plan", "capability-record"]
+						}
+					]
+				},
+				{
+					"id": "SCOPE 7.0.0",
+					"title": "Roadmap, portfolio and scope learning",
+					"definition": "How scope decisions are reviewed across the portfolio and used to improve the research operating system.",
+					"clauses": [
+						{
+							"id": "SCOPE 7.1.1",
+							"type": "rule",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Maintain a visible research backlog or roadmap",
+							"text": "Priority research demand, accepted work, deferred work and known evidence gaps must be visible in a backlog or roadmap that research and delivery leaders can review.",
+							"appliesTo": ["Research leaders", "ResearchOps", "Portfolio leads"],
+							"evidence": ["research-backlog", "research-roadmap", "evidence-gap-log"],
+							"relatedTemplates": ["TPL-RESEARCH-BACKLOG", "TPL-RESEARCH-ROADMAP"]
+						},
+						{
+							"id": "SCOPE 7.1.2",
+							"type": "guidance",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Review demand patterns as operating-system evidence",
+							"text": "Repeated requests, unclear scope, rejected studies, unsupported self-service work and recurring method gaps should feed operating improvements.",
+							"appliesTo": ["ResearchOps", "Research leaders"],
+							"evidence": ["demand-pattern-review", "improvement-backlog"]
+						},
+						{
+							"id": "SCOPE 7.1.3",
+							"type": "principle",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Good scope increases focus and trust",
+							"text": "A mature scope system should help teams ask better questions, use research capacity deliberately and understand why some work proceeds, changes or stops.",
+							"appliesTo": ["Research leaders", "Delivery leaders", "ResearchOps"],
+							"evidence": ["scope-retrospective", "portfolio-review", "stakeholder-feedback"]
+						}
+					]
+				}
+			],
+			"glossary": [
+				{
+					"term": "Research scope",
+					"definition": "The agreed boundary of a research activity, including question, participants, method, intended use, evidence standard and support level."
+				},
+				{
+					"term": "Decision need",
+					"definition": "The decision, risk or uncertainty that research evidence is expected to inform."
+				},
+				{
+					"term": "Support level",
+					"definition": "The degree of ResearchOps, research leadership or governance involvement needed for a piece of work."
+				},
+				{
+					"term": "Self-service pattern",
+					"definition": "An approved low-risk approach that enables non-researchers or teams to collect limited evidence within defined guardrails."
+				}
+			],
+			"changeHistory": [
+				{
+					"date": "2026-07-02",
+					"summary": "Expanded SCOPE into an end-to-end scope lifecycle covering operating model, intake, prioritisation, support levels, method boundaries, self-service and portfolio learning."
+				}
+			]
+		},
+		{
+			"code": "PEOP-COMM",
+			"slug": "people",
+			"legacySlug": "peop-comm",
+			"title": "People",
+			"route": "/pages/sourcebook/people/",
+			"owner": "Research profession lead",
+			"operatingQuestion": "What roles, skills, communities and support are needed for responsible research practice?",
+			"definition": "The People pillar covers research roles, capability, community practice, mentoring, wellbeing, collaboration and professional standards.",
+			"valueFrame": "Strong people systems protect research quality while making research easier to learn, support and sustain.",
+			"sections": [
+				{
+					"id": "PEOP-COMM 1.0.0",
+					"title": "People operating model",
+					"definition": "How research roles, accountabilities and community support are designed as part of the research operating system.",
+					"clauses": [
+						{
+							"id": "PEOP-COMM 1.1.1",
+							"type": "principle",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Research is a team practice with accountable roles",
+							"text": "Research may involve many disciplines, but accountability for method quality, ethics and participant safety must be explicit.",
+							"appliesTo": ["Researchers", "Delivery teams", "ResearchOps"],
+							"evidence": ["raci", "study-roles"],
+							"relatedTemplates": ["TPL-GOVERNANCE-RACI", "TPL-ROLE-DESCRIPTIONS"]
+						},
+						{
+							"id": "PEOP-COMM 1.1.2",
+							"type": "rule",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Define research roles and accountabilities",
+							"text": "The practice must define the responsibilities, decision rights and escalation routes for researchers, ResearchOps, research leaders, observers, coaches and non-researchers involved in research.",
+							"appliesTo": ["Research leaders", "ResearchOps", "Line managers"],
+							"evidence": ["role-descriptions", "raci", "escalation-route"],
+							"relatedTemplates": ["TPL-ROLE-DESCRIPTIONS", "TPL-GOVERNANCE-RACI"]
+						},
+						{
+							"id": "PEOP-COMM 1.1.3",
+							"type": "guidance",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Design support around real operating load",
+							"text": "People support should reflect the volume, complexity and risk of research work rather than assuming informal goodwill can absorb coordination, review, coaching and community labour.",
+							"appliesTo": ["Research leaders", "ResearchOps", "Delivery leaders"],
+							"evidence": ["operating-load-review", "support-model", "capacity-plan"]
+						},
+						{
+							"id": "PEOP-COMM 1.1.4",
+							"type": "conduct",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Respect invisible operations work",
+							"text": "Teams must recognise research coordination, review, coaching, knowledge sharing and participant-care work as real labour that needs time, ownership and credit.",
+							"appliesTo": ["Research leaders", "Delivery teams", "ResearchOps"],
+							"evidence": ["workload-review", "community-contribution-record"]
+						}
+					]
+				},
+				{
+					"id": "PEOP-COMM 2.0.0",
+					"title": "Capability, competence and permission",
+					"definition": "How people are assessed, supported and authorised to conduct different kinds of research activity.",
+					"clauses": [
+						{
+							"id": "PEOP-COMM 2.1.1",
+							"type": "rule",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Match research tasks to competence",
+							"text": "People must only lead research activities that are appropriate to their assessed competence, supervision and the risk level of the study.",
+							"appliesTo": ["Research leaders", "Line managers", "Study leads"],
+							"evidence": ["capability-assessment", "supervision-record"],
+							"relatedTemplates": ["TPL-CAPABILITY-FRAMEWORK"]
+						},
+						{
+							"id": "PEOP-COMM 2.1.2",
+							"type": "rule",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Record permission for non-researcher activity",
+							"text": "Non-researchers may only run research or research-adjacent activity within approved scope, method, participant and data-handling boundaries.",
+							"appliesTo": ["Non-researchers", "Research leaders", "ResearchOps"],
+							"evidence": ["permission-record", "approved-pattern", "scope-boundary"],
+							"relatedTemplates": ["TPL-METHOD-PLAYBOOK", "TPL-CAPABILITY-FRAMEWORK"]
+						},
+						{
+							"id": "PEOP-COMM 2.1.3",
+							"type": "guidance",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Use capability levels to target support",
+							"text": "Capability frameworks should guide coaching, review and supervision needs rather than become a performance label detached from practical research risk.",
+							"appliesTo": ["Research leaders", "Coaches", "Line managers"],
+							"evidence": ["capability-framework", "support-plan"],
+							"relatedTemplates": ["TPL-CAPABILITY-FRAMEWORK"]
+						}
+					]
+				},
+				{
+					"id": "PEOP-COMM 3.0.0",
+					"title": "Community of practice and professional standards",
+					"definition": "How the research community learns, shares standards and improves practice without relying on performative visibility.",
+					"clauses": [
+						{
+							"id": "PEOP-COMM 3.1.1",
+							"type": "rule",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Maintain a community charter",
+							"text": "A research community of practice must have a visible charter that defines purpose, membership, contribution norms, decision rights and how standards are updated.",
+							"appliesTo": ["Community leads", "Research leaders", "ResearchOps"],
+							"evidence": ["community-charter", "membership-record"],
+							"relatedTemplates": ["TPL-COMMUNITY-CHARTER"]
+						},
+						{
+							"id": "PEOP-COMM 3.1.2",
+							"type": "conduct",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Make research work visible without making people performative",
+							"text": "Community activity should share learning, support practice and create trust without rewarding visible performance over careful research work.",
+							"appliesTo": ["Community leads", "Research leaders", "Researchers"],
+							"evidence": ["community-charter", "meeting-notes"],
+							"relatedTemplates": ["TPL-COMMUNITY-CHARTER"]
+						},
+						{
+							"id": "PEOP-COMM 3.1.3",
+							"type": "principle",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Standards should travel through practice",
+							"text": "Research standards should be reinforced through critique, examples, coaching, peer review and reusable artefacts, not only stored in documents.",
+							"appliesTo": ["Researchers", "Community leads", "ResearchOps"],
+							"evidence": ["practice-review", "shared-examples", "community-retrospective"]
+						}
+					]
+				},
+				{
+					"id": "PEOP-COMM 4.0.0",
+					"title": "Coaching, mentoring and supervision",
+					"definition": "How people receive the right level of support before, during and after research work.",
+					"clauses": [
+						{
+							"id": "PEOP-COMM 4.1.1",
+							"type": "rule",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Assign supervision for higher-risk research",
+							"text": "Researchers or non-researchers leading higher-risk or unfamiliar methods must have a named supervisor, mentor or reviewer before research starts.",
+							"appliesTo": ["Research leaders", "Line managers", "Study leads"],
+							"evidence": ["supervision-record", "risk-rating", "support-plan"],
+							"relatedTemplates": ["TPL-MENTORING-AGREEMENT", "TPL-RISK-ASSESSMENT"]
+						},
+						{
+							"id": "PEOP-COMM 4.1.2",
+							"type": "guidance",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Separate coaching from approval",
+							"text": "Where possible, distinguish coaching that helps people improve from formal approval decisions, so learners can expose uncertainty without hiding risk.",
+							"appliesTo": ["Coaches", "Governance reviewers", "Research leaders"],
+							"evidence": ["coaching-record", "approval-record"]
+						},
+						{
+							"id": "PEOP-COMM 4.1.3",
+							"type": "conduct",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Give feedback that improves the work",
+							"text": "Feedback on research practice must be specific, evidence-based and oriented towards better research decisions, participant care and professional growth.",
+							"appliesTo": ["Coaches", "Reviewers", "Research leaders"],
+							"evidence": ["feedback-record", "learning-action"]
+						}
+					]
+				},
+				{
+					"id": "PEOP-COMM 5.0.0",
+					"title": "Research wellbeing and psychological safety",
+					"definition": "How the operating system protects people doing research from avoidable harm, overload and unsupported exposure to difficult work.",
+					"clauses": [
+						{
+							"id": "PEOP-COMM 5.1.1",
+							"type": "principle",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Researcher wellbeing is part of research quality",
+							"text": "Research quality depends on people having enough support, time, psychological safety and recovery space to make careful ethical judgements.",
+							"appliesTo": ["Research leaders", "Line managers", "Delivery leaders"],
+							"evidence": ["wellbeing-risk-review", "capacity-plan"],
+							"relatedTemplates": ["TPL-WELLBEING-RISK"]
+						},
+						{
+							"id": "PEOP-COMM 5.1.2",
+							"type": "rule",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Assess researcher risk for difficult work",
+							"text": "Research involving trauma, distressing topics, safeguarding, hostility, field risk or intense emotional labour must include a researcher wellbeing and support plan.",
+							"appliesTo": ["Study leads", "Line managers", "Research leaders"],
+							"evidence": ["wellbeing-risk-assessment", "debrief-plan", "escalation-route"],
+							"relatedTemplates": ["TPL-WELLBEING-RISK"]
+						},
+						{
+							"id": "PEOP-COMM 5.1.3",
+							"type": "conduct",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Do not normalise overload as commitment",
+							"text": "Teams must not treat unsustainable research load, repeated emotional exposure or unpaid community labour as evidence of professionalism.",
+							"appliesTo": ["Research leaders", "Line managers", "Delivery leaders"],
+							"evidence": ["workload-review", "wellbeing-retrospective"]
+						}
+					]
+				},
+				{
+					"id": "PEOP-COMM 6.0.0",
+					"title": "Collaboration, observers and communication",
+					"definition": "How people outside the research role engage with research responsibly.",
+					"clauses": [
+						{
+							"id": "PEOP-COMM 6.1.1",
+							"type": "rule",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Brief observers before research sessions",
+							"text": "Observers must be briefed on participant respect, confidentiality, note-taking boundaries, communication rules and how to raise concerns before attending research.",
+							"appliesTo": ["Researchers", "Observers", "Delivery teams"],
+							"evidence": ["observer-brief", "attendance-record"]
+						},
+						{
+							"id": "PEOP-COMM 6.1.2",
+							"type": "guidance",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Use sharebacks to connect learning to decisions",
+							"text": "Research communication should help teams understand evidence, limitations and decisions, not only broadcast interesting findings.",
+							"appliesTo": ["Researchers", "Product managers", "Stakeholders"],
+							"evidence": ["shareback-plan", "decision-log"],
+							"relatedTemplates": [
+								"TPL-SHAREBACK-PATTERNS",
+								"TPL-DECISION-LOG",
+								"TPL-INSIGHT-BRIEF"
+							]
+						},
+						{
+							"id": "PEOP-COMM 6.1.3",
+							"type": "conduct",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Keep participant respect visible to the whole team",
+							"text": "Everyone who observes, discusses or uses research must protect participant dignity, confidentiality and context when turning evidence into decisions.",
+							"appliesTo": ["Observers", "Researchers", "Decision makers"],
+							"evidence": ["observer-brief", "shareback-materials", "repository-access-review"]
+						}
+					]
+				},
+				{
+					"id": "PEOP-COMM 7.0.0",
+					"title": "Practice learning and capability planning",
+					"definition": "How the profession learns from delivery, plans capability and improves the operating system over time.",
+					"clauses": [
+						{
+							"id": "PEOP-COMM 7.1.1",
+							"type": "rule",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Review capability gaps on a fixed cycle",
+							"text": "Research leadership must review capability gaps, supervision needs, community health and operating load on a fixed cycle and record improvement actions.",
+							"appliesTo": ["Research leaders", "ResearchOps", "Line managers"],
+							"evidence": ["capability-review", "community-health-review", "improvement-backlog"],
+							"relatedTemplates": ["TPL-CAPABILITY-FRAMEWORK", "TPL-MATURITY-ASSESSMENT"]
+						},
+						{
+							"id": "PEOP-COMM 7.1.2",
+							"type": "guidance",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Turn repeated support requests into system improvements",
+							"text": "Repeated coaching needs, unclear roles, observer issues or community questions should trigger improvements to templates, training, guidance or operating policy.",
+							"appliesTo": ["ResearchOps", "Community leads", "Research leaders"],
+							"evidence": ["support-trend-review", "template-change", "training-backlog"]
+						},
+						{
+							"id": "PEOP-COMM 7.1.3",
+							"type": "principle",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Good people systems increase research quality and resilience",
+							"text": "A mature people system should help research practice stay ethical, skilled, inclusive and sustainable as demand, risk and organisational change increase.",
+							"appliesTo": ["Research leaders", "ResearchOps", "Delivery leaders"],
+							"evidence": ["capability-roadmap", "retrospective", "service-metrics"]
+						}
+					]
+				}
+			],
+			"glossary": [
+				{
+					"term": "Capability",
+					"definition": "The practical ability to plan, run, support, review or use research at a level appropriate to risk and context."
+				},
+				{
+					"term": "Community of practice",
+					"definition": "A group that helps people share research standards, learning, examples and support across teams."
+				},
+				{
+					"term": "Supervision",
+					"definition": "Named support and oversight for people doing research work that is unfamiliar, higher risk or beyond their current independent competence."
+				},
+				{
+					"term": "Researcher wellbeing",
+					"definition": "The conditions, support and workload controls that help people doing research make careful judgements without avoidable harm."
+				}
+			],
+			"changeHistory": [
+				{
+					"date": "2026-07-02",
+					"summary": "Expanded PEOP-COMM into an end-to-end people lifecycle covering operating model, competence, community, coaching, wellbeing, collaboration and capability planning."
+				}
+			]
+		},
+		{
+			"code": "ORG-CONT",
+			"slug": "organisational-context",
+			"legacySlug": "org-cont",
+			"title": "Organisational context",
+			"route": "/pages/sourcebook/organisational-context/",
+			"owner": "Research leadership",
+			"operatingQuestion": "How does research fit the organisation's strategy, governance, funding, decision-making and delivery rhythm?",
+			"definition": "The Organisational context pillar connects research operations to strategy, funding, decision rights, portfolio planning, stakeholder management and operating constraints.",
+			"valueFrame": "ResearchOps creates value when operational systems are connected to the organisation's priorities and decisions.",
+			"sections": [
+				{
+					"id": "ORG-CONT 1.0.0",
+					"title": "Strategy and value connection",
+					"definition": "How ResearchOps work is tied to organisational priorities, decision needs and value creation.",
+					"clauses": [
+						{
+							"id": "ORG-CONT 1.1.1",
+							"type": "principle",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Operations should make strategy executable",
+							"text": "ResearchOps work should translate strategic priorities into repeatable systems, not only provide administrative support after decisions have been made.",
+							"appliesTo": ["ResearchOps", "Research leaders", "Portfolio leads"],
+							"evidence": ["strategy-link", "operating-model-record"],
+							"relatedTemplates": ["TPL-LIFECYCLE-MANAGEMENT"]
+						},
+						{
+							"id": "ORG-CONT 1.1.2",
+							"type": "rule",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Connect priority research to a strategic objective",
+							"text": "Research classed as priority work must record the organisational objective, service risk, policy question or decision it is expected to inform.",
+							"appliesTo": ["Study leads", "Product managers", "Research leaders"],
+							"evidence": ["decision-log", "strategy-link", "portfolio-link"],
+							"relatedTemplates": ["TPL-DECISION-LOG", "TPL-STAKEHOLDER-MAPPING"]
+						},
+						{
+							"id": "ORG-CONT 1.1.3",
+							"type": "guidance",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Frame value in terms the organisation recognises",
+							"text": "Explain ResearchOps value through risk reduction, decision quality, participant protection, delivery efficiency, evidence reuse and strategic learning.",
+							"appliesTo": ["ResearchOps", "Research leaders"],
+							"evidence": ["value-frame", "service-metrics", "stakeholder-feedback"]
+						},
+						{
+							"id": "ORG-CONT 1.1.4",
+							"type": "conduct",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Do not promise certainty from research",
+							"text": "People representing research must communicate evidence, confidence and limits honestly when connecting research to organisational goals.",
+							"appliesTo": ["Researchers", "Research leaders", "ResearchOps"],
+							"evidence": ["limitations-statement", "decision-record"]
+						}
+					]
+				},
+				{
+					"id": "ORG-CONT 2.0.0",
+					"title": "Research operating model",
+					"definition": "How the research practice is structured to create value and interoperate with delivery, policy and organisational governance.",
+					"clauses": [
+						{
+							"id": "ORG-CONT 2.1.1",
+							"type": "rule",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Document the research operating model",
+							"text": "The research practice must document how research is requested, prioritised, staffed, governed, funded, delivered, stored, shared and improved.",
+							"appliesTo": ["Research leaders", "ResearchOps", "Delivery leaders"],
+							"evidence": ["operating-model-record", "service-definition"],
+							"relatedTemplates": ["TPL-LIFECYCLE-MANAGEMENT", "TPL-GOVERNANCE-RACI"]
+						},
+						{
+							"id": "ORG-CONT 2.1.2",
+							"type": "principle",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Operating models should match organisational reality",
+							"text": "The research operating model should reflect actual decision routes, power structures, constraints, funding cycles and delivery rhythms rather than an idealised process.",
+							"appliesTo": ["Research leaders", "ResearchOps", "Portfolio leads"],
+							"evidence": ["stakeholder-map", "decision-map", "constraint-review"],
+							"relatedTemplates": ["TPL-STAKEHOLDER-MAPPING"]
+						},
+						{
+							"id": "ORG-CONT 2.1.3",
+							"type": "guidance",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Use planning matrices to expose operating trade-offs",
+							"text": "Map each pillar against maturity, effort, risk and value so the team can choose what to standardise, operate, specialise or defer.",
+							"appliesTo": ["ResearchOps", "Research leaders"],
+							"evidence": ["planning-matrix", "roadmap"],
+							"relatedTemplates": ["TPL-MATURITY-ASSESSMENT", "TPL-RESEARCH-ROADMAP"]
+						}
+					]
+				},
+				{
+					"id": "ORG-CONT 3.0.0",
+					"title": "Funding, capacity and resource planning",
+					"definition": "How the organisation funds, staffs and sustains research operations.",
+					"clauses": [
+						{
+							"id": "ORG-CONT 3.1.1",
+							"type": "rule",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Plan capacity against demand and risk",
+							"text": "Research leadership must review demand, risk, skill availability, operational load and funding constraints before committing to priority research work.",
+							"appliesTo": ["Research leaders", "ResearchOps", "Portfolio leads"],
+							"evidence": ["capacity-plan", "demand-review", "risk-profile"]
+						},
+						{
+							"id": "ORG-CONT 3.1.2",
+							"type": "guidance",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Make the cost of unsupported operations visible",
+							"text": "Track repeated manual work, delays, rework, tooling gaps and hidden coordination effort so investment decisions can compare cost, risk and value.",
+							"appliesTo": ["ResearchOps", "Research leaders", "Finance partners"],
+							"evidence": ["operating-load-review", "cost-of-delay", "investment-case"]
+						},
+						{
+							"id": "ORG-CONT 3.1.3",
+							"type": "conduct",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Do not fund research by relying on unsustainable goodwill",
+							"text": "Leaders must not rely on unpaid community labour, hidden overtime or informal coordination as a substitute for explicit resourcing.",
+							"appliesTo": ["Research leaders", "Delivery leaders", "Finance partners"],
+							"evidence": ["workload-review", "resource-decision", "risk-acceptance"]
+						}
+					]
+				},
+				{
+					"id": "ORG-CONT 4.0.0",
+					"title": "Decision rights and governance integration",
+					"definition": "How research evidence enters organisational decision-making and governance forums.",
+					"clauses": [
+						{
+							"id": "ORG-CONT 4.1.1",
+							"type": "rule",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Show the decision path for priority research",
+							"text": "Research classed as priority work must record the decision owner, decision forum, expected timing, evidence need and how findings will be used.",
+							"appliesTo": ["Study leads", "Product managers", "Research leaders"],
+							"evidence": ["decision-log", "forum-record", "decision-owner"],
+							"relatedTemplates": ["TPL-DECISION-LOG"]
+						},
+						{
+							"id": "ORG-CONT 4.1.2",
+							"type": "principle",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Evidence should meet decisions where they happen",
+							"text": "Research evidence should be timed, shaped and governed so it can influence real decision routes, not only be shared after choices are effectively made.",
+							"appliesTo": ["Researchers", "Product managers", "Decision makers"],
+							"evidence": ["decision-timeline", "shareback-plan", "governance-forum"]
+						},
+						{
+							"id": "ORG-CONT 4.1.3",
+							"type": "guidance",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Integrate research checkpoints with delivery workflows",
+							"text": "Use delivery, policy or service governance checkpoints to surface research risks, evidence gaps and unresolved assumptions before decisions harden.",
+							"appliesTo": ["ResearchOps", "Delivery leads", "Research leaders"],
+							"evidence": ["workflow-integration", "checkpoint-record"],
+							"relatedTemplates": ["TPL-INTEGRATION-WORKFLOW"]
+						}
+					]
+				},
+				{
+					"id": "ORG-CONT 5.0.0",
+					"title": "Stakeholder alignment and organisational trust",
+					"definition": "How research builds and maintains trust with people who request, fund, approve or use research.",
+					"clauses": [
+						{
+							"id": "ORG-CONT 5.1.1",
+							"type": "rule",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Map stakeholders for priority operating changes",
+							"text": "Material changes to research operations must identify affected stakeholders, decision makers, contributors, risks and communication needs.",
+							"appliesTo": ["ResearchOps", "Research leaders", "Change leads"],
+							"evidence": ["stakeholder-map", "change-plan"],
+							"relatedTemplates": ["TPL-STAKEHOLDER-MAPPING"]
+						},
+						{
+							"id": "ORG-CONT 5.1.2",
+							"type": "guidance",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Build trust by making operating decisions explainable",
+							"text": "When ResearchOps changes routes, rules, tools or support levels, explain the reason, trade-offs, expected benefit and how feedback will be handled.",
+							"appliesTo": ["ResearchOps", "Research leaders"],
+							"evidence": ["communication-plan", "decision-rationale", "feedback-route"]
+						},
+						{
+							"id": "ORG-CONT 5.1.3",
+							"type": "conduct",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Do not use stakeholder pressure to bypass standards",
+							"text": "People must not use seniority, urgency or delivery pressure to bypass research governance, participant protections or evidence standards.",
+							"appliesTo": ["Decision makers", "Delivery leaders", "Research leaders"],
+							"evidence": ["escalation-record", "exception-record"]
+						}
+					]
+				},
+				{
+					"id": "ORG-CONT 6.0.0",
+					"title": "Portfolio rhythm and organisational learning",
+					"definition": "How research operations works across teams, portfolios and planning cycles.",
+					"clauses": [
+						{
+							"id": "ORG-CONT 6.1.1",
+							"type": "rule",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Review research demand at portfolio level",
+							"text": "Research leadership must review demand, evidence gaps, repeated risks and cross-team dependencies at portfolio level on a fixed rhythm.",
+							"appliesTo": ["Research leaders", "Portfolio leads", "ResearchOps"],
+							"evidence": ["portfolio-review", "research-roadmap", "evidence-gap-log"],
+							"relatedTemplates": ["TPL-RESEARCH-ROADMAP"]
+						},
+						{
+							"id": "ORG-CONT 6.1.2",
+							"type": "guidance",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Turn cross-team patterns into operating improvements",
+							"text": "Repeated evidence gaps, duplicated studies, tooling friction or stakeholder confusion should feed the ResearchOps improvement backlog.",
+							"appliesTo": ["ResearchOps", "Research leaders"],
+							"evidence": ["pattern-review", "improvement-backlog", "repository-analysis"]
+						},
+						{
+							"id": "ORG-CONT 6.1.3",
+							"type": "principle",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Organisational learning should compound",
+							"text": "Research operations should help learning travel across teams and over time, while preserving context, limitations and participant protections.",
+							"appliesTo": ["ResearchOps", "Repository curators", "Research leaders"],
+							"evidence": ["repository-entry", "knowledge-reuse-record", "context-summary"],
+							"relatedTemplates": ["TPL-REPOSITORY-ENTRY"]
+						}
+					]
+				},
+				{
+					"id": "ORG-CONT 7.0.0",
+					"title": "Value measurement and operating review",
+					"definition": "How the organisation reviews whether ResearchOps is creating useful, sustainable value.",
+					"clauses": [
+						{
+							"id": "ORG-CONT 7.1.1",
+							"type": "rule",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Review operating value on a fixed cycle",
+							"text": "ResearchOps must review service value, risk reduction, quality indicators, cost drivers, unresolved constraints and operating improvements on a fixed cycle.",
+							"appliesTo": ["ResearchOps", "Research leaders", "Portfolio leads"],
+							"evidence": ["service-review", "metrics-summary", "improvement-roadmap"],
+							"relatedTemplates": ["TPL-RESEARCH-ROADMAP", "TPL-MATURITY-ASSESSMENT"]
+						},
+						{
+							"id": "ORG-CONT 7.1.2",
+							"type": "guidance",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Use mixed measures of value",
+							"text": "Combine quantitative indicators such as cycle time and reuse with qualitative evidence of decision quality, trust, participant protection and researcher effort.",
+							"appliesTo": ["ResearchOps", "Research leaders"],
+							"evidence": ["value-dashboard", "case-study", "stakeholder-feedback"]
+						},
+						{
+							"id": "ORG-CONT 7.1.3",
+							"type": "principle",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Good organisational context makes research usable",
+							"text": "A mature organisational context should help research influence real decisions, receive sustainable investment and strengthen trust in how the organisation learns.",
+							"appliesTo": ["Research leaders", "ResearchOps", "Decision makers"],
+							"evidence": ["operating-review", "decision-impact", "investment-record"]
+						}
+					]
+				}
+			],
+			"glossary": [
+				{
+					"term": "Operating model",
+					"definition": "The way research people, processes, governance, tools, funding and decision routes work together to create value."
+				},
+				{
+					"term": "Decision rights",
+					"definition": "The explicit ownership of who can make, approve, defer or escalate decisions informed by research."
+				},
+				{
+					"term": "Portfolio rhythm",
+					"definition": "The repeated planning and review cycle that connects research demand, evidence gaps and operating improvements across teams."
+				},
+				{
+					"term": "Operating value",
+					"definition": "The value ResearchOps creates by reducing risk, improving decision quality, protecting participants, saving effort and making evidence reusable."
+				}
+			],
+			"changeHistory": [
+				{
+					"date": "2026-07-02",
+					"summary": "Expanded ORG-CONT into an end-to-end organisational context lifecycle covering strategy, operating model, funding, decision rights, stakeholder trust, portfolio rhythm and value review."
+				}
+			]
+		},
+		{
+			"code": "REC-ADMN",
+			"slug": "recruitment-and-administration",
+			"legacySlug": "rec-admn",
+			"title": "Recruitment and administration",
+			"route": "/pages/sourcebook/recruitment-and-administration/",
+			"owner": "Participant recruitment operations lead",
+			"operatingQuestion": "How are participants sourced, invited, consented, supported, paid, tracked and protected throughout the research lifecycle?",
+			"definition": "The Recruitment and administration pillar governs the full participant operations system, including sourcing, screening, scheduling, consent, privacy, incentives, participant records, communications, reporting and learning.",
+			"valueFrame": "Recruitment operations should reduce delivery friction while protecting participants, improving sample quality and making the real cost and value of participant access visible.",
+			"sections": [
+				{
+					"id": "REC-ADMN 1.0.0",
+					"title": "Recruitment operating model",
+					"definition": "How teams decide whether recruitment is self-service, full-service or hybrid.",
+					"clauses": [
+						{
+							"id": "REC-ADMN 1.1.1",
+							"type": "principle",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Participant access is part of the research operating system",
+							"text": "Recruitment must be designed as a system of sourcing, screening, consent, records, scheduling, incentives and learning, not treated as isolated administration.",
+							"appliesTo": ["ResearchOps", "Researchers", "Research leaders"],
+							"evidence": ["recruitment-operating-model", "service-model-decision"]
+						},
+						{
+							"id": "REC-ADMN 1.1.2",
+							"type": "rule",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Classify recruitment support before outreach starts",
+							"text": "A study must be classified as self-service, full-service or hybrid before any participant outreach, with the decision based on risk, audience sensitivity, access needs, timescale and sample complexity.",
+							"appliesTo": ["Study leads", "ResearchOps"],
+							"evidence": ["recruitment-risk-rating", "support-model-decision"],
+							"relatedTemplates": ["TPL-RESEARCH-INTAKE", "TPL-RISK-ASSESSMENT"]
+						},
+						{
+							"id": "REC-ADMN 1.1.3",
+							"type": "guidance",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Reserve full-service recruitment for material risk or specialist access",
+							"text": "Use full-service recruitment where participant harm, safeguarding, legal sensitivity, hard-to-reach access, high-profile stakeholders or complex incentives require specialist coordination.",
+							"appliesTo": ["ResearchOps", "Research leaders"],
+							"evidence": ["support-triage-notes", "capacity-plan"]
+						},
+						{
+							"id": "REC-ADMN 1.1.4",
+							"type": "conduct",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Do not make participants carry operational confusion",
+							"text": "People coordinating recruitment must give participants clear information, timely updates and a single route for questions, changes or withdrawal.",
+							"appliesTo": ["Recruitment coordinators", "Researchers", "ResearchOps"],
+							"evidence": ["participant-communications", "contact-route"]
+						}
+					]
+				},
+				{
+					"id": "REC-ADMN 2.0.0",
+					"title": "Participant sourcing and screening",
+					"definition": "How participant sources, sample plans and screeners are selected and reviewed.",
+					"clauses": [
+						{
+							"id": "REC-ADMN 2.1.1",
+							"type": "rule",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Approve the sample rationale",
+							"text": "The study lead must document and review the sample rationale, inclusion and exclusion criteria, source channels and known bias risks before screening begins.",
+							"appliesTo": ["Study leads", "Researchers"],
+							"evidence": ["sample-plan", "screener-review"],
+							"relatedTemplates": ["TPL-RESEARCH-PLAN"]
+						},
+						{
+							"id": "REC-ADMN 2.1.2",
+							"type": "guidance",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Use more than one source where bias would damage the decision",
+							"text": "Where a single panel, agency, staff list or community route would distort findings, use mixed sourcing and record the trade-offs.",
+							"appliesTo": ["Researchers", "Recruitment coordinators"],
+							"evidence": ["sourcing-plan", "bias-risk-note"]
+						},
+						{
+							"id": "REC-ADMN 2.1.3",
+							"type": "conduct",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Screen without extracting unnecessary personal information",
+							"text": "Screening questions must be relevant, proportionate and written so participants can understand why information is being requested.",
+							"appliesTo": ["Researchers", "Recruitment coordinators"],
+							"evidence": ["screener", "privacy-review"]
+						}
+					]
+				},
+				{
+					"id": "REC-ADMN 3.0.0",
+					"title": "Consent, privacy and participant records",
+					"definition": "How consent, privacy notices and participant records are created, stored, amended and retired.",
+					"clauses": [
+						{
+							"id": "REC-ADMN 3.1.1",
+							"type": "rule",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Record informed consent before research participation",
+							"text": "Participants must receive clear study information and give recorded informed consent before taking part, including consent choices for recording, quotation and future contact.",
+							"appliesTo": ["Researchers", "Recruitment coordinators", "Study leads"],
+							"evidence": ["consent-form", "consent-log"],
+							"relatedTemplates": [
+								"TPL-CONSENT-FORM",
+								"TPL-CONSENT-LOG",
+								"TPL-CONSENT-PRIVACY-STATEMENT"
+							],
+							"relatedAppRoutes": ["/pages/consent/"]
+						},
+						{
+							"id": "REC-ADMN 3.1.2",
+							"type": "rule",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Separate participant identity from research evidence",
+							"text": "Participant contact details and direct identifiers must be stored separately from notes, recordings, transcripts and findings unless an approved exception is recorded.",
+							"appliesTo": ["Researchers", "ResearchOps", "Repository curators"],
+							"evidence": ["data-map", "repository-entry", "exception-record"],
+							"relatedTemplates": ["TPL-REPOSITORY-ENTRY"]
+						},
+						{
+							"id": "REC-ADMN 3.1.3",
+							"type": "guidance",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Treat panels as living data products",
+							"text": "Participant panels should have named ownership, consent refresh points, retention rules, suppression lists, audit trails and a routine process for removing stale or unsuitable records.",
+							"appliesTo": ["ResearchOps", "Panel owners", "Information asset owners"],
+							"evidence": ["panel-register", "retention-schedule", "audit-log"],
+							"relatedTemplates": ["TPL-PARTICIPANT-PANEL-SCHEMA"]
+						}
+					]
+				},
+				{
+					"id": "REC-ADMN 4.0.0",
+					"title": "Incentives and participant care",
+					"definition": "How incentives, reimbursement, accessibility support and participant wellbeing are handled.",
+					"clauses": [
+						{
+							"id": "REC-ADMN 4.1.1",
+							"type": "principle",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Incentives should recognise effort without creating pressure",
+							"text": "Incentives and reimbursements should be fair, timely and proportionate to participant effort, while avoiding undue influence or exclusion.",
+							"appliesTo": ["ResearchOps", "Researchers", "Finance approvers"],
+							"evidence": ["incentive-policy", "study-incentive-decision"],
+							"relatedTemplates": ["TPL-INCENTIVE-POLICY"]
+						},
+						{
+							"id": "REC-ADMN 4.1.2",
+							"type": "rule",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Record incentive decisions and payment status",
+							"text": "The team must record the incentive offered, approval basis, fulfilment route, payment status and unresolved payment issues for each participant who is due an incentive.",
+							"appliesTo": ["Recruitment coordinators", "ResearchOps"],
+							"evidence": ["incentive-log", "payment-status"],
+							"relatedTemplates": ["TPL-RECRUITMENT-STATUS"]
+						},
+						{
+							"id": "REC-ADMN 4.1.3",
+							"type": "conduct",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Respect withdrawal and non-attendance",
+							"text": "Teams must handle withdrawal, late cancellation and non-attendance without blame, while recording operational impact so future planning improves.",
+							"appliesTo": ["Researchers", "Recruitment coordinators"],
+							"evidence": ["withdrawal-record", "attendance-log"]
+						}
+					]
+				},
+				{
+					"id": "REC-ADMN 5.0.0",
+					"title": "Scheduling and communications",
+					"definition": "How participants, researchers and observers are kept aligned before, during and after sessions.",
+					"clauses": [
+						{
+							"id": "REC-ADMN 5.1.1",
+							"type": "rule",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Confirm session logistics in writing",
+							"text": "Participants must receive written confirmation of session time, channel or location, access support, preparation needs, incentive terms, withdrawal route and contact details.",
+							"appliesTo": ["Recruitment coordinators", "Researchers"],
+							"evidence": ["joining-instructions", "communication-log"]
+						},
+						{
+							"id": "REC-ADMN 5.1.2",
+							"type": "guidance",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Automate routine reminders after the wording is safe",
+							"text": "Use scheduling and reminder automation for repeatable logistics, but review message content for plain language, privacy, access needs and the ability to reply to a person.",
+							"appliesTo": ["ResearchOps", "Recruitment coordinators"],
+							"evidence": ["message-template-review", "automation-settings"],
+							"relatedAppRoutes": ["/pages/sessions/"]
+						},
+						{
+							"id": "REC-ADMN 5.1.3",
+							"type": "conduct",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Keep observers behind the participant relationship",
+							"text": "Observers must not contact participants directly unless the study plan assigns that responsibility and participants have been told.",
+							"appliesTo": ["Observers", "Researchers", "Recruitment coordinators"],
+							"evidence": ["observer-brief", "participant-contact-plan"]
+						}
+					]
+				},
+				{
+					"id": "REC-ADMN 6.0.0",
+					"title": "Reporting and operational learning",
+					"definition": "How recruitment performance, participant experience and operating risks are reviewed.",
+					"clauses": [
+						{
+							"id": "REC-ADMN 6.1.1",
+							"type": "rule",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Review recruitment performance after fieldwork",
+							"text": "The study record must include planned sample, achieved sample, source effectiveness, no-show rate, incentive issues, access needs met, unresolved risks and recommendations for future recruitment.",
+							"appliesTo": ["Study leads", "ResearchOps"],
+							"evidence": ["recruitment-closeout", "participant-status-log"],
+							"relatedTemplates": ["TPL-RECRUITMENT-STATUS"]
+						},
+						{
+							"id": "REC-ADMN 6.1.2",
+							"type": "guidance",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Turn recruitment learning into reusable operations",
+							"text": "Where the same recruitment issue appears across studies, treat it as an operating-system improvement candidate rather than a one-off delivery problem.",
+							"appliesTo": ["ResearchOps", "Research leaders"],
+							"evidence": ["operations-backlog-item", "trend-review"]
+						},
+						{
+							"id": "REC-ADMN 6.1.3",
+							"type": "principle",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Measure recruitment by quality and care, not only speed",
+							"text": "Recruitment performance should balance time, cost, sample fit, representation, participant experience, researcher effort and risk reduction.",
+							"appliesTo": ["ResearchOps", "Research leaders"],
+							"evidence": ["service-metrics", "participant-feedback", "quality-review"]
+						}
+					]
+				}
+			],
+			"glossary": [
+				{
+					"term": "Support model",
+					"definition": "The decision about whether recruitment is self-service, full-service or hybrid."
+				},
+				{
+					"term": "Sample rationale",
+					"definition": "The documented reason a participant group, source and screening approach are appropriate for the research question."
+				},
+				{
+					"term": "Participant record",
+					"definition": "The operational record used to manage contact, consent, scheduling, incentive and participation status."
+				}
+			],
+			"changeHistory": [
+				{
+					"date": "2026-07-02",
+					"summary": "Converted REC-ADMN into the reference-quality clause model with operating model, recruitment, consent, incentives, scheduling and learning sections."
+				}
+			]
+		},
+		{
+			"code": "DATA-STO-ACC",
+			"slug": "data-and-knowledge-management",
+			"legacySlug": "data-sto-acc",
+			"title": "Data and knowledge management",
+			"route": "/pages/sourcebook/data-and-knowledge-management/",
+			"owner": "Research repository owner",
+			"operatingQuestion": "How is research evidence stored, protected, retrieved, reused and connected to decisions?",
+			"definition": "The Data and knowledge management pillar covers evidence capture, repositories, taxonomies, metadata, data retention, access control and knowledge reuse.",
+			"valueFrame": "Research knowledge compounds when evidence remains findable, trustworthy, governed and connected to decisions after individual projects end.",
+			"sections": [
+				{
+					"id": "DATA-STO-ACC 1.0.0",
+					"title": "Data and knowledge operating model",
+					"definition": "How research evidence, participant data, repository ownership and knowledge reuse are governed as an operating system.",
+					"clauses": [
+						{
+							"id": "DATA-STO-ACC 1.1.1",
+							"type": "principle",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Research knowledge is an operational asset",
+							"text": "Research evidence should be managed as a shared operating asset with clear ownership, stewardship, access rules, retention expectations and routes back into decisions.",
+							"appliesTo": ["ResearchOps", "Research leaders", "Repository owners"],
+							"evidence": ["knowledge-operating-model", "repository-ownership-model"],
+							"relatedTemplates": ["TPL-LIFECYCLE-MANAGEMENT"]
+						},
+						{
+							"id": "DATA-STO-ACC 1.1.2",
+							"type": "rule",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Assign an owner for each research knowledge system",
+							"text": "Every research repository, evidence library, archive or knowledge base must have a named owner accountable for access, metadata quality, retention, review cadence and issue escalation.",
+							"appliesTo": ["ResearchOps", "Repository owners", "Research leaders"],
+							"evidence": ["repository-owner-record", "service-ownership-model"],
+							"relatedTemplates": ["TPL-GOVERNANCE-RACI"]
+						},
+						{
+							"id": "DATA-STO-ACC 1.1.3",
+							"type": "guidance",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Separate raw data, analysis material and reusable knowledge",
+							"text": "Design the knowledge system so raw participant material, working analysis and decision-ready insights have different storage, access, retention and reuse rules.",
+							"appliesTo": ["Repository owners", "Researchers", "ResearchOps"],
+							"evidence": ["repository-structure", "data-classification"]
+						},
+						{
+							"id": "DATA-STO-ACC 1.1.4",
+							"type": "conduct",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Do not treat evidence as team property",
+							"text": "People working with research evidence must respect participant conditions, organisational stewardship and future decision needs rather than storing knowledge only in personal files or local team spaces.",
+							"appliesTo": ["Researchers", "Repository curators", "ResearchOps"],
+							"evidence": ["repository-entry", "handover-record"]
+						}
+					]
+				},
+				{
+					"id": "DATA-STO-ACC 2.0.0",
+					"title": "Evidence capture and repository entry",
+					"definition": "How research material is captured, described and entered into approved knowledge systems.",
+					"clauses": [
+						{
+							"id": "DATA-STO-ACC 2.1.1",
+							"type": "rule",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Create a repository entry for completed research",
+							"text": "Completed research must have a repository entry that records the research question, method, audience, sample, date, owner, consent constraints, artefacts, findings and decision link.",
+							"appliesTo": ["Researchers", "Repository curators", "Study leads"],
+							"evidence": ["repository-entry", "study-close-record"],
+							"relatedTemplates": ["TPL-REPOSITORY-ENTRY"],
+							"relatedAppRoutes": ["/pages/repository/"]
+						},
+						{
+							"id": "DATA-STO-ACC 2.1.2",
+							"type": "principle",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Evidence must keep its context",
+							"text": "Research findings and recommendations should retain enough method, sample, limitation and consent context for later users to judge whether the evidence can support a new decision.",
+							"appliesTo": ["Researchers", "Repository curators"],
+							"evidence": ["method-context", "limitations-statement"]
+						},
+						{
+							"id": "DATA-STO-ACC 2.1.3",
+							"type": "guidance",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Capture the minimum durable record",
+							"text": "Where raw material cannot be retained, create a durable summary that preserves the decision need, key evidence, limitations, consent boundaries and route to the study owner.",
+							"appliesTo": ["Researchers", "Repository curators"],
+							"evidence": ["summary-record", "retention-decision"],
+							"relatedTemplates": ["TPL-DATA-RETENTION"]
+						}
+					]
+				},
+				{
+					"id": "DATA-STO-ACC 3.0.0",
+					"title": "Metadata, taxonomy and findability",
+					"definition": "How evidence is named, tagged, described and made findable without losing meaning.",
+					"clauses": [
+						{
+							"id": "DATA-STO-ACC 3.1.1",
+							"type": "rule",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Use the approved research taxonomy",
+							"text": "Repository entries must use the approved taxonomy for service area, user group, method, risk, artefact type and decision theme unless an exception is recorded.",
+							"appliesTo": ["Repository curators", "Researchers"],
+							"evidence": ["taxonomy-tags", "taxonomy-exception"],
+							"relatedTemplates": ["TPL-TAXONOMY-REFERENCE"],
+							"relatedAppRoutes": [
+								"/pages/repository/service-areas/",
+								"/pages/repository/user-groups/",
+								"/pages/repository/methods/",
+								"/pages/repository/risks/"
+							]
+						},
+						{
+							"id": "DATA-STO-ACC 3.1.2",
+							"type": "guidance",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Tag for decisions, not only projects",
+							"text": "Add decision themes, policy areas, service stages and known assumptions so evidence can be discovered when future work cuts across previous project boundaries.",
+							"appliesTo": ["Repository curators", "ResearchOps", "Researchers"],
+							"evidence": ["decision-tags", "cross-project-index"],
+							"relatedTemplates": ["TPL-DECISION-LOG"]
+						},
+						{
+							"id": "DATA-STO-ACC 3.1.3",
+							"type": "conduct",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Do not hide uncertainty in labels",
+							"text": "People describing evidence must not use overconfident titles, tags or summaries that make weak, old, narrow or contested findings look stronger than they are.",
+							"appliesTo": ["Researchers", "Repository curators"],
+							"evidence": ["limitations-statement", "summary-review"]
+						}
+					]
+				},
+				{
+					"id": "DATA-STO-ACC 4.0.0",
+					"title": "Access, privacy and permission",
+					"definition": "How access to research material is granted, reviewed and constrained by consent, privacy and sensitivity.",
+					"clauses": [
+						{
+							"id": "DATA-STO-ACC 4.1.1",
+							"type": "rule",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Review consent and sensitivity before access is widened",
+							"text": "Before research material is reused outside the original study team, the repository owner must check consent, confidentiality, sensitivity, retention limits and whether a lower-risk summary can meet the need.",
+							"appliesTo": ["Repository owners", "Repository curators", "Researchers"],
+							"evidence": ["access-review", "reuse-decision", "consent-conditions"],
+							"relatedTemplates": ["TPL-CONSENT-LOG", "TPL-DATA-RETENTION"]
+						},
+						{
+							"id": "DATA-STO-ACC 4.1.2",
+							"type": "principle",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Access should be proportionate to the evidence need",
+							"text": "People should receive the least sensitive form of evidence that can answer their legitimate decision need, with raw participant material treated as exceptional access.",
+							"appliesTo": ["Repository owners", "ResearchOps", "Researchers"],
+							"evidence": ["access-model", "need-to-know-review"]
+						},
+						{
+							"id": "DATA-STO-ACC 4.1.3",
+							"type": "guidance",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Use summaries for most cross-team reuse",
+							"text": "Use de-identified summaries, insight records or evidence packs for most reuse requests, reserving transcripts, recordings and participant-level records for approved specialist review.",
+							"appliesTo": ["Repository curators", "Researchers"],
+							"evidence": ["summary-pack", "specialist-access-approval"],
+							"relatedTemplates": ["TPL-INSIGHT-BRIEF"]
+						}
+					]
+				},
+				{
+					"id": "DATA-STO-ACC 5.0.0",
+					"title": "Retention, disposal and auditability",
+					"definition": "How evidence is retained, reviewed, archived or disposed of in line with consent and operating value.",
+					"clauses": [
+						{
+							"id": "DATA-STO-ACC 5.1.1",
+							"type": "rule",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Apply retention rules to research material",
+							"text": "Research material must have a retention rule that states what is kept, where it is kept, when it is reviewed, when it is deleted or archived and who approves exceptions.",
+							"appliesTo": ["Repository owners", "ResearchOps", "Researchers"],
+							"evidence": ["retention-rule", "retention-review-log"],
+							"relatedTemplates": ["TPL-DATA-RETENTION"]
+						},
+						{
+							"id": "DATA-STO-ACC 5.1.2",
+							"type": "guidance",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Separate disposal of raw data from retention of learning",
+							"text": "When participant-level data reaches its disposal point, retain only the approved level of de-identified learning, decision trace and operating metadata needed for future reuse.",
+							"appliesTo": ["Repository owners", "Repository curators"],
+							"evidence": ["disposal-record", "learning-summary"]
+						},
+						{
+							"id": "DATA-STO-ACC 5.1.3",
+							"type": "conduct",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Do not keep participant material because deletion is inconvenient",
+							"text": "People managing research material must not retain recordings, transcripts, contact details or sensitive records beyond approved retention limits for convenience or personal backup.",
+							"appliesTo": ["Researchers", "Repository owners", "Repository curators"],
+							"evidence": ["retention-review-log", "deletion-confirmation"]
+						}
+					]
+				},
+				{
+					"id": "DATA-STO-ACC 6.0.0",
+					"title": "Reuse, synthesis and decision trace",
+					"definition": "How existing research knowledge is reused, synthesised and connected to organisational decisions.",
+					"clauses": [
+						{
+							"id": "DATA-STO-ACC 6.1.1",
+							"type": "rule",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Check existing evidence before commissioning new research",
+							"text": "Before commissioning or approving new research, teams must check whether existing evidence can answer the decision need or narrow the research scope.",
+							"appliesTo": ["Study leads", "ResearchOps", "Research leaders"],
+							"evidence": ["repository-search", "evidence-review"],
+							"relatedTemplates": ["TPL-RESEARCH-INTAKE", "TPL-DECISION-LOG"],
+							"relatedAppRoutes": ["/pages/search/"]
+						},
+						{
+							"id": "DATA-STO-ACC 6.1.2",
+							"type": "principle",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Reuse should preserve evidence limits",
+							"text": "Existing evidence should be reused with its original method, sample, date, context, confidence and consent limits visible to the new decision maker.",
+							"appliesTo": ["Researchers", "Repository curators", "Decision makers"],
+							"evidence": ["evidence-pack", "limitations-statement"]
+						},
+						{
+							"id": "DATA-STO-ACC 6.1.3",
+							"type": "guidance",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Create synthesis when patterns recur",
+							"text": "When multiple studies show a recurring pattern, create a synthesis record that states the pattern, source studies, confidence level, contradictions and current decision relevance.",
+							"appliesTo": ["ResearchOps", "Researchers", "Repository curators"],
+							"evidence": ["synthesis-record", "source-study-list"]
+						}
+					]
+				},
+				{
+					"id": "DATA-STO-ACC 7.0.0",
+					"title": "Repository health and knowledge learning",
+					"definition": "How the knowledge system is reviewed, improved and measured for operating value.",
+					"clauses": [
+						{
+							"id": "DATA-STO-ACC 7.1.1",
+							"type": "rule",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Review repository health on a fixed cycle",
+							"text": "Repository owners must review repository health on a fixed cycle, including stale entries, missing metadata, unresolved access issues, retention exceptions and evidence reuse.",
+							"appliesTo": ["Repository owners", "ResearchOps", "Research leaders"],
+							"evidence": ["repository-health-review", "improvement-backlog"],
+							"relatedTemplates": ["TPL-RESEARCH-BACKLOG"]
+						},
+						{
+							"id": "DATA-STO-ACC 7.1.2",
+							"type": "guidance",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Measure knowledge by retrieval and decision use",
+							"text": "Track whether evidence is findable, reused, cited in decisions, used to reduce duplicate research and trusted by researchers and decision makers.",
+							"appliesTo": ["ResearchOps", "Repository owners", "Research leaders"],
+							"evidence": ["reuse-metrics", "decision-citations", "repository-feedback"]
+						},
+						{
+							"id": "DATA-STO-ACC 7.1.3",
+							"type": "principle",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Good knowledge systems make evidence reusable without making it unsafe",
+							"text": "A mature data and knowledge system should increase the value of research evidence while reducing privacy risk, duplication, context loss and unsupported claims.",
+							"appliesTo": ["ResearchOps", "Repository owners", "Research leaders"],
+							"evidence": ["repository-health-review", "reuse-metrics", "risk-review"]
+						}
+					]
+				}
+			],
+			"glossary": [
+				{
+					"term": "Research repository",
+					"definition": "An approved system or structured collection used to store, describe, retrieve and reuse research evidence."
+				},
+				{
+					"term": "Evidence trace",
+					"definition": "The link between a research claim and the source material, method context, consent conditions and limitations that support it."
+				},
+				{
+					"term": "Retention rule",
+					"definition": "A documented rule that states what research material is retained, reviewed, archived or deleted and who approves exceptions."
+				},
+				{
+					"term": "Knowledge reuse",
+					"definition": "The controlled use of existing research evidence to inform a new decision, reduce duplicate work or frame future research."
+				}
+			],
+			"changeHistory": [
+				{
+					"date": "2026-07-02",
+					"summary": "Expanded DATA-STO-ACC into an end-to-end data and knowledge lifecycle covering operating model, evidence capture, metadata, access, retention, reuse and repository health."
+				}
+			]
+		},
+		{
+			"code": "GOVERN",
+			"slug": "governance",
+			"legacySlug": "govern",
+			"title": "Governance",
+			"route": "/pages/sourcebook/governance/",
+			"owner": "Research governance lead",
+			"operatingQuestion": "What rules, review gates and escalation routes make research ethical, useful, lawful and consistent?",
+			"definition": "The Governance pillar turns research principles into repeatable practice through review gates, ethics, safeguarding, privacy, quality standards and escalation paths.",
+			"valueFrame": "Governance protects participants and the organisation while keeping research decisions clear, proportionate and usable.",
+			"sections": [
+				{
+					"id": "GOVERN 1.0.0",
+					"title": "Governance operating model",
+					"definition": "How research governance is owned, scaled and made proportionate across the research lifecycle.",
+					"clauses": [
+						{
+							"id": "GOVERN 1.1.1",
+							"type": "principle",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Governance is the operating system for responsible research",
+							"text": "Research governance should turn ethical, legal, inclusion and quality principles into repeatable practice without removing accountable human judgement.",
+							"appliesTo": ["Research leaders", "ResearchOps", "Governance reviewers"],
+							"evidence": ["governance-model", "principles-record"],
+							"relatedTemplates": ["TPL-GOVERNANCE-RACI"]
+						},
+						{
+							"id": "GOVERN 1.1.2",
+							"type": "rule",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Name accountable governance roles",
+							"text": "Every research practice must define who owns governance rules, who reviews studies, who approves exceptions and who can escalate unresolved risks.",
+							"appliesTo": ["Research leaders", "Research governance lead", "ResearchOps"],
+							"evidence": ["governance-raci", "reviewer-rota", "escalation-route"],
+							"relatedTemplates": ["TPL-GOVERNANCE-RACI"]
+						},
+						{
+							"id": "GOVERN 1.1.3",
+							"type": "guidance",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Use proportionate review levels",
+							"text": "Classify research as low, medium or high governance risk so routine work can move quickly and sensitive work receives specialist review.",
+							"appliesTo": ["Study leads", "Research governance reviewers", "ResearchOps"],
+							"evidence": ["risk-triage", "review-level-decision"],
+							"relatedTemplates": ["TPL-RISK-ASSESSMENT"]
+						},
+						{
+							"id": "GOVERN 1.1.4",
+							"type": "conduct",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Make governance usable",
+							"text": "Governance reviewers must explain decisions in plain language, focus on material risk and help teams improve the work rather than only block it.",
+							"appliesTo": ["Governance reviewers", "Research leaders"],
+							"evidence": ["review-feedback", "decision-rationale"]
+						}
+					]
+				},
+				{
+					"id": "GOVERN 2.0.0",
+					"title": "Study initiation and risk triage",
+					"definition": "How studies enter governance review and how risk is assessed before participant contact.",
+					"clauses": [
+						{
+							"id": "GOVERN 2.1.1",
+							"type": "rule",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Complete governance triage before participant contact",
+							"text": "A study must complete governance triage before recruitment, screening, participant outreach or fieldwork begins.",
+							"appliesTo": ["Study leads", "Researchers", "ResearchOps"],
+							"evidence": ["research-intake", "risk-assessment", "triage-outcome"],
+							"relatedTemplates": ["TPL-RESEARCH-INTAKE", "TPL-RISK-ASSESSMENT"]
+						},
+						{
+							"id": "GOVERN 2.1.2",
+							"type": "rule",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Record the method and participant risk rationale",
+							"text": "The study record must explain why the method, participant group, setting, incentives, recording and data handling approach are proportionate to the research question.",
+							"appliesTo": ["Study leads", "Researchers"],
+							"evidence": ["research-plan", "method-rationale", "participant-risk-rationale"],
+							"relatedTemplates": ["TPL-RESEARCH-PLAN", "TPL-RISK-ASSESSMENT"]
+						},
+						{
+							"id": "GOVERN 2.1.3",
+							"type": "guidance",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Escalate uncertainty early",
+							"text": "Where risk is unclear, escalate before the plan hardens. Early review should reduce rework and prevent pressure to accept avoidable risk later.",
+							"appliesTo": ["Researchers", "ResearchOps", "Governance reviewers"],
+							"evidence": ["early-review-note", "open-risk-log"]
+						}
+					]
+				},
+				{
+					"id": "GOVERN 3.0.0",
+					"title": "Ethics, consent and safeguarding",
+					"definition": "How teams protect participant agency, dignity, inclusion and safety.",
+					"clauses": [
+						{
+							"id": "GOVERN 3.1.1",
+							"type": "principle",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Participant agency is a governance requirement",
+							"text": "Participants should understand what they are being asked to do, how their information will be used, what choices they have and how to stop taking part.",
+							"appliesTo": ["Researchers", "Recruitment coordinators", "Governance reviewers"],
+							"evidence": ["participant-information", "consent-form", "withdrawal-route"],
+							"relatedTemplates": [
+								"TPL-CONSENT-FORM",
+								"TPL-CONSENT-LOG",
+								"TPL-CONSENT-PRIVACY-STATEMENT"
+							]
+						},
+						{
+							"id": "GOVERN 3.1.2",
+							"type": "rule",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Review high-risk ethics and safeguarding before approval",
+							"text": "Research involving vulnerable participants, distressing topics, power imbalance, covert observation, minors, legal sensitivity or safeguarding concerns must receive specialist review before approval.",
+							"appliesTo": ["Study leads", "Governance reviewers", "Safeguarding leads"],
+							"evidence": ["ethics-review", "safeguarding-review", "approval-record"],
+							"relatedTemplates": [
+								"TPL-ETHICS-REVIEW",
+								"TPL-RESEARCH-ETHICS-GUIDANCE",
+								"TPL-RISK-ASSESSMENT"
+							]
+						},
+						{
+							"id": "GOVERN 3.1.3",
+							"type": "conduct",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Do not trade participant welfare for delivery speed",
+							"text": "People planning or approving research must not pressure teams to continue, recruit or publish where participant welfare risks are unresolved.",
+							"appliesTo": ["Delivery leaders", "Researchers", "Governance reviewers"],
+							"evidence": ["risk-decision", "escalation-record"]
+						}
+					]
+				},
+				{
+					"id": "GOVERN 4.0.0",
+					"title": "Privacy, data protection and evidence governance",
+					"definition": "How participant data and research evidence are protected from collection through retention and reuse.",
+					"clauses": [
+						{
+							"id": "GOVERN 4.1.1",
+							"type": "rule",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Define data handling before collection",
+							"text": "The study must document what participant data will be collected, where it will be stored, who can access it, how long it will be retained and how deletion or withdrawal will be handled.",
+							"appliesTo": ["Study leads", "Researchers", "Information asset owners"],
+							"evidence": ["data-map", "retention-rule", "access-control"],
+							"relatedTemplates": [
+								"TPL-DATA-RETENTION",
+								"TPL-COMPLIANCE-CHECKLIST",
+								"TPL-GDPR-CHECKLIST",
+								"TPL-CONSENT-PRIVACY-STATEMENT"
+							]
+						},
+						{
+							"id": "GOVERN 4.1.2",
+							"type": "rule",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Protect direct identifiers from unnecessary reuse",
+							"text": "Direct identifiers must not be included in research notes, findings, repositories or sharebacks unless the study has an approved and recorded reason.",
+							"appliesTo": ["Researchers", "Repository curators", "ResearchOps"],
+							"evidence": ["redaction-check", "repository-entry", "exception-record"],
+							"relatedTemplates": ["TPL-REPOSITORY-ENTRY"]
+						},
+						{
+							"id": "GOVERN 4.1.3",
+							"type": "guidance",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Use summaries when raw evidence is not needed",
+							"text": "Where a team needs learning rather than raw data, prefer governed summaries, excerpts or decision records that preserve context without widening access to sensitive material.",
+							"appliesTo": ["Repository curators", "Researchers", "Stakeholders"],
+							"evidence": ["access-review", "summary-record", "decision-log"],
+							"relatedTemplates": ["TPL-DECISION-LOG"]
+						}
+					]
+				},
+				{
+					"id": "GOVERN 5.0.0",
+					"title": "Findings quality and decision assurance",
+					"definition": "How findings are checked before they influence decisions, policy, service design or delivery.",
+					"clauses": [
+						{
+							"id": "GOVERN 5.1.1",
+							"type": "rule",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Review claims before findings are shared",
+							"text": "Before findings are shared, claims must be checked against evidence, method limits, sample limits, consent constraints and the confidence the team can reasonably place in the work.",
+							"appliesTo": ["Researchers", "Study leads", "Research leaders"],
+							"evidence": ["findings-review", "evidence-trace", "limitations-statement"]
+						},
+						{
+							"id": "GOVERN 5.1.2",
+							"type": "principle",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Recommendations must not outrun evidence",
+							"text": "Research recommendations should be clearly separated from observations and should reflect the strength, relevance and limits of the evidence.",
+							"appliesTo": ["Researchers", "Product managers", "Decision makers"],
+							"evidence": ["recommendation-rationale", "decision-log"],
+							"relatedTemplates": ["TPL-DECISION-LOG"]
+						},
+						{
+							"id": "GOVERN 5.1.3",
+							"type": "guidance",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Ratify AI-assisted outputs before use",
+							"text": "AI-assisted notes, summaries, tags or draft findings should be treated as working material until a researcher checks accuracy, context, consent limits and missing evidence.",
+							"appliesTo": ["Researchers", "ResearchOps", "Repository curators"],
+							"evidence": ["human-review-record", "ai-use-note", "correction-log"]
+						}
+					]
+				},
+				{
+					"id": "GOVERN 6.0.0",
+					"title": "Incidents, exceptions and escalation",
+					"definition": "How governance issues are recorded, contained, escalated and resolved.",
+					"clauses": [
+						{
+							"id": "GOVERN 6.1.1",
+							"type": "rule",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Record incidents and exceptions in one place",
+							"text": "Participant harm concerns, consent problems, privacy issues, data loss, protocol deviations and approved exceptions must be recorded in a governed register.",
+							"appliesTo": ["Researchers", "ResearchOps", "Governance reviewers"],
+							"evidence": ["incident-register", "exception-register"],
+							"relatedTemplates": ["TPL-INCIDENT-REGISTER", "TPL-RESEARCH-INCIDENT-LOG"]
+						},
+						{
+							"id": "GOVERN 6.1.2",
+							"type": "rule",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Escalate unresolved material risk",
+							"text": "Material risks that cannot be resolved by the study team must be escalated to the named governance owner before the research proceeds or findings are used.",
+							"appliesTo": ["Study leads", "Governance reviewers", "Research leaders"],
+							"evidence": ["escalation-record", "governance-decision"]
+						},
+						{
+							"id": "GOVERN 6.1.3",
+							"type": "conduct",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Create a no-blame route for raising concerns",
+							"text": "People involved in research must be able to raise governance concerns without being treated as obstructive or disloyal to delivery.",
+							"appliesTo": ["Researchers", "Observers", "ResearchOps", "Delivery leaders"],
+							"evidence": ["concern-route", "retrospective-note", "incident-follow-up"]
+						}
+					]
+				},
+				{
+					"id": "GOVERN 7.0.0",
+					"title": "Continuous governance and operating learning",
+					"definition": "How governance practice is reviewed, measured and improved over time.",
+					"clauses": [
+						{
+							"id": "GOVERN 7.1.1",
+							"type": "guidance",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Review governance patterns, not only individual studies",
+							"text": "Governance reviews should look for repeated risks, unclear rules, slow approvals, recurring exceptions and parts of the operating model that need redesign.",
+							"appliesTo": ["Research governance lead", "ResearchOps", "Research leaders"],
+							"evidence": ["governance-metrics", "trend-review", "improvement-backlog"]
+						},
+						{
+							"id": "GOVERN 7.1.2",
+							"type": "rule",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Review sourcebook governance clauses on a fixed cycle",
+							"text": "Governance clauses must have an owner and review cycle so rules remain current with law, organisational policy, technology, research practice and participant risk.",
+							"appliesTo": ["Research governance lead", "Sourcebook maintainers"],
+							"evidence": ["clause-owner", "review-cycle", "change-history"]
+						},
+						{
+							"id": "GOVERN 7.1.3",
+							"type": "principle",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Good governance should increase trust and pace",
+							"text": "A mature governance system should make safe research easier to run, help risky research get the right review and make the value of responsible practice visible.",
+							"appliesTo": ["Research leaders", "ResearchOps", "Governance reviewers"],
+							"evidence": ["governance-retrospective", "service-metrics", "stakeholder-feedback"]
+						}
+					]
+				}
+			],
+			"glossary": [
+				{
+					"term": "Governance triage",
+					"definition": "The first review that classifies a study by ethics, privacy, safeguarding, inclusion, method and operational risk."
+				},
+				{
+					"term": "Material risk",
+					"definition": "A risk that could affect participant welfare, legal compliance, evidence quality, organisational trust or a significant service decision."
+				},
+				{
+					"term": "Exception",
+					"definition": "A documented decision to depart from a rule, with owner, rationale, controls, expiry and review route."
+				},
+				{
+					"term": "Findings assurance",
+					"definition": "The checks that keep claims, limitations, participant protections and recommendations aligned before findings are used."
+				}
+			],
+			"changeHistory": [
+				{
+					"date": "2026-07-02",
+					"summary": "Expanded GOVERN into an end-to-end governance lifecycle covering operating model, triage, ethics, safeguarding, privacy, findings assurance, incidents, exceptions and continuous improvement."
+				}
+			]
+		},
+		{
+			"code": "INFRA-PROV",
+			"slug": "tools-and-infrastructure",
+			"legacySlug": "infra-prov",
+			"title": "Tools and infrastructure",
+			"route": "/pages/sourcebook/tools-and-infrastructure/",
+			"owner": "Research tooling owner",
+			"operatingQuestion": "What tools, platforms, integrations and support processes make research reliable, secure and scalable?",
+			"definition": "The Tools and infrastructure pillar covers research tooling, procurement, integration, support, access, automation, resilience and operational ownership.",
+			"valueFrame": "Tools should reduce repeat effort, protect data and support the operating model instead of becoming unmanaged local workarounds.",
+			"sections": [
+				{
+					"id": "INFRA-PROV 1.0.0",
+					"title": "Tools and infrastructure operating model",
+					"definition": "How research tools, platforms, infrastructure, support and ownership fit the research operating system.",
+					"clauses": [
+						{
+							"id": "INFRA-PROV 1.1.1",
+							"type": "principle",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Infrastructure should make good practice easier",
+							"text": "Research tools and infrastructure should make responsible research easier to run by reducing manual work, protecting participant data and supporting the agreed operating model.",
+							"appliesTo": ["ResearchOps", "Tool owners", "Research leaders"],
+							"evidence": ["tooling-operating-model", "service-design-rationale"],
+							"relatedTemplates": ["TPL-LIFECYCLE-MANAGEMENT"]
+						},
+						{
+							"id": "INFRA-PROV 1.1.2",
+							"type": "rule",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Assign ownership before a research tool is used",
+							"text": "Every research tool must have a named owner, approved use case, data handling position, access process, support route and lifecycle plan before it is used for live research.",
+							"appliesTo": ["ResearchOps", "Tool owners", "Information assurance"],
+							"evidence": ["tool-register", "data-review", "support-route", "lifecycle-plan"],
+							"relatedTemplates": ["TPL-TOOL-EVALUATION", "TPL-GOVERNANCE-RACI"]
+						},
+						{
+							"id": "INFRA-PROV 1.1.3",
+							"type": "guidance",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Maintain a research tooling register",
+							"text": "Use a tooling register to record each tool's owner, purpose, data types, user groups, integrations, suppliers, costs, assurance status, support model and review date.",
+							"appliesTo": ["Tool owners", "ResearchOps"],
+							"evidence": ["tool-register", "ownership-record"]
+						},
+						{
+							"id": "INFRA-PROV 1.1.4",
+							"type": "conduct",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Do not normalise unmanaged workarounds",
+							"text": "People supporting research must not treat personal spreadsheets, private accounts, unapproved recording tools or unsupported scripts as acceptable infrastructure for live research.",
+							"appliesTo": ["Researchers", "ResearchOps", "Tool owners"],
+							"evidence": ["tool-exception", "risk-acceptance-record"]
+						}
+					]
+				},
+				{
+					"id": "INFRA-PROV 2.0.0",
+					"title": "Tool evaluation, procurement and adoption",
+					"definition": "How tools are assessed, approved, introduced and adopted without creating hidden risk.",
+					"clauses": [
+						{
+							"id": "INFRA-PROV 2.1.1",
+							"type": "rule",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Evaluate tools before procurement or use",
+							"text": "A research tool must be evaluated for user need, accessibility, privacy, security, data residency, integration, cost, support and exit before it is procured or used.",
+							"appliesTo": ["Tool owners", "ResearchOps", "Procurement", "Information assurance"],
+							"evidence": ["tool-evaluation", "assurance-review"],
+							"relatedTemplates": ["TPL-TOOL-EVALUATION", "TPL-COMPLIANCE-CHECKLIST"]
+						},
+						{
+							"id": "INFRA-PROV 2.1.2",
+							"type": "principle",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Tool choice should follow operating need",
+							"text": "Tools should be selected because they support a defined research operation, not because a team prefers a feature, supplier or existing habit.",
+							"appliesTo": ["ResearchOps", "Tool owners", "Research leaders"],
+							"evidence": ["user-need", "tool-decision-record"]
+						},
+						{
+							"id": "INFRA-PROV 2.1.3",
+							"type": "guidance",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Pilot adoption with support and controls",
+							"text": "When introducing a tool, pilot it with clear entry criteria, user support, feedback routes, risk controls and a decision point before wider rollout.",
+							"appliesTo": ["Tool owners", "ResearchOps"],
+							"evidence": ["pilot-plan", "adoption-review"]
+						}
+					]
+				},
+				{
+					"id": "INFRA-PROV 3.0.0",
+					"title": "Access, identity and permission management",
+					"definition": "How people receive, change and lose access to research tools and infrastructure.",
+					"clauses": [
+						{
+							"id": "INFRA-PROV 3.1.1",
+							"type": "rule",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Control access by role and research need",
+							"text": "Access to research tools must be granted by role, project need, data sensitivity and training status, with admin access treated as exceptional.",
+							"appliesTo": ["Tool owners", "ResearchOps", "Team managers"],
+							"evidence": ["access-request", "role-permission-model"],
+							"relatedAppRoutes": ["/pages/account/team-access/", "/pages/team/role-assignments/"]
+						},
+						{
+							"id": "INFRA-PROV 3.1.2",
+							"type": "guidance",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Review access when teams or projects change",
+							"text": "Review tool access when someone changes role, leaves a team, finishes a study, changes supplier status or no longer has a live research need.",
+							"appliesTo": ["Tool owners", "Team managers", "ResearchOps"],
+							"evidence": ["access-review", "leaver-check"]
+						},
+						{
+							"id": "INFRA-PROV 3.1.3",
+							"type": "conduct",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Do not share credentials or participant data through informal channels",
+							"text": "People must not share tool credentials, recordings, transcripts, participant contact details or exports through personal accounts, chat messages or unsupported storage.",
+							"appliesTo": ["Researchers", "ResearchOps", "Tool users"],
+							"evidence": ["security-briefing", "incident-report"]
+						}
+					]
+				},
+				{
+					"id": "INFRA-PROV 4.0.0",
+					"title": "Integration, automation and workflow reliability",
+					"definition": "How research tools connect to workflows, data, repositories and automation safely.",
+					"clauses": [
+						{
+							"id": "INFRA-PROV 4.1.1",
+							"type": "rule",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Document integrations before live use",
+							"text": "Integrations that move research data, participant records, consent states, repository entries or operational status must document source, destination, owner, permissions, failure mode and audit route.",
+							"appliesTo": ["Tool owners", "ResearchOps", "Developers"],
+							"evidence": ["integration-record", "data-flow-review"],
+							"relatedTemplates": ["TPL-INTEGRATION-WORKFLOW", "TPL-GDPR-CHECKLIST"]
+						},
+						{
+							"id": "INFRA-PROV 4.1.2",
+							"type": "principle",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Standardise before automating",
+							"text": "Automation should be added to stable, understood and repeatable operations rather than used to hide unclear ownership, poor process design or missing governance.",
+							"appliesTo": ["ResearchOps", "Tool owners", "Developers"],
+							"evidence": ["process-map", "automation-review"]
+						},
+						{
+							"id": "INFRA-PROV 4.1.3",
+							"type": "guidance",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Design for visible failure",
+							"text": "Automated workflows should expose errors, retries, missing permissions and data mismatches so teams can recover without silent loss of research records.",
+							"appliesTo": ["Tool owners", "ResearchOps", "Developers"],
+							"evidence": ["workflow-monitoring", "failure-runbook"]
+						}
+					]
+				},
+				{
+					"id": "INFRA-PROV 5.0.0",
+					"title": "Support, service health and incident response",
+					"definition": "How tools are supported, monitored and recovered when they affect research delivery.",
+					"clauses": [
+						{
+							"id": "INFRA-PROV 5.1.1",
+							"type": "rule",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Define the support route for each critical tool",
+							"text": "Critical research tools must have a support route that states who responds, what counts as urgent, how incidents are escalated and how users are updated.",
+							"appliesTo": ["Tool owners", "ResearchOps", "Service owners"],
+							"evidence": ["support-route", "incident-runbook"],
+							"relatedTemplates": ["TPL-INCIDENT-REGISTER"]
+						},
+						{
+							"id": "INFRA-PROV 5.1.2",
+							"type": "guidance",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Track service health in research terms",
+							"text": "Monitor tool reliability by its effect on recruitment, sessions, consent, repository access, analysis, reporting and participant communications rather than uptime alone.",
+							"appliesTo": ["Tool owners", "ResearchOps"],
+							"evidence": ["service-health-review", "user-feedback"]
+						},
+						{
+							"id": "INFRA-PROV 5.1.3",
+							"type": "conduct",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Tell affected teams when tooling risk changes",
+							"text": "People responsible for tools must communicate material outages, security issues, permission changes or data problems to affected research teams quickly and plainly.",
+							"appliesTo": ["Tool owners", "ResearchOps", "Service owners"],
+							"evidence": ["incident-communication", "service-update"]
+						}
+					]
+				},
+				{
+					"id": "INFRA-PROV 6.0.0",
+					"title": "Security, compliance and resilience",
+					"definition": "How tooling protects participants, research data, service continuity and organisational assurance.",
+					"clauses": [
+						{
+							"id": "INFRA-PROV 6.1.1",
+							"type": "rule",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Complete assurance for tools handling sensitive research material",
+							"text": "Tools that handle sensitive participant data, recordings, transcripts, consent records or unreleased findings must complete security, privacy and compliance assurance before live use.",
+							"appliesTo": ["Tool owners", "Information assurance", "ResearchOps"],
+							"evidence": ["security-review", "privacy-review", "compliance-check"],
+							"relatedTemplates": ["TPL-COMPLIANCE-CHECKLIST", "TPL-RISK-ASSESSMENT"]
+						},
+						{
+							"id": "INFRA-PROV 6.1.2",
+							"type": "guidance",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Plan continuity for live research moments",
+							"text": "For tools used in recruitment, consent, sessions, incentives or participant communications, define manual fallback, recovery steps and participant-facing messages before disruption happens.",
+							"appliesTo": ["Tool owners", "ResearchOps", "Study leads"],
+							"evidence": ["continuity-plan", "fallback-process"]
+						},
+						{
+							"id": "INFRA-PROV 6.1.3",
+							"type": "principle",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Resilience is part of participant care",
+							"text": "Infrastructure resilience should protect participants from confusion, repeated requests, lost consent, missed payments and failed communications when tools break.",
+							"appliesTo": ["ResearchOps", "Tool owners", "Research leaders"],
+							"evidence": ["incident-review", "participant-impact-review"]
+						}
+					]
+				},
+				{
+					"id": "INFRA-PROV 7.0.0",
+					"title": "Lifecycle review, retirement and improvement",
+					"definition": "How tools are reviewed, improved, consolidated or retired over time.",
+					"clauses": [
+						{
+							"id": "INFRA-PROV 7.1.1",
+							"type": "rule",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Review tool value and risk on a fixed cycle",
+							"text": "Research tools must be reviewed on a fixed cycle for usage, cost, duplication, support burden, data risk, accessibility, user satisfaction and alignment with the operating model.",
+							"appliesTo": ["Tool owners", "ResearchOps", "Research leaders"],
+							"evidence": ["tool-review", "value-risk-review"],
+							"relatedTemplates": ["TPL-LIFECYCLE-MANAGEMENT", "TPL-MATURITY-ASSESSMENT"]
+						},
+						{
+							"id": "INFRA-PROV 7.1.2",
+							"type": "guidance",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Plan for tool exit as part of adoption",
+							"text": "When adopting a tool, document export options, retention effects, replacement triggers and what happens to stored research data if the tool is retired.",
+							"appliesTo": ["Tool owners", "ResearchOps"],
+							"evidence": ["lifecycle-plan", "exit-plan"],
+							"relatedTemplates": ["TPL-DATA-RETENTION"]
+						},
+						{
+							"id": "INFRA-PROV 7.1.3",
+							"type": "principle",
+							"status": "draft",
+							"effectiveDate": "2026-07-02",
+							"title": "Good infrastructure makes responsible research easier to run",
+							"text": "A mature tools and infrastructure system should make research more reliable, secure, inclusive and scalable while reducing unmanaged effort and local workaround risk.",
+							"appliesTo": ["ResearchOps", "Tool owners", "Research leaders"],
+							"evidence": ["tooling-retrospective", "service-metrics", "risk-review"]
+						}
+					]
+				}
+			],
+			"glossary": [
+				{
+					"term": "Tool owner",
+					"definition": "The person accountable for a research tool's approved use, access, support, assurance, lifecycle and escalation route."
+				},
+				{
+					"term": "Critical research tool",
+					"definition": "A tool whose failure or misuse could materially affect recruitment, consent, participant care, data protection, evidence quality or research delivery."
+				},
+				{
+					"term": "Integration record",
+					"definition": "The documented source, destination, data, owner, permissions, failure mode and audit route for a tool or workflow integration."
+				},
+				{
+					"term": "Lifecycle plan",
+					"definition": "The plan for adopting, reviewing, supporting, changing and retiring a research tool or infrastructure component."
+				}
+			],
+			"changeHistory": [
+				{
+					"date": "2026-07-02",
+					"summary": "Expanded INFRA-PROV into an end-to-end tools and infrastructure lifecycle covering operating model, tool evaluation, access, integration, support, security, resilience and retirement."
+				}
+			]
+		}
+	]
+}

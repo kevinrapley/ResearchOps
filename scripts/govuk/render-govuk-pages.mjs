@@ -5,6 +5,7 @@ import nunjucks from 'nunjucks';
 import prettier from 'prettier';
 
 import { repositoryPageContext, repositoryStaticPages } from '../../src/govuk/data/repository-page.mjs';
+import { sourcebookIndex, sourcebookPillarPages } from '../../src/govuk/data/sourcebook.mjs';
 
 const root = resolve(process.cwd());
 const env = new nunjucks.Environment(
@@ -93,6 +94,10 @@ const navigation = [
 		text: 'Research repository',
 		href: '/pages/repository/',
 	},
+	{
+		text: 'Sourcebook',
+		href: '/pages/sourcebook/',
+	},
 ];
 
 const steps = [
@@ -162,6 +167,11 @@ const projectNavigation = navigation.map((item) => ({
 const repositoryNavigation = navigation.map((item) => ({
 	...item,
 	active: item.href === '/pages/repository/',
+}));
+
+const sourcebookNavigation = navigation.map((item) => ({
+	...item,
+	active: item.href === '/pages/sourcebook/',
 }));
 
 const accountNavigation = navigation.map((item) => ({
@@ -301,6 +311,33 @@ export const govukPages = [
 			activeNavigation: 'Research Repository',
 			navigation: repositoryNavigation,
 			...page,
+		},
+	})),
+	{
+		template: 'sourcebook/index.njk',
+		output: 'public/pages/sourcebook/index.html',
+		context: {
+			pageTitle: 'Research Operations Sourcebook - ResearchOps Demo Suite',
+			serviceName: 'ResearchOps Demo Suite',
+			activeNavigation: 'Sourcebook',
+			navigation: sourcebookNavigation,
+			bodyClass: 'researchops-sourcebook-page',
+			sourcebook: sourcebookIndex,
+		},
+	},
+	...sourcebookPillarPages.map((pillar) => ({
+		template: 'sourcebook/pillar.njk',
+		output: `public/pages/sourcebook/${pillar.slug}/index.html`,
+		context: {
+			pageTitle: `${pillar.title} - Research Operations Sourcebook - ResearchOps Demo Suite`,
+			serviceName: 'ResearchOps Demo Suite',
+			activeNavigation: 'Sourcebook',
+			navigation: sourcebookNavigation,
+			bodyClass: 'researchops-sourcebook-page',
+			pillar,
+			sourcebookTitle: sourcebookIndex.title,
+			metadata: sourcebookIndex.metadata,
+			contentTypes: sourcebookIndex.contentTypes,
 		},
 	})),
 	{

@@ -1,0 +1,1334 @@
+<!doctype html>
+<html class="govuk-template" lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>Data and knowledge management - Research Operations Sourcebook - ResearchOps Demo Suite</title>
+		<link rel="stylesheet" href="/assets/govuk/govuk-frontend.css" media="screen" />
+
+		<link rel="stylesheet" href="/css/sourcebook.css?v=sourcebook-20260702" media="screen" />
+		<meta
+			name="description"
+			content="The Data and knowledge management pillar covers evidence capture, repositories, taxonomies, metadata, data retention, access control and knowledge reuse."
+		/>
+		<meta property="dc:title" content="Data and knowledge management - Research Operations Sourcebook" />
+		<meta
+			property="dc:description"
+			content="The Data and knowledge management pillar covers evidence capture, repositories, taxonomies, metadata, data retention, access control and knowledge reuse."
+		/>
+		<meta property="dc:isPartOf" content="Research Operations Sourcebook" />
+		<meta property="dc:type" content="Text" />
+		<meta property="dc:format" content="text/html" />
+		<meta property="dc:language" content="en-GB" />
+		<meta property="dc:creator" content="ResearchOps Governance Team" />
+		<meta property="dc:modified" content="2026-07-02" />
+		<meta property="dc:identifier" content="DATA-STO-ACC" />
+
+		<script type="module" src="/components/layout.js" defer></script>
+		<script type="module" src="/js/govuk-frontend-init.js" defer></script>
+	</head>
+	<body class="govuk-template__body researchops-sourcebook-page">
+		<script>
+			document.body.className +=
+				" js-enabled" + ("noModule" in HTMLScriptElement.prototype ? " govuk-frontend-supported" : "");
+		</script>
+		<x-include src="/partials/header.html" vars='{"active":"Sourcebook"}'></x-include>
+		<main class="govuk-main-wrapper" id="main-content" role="main" tabindex="-1">
+			<div class="govuk-width-container sourcebook-page sourcebook-pillar-page">
+				<nav class="govuk-breadcrumbs" aria-label="Breadcrumb">
+					<ol class="govuk-breadcrumbs__list">
+						<li class="govuk-breadcrumbs__list-item">
+							<a class="govuk-breadcrumbs__link" href="/">Home</a>
+						</li>
+						<li class="govuk-breadcrumbs__list-item">
+							<a class="govuk-breadcrumbs__link" href="/pages/sourcebook/">Sourcebook</a>
+						</li>
+						<li class="govuk-breadcrumbs__list-item" aria-current="page">Data and knowledge management</li>
+					</ol>
+				</nav>
+
+				<article
+					vocab="http://www.w3.org/2004/02/skos/core#"
+					prefix="dc: http://purl.org/dc/terms/ skos: http://www.w3.org/2004/02/skos/core#"
+					typeof="skos:Concept"
+					resource="#data-sto-acc"
+				>
+					<span class="govuk-caption-xl" property="skos:notation">DATA-STO-ACC</span>
+					<h1 class="govuk-heading-xl" property="dc:title skos:prefLabel">Data and knowledge management</h1>
+					<p class="govuk-body-l sourcebook-lede" property="skos:definition">
+						The Data and knowledge management pillar covers evidence capture, repositories, taxonomies, metadata, data
+						retention, access control and knowledge reuse.
+					</p>
+
+					<div class="govuk-grid-row sourcebook-meta-row">
+						<div class="govuk-grid-column-two-thirds">
+							<section class="sourcebook-section sourcebook-section--lead" aria-labelledby="operating-question">
+								<h2 class="govuk-heading-m" id="operating-question">Operating question</h2>
+								<p class="govuk-body-l">
+									How is research evidence stored, protected, retrieved, reused and connected to decisions?
+								</p>
+								<p class="govuk-body">
+									Research knowledge compounds when evidence remains findable, trustworthy, governed and connected to
+									decisions after individual projects end.
+								</p>
+							</section>
+						</div>
+						<div class="govuk-grid-column-one-third">
+							<aside class="sourcebook-aside" aria-labelledby="pillar-details">
+								<h2 class="govuk-heading-s" id="pillar-details">Pillar details</h2>
+								<dl class="govuk-summary-list govuk-summary-list--no-border sourcebook-summary-list">
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Owner</dt>
+										<dd class="govuk-summary-list__value">Research repository owner</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Legacy path</dt>
+										<dd class="govuk-summary-list__value">data-sto-acc</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Status</dt>
+										<dd class="govuk-summary-list__value">
+											<strong class="govuk-tag govuk-tag--yellow">draft</strong>
+										</dd>
+									</div>
+								</dl>
+							</aside>
+						</div>
+					</div>
+
+					<nav class="sourcebook-contents" aria-labelledby="pillar-contents">
+						<h2 class="govuk-heading-m" id="pillar-contents">Contents</h2>
+						<ol class="govuk-list govuk-list--number">
+							<li><a class="govuk-link" href="#data-sto-acc-1-0-0">Data and knowledge operating model</a></li>
+
+							<li><a class="govuk-link" href="#data-sto-acc-2-0-0">Evidence capture and repository entry</a></li>
+
+							<li><a class="govuk-link" href="#data-sto-acc-3-0-0">Metadata, taxonomy and findability</a></li>
+
+							<li><a class="govuk-link" href="#data-sto-acc-4-0-0">Access, privacy and permission</a></li>
+
+							<li><a class="govuk-link" href="#data-sto-acc-5-0-0">Retention, disposal and auditability</a></li>
+
+							<li><a class="govuk-link" href="#data-sto-acc-6-0-0">Reuse, synthesis and decision trace</a></li>
+
+							<li><a class="govuk-link" href="#data-sto-acc-7-0-0">Repository health and knowledge learning</a></li>
+
+							<li><a class="govuk-link" href="#glossary">Glossary</a></li>
+
+							<li><a class="govuk-link" href="#change-history">Change history</a></li>
+						</ol>
+					</nav>
+
+					<section
+						class="sourcebook-section"
+						id="data-sto-acc-1-0-0"
+						typeof="skos:Concept"
+						resource="#data-sto-acc-1-0-0"
+					>
+						<p class="sourcebook-section__id" property="skos:notation">DATA-STO-ACC 1.0.0</p>
+						<h2 class="govuk-heading-l" property="skos:prefLabel">Data and knowledge operating model</h2>
+						<p class="govuk-body" property="skos:definition">
+							How research evidence, participant data, repository ownership and knowledge reuse are governed as an
+							operating system.
+						</p>
+
+						<div class="sourcebook-clause-list">
+							<section
+								class="sourcebook-clause sourcebook-clause--principle"
+								id="data-sto-acc-1-1-1"
+								typeof="skos:Concept"
+								resource="#data-sto-acc-1-1-1"
+							>
+								<div class="sourcebook-clause__header">
+									<span class="sourcebook-clause-badge sourcebook-clause-badge--principle" aria-label="Principle">
+										P
+									</span>
+									<div>
+										<p class="sourcebook-clause__id" property="skos:notation">DATA-STO-ACC 1.1.1</p>
+										<h3 class="govuk-heading-m" property="skos:prefLabel">
+											Research knowledge is an operational asset
+										</h3>
+									</div>
+								</div>
+								<p class="govuk-body sourcebook-clause__text" property="skos:definition">
+									Research evidence should be managed as a shared operating asset with clear ownership, stewardship,
+									access rules, retention expectations and routes back into decisions.
+								</p>
+
+								<dl class="govuk-summary-list sourcebook-clause__meta">
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Type</dt>
+										<dd class="govuk-summary-list__value">Principle</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Status</dt>
+										<dd class="govuk-summary-list__value">draft</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Effective date</dt>
+										<dd class="govuk-summary-list__value">2026-07-02</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Applies to</dt>
+										<dd class="govuk-summary-list__value">ResearchOps, Research leaders, Repository owners</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Evidence</dt>
+										<dd class="govuk-summary-list__value">knowledge-operating-model, repository-ownership-model</dd>
+									</div>
+
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Templates</dt>
+										<dd class="govuk-summary-list__value">TPL-LIFECYCLE-MANAGEMENT</dd>
+									</div>
+								</dl>
+							</section>
+
+							<section
+								class="sourcebook-clause sourcebook-clause--rule"
+								id="data-sto-acc-1-1-2"
+								typeof="skos:Concept"
+								resource="#data-sto-acc-1-1-2"
+							>
+								<div class="sourcebook-clause__header">
+									<span class="sourcebook-clause-badge sourcebook-clause-badge--rule" aria-label="Rule">R</span>
+									<div>
+										<p class="sourcebook-clause__id" property="skos:notation">DATA-STO-ACC 1.1.2</p>
+										<h3 class="govuk-heading-m" property="skos:prefLabel">
+											Assign an owner for each research knowledge system
+										</h3>
+									</div>
+								</div>
+								<p class="govuk-body sourcebook-clause__text" property="skos:definition">
+									Every research repository, evidence library, archive or knowledge base must have a named owner
+									accountable for access, metadata quality, retention, review cadence and issue escalation.
+								</p>
+
+								<dl class="govuk-summary-list sourcebook-clause__meta">
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Type</dt>
+										<dd class="govuk-summary-list__value">Rule</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Status</dt>
+										<dd class="govuk-summary-list__value">draft</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Effective date</dt>
+										<dd class="govuk-summary-list__value">2026-07-02</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Applies to</dt>
+										<dd class="govuk-summary-list__value">ResearchOps, Repository owners, Research leaders</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Evidence</dt>
+										<dd class="govuk-summary-list__value">repository-owner-record, service-ownership-model</dd>
+									</div>
+
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Templates</dt>
+										<dd class="govuk-summary-list__value">TPL-GOVERNANCE-RACI</dd>
+									</div>
+								</dl>
+							</section>
+
+							<section
+								class="sourcebook-clause sourcebook-clause--guidance"
+								id="data-sto-acc-1-1-3"
+								typeof="skos:Concept"
+								resource="#data-sto-acc-1-1-3"
+							>
+								<div class="sourcebook-clause__header">
+									<span class="sourcebook-clause-badge sourcebook-clause-badge--guidance" aria-label="Guidance">G</span>
+									<div>
+										<p class="sourcebook-clause__id" property="skos:notation">DATA-STO-ACC 1.1.3</p>
+										<h3 class="govuk-heading-m" property="skos:prefLabel">
+											Separate raw data, analysis material and reusable knowledge
+										</h3>
+									</div>
+								</div>
+								<p class="govuk-body sourcebook-clause__text" property="skos:definition">
+									Design the knowledge system so raw participant material, working analysis and decision-ready insights
+									have different storage, access, retention and reuse rules.
+								</p>
+
+								<dl class="govuk-summary-list sourcebook-clause__meta">
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Type</dt>
+										<dd class="govuk-summary-list__value">Guidance</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Status</dt>
+										<dd class="govuk-summary-list__value">draft</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Effective date</dt>
+										<dd class="govuk-summary-list__value">2026-07-02</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Applies to</dt>
+										<dd class="govuk-summary-list__value">Repository owners, Researchers, ResearchOps</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Evidence</dt>
+										<dd class="govuk-summary-list__value">repository-structure, data-classification</dd>
+									</div>
+								</dl>
+							</section>
+
+							<section
+								class="sourcebook-clause sourcebook-clause--conduct"
+								id="data-sto-acc-1-1-4"
+								typeof="skos:Concept"
+								resource="#data-sto-acc-1-1-4"
+							>
+								<div class="sourcebook-clause__header">
+									<span class="sourcebook-clause-badge sourcebook-clause-badge--conduct" aria-label="Conduct">C</span>
+									<div>
+										<p class="sourcebook-clause__id" property="skos:notation">DATA-STO-ACC 1.1.4</p>
+										<h3 class="govuk-heading-m" property="skos:prefLabel">Do not treat evidence as team property</h3>
+									</div>
+								</div>
+								<p class="govuk-body sourcebook-clause__text" property="skos:definition">
+									People working with research evidence must respect participant conditions, organisational stewardship
+									and future decision needs rather than storing knowledge only in personal files or local team spaces.
+								</p>
+
+								<dl class="govuk-summary-list sourcebook-clause__meta">
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Type</dt>
+										<dd class="govuk-summary-list__value">Conduct</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Status</dt>
+										<dd class="govuk-summary-list__value">draft</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Effective date</dt>
+										<dd class="govuk-summary-list__value">2026-07-02</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Applies to</dt>
+										<dd class="govuk-summary-list__value">Researchers, Repository curators, ResearchOps</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Evidence</dt>
+										<dd class="govuk-summary-list__value">repository-entry, handover-record</dd>
+									</div>
+								</dl>
+							</section>
+						</div>
+					</section>
+
+					<section
+						class="sourcebook-section"
+						id="data-sto-acc-2-0-0"
+						typeof="skos:Concept"
+						resource="#data-sto-acc-2-0-0"
+					>
+						<p class="sourcebook-section__id" property="skos:notation">DATA-STO-ACC 2.0.0</p>
+						<h2 class="govuk-heading-l" property="skos:prefLabel">Evidence capture and repository entry</h2>
+						<p class="govuk-body" property="skos:definition">
+							How research material is captured, described and entered into approved knowledge systems.
+						</p>
+
+						<div class="sourcebook-clause-list">
+							<section
+								class="sourcebook-clause sourcebook-clause--rule"
+								id="data-sto-acc-2-1-1"
+								typeof="skos:Concept"
+								resource="#data-sto-acc-2-1-1"
+							>
+								<div class="sourcebook-clause__header">
+									<span class="sourcebook-clause-badge sourcebook-clause-badge--rule" aria-label="Rule">R</span>
+									<div>
+										<p class="sourcebook-clause__id" property="skos:notation">DATA-STO-ACC 2.1.1</p>
+										<h3 class="govuk-heading-m" property="skos:prefLabel">
+											Create a repository entry for completed research
+										</h3>
+									</div>
+								</div>
+								<p class="govuk-body sourcebook-clause__text" property="skos:definition">
+									Completed research must have a repository entry that records the research question, method, audience,
+									sample, date, owner, consent constraints, artefacts, findings and decision link.
+								</p>
+
+								<dl class="govuk-summary-list sourcebook-clause__meta">
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Type</dt>
+										<dd class="govuk-summary-list__value">Rule</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Status</dt>
+										<dd class="govuk-summary-list__value">draft</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Effective date</dt>
+										<dd class="govuk-summary-list__value">2026-07-02</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Applies to</dt>
+										<dd class="govuk-summary-list__value">Researchers, Repository curators, Study leads</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Evidence</dt>
+										<dd class="govuk-summary-list__value">repository-entry, study-close-record</dd>
+									</div>
+
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Templates</dt>
+										<dd class="govuk-summary-list__value">TPL-REPOSITORY-ENTRY</dd>
+									</div>
+
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Related routes</dt>
+										<dd class="govuk-summary-list__value">
+											<a class="govuk-link" href="/pages/repository/">/pages/repository/</a>
+										</dd>
+									</div>
+								</dl>
+							</section>
+
+							<section
+								class="sourcebook-clause sourcebook-clause--principle"
+								id="data-sto-acc-2-1-2"
+								typeof="skos:Concept"
+								resource="#data-sto-acc-2-1-2"
+							>
+								<div class="sourcebook-clause__header">
+									<span class="sourcebook-clause-badge sourcebook-clause-badge--principle" aria-label="Principle">
+										P
+									</span>
+									<div>
+										<p class="sourcebook-clause__id" property="skos:notation">DATA-STO-ACC 2.1.2</p>
+										<h3 class="govuk-heading-m" property="skos:prefLabel">Evidence must keep its context</h3>
+									</div>
+								</div>
+								<p class="govuk-body sourcebook-clause__text" property="skos:definition">
+									Research findings and recommendations should retain enough method, sample, limitation and consent
+									context for later users to judge whether the evidence can support a new decision.
+								</p>
+
+								<dl class="govuk-summary-list sourcebook-clause__meta">
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Type</dt>
+										<dd class="govuk-summary-list__value">Principle</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Status</dt>
+										<dd class="govuk-summary-list__value">draft</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Effective date</dt>
+										<dd class="govuk-summary-list__value">2026-07-02</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Applies to</dt>
+										<dd class="govuk-summary-list__value">Researchers, Repository curators</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Evidence</dt>
+										<dd class="govuk-summary-list__value">method-context, limitations-statement</dd>
+									</div>
+								</dl>
+							</section>
+
+							<section
+								class="sourcebook-clause sourcebook-clause--guidance"
+								id="data-sto-acc-2-1-3"
+								typeof="skos:Concept"
+								resource="#data-sto-acc-2-1-3"
+							>
+								<div class="sourcebook-clause__header">
+									<span class="sourcebook-clause-badge sourcebook-clause-badge--guidance" aria-label="Guidance">G</span>
+									<div>
+										<p class="sourcebook-clause__id" property="skos:notation">DATA-STO-ACC 2.1.3</p>
+										<h3 class="govuk-heading-m" property="skos:prefLabel">Capture the minimum durable record</h3>
+									</div>
+								</div>
+								<p class="govuk-body sourcebook-clause__text" property="skos:definition">
+									Where raw material cannot be retained, create a durable summary that preserves the decision need, key
+									evidence, limitations, consent boundaries and route to the study owner.
+								</p>
+
+								<dl class="govuk-summary-list sourcebook-clause__meta">
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Type</dt>
+										<dd class="govuk-summary-list__value">Guidance</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Status</dt>
+										<dd class="govuk-summary-list__value">draft</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Effective date</dt>
+										<dd class="govuk-summary-list__value">2026-07-02</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Applies to</dt>
+										<dd class="govuk-summary-list__value">Researchers, Repository curators</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Evidence</dt>
+										<dd class="govuk-summary-list__value">summary-record, retention-decision</dd>
+									</div>
+
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Templates</dt>
+										<dd class="govuk-summary-list__value">TPL-DATA-RETENTION</dd>
+									</div>
+								</dl>
+							</section>
+						</div>
+					</section>
+
+					<section
+						class="sourcebook-section"
+						id="data-sto-acc-3-0-0"
+						typeof="skos:Concept"
+						resource="#data-sto-acc-3-0-0"
+					>
+						<p class="sourcebook-section__id" property="skos:notation">DATA-STO-ACC 3.0.0</p>
+						<h2 class="govuk-heading-l" property="skos:prefLabel">Metadata, taxonomy and findability</h2>
+						<p class="govuk-body" property="skos:definition">
+							How evidence is named, tagged, described and made findable without losing meaning.
+						</p>
+
+						<div class="sourcebook-clause-list">
+							<section
+								class="sourcebook-clause sourcebook-clause--rule"
+								id="data-sto-acc-3-1-1"
+								typeof="skos:Concept"
+								resource="#data-sto-acc-3-1-1"
+							>
+								<div class="sourcebook-clause__header">
+									<span class="sourcebook-clause-badge sourcebook-clause-badge--rule" aria-label="Rule">R</span>
+									<div>
+										<p class="sourcebook-clause__id" property="skos:notation">DATA-STO-ACC 3.1.1</p>
+										<h3 class="govuk-heading-m" property="skos:prefLabel">Use the approved research taxonomy</h3>
+									</div>
+								</div>
+								<p class="govuk-body sourcebook-clause__text" property="skos:definition">
+									Repository entries must use the approved taxonomy for service area, user group, method, risk, artefact
+									type and decision theme unless an exception is recorded.
+								</p>
+
+								<dl class="govuk-summary-list sourcebook-clause__meta">
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Type</dt>
+										<dd class="govuk-summary-list__value">Rule</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Status</dt>
+										<dd class="govuk-summary-list__value">draft</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Effective date</dt>
+										<dd class="govuk-summary-list__value">2026-07-02</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Applies to</dt>
+										<dd class="govuk-summary-list__value">Repository curators, Researchers</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Evidence</dt>
+										<dd class="govuk-summary-list__value">taxonomy-tags, taxonomy-exception</dd>
+									</div>
+
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Templates</dt>
+										<dd class="govuk-summary-list__value">TPL-TAXONOMY-REFERENCE</dd>
+									</div>
+
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Related routes</dt>
+										<dd class="govuk-summary-list__value">
+											<a class="govuk-link" href="/pages/repository/service-areas/">/pages/repository/service-areas/</a>
+											,
+
+											<a class="govuk-link" href="/pages/repository/user-groups/">/pages/repository/user-groups/</a>
+											,
+
+											<a class="govuk-link" href="/pages/repository/methods/">/pages/repository/methods/</a>
+											,
+
+											<a class="govuk-link" href="/pages/repository/risks/">/pages/repository/risks/</a>
+										</dd>
+									</div>
+								</dl>
+							</section>
+
+							<section
+								class="sourcebook-clause sourcebook-clause--guidance"
+								id="data-sto-acc-3-1-2"
+								typeof="skos:Concept"
+								resource="#data-sto-acc-3-1-2"
+							>
+								<div class="sourcebook-clause__header">
+									<span class="sourcebook-clause-badge sourcebook-clause-badge--guidance" aria-label="Guidance">G</span>
+									<div>
+										<p class="sourcebook-clause__id" property="skos:notation">DATA-STO-ACC 3.1.2</p>
+										<h3 class="govuk-heading-m" property="skos:prefLabel">Tag for decisions, not only projects</h3>
+									</div>
+								</div>
+								<p class="govuk-body sourcebook-clause__text" property="skos:definition">
+									Add decision themes, policy areas, service stages and known assumptions so evidence can be discovered
+									when future work cuts across previous project boundaries.
+								</p>
+
+								<dl class="govuk-summary-list sourcebook-clause__meta">
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Type</dt>
+										<dd class="govuk-summary-list__value">Guidance</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Status</dt>
+										<dd class="govuk-summary-list__value">draft</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Effective date</dt>
+										<dd class="govuk-summary-list__value">2026-07-02</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Applies to</dt>
+										<dd class="govuk-summary-list__value">Repository curators, ResearchOps, Researchers</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Evidence</dt>
+										<dd class="govuk-summary-list__value">decision-tags, cross-project-index</dd>
+									</div>
+
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Templates</dt>
+										<dd class="govuk-summary-list__value">TPL-DECISION-LOG</dd>
+									</div>
+								</dl>
+							</section>
+
+							<section
+								class="sourcebook-clause sourcebook-clause--conduct"
+								id="data-sto-acc-3-1-3"
+								typeof="skos:Concept"
+								resource="#data-sto-acc-3-1-3"
+							>
+								<div class="sourcebook-clause__header">
+									<span class="sourcebook-clause-badge sourcebook-clause-badge--conduct" aria-label="Conduct">C</span>
+									<div>
+										<p class="sourcebook-clause__id" property="skos:notation">DATA-STO-ACC 3.1.3</p>
+										<h3 class="govuk-heading-m" property="skos:prefLabel">Do not hide uncertainty in labels</h3>
+									</div>
+								</div>
+								<p class="govuk-body sourcebook-clause__text" property="skos:definition">
+									People describing evidence must not use overconfident titles, tags or summaries that make weak, old,
+									narrow or contested findings look stronger than they are.
+								</p>
+
+								<dl class="govuk-summary-list sourcebook-clause__meta">
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Type</dt>
+										<dd class="govuk-summary-list__value">Conduct</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Status</dt>
+										<dd class="govuk-summary-list__value">draft</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Effective date</dt>
+										<dd class="govuk-summary-list__value">2026-07-02</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Applies to</dt>
+										<dd class="govuk-summary-list__value">Researchers, Repository curators</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Evidence</dt>
+										<dd class="govuk-summary-list__value">limitations-statement, summary-review</dd>
+									</div>
+								</dl>
+							</section>
+						</div>
+					</section>
+
+					<section
+						class="sourcebook-section"
+						id="data-sto-acc-4-0-0"
+						typeof="skos:Concept"
+						resource="#data-sto-acc-4-0-0"
+					>
+						<p class="sourcebook-section__id" property="skos:notation">DATA-STO-ACC 4.0.0</p>
+						<h2 class="govuk-heading-l" property="skos:prefLabel">Access, privacy and permission</h2>
+						<p class="govuk-body" property="skos:definition">
+							How access to research material is granted, reviewed and constrained by consent, privacy and sensitivity.
+						</p>
+
+						<div class="sourcebook-clause-list">
+							<section
+								class="sourcebook-clause sourcebook-clause--rule"
+								id="data-sto-acc-4-1-1"
+								typeof="skos:Concept"
+								resource="#data-sto-acc-4-1-1"
+							>
+								<div class="sourcebook-clause__header">
+									<span class="sourcebook-clause-badge sourcebook-clause-badge--rule" aria-label="Rule">R</span>
+									<div>
+										<p class="sourcebook-clause__id" property="skos:notation">DATA-STO-ACC 4.1.1</p>
+										<h3 class="govuk-heading-m" property="skos:prefLabel">
+											Review consent and sensitivity before access is widened
+										</h3>
+									</div>
+								</div>
+								<p class="govuk-body sourcebook-clause__text" property="skos:definition">
+									Before research material is reused outside the original study team, the repository owner must check
+									consent, confidentiality, sensitivity, retention limits and whether a lower-risk summary can meet the
+									need.
+								</p>
+
+								<dl class="govuk-summary-list sourcebook-clause__meta">
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Type</dt>
+										<dd class="govuk-summary-list__value">Rule</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Status</dt>
+										<dd class="govuk-summary-list__value">draft</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Effective date</dt>
+										<dd class="govuk-summary-list__value">2026-07-02</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Applies to</dt>
+										<dd class="govuk-summary-list__value">Repository owners, Repository curators, Researchers</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Evidence</dt>
+										<dd class="govuk-summary-list__value">access-review, reuse-decision, consent-conditions</dd>
+									</div>
+
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Templates</dt>
+										<dd class="govuk-summary-list__value">TPL-CONSENT-LOG, TPL-DATA-RETENTION</dd>
+									</div>
+								</dl>
+							</section>
+
+							<section
+								class="sourcebook-clause sourcebook-clause--principle"
+								id="data-sto-acc-4-1-2"
+								typeof="skos:Concept"
+								resource="#data-sto-acc-4-1-2"
+							>
+								<div class="sourcebook-clause__header">
+									<span class="sourcebook-clause-badge sourcebook-clause-badge--principle" aria-label="Principle">
+										P
+									</span>
+									<div>
+										<p class="sourcebook-clause__id" property="skos:notation">DATA-STO-ACC 4.1.2</p>
+										<h3 class="govuk-heading-m" property="skos:prefLabel">
+											Access should be proportionate to the evidence need
+										</h3>
+									</div>
+								</div>
+								<p class="govuk-body sourcebook-clause__text" property="skos:definition">
+									People should receive the least sensitive form of evidence that can answer their legitimate decision
+									need, with raw participant material treated as exceptional access.
+								</p>
+
+								<dl class="govuk-summary-list sourcebook-clause__meta">
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Type</dt>
+										<dd class="govuk-summary-list__value">Principle</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Status</dt>
+										<dd class="govuk-summary-list__value">draft</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Effective date</dt>
+										<dd class="govuk-summary-list__value">2026-07-02</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Applies to</dt>
+										<dd class="govuk-summary-list__value">Repository owners, ResearchOps, Researchers</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Evidence</dt>
+										<dd class="govuk-summary-list__value">access-model, need-to-know-review</dd>
+									</div>
+								</dl>
+							</section>
+
+							<section
+								class="sourcebook-clause sourcebook-clause--guidance"
+								id="data-sto-acc-4-1-3"
+								typeof="skos:Concept"
+								resource="#data-sto-acc-4-1-3"
+							>
+								<div class="sourcebook-clause__header">
+									<span class="sourcebook-clause-badge sourcebook-clause-badge--guidance" aria-label="Guidance">G</span>
+									<div>
+										<p class="sourcebook-clause__id" property="skos:notation">DATA-STO-ACC 4.1.3</p>
+										<h3 class="govuk-heading-m" property="skos:prefLabel">Use summaries for most cross-team reuse</h3>
+									</div>
+								</div>
+								<p class="govuk-body sourcebook-clause__text" property="skos:definition">
+									Use de-identified summaries, insight records or evidence packs for most reuse requests, reserving
+									transcripts, recordings and participant-level records for approved specialist review.
+								</p>
+
+								<dl class="govuk-summary-list sourcebook-clause__meta">
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Type</dt>
+										<dd class="govuk-summary-list__value">Guidance</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Status</dt>
+										<dd class="govuk-summary-list__value">draft</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Effective date</dt>
+										<dd class="govuk-summary-list__value">2026-07-02</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Applies to</dt>
+										<dd class="govuk-summary-list__value">Repository curators, Researchers</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Evidence</dt>
+										<dd class="govuk-summary-list__value">summary-pack, specialist-access-approval</dd>
+									</div>
+
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Templates</dt>
+										<dd class="govuk-summary-list__value">TPL-INSIGHT-BRIEF</dd>
+									</div>
+								</dl>
+							</section>
+						</div>
+					</section>
+
+					<section
+						class="sourcebook-section"
+						id="data-sto-acc-5-0-0"
+						typeof="skos:Concept"
+						resource="#data-sto-acc-5-0-0"
+					>
+						<p class="sourcebook-section__id" property="skos:notation">DATA-STO-ACC 5.0.0</p>
+						<h2 class="govuk-heading-l" property="skos:prefLabel">Retention, disposal and auditability</h2>
+						<p class="govuk-body" property="skos:definition">
+							How evidence is retained, reviewed, archived or disposed of in line with consent and operating value.
+						</p>
+
+						<div class="sourcebook-clause-list">
+							<section
+								class="sourcebook-clause sourcebook-clause--rule"
+								id="data-sto-acc-5-1-1"
+								typeof="skos:Concept"
+								resource="#data-sto-acc-5-1-1"
+							>
+								<div class="sourcebook-clause__header">
+									<span class="sourcebook-clause-badge sourcebook-clause-badge--rule" aria-label="Rule">R</span>
+									<div>
+										<p class="sourcebook-clause__id" property="skos:notation">DATA-STO-ACC 5.1.1</p>
+										<h3 class="govuk-heading-m" property="skos:prefLabel">
+											Apply retention rules to research material
+										</h3>
+									</div>
+								</div>
+								<p class="govuk-body sourcebook-clause__text" property="skos:definition">
+									Research material must have a retention rule that states what is kept, where it is kept, when it is
+									reviewed, when it is deleted or archived and who approves exceptions.
+								</p>
+
+								<dl class="govuk-summary-list sourcebook-clause__meta">
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Type</dt>
+										<dd class="govuk-summary-list__value">Rule</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Status</dt>
+										<dd class="govuk-summary-list__value">draft</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Effective date</dt>
+										<dd class="govuk-summary-list__value">2026-07-02</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Applies to</dt>
+										<dd class="govuk-summary-list__value">Repository owners, ResearchOps, Researchers</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Evidence</dt>
+										<dd class="govuk-summary-list__value">retention-rule, retention-review-log</dd>
+									</div>
+
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Templates</dt>
+										<dd class="govuk-summary-list__value">TPL-DATA-RETENTION</dd>
+									</div>
+								</dl>
+							</section>
+
+							<section
+								class="sourcebook-clause sourcebook-clause--guidance"
+								id="data-sto-acc-5-1-2"
+								typeof="skos:Concept"
+								resource="#data-sto-acc-5-1-2"
+							>
+								<div class="sourcebook-clause__header">
+									<span class="sourcebook-clause-badge sourcebook-clause-badge--guidance" aria-label="Guidance">G</span>
+									<div>
+										<p class="sourcebook-clause__id" property="skos:notation">DATA-STO-ACC 5.1.2</p>
+										<h3 class="govuk-heading-m" property="skos:prefLabel">
+											Separate disposal of raw data from retention of learning
+										</h3>
+									</div>
+								</div>
+								<p class="govuk-body sourcebook-clause__text" property="skos:definition">
+									When participant-level data reaches its disposal point, retain only the approved level of
+									de-identified learning, decision trace and operating metadata needed for future reuse.
+								</p>
+
+								<dl class="govuk-summary-list sourcebook-clause__meta">
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Type</dt>
+										<dd class="govuk-summary-list__value">Guidance</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Status</dt>
+										<dd class="govuk-summary-list__value">draft</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Effective date</dt>
+										<dd class="govuk-summary-list__value">2026-07-02</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Applies to</dt>
+										<dd class="govuk-summary-list__value">Repository owners, Repository curators</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Evidence</dt>
+										<dd class="govuk-summary-list__value">disposal-record, learning-summary</dd>
+									</div>
+								</dl>
+							</section>
+
+							<section
+								class="sourcebook-clause sourcebook-clause--conduct"
+								id="data-sto-acc-5-1-3"
+								typeof="skos:Concept"
+								resource="#data-sto-acc-5-1-3"
+							>
+								<div class="sourcebook-clause__header">
+									<span class="sourcebook-clause-badge sourcebook-clause-badge--conduct" aria-label="Conduct">C</span>
+									<div>
+										<p class="sourcebook-clause__id" property="skos:notation">DATA-STO-ACC 5.1.3</p>
+										<h3 class="govuk-heading-m" property="skos:prefLabel">
+											Do not keep participant material because deletion is inconvenient
+										</h3>
+									</div>
+								</div>
+								<p class="govuk-body sourcebook-clause__text" property="skos:definition">
+									People managing research material must not retain recordings, transcripts, contact details or
+									sensitive records beyond approved retention limits for convenience or personal backup.
+								</p>
+
+								<dl class="govuk-summary-list sourcebook-clause__meta">
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Type</dt>
+										<dd class="govuk-summary-list__value">Conduct</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Status</dt>
+										<dd class="govuk-summary-list__value">draft</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Effective date</dt>
+										<dd class="govuk-summary-list__value">2026-07-02</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Applies to</dt>
+										<dd class="govuk-summary-list__value">Researchers, Repository owners, Repository curators</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Evidence</dt>
+										<dd class="govuk-summary-list__value">retention-review-log, deletion-confirmation</dd>
+									</div>
+								</dl>
+							</section>
+						</div>
+					</section>
+
+					<section
+						class="sourcebook-section"
+						id="data-sto-acc-6-0-0"
+						typeof="skos:Concept"
+						resource="#data-sto-acc-6-0-0"
+					>
+						<p class="sourcebook-section__id" property="skos:notation">DATA-STO-ACC 6.0.0</p>
+						<h2 class="govuk-heading-l" property="skos:prefLabel">Reuse, synthesis and decision trace</h2>
+						<p class="govuk-body" property="skos:definition">
+							How existing research knowledge is reused, synthesised and connected to organisational decisions.
+						</p>
+
+						<div class="sourcebook-clause-list">
+							<section
+								class="sourcebook-clause sourcebook-clause--rule"
+								id="data-sto-acc-6-1-1"
+								typeof="skos:Concept"
+								resource="#data-sto-acc-6-1-1"
+							>
+								<div class="sourcebook-clause__header">
+									<span class="sourcebook-clause-badge sourcebook-clause-badge--rule" aria-label="Rule">R</span>
+									<div>
+										<p class="sourcebook-clause__id" property="skos:notation">DATA-STO-ACC 6.1.1</p>
+										<h3 class="govuk-heading-m" property="skos:prefLabel">
+											Check existing evidence before commissioning new research
+										</h3>
+									</div>
+								</div>
+								<p class="govuk-body sourcebook-clause__text" property="skos:definition">
+									Before commissioning or approving new research, teams must check whether existing evidence can answer
+									the decision need or narrow the research scope.
+								</p>
+
+								<dl class="govuk-summary-list sourcebook-clause__meta">
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Type</dt>
+										<dd class="govuk-summary-list__value">Rule</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Status</dt>
+										<dd class="govuk-summary-list__value">draft</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Effective date</dt>
+										<dd class="govuk-summary-list__value">2026-07-02</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Applies to</dt>
+										<dd class="govuk-summary-list__value">Study leads, ResearchOps, Research leaders</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Evidence</dt>
+										<dd class="govuk-summary-list__value">repository-search, evidence-review</dd>
+									</div>
+
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Templates</dt>
+										<dd class="govuk-summary-list__value">TPL-RESEARCH-INTAKE, TPL-DECISION-LOG</dd>
+									</div>
+
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Related routes</dt>
+										<dd class="govuk-summary-list__value">
+											<a class="govuk-link" href="/pages/search/">/pages/search/</a>
+										</dd>
+									</div>
+								</dl>
+							</section>
+
+							<section
+								class="sourcebook-clause sourcebook-clause--principle"
+								id="data-sto-acc-6-1-2"
+								typeof="skos:Concept"
+								resource="#data-sto-acc-6-1-2"
+							>
+								<div class="sourcebook-clause__header">
+									<span class="sourcebook-clause-badge sourcebook-clause-badge--principle" aria-label="Principle">
+										P
+									</span>
+									<div>
+										<p class="sourcebook-clause__id" property="skos:notation">DATA-STO-ACC 6.1.2</p>
+										<h3 class="govuk-heading-m" property="skos:prefLabel">Reuse should preserve evidence limits</h3>
+									</div>
+								</div>
+								<p class="govuk-body sourcebook-clause__text" property="skos:definition">
+									Existing evidence should be reused with its original method, sample, date, context, confidence and
+									consent limits visible to the new decision maker.
+								</p>
+
+								<dl class="govuk-summary-list sourcebook-clause__meta">
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Type</dt>
+										<dd class="govuk-summary-list__value">Principle</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Status</dt>
+										<dd class="govuk-summary-list__value">draft</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Effective date</dt>
+										<dd class="govuk-summary-list__value">2026-07-02</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Applies to</dt>
+										<dd class="govuk-summary-list__value">Researchers, Repository curators, Decision makers</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Evidence</dt>
+										<dd class="govuk-summary-list__value">evidence-pack, limitations-statement</dd>
+									</div>
+								</dl>
+							</section>
+
+							<section
+								class="sourcebook-clause sourcebook-clause--guidance"
+								id="data-sto-acc-6-1-3"
+								typeof="skos:Concept"
+								resource="#data-sto-acc-6-1-3"
+							>
+								<div class="sourcebook-clause__header">
+									<span class="sourcebook-clause-badge sourcebook-clause-badge--guidance" aria-label="Guidance">G</span>
+									<div>
+										<p class="sourcebook-clause__id" property="skos:notation">DATA-STO-ACC 6.1.3</p>
+										<h3 class="govuk-heading-m" property="skos:prefLabel">Create synthesis when patterns recur</h3>
+									</div>
+								</div>
+								<p class="govuk-body sourcebook-clause__text" property="skos:definition">
+									When multiple studies show a recurring pattern, create a synthesis record that states the pattern,
+									source studies, confidence level, contradictions and current decision relevance.
+								</p>
+
+								<dl class="govuk-summary-list sourcebook-clause__meta">
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Type</dt>
+										<dd class="govuk-summary-list__value">Guidance</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Status</dt>
+										<dd class="govuk-summary-list__value">draft</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Effective date</dt>
+										<dd class="govuk-summary-list__value">2026-07-02</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Applies to</dt>
+										<dd class="govuk-summary-list__value">ResearchOps, Researchers, Repository curators</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Evidence</dt>
+										<dd class="govuk-summary-list__value">synthesis-record, source-study-list</dd>
+									</div>
+								</dl>
+							</section>
+						</div>
+					</section>
+
+					<section
+						class="sourcebook-section"
+						id="data-sto-acc-7-0-0"
+						typeof="skos:Concept"
+						resource="#data-sto-acc-7-0-0"
+					>
+						<p class="sourcebook-section__id" property="skos:notation">DATA-STO-ACC 7.0.0</p>
+						<h2 class="govuk-heading-l" property="skos:prefLabel">Repository health and knowledge learning</h2>
+						<p class="govuk-body" property="skos:definition">
+							How the knowledge system is reviewed, improved and measured for operating value.
+						</p>
+
+						<div class="sourcebook-clause-list">
+							<section
+								class="sourcebook-clause sourcebook-clause--rule"
+								id="data-sto-acc-7-1-1"
+								typeof="skos:Concept"
+								resource="#data-sto-acc-7-1-1"
+							>
+								<div class="sourcebook-clause__header">
+									<span class="sourcebook-clause-badge sourcebook-clause-badge--rule" aria-label="Rule">R</span>
+									<div>
+										<p class="sourcebook-clause__id" property="skos:notation">DATA-STO-ACC 7.1.1</p>
+										<h3 class="govuk-heading-m" property="skos:prefLabel">Review repository health on a fixed cycle</h3>
+									</div>
+								</div>
+								<p class="govuk-body sourcebook-clause__text" property="skos:definition">
+									Repository owners must review repository health on a fixed cycle, including stale entries, missing
+									metadata, unresolved access issues, retention exceptions and evidence reuse.
+								</p>
+
+								<dl class="govuk-summary-list sourcebook-clause__meta">
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Type</dt>
+										<dd class="govuk-summary-list__value">Rule</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Status</dt>
+										<dd class="govuk-summary-list__value">draft</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Effective date</dt>
+										<dd class="govuk-summary-list__value">2026-07-02</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Applies to</dt>
+										<dd class="govuk-summary-list__value">Repository owners, ResearchOps, Research leaders</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Evidence</dt>
+										<dd class="govuk-summary-list__value">repository-health-review, improvement-backlog</dd>
+									</div>
+
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Templates</dt>
+										<dd class="govuk-summary-list__value">TPL-RESEARCH-BACKLOG</dd>
+									</div>
+								</dl>
+							</section>
+
+							<section
+								class="sourcebook-clause sourcebook-clause--guidance"
+								id="data-sto-acc-7-1-2"
+								typeof="skos:Concept"
+								resource="#data-sto-acc-7-1-2"
+							>
+								<div class="sourcebook-clause__header">
+									<span class="sourcebook-clause-badge sourcebook-clause-badge--guidance" aria-label="Guidance">G</span>
+									<div>
+										<p class="sourcebook-clause__id" property="skos:notation">DATA-STO-ACC 7.1.2</p>
+										<h3 class="govuk-heading-m" property="skos:prefLabel">
+											Measure knowledge by retrieval and decision use
+										</h3>
+									</div>
+								</div>
+								<p class="govuk-body sourcebook-clause__text" property="skos:definition">
+									Track whether evidence is findable, reused, cited in decisions, used to reduce duplicate research and
+									trusted by researchers and decision makers.
+								</p>
+
+								<dl class="govuk-summary-list sourcebook-clause__meta">
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Type</dt>
+										<dd class="govuk-summary-list__value">Guidance</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Status</dt>
+										<dd class="govuk-summary-list__value">draft</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Effective date</dt>
+										<dd class="govuk-summary-list__value">2026-07-02</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Applies to</dt>
+										<dd class="govuk-summary-list__value">ResearchOps, Repository owners, Research leaders</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Evidence</dt>
+										<dd class="govuk-summary-list__value">reuse-metrics, decision-citations, repository-feedback</dd>
+									</div>
+								</dl>
+							</section>
+
+							<section
+								class="sourcebook-clause sourcebook-clause--principle"
+								id="data-sto-acc-7-1-3"
+								typeof="skos:Concept"
+								resource="#data-sto-acc-7-1-3"
+							>
+								<div class="sourcebook-clause__header">
+									<span class="sourcebook-clause-badge sourcebook-clause-badge--principle" aria-label="Principle">
+										P
+									</span>
+									<div>
+										<p class="sourcebook-clause__id" property="skos:notation">DATA-STO-ACC 7.1.3</p>
+										<h3 class="govuk-heading-m" property="skos:prefLabel">
+											Good knowledge systems make evidence reusable without making it unsafe
+										</h3>
+									</div>
+								</div>
+								<p class="govuk-body sourcebook-clause__text" property="skos:definition">
+									A mature data and knowledge system should increase the value of research evidence while reducing
+									privacy risk, duplication, context loss and unsupported claims.
+								</p>
+
+								<dl class="govuk-summary-list sourcebook-clause__meta">
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Type</dt>
+										<dd class="govuk-summary-list__value">Principle</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Status</dt>
+										<dd class="govuk-summary-list__value">draft</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Effective date</dt>
+										<dd class="govuk-summary-list__value">2026-07-02</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Applies to</dt>
+										<dd class="govuk-summary-list__value">ResearchOps, Repository owners, Research leaders</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Evidence</dt>
+										<dd class="govuk-summary-list__value">repository-health-review, reuse-metrics, risk-review</dd>
+									</div>
+								</dl>
+							</section>
+						</div>
+					</section>
+
+					<section
+						class="sourcebook-section sourcebook-section--secondary"
+						id="glossary"
+						aria-labelledby="glossary-heading"
+					>
+						<h2 class="govuk-heading-l" id="glossary-heading">Glossary</h2>
+						<dl class="sourcebook-glossary">
+							<div class="sourcebook-glossary__item">
+								<dt>Research repository</dt>
+								<dd>
+									An approved system or structured collection used to store, describe, retrieve and reuse research
+									evidence.
+								</dd>
+							</div>
+
+							<div class="sourcebook-glossary__item">
+								<dt>Evidence trace</dt>
+								<dd>
+									The link between a research claim and the source material, method context, consent conditions and
+									limitations that support it.
+								</dd>
+							</div>
+
+							<div class="sourcebook-glossary__item">
+								<dt>Retention rule</dt>
+								<dd>
+									A documented rule that states what research material is retained, reviewed, archived or deleted and
+									who approves exceptions.
+								</dd>
+							</div>
+
+							<div class="sourcebook-glossary__item">
+								<dt>Knowledge reuse</dt>
+								<dd>
+									The controlled use of existing research evidence to inform a new decision, reduce duplicate work or
+									frame future research.
+								</dd>
+							</div>
+						</dl>
+					</section>
+
+					<section
+						class="sourcebook-section sourcebook-section--secondary"
+						id="change-history"
+						aria-labelledby="change-history-heading"
+					>
+						<h2 class="govuk-heading-l" id="change-history-heading">Change history</h2>
+						<ol class="govuk-list sourcebook-change-history">
+							<li>
+								<p class="sourcebook-change-history__date">2026-07-02</p>
+								<p class="govuk-body">
+									Expanded DATA-STO-ACC into an end-to-end data and knowledge lifecycle covering operating model,
+									evidence capture, metadata, access, retention, reuse and repository health.
+								</p>
+							</li>
+						</ol>
+					</section>
+				</article>
+			</div>
+		</main>
+		<x-include src="/partials/footer.html"></x-include>
+	</body>
+</html>
