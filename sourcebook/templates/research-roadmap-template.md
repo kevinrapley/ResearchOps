@@ -14,8 +14,8 @@ Use this template to plan research over a quarter, half-year or programme phase.
 ## Research roadmap
 
 | Period | Research question | Method | Decision supported | Dependencies | Status |
-|---|---|---|---|---|---|
-|  |  |  |  |  |  |
+| ------ | ----------------- | ------ | ------------------ | ------------ | ------ |
+|        |                   |        |                    |              |        |
 
 ## Risks and constraints
 

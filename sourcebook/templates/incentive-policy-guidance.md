@@ -13,8 +13,8 @@ Use this template to document participant incentive policy decisions for a resea
 ## Incentive levels
 
 | Participant type | Session type | Duration | Incentive value |
-|---|---|---|---|
-|  |  |  |  |
+| ---------------- | ------------ | -------- | --------------- |
+|                  |              |          |                 |
 
 ## Tax and reporting obligations
 

@@ -13,14 +13,14 @@ Use this template to assign responsibilities for research governance, standards,
 
 ## RACI matrix
 
-| Activity | Responsible | Accountable | Consulted | Informed |
-|---|---|---|---|---|
-| Research planning |  |  |  |  |
-| Ethics and risk review |  |  |  |  |
-| Participant recruitment |  |  |  |  |
-| Data handling |  |  |  |  |
-| Insight approval |  |  |  |  |
-| Escalation |  |  |  |  |
+| Activity                | Responsible | Accountable | Consulted | Informed |
+| ----------------------- | ----------- | ----------- | --------- | -------- |
+| Research planning       |             |             |           |          |
+| Ethics and risk review  |             |             |           |          |
+| Participant recruitment |             |             |           |          |
+| Data handling           |             |             |           |          |
+| Insight approval        |             |             |           |          |
+| Escalation              |             |             |           |          |
 
 ## Escalation route
 

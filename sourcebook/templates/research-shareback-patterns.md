@@ -33,5 +33,5 @@ Choose one or more:
 ## Action capture
 
 | Action | Owner | Due date | Evidence link |
-|---|---|---|---|
-|  |  |  |  |
+| ------ | ----- | -------- | ------------- |
+|        |       |          |               |

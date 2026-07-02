@@ -13,8 +13,8 @@ Use this excerpt template to document data retention obligations for a specific 
 ## Retention periods
 
 | Data type | Retention period | Basis | Disposal method |
-|---|---|---|---|
-|  |  |  |  |
+| --------- | ---------------- | ----- | --------------- |
+|           |                  |       |                 |
 
 ## Disposal procedure
 

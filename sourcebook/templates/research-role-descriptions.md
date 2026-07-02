@@ -6,15 +6,15 @@ Use this template to define research roles within the team.
 
 ## Role inventory
 
-| Role title | Level | Core responsibilities | Reporting line |
-|---|---|---|---|
-| Research Director |  |  |  |
-| Lead Researcher |  |  |  |
-| Senior Researcher |  |  |  |
-| Researcher |  |  |  |
-| Junior Researcher |  |  |  |
-| Research Operations Manager |  |  |  |
-| Research Coordinator |  |  |  |
+| Role title                  | Level | Core responsibilities | Reporting line |
+| --------------------------- | ----- | --------------------- | -------------- |
+| Research Director           |       |                       |                |
+| Lead Researcher             |       |                       |                |
+| Senior Researcher           |       |                       |                |
+| Researcher                  |       |                       |                |
+| Junior Researcher           |       |                       |                |
+| Research Operations Manager |       |                       |                |
+| Research Coordinator        |       |                       |                |
 
 ## Role profile template
 

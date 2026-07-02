@@ -13,13 +13,13 @@ Use this template to track the lifecycle of a research artefact, dataset, or too
 
 ## Lifecycle stages
 
-| Stage | Date | Owner | Notes |
-|---|---|---|---|
-| Created |  |  |  |
-| Active use |  |  |  |
-| Under review |  |  |  |
-| Archived |  |  |  |
-| Disposed |  |  |  |
+| Stage        | Date | Owner | Notes |
+| ------------ | ---- | ----- | ----- |
+| Created      |      |       |       |
+| Active use   |      |       |       |
+| Under review |      |       |       |
+| Archived     |      |       |       |
+| Disposed     |      |       |       |
 
 ## Retention and disposal
 

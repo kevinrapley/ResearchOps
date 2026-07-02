@@ -13,14 +13,14 @@ Use this template to assess how ready a team or organisation is to plan, conduct
 
 ## Maturity dimensions
 
-| Dimension | Current state | Evidence | Risk | Next action |
-|---|---|---|---|---|
-| Research capability |  |  |  |  |
-| Governance |  |  |  |  |
-| Recruitment and consent |  |  |  |  |
-| Data management |  |  |  |  |
-| Insight use |  |  |  |  |
-| Accessibility and inclusion |  |  |  |  |
+| Dimension                   | Current state | Evidence | Risk | Next action |
+| --------------------------- | ------------- | -------- | ---- | ----------- |
+| Research capability         |               |          |      |             |
+| Governance                  |               |          |      |             |
+| Recruitment and consent     |               |          |      |             |
+| Data management             |               |          |      |             |
+| Insight use                 |               |          |      |             |
+| Accessibility and inclusion |               |          |      |             |
 
 ## Summary
 

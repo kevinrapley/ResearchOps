@@ -13,6 +13,7 @@ Use this guidance when planning research involving human participants to identif
 ## Ethical review triggers
 
 Consider formal ethical review when:
+
 - Research involves vulnerable groups
 - Research covers sensitive topics
 - Research involves significant data collection

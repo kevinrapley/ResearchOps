@@ -10,14 +10,14 @@ A research backlog board surfaces outstanding research questions, prioritises wo
 
 ## Column structure
 
-| Column | Contents |
-|---|---|
-| Inbox | Unvalidated questions and requests |
-| Backlog | Accepted, prioritised questions |
-| In discovery | Active research |
-| In analysis | Data collected, analysis underway |
-| In reporting | Findings being written up |
-| Done | Shared findings |
+| Column       | Contents                           |
+| ------------ | ---------------------------------- |
+| Inbox        | Unvalidated questions and requests |
+| Backlog      | Accepted, prioritised questions    |
+| In discovery | Active research                    |
+| In analysis  | Data collected, analysis underway  |
+| In reporting | Findings being written up          |
+| Done         | Shared findings                    |
 
 ## Card fields
 

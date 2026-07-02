@@ -14,8 +14,8 @@ Use this template to identify stakeholders, decision-makers, operational owners 
 ## Stakeholder list
 
 | Stakeholder | Role | Interest | Influence | Decision rights | Engagement need |
-|---|---|---|---|---|---|
-|  |  |  |  |  |  |
+| ----------- | ---- | -------- | --------- | --------------- | --------------- |
+|             |      |          |           |                 |                 |
 
 ## Power and expectation notes
 
@@ -24,8 +24,8 @@ Record power dynamics, expectations, constraints and any risks to research indep
 ## Engagement plan
 
 | Stakeholder | Channel | Frequency | Purpose | Owner |
-|---|---|---|---|---|
-|  |  |  |  |  |
+| ----------- | ------- | --------- | ------- | ----- |
+|             |         |           |         |       |
 
 ## Review
 
