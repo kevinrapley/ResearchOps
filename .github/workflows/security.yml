@@ -1,11 +1,6 @@
 name: Security & dependencies
 
 on:
-  pull_request:
-    paths:
-      - "package.json"
-      - "package-lock.json"
-      - ".github/workflows/security.yml"
   schedule:
     - cron: "0 6 * * 1" # Mondays 06:00 UTC
   workflow_dispatch:
@@ -21,23 +16,6 @@ env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
-  dependency-review:
-    if: github.event_name == 'pull_request'
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v6
-        with:
-          fetch-depth: 1
-
-      - name: Dependency review
-        uses: actions/dependency-review-action@v5
-        with:
-          fail-on-severity: high
-          comment-summary-in-pr: always
-
   npm-audit:
     runs-on: ubuntu-latest
     timeout-minutes: 10

@@ -89,7 +89,7 @@
 - Replaced raw email values in auth audit metadata with keyed hashes.
 - Added a scheduled, disabled-by-default D1 retention enforcement service that anonymises old participant contact data and deletes expired participant consent and session notes.
 - Tightened production Worker defaults by disabling QA BDD auth bypass and removing localhost from `ALLOWED_ORIGINS`.
-- Added PR dependency review and release SBOM generation. Code scanning remains repository-level evidence through GitHub code scanning/default setup.
+- Added release SBOM generation and retained intended repository settings for code scanning and dependency review. Code scanning remains repository-level evidence through GitHub code scanning/default setup.
 
 ## Validation attempted
 
@@ -119,6 +119,7 @@
 - The first full test run failed because the D1 migration ordering document still identified `0024` as next. The document was updated to state that `0025` follows `0024_security_hardening_controls.sql`, and the failing test then passed.
 - An existing QA BDD test expected production config to enable the bypass. It was updated to reflect the hardened production default while leaving preview config expectations intact.
 - The first PR run showed that GitHub CodeQL default setup is enabled for the repository, so an added advanced CodeQL workflow could not upload SARIF. The explicit CodeQL job was removed and repo-level `code_scanning: true` evidence retained.
+- The next PR run showed that GitHub dependency review is unsupported until the dependency graph is enabled for the repository. The explicit dependency-review job was removed and repo-level `dependency_review: true` intended-setting evidence retained.
 
 ## Residual risks
 
@@ -126,3 +127,4 @@
 - Security headers include `'unsafe-inline'` for current frontend compatibility; a future hardening pass should move inline scripts/styles behind nonces or external bundles before tightening CSP further.
 - Workflow action SHA pinning is still not implemented in this branch.
 - CodeQL coverage depends on GitHub default setup rather than this workflow while default setup remains enabled.
+- Dependency review enforcement depends on enabling GitHub dependency graph for the repository before adding the dependency review workflow back.
