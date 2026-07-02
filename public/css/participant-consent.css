@@ -120,10 +120,13 @@
 
 .participant-consent-item .govuk-radios--inline .govuk-radios__item {
 	display: inline-flex;
+	float: none;
+	clear: none;
 	gap: 8px;
 	align-items: center;
 	min-height: 44px;
 	margin-right: 0;
+	margin-bottom: 0;
 	padding-left: 0;
 	}
 
@@ -153,6 +156,7 @@
 	display: inline-flex;
 	align-items: center;
 	min-height: 44px;
+	margin-top: -5px;
 	padding: 0;
 	}
 

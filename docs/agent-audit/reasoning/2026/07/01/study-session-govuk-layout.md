@@ -114,7 +114,7 @@
 - Adjusted study session GOV.UK summary-list rows so consent summary labels and values use the full datalist width instead of inheriting cramped default key/value proportions inside a half-width grid column.
 - Follow-up review fixes included authenticated `fetch` calls for participant and note APIs, posting session notes through the configured API origin, removing the legacy `sid` fallback as a session-note id, and falling back to Airtable when the D1 participant consent cache is empty.
 - Updated the D1 migration ordering policy so the next main prefix after `0023_session_consent_and_notes.sql` is `0024`.
-- Restored the participant consent generated page contract expected by the wider GOV.UK route-state suite: the page includes the GOV.UK table stylesheet and a `Back to Study` action hydrated by the participant consent route controller.
+- Updated the participant consent generated page contract so the page does not include a `Back to Study` action and relies on the GOV.UK frontend styles plus the participant consent stylesheet.
 
 ## Validation
 
