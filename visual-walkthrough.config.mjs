@@ -408,8 +408,8 @@ const studySessionPage = {
 		description: 'Session workspace captured with a selected participant and ready consent status.',
 		path: operationalPaths.studySession,
 		actions: [
-			{ type: 'waitForSelector', selector: '#participant-select option[value="ptp_001"]', state: 'attached' },
-			{ type: 'select', selector: '#participant-select', value: 'ptp_001' },
+			{ type: 'waitForSelector', selector: '#participant-select option[value="recVisualParticipant001"]', state: 'attached' },
+			{ type: 'select', selector: '#participant-select', value: 'recVisualParticipant001' },
 			{ type: 'waitForText', text: 'Ready for session' },
 		],
 	},
