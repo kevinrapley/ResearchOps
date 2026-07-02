@@ -683,6 +683,23 @@ export const visualWalkthroughConfig = {
 		registeredPage('notes', 'Notes', 'Utilities', '/pages/notes/index.html', 'Notes page.'),
 		registeredPage('consent', 'Consent', 'Utilities', '/pages/consent/index.html', 'Consent page.'),
 		registeredPage('sessions', 'Sessions', 'Utilities', '/pages/sessions/index.html', 'Sessions list page.'),
+		{
+			...registeredPage(
+				'compliance-readiness',
+				'SOC 2 and ISO 27001 readiness',
+				'Assurance',
+				'/pages/compliance-readiness/index.html',
+				'Footer-linked readiness page defining the platform boundary and control matrix.'
+			),
+			authenticated: false,
+			defaultState: {
+				id: 'default',
+				title: 'Compliance readiness boundary and control matrix',
+				description: 'Compliance readiness page captured as a public assurance support page.',
+				path: '/pages/compliance-readiness/',
+				actions: [{ type: 'waitForText', text: 'This page does not assert SOC 2 compliance' }],
+			},
+		},
 		...repositoryPages,
 		...sourcebookPages,
 	],

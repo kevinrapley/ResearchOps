@@ -22,6 +22,10 @@ function excludes(source, text, label) {
 	assert.equal(source.includes(text), false, `Expected ${label} not to include: ${text}`);
 }
 
+function matches(source, pattern, label) {
+	assert.match(source, pattern, `Expected ${label} to match: ${pattern}`);
+}
+
 function countOccurrences(source, text) {
 	return source.split(text).length - 1;
 }
@@ -45,7 +49,7 @@ includes(renderGovukPagesSource, "template: 'pages/project-dashboard.njk'", "GOV
 includes(renderGovukPagesSource, "output: 'public/pages/project-dashboard/index.html'", "GOV.UK page renderer");
 
 includes(layoutSource, "<x-include src=\"/partials/header.html\"", "GOV.UK layout");
-includes(layoutSource, "<x-include src=\"/partials/footer.html\"></x-include>", "GOV.UK layout");
+matches(layoutSource, /<x-include src="\/partials\/footer\.html\{% if footerCacheKey %\}\?v=\{\{ footerCacheKey \}\}\{% endif %\}"><\/x-include>/, "GOV.UK layout");
 excludes(layoutSource, "fallbackHeaderHtml", "GOV.UK layout");
 excludes(layoutSource, "fallbackFooterHtml", "GOV.UK layout");
 
@@ -164,7 +168,7 @@ excludes(templateSource, "href=\"/css/screen.css\"", "project dashboard template
 includes(pageSource, "class=\"govuk-template\"", "project dashboard page");
 includes(pageSource, "href=\"/assets/govuk/govuk-frontend.css\"", "project dashboard page");
 includes(pageSource, "<x-include src=\"/partials/header.html\"", "project dashboard page");
-includes(pageSource, "<x-include src=\"/partials/footer.html\"", "project dashboard page");
+matches(pageSource, /<x-include src="\/partials\/footer\.html(?:\?[^"]*)?"/, "project dashboard page");
 includes(pageSource, "class=\"govuk-summary-card\"", "project dashboard page");
 includes(pageSource, "class=\"govuk-summary-list govuk-body-s\"", "project dashboard page");
 includes(pageSource, "id=\"project-title\"", "project dashboard page");

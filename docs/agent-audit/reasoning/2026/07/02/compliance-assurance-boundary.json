@@ -1,0 +1,337 @@
+{
+	"date": "2026-07-02",
+	"branch": "feature/compliance-assurance-boundary",
+	"base": "origin/main",
+	"baseMergeCommit": "cd3a335d06f3ac36c9fde70e369f98040c6bd192",
+	"traceRequired": true,
+	"traceReason": "feature/ branches require auditable traces for repository-affecting work",
+	"taskSummary": "Define compliance scope and system boundary as part of a broader SOC 2 and ISO/IEC 27001 readiness workstream.",
+	"operatingModelFilesLoaded": [
+		"AGENTS.md",
+		".agent-operating-model/orchestration.xml",
+		".agent-operating-model/bundle-registry.json",
+		".agent-operating-model/task-signal-catalog.json",
+		".agent-operating-model/selection-rules.json",
+		".agent-operating-model/bootstrap-checklist.md",
+		".agent-operating-model/precedence-policy.md",
+		".agent-operating-model/trace-policy.md",
+		".agent-operating-model/trace-layers.md",
+		".agent-operating-model/github-mutation-policy.md"
+	],
+	"selectedBundles": [
+		{
+			"id": "github-diamond",
+			"canonicalPath": ".agent-operating-model/bundles/github/"
+		},
+		{
+			"id": "researchops-developer-control",
+			"canonicalPath": ".agent-operating-model/bundles/researchops-developer-control/"
+		},
+		{
+			"id": "multi-functional-team",
+			"canonicalPath": ".agent-operating-model/bundles/multi-functional-team/"
+		},
+		{
+			"id": "govuk-design-system",
+			"canonicalPath": ".agent-operating-model/bundles/govuk-design-system/"
+		},
+		{
+			"id": "cloudflare",
+			"canonicalPath": ".agent-operating-model/bundles/cloudflare/"
+		},
+		{
+			"id": "openai-platform",
+			"canonicalPath": ".agent-operating-model/bundles/openai/"
+		},
+		{
+			"id": "mcp-agent-tooling",
+			"canonicalPath": ".agent-operating-model/bundles/mcp-agent-tooling/"
+		},
+		{
+			"id": "airtable-public-api",
+			"canonicalPath": ".agent-operating-model/bundles/airtable-public-api/"
+		},
+		{
+			"id": "mural-public-api",
+			"canonicalPath": ".agent-operating-model/bundles/mural-public-api/"
+		}
+	],
+	"bundlesSkipped": [],
+	"implementationSummary": [
+		"Created a SOC 2 and ISO/IEC 27001 readiness documentation folder.",
+		"Defined the ResearchOps compliance scope and system boundary across service, data, users, suppliers, integrations and controls.",
+		"Added an evidence index that records current evidence and gaps before any compliance claim can be made.",
+		"Added a repository test to prevent unsupported compliance or certification wording.",
+		"Added a GOV.UK-rendered compliance readiness page at /pages/compliance-readiness/.",
+		"Added a GOV.UK footer link to the page without adding it to the main service navigation.",
+		"Added a formal internal readiness matrix mapped to SOC 2 Trust Services Criteria categories and ISO/IEC 27001:2022 Annex A controls.",
+		"Updated the GOV.UK render workflow to track the compliance-readiness data module.",
+		"Registered the compliance readiness page in the visual walkthrough registry after CI showed the route was discoverable but uncovered.",
+		"Addressed browser review comments by keeping the compliance readiness page authored in Nunjucks, rendered through GOV.UK Frontend macros and styled through the GOV.UK Sass build.",
+		"Switched the warning text to the official GOV.UK warning-text macro with HTML content so abbreviation markup renders inside the component.",
+		"Added a shared Nunjucks abbreviation filter for SOC, TSC, ISO/IEC, DPIA, ROPA, SLOs and RTO/RPO.",
+		"Replaced visible bullet lists in the SOC 2 TSC and ISO/IEC Annex A matrix columns with comma-separated reference spans.",
+		"Added small GOV.UK text utility classes to the control matrix and a minimal Sass hook for top-aligned matrix cells and non-wrapping control references.",
+		"Updated the generated GOV.UK page test helper so route-state tests render pages with the same shared abbreviation filter as the static renderer.",
+		"Addressed follow-up browser review by removing abbreviation markup from the main page heading while retaining abbreviation markup in explanatory content and matrix headings.",
+		"Addressed follow-up browser review by scoping warning-icon alignment to the compliance readiness warning component.",
+		"Changed control-reference rendering so commas belong to the preceding reference span and do not render with a space before the comma.",
+		"Added GDPR abbreviation markup through the shared compliance abbreviation filter.",
+		"Changed header and footer includes to bypass stale browser cache so the footer support link to /pages/compliance-readiness/ is visible after deployment updates.",
+		"Reworked the footer cache-busting follow-up from a page-specific compliance readiness key to a shared generated GOV.UK page chrome cache key applied to all rendered pages.",
+		"Added ISMS scope, risk assessment, risk treatment plan and Statement of Applicability to the evidence still needed before a claim."
+	],
+	"validationPlanned": [
+		"Focused compliance assurance boundary test",
+		"Formatting check",
+		"Lint",
+		"Trace coverage",
+		"Repository validation"
+	],
+	"validationEvidence": [
+		{
+			"command": "node --import ./tests/helpers/generated-govuk-page-source.mjs --test tests/compliance-assurance-boundary.test.js",
+			"status": "passed",
+			"summary": "4 tests passed for non-claim wording, service boundary content, privacy/supplier essentials and evidence gaps."
+		},
+		{
+			"command": "npm run format:check",
+			"status": "passed"
+		},
+		{
+			"command": "npm run lint",
+			"status": "passed",
+			"notes": "Exited 0 with existing warning-only lint debt."
+		},
+		{
+			"command": "npm run trace:coverage",
+			"status": "passed",
+			"summary": "Trace coverage confirmed for feature/compliance-assurance-boundary."
+		},
+		{
+			"command": "npm test",
+			"status": "passed",
+			"summary": "309 tests, 309 pass, 0 fail."
+		},
+		{
+			"command": "npm run validate",
+			"status": "passed"
+		},
+		{
+			"command": "node --import ./tests/helpers/generated-govuk-page-source.mjs --test tests/compliance-readiness-page-route-state.test.js tests/compliance-assurance-boundary.test.js tests/govuk-pages-render-workflow-state.test.js tests/deploy-asset-paths.test.js tests/govuk-frontend-service-pages-route-state.test.js",
+			"status": "passed",
+			"summary": "11 tests passed for the GOV.UK compliance readiness page, footer-only link, render workflow, deploy assets and GOV.UK page chrome."
+		},
+		{
+			"command": "npm run format:check",
+			"status": "passed",
+			"summary": "Follow-up formatting check passed after the page addition."
+		},
+		{
+			"command": "npm run lint",
+			"status": "passed",
+			"notes": "Exited 0 with existing warning-only lint debt."
+		},
+		{
+			"command": "npm run trace:coverage",
+			"status": "passed",
+			"summary": "Trace coverage confirmed after the page addition."
+		},
+		{
+			"command": "npm test",
+			"status": "passed",
+			"summary": "313 tests, 313 pass, 0 fail after adding the GOV.UK compliance readiness page."
+		},
+		{
+			"command": "npm run validate",
+			"status": "passed",
+			"summary": "Repository validation passed after adding the GOV.UK compliance readiness page."
+		},
+		{
+			"command": "npm test -- tests/visual-walkthrough-registry-coverage.test.js",
+			"status": "passed",
+			"summary": "CI failure reproduced locally and fixed by registering /pages/compliance-readiness/index.html in visual-walkthrough.config.mjs."
+		},
+		{
+			"command": "npm run format:check",
+			"status": "passed",
+			"summary": "Post-fix formatting check passed."
+		},
+		{
+			"command": "npm run lint",
+			"status": "passed",
+			"notes": "Exited 0 with existing warning-only lint debt."
+		},
+		{
+			"command": "npm run trace:coverage",
+			"status": "passed",
+			"summary": "Trace coverage confirmed after the visual walkthrough registry fix."
+		},
+		{
+			"command": "npm test",
+			"status": "passed",
+			"summary": "313 tests, 313 pass, 0 fail after registering the compliance readiness visual walkthrough route."
+		},
+		{
+			"command": "npm run validate",
+			"status": "passed",
+			"summary": "Repository validation passed after registering the compliance readiness visual walkthrough route."
+		},
+		{
+			"command": "npm run build",
+			"status": "passed",
+			"summary": "Regenerated GOV.UK Sass output and public/pages/compliance-readiness/index.html for browser-comment fixes."
+		},
+		{
+			"command": "node --import ./tests/helpers/generated-govuk-page-source.mjs --test tests/compliance-readiness-page-route-state.test.js tests/govuk-pages-render-workflow-state.test.js tests/visual-walkthrough-registry-coverage.test.js tests/govuk-generated-html-test-source-route-state.test.js",
+			"status": "passed",
+			"summary": "8 focused tests passed for the compliance readiness page, GOV.UK render workflow, visual walkthrough registry coverage and generated GOV.UK page helper coverage."
+		},
+		{
+			"command": "curl -I http://127.0.0.1:4173/pages/compliance-readiness/ plus generated HTML markup probe",
+			"status": "passed",
+			"summary": "Preview route returned HTTP 200; warning component rendered; requested abbreviation markup is present; 24 SOC 2 and ISO/IEC reference cells render without ul or li list markup."
+		},
+		{
+			"command": "npm run format:check",
+			"status": "passed",
+			"summary": "Browser-comment formatting check passed."
+		},
+		{
+			"command": "npm run lint",
+			"status": "passed",
+			"notes": "Exited 0 with existing warning-only lint debt."
+		},
+		{
+			"command": "npm test",
+			"status": "passed",
+			"summary": "314 tests, 314 pass, 0 fail after browser-comment fixes."
+		},
+		{
+			"command": "npm run validate",
+			"status": "passed",
+			"summary": "Repository validation passed after browser-comment fixes."
+		},
+		{
+			"command": "npm run build:govuk-pages",
+			"status": "passed",
+			"summary": "Regenerated public/pages/compliance-readiness/index.html after removing abbreviation markup from the H1."
+		},
+		{
+			"command": "generated HTML markup probe",
+			"status": "passed",
+			"summary": "Confirmed the generated H1 is SOC 2 and ISO 27001 readiness and contains no abbr element."
+		},
+		{
+			"command": "node --import ./tests/helpers/generated-govuk-page-source.mjs --test tests/compliance-readiness-page-route-state.test.js tests/govuk-pages-render-workflow-state.test.js",
+			"status": "passed",
+			"summary": "7 focused tests passed for the compliance readiness route and GOV.UK render workflow."
+		},
+		{
+			"command": "npm run format:check",
+			"status": "passed",
+			"summary": "Follow-up H1 browser-comment formatting check passed."
+		},
+		{
+			"command": "npm run trace:coverage",
+			"status": "passed",
+			"summary": "Trace coverage confirmed after the H1 browser-comment fix."
+		},
+		{
+			"command": "npm test",
+			"status": "passed",
+			"summary": "315 tests, 315 pass, 0 fail after the H1 browser-comment fix."
+		},
+		{
+			"command": "npm run build:govuk-pages",
+			"status": "passed",
+			"summary": "Regenerated public/pages/compliance-readiness/index.html after footer and markup browser-comment fixes."
+		},
+		{
+			"command": "generated HTML markup probe",
+			"status": "passed",
+			"summary": "Confirmed 24 reference cells, no space before commas, GDPR abbreviation markup and the scoped warning class."
+		},
+		{
+			"command": "curl http://127.0.0.1:4173/partials/footer.html",
+			"status": "passed",
+			"summary": "Confirmed the /pages/compliance-readiness/ footer support link is present in the served footer partial."
+		},
+		{
+			"command": "node --import ./tests/helpers/generated-govuk-page-source.mjs --test tests/compliance-readiness-page-route-state.test.js tests/layout-footer-include-race.test.js tests/govuk-generated-html-test-source-route-state.test.js tests/govuk-pages-render-workflow-state.test.js",
+			"status": "passed",
+			"summary": "12 focused tests passed for the compliance readiness page, footer include cache behaviour, generated GOV.UK page helper coverage and render workflow."
+		},
+		{
+			"command": "npm run format:check",
+			"status": "passed",
+			"summary": "Footer and markup browser-comment formatting check passed."
+		},
+		{
+			"command": "npm run trace:coverage",
+			"status": "passed",
+			"summary": "Trace coverage confirmed after footer and markup browser-comment fixes."
+		},
+		{
+			"command": "npm test",
+			"status": "passed",
+			"summary": "316 tests, 316 pass, 0 fail after footer and markup browser-comment fixes."
+		},
+		{
+			"command": "npm run build:govuk-pages",
+			"status": "passed",
+			"summary": "Regenerated all GOV.UK-rendered pages with govuk-page-chrome-20260702-1 on shared layout and footer includes."
+		},
+		{
+			"command": "node --import ./tests/helpers/generated-govuk-page-source.mjs --test tests/compliance-readiness-page-route-state.test.js tests/auth-header-links-route-state.test.js tests/govuk-frontend-service-pages-route-state.test.js tests/govuk-frontend-integration-route-state.test.js tests/layout-footer-include-race.test.js",
+			"status": "passed",
+			"summary": "13 focused tests passed for compliance readiness, auth header links, GOV.UK frontend route-state coverage and footer include cache behaviour."
+		},
+		{
+			"command": "curl http://127.0.0.1:4173/pages/compliance-readiness/ and curl http://127.0.0.1:4173/partials/footer.html?v=govuk-page-chrome-20260702-1",
+			"status": "passed",
+			"summary": "Live preview served the shared cache-busted footer include, and the cache-busted footer partial contained the Compliance readiness link."
+		},
+		{
+			"command": "affected generated-page route-state tests",
+			"status": "passed",
+			"summary": "Updated affected generated-page tests to allow versioned shared layout, GOV.UK init and footer URLs while still requiring shared chrome."
+		},
+		{
+			"command": "npm run validate",
+			"status": "passed",
+			"summary": "Repository validation passed after applying the generated-page chrome cache key across all GOV.UK-rendered pages."
+		},
+		{
+			"command": "npm run format:check",
+			"status": "passed",
+			"summary": "Formatting and generated CSS checks passed after the shared chrome cache-key changes."
+		},
+		{
+			"command": "npm test",
+			"status": "passed",
+			"summary": "316 tests, 316 pass, 0 fail after the shared chrome cache-key changes."
+		},
+		{
+			"command": "npm run build:govuk-pages",
+			"status": "passed",
+			"summary": "Regenerated the compliance readiness page after adding the ISMS scope, risk assessment, risk treatment plan and Statement of Applicability evidence item."
+		},
+		{
+			"command": "node --import ./tests/helpers/generated-govuk-page-source.mjs --test tests/compliance-readiness-page-route-state.test.js tests/compliance-assurance-boundary.test.js",
+			"status": "passed",
+			"summary": "10 focused tests passed for the compliance readiness page and compliance evidence pack."
+		},
+		{
+			"command": "npm run validate",
+			"status": "passed",
+			"summary": "Repository validation passed after adding the ISMS scope, risk assessment, risk treatment plan and Statement of Applicability evidence item."
+		}
+	],
+	"residualRisks": [
+		"The proposed boundary requires Home Office owner and security sign-off.",
+		"The branch does not create a full asset inventory, risk register, supplier assurance pack, SOC 2 mapping or ISO/IEC 27001 Statement of Applicability.",
+		"No SOC 2 compliance or ISO/IEC 27001 certification claim should be made from this PR alone.",
+		"The page uses category-level SOC 2 TSC mappings and selected ISO/IEC 27001 Annex A control references for readiness; final assessment needs assessor confirmation at criteria/control and evidence level."
+	]
+}

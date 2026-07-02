@@ -4,10 +4,12 @@ import { fileURLToPath } from 'node:url';
 import nunjucks from 'nunjucks';
 import prettier from 'prettier';
 
+import { complianceReadinessContext } from '../../src/govuk/data/compliance-readiness.mjs';
 import { repositoryPageContext, repositoryStaticPages } from '../../src/govuk/data/repository-page.mjs';
 import { sourcebookIndex, sourcebookPillarPages } from '../../src/govuk/data/sourcebook.mjs';
 
 const root = resolve(process.cwd());
+export const generatedGovukChromeCacheKey = 'govuk-page-chrome-20260702-1';
 const env = new nunjucks.Environment(
 	[
 		new nunjucks.FileSystemLoader(resolve(root, 'src/govuk/templates')),
@@ -41,6 +43,55 @@ function govukAttributes(attributes = {}) {
 	return new nunjucks.runtime.SafeString(html);
 }
 
+const complianceAbbreviations = [
+	{
+		pattern: /\bISO\/IEC\b/g,
+		markup:
+			'<abbr title="International Organization for Standardization / International Electrotechnical Commission">ISO/IEC</abbr>',
+	},
+	{
+		pattern: /\bSOC\b/g,
+		markup: '<abbr title="System and Organization Controls">SOC</abbr>',
+	},
+	{
+		pattern: /\bTSC\b/g,
+		markup: '<abbr title="Trust Services Criteria">TSC</abbr>',
+	},
+	{
+		pattern: /\bGDPR\b/g,
+		markup: '<abbr title="General Data Protection Regulation">GDPR</abbr>',
+	},
+	{
+		pattern: /\bDPIA\b/g,
+		markup: '<abbr title="Data Protection Impact Assessment">DPIA</abbr>',
+	},
+	{
+		pattern: /\bROPA\b/g,
+		markup: '<abbr title="Record of Processing Activities">ROPA</abbr>',
+	},
+	{
+		pattern: /\bSLOs\b/g,
+		markup: '<abbr title="Service level objectives">SLOs</abbr>',
+	},
+	{
+		pattern: /\bRTO\/RPO\b/g,
+		markup: '<abbr title="Recovery Time Objective / Recovery Point Objective">RTO/RPO</abbr>',
+	},
+];
+
+export function complianceAbbreviationMarkup(value) {
+	let html = String(value)
+		.replaceAll('&', '&amp;')
+		.replaceAll('<', '&lt;')
+		.replaceAll('>', '&gt;');
+
+	for (const abbreviation of complianceAbbreviations) {
+		html = html.replace(abbreviation.pattern, abbreviation.markup);
+	}
+
+	return new nunjucks.runtime.SafeString(html);
+}
+
 async function formatRenderedHtml(html) {
 	return prettier.format(html, {
 		parser: 'html',
@@ -52,6 +103,7 @@ async function formatRenderedHtml(html) {
 }
 
 env.addFilter('govukAttributes', govukAttributes);
+env.addFilter('complianceAbbreviations', complianceAbbreviationMarkup);
 env.addGlobal('govukAttributes', govukAttributes);
 
 export const outcomesScriptVersion = '20260603-form-interactions';
@@ -217,6 +269,14 @@ export const govukPages = [
 		},
 	},
 	{
+		template: 'pages/compliance-readiness.njk',
+		output: 'public/pages/compliance-readiness/index.html',
+		context: {
+			...complianceReadinessContext,
+			navigation: accountNavigation,
+		},
+	},
+	{
 		template: 'pages/start.njk',
 		output: 'public/pages/start/index.html',
 		context: {
@@ -236,7 +296,6 @@ export const govukPages = [
 			pageTitle: 'Your ResearchOps account - ResearchOps Demo Suite',
 			serviceName: 'ResearchOps Demo Suite',
 			activeNavigation: '',
-			layoutCacheKey: 'header-account-links-20260623-1',
 			navigation: accountNavigation,
 		},
 	},
@@ -544,7 +603,12 @@ export const govukPages = [
 
 export async function renderGovukPage(page) {
 	const outputPath = resolve(root, page.output);
-	const rawHtml = cacheBustOutcomesPageScripts(env.render(page.template, page.context), page);
+	const context = {
+		...page.context,
+		layoutCacheKey: generatedGovukChromeCacheKey,
+		footerCacheKey: generatedGovukChromeCacheKey,
+	};
+	const rawHtml = cacheBustOutcomesPageScripts(env.render(page.template, context), page);
 	const html = await formatRenderedHtml(rawHtml);
 	await mkdir(dirname(outputPath), { recursive: true });
 	await writeFile(outputPath, html.endsWith('\n') ? html : `${html}\n`, 'utf8');

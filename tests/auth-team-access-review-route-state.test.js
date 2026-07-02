@@ -19,6 +19,10 @@ function excludes(source, text, label) {
 	assert.equal(source.includes(text), false, `Expected ${label} not to include: ${text}`);
 }
 
+function matches(source, pattern, label) {
+	assert.match(source, pattern, `Expected ${label} to match: ${pattern}`);
+}
+
 function normaliseWhitespace(value) {
 	return String(value).replace(/\s+/g, ' ').trim();
 }
@@ -111,7 +115,11 @@ includes(template, 'govukWarningText', 'team access review template');
 includes(template, 'govukErrorSummary', 'team access review template');
 includes(page, '<title>Review team access requests - ResearchOps Demo Suite</title>', 'generated team access review page');
 includes(page, '<x-include src="/partials/header.html"', 'generated team access review page');
-includes(page, '<x-include src="/partials/footer.html"></x-include>', 'generated team access review page');
+matches(
+	page,
+	/<x-include src="\/partials\/footer\.html(?:\?[^"]*)?"><\/x-include>/,
+	'generated team access review page'
+);
 
 includes(pageScript, "fetchJson('/api/team-access/requests/review')", 'team access review page controller');
 includes(pageScript, "'/api/team-access/requests/approve'", 'team access review page controller');

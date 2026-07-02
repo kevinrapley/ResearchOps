@@ -82,7 +82,10 @@ assert.match(generatedCss, /\.govuk-tag/);
 
 assert.match(layoutTemplate, /\/components\/layout\.js/);
 assert.match(layoutTemplate, /<x-include src="\/partials\/header\.html"/);
-assert.match(layoutTemplate, /<x-include src="\/partials\/footer\.html"><\/x-include>/);
+assert.match(
+	layoutTemplate,
+	/<x-include src="\/partials\/footer\.html\{% if footerCacheKey %\}\?v=\{\{ footerCacheKey \}\}\{% endif %\}"><\/x-include>/
+);
 assert.doesNotMatch(layoutTemplate, /\/components\/govuk-layout\.js/);
 
 assert.match(sharedHead, /\/assets\/govuk\/govuk-frontend\.css/);
@@ -119,7 +122,11 @@ for (const path of representativePages) {
 	assert.match(page, /\/components\/layout\.js/, `${path} should load the shared x-include loader`);
 	assert.match(page, /\/js\/govuk-frontend-init\.js/, `${path} should load GOV.UK Frontend initialisation`);
 	assert.match(page, /<x-include src="\/partials\/header\.html"/, `${path} should include shared GOV.UK header chrome`);
-	assert.match(page, /<x-include src="\/partials\/footer\.html"><\/x-include>/, `${path} should include shared GOV.UK footer chrome`);
+	assert.match(
+		page,
+		/<x-include src="\/partials\/footer\.html(?:\?[^"]*)?"><\/x-include>/,
+		`${path} should include shared GOV.UK footer chrome`
+	);
 	for (const asset of legacyCloneAssets) {
 		assert.equal(page.includes(asset), false, `${path} should not load legacy clone CSS asset ${asset}`);
 	}

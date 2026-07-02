@@ -17,7 +17,7 @@ function assertSignInPageUsesGovukFrontendTemplate() {
 	assert.match(signInPage, /src="\/components\/layout\.js"/);
 	assert.match(signInPage, /src="\/js\/govuk-frontend-init\.js"/);
 	assert.match(signInPage, /<x-include src="\/partials\/header\.html" vars='\{"active":""\}'><\/x-include>/);
-	assert.match(signInPage, /<x-include src="\/partials\/footer\.html"><\/x-include>/);
+	assert.match(signInPage, /<x-include src="\/partials\/footer\.html(?:\?[^"]*)?"><\/x-include>/);
 	assert.match(signInPage, /<main class="govuk-main-wrapper" id="main-content" role="main" tabindex="-1">/);
 	assert.match(signInPage, /class="govuk-width-container"/);
 	assert.equal(signInPage.includes('/css/govuk/govuk-page-chrome.css'), false);

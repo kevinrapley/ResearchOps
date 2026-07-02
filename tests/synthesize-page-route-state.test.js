@@ -18,6 +18,10 @@ function excludes(source, text, label) {
 	assert.equal(source.includes(text), false, `Expected ${label} not to include: ${text}`);
 }
 
+function matches(source, pattern, label) {
+	assert.match(source, pattern, `Expected ${label} to match: ${pattern}`);
+}
+
 includes(pageSource, "<html class=\"govuk-template\" lang=\"en\">", "synthesis page");
 for (const macro of ["govukBreadcrumbs({", "govukButton({", "govukInput({", "govukSelect({", "govukSummaryList({", "govukTaskList({", "govukTextarea({"]) {
 	includes(templateSource, macro, "synthesis template");
@@ -28,7 +32,7 @@ includes(pageSource, "/assets/govuk/govuk-frontend.css", "synthesis page");
 includes(pageSource, "/components/layout.js", "synthesis page");
 includes(pageSource, "/js/govuk-frontend-init.js", "synthesis page");
 includes(pageSource, "src=\"/partials/header.html\"", "synthesis page");
-includes(pageSource, "src=\"/partials/footer.html\"", "synthesis page");
+matches(pageSource, /src="\/partials\/footer\.html(?:\?[^"]*)?"/, "synthesis page");
 excludes(pageSource, "/css/govuk/govuk-forms.css", "synthesis page");
 includes(pageSource, "/js/synthesis-route-loader.js?v=study-synthesis-20260701-cache-refresh", "synthesis page");
 includes(pageSource, "href=\"/css/synthesize.css?v=study-synthesis-20260701-cache-refresh\"", "synthesis page");

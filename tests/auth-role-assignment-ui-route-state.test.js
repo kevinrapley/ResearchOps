@@ -81,7 +81,7 @@ function assertUsesFullGOVUKFrontendTemplate() {
 	assert.match(pageSource, /\/components\/layout\.js/);
 	assert.match(pageSource, /\/js\/govuk-frontend-init\.js/);
 	assert.match(pageSource, /<x-include src="\/partials\/header\.html"/);
-	assert.match(pageSource, /<x-include src="\/partials\/footer\.html"/);
+	assert.match(pageSource, /<x-include src="\/partials\/footer\.html(?:\?[^"]*)?"/);
 	assert.doesNotMatch(pageSource, /\/css\/govuk\/govuk-typography\.css/);
 	assert.doesNotMatch(pageSource, /\/css\/govuk\/govuk-colours\.css/);
 	assert.doesNotMatch(pageSource, /\/css\/govuk\/govuk-page-chrome\.css/);

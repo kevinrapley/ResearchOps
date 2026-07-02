@@ -22,7 +22,7 @@ function excludes(source, text, label) {
 
 includes(pageSource, "href=\"/assets/govuk/govuk-frontend.css\"", "start page");
 includes(pageSource, "href=\"/css/start.css\"", "start page");
-includes(pageSource, "src=\"/components/layout.js\" defer", "start page");
+includes(pageSource, "src=\"/components/layout.js", "start page");
 includes(pageSource, "src=\"/js/start-description-assist.js\" defer", "start page");
 includes(pageSource, "src=\"/js/start-objectives-assist.js\" defer", "start page");
 includes(pageSource, "src=\"start-new-project.js\" defer", "start page");

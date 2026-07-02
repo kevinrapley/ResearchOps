@@ -15,7 +15,7 @@
 	<main class="govuk-main-wrapper" id="main-content" role="main" tabindex="-1">
 		{% block content %}{% endblock %}
 	</main>
-	<x-include src="/partials/footer.html"></x-include>
+	<x-include src="/partials/footer.html{% if footerCacheKey %}?v={{ footerCacheKey }}{% endif %}"></x-include>
 	{% block scripts %}{% endblock %}
 </body>
 </html>
