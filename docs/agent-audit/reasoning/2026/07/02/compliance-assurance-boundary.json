@@ -1,0 +1,109 @@
+{
+	"date": "2026-07-02",
+	"branch": "feature/compliance-assurance-boundary",
+	"base": "origin/main",
+	"baseMergeCommit": "cd3a335d06f3ac36c9fde70e369f98040c6bd192",
+	"traceRequired": true,
+	"traceReason": "feature/ branches require auditable traces for repository-affecting work",
+	"taskSummary": "Define compliance scope and system boundary as part of a broader SOC 2 and ISO/IEC 27001 readiness workstream.",
+	"operatingModelFilesLoaded": [
+		"AGENTS.md",
+		".agent-operating-model/orchestration.xml",
+		".agent-operating-model/bundle-registry.json",
+		".agent-operating-model/task-signal-catalog.json",
+		".agent-operating-model/selection-rules.json",
+		".agent-operating-model/bootstrap-checklist.md",
+		".agent-operating-model/precedence-policy.md",
+		".agent-operating-model/trace-policy.md",
+		".agent-operating-model/trace-layers.md",
+		".agent-operating-model/github-mutation-policy.md"
+	],
+	"selectedBundles": [
+		{
+			"id": "github-diamond",
+			"canonicalPath": ".agent-operating-model/bundles/github/"
+		},
+		{
+			"id": "researchops-developer-control",
+			"canonicalPath": ".agent-operating-model/bundles/researchops-developer-control/"
+		},
+		{
+			"id": "multi-functional-team",
+			"canonicalPath": ".agent-operating-model/bundles/multi-functional-team/"
+		},
+		{
+			"id": "cloudflare",
+			"canonicalPath": ".agent-operating-model/bundles/cloudflare/"
+		},
+		{
+			"id": "openai-platform",
+			"canonicalPath": ".agent-operating-model/bundles/openai/"
+		},
+		{
+			"id": "mcp-agent-tooling",
+			"canonicalPath": ".agent-operating-model/bundles/mcp-agent-tooling/"
+		},
+		{
+			"id": "airtable-public-api",
+			"canonicalPath": ".agent-operating-model/bundles/airtable-public-api/"
+		},
+		{
+			"id": "mural-public-api",
+			"canonicalPath": ".agent-operating-model/bundles/mural-public-api/"
+		}
+	],
+	"bundlesSkipped": [
+		{
+			"id": "govuk-design-system",
+			"reason": "No GOV.UK UI, component or interaction behaviour changed."
+		}
+	],
+	"implementationSummary": [
+		"Created a SOC 2 and ISO/IEC 27001 readiness documentation folder.",
+		"Defined the ResearchOps compliance scope and system boundary across service, data, users, suppliers, integrations and controls.",
+		"Added an evidence index that records current evidence and gaps before any compliance claim can be made.",
+		"Added a repository test to prevent unsupported compliance or certification wording."
+	],
+	"validationPlanned": [
+		"Focused compliance assurance boundary test",
+		"Formatting check",
+		"Lint",
+		"Trace coverage",
+		"Repository validation"
+	],
+	"validationEvidence": [
+		{
+			"command": "node --import ./tests/helpers/generated-govuk-page-source.mjs --test tests/compliance-assurance-boundary.test.js",
+			"status": "passed",
+			"summary": "4 tests passed for non-claim wording, service boundary content, privacy/supplier essentials and evidence gaps."
+		},
+		{
+			"command": "npm run format:check",
+			"status": "passed"
+		},
+		{
+			"command": "npm run lint",
+			"status": "passed",
+			"notes": "Exited 0 with existing warning-only lint debt."
+		},
+		{
+			"command": "npm run trace:coverage",
+			"status": "passed",
+			"summary": "Trace coverage confirmed for feature/compliance-assurance-boundary."
+		},
+		{
+			"command": "npm test",
+			"status": "passed",
+			"summary": "309 tests, 309 pass, 0 fail."
+		},
+		{
+			"command": "npm run validate",
+			"status": "passed"
+		}
+	],
+	"residualRisks": [
+		"The proposed boundary requires Home Office owner and security sign-off.",
+		"The branch does not create a full asset inventory, risk register, supplier assurance pack, SOC 2 mapping or ISO/IEC 27001 Statement of Applicability.",
+		"No SOC 2 compliance or ISO/IEC 27001 certification claim should be made from this PR alone."
+	]
+}
