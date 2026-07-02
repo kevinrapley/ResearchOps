@@ -106,3 +106,44 @@ test('Worker sanitises internal error details from API 5xx responses', async () 
 	assert.equal(Object.hasOwn(body, 'detail'), false);
 	assert.equal(JSON.stringify(body).includes('database table name'), false);
 });
+
+test('Worker keeps diagnostic routes disabled unless explicitly enabled', async () => {
+	const response = await worker.fetch(
+		new Request('https://rops-api.test/api/_diag/projects-source', {
+			headers: { Origin: 'https://researchops.pages.dev' },
+		}),
+		{
+			ALLOWED_ORIGINS: 'https://researchops.pages.dev',
+			RESEARCHOPS_D1: createRoutePermissionD1(),
+		},
+		{}
+	);
+
+	assert.equal(response.status, 404);
+	assert.equal((await response.json()).error, 'Not found');
+});
+
+test('Worker requires authenticated deployment permission before deploy hook token checks', async () => {
+	const response = await worker.fetch(
+		new Request('https://rops-api.test/api/agent-pages/deploy', {
+			method: 'POST',
+			headers: {
+				Origin: 'https://researchops.pages.dev',
+				Authorization: 'Bearer deploy-secret',
+				'Content-Type': 'application/json',
+				'X-ResearchOps-CSRF': 'required',
+			},
+			body: JSON.stringify({ branch: 'main' }),
+		}),
+		{
+			ALLOWED_ORIGINS: 'https://researchops.pages.dev',
+			AGENT_PAGES_DEPLOY_TOKEN: 'deploy-secret',
+			AGENT_PAGES_DEPLOY_HOOK_URL: 'https://deploy.example.test/hook',
+			RESEARCHOPS_D1: createRoutePermissionD1(),
+		},
+		{}
+	);
+
+	assert.equal(response.status, 401);
+	assert.equal((await response.json()).error, 'authentication_required');
+});

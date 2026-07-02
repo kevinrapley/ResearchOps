@@ -3,7 +3,7 @@ import { normalizeCategoryKey, normalizeTags, safeText } from "./text.js";
 export function parseBasePayload(body) {
 	const projectId = safeText(body.projectId || body.project || body.project_airtable_id || body.project_local_id);
 	const projectName = safeText(body.projectName || body.projectTitle || body.projectLabel || projectId);
-	const uid = safeText(body.uid || "anon") || "anon";
+	const uid = safeText(body.uid || "");
 
 	return {
 		mode: safeText(body.mode || "entry").toLowerCase() || "entry",

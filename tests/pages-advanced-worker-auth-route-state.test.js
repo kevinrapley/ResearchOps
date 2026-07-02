@@ -17,7 +17,8 @@ includes(workerSource, "stripAccessHeaders: true", "Pages advanced worker");
 includes(workerSource, "headers.delete('cf-access-jwt-assertion');", "Pages advanced worker");
 includes(workerSource, "headers.delete('cf-access-authenticated-user-email');", "Pages advanced worker");
 includes(workerSource, "headers.delete('cf-access-user-email');", "Pages advanced worker");
-includes(workerSource, "target.stripAccessHeaders ? 'false' : 'true'", "Pages advanced worker");
+includes(workerSource, "function proxyDiagnosticsEnabled(env = {})", "Pages advanced worker");
+includes(workerSource, "RESEARCHOPS_PROXY_DIAGNOSTICS_ENABLED", "Pages advanced worker");
 includes(workerSource, "function shouldDisableStaticCache(pathname)", "Pages advanced worker static cache policy");
 includes(workerSource, "pathname === '/' || pathname.endsWith('/') || pathname.endsWith('.html')", "Pages advanced worker static cache policy");
 includes(workerSource, "headers.set('cache-control', 'no-store');", "Pages advanced worker static cache policy");
@@ -238,6 +239,29 @@ test("Pages advanced worker strips Cloudflare Access headers from preview API re
 				},
 			}),
 			assetEnv(),
+		);
+		assert.equal(response.status, 200);
+		assert.equal(response.headers.get("x-researchops-api-origin-source"), null);
+		assert.equal(response.headers.get("x-researchops-api-upstream"), null);
+		assert.equal(response.headers.get("x-researchops-access-headers-forwarded"), null);
+	});
+});
+
+test("Pages advanced worker only emits API proxy diagnostics when explicitly enabled", async () => {
+	await withMockedFetch(async (url, init = {}) => {
+		assert.equal(url, "https://rops-api-passwordless-preview.digikev-kevin-rapley.workers.dev/api/projects/recMtdmBbaFilF2Tm");
+		const headers = new Headers(init.headers);
+		assert.equal(headers.has("cf-access-jwt-assertion"), false);
+		return new Response(JSON.stringify({ ok: true, id: "recMtdmBbaFilF2Tm" }), {
+			status: 200,
+			headers: { "content-type": "application/json; charset=utf-8" },
+		});
+	}, async () => {
+		const response = await worker.fetch(
+			new Request("https://feature-edit-project-objectives-markdown.researchops.pages.dev/api/projects/recMtdmBbaFilF2Tm", {
+				headers: { "cf-access-jwt-assertion": "access.jwt" },
+			}),
+			{ ...assetEnv(), RESEARCHOPS_PROXY_DIAGNOSTICS_ENABLED: "true" },
 		);
 		assert.equal(response.status, 200);
 		assert.equal(response.headers.get("x-researchops-api-origin-source"), "preview-host");

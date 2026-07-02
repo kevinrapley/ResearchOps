@@ -28,16 +28,18 @@ excludes(redirects, "https://rops-api.digikev-kevin-rapley.workers.dev/api/:spla
 includes(workerConfig, 'MURAL_REDIRECT_URI = "https://rops-api.digikev-kevin-rapley.workers.dev/api/mural/callback"', "Worker Mural OAuth config");
 includes(workerConfig, 'PAGES_ORIGIN       = "https://researchops.pages.dev"', "Worker Mural OAuth config");
 
-includes(routerSource, 'if (url.pathname === "/api/mural/auth" && request.method === "GET") return service.mural.muralAuth(origin, url);', "Worker router");
+includes(routerSource, 'url.pathname.startsWith("/api/mural/") && url.pathname !== "/api/mural/callback"', "Worker router");
 includes(routerSource, 'if (url.pathname === "/api/mural/callback" && request.method === "GET") return service.mural.muralCallback(origin, url);', "Worker router");
 
 includes(muralSource, 'const ret = url.searchParams.get("return") || "";', "Mural auth route");
 includes(muralSource, 'if (ret && new URL(ret).origin === new URL(origin).origin) safeReturn = ret;', "Mural auth route");
 includes(muralSource, 'if (ret.startsWith("/")) safeReturn = ret;', "Mural auth route");
-includes(muralSource, 'const state = b64Encode(JSON.stringify({ uid, ts: Date.now(), return: safeReturn, dbg }));', "Mural auth route");
+includes(muralSource, 'const state = await signOAuthState(this.root.env, { uid, ts: Date.now(), return: safeReturn });', "Mural auth route");
+includes(muralSource, 'stateObj = await verifyOAuthState(env, stateB64);', "Mural callback route");
 includes(muralSource, 'const pagesOrigin = env.PAGES_ORIGIN || "https://researchops.pages.dev";', "Mural callback route");
 includes(muralSource, 'backUrl = new URL(want, pagesOrigin);', "Mural callback route");
 includes(muralSource, "return Response.redirect(finalUrl, 302);", "Mural callback route");
 
+excludes(muralSource, "b64Encode(JSON.stringify", "Mural auth route");
 excludes(muralSource, "backUrl = new URL(want, url);", "Mural callback route");
 excludes(muralSource, 'new URL("/pages/projects/", url)', "Mural callback route");

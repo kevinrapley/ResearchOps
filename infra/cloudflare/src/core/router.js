@@ -52,6 +52,21 @@ function safeSlice(s, n) {
 	return s.length > n ? s.slice(0, n) + "…" : s;
 }
 
+function diagnosticsEnabled(env = {}) {
+	return String(env.RESEARCHOPS_DIAGNOSTICS_ENABLED || "").toLowerCase() === "true";
+}
+
+function constantTimeEqual(a, b) {
+	const left = new TextEncoder().encode(String(a || ""));
+	const right = new TextEncoder().encode(String(b || ""));
+	const max = Math.max(left.length, right.length);
+	let diff = left.length ^ right.length;
+	for (let index = 0; index < max; index += 1) {
+		diff |= (left[index] || 0) ^ (right[index] || 0);
+	}
+	return diff === 0;
+}
+
 function requireEnv(env, keys) {
 	const missing = keys.filter(k => !env[k]);
 	if (missing.length) throw new Error(`Missing env: ${missing.join(", ")}`);
@@ -155,23 +170,21 @@ async function agentPagesDeployDirect(request, env, origin) {
 	try {
 		requireEnv(env, ["AGENT_PAGES_DEPLOY_TOKEN", "AGENT_PAGES_DEPLOY_HOOK_URL"]);
 		const suppliedToken = bearerToken(request);
-		if (!suppliedToken || suppliedToken !== env.AGENT_PAGES_DEPLOY_TOKEN) {
+		if (!suppliedToken || !constantTimeEqual(suppliedToken, env.AGENT_PAGES_DEPLOY_TOKEN)) {
 			return new Response(json({ ok: false, error: "unauthorised" }), {
 				status: 401,
 				headers: { ...corsHeadersForEnv(env, origin), "content-type": "application/json; charset=utf-8", "cache-control": "no-store", "x-content-type-options": "nosniff" }
 			});
 		}
-		let payload = {};
-		try { payload = await request.json(); } catch (_error) { payload = {}; }
+			let payload = {};
+			try { payload = await request.json(); } catch { payload = {}; }
 		const deployResponse = await fetch(env.AGENT_PAGES_DEPLOY_HOOK_URL, { method: "POST" });
-		const deployBody = await deployResponse.text().catch(() => "");
 		return new Response(json({
 			ok: deployResponse.ok,
 			status: deployResponse.status,
 			branch: payload.branch || null,
 			commit: payload.commit || null,
-			source: payload.source || "unknown",
-			cloudflare: safeSlice(deployBody, 2000)
+			source: payload.source || "unknown"
 		}), {
 			status: deployResponse.ok ? 202 : 502,
 			headers: { ...corsHeadersForEnv(env, origin), "content-type": "application/json; charset=utf-8", "cache-control": "no-store", "x-content-type-options": "nosniff" }
@@ -198,6 +211,12 @@ export async function handleRequest(request, env) {
 			return new Response(null, {
 				status: 204,
 				headers: { ...corsHeadersForEnv(env, origin), "Access-Control-Max-Age": "86400" }
+			});
+		}
+		if (url.pathname.startsWith("/api/_diag/") && !diagnosticsEnabled(env)) {
+			return new Response(json({ error: "Not found", path: url.pathname }), {
+				status: 404,
+				headers: { ...corsHeadersForEnv(env, origin), "content-type": "application/json; charset=utf-8", "x-content-type-options": "nosniff" }
 			});
 		}
 		if (url.pathname === "/api/_diag/ping" && request.method === "GET") {
@@ -346,6 +365,12 @@ export async function handleRequest(request, env) {
 
 			if (url.pathname === "/api/comms/send" && request.method === "POST" && typeof service.sendComms === "function") return service.sendComms(request, origin);
 
+			if (url.pathname.startsWith("/api/mural/") && url.pathname !== "/api/mural/callback") {
+				return new Response(json({ error: "Not found", path: url.pathname }), {
+					status: 404,
+					headers: { ...corsHeadersForEnv(env, origin), "content-type": "application/json; charset=utf-8", "x-content-type-options": "nosniff" }
+				});
+			}
 			if (url.pathname === "/api/mural/auth" && request.method === "GET") return service.mural.muralAuth(origin, url);
 			if (url.pathname === "/api/mural/callback" && request.method === "GET") return service.mural.muralCallback(origin, url);
 			if (url.pathname === "/api/mural/verify" && request.method === "GET") return service.mural.muralVerify(origin, url);

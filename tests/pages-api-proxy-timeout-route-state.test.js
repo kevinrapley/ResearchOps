@@ -21,10 +21,16 @@ includes(proxySource, 'signal: controller.signal', 'Pages API proxy');
 includes(proxySource, 'clearTimeout(timer);', 'Pages API proxy');
 includes(proxySource, "error: 'api_proxy_timeout'", 'Pages API proxy');
 includes(proxySource, "'x-researchops-api-proxy-timeout-ms'", 'Pages API proxy');
-includes(proxySource, "'x-researchops-api-upstream'", 'Pages API proxy');
+includes(proxySource, "function normalizeAllowedOrigins(env = {})", 'Pages API proxy');
+includes(proxySource, "'Access-Control-Allow-Origin': allowOrigin", 'Pages API proxy');
+includes(proxySource, "headers.delete('access-control-allow-origin');", 'Pages API proxy');
+includes(proxySource, "headers.set('x-researchops-csrf', 'pages-proxy');", 'Pages API proxy');
 includes(proxySource, '504', 'Pages API proxy');
 includes(proxySource, "message: 'ResearchOps API proxy timed out while contacting the upstream Worker.'", 'Pages API proxy');
 includes(proxySource, "message: 'ResearchOps could not contact the API service.'", 'Pages API proxy');
+excludes(proxySource, "origin || '*'", 'Pages API proxy');
+excludes(proxySource, "upstreamOrigin", 'Pages API proxy');
+excludes(proxySource, "detail: String(error?.message || error)", 'Pages API proxy');
 
 includes(dashboardSource, 'fetchWithTimeout', 'Project Dashboard controller');
 includes(dashboardSource, 'apiUrl(`/api/projects/${encodeURIComponent(projectId)}?ts=${Date.now()}`)', 'Project Dashboard controller');

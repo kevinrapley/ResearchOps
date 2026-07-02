@@ -1,0 +1,113 @@
+{
+	"date": "2026-07-02",
+	"branch": "fix/security-hardening-main",
+	"base": "origin/main",
+	"traceRequired": true,
+	"traceReason": "fix/ branches require auditable traces for repository-affecting work",
+	"taskSummary": "Apply the nine hardening fixes identified against main on a new branch ready for PR review.",
+	"operatingModelFilesLoaded": [
+		"AGENTS.md",
+		".agent-operating-model/orchestration.xml",
+		".agent-operating-model/bundle-registry.json",
+		".agent-operating-model/task-signal-catalog.json",
+		".agent-operating-model/selection-rules.json",
+		".agent-operating-model/bootstrap-checklist.md",
+		".agent-operating-model/precedence-policy.md",
+		".agent-operating-model/trace-policy.md",
+		".agent-operating-model/trace-layers.md",
+		".agent-operating-model/behavioural-evals.json",
+		".agent-operating-model/github-mutation-policy.md"
+	],
+	"selectedBundles": [
+		{
+			"id": "github-diamond",
+			"canonicalPath": ".agent-operating-model/bundles/github/"
+		},
+		{
+			"id": "researchops-developer-control",
+			"canonicalPath": ".agent-operating-model/bundles/researchops-developer-control/"
+		},
+		{
+			"id": "multi-functional-team",
+			"canonicalPath": ".agent-operating-model/bundles/multi-functional-team/"
+		},
+		{
+			"id": "cloudflare",
+			"canonicalPath": ".agent-operating-model/bundles/cloudflare/"
+		},
+		{
+			"id": "mural-public-api",
+			"canonicalPath": ".agent-operating-model/bundles/mural-public-api/"
+		}
+	],
+	"bundlesSkipped": [
+		{
+			"id": "govuk-design-system",
+			"reason": "No UI/content or GOV.UK component behaviour was changed directly."
+		},
+		{
+			"id": "openai-platform",
+			"reason": "No OpenAI API or AI safety implementation was changed."
+		},
+		{
+			"id": "mcp-agent-tooling",
+			"reason": "No MCP or agent-tooling contract was changed."
+		},
+		{
+			"id": "airtable-public-api",
+			"reason": "No Airtable API request/response contract was changed directly."
+		}
+	],
+	"implementationSummary": [
+		"Legacy Pages Function proxy now uses allowlisted credentialed CORS, strips upstream CORS, adds CSRF confirmation to proxied mutations and returns generic upstream errors.",
+		"Advanced Pages Worker proxy diagnostics are hidden unless RESEARCHOPS_PROXY_DIAGNOSTICS_ENABLED=true.",
+		"Production retention enforcement is enabled.",
+		"Production persistent invocation logging is disabled and log sampling is reduced.",
+		"Mural OAuth state is signed and token storage is keyed by authenticated ResearchOps user id.",
+		"Mural endpoints now receive Worker auth context and anonymous uid fallback is removed from journal sync payload parsing.",
+		"Deploy hook route requires deployment.trigger permission and uses constant-time token comparison without returning Cloudflare hook response text.",
+		"Diagnostic endpoints are disabled unless RESEARCHOPS_DIAGNOSTICS_ENABLED=true.",
+		"Passwordless preview config uses separate storage identifiers and a tightened allowlist.",
+		"Security workflow now runs on relevant PR changes with Node 22 and package engine metadata is aligned."
+	],
+	"validationPlanned": [
+		"Focused security route-state tests",
+		"Formatting and lint checks",
+		"Trace coverage",
+		"Repository validation"
+	],
+	"validationEvidence": [
+		{
+			"command": "npm run format:check",
+			"status": "passed"
+		},
+		{
+			"command": "npm run lint",
+			"status": "passed",
+			"notes": "Exited 0 with existing warning-only lint debt."
+		},
+		{
+			"command": "npm run trace:coverage",
+			"status": "passed"
+		},
+		{
+			"command": "npm run validate",
+			"status": "passed"
+		},
+		{
+			"command": "npm test",
+			"status": "passed",
+			"summary": "305 tests, 305 pass, 0 fail"
+		},
+		{
+			"command": "focused hardening test slices",
+			"status": "passed",
+			"summary": "Covered proxy CORS/CSRF, diagnostics, deployment permission, Mural OAuth state/token ownership and production/preview configuration contracts."
+		}
+	],
+	"residualRisks": [
+		"Separate preview Cloudflare KV/D1 resources must exist before deploying the passwordless preview config.",
+		"Operators should review the first production retention run after deployment.",
+		"Mural OAuth state requires RESEARCHOPS_AUTH_SECRET or MURAL_OAUTH_STATE_SECRET."
+	]
+}

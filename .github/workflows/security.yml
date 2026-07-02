@@ -1,6 +1,16 @@
 name: Security & dependencies
 
 on:
+  pull_request:
+    paths:
+      - "package.json"
+      - "package-lock.json"
+      - ".github/workflows/**"
+      - "infra/cloudflare/**"
+      - "functions/**"
+      - "public/js/**"
+      - "scripts/security-audit-policy.sh"
+      - "security-audit-policy.json"
   schedule:
     - cron: "0 6 * * 1" # Mondays 06:00 UTC
   workflow_dispatch:
@@ -29,7 +39,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v6
         with:
-          node-version: "20"
+          node-version: "22"
           cache: "npm"
 
       - name: Install dependencies

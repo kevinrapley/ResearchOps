@@ -23,14 +23,9 @@
 		return url.searchParams.get('project') || url.searchParams.get('id') || '';
 	}
 
-	function muralUid() {
-		return localStorage.getItem('mural.uid') || localStorage.getItem('userId') || 'anon';
-	}
-
 	function payload(mode) {
 		return {
 			mode,
-			uid: muralUid(),
 			projectId: projectId(),
 			projectName:
 				document.querySelector('main')?.dataset?.projectName ||

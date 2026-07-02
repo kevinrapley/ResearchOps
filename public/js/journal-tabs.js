@@ -181,14 +181,9 @@ import { clearJournalFeedback, showJournalError, showJournalStatus } from './jou
 			state.projectId;
 	}
 
-	function muralUid() {
-		return localStorage.getItem('mural.uid') || localStorage.getItem('userId') || 'anon';
-	}
-
 	function muralSyncPayload(mode, extra = {}) {
 		return {
 			mode,
-			uid: muralUid(),
 			projectId: state.projectId,
 			projectName: projectNameForSync(),
 			...extra

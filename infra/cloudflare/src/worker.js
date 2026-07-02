@@ -88,6 +88,10 @@ function buildCorsHeaders(env, request) {
 	};
 }
 
+function diagnosticsEnabled(env = {}) {
+	return String(env.RESEARCHOPS_DIAGNOSTICS_ENABLED || "").toLowerCase() === "true";
+}
+
 function isStateChangingMethod(method) {
 	return ["POST", "PUT", "PATCH", "DELETE"].includes(String(method || "").toUpperCase());
 }
@@ -255,6 +259,7 @@ const RESEARCH_DATA_AUTH_PERMISSIONS = [
 	["research.content.view", "View research content", "Can view journal entries, memos, codes, guides, sessions and analysis."],
 	["research.content.manage", "Manage research content", "Can create, update or delete journal entries, memos, codes, guides, sessions and analysis."],
 	["research.integration.manage", "Manage research integrations", "Can use integrations that write or synchronise research data."],
+	["deployment.trigger", "Trigger deployments", "Can trigger governed ResearchOps deployment hooks."],
 	["synthesis.view", "View synthesis", "Can view research evidence, clusters and themes."],
 	["synthesis.manage", "Manage synthesis", "Can create, update or delete research synthesis records."],
 	["consent.form.view", "View consent forms", "Can view consent form templates and versions."],
@@ -299,6 +304,7 @@ const RESEARCH_DATA_ROLE_PERMISSIONS = [
 	["role_team_admin", "research.content.view"],
 	["role_team_admin", "research.content.manage"],
 	["role_team_admin", "research.integration.manage"],
+	["role_team_admin", "deployment.trigger"],
 	["role_team_admin", "synthesis.view"],
 	["role_team_admin", "synthesis.manage"],
 	["role_team_admin", "consent.form.view"],
@@ -371,7 +377,7 @@ const RESEARCH_DATA_ROUTE_PERMISSIONS = [
 	["route_api_session_notes_post", "POST", "/api/session-notes", "[\"research.content.manage\"]", 1],
 	["route_api_session_note_patch", "PATCH", "/api/session-notes/:id", "[\"research.content.manage\"]", 1],
 	["route_api_comms_send_post", "POST", "/api/comms/send", "[\"research.content.manage\"]", 1],
-	["route_api_agent_pages_deploy_post", "POST", "/api/agent-pages/deploy", "[]", 0],
+	["route_api_agent_pages_deploy_post", "POST", "/api/agent-pages/deploy", "[\"deployment.trigger\"]", 1],
 	["route_api_mural_auth_get", "GET", "/api/mural/auth", "[\"research.integration.manage\"]", 1],
 	["route_api_mural_callback_get", "GET", "/api/mural/callback", "[]", 0],
 	["route_api_mural_verify_get", "GET", "/api/mural/verify", "[\"research.integration.manage\"]", 1],
@@ -635,6 +641,7 @@ async function probeProjectCache(env) {
 }
 
 async function handleProjectSourceDiagnostics(request, env) {
+	if (!diagnosticsEnabled(env)) return new Response(JSON.stringify({ error: "Not found", path: "/api/_diag/projects-source" }), { status: 404, headers: { "content-type": "application/json; charset=utf-8", "cache-control": "no-store" } });
 	const authContext = await assertResearchDataRoutePermission(request, env, "/api/_diag/projects-source");
 	const [airtable, d1] = await Promise.all([probeAirtableProjects(env), probeProjectCache(env)]);
 	const airtableUsable = airtable.status === 200 && airtable.firstRecordIdValid === true;
@@ -643,6 +650,7 @@ async function handleProjectSourceDiagnostics(request, env) {
 }
 
 async function handleProjectLinkedDiagnostics(request, env) {
+	if (!diagnosticsEnabled(env)) return new Response(JSON.stringify({ error: "Not found", path: "/api/_diag/project-linked-records" }), { status: 404, headers: { "content-type": "application/json; charset=utf-8", "cache-control": "no-store" } });
 	const authContext = await assertResearchDataRoutePermission(request, env, "/api/_diag/project-linked-records");
 	const origin = request.headers.get("Origin") || "";
 	const url = new URL(request.url);
@@ -787,6 +795,32 @@ async function handleRepository(request, env, apiPath) {
 	return new Response(JSON.stringify({ error: "Not found", path: apiPath }), { status: 404, headers: { "content-type": "application/json; charset=utf-8" } });
 }
 
+async function handleMural(request, env, apiPath) {
+	const url = new URL(request.url);
+	const origin = request.headers.get("Origin") || "";
+	const service = serviceFor(env);
+
+	if (apiPath === "/api/mural/callback" && request.method === "GET") {
+		return service.mural.muralCallback(origin, url);
+	}
+
+	await ensureResearchDataAuthDeclarations(env);
+	const authContext = await authContextFor(request, env);
+	await assertRoutePermission(researchDataRoutePermissionRequest(request, apiPath), env, authContext);
+
+	if (apiPath === "/api/mural/auth" && request.method === "GET") return service.mural.muralAuth(origin, url, authContext);
+	if (apiPath === "/api/mural/verify" && request.method === "GET") return service.mural.muralVerify(origin, url, authContext);
+	if (apiPath === "/api/mural/resolve" && request.method === "GET") return service.mural.muralResolve(origin, url, authContext);
+	if (apiPath === "/api/mural/setup" && request.method === "POST") return service.mural.muralSetup(request, origin, authContext);
+	if (apiPath === "/api/mural/journal-sync" && request.method === "POST") return service.mural.muralJournalSync(request, origin, authContext);
+	if (apiPath === "/api/mural/workspaces" && request.method === "GET") return service.mural.muralListWorkspaces(origin, url, authContext);
+	if (apiPath === "/api/mural/me" && request.method === "GET") return service.mural.muralMe(origin, url, authContext);
+	if (apiPath === "/api/mural/find" && request.method === "GET" && typeof service.mural.muralFind === "function") return service.mural.muralFind(origin, url);
+	if (apiPath === "/api/mural/await" && request.method === "GET" && typeof service.mural.muralAwait === "function") return service.mural.muralAwait(origin, url);
+	if (apiPath === "/api/mural/debug-env" && request.method === "GET" && typeof service.mural.muralDebugEnv === "function") return service.mural.muralDebugEnv(origin);
+	return new Response(JSON.stringify({ error: "Not found", path: apiPath }), { status: 404, headers: { "content-type": "application/json; charset=utf-8" } });
+}
+
 export default {
 	async fetch(request, env, ctx) {
 		const { method, url } = request;
@@ -812,6 +846,7 @@ export default {
 				else if (apiPath === "/api/participant-consent" || apiPath.startsWith("/api/participant-consent/")) result = await handleParticipantConsent(request, env, apiPath);
 				else if (apiPath === "/api/study-support" || apiPath.startsWith("/api/study-support/")) result = await handleStudySupport(request, env, apiPath);
 				else if (apiPath === "/api/repository" || apiPath.startsWith("/api/repository/")) result = await handleRepository(request, env, apiPath);
+				else if (apiPath === "/api/mural/callback" || apiPath.startsWith("/api/mural/")) result = await handleMural(request, env, apiPath);
 				else if ((apiPath === "/api/health" || apiPath === "/api/_diag/ping") && method === "GET") result = await handleRequest(request, env, ctx);
 				else {
 					if (apiPath.startsWith("/api/")) await assertFallbackApiRoutePermission(request, env, apiPath);

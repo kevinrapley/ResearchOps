@@ -30,9 +30,8 @@ AUDIT = "true"
 RESEARCHOPS_BUILD_SHA = "local"
 RESEARCHOPS_BUILD_BRANCH = "local"
 RESEARCHOPS_QA_BDD_AUTH_ENABLED = "false"
-RESEARCHOPS_QA_BDD_AUTH_EMAILS = "qa-bdd.walkthrough@example.gov.uk"
 RESEARCHOPS_ALLOW_PAGES_PREVIEW_ORIGINS = "false"
-RESEARCHOPS_RETENTION_ENFORCEMENT_ENABLED = "false"
+RESEARCHOPS_RETENTION_ENFORCEMENT_ENABLED = "true"
 RESEARCHOPS_RETENTION_GRACE_DAYS = "7"
 
 ALLOWED_ORIGINS = "https://researchops.pages.dev,https://rops-api.digikev-kevin-rapley.workers.dev,https://reops-sourcebook.pages.dev"
@@ -78,9 +77,9 @@ preview_id = "8e2d88969b9e4be694868931bdba92f2"
 [observability]
 [observability.logs]
 enabled = true
-head_sampling_rate = 1
-invocation_logs = true
-persist = true
+head_sampling_rate = 0.1
+invocation_logs = false
+persist = false
 
 [triggers]
 crons = ["17 2 * * *"]

@@ -7,7 +7,8 @@ INSERT OR IGNORE INTO auth_permissions (code, label, description, is_sensitive, 
 	('project.manage', 'Manage projects', 'Can create or update project records.', 1, 0),
 	('research.content.view', 'View research content', 'Can view journal entries, memos, codes, guides, sessions and analysis.', 1, 0),
 	('research.content.manage', 'Manage research content', 'Can create, update or delete journal entries, memos, codes, guides, sessions and analysis.', 1, 0),
-	('research.integration.manage', 'Manage research integrations', 'Can use integrations that write or synchronise research data.', 1, 0);
+	('research.integration.manage', 'Manage research integrations', 'Can use integrations that write or synchronise research data.', 1, 0),
+	('deployment.trigger', 'Trigger deployments', 'Can trigger governed ResearchOps deployment hooks.', 1, 1);
 
 INSERT OR IGNORE INTO auth_role_permissions (role_id, permission_code) VALUES
 	('role_researcher', 'project.view'),
@@ -24,7 +25,8 @@ INSERT OR IGNORE INTO auth_role_permissions (role_id, permission_code) VALUES
 	('role_team_admin', 'project.manage'),
 	('role_team_admin', 'research.content.view'),
 	('role_team_admin', 'research.content.manage'),
-	('role_team_admin', 'research.integration.manage');
+	('role_team_admin', 'research.integration.manage'),
+	('role_team_admin', 'deployment.trigger');
 
 INSERT OR IGNORE INTO auth_route_permissions (id, method, route_pattern, required_permissions_json, auth_required, implementation_status) VALUES
 	('route_api_health_get', 'GET', '/api/health', '[]', 0, 'implemented'),
@@ -84,7 +86,7 @@ INSERT OR IGNORE INTO auth_route_permissions (id, method, route_pattern, require
 	('route_api_session_notes_post', 'POST', '/api/session-notes', '["research.content.manage"]', 1, 'implemented'),
 	('route_api_session_note_patch', 'PATCH', '/api/session-notes/:id', '["research.content.manage"]', 1, 'implemented'),
 	('route_api_comms_send_post', 'POST', '/api/comms/send', '["research.content.manage"]', 1, 'implemented'),
-	('route_api_agent_pages_deploy_post', 'POST', '/api/agent-pages/deploy', '[]', 0, 'implemented'),
+	('route_api_agent_pages_deploy_post', 'POST', '/api/agent-pages/deploy', '["deployment.trigger"]', 1, 'implemented'),
 	('route_api_mural_auth_get', 'GET', '/api/mural/auth', '["research.integration.manage"]', 1, 'implemented'),
 	('route_api_mural_callback_get', 'GET', '/api/mural/callback', '[]', 0, 'implemented'),
 	('route_api_mural_verify_get', 'GET', '/api/mural/verify', '["research.integration.manage"]', 1, 'implemented'),
