@@ -30,11 +30,28 @@ function isAbortError(error) {
 	return error?.name === 'AbortError';
 }
 
-function corsHeaders(origin) {
+function normalizeAllowedOrigins(env = {}) {
+	const raw = env.ALLOWED_ORIGINS || '';
+	return Array.isArray(raw) ? raw : String(raw).split(',').map((value) => value.trim()).filter(Boolean);
+}
+
+function isAllowedPagesOrigin(env, origin) {
+	if (String(env.RESEARCHOPS_ALLOW_PAGES_PREVIEW_ORIGINS || '').toLowerCase() !== 'true') return false;
+	try {
+		const { hostname, protocol } = new URL(origin);
+		return protocol === 'https:' && hostname.endsWith('.researchops.pages.dev');
+	} catch {
+		return false;
+	}
+}
+
+function corsHeaders(env, origin) {
+	const allowed = normalizeAllowedOrigins(env);
+	const allowOrigin = origin && (allowed.includes(origin) || isAllowedPagesOrigin(env, origin)) ? origin : 'null';
 	return {
-		'Access-Control-Allow-Origin': origin || '*',
+		'Access-Control-Allow-Origin': allowOrigin,
 		'Access-Control-Allow-Methods': 'GET, POST, PATCH, OPTIONS',
-		'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-ResearchOps-Team-Id',
+		'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-ResearchOps-Team-Id, X-ResearchOps-CSRF',
 		'Access-Control-Allow-Credentials': 'true',
 		Vary: 'Origin',
 		'Access-Control-Max-Age': '86400',
@@ -72,10 +89,13 @@ function forwardedHeaders(request) {
 	headers.delete('cf-ipcountry');
 	headers.delete('cf-ray');
 	headers.delete('cf-visitor');
+	if (!['GET', 'HEAD', 'OPTIONS'].includes(request.method.toUpperCase()) && !headers.has('x-researchops-csrf')) {
+		headers.set('x-researchops-csrf', 'pages-proxy');
+	}
 	return headers;
 }
 
-function jsonResponse(body, status = 200, origin = null, extraHeaders = {}) {
+function jsonResponse(body, status = 200, env = {}, origin = null, extraHeaders = {}) {
 	return new Response(JSON.stringify(body), {
 		status,
 		headers: {
@@ -83,7 +103,7 @@ function jsonResponse(body, status = 200, origin = null, extraHeaders = {}) {
 			'cache-control': 'no-store',
 			'x-content-type-options': 'nosniff',
 			'x-researchops-api-proxy': 'pages-function',
-			...corsHeaders(origin),
+			...corsHeaders(env, origin),
 			...extraHeaders,
 		},
 	});
@@ -155,7 +175,7 @@ async function parseJsonResponse(response) {
 	}
 }
 
-async function blockMalformedProjectList(request, origin, response) {
+async function blockMalformedProjectList(request, env, origin, response) {
 	if (!isProjectListRequest(request)) return null;
 	const data = await parseJsonResponse(response);
 	if (!data || data.ok !== true || !Array.isArray(data.projects)) return null;
@@ -168,7 +188,6 @@ async function blockMalformedProjectList(request, origin, response) {
 			ok: false,
 			error: 'projects_unavailable',
 			detail: '/api/projects returned records that do not match the Airtable/D1 project contract. CSV fallback is disabled for project cards.',
-			upstreamStatus: response.status,
 			malformedCount: malformed.length,
 			projectCount: data.projects.length,
 			expected: {
@@ -178,10 +197,10 @@ async function blockMalformedProjectList(request, origin, response) {
 			},
 		},
 		503,
+		env,
 		origin,
 		{
 			'x-researchops-api-proxy-blocked': 'malformed-project-list',
-			'x-researchops-api-upstream-status': String(response.status),
 		},
 	);
 }
@@ -195,7 +214,7 @@ export async function onRequest({ request, env }) {
 	if (method === 'OPTIONS') {
 		return new Response(null, {
 			status: 204,
-			headers: corsHeaders(origin),
+			headers: corsHeaders(env, origin),
 		});
 	}
 
@@ -203,16 +222,20 @@ export async function onRequest({ request, env }) {
 		targetUrl = buildUpstreamUrl(request, env);
 		const response = await fetchUpstreamWithTimeout(targetUrl, request, method, timeoutMs);
 
-		const projectBlock = await blockMalformedProjectList(request, origin, response);
+		const projectBlock = await blockMalformedProjectList(request, env, origin, response);
 		if (projectBlock) return projectBlock;
 
 		const headers = new Headers(response.headers);
+		headers.delete('access-control-allow-origin');
+		headers.delete('access-control-allow-credentials');
+		headers.delete('access-control-allow-methods');
+		headers.delete('access-control-allow-headers');
+		headers.delete('vary');
 		headers.set('cache-control', 'no-store');
 		headers.set('x-content-type-options', 'nosniff');
 		headers.set('x-researchops-api-proxy', 'pages-function');
-		headers.set('x-researchops-api-upstream', targetUrl.origin);
 		headers.set('x-researchops-api-proxy-timeout-ms', String(timeoutMs));
-		for (const [key, value] of Object.entries(corsHeaders(origin))) headers.set(key, value);
+		for (const [key, value] of Object.entries(corsHeaders(env, origin))) headers.set(key, value);
 
 		return new Response(response.body, {
 			status: response.status,
@@ -226,14 +249,12 @@ export async function onRequest({ request, env }) {
 					ok: false,
 					error: 'api_proxy_timeout',
 					message: 'ResearchOps API proxy timed out while contacting the upstream Worker.',
-					detail: `Upstream Worker did not respond within ${timeoutMs}ms.`,
-					upstreamOrigin: targetUrl?.origin || null,
 					timeoutMs,
 				},
 				504,
+				env,
 				origin,
 				{
-					'x-researchops-api-upstream': targetUrl?.origin || 'unknown',
 					'x-researchops-api-proxy-timeout-ms': String(timeoutMs),
 				},
 			);
@@ -244,13 +265,11 @@ export async function onRequest({ request, env }) {
 				ok: false,
 				error: 'api_proxy_error',
 				message: 'ResearchOps could not contact the API service.',
-				detail: String(error?.message || error),
-				upstreamOrigin: targetUrl?.origin || null,
 			},
 			502,
+			env,
 			origin,
 			{
-				'x-researchops-api-upstream': targetUrl?.origin || 'unknown',
 				'x-researchops-api-proxy-timeout-ms': String(timeoutMs),
 			},
 		);

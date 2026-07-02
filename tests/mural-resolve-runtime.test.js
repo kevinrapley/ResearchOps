@@ -36,7 +36,7 @@ function makeService({
 	tokens = { access_token: 'access-token' },
 	companyId = 'homeofficegovuk',
 } = {}) {
-	const tokenStore = new Map([['mural:resolve-user:tokens', JSON.stringify(tokens)]]);
+	const tokenStore = new Map([['mural:user:resolve-user:tokens', JSON.stringify(tokens)]]);
 	const root = {
 		env: {
 			MURAL_COMPANY_ID: companyId,
@@ -61,11 +61,15 @@ function makeService({
 
 function resolveUrl(projectId) {
 	return new URL(
-		`https://worker.test/api/mural/resolve?projectId=${encodeURIComponent(
-			projectId
-		)}&uid=resolve-user`
+		`https://worker.test/api/mural/resolve?projectId=${encodeURIComponent(projectId)}`
 	);
 }
+
+const resolveUserContext = {
+	user: {
+		id: 'resolve-user',
+	},
+};
 
 test('muralResolve returns not found when the saved Mural board was deleted', async () => {
 	const originalFetch = globalThis.fetch;
@@ -95,7 +99,11 @@ test('muralResolve returns not found when the saved Mural board was deleted', as
 			],
 		});
 
-		const response = await service.muralResolve('', resolveUrl('recDeletedBoard1'));
+		const response = await service.muralResolve(
+			'',
+			resolveUrl('recDeletedBoard1'),
+			resolveUserContext
+		);
 		const body = await response.json();
 
 		assert.equal(response.status, 404);
@@ -137,7 +145,11 @@ test('muralResolve still returns a linked board when Mural confirms it exists', 
 			],
 		});
 
-		const response = await service.muralResolve('', resolveUrl('recLiveBoard01'));
+		const response = await service.muralResolve(
+			'',
+			resolveUrl('recLiveBoard01'),
+			resolveUserContext
+		);
 		const body = await response.json();
 
 		assert.equal(response.status, 200);

@@ -1,6 +1,8 @@
 import assert from 'node:assert/strict';
 import { muralJournalSync } from '../infra/cloudflare/src/service/mural-journal-sync-safe-tags.js';
 
+const AUTH_CONTEXT = { user: { id: 'user-123' } };
+
 function jsonResponse(body, status = 200) {
 	return new Response(JSON.stringify(body), {
 		status,
@@ -58,7 +60,8 @@ async function postHydrate(svc) {
 				projectName: 'Test Project 1',
 			}),
 		}),
-		'https://researchops.test'
+		'https://researchops.test',
+		AUTH_CONTEXT
 	);
 }
 
@@ -73,13 +76,29 @@ async function postStatus(svc) {
 				projectName: 'Test Project 1',
 			}),
 		}),
-		'https://researchops.test'
+		'https://researchops.test',
+		AUTH_CONTEXT
 	);
 }
 
 const originalFetch = globalThis.fetch;
 
 try {
+	const unauthenticatedResponse = await muralJournalSync(
+		service([]),
+		new Request('https://researchops.test/api/mural/journal-sync', {
+			method: 'POST',
+			body: JSON.stringify({
+				mode: 'hydrate',
+				projectId: 'project-1',
+				projectName: 'Test Project 1',
+			}),
+		}),
+		'https://researchops.test'
+	);
+	assert.equal(unauthenticatedResponse.status, 401);
+	assert.equal((await unauthenticatedResponse.json()).error, 'not_authenticated');
+
 	const entries = [
 		{
 			id: 'entry-001',
@@ -733,7 +752,8 @@ try {
 				projectName: 'project-1',
 			}),
 		}),
-		'https://researchops.test'
+		'https://researchops.test',
+		AUTH_CONTEXT
 	);
 	const preserveData = await preserveResponse.json();
 

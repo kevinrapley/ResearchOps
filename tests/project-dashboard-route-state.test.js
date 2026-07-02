@@ -395,10 +395,10 @@ includes(muralIntegrationSource, "function disableAll() {\n\t\thideConnectButton
 includes(muralIntegrationSource, "function setGovukTag(el, text, modifier = \"govuk-tag--grey\")", "Mural integration component");
 includes(muralIntegrationSource, "function setOpenLinkState(enabled, boardUrl = \"\")", "Mural integration component");
 includes(muralIntegrationSource, "jsonFetch(addDebug(`${API_ORIGIN}/api/health`)).catch(() => {});", "Mural integration component");
-includes(muralIntegrationSource, "`${API_ORIGIN}/api/mural/auth?uid=${encodeURIComponent(uid())}&return=${encodeURIComponent(backPath)}`", "Mural integration component");
-includes(muralIntegrationSource, "`${API_ORIGIN}/api/mural/verify?uid=${encodeURIComponent(uid())}`", "Mural integration component");
+includes(muralIntegrationSource, "`${API_ORIGIN}/api/mural/auth?return=${encodeURIComponent(backPath)}`", "Mural integration component");
+includes(muralIntegrationSource, "`${API_ORIGIN}/api/mural/verify`", "Mural integration component");
 includes(muralIntegrationSource, "`${API_ORIGIN}/api/mural/setup`", "Mural integration component");
-includes(muralIntegrationSource, "`${API_ORIGIN}/api/mural/resolve?projectId=${encodeURIComponent(pid)}&uid=${encodeURIComponent(uid())}`", "Mural integration component");
+includes(muralIntegrationSource, "`${API_ORIGIN}/api/mural/resolve?projectId=${encodeURIComponent(pid)}`", "Mural integration component");
 includes(muralIntegrationSource, "Mural optional", "Mural integration component");
 includes(muralIntegrationSource, "Connect if needed", "Mural integration component");
 includes(muralIntegrationSource, "Create or open manually", "Mural integration component");

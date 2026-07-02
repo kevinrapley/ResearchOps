@@ -134,6 +134,17 @@ async function requestBody(request) {
 	}
 }
 
+function authenticatedUid(authContext) {
+	return safeText(authContext?.user?.id || authContext?.userId || "");
+}
+
+function requestWithAuthenticatedUid(request, body, uid) {
+	return new Request(request, {
+		body: JSON.stringify({ ...(body || {}), uid }),
+		headers: new Headers(request.headers)
+	});
+}
+
 function airtableTableName(env) {
 	return env?.AIRTABLE_TABLE_MURAL_JOURNAL_SYNC || env?.AIRTABLE_TABLE_MURAL_JOURNAL_MAPPINGS || "Mural Journal Sync";
 }
@@ -719,14 +730,17 @@ async function responseWithMappings(response, svc, body) {
 	return jsonResponseFrom(response, { ...data, mappings, tagSync: tagSyncEvents.slice() });
 }
 
-export async function muralJournalSync(svc, request, origin) {
+export async function muralJournalSync(svc, request, origin, authContext) {
 	const originalFetch = globalThis.fetch;
 	const body = await requestBody(request);
+	const uid = authenticatedUid(authContext);
+	if (!uid) return svc.json({ ok: false, error: "not_authenticated" }, 401, svc.corsHeaders(origin));
+	const authenticatedRequest = requestWithAuthenticatedUid(request, body, uid);
 	tagSyncEvents = [];
 	globalThis.fetch = installSafeMuralFetch(svc, originalFetch);
 	try {
-		const response = await BaseMuralJournalSync.muralJournalSync(svc, request, origin);
-		return responseWithMappings(response, svc, body);
+		const response = await BaseMuralJournalSync.muralJournalSync(svc, authenticatedRequest, origin);
+		return responseWithMappings(response, svc, { ...body, uid });
 	} finally {
 		globalThis.fetch = originalFetch;
 	}

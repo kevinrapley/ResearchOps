@@ -19,15 +19,24 @@ function excludes(source, text, label) {
 includes(serviceSource, "export class MuralServicePart", "Mural service");
 includes(serviceSource, "resolveBoardForService(this", "Mural service");
 includes(serviceSource, "registerBoardForService(this", "Mural service");
-includes(serviceSource, "handleMuralJournalSync(this, request, origin)", "Mural service");
+includes(serviceSource, "handleMuralJournalSync(this, next, origin)", "Mural service");
 includes(serviceSource, "probeViewerUrl(this.root.env, accessToken, muralId)", "Mural service");
 includes(serviceSource, "ensureWorkspace(this.root, accessToken, wsOverride)", "Mural service");
 includes(serviceSource, "getValidAccessToken(this, uid)", "Mural service");
+includes(serviceSource, "async function signOAuthState(env, payload)", "Mural service");
+includes(serviceSource, "async function verifyOAuthState(env, state)", "Mural service");
+includes(serviceSource, "env.MURAL_OAUTH_STATE_SECRET || env.RESEARCHOPS_AUTH_SECRET", "Mural service");
+includes(serviceSource, "function authenticatedUid(authContext)", "Mural service");
+includes(serviceSource, "return `mural:user:${uid}:tokens`;", "Mural service");
+includes(serviceSource, "const uid = authenticatedUid(authContext);", "Mural service");
+includes(serviceSource, "JSON.stringify({ ...body, uid })", "Mural service");
 
 excludes(serviceSource, "async function d1ResolveMuralBoard", "Mural service");
 excludes(serviceSource, "function _looksLikeMuralViewerUrl", "Mural service");
 excludes(serviceSource, "async function _getValidAccessToken", "Mural service");
 excludes(serviceSource, "const GRID_Y = 32", "Mural service");
+excludes(serviceSource, "url.searchParams.get(\"uid\") || \"anon\"", "Mural service");
+excludes(serviceSource, "JSON.parse(b64Decode", "Mural service");
 
 includes(boardRegistrySource, "export const PURPOSE_REFLEXIVE", "Mural board registry");
 includes(boardRegistrySource, "async function d1ResolveMuralBoard", "Mural board registry");

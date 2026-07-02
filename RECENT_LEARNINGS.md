@@ -2,6 +2,14 @@
 
 This file records repeatable repository-specific lessons for ResearchOps agents and maintainers. It is not a changelog.
 
+## 2026-07-02 — Do not invent Cloudflare resource IDs for hardening changes
+
+Context: PR #460 tightened the passwordless preview Worker configuration by attempting to separate preview storage from production, but replaced the checked-in `SESSION_KV` namespace ID and D1 database ID with unprovisioned values. CI reached `wrangler deploy` and Cloudflare rejected the Worker version because the configured KV and D1 resources did not exist.
+
+Learning: Cloudflare resource IDs in Wrangler files are live deployment contracts, not placeholders. Security hardening can require resource separation, but the repository must either reference a provisioned resource or patch configuration from a verified secret before deployment.
+
+Action: Before changing KV, D1, R2, queue or Worker binding identifiers, verify that the target resource exists in the account or keep the existing provisioned binding and record the residual separation gap. Add route-state or workflow tests that distinguish "separate where provisioned" from "invented ID that breaks deploy".
+
 ## 2026-07-01 — Credential-sensitive Pages deploys should be manual until token scope is proven
 
 Context: PR #440 added a dedicated `Deploy reporting site` workflow to publish the committed `reports-site/` directory to the `reopsreporting` Cloudflare Pages project. After merge, the workflow passed the local reporting-site validation and artefact guard, but failed on `main` during `wrangler pages deploy` because Cloudflare returned authentication error `10000` for the Pages project API call. The workflow therefore made normal post-merge `main` status depend on a secret permission that had not been proven for Pages deployment.

@@ -25,7 +25,6 @@ import {
 	updateAreaTitle
 } from "../../lib/mural.js";
 
-import { b64Encode, b64Decode } from "../../core/utils.js";
 import {
 	PURPOSE_REFLEXIVE,
 	registerBoardForService,
@@ -38,18 +37,64 @@ import { ensureWorkspace, resolveUserOwnedRoomForSetup } from "./mural-workspace
 
 /** @typedef {import("../index.js").ResearchOpsService} ResearchOpsService */
 
-/* ───────────────────────── small debug helpers ───────────────────────── */
-function _wantDebugFromUrl(urlLike) {
-	try {
-		return (new URL(String(urlLike))).searchParams.get("debug") === "true";
-	} catch {
-		return false;
-	}
-}
-
 function isMissingOrInaccessibleMural(err) {
 	const status = Number(err?.status || 0);
 	return status === 403 || status === 404 || status === 410;
+}
+
+function base64UrlEncodeBytes(bytes) {
+	let binary = "";
+	for (const byte of bytes) binary += String.fromCharCode(byte);
+	return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
+}
+
+function base64UrlEncodeJson(value) {
+	return base64UrlEncodeBytes(new TextEncoder().encode(JSON.stringify(value)));
+}
+
+function base64UrlDecodeJson(value) {
+	const padded = `${String(value || "").replace(/-/g, "+").replace(/_/g, "/")}${"=".repeat((4 - (String(value || "").length % 4)) % 4)}`;
+	const binary = atob(padded);
+	const bytes = Uint8Array.from(binary, (char) => char.charCodeAt(0));
+	return JSON.parse(new TextDecoder().decode(bytes));
+}
+
+async function hmacKey(env) {
+	const secret = env.MURAL_OAUTH_STATE_SECRET || env.RESEARCHOPS_AUTH_SECRET || "";
+	if (!secret) throw new Error("missing_oauth_state_secret");
+	return crypto.subtle.importKey(
+		"raw",
+		new TextEncoder().encode(secret),
+		{ name: "HMAC", hash: "SHA-256" },
+		false,
+		["sign", "verify"]
+	);
+}
+
+async function signOAuthState(env, payload) {
+	const encodedPayload = base64UrlEncodeJson(payload);
+	const signature = await crypto.subtle.sign("HMAC", await hmacKey(env), new TextEncoder().encode(encodedPayload));
+	return `${encodedPayload}.${base64UrlEncodeBytes(new Uint8Array(signature))}`;
+}
+
+async function verifyOAuthState(env, state) {
+	const [encodedPayload, encodedSignature] = String(state || "").split(".");
+	if (!encodedPayload || !encodedSignature) throw new Error("invalid_oauth_state");
+	const signatureBytes = Uint8Array.from(atob(`${encodedSignature.replace(/-/g, "+").replace(/_/g, "/")}${"=".repeat((4 - (encodedSignature.length % 4)) % 4)}`), (char) => char.charCodeAt(0));
+	const ok = await crypto.subtle.verify("HMAC", await hmacKey(env), signatureBytes, new TextEncoder().encode(encodedPayload));
+	if (!ok) throw new Error("invalid_oauth_state");
+	const payload = base64UrlDecodeJson(encodedPayload);
+	const issuedAt = Number(payload?.ts || 0);
+	if (!payload?.uid || !Number.isFinite(issuedAt) || Date.now() - issuedAt > 10 * 60 * 1000) {
+		throw new Error("expired_oauth_state");
+	}
+	return payload;
+}
+
+function authenticatedUid(authContext) {
+	const uid = authContext?.user?.id || authContext?.userId || "";
+	if (!uid) throw new Error("authenticated_user_required");
+	return String(uid);
 }
 
 /* ───────────────────────── Class ───────────────────────── */
@@ -63,7 +108,7 @@ export class MuralServicePart {
 	}
 
 	kvKey(uid) {
-		return `mural:${uid}:tokens`;
+		return `mural:user:${uid}:tokens`;
 	}
 
 	async saveTokens(uid, tokens) {
@@ -119,9 +164,8 @@ export class MuralServicePart {
 		});
 	}
 
-	async muralAuth(origin, url) {
-		const dbg = _wantDebugFromUrl(url);
-		const uid = url.searchParams.get("uid") || "anon";
+	async muralAuth(origin, url, authContext) {
+		const uid = authenticatedUid(authContext);
 		const ret = url.searchParams.get("return") || "";
 		let safeReturn = "/pages/projects/";
 		try {
@@ -130,21 +174,13 @@ export class MuralServicePart {
 			if (ret.startsWith("/")) safeReturn = ret;
 		}
 
-		const state = b64Encode(JSON.stringify({ uid, ts: Date.now(), return: safeReturn, dbg }));
+		const state = await signOAuthState(this.root.env, { uid, ts: Date.now(), return: safeReturn });
 		const redirect = buildAuthUrl(this.root.env, state);
 		return Response.redirect(redirect, 302);
 	}
 
 	async muralCallback(origin, url) {
 		const { env } = this.root;
-
-		// Debug logging (remove after fix is verified)
-		console.log('[muralCallback] Environment check:', {
-			hasPAGES_ORIGIN: Boolean(env.PAGES_ORIGIN),
-			PAGES_ORIGIN: env.PAGES_ORIGIN,
-			hasALLOWED_ORIGINS: Boolean(env.ALLOWED_ORIGINS),
-			ALLOWED_ORIGINS: env.ALLOWED_ORIGINS
-		});
 
 		if (!env.MURAL_CLIENT_SECRET) {
 			return this.root.json({
@@ -160,19 +196,12 @@ export class MuralServicePart {
 			return this.root.json({ ok: false, error: "missing_code" }, 400, this.root.corsHeaders(origin));
 		}
 
-		let uid = "anon";
 		let stateObj = {};
 		try {
-			stateObj = JSON.parse(b64Decode(stateB64 || ""));
-			uid = stateObj?.uid || "anon";
-		} catch { /* ignore */ }
-
-		// Debug: log decoded state
-		console.log('[muralCallback] Decoded state:', {
-			uid,
-			return: stateObj?.return,
-			ts: stateObj?.ts
-		});
+			stateObj = await verifyOAuthState(env, stateB64);
+		} catch {
+			return this.root.json({ ok: false, error: "invalid_oauth_state" }, 400, this.root.corsHeaders(origin));
+		}
 
 		// Exchange code → tokens
 		let tokens;
@@ -186,7 +215,7 @@ export class MuralServicePart {
 			}, 500, this.root.corsHeaders(origin));
 		}
 
-		await this.saveTokens(uid, tokens);
+		await this.saveTokens(stateObj.uid, tokens);
 
 		// Build redirect target
 		const want = stateObj?.return || "/pages/projects/";
@@ -195,21 +224,9 @@ export class MuralServicePart {
 		// Use PAGES_ORIGIN as the base for ALL redirects (with hardcoded fallback)
 		const pagesOrigin = env.PAGES_ORIGIN || "https://researchops.pages.dev";
 
-		console.log('[muralCallback] Building redirect:', {
-			want,
-			pagesOrigin,
-			startsWithHttp: want.startsWith("http")
-		});
-
 		if (want.startsWith("http")) {
 			// Absolute URL: validate and use if allowed, otherwise fallback to PAGES_ORIGIN + default path
 			const isAllowed = _isAllowedReturn(env, want);
-			console.log('[muralCallback] Absolute URL validation:', {
-				want,
-				isAllowed,
-				allowedOrigins: env.ALLOWED_ORIGINS
-			});
-
 			backUrl = isAllowed ?
 				new URL(want) :
 				new URL("/pages/projects/", pagesOrigin); // FIX: use pagesOrigin, not url
@@ -224,14 +241,13 @@ export class MuralServicePart {
 		backUrl.search = sp.toString();
 
 		const finalUrl = backUrl.toString();
-		console.log('[muralCallback] Final redirect URL:', finalUrl);
 
 		return Response.redirect(finalUrl, 302);
 	}
 
-	async muralVerify(origin, url) {
+	async muralVerify(origin, url, authContext) {
 		const cors = this.root.corsHeaders(origin);
-		const uid = url.searchParams.get("uid") || "anon";
+		const uid = authenticatedUid(authContext);
 		try {
 			const tokenRes = await getValidAccessToken(this, uid);
 			if (!tokenRes.ok) {
@@ -253,32 +269,27 @@ export class MuralServicePart {
 		}
 	}
 
-	async muralSetup(request, origin) {
+	async muralSetup(request, origin, authContext) {
 		const cors = this.root.corsHeaders(origin);
 		let step = "parse_input";
 
 		try {
 			const body = await request.json().catch(() => ({}));
-			const uid = body?.uid ?? "anon";
+			const uid = authenticatedUid(authContext);
 			const projectId = body?.projectId ?? null;
 			const projectName = body?.projectName;
 			const wsOverride = body?.workspaceId;
 
-			console.log("[mural.setup] Starting", { uid, projectId, projectName, hasWorkspaceOverride: !!wsOverride });
-
 			if (!projectName || !String(projectName).trim()) {
-				console.error("[mural.setup] Missing projectName");
 				return this.root.json({ ok: false, error: "projectName required" }, 400, cors);
 			}
 			if (!projectId) {
-				console.error("[mural.setup] Missing projectId");
 				return this.root.json({ ok: false, error: "projectId required" }, 400, cors);
 			}
 
 			step = "load_tokens";
 			const tokens = await this.loadTokens(uid);
 			if (!tokens?.access_token) {
-				console.error("[mural.setup] No access token for uid", { uid });
 				return this.root.json({ ok: false, reason: "not_authenticated" }, 401, cors);
 			}
 
@@ -287,19 +298,15 @@ export class MuralServicePart {
 			let ws;
 			try {
 				ws = await ensureWorkspace(this.root, accessToken, wsOverride);
-				console.log("[mural.setup] Workspace verified", { workspaceId: ws.id, workspaceName: ws.name });
 			} catch (err) {
 				const code = Number(err?.status || err?.code || 0);
 				if (code === 401 && tokens.refresh_token) {
-					console.log("[mural.setup] Token expired, refreshing");
 					const refreshed = await refreshAccessToken(this.root.env, tokens.refresh_token);
 					const merged = { ...tokens, ...refreshed };
 					await this.saveTokens(uid, merged);
 					accessToken = merged.access_token;
 					ws = await ensureWorkspace(this.root, accessToken, wsOverride);
-					console.log("[mural.setup] Workspace verified after refresh", { workspaceId: ws.id });
 				} else if (String(err?.message) === "not_in_home_office_workspace") {
-					console.error("[mural.setup] Not in Home Office workspace");
 					return this.root.json({ ok: false, reason: "not_in_home_office_workspace" }, 403, cors);
 				} else {
 					throw err;
@@ -307,45 +314,27 @@ export class MuralServicePart {
 			}
 
 			step = "get_me";
-			const me = await getMe(this.root.env, accessToken).catch(() => null);
-			const username = me?.value?.firstName || me?.name || "Private";
-			console.log("[mural.setup] User identity", { username, userId: me?.value?.id });
+			await getMe(this.root.env, accessToken).catch(() => null);
 
 			step = "resolve_user_room";
 			const room = await resolveUserOwnedRoomForSetup(this.root.env, accessToken, ws.id);
 			const roomId = room?.id || room?.value?.id;
 			if (!roomId) {
-				console.error("[mural.setup] No user-owned room ID obtained", { room });
 				return this.root.json({ ok: false, error: "user_room_not_found", step }, 502, cors);
 			}
-			console.log("[mural.setup] Target room resolved", {
-				roomId,
-				roomName: room?.name || room?.title
-			});
 
 			step = "ensure_folder";
 			let folder = null;
 			try {
 				folder = await ensureProjectFolder(this.root.env, accessToken, roomId, String(projectName).trim());
-				console.log("[mural.setup] Folder ensured", { folderId: folder?.id, folderName: folder?.name });
-			} catch (e) {
-				console.warn("[mural.setup] Folder creation failed (non-critical)", { error: e?.message, status: e?.status });
-			}
+			} catch {}
 
 			step = "duplicate_or_create_mural";
 			let mural = null;
 			let muralId = null;
 			let templateCopied = true;
 
-			const templateId = this.root.env.MURAL_TEMPLATE_REFLEXIVE || "76da04f30edfebd1ac5b595ad2953629b41c1c7d";
 			const muralTitle = `Reflexive Journal: ${projectName}`;
-			console.log("[mural.setup] Starting mural creation", {
-				templateId,
-				roomId,
-				folderId: folder?.id,
-				muralTitle,
-				willAttemptDuplication: true
-			});
 
 			try {
 				mural = await duplicateMural(this.root.env, accessToken, {
@@ -354,30 +343,17 @@ export class MuralServicePart {
 					folderId: folder?.id || folder?.value?.id
 				});
 				muralId = mural?.id || mural?.value?.id;
-				console.log("[mural.setup] Template duplication SUCCEEDED", { muralId });
 			} catch (e) {
 				templateCopied = false;
 
-				console.error("[mural.setup] Template duplication FAILED", {
-					error: e?.message,
-					status: e?.status,
-					body: e?.body,
-					templateId: e?.templateId,
-					endpoint: e?.endpoint,
-					willFallbackToBlank: e?.status === 404
-				});
-
 				if (e?.status === 404) {
-					console.log("[mural.setup] Fallback: Creating blank mural (404 - endpoint not found)");
 					mural = await createMural(this.root.env, accessToken, {
 						title: muralTitle,
 						roomId,
 						folderId: folder?.id || folder?.value?.id
 					});
 					muralId = mural?.id || mural?.value?.id;
-					console.log("[mural.setup] Blank mural created", { muralId });
 				} else {
-					console.error("[mural.setup] NOT creating blank mural - non-404 error", { status: e?.status });
 					throw Object.assign(
 						new Error(`Template duplication failed: ${e?.message || "Unknown error"}`), {
 							code: "TEMPLATE_COPY_FAILED",
@@ -389,43 +365,24 @@ export class MuralServicePart {
 			}
 
 			if (!muralId) {
-				console.error("[mural.setup] No mural ID after creation attempts");
 				return this.root.json({ ok: false, error: "mural_id_unavailable", step }, 502, cors);
 			}
 
 			// Update the title widget on the duplicated mural
 			step = "update_area_title";
 			try {
-				console.log("[mural.setup] Updating reflexive journal title widget", {
-					muralId,
-					projectName
-				});
 				await updateAreaTitle(this.root.env, accessToken, muralId, projectName);
-				console.log("[mural.setup] Title widget update completed", {
-					muralId,
-					projectName
-				});
-			} catch (e) {
-				console.warn("[mural.setup] Title widget update failed (non-critical)", {
-					muralId,
-					projectName,
-					error: e?.message,
-					status: e?.status
-				});
-			}
+			} catch {}
 
 			step = "probe_viewer_url";
 			let openUrl = null;
 			const deadline = Date.now() + 9000;
-			let attempts = 0;
 			while (!openUrl && Date.now() < deadline) {
-				attempts++;
 				openUrl = await probeViewerUrl(this.root.env, accessToken, muralId);
 				if (!openUrl) {
 					await new Promise(r => setTimeout(r, 600));
 				}
 			}
-			console.log("[mural.setup] Viewer URL probe", { openUrl, attempts, found: !!openUrl });
 
 			step = "register_board";
 			await this.registerBoard({
@@ -437,7 +394,6 @@ export class MuralServicePart {
 				workspaceId: ws?.id || null,
 				primary: true
 			});
-			console.log("[mural.setup] Board registered in Airtable");
 
 			if (openUrl) {
 				const kvKey = `mural:${uid}:project:id::${String(projectId)}`;
@@ -450,20 +406,10 @@ export class MuralServicePart {
 							workspaceId: ws?.id || null,
 							projectName,
 							updatedAt: Date.now()
-						})
-					);
-					console.log("[mural.setup] KV cache updated");
-				} catch (e) {
-					console.warn("[mural.setup] KV cache update failed (non-critical)", { error: e?.message });
+							})
+						);
+					} catch {}
 				}
-			}
-
-			console.log("[mural.setup] COMPLETE", {
-				muralId,
-				boardUrl: openUrl,
-				templateCopied,
-				folderCreated: !!folder?.id
-			});
 
 			return this.root.json({
 					ok: true,
@@ -481,30 +427,21 @@ export class MuralServicePart {
 			);
 		} catch (err) {
 			const status = Number(err?.status) || 500;
-			const body = err?.body || null;
 			const message = String(err?.message || "setup_failed");
 			const code = err?.code || null;
 
-			console.error("[mural.setup] FAILED", {
-				step,
-				status,
-				code,
-				message,
-				body: body?.slice?.(0, 500) || body
-			});
-
-			return this.root.json({ ok: false, error: "setup_failed", step, message, code, upstream: body },
+			return this.root.json({ ok: false, error: "setup_failed", step, message, code },
 				status,
 				cors
 			);
 		}
 	}
 
-	async muralResolve(origin, url) {
+	async muralResolve(origin, url, authContext) {
 		const cors = this.root.corsHeaders(origin);
 		try {
 			const projectId = url.searchParams.get("projectId") || "";
-			const uid = url.searchParams.get("uid") || "";
+			const uid = authenticatedUid(authContext);
 			const purpose = url.searchParams.get("purpose") || PURPOSE_REFLEXIVE;
 			if (!projectId) {
 				return this.root.json({ ok: false, error: "missing_projectId" }, 400, cors);
@@ -554,13 +491,19 @@ export class MuralServicePart {
 		}
 	}
 
-	async muralJournalSync(request, origin) {
-		return handleMuralJournalSync(this, request, origin);
+	async muralJournalSync(request, origin, authContext) {
+		const body = await request.clone().json().catch(() => ({}));
+		const uid = authenticatedUid(authContext);
+		const next = new Request(request, {
+			body: JSON.stringify({ ...body, uid }),
+			headers: new Headers(request.headers)
+		});
+		return handleMuralJournalSync(this, next, origin);
 	}
 
-	async muralListWorkspaces(origin, url) {
+	async muralListWorkspaces(origin, url, authContext) {
 		const cors = this.root.corsHeaders(origin);
-		const uid = url.searchParams.get("uid") || "anon";
+		const uid = authenticatedUid(authContext);
 
 		try {
 			const tokenRes = await getValidAccessToken(this, uid);
@@ -582,9 +525,9 @@ export class MuralServicePart {
 		}
 	}
 
-	async muralMe(origin, url) {
+	async muralMe(origin, url, authContext) {
 		const cors = this.root.corsHeaders(origin);
-		const uid = url.searchParams.get("uid") || "anon";
+		const uid = authenticatedUid(authContext);
 
 		try {
 			const tokenRes = await getValidAccessToken(this, uid);

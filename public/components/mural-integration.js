@@ -131,10 +131,6 @@
 		pill(els.status, "neutral", message);
 	}
 
-	function uid() {
-		return localStorage.getItem("mural.uid") || localStorage.getItem("userId") || "anon";
-	}
-
 	function getProjectParamId() {
 		const u = new URL(location.href);
 		return u.searchParams.get("id") || "";
@@ -227,7 +223,7 @@
 		els.btnConnect.onclick = () => {
 			const effectiveId = canonicalProjectId(projectId);
 			const backPath = projectDashboardPath(effectiveId);
-			const href = addDebug(`${API_ORIGIN}/api/mural/auth?uid=${encodeURIComponent(uid())}&return=${encodeURIComponent(backPath)}`);
+			const href = addDebug(`${API_ORIGIN}/api/mural/auth?return=${encodeURIComponent(backPath)}`);
 			debugLog("connect click", { href, backPath });
 			location.href = href;
 		};
@@ -235,7 +231,7 @@
 	}
 
 	async function verify() {
-		const url = addDebug(`${API_ORIGIN}/api/mural/verify?uid=${encodeURIComponent(uid())}`);
+		const url = addDebug(`${API_ORIGIN}/api/mural/verify`);
 		const js = await jsonFetch(url);
 		window.__muralActiveWorkspaceId = js?.activeWorkspaceId || window.__muralActiveWorkspaceId || null;
 		debugLog("verify ok", js);
@@ -248,7 +244,7 @@
 		const cached = RESOLVE_CACHE.get(pid);
 		if (cached && Date.now() - cached.ts < 60000) return cached;
 
-		const url = addDebug(`${API_ORIGIN}/api/mural/resolve?projectId=${encodeURIComponent(pid)}&uid=${encodeURIComponent(uid())}`);
+		const url = addDebug(`${API_ORIGIN}/api/mural/resolve?projectId=${encodeURIComponent(pid)}`);
 		const js = await jsonFetch(url);
 
 		const rec = { muralId: js?.muralId || null, boardUrl: js?.boardUrl || null, ts: Date.now() };
@@ -270,7 +266,7 @@
 		const start = Date.now();
 		while (Date.now() - start < maxMs) {
 			try {
-				const url = addDebug(`${API_ORIGIN}/api/mural/await?muralId=${encodeURIComponent(muralId)}&projectId=${encodeURIComponent(projectId)}&uid=${encodeURIComponent(uid())}`);
+				const url = addDebug(`${API_ORIGIN}/api/mural/await?muralId=${encodeURIComponent(muralId)}&projectId=${encodeURIComponent(projectId)}`);
 				const r = await fetch(url, { method: "GET", cache: "no-store" });
 				const bodyText = await r.text().catch(() => "");
 				let body = {};
@@ -399,7 +395,6 @@
 				}
 
 				const body = {
-					uid: uid(),
 					projectName,
 				};
 

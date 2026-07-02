@@ -90,33 +90,39 @@ function requestHeaders(request, target) {
 	return headers;
 }
 
-function addDiagnosticHeaders(headers, target) {
+function proxyDiagnosticsEnabled(env = {}) {
+	return String(env.RESEARCHOPS_PROXY_DIAGNOSTICS_ENABLED || '').toLowerCase() === 'true';
+}
+
+function addDiagnosticHeaders(headers, target, env = {}) {
 	headers.set('cache-control', 'no-store');
 	headers.set('x-content-type-options', 'nosniff');
 	headers.set('x-researchops-api-proxy', 'pages-advanced-worker');
-	headers.set('x-researchops-api-upstream', target.origin);
-	headers.set('x-researchops-api-origin-source', target.source);
-	headers.set('x-researchops-pages-host', target.hostname);
-	headers.set('x-researchops-access-headers-forwarded', target.stripAccessHeaders ? 'false' : 'true');
+	if (proxyDiagnosticsEnabled(env)) {
+		headers.set('x-researchops-api-upstream', target.origin);
+		headers.set('x-researchops-api-origin-source', target.source);
+		headers.set('x-researchops-pages-host', target.hostname);
+		headers.set('x-researchops-access-headers-forwarded', target.stripAccessHeaders ? 'false' : 'true');
+	}
 	return headers;
 }
 
-function proxiedResponseHeaders(response, target) {
+function proxiedResponseHeaders(response, target, env) {
 	const headers = new Headers(response.headers);
 	headers.delete('access-control-allow-origin');
 	headers.delete('access-control-allow-credentials');
 	headers.delete('access-control-allow-methods');
 	headers.delete('access-control-allow-headers');
 	headers.delete('vary');
-	return addDiagnosticHeaders(headers, target);
+	return addDiagnosticHeaders(headers, target, env);
 }
 
-function jsonResponse(body, status = 200, target = null, extraHeaders = {}) {
+function jsonResponse(body, status = 200, target = null, extraHeaders = {}, env = {}) {
 	const headers = new Headers({
 		'content-type': 'application/json; charset=utf-8',
 		...extraHeaders,
 	});
-	if (target) addDiagnosticHeaders(headers, target);
+	if (target) addDiagnosticHeaders(headers, target, env);
 	else headers.set('x-researchops-api-proxy', 'pages-advanced-worker');
 	return new Response(JSON.stringify(body), { status, headers });
 }
@@ -296,8 +302,6 @@ async function projectListBlocker(request, response, target) {
 			ok: false,
 			error: 'projects_unavailable',
 			detail: 'Project lists must come from Airtable or D1 and must contain valid Airtable record ids.',
-			upstreamStatus: response.status,
-			upstreamSource: upstreamSource || 'unknown',
 			projectCount: projects.length,
 			invalidCount,
 		},
@@ -305,8 +309,6 @@ async function projectListBlocker(request, response, target) {
 		target,
 		{
 			'x-researchops-api-proxy-blocked': upstreamSource.toLowerCase() === 'csv' ? 'csv-project-list' : 'invalid-project-list',
-			'x-researchops-api-upstream-status': String(response.status),
-			'x-researchops-api-upstream-source': upstreamSource || 'unknown',
 		},
 	);
 }
@@ -327,7 +329,7 @@ async function proxyApiRequest(request, env) {
 	return new Response(response.body, {
 		status: response.status,
 		statusText: response.statusText,
-		headers: proxiedResponseHeaders(response, target),
+		headers: proxiedResponseHeaders(response, target, env),
 	});
 }
 
@@ -339,16 +341,17 @@ export default {
 			const target = apiTargetUrl(request, env);
 			try {
 				return await proxyApiRequest(request, env);
-			} catch (error) {
+			} catch {
 				return jsonResponse(
 					{
 						ok: false,
 						error: 'api_proxy_error',
 						message: 'ResearchOps could not contact the API service.',
-						detail: String(error?.message || error),
 					},
 					502,
 					target,
+					{},
+					env,
 				);
 			}
 		}
