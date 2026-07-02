@@ -1,0 +1,1269 @@
+<!doctype html>
+<html class="govuk-template" lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>Environment - Research Operations Sourcebook - ResearchOps Demo Suite</title>
+		<link rel="stylesheet" href="/assets/govuk/govuk-frontend.css" media="screen" />
+
+		<link rel="stylesheet" href="/css/sourcebook.css?v=sourcebook-20260702" media="screen" />
+		<meta
+			name="description"
+			content="The Environment pillar covers research spaces, fieldwork conditions, remote research settings, accessibility, researcher safety and participant comfort."
+		/>
+		<meta property="dc:title" content="Environment - Research Operations Sourcebook" />
+		<meta
+			property="dc:description"
+			content="The Environment pillar covers research spaces, fieldwork conditions, remote research settings, accessibility, researcher safety and participant comfort."
+		/>
+		<meta property="dc:isPartOf" content="Research Operations Sourcebook" />
+		<meta property="dc:type" content="Text" />
+		<meta property="dc:format" content="text/html" />
+		<meta property="dc:language" content="en-GB" />
+		<meta property="dc:creator" content="ResearchOps Governance Team" />
+		<meta property="dc:modified" content="2026-07-02" />
+		<meta property="dc:identifier" content="ENVIRO" />
+
+		<script type="module" src="/components/layout.js" defer></script>
+		<script type="module" src="/js/govuk-frontend-init.js" defer></script>
+	</head>
+	<body class="govuk-template__body researchops-sourcebook-page">
+		<script>
+			document.body.className +=
+				" js-enabled" + ("noModule" in HTMLScriptElement.prototype ? " govuk-frontend-supported" : "");
+		</script>
+		<x-include src="/partials/header.html" vars='{"active":"Sourcebook"}'></x-include>
+		<main class="govuk-main-wrapper" id="main-content" role="main" tabindex="-1">
+			<div class="govuk-width-container sourcebook-page sourcebook-pillar-page">
+				<nav class="govuk-breadcrumbs" aria-label="Breadcrumb">
+					<ol class="govuk-breadcrumbs__list">
+						<li class="govuk-breadcrumbs__list-item">
+							<a class="govuk-breadcrumbs__link" href="/">Home</a>
+						</li>
+						<li class="govuk-breadcrumbs__list-item">
+							<a class="govuk-breadcrumbs__link" href="/pages/sourcebook/">Sourcebook</a>
+						</li>
+						<li class="govuk-breadcrumbs__list-item" aria-current="page">Environment</li>
+					</ol>
+				</nav>
+
+				<article
+					vocab="http://www.w3.org/2004/02/skos/core#"
+					prefix="dc: http://purl.org/dc/terms/ skos: http://www.w3.org/2004/02/skos/core#"
+					typeof="skos:Concept"
+					resource="#enviro"
+				>
+					<span class="govuk-caption-xl" property="skos:notation">ENVIRO</span>
+					<h1 class="govuk-heading-xl" property="dc:title skos:prefLabel">Environment</h1>
+					<p class="govuk-body-l sourcebook-lede" property="skos:definition">
+						The Environment pillar covers research spaces, fieldwork conditions, remote research settings,
+						accessibility, researcher safety and participant comfort.
+					</p>
+
+					<div class="govuk-grid-row sourcebook-meta-row">
+						<div class="govuk-grid-column-two-thirds">
+							<section class="sourcebook-section sourcebook-section--lead" aria-labelledby="operating-question">
+								<h2 class="govuk-heading-m" id="operating-question">Operating question</h2>
+								<p class="govuk-body-l">
+									Where and under what conditions can research happen safely, inclusively and effectively?
+								</p>
+								<p class="govuk-body">
+									Good environments reduce session risk, improve participant trust and make high-quality research
+									repeatable across locations and channels.
+								</p>
+							</section>
+						</div>
+						<div class="govuk-grid-column-one-third">
+							<aside class="sourcebook-aside" aria-labelledby="pillar-details">
+								<h2 class="govuk-heading-s" id="pillar-details">Pillar details</h2>
+								<dl class="govuk-summary-list govuk-summary-list--no-border sourcebook-summary-list">
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Owner</dt>
+										<dd class="govuk-summary-list__value">ResearchOps lead</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Legacy path</dt>
+										<dd class="govuk-summary-list__value">enviro</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Status</dt>
+										<dd class="govuk-summary-list__value">
+											<strong class="govuk-tag govuk-tag--yellow">draft</strong>
+										</dd>
+									</div>
+								</dl>
+							</aside>
+						</div>
+					</div>
+
+					<nav class="sourcebook-contents" aria-labelledby="pillar-contents">
+						<h2 class="govuk-heading-m" id="pillar-contents">Contents</h2>
+						<ol class="govuk-list govuk-list--number">
+							<li><a class="govuk-link" href="#enviro-1-0-0">Environment operating model</a></li>
+
+							<li>
+								<a class="govuk-link" href="#enviro-2-0-0">Accessibility, inclusion and reasonable adjustments</a>
+							</li>
+
+							<li><a class="govuk-link" href="#enviro-3-0-0">Physical spaces and controlled research settings</a></li>
+
+							<li><a class="govuk-link" href="#enviro-4-0-0">Remote and digital research settings</a></li>
+
+							<li><a class="govuk-link" href="#enviro-5-0-0">Fieldwork, community and high-variability settings</a></li>
+
+							<li><a class="govuk-link" href="#enviro-6-0-0">Researcher safety, wellbeing and session support</a></li>
+
+							<li><a class="govuk-link" href="#enviro-7-0-0">Environment review and operating learning</a></li>
+
+							<li><a class="govuk-link" href="#glossary">Glossary</a></li>
+
+							<li><a class="govuk-link" href="#change-history">Change history</a></li>
+						</ol>
+					</nav>
+
+					<section class="sourcebook-section" id="enviro-1-0-0" typeof="skos:Concept" resource="#enviro-1-0-0">
+						<p class="sourcebook-section__id" property="skos:notation">ENVIRO 1.0.0</p>
+						<h2 class="govuk-heading-l" property="skos:prefLabel">Environment operating model</h2>
+						<p class="govuk-body" property="skos:definition">
+							How research settings, channels, safety, inclusion and readiness are governed across the research
+							lifecycle.
+						</p>
+
+						<div class="sourcebook-clause-list">
+							<section
+								class="sourcebook-clause sourcebook-clause--principle"
+								id="enviro-1-1-1"
+								typeof="skos:Concept"
+								resource="#enviro-1-1-1"
+							>
+								<div class="sourcebook-clause__header">
+									<span class="sourcebook-clause-badge sourcebook-clause-badge--principle" aria-label="Principle">
+										P
+									</span>
+									<div>
+										<p class="sourcebook-clause__id" property="skos:notation">ENVIRO 1.1.1</p>
+										<h3 class="govuk-heading-m" property="skos:prefLabel">
+											The research environment is part of the method
+										</h3>
+									</div>
+								</div>
+								<p class="govuk-body sourcebook-clause__text" property="skos:definition">
+									Research environments should be chosen, prepared and reviewed as part of research quality, participant
+									care and researcher safety rather than treated as logistics.
+								</p>
+
+								<dl class="govuk-summary-list sourcebook-clause__meta">
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Type</dt>
+										<dd class="govuk-summary-list__value">Principle</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Status</dt>
+										<dd class="govuk-summary-list__value">draft</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Effective date</dt>
+										<dd class="govuk-summary-list__value">2026-07-02</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Applies to</dt>
+										<dd class="govuk-summary-list__value">Researchers, ResearchOps, Study leads</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Evidence</dt>
+										<dd class="govuk-summary-list__value">environment-operating-model, method-rationale</dd>
+									</div>
+
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Templates</dt>
+										<dd class="govuk-summary-list__value">TPL-LIFECYCLE-MANAGEMENT</dd>
+									</div>
+								</dl>
+							</section>
+
+							<section
+								class="sourcebook-clause sourcebook-clause--rule"
+								id="enviro-1-1-2"
+								typeof="skos:Concept"
+								resource="#enviro-1-1-2"
+							>
+								<div class="sourcebook-clause__header">
+									<span class="sourcebook-clause-badge sourcebook-clause-badge--rule" aria-label="Rule">R</span>
+									<div>
+										<p class="sourcebook-clause__id" property="skos:notation">ENVIRO 1.1.2</p>
+										<h3 class="govuk-heading-m" property="skos:prefLabel">Assess the setting before research starts</h3>
+									</div>
+								</div>
+								<p class="govuk-body sourcebook-clause__text" property="skos:definition">
+									Every study must assess whether the physical, remote or field setting supports the method, participant
+									needs, confidentiality, safeguarding and researcher safety before sessions begin.
+								</p>
+
+								<dl class="govuk-summary-list sourcebook-clause__meta">
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Type</dt>
+										<dd class="govuk-summary-list__value">Rule</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Status</dt>
+										<dd class="govuk-summary-list__value">draft</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Effective date</dt>
+										<dd class="govuk-summary-list__value">2026-07-02</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Applies to</dt>
+										<dd class="govuk-summary-list__value">Researchers, ResearchOps, Study leads</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Evidence</dt>
+										<dd class="govuk-summary-list__value">environment-risk-assessment, access-needs-check</dd>
+									</div>
+
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Templates</dt>
+										<dd class="govuk-summary-list__value">TPL-RISK-ASSESSMENT</dd>
+									</div>
+								</dl>
+							</section>
+
+							<section
+								class="sourcebook-clause sourcebook-clause--guidance"
+								id="enviro-1-1-3"
+								typeof="skos:Concept"
+								resource="#enviro-1-1-3"
+							>
+								<div class="sourcebook-clause__header">
+									<span class="sourcebook-clause-badge sourcebook-clause-badge--guidance" aria-label="Guidance">G</span>
+									<div>
+										<p class="sourcebook-clause__id" property="skos:notation">ENVIRO 1.1.3</p>
+										<h3 class="govuk-heading-m" property="skos:prefLabel">
+											Choose the lowest-friction setting that still protects quality
+										</h3>
+									</div>
+								</div>
+								<p class="govuk-body sourcebook-clause__text" property="skos:definition">
+									Use remote, lab, office or field settings according to the research question, participant context,
+									privacy risk and access needs rather than team convenience alone.
+								</p>
+
+								<dl class="govuk-summary-list sourcebook-clause__meta">
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Type</dt>
+										<dd class="govuk-summary-list__value">Guidance</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Status</dt>
+										<dd class="govuk-summary-list__value">draft</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Effective date</dt>
+										<dd class="govuk-summary-list__value">2026-07-02</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Applies to</dt>
+										<dd class="govuk-summary-list__value">Researchers, Delivery teams</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Evidence</dt>
+										<dd class="govuk-summary-list__value">method-rationale, environment-risk-notes</dd>
+									</div>
+								</dl>
+							</section>
+
+							<section
+								class="sourcebook-clause sourcebook-clause--conduct"
+								id="enviro-1-1-4"
+								typeof="skos:Concept"
+								resource="#enviro-1-1-4"
+							>
+								<div class="sourcebook-clause__header">
+									<span class="sourcebook-clause-badge sourcebook-clause-badge--conduct" aria-label="Conduct">C</span>
+									<div>
+										<p class="sourcebook-clause__id" property="skos:notation">ENVIRO 1.1.4</p>
+										<h3 class="govuk-heading-m" property="skos:prefLabel">
+											Do not make people absorb environmental risk
+										</h3>
+									</div>
+								</div>
+								<p class="govuk-body sourcebook-clause__text" property="skos:definition">
+									People planning research must not expect participants, researchers or observers to compensate for
+									unsafe, inaccessible, noisy, exposed or poorly prepared settings.
+								</p>
+
+								<dl class="govuk-summary-list sourcebook-clause__meta">
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Type</dt>
+										<dd class="govuk-summary-list__value">Conduct</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Status</dt>
+										<dd class="govuk-summary-list__value">draft</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Effective date</dt>
+										<dd class="govuk-summary-list__value">2026-07-02</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Applies to</dt>
+										<dd class="govuk-summary-list__value">Researchers, Observers, ResearchOps</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Evidence</dt>
+										<dd class="govuk-summary-list__value">environment-risk-notes, adjustment-record</dd>
+									</div>
+								</dl>
+							</section>
+						</div>
+					</section>
+
+					<section class="sourcebook-section" id="enviro-2-0-0" typeof="skos:Concept" resource="#enviro-2-0-0">
+						<p class="sourcebook-section__id" property="skos:notation">ENVIRO 2.0.0</p>
+						<h2 class="govuk-heading-l" property="skos:prefLabel">
+							Accessibility, inclusion and reasonable adjustments
+						</h2>
+						<p class="govuk-body" property="skos:definition">
+							How research settings support access needs, inclusive participation and reasonable adjustments.
+						</p>
+
+						<div class="sourcebook-clause-list">
+							<section
+								class="sourcebook-clause sourcebook-clause--rule"
+								id="enviro-2-1-1"
+								typeof="skos:Concept"
+								resource="#enviro-2-1-1"
+							>
+								<div class="sourcebook-clause__header">
+									<span class="sourcebook-clause-badge sourcebook-clause-badge--rule" aria-label="Rule">R</span>
+									<div>
+										<p class="sourcebook-clause__id" property="skos:notation">ENVIRO 2.1.1</p>
+										<h3 class="govuk-heading-m" property="skos:prefLabel">Offer and record environment adjustments</h3>
+									</div>
+								</div>
+								<p class="govuk-body sourcebook-clause__text" property="skos:definition">
+									Participants must be offered a clear route to request environment adjustments before research, and
+									agreed adjustments must be recorded and prepared before the session.
+								</p>
+
+								<dl class="govuk-summary-list sourcebook-clause__meta">
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Type</dt>
+										<dd class="govuk-summary-list__value">Rule</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Status</dt>
+										<dd class="govuk-summary-list__value">draft</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Effective date</dt>
+										<dd class="govuk-summary-list__value">2026-07-02</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Applies to</dt>
+										<dd class="govuk-summary-list__value">Researchers, Recruitment coordinators, ResearchOps</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Evidence</dt>
+										<dd class="govuk-summary-list__value">access-needs-check, adjustment-record</dd>
+									</div>
+
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Templates</dt>
+										<dd class="govuk-summary-list__value">TPL-RESEARCH-PLAN</dd>
+									</div>
+								</dl>
+							</section>
+
+							<section
+								class="sourcebook-clause sourcebook-clause--principle"
+								id="enviro-2-1-2"
+								typeof="skos:Concept"
+								resource="#enviro-2-1-2"
+							>
+								<div class="sourcebook-clause__header">
+									<span class="sourcebook-clause-badge sourcebook-clause-badge--principle" aria-label="Principle">
+										P
+									</span>
+									<div>
+										<p class="sourcebook-clause__id" property="skos:notation">ENVIRO 2.1.2</p>
+										<h3 class="govuk-heading-m" property="skos:prefLabel">
+											Inclusive settings improve evidence quality
+										</h3>
+									</div>
+								</div>
+								<p class="govuk-body sourcebook-clause__text" property="skos:definition">
+									Research settings should reduce avoidable barriers so participants can take part in ways that reflect
+									their real experience, not the constraints of the research setup.
+								</p>
+
+								<dl class="govuk-summary-list sourcebook-clause__meta">
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Type</dt>
+										<dd class="govuk-summary-list__value">Principle</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Status</dt>
+										<dd class="govuk-summary-list__value">draft</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Effective date</dt>
+										<dd class="govuk-summary-list__value">2026-07-02</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Applies to</dt>
+										<dd class="govuk-summary-list__value">Researchers, ResearchOps, Research leaders</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Evidence</dt>
+										<dd class="govuk-summary-list__value">inclusion-review, participant-feedback</dd>
+									</div>
+								</dl>
+							</section>
+
+							<section
+								class="sourcebook-clause sourcebook-clause--guidance"
+								id="enviro-2-1-3"
+								typeof="skos:Concept"
+								resource="#enviro-2-1-3"
+							>
+								<div class="sourcebook-clause__header">
+									<span class="sourcebook-clause-badge sourcebook-clause-badge--guidance" aria-label="Guidance">G</span>
+									<div>
+										<p class="sourcebook-clause__id" property="skos:notation">ENVIRO 2.1.3</p>
+										<h3 class="govuk-heading-m" property="skos:prefLabel">
+											Check accessibility across the whole journey
+										</h3>
+									</div>
+								</div>
+								<p class="govuk-body sourcebook-clause__text" property="skos:definition">
+									Consider travel, arrival, waiting, sign-in, digital access, assistive technology, breaks, captions,
+									interpreters, support people and follow-up rather than only the interview room or video call.
+								</p>
+
+								<dl class="govuk-summary-list sourcebook-clause__meta">
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Type</dt>
+										<dd class="govuk-summary-list__value">Guidance</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Status</dt>
+										<dd class="govuk-summary-list__value">draft</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Effective date</dt>
+										<dd class="govuk-summary-list__value">2026-07-02</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Applies to</dt>
+										<dd class="govuk-summary-list__value">Researchers, ResearchOps, Recruitment coordinators</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Evidence</dt>
+										<dd class="govuk-summary-list__value">participant-journey-check, accessibility-checklist</dd>
+									</div>
+								</dl>
+							</section>
+						</div>
+					</section>
+
+					<section class="sourcebook-section" id="enviro-3-0-0" typeof="skos:Concept" resource="#enviro-3-0-0">
+						<p class="sourcebook-section__id" property="skos:notation">ENVIRO 3.0.0</p>
+						<h2 class="govuk-heading-l" property="skos:prefLabel">Physical spaces and controlled research settings</h2>
+						<p class="govuk-body" property="skos:definition">
+							How labs, offices, usability rooms and other controlled spaces are prepared for research.
+						</p>
+
+						<div class="sourcebook-clause-list">
+							<section
+								class="sourcebook-clause sourcebook-clause--rule"
+								id="enviro-3-1-1"
+								typeof="skos:Concept"
+								resource="#enviro-3-1-1"
+							>
+								<div class="sourcebook-clause__header">
+									<span class="sourcebook-clause-badge sourcebook-clause-badge--rule" aria-label="Rule">R</span>
+									<div>
+										<p class="sourcebook-clause__id" property="skos:notation">ENVIRO 3.1.1</p>
+										<h3 class="govuk-heading-m" property="skos:prefLabel">
+											Prepare the physical space before participants arrive
+										</h3>
+									</div>
+								</div>
+								<p class="govuk-body sourcebook-clause__text" property="skos:definition">
+									Physical research spaces must be checked for privacy, accessibility, comfort, recording setup,
+									observer arrangements, emergency routes and participant arrival before participants arrive.
+								</p>
+
+								<dl class="govuk-summary-list sourcebook-clause__meta">
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Type</dt>
+										<dd class="govuk-summary-list__value">Rule</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Status</dt>
+										<dd class="govuk-summary-list__value">draft</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Effective date</dt>
+										<dd class="govuk-summary-list__value">2026-07-02</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Applies to</dt>
+										<dd class="govuk-summary-list__value">Researchers, ResearchOps, Facilities teams</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Evidence</dt>
+										<dd class="govuk-summary-list__value">research-space-checklist, arrival-plan</dd>
+									</div>
+
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Templates</dt>
+										<dd class="govuk-summary-list__value">TPL-RESEARCH-SPACE-CHECKLIST</dd>
+									</div>
+								</dl>
+							</section>
+
+							<section
+								class="sourcebook-clause sourcebook-clause--guidance"
+								id="enviro-3-1-2"
+								typeof="skos:Concept"
+								resource="#enviro-3-1-2"
+							>
+								<div class="sourcebook-clause__header">
+									<span class="sourcebook-clause-badge sourcebook-clause-badge--guidance" aria-label="Guidance">G</span>
+									<div>
+										<p class="sourcebook-clause__id" property="skos:notation">ENVIRO 3.1.2</p>
+										<h3 class="govuk-heading-m" property="skos:prefLabel">
+											Make observers visible in the consent model
+										</h3>
+									</div>
+								</div>
+								<p class="govuk-body sourcebook-clause__text" property="skos:definition">
+									If observers are present physically or remotely, explain who they are, why they are there, what they
+									can see or hear and how participants can object.
+								</p>
+
+								<dl class="govuk-summary-list sourcebook-clause__meta">
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Type</dt>
+										<dd class="govuk-summary-list__value">Guidance</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Status</dt>
+										<dd class="govuk-summary-list__value">draft</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Effective date</dt>
+										<dd class="govuk-summary-list__value">2026-07-02</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Applies to</dt>
+										<dd class="govuk-summary-list__value">Researchers, Observers, ResearchOps</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Evidence</dt>
+										<dd class="govuk-summary-list__value">participant-information, observer-brief</dd>
+									</div>
+
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Templates</dt>
+										<dd class="govuk-summary-list__value">TPL-CONSENT-FORM</dd>
+									</div>
+								</dl>
+							</section>
+
+							<section
+								class="sourcebook-clause sourcebook-clause--conduct"
+								id="enviro-3-1-3"
+								typeof="skos:Concept"
+								resource="#enviro-3-1-3"
+							>
+								<div class="sourcebook-clause__header">
+									<span class="sourcebook-clause-badge sourcebook-clause-badge--conduct" aria-label="Conduct">C</span>
+									<div>
+										<p class="sourcebook-clause__id" property="skos:notation">ENVIRO 3.1.3</p>
+										<h3 class="govuk-heading-m" property="skos:prefLabel">
+											Protect participant comfort in controlled spaces
+										</h3>
+									</div>
+								</div>
+								<p class="govuk-body sourcebook-clause__text" property="skos:definition">
+									People supporting research must make it easy for participants to pause, ask for adjustments, decline
+									recording or leave without pressure.
+								</p>
+
+								<dl class="govuk-summary-list sourcebook-clause__meta">
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Type</dt>
+										<dd class="govuk-summary-list__value">Conduct</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Status</dt>
+										<dd class="govuk-summary-list__value">draft</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Effective date</dt>
+										<dd class="govuk-summary-list__value">2026-07-02</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Applies to</dt>
+										<dd class="govuk-summary-list__value">Researchers, Observers, ResearchOps</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Evidence</dt>
+										<dd class="govuk-summary-list__value">participant-information, session-brief</dd>
+									</div>
+								</dl>
+							</section>
+						</div>
+					</section>
+
+					<section class="sourcebook-section" id="enviro-4-0-0" typeof="skos:Concept" resource="#enviro-4-0-0">
+						<p class="sourcebook-section__id" property="skos:notation">ENVIRO 4.0.0</p>
+						<h2 class="govuk-heading-l" property="skos:prefLabel">Remote and digital research settings</h2>
+						<p class="govuk-body" property="skos:definition">
+							How remote research environments, digital access and recording conditions are managed.
+						</p>
+
+						<div class="sourcebook-clause-list">
+							<section
+								class="sourcebook-clause sourcebook-clause--rule"
+								id="enviro-4-1-1"
+								typeof="skos:Concept"
+								resource="#enviro-4-1-1"
+							>
+								<div class="sourcebook-clause__header">
+									<span class="sourcebook-clause-badge sourcebook-clause-badge--rule" aria-label="Rule">R</span>
+									<div>
+										<p class="sourcebook-clause__id" property="skos:notation">ENVIRO 4.1.1</p>
+										<h3 class="govuk-heading-m" property="skos:prefLabel">Check remote readiness before the session</h3>
+									</div>
+								</div>
+								<p class="govuk-body sourcebook-clause__text" property="skos:definition">
+									Remote research must confirm participant access, device needs, platform familiarity, privacy
+									conditions, recording consent, backup contact route and support for technical issues before the
+									session.
+								</p>
+
+								<dl class="govuk-summary-list sourcebook-clause__meta">
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Type</dt>
+										<dd class="govuk-summary-list__value">Rule</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Status</dt>
+										<dd class="govuk-summary-list__value">draft</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Effective date</dt>
+										<dd class="govuk-summary-list__value">2026-07-02</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Applies to</dt>
+										<dd class="govuk-summary-list__value">Researchers, ResearchOps, Recruitment coordinators</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Evidence</dt>
+										<dd class="govuk-summary-list__value">remote-readiness-check, technical-support-plan</dd>
+									</div>
+
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Templates</dt>
+										<dd class="govuk-summary-list__value">TPL-REMOTE-SETUP</dd>
+									</div>
+								</dl>
+							</section>
+
+							<section
+								class="sourcebook-clause sourcebook-clause--principle"
+								id="enviro-4-1-2"
+								typeof="skos:Concept"
+								resource="#enviro-4-1-2"
+							>
+								<div class="sourcebook-clause__header">
+									<span class="sourcebook-clause-badge sourcebook-clause-badge--principle" aria-label="Principle">
+										P
+									</span>
+									<div>
+										<p class="sourcebook-clause__id" property="skos:notation">ENVIRO 4.1.2</p>
+										<h3 class="govuk-heading-m" property="skos:prefLabel">
+											Remote research should not lower care standards
+										</h3>
+									</div>
+								</div>
+								<p class="govuk-body sourcebook-clause__text" property="skos:definition">
+									Remote sessions should provide the same clarity, consent, access, confidentiality and participant care
+									as physical sessions, adapted to the channel.
+								</p>
+
+								<dl class="govuk-summary-list sourcebook-clause__meta">
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Type</dt>
+										<dd class="govuk-summary-list__value">Principle</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Status</dt>
+										<dd class="govuk-summary-list__value">draft</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Effective date</dt>
+										<dd class="govuk-summary-list__value">2026-07-02</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Applies to</dt>
+										<dd class="govuk-summary-list__value">Researchers, ResearchOps, Study leads</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Evidence</dt>
+										<dd class="govuk-summary-list__value">remote-session-brief, consent-record</dd>
+									</div>
+								</dl>
+							</section>
+
+							<section
+								class="sourcebook-clause sourcebook-clause--guidance"
+								id="enviro-4-1-3"
+								typeof="skos:Concept"
+								resource="#enviro-4-1-3"
+							>
+								<div class="sourcebook-clause__header">
+									<span class="sourcebook-clause-badge sourcebook-clause-badge--guidance" aria-label="Guidance">G</span>
+									<div>
+										<p class="sourcebook-clause__id" property="skos:notation">ENVIRO 4.1.3</p>
+										<h3 class="govuk-heading-m" property="skos:prefLabel">Have a fallback when technology fails</h3>
+									</div>
+								</div>
+								<p class="govuk-body sourcebook-clause__text" property="skos:definition">
+									For remote research, prepare a fallback route for joining, contacting the participant, rescheduling,
+									preserving consent choices and recording any data quality limitations.
+								</p>
+
+								<dl class="govuk-summary-list sourcebook-clause__meta">
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Type</dt>
+										<dd class="govuk-summary-list__value">Guidance</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Status</dt>
+										<dd class="govuk-summary-list__value">draft</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Effective date</dt>
+										<dd class="govuk-summary-list__value">2026-07-02</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Applies to</dt>
+										<dd class="govuk-summary-list__value">Researchers, ResearchOps</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Evidence</dt>
+										<dd class="govuk-summary-list__value">fallback-plan, session-issue-log</dd>
+									</div>
+								</dl>
+							</section>
+						</div>
+					</section>
+
+					<section class="sourcebook-section" id="enviro-5-0-0" typeof="skos:Concept" resource="#enviro-5-0-0">
+						<p class="sourcebook-section__id" property="skos:notation">ENVIRO 5.0.0</p>
+						<h2 class="govuk-heading-l" property="skos:prefLabel">
+							Fieldwork, community and high-variability settings
+						</h2>
+						<p class="govuk-body" property="skos:definition">
+							How research outside controlled spaces is planned, supported and reviewed.
+						</p>
+
+						<div class="sourcebook-clause-list">
+							<section
+								class="sourcebook-clause sourcebook-clause--rule"
+								id="enviro-5-1-1"
+								typeof="skos:Concept"
+								resource="#enviro-5-1-1"
+							>
+								<div class="sourcebook-clause__header">
+									<span class="sourcebook-clause-badge sourcebook-clause-badge--rule" aria-label="Rule">R</span>
+									<div>
+										<p class="sourcebook-clause__id" property="skos:notation">ENVIRO 5.1.1</p>
+										<h3 class="govuk-heading-m" property="skos:prefLabel">Complete fieldwork risk planning</h3>
+									</div>
+								</div>
+								<p class="govuk-body sourcebook-clause__text" property="skos:definition">
+									Fieldwork and community research must have a risk plan covering location, travel, lone working,
+									safeguarding, confidentiality, local permission, participant distress and escalation routes.
+								</p>
+
+								<dl class="govuk-summary-list sourcebook-clause__meta">
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Type</dt>
+										<dd class="govuk-summary-list__value">Rule</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Status</dt>
+										<dd class="govuk-summary-list__value">draft</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Effective date</dt>
+										<dd class="govuk-summary-list__value">2026-07-02</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Applies to</dt>
+										<dd class="govuk-summary-list__value">Researchers, ResearchOps, Study leads</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Evidence</dt>
+										<dd class="govuk-summary-list__value">fieldwork-risk-plan, escalation-route</dd>
+									</div>
+
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Templates</dt>
+										<dd class="govuk-summary-list__value">TPL-RISK-ASSESSMENT</dd>
+									</div>
+								</dl>
+							</section>
+
+							<section
+								class="sourcebook-clause sourcebook-clause--guidance"
+								id="enviro-5-1-2"
+								typeof="skos:Concept"
+								resource="#enviro-5-1-2"
+							>
+								<div class="sourcebook-clause__header">
+									<span class="sourcebook-clause-badge sourcebook-clause-badge--guidance" aria-label="Guidance">G</span>
+									<div>
+										<p class="sourcebook-clause__id" property="skos:notation">ENVIRO 5.1.2</p>
+										<h3 class="govuk-heading-m" property="skos:prefLabel">
+											Work with local context rather than around it
+										</h3>
+									</div>
+								</div>
+								<p class="govuk-body sourcebook-clause__text" property="skos:definition">
+									When research happens in a participant&#39;s home, workplace, community setting or public place, adapt
+									the plan to local norms, power dynamics, privacy and safety conditions.
+								</p>
+
+								<dl class="govuk-summary-list sourcebook-clause__meta">
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Type</dt>
+										<dd class="govuk-summary-list__value">Guidance</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Status</dt>
+										<dd class="govuk-summary-list__value">draft</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Effective date</dt>
+										<dd class="govuk-summary-list__value">2026-07-02</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Applies to</dt>
+										<dd class="govuk-summary-list__value">Researchers, ResearchOps</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Evidence</dt>
+										<dd class="govuk-summary-list__value">context-notes, fieldwork-brief</dd>
+									</div>
+								</dl>
+							</section>
+
+							<section
+								class="sourcebook-clause sourcebook-clause--conduct"
+								id="enviro-5-1-3"
+								typeof="skos:Concept"
+								resource="#enviro-5-1-3"
+							>
+								<div class="sourcebook-clause__header">
+									<span class="sourcebook-clause-badge sourcebook-clause-badge--conduct" aria-label="Conduct">C</span>
+									<div>
+										<p class="sourcebook-clause__id" property="skos:notation">ENVIRO 5.1.3</p>
+										<h3 class="govuk-heading-m" property="skos:prefLabel">Do not trade safety for access</h3>
+									</div>
+								</div>
+								<p class="govuk-body sourcebook-clause__text" property="skos:definition">
+									People planning fieldwork must not accept unsafe conditions, weak safeguarding or unclear permission
+									simply because a setting gives access to a hard-to-reach group.
+								</p>
+
+								<dl class="govuk-summary-list sourcebook-clause__meta">
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Type</dt>
+										<dd class="govuk-summary-list__value">Conduct</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Status</dt>
+										<dd class="govuk-summary-list__value">draft</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Effective date</dt>
+										<dd class="govuk-summary-list__value">2026-07-02</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Applies to</dt>
+										<dd class="govuk-summary-list__value">Researchers, ResearchOps, Research leaders</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Evidence</dt>
+										<dd class="govuk-summary-list__value">risk-acceptance-record, escalation-decision</dd>
+									</div>
+								</dl>
+							</section>
+						</div>
+					</section>
+
+					<section class="sourcebook-section" id="enviro-6-0-0" typeof="skos:Concept" resource="#enviro-6-0-0">
+						<p class="sourcebook-section__id" property="skos:notation">ENVIRO 6.0.0</p>
+						<h2 class="govuk-heading-l" property="skos:prefLabel">Researcher safety, wellbeing and session support</h2>
+						<p class="govuk-body" property="skos:definition">
+							How the environment protects researchers, facilitators, note-takers and support roles.
+						</p>
+
+						<div class="sourcebook-clause-list">
+							<section
+								class="sourcebook-clause sourcebook-clause--rule"
+								id="enviro-6-1-1"
+								typeof="skos:Concept"
+								resource="#enviro-6-1-1"
+							>
+								<div class="sourcebook-clause__header">
+									<span class="sourcebook-clause-badge sourcebook-clause-badge--rule" aria-label="Rule">R</span>
+									<div>
+										<p class="sourcebook-clause__id" property="skos:notation">ENVIRO 6.1.1</p>
+										<h3 class="govuk-heading-m" property="skos:prefLabel">Plan safety for people running research</h3>
+									</div>
+								</div>
+								<p class="govuk-body sourcebook-clause__text" property="skos:definition">
+									Research plans must identify safety, emotional load, lone working, observer conduct, escalation and
+									debrief needs for people running or supporting sessions.
+								</p>
+
+								<dl class="govuk-summary-list sourcebook-clause__meta">
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Type</dt>
+										<dd class="govuk-summary-list__value">Rule</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Status</dt>
+										<dd class="govuk-summary-list__value">draft</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Effective date</dt>
+										<dd class="govuk-summary-list__value">2026-07-02</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Applies to</dt>
+										<dd class="govuk-summary-list__value">Researchers, ResearchOps, Research leaders</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Evidence</dt>
+										<dd class="govuk-summary-list__value">researcher-safety-plan, debrief-plan</dd>
+									</div>
+
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Templates</dt>
+										<dd class="govuk-summary-list__value">TPL-WELLBEING-RISK</dd>
+									</div>
+								</dl>
+							</section>
+
+							<section
+								class="sourcebook-clause sourcebook-clause--guidance"
+								id="enviro-6-1-2"
+								typeof="skos:Concept"
+								resource="#enviro-6-1-2"
+							>
+								<div class="sourcebook-clause__header">
+									<span class="sourcebook-clause-badge sourcebook-clause-badge--guidance" aria-label="Guidance">G</span>
+									<div>
+										<p class="sourcebook-clause__id" property="skos:notation">ENVIRO 6.1.2</p>
+										<h3 class="govuk-heading-m" property="skos:prefLabel">Match support to session risk</h3>
+									</div>
+								</div>
+								<p class="govuk-body sourcebook-clause__text" property="skos:definition">
+									Use co-facilitation, observer limits, check-ins, safeguarding support or post-session debriefs where
+									topic sensitivity, location, participant distress or researcher experience increases risk.
+								</p>
+
+								<dl class="govuk-summary-list sourcebook-clause__meta">
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Type</dt>
+										<dd class="govuk-summary-list__value">Guidance</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Status</dt>
+										<dd class="govuk-summary-list__value">draft</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Effective date</dt>
+										<dd class="govuk-summary-list__value">2026-07-02</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Applies to</dt>
+										<dd class="govuk-summary-list__value">Researchers, ResearchOps, Research leaders</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Evidence</dt>
+										<dd class="govuk-summary-list__value">support-model-decision, risk-rating</dd>
+									</div>
+								</dl>
+							</section>
+
+							<section
+								class="sourcebook-clause sourcebook-clause--principle"
+								id="enviro-6-1-3"
+								typeof="skos:Concept"
+								resource="#enviro-6-1-3"
+							>
+								<div class="sourcebook-clause__header">
+									<span class="sourcebook-clause-badge sourcebook-clause-badge--principle" aria-label="Principle">
+										P
+									</span>
+									<div>
+										<p class="sourcebook-clause__id" property="skos:notation">ENVIRO 6.1.3</p>
+										<h3 class="govuk-heading-m" property="skos:prefLabel">
+											A safe environment protects research quality
+										</h3>
+									</div>
+								</div>
+								<p class="govuk-body sourcebook-clause__text" property="skos:definition">
+									Researchers who feel safe and supported are better able to listen, adapt, notice risk and protect
+									participants during research.
+								</p>
+
+								<dl class="govuk-summary-list sourcebook-clause__meta">
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Type</dt>
+										<dd class="govuk-summary-list__value">Principle</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Status</dt>
+										<dd class="govuk-summary-list__value">draft</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Effective date</dt>
+										<dd class="govuk-summary-list__value">2026-07-02</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Applies to</dt>
+										<dd class="govuk-summary-list__value">Research leaders, ResearchOps, Researchers</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Evidence</dt>
+										<dd class="govuk-summary-list__value">debrief-record, wellbeing-review</dd>
+									</div>
+								</dl>
+							</section>
+						</div>
+					</section>
+
+					<section class="sourcebook-section" id="enviro-7-0-0" typeof="skos:Concept" resource="#enviro-7-0-0">
+						<p class="sourcebook-section__id" property="skos:notation">ENVIRO 7.0.0</p>
+						<h2 class="govuk-heading-l" property="skos:prefLabel">Environment review and operating learning</h2>
+						<p class="govuk-body" property="skos:definition">
+							How environment issues, participant feedback and session learning improve future research settings.
+						</p>
+
+						<div class="sourcebook-clause-list">
+							<section
+								class="sourcebook-clause sourcebook-clause--rule"
+								id="enviro-7-1-1"
+								typeof="skos:Concept"
+								resource="#enviro-7-1-1"
+							>
+								<div class="sourcebook-clause__header">
+									<span class="sourcebook-clause-badge sourcebook-clause-badge--rule" aria-label="Rule">R</span>
+									<div>
+										<p class="sourcebook-clause__id" property="skos:notation">ENVIRO 7.1.1</p>
+										<h3 class="govuk-heading-m" property="skos:prefLabel">Record material environment issues</h3>
+									</div>
+								</div>
+								<p class="govuk-body sourcebook-clause__text" property="skos:definition">
+									Material issues with access, safety, privacy, technology, comfort, observer behaviour or setting
+									suitability must be recorded and reviewed after the research activity.
+								</p>
+
+								<dl class="govuk-summary-list sourcebook-clause__meta">
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Type</dt>
+										<dd class="govuk-summary-list__value">Rule</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Status</dt>
+										<dd class="govuk-summary-list__value">draft</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Effective date</dt>
+										<dd class="govuk-summary-list__value">2026-07-02</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Applies to</dt>
+										<dd class="govuk-summary-list__value">Researchers, ResearchOps, Study leads</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Evidence</dt>
+										<dd class="govuk-summary-list__value">environment-issue-log, retrospective-notes</dd>
+									</div>
+								</dl>
+							</section>
+
+							<section
+								class="sourcebook-clause sourcebook-clause--guidance"
+								id="enviro-7-1-2"
+								typeof="skos:Concept"
+								resource="#enviro-7-1-2"
+							>
+								<div class="sourcebook-clause__header">
+									<span class="sourcebook-clause-badge sourcebook-clause-badge--guidance" aria-label="Guidance">G</span>
+									<div>
+										<p class="sourcebook-clause__id" property="skos:notation">ENVIRO 7.1.2</p>
+										<h3 class="govuk-heading-m" property="skos:prefLabel">
+											Turn repeated environment issues into standards
+										</h3>
+									</div>
+								</div>
+								<p class="govuk-body sourcebook-clause__text" property="skos:definition">
+									When the same setting problems recur, update checklists, guidance, templates, supplier choices or
+									support models rather than relying on individual memory.
+								</p>
+
+								<dl class="govuk-summary-list sourcebook-clause__meta">
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Type</dt>
+										<dd class="govuk-summary-list__value">Guidance</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Status</dt>
+										<dd class="govuk-summary-list__value">draft</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Effective date</dt>
+										<dd class="govuk-summary-list__value">2026-07-02</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Applies to</dt>
+										<dd class="govuk-summary-list__value">ResearchOps, Researchers, Research leaders</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Evidence</dt>
+										<dd class="govuk-summary-list__value">improvement-backlog, standard-update</dd>
+									</div>
+
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Templates</dt>
+										<dd class="govuk-summary-list__value">TPL-RESEARCH-BACKLOG</dd>
+									</div>
+								</dl>
+							</section>
+
+							<section
+								class="sourcebook-clause sourcebook-clause--principle"
+								id="enviro-7-1-3"
+								typeof="skos:Concept"
+								resource="#enviro-7-1-3"
+							>
+								<div class="sourcebook-clause__header">
+									<span class="sourcebook-clause-badge sourcebook-clause-badge--principle" aria-label="Principle">
+										P
+									</span>
+									<div>
+										<p class="sourcebook-clause__id" property="skos:notation">ENVIRO 7.1.3</p>
+										<h3 class="govuk-heading-m" property="skos:prefLabel">
+											Good environments make research safer, fairer and easier to repeat
+										</h3>
+									</div>
+								</div>
+								<p class="govuk-body sourcebook-clause__text" property="skos:definition">
+									A mature environment system should reduce avoidable risk, improve inclusion, strengthen participant
+									trust and make high-quality research repeatable across channels.
+								</p>
+
+								<dl class="govuk-summary-list sourcebook-clause__meta">
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Type</dt>
+										<dd class="govuk-summary-list__value">Principle</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Status</dt>
+										<dd class="govuk-summary-list__value">draft</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Effective date</dt>
+										<dd class="govuk-summary-list__value">2026-07-02</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Applies to</dt>
+										<dd class="govuk-summary-list__value">ResearchOps, Research leaders, Researchers</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Evidence</dt>
+										<dd class="govuk-summary-list__value">
+											environment-retrospective, participant-feedback, quality-review
+										</dd>
+									</div>
+								</dl>
+							</section>
+						</div>
+					</section>
+
+					<section
+						class="sourcebook-section sourcebook-section--secondary"
+						id="glossary"
+						aria-labelledby="glossary-heading"
+					>
+						<h2 class="govuk-heading-l" id="glossary-heading">Glossary</h2>
+						<dl class="sourcebook-glossary">
+							<div class="sourcebook-glossary__item">
+								<dt>Research environment</dt>
+								<dd>
+									The physical, remote, digital, fieldwork or community setting in which research is planned, run,
+									observed or supported.
+								</dd>
+							</div>
+
+							<div class="sourcebook-glossary__item">
+								<dt>Environment adjustment</dt>
+								<dd>
+									A change to the setting, channel, timing, support or tools that helps a participant or researcher take
+									part safely and effectively.
+								</dd>
+							</div>
+
+							<div class="sourcebook-glossary__item">
+								<dt>Fieldwork setting</dt>
+								<dd>
+									A research setting outside a controlled research space, including homes, workplaces, public places and
+									community locations.
+								</dd>
+							</div>
+
+							<div class="sourcebook-glossary__item">
+								<dt>Environment issue</dt>
+								<dd>
+									A material problem with access, safety, privacy, comfort, technology or setting suitability that
+									affects research quality or care.
+								</dd>
+							</div>
+						</dl>
+					</section>
+
+					<section
+						class="sourcebook-section sourcebook-section--secondary"
+						id="change-history"
+						aria-labelledby="change-history-heading"
+					>
+						<h2 class="govuk-heading-l" id="change-history-heading">Change history</h2>
+						<ol class="govuk-list sourcebook-change-history">
+							<li>
+								<p class="sourcebook-change-history__date">2026-07-02</p>
+								<p class="govuk-body">
+									Expanded ENVIRO into an end-to-end environment lifecycle covering operating model, accessibility,
+									controlled spaces, remote research, fieldwork, researcher safety and operating learning.
+								</p>
+							</li>
+						</ol>
+					</section>
+				</article>
+			</div>
+		</main>
+		<x-include src="/partials/footer.html"></x-include>
+	</body>
+</html>

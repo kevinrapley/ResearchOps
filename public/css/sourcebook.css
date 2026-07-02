@@ -1,0 +1,265 @@
+@charset "UTF-8";
+
+/* ==========================================================================
+   ResearchOps Sourcebook stylesheet source
+   Service:    Home Office — ResearchOps
+   Routes:     /pages/sourcebook/
+   ========================================================================== */
+
+.researchops-sourcebook-page {
+	background: #ffffff;
+	}
+
+.sourcebook-page {
+	--sourcebook-border: #b1b4b6;
+	--sourcebook-rule: #d4351c;
+	--sourcebook-principle: #1d70b8;
+	--sourcebook-guidance: #00703c;
+	--sourcebook-conduct: #4c2c92;
+	color: #0b0c0c;
+	font-family: "GDS Transport", arial, sans-serif;
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+	font-size: 1.1875rem;
+	font-weight: 400;
+	line-height: 1.3157894737;
+	}
+
+@media print {
+	.sourcebook-page {
+		font-family: sans-serif;
+		font-size: 14pt;
+		line-height: 1.15;
+		}
+	}
+
+.sourcebook-lede {
+	max-width: 38em;
+	}
+
+.sourcebook-meta-row {
+	margin-top: 30px;
+	}
+
+.sourcebook-section {
+	border-top: 5px solid #1d70b8;
+	margin-top: 40px;
+	padding-top: 20px;
+	}
+
+.sourcebook-section--lead {
+	margin-top: 0;
+	}
+
+.sourcebook-section--secondary {
+	border-top-width: 1px;
+	border-top-color: var(--sourcebook-border);
+	}
+
+.sourcebook-section__id, .sourcebook-clause__id, .sourcebook-gate__id, .sourcebook-pillar-card__code, .sourcebook-change-history__date {
+	color: #505a5f;
+	font-family: monospace;
+	font-size: 16px;
+	font-weight: 700;
+	margin: 0 0 5px;
+	}
+
+.sourcebook-aside {
+	border-top: 5px solid #732282;
+	padding-top: 15px;
+	}
+
+.sourcebook-summary-list .govuk-summary-list__key, .sourcebook-summary-list .govuk-summary-list__value {
+	padding-top: 5px;
+	padding-bottom: 5px;
+	}
+
+.sourcebook-type-list, .sourcebook-glossary {
+	margin: 0;
+	}
+
+.sourcebook-type-list__item, .sourcebook-glossary__item {
+	border-top: 1px solid var(--sourcebook-border);
+	padding: 15px 0;
+	}
+
+.sourcebook-type-list dt, .sourcebook-glossary dt {
+	font-weight: 700;
+	}
+
+.sourcebook-type-list dd, .sourcebook-glossary dd {
+	margin: 5px 0 0;
+	}
+
+.sourcebook-pillar-grid {
+	display: grid;
+	gap: 15px;
+	grid-template-columns: 1fr;
+	}
+
+.sourcebook-pillar-card {
+	border: 1px solid var(--sourcebook-border);
+	border-left: 5px solid #732282;
+	color: #0b0c0c;
+	display: block;
+	padding: 20px;
+	text-decoration: none;
+	}
+
+.sourcebook-pillar-card:focus, .sourcebook-pillar-card:hover {
+	background: #f3f2f1;
+	}
+
+.sourcebook-pillar-card__title {
+	color: #1d70b8;
+	display: block;
+	font-size: 24px;
+	font-weight: 700;
+	line-height: 1.25;
+	margin-bottom: 10px;
+	text-decoration: underline;
+	}
+
+.sourcebook-pillar-card__text {
+	display: block;
+	}
+
+.sourcebook-adoption-table {
+	font-size: 16px;
+	line-height: 1.25;
+	}
+
+.sourcebook-adoption-table__pace {
+	color: #505a5f;
+	display: block;
+	font-size: 16px;
+	font-weight: 700;
+	margin-bottom: 5px;
+	}
+
+.sourcebook-pill {
+	background: #f3f2f1;
+	border: 1px solid #b1b4b6;
+	display: inline-block;
+	font-family: monospace;
+	font-size: 16px;
+	font-weight: 700;
+	line-height: 1.25;
+	margin: 0 5px 5px 0;
+	padding: 2px 5px;
+	}
+
+.sourcebook-gate-list, .sourcebook-clause-list {
+	display: grid;
+	gap: 20px;
+	}
+
+.sourcebook-gate, .sourcebook-clause {
+	border: 1px solid var(--sourcebook-border);
+	border-left: 5px solid #1d70b8;
+	padding: 20px;
+	}
+
+.sourcebook-clause--rule {
+	border-left-color: var(--sourcebook-rule);
+	}
+
+.sourcebook-clause--principle {
+	border-left-color: var(--sourcebook-principle);
+	}
+
+.sourcebook-clause--guidance {
+	border-left-color: var(--sourcebook-guidance);
+	}
+
+.sourcebook-clause--conduct {
+	border-left-color: var(--sourcebook-conduct);
+	}
+
+.sourcebook-clause__header {
+	align-items: flex-start;
+	display: flex;
+	gap: 15px;
+	}
+
+.sourcebook-clause__header .govuk-heading-m {
+	margin-bottom: 10px;
+	}
+
+.sourcebook-clause-badge {
+	align-items: center;
+	color: #ffffff;
+	display: inline-flex;
+	flex: 0 0 auto;
+	font-weight: 700;
+	justify-content: center;
+	line-height: 1;
+	min-height: 32px;
+	min-width: 32px;
+	}
+
+.sourcebook-clause__header > .sourcebook-clause-badge {
+	font-size: 24px;
+	min-height: 55px;
+	min-width: 55px;
+	}
+
+.sourcebook-clause-badge--rule {
+	background: var(--sourcebook-rule);
+	}
+
+.sourcebook-clause-badge--principle {
+	background: var(--sourcebook-principle);
+	}
+
+.sourcebook-clause-badge--guidance {
+	background: var(--sourcebook-guidance);
+	}
+
+.sourcebook-clause-badge--conduct {
+	background: var(--sourcebook-conduct);
+	}
+
+.sourcebook-clause__text {
+	max-width: 42em;
+	}
+
+.sourcebook-clause__meta {
+	margin-bottom: 0;
+	}
+
+.sourcebook-clause__meta .govuk-summary-list__key, .sourcebook-clause__meta .govuk-summary-list__value {
+	font-size: 1rem;
+	line-height: 1.25;
+	padding-top: 10px;
+	padding-bottom: 10px;
+	}
+
+@media print {
+	.sourcebook-clause__meta .govuk-summary-list__key, .sourcebook-clause__meta .govuk-summary-list__value {
+		font-size: 14pt;
+		line-height: 1.2;
+		}
+	}
+
+.sourcebook-contents {
+	border-top: 1px solid var(--sourcebook-border);
+	border-bottom: 1px solid var(--sourcebook-border);
+	margin-top: 30px;
+	padding: 20px 0 10px;
+	}
+
+.sourcebook-change-history {
+	border-top: 1px solid var(--sourcebook-border);
+	}
+
+.sourcebook-change-history li {
+	border-bottom: 1px solid var(--sourcebook-border);
+	padding: 15px 0;
+	}
+
+@media (min-width: 40.0625em) {
+	.sourcebook-pillar-grid {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		}
+	}

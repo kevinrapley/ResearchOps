@@ -1,0 +1,1265 @@
+<!doctype html>
+<html class="govuk-template" lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>Scope - Research Operations Sourcebook - ResearchOps Demo Suite</title>
+		<link rel="stylesheet" href="/assets/govuk/govuk-frontend.css" media="screen" />
+
+		<link rel="stylesheet" href="/css/sourcebook.css?v=sourcebook-20260702" media="screen" />
+		<meta
+			name="description"
+			content="The Scope pillar defines the boundaries of research work, request intake, prioritisation, risk classification, method choice and support model."
+		/>
+		<meta property="dc:title" content="Scope - Research Operations Sourcebook" />
+		<meta
+			property="dc:description"
+			content="The Scope pillar defines the boundaries of research work, request intake, prioritisation, risk classification, method choice and support model."
+		/>
+		<meta property="dc:isPartOf" content="Research Operations Sourcebook" />
+		<meta property="dc:type" content="Text" />
+		<meta property="dc:format" content="text/html" />
+		<meta property="dc:language" content="en-GB" />
+		<meta property="dc:creator" content="ResearchOps Governance Team" />
+		<meta property="dc:modified" content="2026-07-02" />
+		<meta property="dc:identifier" content="SCOPE" />
+
+		<script type="module" src="/components/layout.js" defer></script>
+		<script type="module" src="/js/govuk-frontend-init.js" defer></script>
+	</head>
+	<body class="govuk-template__body researchops-sourcebook-page">
+		<script>
+			document.body.className +=
+				" js-enabled" + ("noModule" in HTMLScriptElement.prototype ? " govuk-frontend-supported" : "");
+		</script>
+		<x-include src="/partials/header.html" vars='{"active":"Sourcebook"}'></x-include>
+		<main class="govuk-main-wrapper" id="main-content" role="main" tabindex="-1">
+			<div class="govuk-width-container sourcebook-page sourcebook-pillar-page">
+				<nav class="govuk-breadcrumbs" aria-label="Breadcrumb">
+					<ol class="govuk-breadcrumbs__list">
+						<li class="govuk-breadcrumbs__list-item">
+							<a class="govuk-breadcrumbs__link" href="/">Home</a>
+						</li>
+						<li class="govuk-breadcrumbs__list-item">
+							<a class="govuk-breadcrumbs__link" href="/pages/sourcebook/">Sourcebook</a>
+						</li>
+						<li class="govuk-breadcrumbs__list-item" aria-current="page">Scope</li>
+					</ol>
+				</nav>
+
+				<article
+					vocab="http://www.w3.org/2004/02/skos/core#"
+					prefix="dc: http://purl.org/dc/terms/ skos: http://www.w3.org/2004/02/skos/core#"
+					typeof="skos:Concept"
+					resource="#scope"
+				>
+					<span class="govuk-caption-xl" property="skos:notation">SCOPE</span>
+					<h1 class="govuk-heading-xl" property="dc:title skos:prefLabel">Scope</h1>
+					<p class="govuk-body-l sourcebook-lede" property="skos:definition">
+						The Scope pillar defines the boundaries of research work, request intake, prioritisation, risk
+						classification, method choice and support model.
+					</p>
+
+					<div class="govuk-grid-row sourcebook-meta-row">
+						<div class="govuk-grid-column-two-thirds">
+							<section class="sourcebook-section sourcebook-section--lead" aria-labelledby="operating-question">
+								<h2 class="govuk-heading-m" id="operating-question">Operating question</h2>
+								<p class="govuk-body-l">
+									What research should happen, who may do it and what level of support or review does it need?
+								</p>
+								<p class="govuk-body">
+									Clear scope directs limited research capacity towards the highest-value questions and stops
+									low-quality or unsafe research from entering delivery unnoticed.
+								</p>
+							</section>
+						</div>
+						<div class="govuk-grid-column-one-third">
+							<aside class="sourcebook-aside" aria-labelledby="pillar-details">
+								<h2 class="govuk-heading-s" id="pillar-details">Pillar details</h2>
+								<dl class="govuk-summary-list govuk-summary-list--no-border sourcebook-summary-list">
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Owner</dt>
+										<dd class="govuk-summary-list__value">Head of user research</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Legacy path</dt>
+										<dd class="govuk-summary-list__value">scope</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Status</dt>
+										<dd class="govuk-summary-list__value">
+											<strong class="govuk-tag govuk-tag--yellow">draft</strong>
+										</dd>
+									</div>
+								</dl>
+							</aside>
+						</div>
+					</div>
+
+					<nav class="sourcebook-contents" aria-labelledby="pillar-contents">
+						<h2 class="govuk-heading-m" id="pillar-contents">Contents</h2>
+						<ol class="govuk-list govuk-list--number">
+							<li><a class="govuk-link" href="#scope-1-0-0">Scope operating model</a></li>
+
+							<li><a class="govuk-link" href="#scope-2-0-0">Research intake and problem framing</a></li>
+
+							<li><a class="govuk-link" href="#scope-3-0-0">Prioritisation and capacity</a></li>
+
+							<li><a class="govuk-link" href="#scope-4-0-0">Risk, review and support levels</a></li>
+
+							<li><a class="govuk-link" href="#scope-5-0-0">Method boundaries and evidence standards</a></li>
+
+							<li><a class="govuk-link" href="#scope-6-0-0">Self-service, coaching and non-researcher activity</a></li>
+
+							<li><a class="govuk-link" href="#scope-7-0-0">Roadmap, portfolio and scope learning</a></li>
+
+							<li><a class="govuk-link" href="#glossary">Glossary</a></li>
+
+							<li><a class="govuk-link" href="#change-history">Change history</a></li>
+						</ol>
+					</nav>
+
+					<section class="sourcebook-section" id="scope-1-0-0" typeof="skos:Concept" resource="#scope-1-0-0">
+						<p class="sourcebook-section__id" property="skos:notation">SCOPE 1.0.0</p>
+						<h2 class="govuk-heading-l" property="skos:prefLabel">Scope operating model</h2>
+						<p class="govuk-body" property="skos:definition">
+							How the organisation defines what counts as research work, who can do it and what level of operating
+							support it needs.
+						</p>
+
+						<div class="sourcebook-clause-list">
+							<section
+								class="sourcebook-clause sourcebook-clause--principle"
+								id="scope-1-1-1"
+								typeof="skos:Concept"
+								resource="#scope-1-1-1"
+							>
+								<div class="sourcebook-clause__header">
+									<span class="sourcebook-clause-badge sourcebook-clause-badge--principle" aria-label="Principle">
+										P
+									</span>
+									<div>
+										<p class="sourcebook-clause__id" property="skos:notation">SCOPE 1.1.1</p>
+										<h3 class="govuk-heading-m" property="skos:prefLabel">Research scope is an operating decision</h3>
+									</div>
+								</div>
+								<p class="govuk-body sourcebook-clause__text" property="skos:definition">
+									Research scope should connect organisational priorities, decision needs, participant risk, available
+									capability and the operating support needed to run the work well.
+								</p>
+
+								<dl class="govuk-summary-list sourcebook-clause__meta">
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Type</dt>
+										<dd class="govuk-summary-list__value">Principle</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Status</dt>
+										<dd class="govuk-summary-list__value">draft</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Effective date</dt>
+										<dd class="govuk-summary-list__value">2026-07-02</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Applies to</dt>
+										<dd class="govuk-summary-list__value">Research leaders, ResearchOps, Delivery leaders</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Evidence</dt>
+										<dd class="govuk-summary-list__value">scope-model, research-service-definition</dd>
+									</div>
+
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Templates</dt>
+										<dd class="govuk-summary-list__value">TPL-MATURITY-ASSESSMENT</dd>
+									</div>
+								</dl>
+							</section>
+
+							<section
+								class="sourcebook-clause sourcebook-clause--rule"
+								id="scope-1-1-2"
+								typeof="skos:Concept"
+								resource="#scope-1-1-2"
+							>
+								<div class="sourcebook-clause__header">
+									<span class="sourcebook-clause-badge sourcebook-clause-badge--rule" aria-label="Rule">R</span>
+									<div>
+										<p class="sourcebook-clause__id" property="skos:notation">SCOPE 1.1.2</p>
+										<h3 class="govuk-heading-m" property="skos:prefLabel">
+											Define the boundary between research and adjacent activity
+										</h3>
+									</div>
+								</div>
+								<p class="govuk-body sourcebook-clause__text" property="skos:definition">
+									The practice must define which activities are governed as user research, which are adjacent discovery
+									or engagement activities and which require research leadership review before proceeding.
+								</p>
+
+								<dl class="govuk-summary-list sourcebook-clause__meta">
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Type</dt>
+										<dd class="govuk-summary-list__value">Rule</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Status</dt>
+										<dd class="govuk-summary-list__value">draft</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Effective date</dt>
+										<dd class="govuk-summary-list__value">2026-07-02</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Applies to</dt>
+										<dd class="govuk-summary-list__value">Research leaders, Product managers, Delivery leaders</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Evidence</dt>
+										<dd class="govuk-summary-list__value">scope-boundary, activity-classification</dd>
+									</div>
+
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Templates</dt>
+										<dd class="govuk-summary-list__value">TPL-GOVERNANCE-RACI</dd>
+									</div>
+								</dl>
+							</section>
+
+							<section
+								class="sourcebook-clause sourcebook-clause--guidance"
+								id="scope-1-1-3"
+								typeof="skos:Concept"
+								resource="#scope-1-1-3"
+							>
+								<div class="sourcebook-clause__header">
+									<span class="sourcebook-clause-badge sourcebook-clause-badge--guidance" aria-label="Guidance">G</span>
+									<div>
+										<p class="sourcebook-clause__id" property="skos:notation">SCOPE 1.1.3</p>
+										<h3 class="govuk-heading-m" property="skos:prefLabel">Use scope to choose the operating model</h3>
+									</div>
+								</div>
+								<p class="govuk-body sourcebook-clause__text" property="skos:definition">
+									Scope decisions should identify whether work is best supported through self-service, coaching,
+									full-service research, specialist governance or a mixed model.
+								</p>
+
+								<dl class="govuk-summary-list sourcebook-clause__meta">
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Type</dt>
+										<dd class="govuk-summary-list__value">Guidance</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Status</dt>
+										<dd class="govuk-summary-list__value">draft</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Effective date</dt>
+										<dd class="govuk-summary-list__value">2026-07-02</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Applies to</dt>
+										<dd class="govuk-summary-list__value">ResearchOps, Research leaders, Study leads</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Evidence</dt>
+										<dd class="govuk-summary-list__value">support-model-decision, scope-triage</dd>
+									</div>
+								</dl>
+							</section>
+
+							<section
+								class="sourcebook-clause sourcebook-clause--conduct"
+								id="scope-1-1-4"
+								typeof="skos:Concept"
+								resource="#scope-1-1-4"
+							>
+								<div class="sourcebook-clause__header">
+									<span class="sourcebook-clause-badge sourcebook-clause-badge--conduct" aria-label="Conduct">C</span>
+									<div>
+										<p class="sourcebook-clause__id" property="skos:notation">SCOPE 1.1.4</p>
+										<h3 class="govuk-heading-m" property="skos:prefLabel">
+											Do not relabel weak research to avoid governance
+										</h3>
+									</div>
+								</div>
+								<p class="govuk-body sourcebook-clause__text" property="skos:definition">
+									Teams must not describe research as feedback, validation, engagement or discovery to avoid required
+									review, participant protections or evidence standards.
+								</p>
+
+								<dl class="govuk-summary-list sourcebook-clause__meta">
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Type</dt>
+										<dd class="govuk-summary-list__value">Conduct</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Status</dt>
+										<dd class="govuk-summary-list__value">draft</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Effective date</dt>
+										<dd class="govuk-summary-list__value">2026-07-02</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Applies to</dt>
+										<dd class="govuk-summary-list__value">Researchers, Product managers, Delivery teams</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Evidence</dt>
+										<dd class="govuk-summary-list__value">activity-classification, governance-triage</dd>
+									</div>
+								</dl>
+							</section>
+						</div>
+					</section>
+
+					<section class="sourcebook-section" id="scope-2-0-0" typeof="skos:Concept" resource="#scope-2-0-0">
+						<p class="sourcebook-section__id" property="skos:notation">SCOPE 2.0.0</p>
+						<h2 class="govuk-heading-l" property="skos:prefLabel">Research intake and problem framing</h2>
+						<p class="govuk-body" property="skos:definition">
+							How research demand enters the system and is shaped into a clear decision need.
+						</p>
+
+						<div class="sourcebook-clause-list">
+							<section
+								class="sourcebook-clause sourcebook-clause--rule"
+								id="scope-2-1-1"
+								typeof="skos:Concept"
+								resource="#scope-2-1-1"
+							>
+								<div class="sourcebook-clause__header">
+									<span class="sourcebook-clause-badge sourcebook-clause-badge--rule" aria-label="Rule">R</span>
+									<div>
+										<p class="sourcebook-clause__id" property="skos:notation">SCOPE 2.1.1</p>
+										<h3 class="govuk-heading-m" property="skos:prefLabel">
+											Record a research rationale before work starts
+										</h3>
+									</div>
+								</div>
+								<p class="govuk-body sourcebook-clause__text" property="skos:definition">
+									Every research activity must have a recorded problem, decision need, user group, method rationale and
+									expected use of findings before recruitment or fieldwork starts.
+								</p>
+
+								<dl class="govuk-summary-list sourcebook-clause__meta">
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Type</dt>
+										<dd class="govuk-summary-list__value">Rule</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Status</dt>
+										<dd class="govuk-summary-list__value">draft</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Effective date</dt>
+										<dd class="govuk-summary-list__value">2026-07-02</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Applies to</dt>
+										<dd class="govuk-summary-list__value">Researchers, Product managers, Study leads</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Evidence</dt>
+										<dd class="govuk-summary-list__value">research-intake, research-plan</dd>
+									</div>
+
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Templates</dt>
+										<dd class="govuk-summary-list__value">TPL-RESEARCH-INTAKE, TPL-RESEARCH-PLAN</dd>
+									</div>
+								</dl>
+							</section>
+
+							<section
+								class="sourcebook-clause sourcebook-clause--rule"
+								id="scope-2-1-2"
+								typeof="skos:Concept"
+								resource="#scope-2-1-2"
+							>
+								<div class="sourcebook-clause__header">
+									<span class="sourcebook-clause-badge sourcebook-clause-badge--rule" aria-label="Rule">R</span>
+									<div>
+										<p class="sourcebook-clause__id" property="skos:notation">SCOPE 2.1.2</p>
+										<h3 class="govuk-heading-m" property="skos:prefLabel">
+											Name the decision the research will inform
+										</h3>
+									</div>
+								</div>
+								<p class="govuk-body sourcebook-clause__text" property="skos:definition">
+									Research requests must state the decision, risk, policy question, service assumption or design choice
+									that evidence is expected to inform.
+								</p>
+
+								<dl class="govuk-summary-list sourcebook-clause__meta">
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Type</dt>
+										<dd class="govuk-summary-list__value">Rule</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Status</dt>
+										<dd class="govuk-summary-list__value">draft</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Effective date</dt>
+										<dd class="govuk-summary-list__value">2026-07-02</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Applies to</dt>
+										<dd class="govuk-summary-list__value">Product managers, Researchers, Delivery leaders</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Evidence</dt>
+										<dd class="govuk-summary-list__value">decision-need, stakeholder-map, decision-log</dd>
+									</div>
+
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Templates</dt>
+										<dd class="govuk-summary-list__value">TPL-DECISION-LOG, TPL-STAKEHOLDER-MAPPING</dd>
+									</div>
+								</dl>
+							</section>
+
+							<section
+								class="sourcebook-clause sourcebook-clause--guidance"
+								id="scope-2-1-3"
+								typeof="skos:Concept"
+								resource="#scope-2-1-3"
+							>
+								<div class="sourcebook-clause__header">
+									<span class="sourcebook-clause-badge sourcebook-clause-badge--guidance" aria-label="Guidance">G</span>
+									<div>
+										<p class="sourcebook-clause__id" property="skos:notation">SCOPE 2.1.3</p>
+										<h3 class="govuk-heading-m" property="skos:prefLabel">
+											Separate symptoms from researchable questions
+										</h3>
+									</div>
+								</div>
+								<p class="govuk-body sourcebook-clause__text" property="skos:definition">
+									When an intake request describes a solution, complaint or vague learning goal, reframe it into the
+									decision, user group, uncertainty and evidence need before accepting it as research work.
+								</p>
+
+								<dl class="govuk-summary-list sourcebook-clause__meta">
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Type</dt>
+										<dd class="govuk-summary-list__value">Guidance</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Status</dt>
+										<dd class="govuk-summary-list__value">draft</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Effective date</dt>
+										<dd class="govuk-summary-list__value">2026-07-02</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Applies to</dt>
+										<dd class="govuk-summary-list__value">Researchers, ResearchOps, Product managers</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Evidence</dt>
+										<dd class="govuk-summary-list__value">intake-triage-notes, reframed-question</dd>
+									</div>
+								</dl>
+							</section>
+						</div>
+					</section>
+
+					<section class="sourcebook-section" id="scope-3-0-0" typeof="skos:Concept" resource="#scope-3-0-0">
+						<p class="sourcebook-section__id" property="skos:notation">SCOPE 3.0.0</p>
+						<h2 class="govuk-heading-l" property="skos:prefLabel">Prioritisation and capacity</h2>
+						<p class="govuk-body" property="skos:definition">
+							How research effort is matched to strategy, risk, value and available capability.
+						</p>
+
+						<div class="sourcebook-clause-list">
+							<section
+								class="sourcebook-clause sourcebook-clause--principle"
+								id="scope-3-1-1"
+								typeof="skos:Concept"
+								resource="#scope-3-1-1"
+							>
+								<div class="sourcebook-clause__header">
+									<span class="sourcebook-clause-badge sourcebook-clause-badge--principle" aria-label="Principle">
+										P
+									</span>
+									<div>
+										<p class="sourcebook-clause__id" property="skos:notation">SCOPE 3.1.1</p>
+										<h3 class="govuk-heading-m" property="skos:prefLabel">Research capacity is a strategic resource</h3>
+									</div>
+								</div>
+								<p class="govuk-body sourcebook-clause__text" property="skos:definition">
+									Research effort should be directed to decisions where user evidence can reduce material risk, improve
+									outcomes or change what the organisation does.
+								</p>
+
+								<dl class="govuk-summary-list sourcebook-clause__meta">
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Type</dt>
+										<dd class="govuk-summary-list__value">Principle</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Status</dt>
+										<dd class="govuk-summary-list__value">draft</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Effective date</dt>
+										<dd class="govuk-summary-list__value">2026-07-02</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Applies to</dt>
+										<dd class="govuk-summary-list__value">Research leaders, Delivery leaders</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Evidence</dt>
+										<dd class="govuk-summary-list__value">prioritisation-record, decision-log</dd>
+									</div>
+
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Templates</dt>
+										<dd class="govuk-summary-list__value">TPL-DECISION-LOG</dd>
+									</div>
+								</dl>
+							</section>
+
+							<section
+								class="sourcebook-clause sourcebook-clause--rule"
+								id="scope-3-1-2"
+								typeof="skos:Concept"
+								resource="#scope-3-1-2"
+							>
+								<div class="sourcebook-clause__header">
+									<span class="sourcebook-clause-badge sourcebook-clause-badge--rule" aria-label="Rule">R</span>
+									<div>
+										<p class="sourcebook-clause__id" property="skos:notation">SCOPE 3.1.2</p>
+										<h3 class="govuk-heading-m" property="skos:prefLabel">Prioritise demand using visible criteria</h3>
+									</div>
+								</div>
+								<p class="govuk-body sourcebook-clause__text" property="skos:definition">
+									Research demand must be prioritised using recorded criteria such as user risk, service impact, legal
+									or policy dependency, learning value, urgency, effort and strategic fit.
+								</p>
+
+								<dl class="govuk-summary-list sourcebook-clause__meta">
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Type</dt>
+										<dd class="govuk-summary-list__value">Rule</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Status</dt>
+										<dd class="govuk-summary-list__value">draft</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Effective date</dt>
+										<dd class="govuk-summary-list__value">2026-07-02</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Applies to</dt>
+										<dd class="govuk-summary-list__value">Research leaders, ResearchOps, Portfolio leads</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Evidence</dt>
+										<dd class="govuk-summary-list__value">prioritisation-criteria, research-backlog</dd>
+									</div>
+
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Templates</dt>
+										<dd class="govuk-summary-list__value">TPL-RESEARCH-BACKLOG</dd>
+									</div>
+								</dl>
+							</section>
+
+							<section
+								class="sourcebook-clause sourcebook-clause--guidance"
+								id="scope-3-1-3"
+								typeof="skos:Concept"
+								resource="#scope-3-1-3"
+							>
+								<div class="sourcebook-clause__header">
+									<span class="sourcebook-clause-badge sourcebook-clause-badge--guidance" aria-label="Guidance">G</span>
+									<div>
+										<p class="sourcebook-clause__id" property="skos:notation">SCOPE 3.1.3</p>
+										<h3 class="govuk-heading-m" property="skos:prefLabel">
+											Make trade-offs explicit when deprioritising work
+										</h3>
+									</div>
+								</div>
+								<p class="govuk-body sourcebook-clause__text" property="skos:definition">
+									When research is deferred or declined, record the reason, the risk accepted, the alternative evidence
+									available and the point at which the decision should be revisited.
+								</p>
+
+								<dl class="govuk-summary-list sourcebook-clause__meta">
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Type</dt>
+										<dd class="govuk-summary-list__value">Guidance</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Status</dt>
+										<dd class="govuk-summary-list__value">draft</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Effective date</dt>
+										<dd class="govuk-summary-list__value">2026-07-02</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Applies to</dt>
+										<dd class="govuk-summary-list__value">Research leaders, Product managers, Delivery leaders</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Evidence</dt>
+										<dd class="govuk-summary-list__value">deprioritisation-note, accepted-risk, review-trigger</dd>
+									</div>
+								</dl>
+							</section>
+						</div>
+					</section>
+
+					<section class="sourcebook-section" id="scope-4-0-0" typeof="skos:Concept" resource="#scope-4-0-0">
+						<p class="sourcebook-section__id" property="skos:notation">SCOPE 4.0.0</p>
+						<h2 class="govuk-heading-l" property="skos:prefLabel">Risk, review and support levels</h2>
+						<p class="govuk-body" property="skos:definition">
+							How the scope of work determines governance, ResearchOps support and delivery controls.
+						</p>
+
+						<div class="sourcebook-clause-list">
+							<section
+								class="sourcebook-clause sourcebook-clause--rule"
+								id="scope-4-1-1"
+								typeof="skos:Concept"
+								resource="#scope-4-1-1"
+							>
+								<div class="sourcebook-clause__header">
+									<span class="sourcebook-clause-badge sourcebook-clause-badge--rule" aria-label="Rule">R</span>
+									<div>
+										<p class="sourcebook-clause__id" property="skos:notation">SCOPE 4.1.1</p>
+										<h3 class="govuk-heading-m" property="skos:prefLabel">
+											Classify support level before delivery starts
+										</h3>
+									</div>
+								</div>
+								<p class="govuk-body sourcebook-clause__text" property="skos:definition">
+									A study must be classified for support level before delivery starts, using risk, method complexity,
+									participant sensitivity, capability and operational dependency.
+								</p>
+
+								<dl class="govuk-summary-list sourcebook-clause__meta">
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Type</dt>
+										<dd class="govuk-summary-list__value">Rule</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Status</dt>
+										<dd class="govuk-summary-list__value">draft</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Effective date</dt>
+										<dd class="govuk-summary-list__value">2026-07-02</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Applies to</dt>
+										<dd class="govuk-summary-list__value">Study leads, ResearchOps, Research leaders</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Evidence</dt>
+										<dd class="govuk-summary-list__value">support-level, risk-rating, capability-check</dd>
+									</div>
+
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Templates</dt>
+										<dd class="govuk-summary-list__value">TPL-RISK-ASSESSMENT</dd>
+									</div>
+								</dl>
+							</section>
+
+							<section
+								class="sourcebook-clause sourcebook-clause--guidance"
+								id="scope-4-1-2"
+								typeof="skos:Concept"
+								resource="#scope-4-1-2"
+							>
+								<div class="sourcebook-clause__header">
+									<span class="sourcebook-clause-badge sourcebook-clause-badge--guidance" aria-label="Guidance">G</span>
+									<div>
+										<p class="sourcebook-clause__id" property="skos:notation">SCOPE 4.1.2</p>
+										<h3 class="govuk-heading-m" property="skos:prefLabel">Use a hybrid support model</h3>
+									</div>
+								</div>
+								<p class="govuk-body sourcebook-clause__text" property="skos:definition">
+									Provide self-service templates for low-risk routine work and full-service ResearchOps support for
+									high-risk, high-priority or specialist studies.
+								</p>
+
+								<dl class="govuk-summary-list sourcebook-clause__meta">
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Type</dt>
+										<dd class="govuk-summary-list__value">Guidance</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Status</dt>
+										<dd class="govuk-summary-list__value">draft</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Effective date</dt>
+										<dd class="govuk-summary-list__value">2026-07-02</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Applies to</dt>
+										<dd class="govuk-summary-list__value">ResearchOps, Research leaders</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Evidence</dt>
+										<dd class="govuk-summary-list__value">support-model-decision, risk-rating</dd>
+									</div>
+								</dl>
+							</section>
+
+							<section
+								class="sourcebook-clause sourcebook-clause--conduct"
+								id="scope-4-1-3"
+								typeof="skos:Concept"
+								resource="#scope-4-1-3"
+							>
+								<div class="sourcebook-clause__header">
+									<span class="sourcebook-clause-badge sourcebook-clause-badge--conduct" aria-label="Conduct">C</span>
+									<div>
+										<p class="sourcebook-clause__id" property="skos:notation">SCOPE 4.1.3</p>
+										<h3 class="govuk-heading-m" property="skos:prefLabel">Escalate when scope grows beyond approval</h3>
+									</div>
+								</div>
+								<p class="govuk-body sourcebook-clause__text" property="skos:definition">
+									People running research must pause and recheck scope when participants, topics, methods, data
+									collection, incentives or intended use expand beyond the approved plan.
+								</p>
+
+								<dl class="govuk-summary-list sourcebook-clause__meta">
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Type</dt>
+										<dd class="govuk-summary-list__value">Conduct</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Status</dt>
+										<dd class="govuk-summary-list__value">draft</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Effective date</dt>
+										<dd class="govuk-summary-list__value">2026-07-02</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Applies to</dt>
+										<dd class="govuk-summary-list__value">Researchers, Study leads, ResearchOps</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Evidence</dt>
+										<dd class="govuk-summary-list__value">scope-change-record, reapproval-note</dd>
+									</div>
+								</dl>
+							</section>
+						</div>
+					</section>
+
+					<section class="sourcebook-section" id="scope-5-0-0" typeof="skos:Concept" resource="#scope-5-0-0">
+						<p class="sourcebook-section__id" property="skos:notation">SCOPE 5.0.0</p>
+						<h2 class="govuk-heading-l" property="skos:prefLabel">Method boundaries and evidence standards</h2>
+						<p class="govuk-body" property="skos:definition">
+							How method choice, evidence quality and research claims stay within scope.
+						</p>
+
+						<div class="sourcebook-clause-list">
+							<section
+								class="sourcebook-clause sourcebook-clause--rule"
+								id="scope-5-1-1"
+								typeof="skos:Concept"
+								resource="#scope-5-1-1"
+							>
+								<div class="sourcebook-clause__header">
+									<span class="sourcebook-clause-badge sourcebook-clause-badge--rule" aria-label="Rule">R</span>
+									<div>
+										<p class="sourcebook-clause__id" property="skos:notation">SCOPE 5.1.1</p>
+										<h3 class="govuk-heading-m" property="skos:prefLabel">Match method to decision risk</h3>
+									</div>
+								</div>
+								<p class="govuk-body sourcebook-clause__text" property="skos:definition">
+									The selected method must be proportionate to the decision risk and capable of producing evidence
+									strong enough for the intended use.
+								</p>
+
+								<dl class="govuk-summary-list sourcebook-clause__meta">
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Type</dt>
+										<dd class="govuk-summary-list__value">Rule</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Status</dt>
+										<dd class="govuk-summary-list__value">draft</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Effective date</dt>
+										<dd class="govuk-summary-list__value">2026-07-02</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Applies to</dt>
+										<dd class="govuk-summary-list__value">Researchers, Study leads, Research reviewers</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Evidence</dt>
+										<dd class="govuk-summary-list__value">method-rationale, decision-risk, limitations-statement</dd>
+									</div>
+
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Templates</dt>
+										<dd class="govuk-summary-list__value">TPL-METHOD-PLAYBOOK, TPL-RESEARCH-PLAN</dd>
+									</div>
+								</dl>
+							</section>
+
+							<section
+								class="sourcebook-clause sourcebook-clause--principle"
+								id="scope-5-1-2"
+								typeof="skos:Concept"
+								resource="#scope-5-1-2"
+							>
+								<div class="sourcebook-clause__header">
+									<span class="sourcebook-clause-badge sourcebook-clause-badge--principle" aria-label="Principle">
+										P
+									</span>
+									<div>
+										<p class="sourcebook-clause__id" property="skos:notation">SCOPE 5.1.2</p>
+										<h3 class="govuk-heading-m" property="skos:prefLabel">
+											Scope should protect evidence from overreach
+										</h3>
+									</div>
+								</div>
+								<p class="govuk-body sourcebook-clause__text" property="skos:definition">
+									Research claims should stay within the population, context, method, sample and confidence level
+									covered by the study.
+								</p>
+
+								<dl class="govuk-summary-list sourcebook-clause__meta">
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Type</dt>
+										<dd class="govuk-summary-list__value">Principle</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Status</dt>
+										<dd class="govuk-summary-list__value">draft</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Effective date</dt>
+										<dd class="govuk-summary-list__value">2026-07-02</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Applies to</dt>
+										<dd class="govuk-summary-list__value">Researchers, Research leaders, Decision makers</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Evidence</dt>
+										<dd class="govuk-summary-list__value">limitations-statement, findings-review</dd>
+									</div>
+								</dl>
+							</section>
+
+							<section
+								class="sourcebook-clause sourcebook-clause--guidance"
+								id="scope-5-1-3"
+								typeof="skos:Concept"
+								resource="#scope-5-1-3"
+							>
+								<div class="sourcebook-clause__header">
+									<span class="sourcebook-clause-badge sourcebook-clause-badge--guidance" aria-label="Guidance">G</span>
+									<div>
+										<p class="sourcebook-clause__id" property="skos:notation">SCOPE 5.1.3</p>
+										<h3 class="govuk-heading-m" property="skos:prefLabel">
+											Use method playbooks as guardrails, not scripts
+										</h3>
+									</div>
+								</div>
+								<p class="govuk-body sourcebook-clause__text" property="skos:definition">
+									Method playbooks should help teams choose and run suitable approaches while still requiring
+									researchers to adapt responsibly to context and risk.
+								</p>
+
+								<dl class="govuk-summary-list sourcebook-clause__meta">
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Type</dt>
+										<dd class="govuk-summary-list__value">Guidance</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Status</dt>
+										<dd class="govuk-summary-list__value">draft</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Effective date</dt>
+										<dd class="govuk-summary-list__value">2026-07-02</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Applies to</dt>
+										<dd class="govuk-summary-list__value">Researchers, ResearchOps, Coaches</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Evidence</dt>
+										<dd class="govuk-summary-list__value">method-playbook-reference, contextual-adaptation</dd>
+									</div>
+
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Templates</dt>
+										<dd class="govuk-summary-list__value">TPL-METHOD-PLAYBOOK</dd>
+									</div>
+								</dl>
+							</section>
+						</div>
+					</section>
+
+					<section class="sourcebook-section" id="scope-6-0-0" typeof="skos:Concept" resource="#scope-6-0-0">
+						<p class="sourcebook-section__id" property="skos:notation">SCOPE 6.0.0</p>
+						<h2 class="govuk-heading-l" property="skos:prefLabel">
+							Self-service, coaching and non-researcher activity
+						</h2>
+						<p class="govuk-body" property="skos:definition">
+							How low-risk research-adjacent work is enabled without weakening standards.
+						</p>
+
+						<div class="sourcebook-clause-list">
+							<section
+								class="sourcebook-clause sourcebook-clause--rule"
+								id="scope-6-1-1"
+								typeof="skos:Concept"
+								resource="#scope-6-1-1"
+							>
+								<div class="sourcebook-clause__header">
+									<span class="sourcebook-clause-badge sourcebook-clause-badge--rule" aria-label="Rule">R</span>
+									<div>
+										<p class="sourcebook-clause__id" property="skos:notation">SCOPE 6.1.1</p>
+										<h3 class="govuk-heading-m" property="skos:prefLabel">
+											Limit self-service research to approved low-risk patterns
+										</h3>
+									</div>
+								</div>
+								<p class="govuk-body sourcebook-clause__text" property="skos:definition">
+									Self-service research or research-adjacent activity must stay within approved methods, participant
+									groups, data handling rules and review thresholds.
+								</p>
+
+								<dl class="govuk-summary-list sourcebook-clause__meta">
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Type</dt>
+										<dd class="govuk-summary-list__value">Rule</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Status</dt>
+										<dd class="govuk-summary-list__value">draft</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Effective date</dt>
+										<dd class="govuk-summary-list__value">2026-07-02</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Applies to</dt>
+										<dd class="govuk-summary-list__value">Non-researchers, Product managers, ResearchOps</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Evidence</dt>
+										<dd class="govuk-summary-list__value">self-service-pattern, approved-method, risk-threshold</dd>
+									</div>
+								</dl>
+							</section>
+
+							<section
+								class="sourcebook-clause sourcebook-clause--conduct"
+								id="scope-6-1-2"
+								typeof="skos:Concept"
+								resource="#scope-6-1-2"
+							>
+								<div class="sourcebook-clause__header">
+									<span class="sourcebook-clause-badge sourcebook-clause-badge--conduct" aria-label="Conduct">C</span>
+									<div>
+										<p class="sourcebook-clause__id" property="skos:notation">SCOPE 6.1.2</p>
+										<h3 class="govuk-heading-m" property="skos:prefLabel">
+											Ask for help before quality or safety is compromised
+										</h3>
+									</div>
+								</div>
+								<p class="govuk-body sourcebook-clause__text" property="skos:definition">
+									People using self-service patterns must seek research or governance support when the work becomes
+									sensitive, ambiguous, high-impact or beyond their competence.
+								</p>
+
+								<dl class="govuk-summary-list sourcebook-clause__meta">
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Type</dt>
+										<dd class="govuk-summary-list__value">Conduct</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Status</dt>
+										<dd class="govuk-summary-list__value">draft</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Effective date</dt>
+										<dd class="govuk-summary-list__value">2026-07-02</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Applies to</dt>
+										<dd class="govuk-summary-list__value">Non-researchers, Delivery teams, Coaches</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Evidence</dt>
+										<dd class="govuk-summary-list__value">support-request, coaching-record</dd>
+									</div>
+								</dl>
+							</section>
+
+							<section
+								class="sourcebook-clause sourcebook-clause--guidance"
+								id="scope-6-1-3"
+								typeof="skos:Concept"
+								resource="#scope-6-1-3"
+							>
+								<div class="sourcebook-clause__header">
+									<span class="sourcebook-clause-badge sourcebook-clause-badge--guidance" aria-label="Guidance">G</span>
+									<div>
+										<p class="sourcebook-clause__id" property="skos:notation">SCOPE 6.1.3</p>
+										<h3 class="govuk-heading-m" property="skos:prefLabel">
+											Use coaching to grow capability without hiding risk
+										</h3>
+									</div>
+								</div>
+								<p class="govuk-body sourcebook-clause__text" property="skos:definition">
+									Coaching should help teams frame questions, choose safe methods and understand limits, while keeping
+									accountability for high-risk research with qualified researchers.
+								</p>
+
+								<dl class="govuk-summary-list sourcebook-clause__meta">
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Type</dt>
+										<dd class="govuk-summary-list__value">Guidance</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Status</dt>
+										<dd class="govuk-summary-list__value">draft</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Effective date</dt>
+										<dd class="govuk-summary-list__value">2026-07-02</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Applies to</dt>
+										<dd class="govuk-summary-list__value">Research coaches, Research leaders, ResearchOps</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Evidence</dt>
+										<dd class="govuk-summary-list__value">coaching-plan, capability-record</dd>
+									</div>
+								</dl>
+							</section>
+						</div>
+					</section>
+
+					<section class="sourcebook-section" id="scope-7-0-0" typeof="skos:Concept" resource="#scope-7-0-0">
+						<p class="sourcebook-section__id" property="skos:notation">SCOPE 7.0.0</p>
+						<h2 class="govuk-heading-l" property="skos:prefLabel">Roadmap, portfolio and scope learning</h2>
+						<p class="govuk-body" property="skos:definition">
+							How scope decisions are reviewed across the portfolio and used to improve the research operating system.
+						</p>
+
+						<div class="sourcebook-clause-list">
+							<section
+								class="sourcebook-clause sourcebook-clause--rule"
+								id="scope-7-1-1"
+								typeof="skos:Concept"
+								resource="#scope-7-1-1"
+							>
+								<div class="sourcebook-clause__header">
+									<span class="sourcebook-clause-badge sourcebook-clause-badge--rule" aria-label="Rule">R</span>
+									<div>
+										<p class="sourcebook-clause__id" property="skos:notation">SCOPE 7.1.1</p>
+										<h3 class="govuk-heading-m" property="skos:prefLabel">
+											Maintain a visible research backlog or roadmap
+										</h3>
+									</div>
+								</div>
+								<p class="govuk-body sourcebook-clause__text" property="skos:definition">
+									Priority research demand, accepted work, deferred work and known evidence gaps must be visible in a
+									backlog or roadmap that research and delivery leaders can review.
+								</p>
+
+								<dl class="govuk-summary-list sourcebook-clause__meta">
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Type</dt>
+										<dd class="govuk-summary-list__value">Rule</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Status</dt>
+										<dd class="govuk-summary-list__value">draft</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Effective date</dt>
+										<dd class="govuk-summary-list__value">2026-07-02</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Applies to</dt>
+										<dd class="govuk-summary-list__value">Research leaders, ResearchOps, Portfolio leads</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Evidence</dt>
+										<dd class="govuk-summary-list__value">research-backlog, research-roadmap, evidence-gap-log</dd>
+									</div>
+
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Templates</dt>
+										<dd class="govuk-summary-list__value">TPL-RESEARCH-BACKLOG, TPL-RESEARCH-ROADMAP</dd>
+									</div>
+								</dl>
+							</section>
+
+							<section
+								class="sourcebook-clause sourcebook-clause--guidance"
+								id="scope-7-1-2"
+								typeof="skos:Concept"
+								resource="#scope-7-1-2"
+							>
+								<div class="sourcebook-clause__header">
+									<span class="sourcebook-clause-badge sourcebook-clause-badge--guidance" aria-label="Guidance">G</span>
+									<div>
+										<p class="sourcebook-clause__id" property="skos:notation">SCOPE 7.1.2</p>
+										<h3 class="govuk-heading-m" property="skos:prefLabel">
+											Review demand patterns as operating-system evidence
+										</h3>
+									</div>
+								</div>
+								<p class="govuk-body sourcebook-clause__text" property="skos:definition">
+									Repeated requests, unclear scope, rejected studies, unsupported self-service work and recurring method
+									gaps should feed operating improvements.
+								</p>
+
+								<dl class="govuk-summary-list sourcebook-clause__meta">
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Type</dt>
+										<dd class="govuk-summary-list__value">Guidance</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Status</dt>
+										<dd class="govuk-summary-list__value">draft</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Effective date</dt>
+										<dd class="govuk-summary-list__value">2026-07-02</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Applies to</dt>
+										<dd class="govuk-summary-list__value">ResearchOps, Research leaders</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Evidence</dt>
+										<dd class="govuk-summary-list__value">demand-pattern-review, improvement-backlog</dd>
+									</div>
+								</dl>
+							</section>
+
+							<section
+								class="sourcebook-clause sourcebook-clause--principle"
+								id="scope-7-1-3"
+								typeof="skos:Concept"
+								resource="#scope-7-1-3"
+							>
+								<div class="sourcebook-clause__header">
+									<span class="sourcebook-clause-badge sourcebook-clause-badge--principle" aria-label="Principle">
+										P
+									</span>
+									<div>
+										<p class="sourcebook-clause__id" property="skos:notation">SCOPE 7.1.3</p>
+										<h3 class="govuk-heading-m" property="skos:prefLabel">Good scope increases focus and trust</h3>
+									</div>
+								</div>
+								<p class="govuk-body sourcebook-clause__text" property="skos:definition">
+									A mature scope system should help teams ask better questions, use research capacity deliberately and
+									understand why some work proceeds, changes or stops.
+								</p>
+
+								<dl class="govuk-summary-list sourcebook-clause__meta">
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Type</dt>
+										<dd class="govuk-summary-list__value">Principle</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Status</dt>
+										<dd class="govuk-summary-list__value">draft</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Effective date</dt>
+										<dd class="govuk-summary-list__value">2026-07-02</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Applies to</dt>
+										<dd class="govuk-summary-list__value">Research leaders, Delivery leaders, ResearchOps</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Evidence</dt>
+										<dd class="govuk-summary-list__value">
+											scope-retrospective, portfolio-review, stakeholder-feedback
+										</dd>
+									</div>
+								</dl>
+							</section>
+						</div>
+					</section>
+
+					<section
+						class="sourcebook-section sourcebook-section--secondary"
+						id="glossary"
+						aria-labelledby="glossary-heading"
+					>
+						<h2 class="govuk-heading-l" id="glossary-heading">Glossary</h2>
+						<dl class="sourcebook-glossary">
+							<div class="sourcebook-glossary__item">
+								<dt>Research scope</dt>
+								<dd>
+									The agreed boundary of a research activity, including question, participants, method, intended use,
+									evidence standard and support level.
+								</dd>
+							</div>
+
+							<div class="sourcebook-glossary__item">
+								<dt>Decision need</dt>
+								<dd>The decision, risk or uncertainty that research evidence is expected to inform.</dd>
+							</div>
+
+							<div class="sourcebook-glossary__item">
+								<dt>Support level</dt>
+								<dd>
+									The degree of ResearchOps, research leadership or governance involvement needed for a piece of work.
+								</dd>
+							</div>
+
+							<div class="sourcebook-glossary__item">
+								<dt>Self-service pattern</dt>
+								<dd>
+									An approved low-risk approach that enables non-researchers or teams to collect limited evidence within
+									defined guardrails.
+								</dd>
+							</div>
+						</dl>
+					</section>
+
+					<section
+						class="sourcebook-section sourcebook-section--secondary"
+						id="change-history"
+						aria-labelledby="change-history-heading"
+					>
+						<h2 class="govuk-heading-l" id="change-history-heading">Change history</h2>
+						<ol class="govuk-list sourcebook-change-history">
+							<li>
+								<p class="sourcebook-change-history__date">2026-07-02</p>
+								<p class="govuk-body">
+									Expanded SCOPE into an end-to-end scope lifecycle covering operating model, intake, prioritisation,
+									support levels, method boundaries, self-service and portfolio learning.
+								</p>
+							</li>
+						</ol>
+					</section>
+				</article>
+			</div>
+		</main>
+		<x-include src="/partials/footer.html"></x-include>
+	</body>
+</html>

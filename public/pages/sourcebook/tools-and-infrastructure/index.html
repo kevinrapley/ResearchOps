@@ -1,0 +1,1261 @@
+<!doctype html>
+<html class="govuk-template" lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>Tools and infrastructure - Research Operations Sourcebook - ResearchOps Demo Suite</title>
+		<link rel="stylesheet" href="/assets/govuk/govuk-frontend.css" media="screen" />
+
+		<link rel="stylesheet" href="/css/sourcebook.css?v=sourcebook-20260702" media="screen" />
+		<meta
+			name="description"
+			content="The Tools and infrastructure pillar covers research tooling, procurement, integration, support, access, automation, resilience and operational ownership."
+		/>
+		<meta property="dc:title" content="Tools and infrastructure - Research Operations Sourcebook" />
+		<meta
+			property="dc:description"
+			content="The Tools and infrastructure pillar covers research tooling, procurement, integration, support, access, automation, resilience and operational ownership."
+		/>
+		<meta property="dc:isPartOf" content="Research Operations Sourcebook" />
+		<meta property="dc:type" content="Text" />
+		<meta property="dc:format" content="text/html" />
+		<meta property="dc:language" content="en-GB" />
+		<meta property="dc:creator" content="ResearchOps Governance Team" />
+		<meta property="dc:modified" content="2026-07-02" />
+		<meta property="dc:identifier" content="INFRA-PROV" />
+
+		<script type="module" src="/components/layout.js" defer></script>
+		<script type="module" src="/js/govuk-frontend-init.js" defer></script>
+	</head>
+	<body class="govuk-template__body researchops-sourcebook-page">
+		<script>
+			document.body.className +=
+				" js-enabled" + ("noModule" in HTMLScriptElement.prototype ? " govuk-frontend-supported" : "");
+		</script>
+		<x-include src="/partials/header.html" vars='{"active":"Sourcebook"}'></x-include>
+		<main class="govuk-main-wrapper" id="main-content" role="main" tabindex="-1">
+			<div class="govuk-width-container sourcebook-page sourcebook-pillar-page">
+				<nav class="govuk-breadcrumbs" aria-label="Breadcrumb">
+					<ol class="govuk-breadcrumbs__list">
+						<li class="govuk-breadcrumbs__list-item">
+							<a class="govuk-breadcrumbs__link" href="/">Home</a>
+						</li>
+						<li class="govuk-breadcrumbs__list-item">
+							<a class="govuk-breadcrumbs__link" href="/pages/sourcebook/">Sourcebook</a>
+						</li>
+						<li class="govuk-breadcrumbs__list-item" aria-current="page">Tools and infrastructure</li>
+					</ol>
+				</nav>
+
+				<article
+					vocab="http://www.w3.org/2004/02/skos/core#"
+					prefix="dc: http://purl.org/dc/terms/ skos: http://www.w3.org/2004/02/skos/core#"
+					typeof="skos:Concept"
+					resource="#infra-prov"
+				>
+					<span class="govuk-caption-xl" property="skos:notation">INFRA-PROV</span>
+					<h1 class="govuk-heading-xl" property="dc:title skos:prefLabel">Tools and infrastructure</h1>
+					<p class="govuk-body-l sourcebook-lede" property="skos:definition">
+						The Tools and infrastructure pillar covers research tooling, procurement, integration, support, access,
+						automation, resilience and operational ownership.
+					</p>
+
+					<div class="govuk-grid-row sourcebook-meta-row">
+						<div class="govuk-grid-column-two-thirds">
+							<section class="sourcebook-section sourcebook-section--lead" aria-labelledby="operating-question">
+								<h2 class="govuk-heading-m" id="operating-question">Operating question</h2>
+								<p class="govuk-body-l">
+									What tools, platforms, integrations and support processes make research reliable, secure and scalable?
+								</p>
+								<p class="govuk-body">
+									Tools should reduce repeat effort, protect data and support the operating model instead of becoming
+									unmanaged local workarounds.
+								</p>
+							</section>
+						</div>
+						<div class="govuk-grid-column-one-third">
+							<aside class="sourcebook-aside" aria-labelledby="pillar-details">
+								<h2 class="govuk-heading-s" id="pillar-details">Pillar details</h2>
+								<dl class="govuk-summary-list govuk-summary-list--no-border sourcebook-summary-list">
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Owner</dt>
+										<dd class="govuk-summary-list__value">Research tooling owner</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Legacy path</dt>
+										<dd class="govuk-summary-list__value">infra-prov</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Status</dt>
+										<dd class="govuk-summary-list__value">
+											<strong class="govuk-tag govuk-tag--yellow">draft</strong>
+										</dd>
+									</div>
+								</dl>
+							</aside>
+						</div>
+					</div>
+
+					<nav class="sourcebook-contents" aria-labelledby="pillar-contents">
+						<h2 class="govuk-heading-m" id="pillar-contents">Contents</h2>
+						<ol class="govuk-list govuk-list--number">
+							<li><a class="govuk-link" href="#infra-prov-1-0-0">Tools and infrastructure operating model</a></li>
+
+							<li><a class="govuk-link" href="#infra-prov-2-0-0">Tool evaluation, procurement and adoption</a></li>
+
+							<li><a class="govuk-link" href="#infra-prov-3-0-0">Access, identity and permission management</a></li>
+
+							<li>
+								<a class="govuk-link" href="#infra-prov-4-0-0">Integration, automation and workflow reliability</a>
+							</li>
+
+							<li><a class="govuk-link" href="#infra-prov-5-0-0">Support, service health and incident response</a></li>
+
+							<li><a class="govuk-link" href="#infra-prov-6-0-0">Security, compliance and resilience</a></li>
+
+							<li><a class="govuk-link" href="#infra-prov-7-0-0">Lifecycle review, retirement and improvement</a></li>
+
+							<li><a class="govuk-link" href="#glossary">Glossary</a></li>
+
+							<li><a class="govuk-link" href="#change-history">Change history</a></li>
+						</ol>
+					</nav>
+
+					<section class="sourcebook-section" id="infra-prov-1-0-0" typeof="skos:Concept" resource="#infra-prov-1-0-0">
+						<p class="sourcebook-section__id" property="skos:notation">INFRA-PROV 1.0.0</p>
+						<h2 class="govuk-heading-l" property="skos:prefLabel">Tools and infrastructure operating model</h2>
+						<p class="govuk-body" property="skos:definition">
+							How research tools, platforms, infrastructure, support and ownership fit the research operating system.
+						</p>
+
+						<div class="sourcebook-clause-list">
+							<section
+								class="sourcebook-clause sourcebook-clause--principle"
+								id="infra-prov-1-1-1"
+								typeof="skos:Concept"
+								resource="#infra-prov-1-1-1"
+							>
+								<div class="sourcebook-clause__header">
+									<span class="sourcebook-clause-badge sourcebook-clause-badge--principle" aria-label="Principle">
+										P
+									</span>
+									<div>
+										<p class="sourcebook-clause__id" property="skos:notation">INFRA-PROV 1.1.1</p>
+										<h3 class="govuk-heading-m" property="skos:prefLabel">
+											Infrastructure should make good practice easier
+										</h3>
+									</div>
+								</div>
+								<p class="govuk-body sourcebook-clause__text" property="skos:definition">
+									Research tools and infrastructure should make responsible research easier to run by reducing manual
+									work, protecting participant data and supporting the agreed operating model.
+								</p>
+
+								<dl class="govuk-summary-list sourcebook-clause__meta">
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Type</dt>
+										<dd class="govuk-summary-list__value">Principle</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Status</dt>
+										<dd class="govuk-summary-list__value">draft</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Effective date</dt>
+										<dd class="govuk-summary-list__value">2026-07-02</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Applies to</dt>
+										<dd class="govuk-summary-list__value">ResearchOps, Tool owners, Research leaders</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Evidence</dt>
+										<dd class="govuk-summary-list__value">tooling-operating-model, service-design-rationale</dd>
+									</div>
+
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Templates</dt>
+										<dd class="govuk-summary-list__value">TPL-LIFECYCLE-MANAGEMENT</dd>
+									</div>
+								</dl>
+							</section>
+
+							<section
+								class="sourcebook-clause sourcebook-clause--rule"
+								id="infra-prov-1-1-2"
+								typeof="skos:Concept"
+								resource="#infra-prov-1-1-2"
+							>
+								<div class="sourcebook-clause__header">
+									<span class="sourcebook-clause-badge sourcebook-clause-badge--rule" aria-label="Rule">R</span>
+									<div>
+										<p class="sourcebook-clause__id" property="skos:notation">INFRA-PROV 1.1.2</p>
+										<h3 class="govuk-heading-m" property="skos:prefLabel">
+											Assign ownership before a research tool is used
+										</h3>
+									</div>
+								</div>
+								<p class="govuk-body sourcebook-clause__text" property="skos:definition">
+									Every research tool must have a named owner, approved use case, data handling position, access
+									process, support route and lifecycle plan before it is used for live research.
+								</p>
+
+								<dl class="govuk-summary-list sourcebook-clause__meta">
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Type</dt>
+										<dd class="govuk-summary-list__value">Rule</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Status</dt>
+										<dd class="govuk-summary-list__value">draft</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Effective date</dt>
+										<dd class="govuk-summary-list__value">2026-07-02</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Applies to</dt>
+										<dd class="govuk-summary-list__value">ResearchOps, Tool owners, Information assurance</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Evidence</dt>
+										<dd class="govuk-summary-list__value">tool-register, data-review, support-route, lifecycle-plan</dd>
+									</div>
+
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Templates</dt>
+										<dd class="govuk-summary-list__value">TPL-TOOL-EVALUATION, TPL-GOVERNANCE-RACI</dd>
+									</div>
+								</dl>
+							</section>
+
+							<section
+								class="sourcebook-clause sourcebook-clause--guidance"
+								id="infra-prov-1-1-3"
+								typeof="skos:Concept"
+								resource="#infra-prov-1-1-3"
+							>
+								<div class="sourcebook-clause__header">
+									<span class="sourcebook-clause-badge sourcebook-clause-badge--guidance" aria-label="Guidance">G</span>
+									<div>
+										<p class="sourcebook-clause__id" property="skos:notation">INFRA-PROV 1.1.3</p>
+										<h3 class="govuk-heading-m" property="skos:prefLabel">Maintain a research tooling register</h3>
+									</div>
+								</div>
+								<p class="govuk-body sourcebook-clause__text" property="skos:definition">
+									Use a tooling register to record each tool&#39;s owner, purpose, data types, user groups,
+									integrations, suppliers, costs, assurance status, support model and review date.
+								</p>
+
+								<dl class="govuk-summary-list sourcebook-clause__meta">
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Type</dt>
+										<dd class="govuk-summary-list__value">Guidance</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Status</dt>
+										<dd class="govuk-summary-list__value">draft</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Effective date</dt>
+										<dd class="govuk-summary-list__value">2026-07-02</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Applies to</dt>
+										<dd class="govuk-summary-list__value">Tool owners, ResearchOps</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Evidence</dt>
+										<dd class="govuk-summary-list__value">tool-register, ownership-record</dd>
+									</div>
+								</dl>
+							</section>
+
+							<section
+								class="sourcebook-clause sourcebook-clause--conduct"
+								id="infra-prov-1-1-4"
+								typeof="skos:Concept"
+								resource="#infra-prov-1-1-4"
+							>
+								<div class="sourcebook-clause__header">
+									<span class="sourcebook-clause-badge sourcebook-clause-badge--conduct" aria-label="Conduct">C</span>
+									<div>
+										<p class="sourcebook-clause__id" property="skos:notation">INFRA-PROV 1.1.4</p>
+										<h3 class="govuk-heading-m" property="skos:prefLabel">Do not normalise unmanaged workarounds</h3>
+									</div>
+								</div>
+								<p class="govuk-body sourcebook-clause__text" property="skos:definition">
+									People supporting research must not treat personal spreadsheets, private accounts, unapproved
+									recording tools or unsupported scripts as acceptable infrastructure for live research.
+								</p>
+
+								<dl class="govuk-summary-list sourcebook-clause__meta">
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Type</dt>
+										<dd class="govuk-summary-list__value">Conduct</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Status</dt>
+										<dd class="govuk-summary-list__value">draft</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Effective date</dt>
+										<dd class="govuk-summary-list__value">2026-07-02</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Applies to</dt>
+										<dd class="govuk-summary-list__value">Researchers, ResearchOps, Tool owners</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Evidence</dt>
+										<dd class="govuk-summary-list__value">tool-exception, risk-acceptance-record</dd>
+									</div>
+								</dl>
+							</section>
+						</div>
+					</section>
+
+					<section class="sourcebook-section" id="infra-prov-2-0-0" typeof="skos:Concept" resource="#infra-prov-2-0-0">
+						<p class="sourcebook-section__id" property="skos:notation">INFRA-PROV 2.0.0</p>
+						<h2 class="govuk-heading-l" property="skos:prefLabel">Tool evaluation, procurement and adoption</h2>
+						<p class="govuk-body" property="skos:definition">
+							How tools are assessed, approved, introduced and adopted without creating hidden risk.
+						</p>
+
+						<div class="sourcebook-clause-list">
+							<section
+								class="sourcebook-clause sourcebook-clause--rule"
+								id="infra-prov-2-1-1"
+								typeof="skos:Concept"
+								resource="#infra-prov-2-1-1"
+							>
+								<div class="sourcebook-clause__header">
+									<span class="sourcebook-clause-badge sourcebook-clause-badge--rule" aria-label="Rule">R</span>
+									<div>
+										<p class="sourcebook-clause__id" property="skos:notation">INFRA-PROV 2.1.1</p>
+										<h3 class="govuk-heading-m" property="skos:prefLabel">Evaluate tools before procurement or use</h3>
+									</div>
+								</div>
+								<p class="govuk-body sourcebook-clause__text" property="skos:definition">
+									A research tool must be evaluated for user need, accessibility, privacy, security, data residency,
+									integration, cost, support and exit before it is procured or used.
+								</p>
+
+								<dl class="govuk-summary-list sourcebook-clause__meta">
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Type</dt>
+										<dd class="govuk-summary-list__value">Rule</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Status</dt>
+										<dd class="govuk-summary-list__value">draft</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Effective date</dt>
+										<dd class="govuk-summary-list__value">2026-07-02</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Applies to</dt>
+										<dd class="govuk-summary-list__value">
+											Tool owners, ResearchOps, Procurement, Information assurance
+										</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Evidence</dt>
+										<dd class="govuk-summary-list__value">tool-evaluation, assurance-review</dd>
+									</div>
+
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Templates</dt>
+										<dd class="govuk-summary-list__value">TPL-TOOL-EVALUATION, TPL-COMPLIANCE-CHECKLIST</dd>
+									</div>
+								</dl>
+							</section>
+
+							<section
+								class="sourcebook-clause sourcebook-clause--principle"
+								id="infra-prov-2-1-2"
+								typeof="skos:Concept"
+								resource="#infra-prov-2-1-2"
+							>
+								<div class="sourcebook-clause__header">
+									<span class="sourcebook-clause-badge sourcebook-clause-badge--principle" aria-label="Principle">
+										P
+									</span>
+									<div>
+										<p class="sourcebook-clause__id" property="skos:notation">INFRA-PROV 2.1.2</p>
+										<h3 class="govuk-heading-m" property="skos:prefLabel">Tool choice should follow operating need</h3>
+									</div>
+								</div>
+								<p class="govuk-body sourcebook-clause__text" property="skos:definition">
+									Tools should be selected because they support a defined research operation, not because a team prefers
+									a feature, supplier or existing habit.
+								</p>
+
+								<dl class="govuk-summary-list sourcebook-clause__meta">
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Type</dt>
+										<dd class="govuk-summary-list__value">Principle</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Status</dt>
+										<dd class="govuk-summary-list__value">draft</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Effective date</dt>
+										<dd class="govuk-summary-list__value">2026-07-02</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Applies to</dt>
+										<dd class="govuk-summary-list__value">ResearchOps, Tool owners, Research leaders</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Evidence</dt>
+										<dd class="govuk-summary-list__value">user-need, tool-decision-record</dd>
+									</div>
+								</dl>
+							</section>
+
+							<section
+								class="sourcebook-clause sourcebook-clause--guidance"
+								id="infra-prov-2-1-3"
+								typeof="skos:Concept"
+								resource="#infra-prov-2-1-3"
+							>
+								<div class="sourcebook-clause__header">
+									<span class="sourcebook-clause-badge sourcebook-clause-badge--guidance" aria-label="Guidance">G</span>
+									<div>
+										<p class="sourcebook-clause__id" property="skos:notation">INFRA-PROV 2.1.3</p>
+										<h3 class="govuk-heading-m" property="skos:prefLabel">Pilot adoption with support and controls</h3>
+									</div>
+								</div>
+								<p class="govuk-body sourcebook-clause__text" property="skos:definition">
+									When introducing a tool, pilot it with clear entry criteria, user support, feedback routes, risk
+									controls and a decision point before wider rollout.
+								</p>
+
+								<dl class="govuk-summary-list sourcebook-clause__meta">
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Type</dt>
+										<dd class="govuk-summary-list__value">Guidance</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Status</dt>
+										<dd class="govuk-summary-list__value">draft</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Effective date</dt>
+										<dd class="govuk-summary-list__value">2026-07-02</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Applies to</dt>
+										<dd class="govuk-summary-list__value">Tool owners, ResearchOps</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Evidence</dt>
+										<dd class="govuk-summary-list__value">pilot-plan, adoption-review</dd>
+									</div>
+								</dl>
+							</section>
+						</div>
+					</section>
+
+					<section class="sourcebook-section" id="infra-prov-3-0-0" typeof="skos:Concept" resource="#infra-prov-3-0-0">
+						<p class="sourcebook-section__id" property="skos:notation">INFRA-PROV 3.0.0</p>
+						<h2 class="govuk-heading-l" property="skos:prefLabel">Access, identity and permission management</h2>
+						<p class="govuk-body" property="skos:definition">
+							How people receive, change and lose access to research tools and infrastructure.
+						</p>
+
+						<div class="sourcebook-clause-list">
+							<section
+								class="sourcebook-clause sourcebook-clause--rule"
+								id="infra-prov-3-1-1"
+								typeof="skos:Concept"
+								resource="#infra-prov-3-1-1"
+							>
+								<div class="sourcebook-clause__header">
+									<span class="sourcebook-clause-badge sourcebook-clause-badge--rule" aria-label="Rule">R</span>
+									<div>
+										<p class="sourcebook-clause__id" property="skos:notation">INFRA-PROV 3.1.1</p>
+										<h3 class="govuk-heading-m" property="skos:prefLabel">Control access by role and research need</h3>
+									</div>
+								</div>
+								<p class="govuk-body sourcebook-clause__text" property="skos:definition">
+									Access to research tools must be granted by role, project need, data sensitivity and training status,
+									with admin access treated as exceptional.
+								</p>
+
+								<dl class="govuk-summary-list sourcebook-clause__meta">
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Type</dt>
+										<dd class="govuk-summary-list__value">Rule</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Status</dt>
+										<dd class="govuk-summary-list__value">draft</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Effective date</dt>
+										<dd class="govuk-summary-list__value">2026-07-02</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Applies to</dt>
+										<dd class="govuk-summary-list__value">Tool owners, ResearchOps, Team managers</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Evidence</dt>
+										<dd class="govuk-summary-list__value">access-request, role-permission-model</dd>
+									</div>
+
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Related routes</dt>
+										<dd class="govuk-summary-list__value">
+											<a class="govuk-link" href="/pages/account/team-access/">/pages/account/team-access/</a>
+											,
+
+											<a class="govuk-link" href="/pages/team/role-assignments/">/pages/team/role-assignments/</a>
+										</dd>
+									</div>
+								</dl>
+							</section>
+
+							<section
+								class="sourcebook-clause sourcebook-clause--guidance"
+								id="infra-prov-3-1-2"
+								typeof="skos:Concept"
+								resource="#infra-prov-3-1-2"
+							>
+								<div class="sourcebook-clause__header">
+									<span class="sourcebook-clause-badge sourcebook-clause-badge--guidance" aria-label="Guidance">G</span>
+									<div>
+										<p class="sourcebook-clause__id" property="skos:notation">INFRA-PROV 3.1.2</p>
+										<h3 class="govuk-heading-m" property="skos:prefLabel">
+											Review access when teams or projects change
+										</h3>
+									</div>
+								</div>
+								<p class="govuk-body sourcebook-clause__text" property="skos:definition">
+									Review tool access when someone changes role, leaves a team, finishes a study, changes supplier status
+									or no longer has a live research need.
+								</p>
+
+								<dl class="govuk-summary-list sourcebook-clause__meta">
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Type</dt>
+										<dd class="govuk-summary-list__value">Guidance</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Status</dt>
+										<dd class="govuk-summary-list__value">draft</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Effective date</dt>
+										<dd class="govuk-summary-list__value">2026-07-02</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Applies to</dt>
+										<dd class="govuk-summary-list__value">Tool owners, Team managers, ResearchOps</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Evidence</dt>
+										<dd class="govuk-summary-list__value">access-review, leaver-check</dd>
+									</div>
+								</dl>
+							</section>
+
+							<section
+								class="sourcebook-clause sourcebook-clause--conduct"
+								id="infra-prov-3-1-3"
+								typeof="skos:Concept"
+								resource="#infra-prov-3-1-3"
+							>
+								<div class="sourcebook-clause__header">
+									<span class="sourcebook-clause-badge sourcebook-clause-badge--conduct" aria-label="Conduct">C</span>
+									<div>
+										<p class="sourcebook-clause__id" property="skos:notation">INFRA-PROV 3.1.3</p>
+										<h3 class="govuk-heading-m" property="skos:prefLabel">
+											Do not share credentials or participant data through informal channels
+										</h3>
+									</div>
+								</div>
+								<p class="govuk-body sourcebook-clause__text" property="skos:definition">
+									People must not share tool credentials, recordings, transcripts, participant contact details or
+									exports through personal accounts, chat messages or unsupported storage.
+								</p>
+
+								<dl class="govuk-summary-list sourcebook-clause__meta">
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Type</dt>
+										<dd class="govuk-summary-list__value">Conduct</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Status</dt>
+										<dd class="govuk-summary-list__value">draft</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Effective date</dt>
+										<dd class="govuk-summary-list__value">2026-07-02</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Applies to</dt>
+										<dd class="govuk-summary-list__value">Researchers, ResearchOps, Tool users</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Evidence</dt>
+										<dd class="govuk-summary-list__value">security-briefing, incident-report</dd>
+									</div>
+								</dl>
+							</section>
+						</div>
+					</section>
+
+					<section class="sourcebook-section" id="infra-prov-4-0-0" typeof="skos:Concept" resource="#infra-prov-4-0-0">
+						<p class="sourcebook-section__id" property="skos:notation">INFRA-PROV 4.0.0</p>
+						<h2 class="govuk-heading-l" property="skos:prefLabel">Integration, automation and workflow reliability</h2>
+						<p class="govuk-body" property="skos:definition">
+							How research tools connect to workflows, data, repositories and automation safely.
+						</p>
+
+						<div class="sourcebook-clause-list">
+							<section
+								class="sourcebook-clause sourcebook-clause--rule"
+								id="infra-prov-4-1-1"
+								typeof="skos:Concept"
+								resource="#infra-prov-4-1-1"
+							>
+								<div class="sourcebook-clause__header">
+									<span class="sourcebook-clause-badge sourcebook-clause-badge--rule" aria-label="Rule">R</span>
+									<div>
+										<p class="sourcebook-clause__id" property="skos:notation">INFRA-PROV 4.1.1</p>
+										<h3 class="govuk-heading-m" property="skos:prefLabel">Document integrations before live use</h3>
+									</div>
+								</div>
+								<p class="govuk-body sourcebook-clause__text" property="skos:definition">
+									Integrations that move research data, participant records, consent states, repository entries or
+									operational status must document source, destination, owner, permissions, failure mode and audit
+									route.
+								</p>
+
+								<dl class="govuk-summary-list sourcebook-clause__meta">
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Type</dt>
+										<dd class="govuk-summary-list__value">Rule</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Status</dt>
+										<dd class="govuk-summary-list__value">draft</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Effective date</dt>
+										<dd class="govuk-summary-list__value">2026-07-02</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Applies to</dt>
+										<dd class="govuk-summary-list__value">Tool owners, ResearchOps, Developers</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Evidence</dt>
+										<dd class="govuk-summary-list__value">integration-record, data-flow-review</dd>
+									</div>
+
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Templates</dt>
+										<dd class="govuk-summary-list__value">TPL-INTEGRATION-WORKFLOW, TPL-GDPR-CHECKLIST</dd>
+									</div>
+								</dl>
+							</section>
+
+							<section
+								class="sourcebook-clause sourcebook-clause--principle"
+								id="infra-prov-4-1-2"
+								typeof="skos:Concept"
+								resource="#infra-prov-4-1-2"
+							>
+								<div class="sourcebook-clause__header">
+									<span class="sourcebook-clause-badge sourcebook-clause-badge--principle" aria-label="Principle">
+										P
+									</span>
+									<div>
+										<p class="sourcebook-clause__id" property="skos:notation">INFRA-PROV 4.1.2</p>
+										<h3 class="govuk-heading-m" property="skos:prefLabel">Standardise before automating</h3>
+									</div>
+								</div>
+								<p class="govuk-body sourcebook-clause__text" property="skos:definition">
+									Automation should be added to stable, understood and repeatable operations rather than used to hide
+									unclear ownership, poor process design or missing governance.
+								</p>
+
+								<dl class="govuk-summary-list sourcebook-clause__meta">
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Type</dt>
+										<dd class="govuk-summary-list__value">Principle</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Status</dt>
+										<dd class="govuk-summary-list__value">draft</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Effective date</dt>
+										<dd class="govuk-summary-list__value">2026-07-02</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Applies to</dt>
+										<dd class="govuk-summary-list__value">ResearchOps, Tool owners, Developers</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Evidence</dt>
+										<dd class="govuk-summary-list__value">process-map, automation-review</dd>
+									</div>
+								</dl>
+							</section>
+
+							<section
+								class="sourcebook-clause sourcebook-clause--guidance"
+								id="infra-prov-4-1-3"
+								typeof="skos:Concept"
+								resource="#infra-prov-4-1-3"
+							>
+								<div class="sourcebook-clause__header">
+									<span class="sourcebook-clause-badge sourcebook-clause-badge--guidance" aria-label="Guidance">G</span>
+									<div>
+										<p class="sourcebook-clause__id" property="skos:notation">INFRA-PROV 4.1.3</p>
+										<h3 class="govuk-heading-m" property="skos:prefLabel">Design for visible failure</h3>
+									</div>
+								</div>
+								<p class="govuk-body sourcebook-clause__text" property="skos:definition">
+									Automated workflows should expose errors, retries, missing permissions and data mismatches so teams
+									can recover without silent loss of research records.
+								</p>
+
+								<dl class="govuk-summary-list sourcebook-clause__meta">
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Type</dt>
+										<dd class="govuk-summary-list__value">Guidance</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Status</dt>
+										<dd class="govuk-summary-list__value">draft</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Effective date</dt>
+										<dd class="govuk-summary-list__value">2026-07-02</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Applies to</dt>
+										<dd class="govuk-summary-list__value">Tool owners, ResearchOps, Developers</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Evidence</dt>
+										<dd class="govuk-summary-list__value">workflow-monitoring, failure-runbook</dd>
+									</div>
+								</dl>
+							</section>
+						</div>
+					</section>
+
+					<section class="sourcebook-section" id="infra-prov-5-0-0" typeof="skos:Concept" resource="#infra-prov-5-0-0">
+						<p class="sourcebook-section__id" property="skos:notation">INFRA-PROV 5.0.0</p>
+						<h2 class="govuk-heading-l" property="skos:prefLabel">Support, service health and incident response</h2>
+						<p class="govuk-body" property="skos:definition">
+							How tools are supported, monitored and recovered when they affect research delivery.
+						</p>
+
+						<div class="sourcebook-clause-list">
+							<section
+								class="sourcebook-clause sourcebook-clause--rule"
+								id="infra-prov-5-1-1"
+								typeof="skos:Concept"
+								resource="#infra-prov-5-1-1"
+							>
+								<div class="sourcebook-clause__header">
+									<span class="sourcebook-clause-badge sourcebook-clause-badge--rule" aria-label="Rule">R</span>
+									<div>
+										<p class="sourcebook-clause__id" property="skos:notation">INFRA-PROV 5.1.1</p>
+										<h3 class="govuk-heading-m" property="skos:prefLabel">
+											Define the support route for each critical tool
+										</h3>
+									</div>
+								</div>
+								<p class="govuk-body sourcebook-clause__text" property="skos:definition">
+									Critical research tools must have a support route that states who responds, what counts as urgent, how
+									incidents are escalated and how users are updated.
+								</p>
+
+								<dl class="govuk-summary-list sourcebook-clause__meta">
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Type</dt>
+										<dd class="govuk-summary-list__value">Rule</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Status</dt>
+										<dd class="govuk-summary-list__value">draft</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Effective date</dt>
+										<dd class="govuk-summary-list__value">2026-07-02</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Applies to</dt>
+										<dd class="govuk-summary-list__value">Tool owners, ResearchOps, Service owners</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Evidence</dt>
+										<dd class="govuk-summary-list__value">support-route, incident-runbook</dd>
+									</div>
+
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Templates</dt>
+										<dd class="govuk-summary-list__value">TPL-INCIDENT-REGISTER</dd>
+									</div>
+								</dl>
+							</section>
+
+							<section
+								class="sourcebook-clause sourcebook-clause--guidance"
+								id="infra-prov-5-1-2"
+								typeof="skos:Concept"
+								resource="#infra-prov-5-1-2"
+							>
+								<div class="sourcebook-clause__header">
+									<span class="sourcebook-clause-badge sourcebook-clause-badge--guidance" aria-label="Guidance">G</span>
+									<div>
+										<p class="sourcebook-clause__id" property="skos:notation">INFRA-PROV 5.1.2</p>
+										<h3 class="govuk-heading-m" property="skos:prefLabel">Track service health in research terms</h3>
+									</div>
+								</div>
+								<p class="govuk-body sourcebook-clause__text" property="skos:definition">
+									Monitor tool reliability by its effect on recruitment, sessions, consent, repository access, analysis,
+									reporting and participant communications rather than uptime alone.
+								</p>
+
+								<dl class="govuk-summary-list sourcebook-clause__meta">
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Type</dt>
+										<dd class="govuk-summary-list__value">Guidance</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Status</dt>
+										<dd class="govuk-summary-list__value">draft</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Effective date</dt>
+										<dd class="govuk-summary-list__value">2026-07-02</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Applies to</dt>
+										<dd class="govuk-summary-list__value">Tool owners, ResearchOps</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Evidence</dt>
+										<dd class="govuk-summary-list__value">service-health-review, user-feedback</dd>
+									</div>
+								</dl>
+							</section>
+
+							<section
+								class="sourcebook-clause sourcebook-clause--conduct"
+								id="infra-prov-5-1-3"
+								typeof="skos:Concept"
+								resource="#infra-prov-5-1-3"
+							>
+								<div class="sourcebook-clause__header">
+									<span class="sourcebook-clause-badge sourcebook-clause-badge--conduct" aria-label="Conduct">C</span>
+									<div>
+										<p class="sourcebook-clause__id" property="skos:notation">INFRA-PROV 5.1.3</p>
+										<h3 class="govuk-heading-m" property="skos:prefLabel">
+											Tell affected teams when tooling risk changes
+										</h3>
+									</div>
+								</div>
+								<p class="govuk-body sourcebook-clause__text" property="skos:definition">
+									People responsible for tools must communicate material outages, security issues, permission changes or
+									data problems to affected research teams quickly and plainly.
+								</p>
+
+								<dl class="govuk-summary-list sourcebook-clause__meta">
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Type</dt>
+										<dd class="govuk-summary-list__value">Conduct</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Status</dt>
+										<dd class="govuk-summary-list__value">draft</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Effective date</dt>
+										<dd class="govuk-summary-list__value">2026-07-02</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Applies to</dt>
+										<dd class="govuk-summary-list__value">Tool owners, ResearchOps, Service owners</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Evidence</dt>
+										<dd class="govuk-summary-list__value">incident-communication, service-update</dd>
+									</div>
+								</dl>
+							</section>
+						</div>
+					</section>
+
+					<section class="sourcebook-section" id="infra-prov-6-0-0" typeof="skos:Concept" resource="#infra-prov-6-0-0">
+						<p class="sourcebook-section__id" property="skos:notation">INFRA-PROV 6.0.0</p>
+						<h2 class="govuk-heading-l" property="skos:prefLabel">Security, compliance and resilience</h2>
+						<p class="govuk-body" property="skos:definition">
+							How tooling protects participants, research data, service continuity and organisational assurance.
+						</p>
+
+						<div class="sourcebook-clause-list">
+							<section
+								class="sourcebook-clause sourcebook-clause--rule"
+								id="infra-prov-6-1-1"
+								typeof="skos:Concept"
+								resource="#infra-prov-6-1-1"
+							>
+								<div class="sourcebook-clause__header">
+									<span class="sourcebook-clause-badge sourcebook-clause-badge--rule" aria-label="Rule">R</span>
+									<div>
+										<p class="sourcebook-clause__id" property="skos:notation">INFRA-PROV 6.1.1</p>
+										<h3 class="govuk-heading-m" property="skos:prefLabel">
+											Complete assurance for tools handling sensitive research material
+										</h3>
+									</div>
+								</div>
+								<p class="govuk-body sourcebook-clause__text" property="skos:definition">
+									Tools that handle sensitive participant data, recordings, transcripts, consent records or unreleased
+									findings must complete security, privacy and compliance assurance before live use.
+								</p>
+
+								<dl class="govuk-summary-list sourcebook-clause__meta">
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Type</dt>
+										<dd class="govuk-summary-list__value">Rule</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Status</dt>
+										<dd class="govuk-summary-list__value">draft</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Effective date</dt>
+										<dd class="govuk-summary-list__value">2026-07-02</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Applies to</dt>
+										<dd class="govuk-summary-list__value">Tool owners, Information assurance, ResearchOps</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Evidence</dt>
+										<dd class="govuk-summary-list__value">security-review, privacy-review, compliance-check</dd>
+									</div>
+
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Templates</dt>
+										<dd class="govuk-summary-list__value">TPL-COMPLIANCE-CHECKLIST, TPL-RISK-ASSESSMENT</dd>
+									</div>
+								</dl>
+							</section>
+
+							<section
+								class="sourcebook-clause sourcebook-clause--guidance"
+								id="infra-prov-6-1-2"
+								typeof="skos:Concept"
+								resource="#infra-prov-6-1-2"
+							>
+								<div class="sourcebook-clause__header">
+									<span class="sourcebook-clause-badge sourcebook-clause-badge--guidance" aria-label="Guidance">G</span>
+									<div>
+										<p class="sourcebook-clause__id" property="skos:notation">INFRA-PROV 6.1.2</p>
+										<h3 class="govuk-heading-m" property="skos:prefLabel">Plan continuity for live research moments</h3>
+									</div>
+								</div>
+								<p class="govuk-body sourcebook-clause__text" property="skos:definition">
+									For tools used in recruitment, consent, sessions, incentives or participant communications, define
+									manual fallback, recovery steps and participant-facing messages before disruption happens.
+								</p>
+
+								<dl class="govuk-summary-list sourcebook-clause__meta">
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Type</dt>
+										<dd class="govuk-summary-list__value">Guidance</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Status</dt>
+										<dd class="govuk-summary-list__value">draft</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Effective date</dt>
+										<dd class="govuk-summary-list__value">2026-07-02</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Applies to</dt>
+										<dd class="govuk-summary-list__value">Tool owners, ResearchOps, Study leads</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Evidence</dt>
+										<dd class="govuk-summary-list__value">continuity-plan, fallback-process</dd>
+									</div>
+								</dl>
+							</section>
+
+							<section
+								class="sourcebook-clause sourcebook-clause--principle"
+								id="infra-prov-6-1-3"
+								typeof="skos:Concept"
+								resource="#infra-prov-6-1-3"
+							>
+								<div class="sourcebook-clause__header">
+									<span class="sourcebook-clause-badge sourcebook-clause-badge--principle" aria-label="Principle">
+										P
+									</span>
+									<div>
+										<p class="sourcebook-clause__id" property="skos:notation">INFRA-PROV 6.1.3</p>
+										<h3 class="govuk-heading-m" property="skos:prefLabel">Resilience is part of participant care</h3>
+									</div>
+								</div>
+								<p class="govuk-body sourcebook-clause__text" property="skos:definition">
+									Infrastructure resilience should protect participants from confusion, repeated requests, lost consent,
+									missed payments and failed communications when tools break.
+								</p>
+
+								<dl class="govuk-summary-list sourcebook-clause__meta">
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Type</dt>
+										<dd class="govuk-summary-list__value">Principle</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Status</dt>
+										<dd class="govuk-summary-list__value">draft</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Effective date</dt>
+										<dd class="govuk-summary-list__value">2026-07-02</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Applies to</dt>
+										<dd class="govuk-summary-list__value">ResearchOps, Tool owners, Research leaders</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Evidence</dt>
+										<dd class="govuk-summary-list__value">incident-review, participant-impact-review</dd>
+									</div>
+								</dl>
+							</section>
+						</div>
+					</section>
+
+					<section class="sourcebook-section" id="infra-prov-7-0-0" typeof="skos:Concept" resource="#infra-prov-7-0-0">
+						<p class="sourcebook-section__id" property="skos:notation">INFRA-PROV 7.0.0</p>
+						<h2 class="govuk-heading-l" property="skos:prefLabel">Lifecycle review, retirement and improvement</h2>
+						<p class="govuk-body" property="skos:definition">
+							How tools are reviewed, improved, consolidated or retired over time.
+						</p>
+
+						<div class="sourcebook-clause-list">
+							<section
+								class="sourcebook-clause sourcebook-clause--rule"
+								id="infra-prov-7-1-1"
+								typeof="skos:Concept"
+								resource="#infra-prov-7-1-1"
+							>
+								<div class="sourcebook-clause__header">
+									<span class="sourcebook-clause-badge sourcebook-clause-badge--rule" aria-label="Rule">R</span>
+									<div>
+										<p class="sourcebook-clause__id" property="skos:notation">INFRA-PROV 7.1.1</p>
+										<h3 class="govuk-heading-m" property="skos:prefLabel">
+											Review tool value and risk on a fixed cycle
+										</h3>
+									</div>
+								</div>
+								<p class="govuk-body sourcebook-clause__text" property="skos:definition">
+									Research tools must be reviewed on a fixed cycle for usage, cost, duplication, support burden, data
+									risk, accessibility, user satisfaction and alignment with the operating model.
+								</p>
+
+								<dl class="govuk-summary-list sourcebook-clause__meta">
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Type</dt>
+										<dd class="govuk-summary-list__value">Rule</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Status</dt>
+										<dd class="govuk-summary-list__value">draft</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Effective date</dt>
+										<dd class="govuk-summary-list__value">2026-07-02</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Applies to</dt>
+										<dd class="govuk-summary-list__value">Tool owners, ResearchOps, Research leaders</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Evidence</dt>
+										<dd class="govuk-summary-list__value">tool-review, value-risk-review</dd>
+									</div>
+
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Templates</dt>
+										<dd class="govuk-summary-list__value">TPL-LIFECYCLE-MANAGEMENT, TPL-MATURITY-ASSESSMENT</dd>
+									</div>
+								</dl>
+							</section>
+
+							<section
+								class="sourcebook-clause sourcebook-clause--guidance"
+								id="infra-prov-7-1-2"
+								typeof="skos:Concept"
+								resource="#infra-prov-7-1-2"
+							>
+								<div class="sourcebook-clause__header">
+									<span class="sourcebook-clause-badge sourcebook-clause-badge--guidance" aria-label="Guidance">G</span>
+									<div>
+										<p class="sourcebook-clause__id" property="skos:notation">INFRA-PROV 7.1.2</p>
+										<h3 class="govuk-heading-m" property="skos:prefLabel">Plan for tool exit as part of adoption</h3>
+									</div>
+								</div>
+								<p class="govuk-body sourcebook-clause__text" property="skos:definition">
+									When adopting a tool, document export options, retention effects, replacement triggers and what
+									happens to stored research data if the tool is retired.
+								</p>
+
+								<dl class="govuk-summary-list sourcebook-clause__meta">
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Type</dt>
+										<dd class="govuk-summary-list__value">Guidance</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Status</dt>
+										<dd class="govuk-summary-list__value">draft</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Effective date</dt>
+										<dd class="govuk-summary-list__value">2026-07-02</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Applies to</dt>
+										<dd class="govuk-summary-list__value">Tool owners, ResearchOps</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Evidence</dt>
+										<dd class="govuk-summary-list__value">lifecycle-plan, exit-plan</dd>
+									</div>
+
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Templates</dt>
+										<dd class="govuk-summary-list__value">TPL-DATA-RETENTION</dd>
+									</div>
+								</dl>
+							</section>
+
+							<section
+								class="sourcebook-clause sourcebook-clause--principle"
+								id="infra-prov-7-1-3"
+								typeof="skos:Concept"
+								resource="#infra-prov-7-1-3"
+							>
+								<div class="sourcebook-clause__header">
+									<span class="sourcebook-clause-badge sourcebook-clause-badge--principle" aria-label="Principle">
+										P
+									</span>
+									<div>
+										<p class="sourcebook-clause__id" property="skos:notation">INFRA-PROV 7.1.3</p>
+										<h3 class="govuk-heading-m" property="skos:prefLabel">
+											Good infrastructure makes responsible research easier to run
+										</h3>
+									</div>
+								</div>
+								<p class="govuk-body sourcebook-clause__text" property="skos:definition">
+									A mature tools and infrastructure system should make research more reliable, secure, inclusive and
+									scalable while reducing unmanaged effort and local workaround risk.
+								</p>
+
+								<dl class="govuk-summary-list sourcebook-clause__meta">
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Type</dt>
+										<dd class="govuk-summary-list__value">Principle</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Status</dt>
+										<dd class="govuk-summary-list__value">draft</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Effective date</dt>
+										<dd class="govuk-summary-list__value">2026-07-02</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Applies to</dt>
+										<dd class="govuk-summary-list__value">ResearchOps, Tool owners, Research leaders</dd>
+									</div>
+									<div class="govuk-summary-list__row">
+										<dt class="govuk-summary-list__key">Evidence</dt>
+										<dd class="govuk-summary-list__value">tooling-retrospective, service-metrics, risk-review</dd>
+									</div>
+								</dl>
+							</section>
+						</div>
+					</section>
+
+					<section
+						class="sourcebook-section sourcebook-section--secondary"
+						id="glossary"
+						aria-labelledby="glossary-heading"
+					>
+						<h2 class="govuk-heading-l" id="glossary-heading">Glossary</h2>
+						<dl class="sourcebook-glossary">
+							<div class="sourcebook-glossary__item">
+								<dt>Tool owner</dt>
+								<dd>
+									The person accountable for a research tool&#39;s approved use, access, support, assurance, lifecycle
+									and escalation route.
+								</dd>
+							</div>
+
+							<div class="sourcebook-glossary__item">
+								<dt>Critical research tool</dt>
+								<dd>
+									A tool whose failure or misuse could materially affect recruitment, consent, participant care, data
+									protection, evidence quality or research delivery.
+								</dd>
+							</div>
+
+							<div class="sourcebook-glossary__item">
+								<dt>Integration record</dt>
+								<dd>
+									The documented source, destination, data, owner, permissions, failure mode and audit route for a tool
+									or workflow integration.
+								</dd>
+							</div>
+
+							<div class="sourcebook-glossary__item">
+								<dt>Lifecycle plan</dt>
+								<dd>
+									The plan for adopting, reviewing, supporting, changing and retiring a research tool or infrastructure
+									component.
+								</dd>
+							</div>
+						</dl>
+					</section>
+
+					<section
+						class="sourcebook-section sourcebook-section--secondary"
+						id="change-history"
+						aria-labelledby="change-history-heading"
+					>
+						<h2 class="govuk-heading-l" id="change-history-heading">Change history</h2>
+						<ol class="govuk-list sourcebook-change-history">
+							<li>
+								<p class="sourcebook-change-history__date">2026-07-02</p>
+								<p class="govuk-body">
+									Expanded INFRA-PROV into an end-to-end tools and infrastructure lifecycle covering operating model,
+									tool evaluation, access, integration, support, security, resilience and retirement.
+								</p>
+							</li>
+						</ol>
+					</section>
+				</article>
+			</div>
+		</main>
+		<x-include src="/partials/footer.html"></x-include>
+	</body>
+</html>

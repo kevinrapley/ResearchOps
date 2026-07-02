@@ -16,6 +16,53 @@ function writeHtml(dir, filename, body) {
 	);
 }
 
+function writeQualityHtml(dir, filename, body) {
+	fs.writeFileSync(
+		path.join(dir, filename),
+		`<!DOCTYPE html><html><head><meta property="dc:modified" content="2026-07-02"></head><body id="main-content">${body}</body></html>`
+	);
+}
+
+function writeMinimalSourcebookModel(indexPath, sourcebookDir, overrides = {}) {
+	fs.mkdirSync(path.join(sourcebookDir, 'templates'), { recursive: true });
+	fs.writeFileSync(path.join(sourcebookDir, 'templates', 'used-template.md'), '# Used template');
+
+	const model = {
+		contentTypes: {
+			rule: { notation: 'R', label: 'Rule' },
+			principle: { notation: 'P', label: 'Principle' },
+			guidance: { notation: 'G', label: 'Guidance' },
+			conduct: { notation: 'C', label: 'Conduct' },
+		},
+		templates: [
+			{
+				id: 'TPL-USED',
+				title: 'Used template',
+				path: '/sourcebook/templates/used-template.md',
+			},
+		],
+		pillars: [
+			{
+				code: 'SCOPE',
+				changeHistory: [{ date: '2026-07-02', summary: 'Initial sourcebook clause set.' }],
+				sections: [
+					{
+						clauses: [
+							{
+								id: 'SCOPE 1.1.1',
+								relatedTemplates: ['TPL-USED'],
+							},
+						],
+					},
+				],
+			},
+		],
+		...overrides,
+	};
+
+	fs.writeFileSync(indexPath, JSON.stringify(model, null, 2));
+}
+
 test('validateSourcebookLinks throws when sourcebook directory is missing', () => {
 	assert.throws(
 		() => validateSourcebookLinks({ sourcebookDir: '/nonexistent/sourcebook/path' }),
@@ -35,13 +82,11 @@ test('validateSourcebookLinks passes with no links', () => {
 	}
 });
 
-test('validateSourcebookLinks skips href="#" placeholder', () => {
+test('validateSourcebookLinks fails on href="#" placeholder', () => {
 	const tmp = makeTempDir();
 	try {
 		writeHtml(tmp, 'index.html', '<a href="#">placeholder</a>');
-		const result = validateSourcebookLinks({ sourcebookDir: tmp });
-		assert.equal(result.skippedCount, 1);
-		assert.equal(result.totalLinks, 0);
+		assert.throws(() => validateSourcebookLinks({ sourcebookDir: tmp }), /placeholder href/);
 	} finally {
 		fs.rmSync(tmp, { recursive: true });
 	}
@@ -143,6 +188,166 @@ test('validateSourcebookLinks passes for existing template file', () => {
 		writeHtml(tmp, 'index.html', '<a href="templates/my-template.md">template</a>');
 		const result = validateSourcebookLinks({ sourcebookDir: tmp });
 		assert.equal(result.totalLinks, 1);
+	} finally {
+		fs.rmSync(tmp, { recursive: true });
+	}
+});
+
+test('validateSourcebookLinks fails quality gates on placeholder text', () => {
+	const tmp = makeTempDir();
+	try {
+		const sourcebookDir = path.join(tmp, 'docs');
+		fs.mkdirSync(sourcebookDir);
+		writeQualityHtml(sourcebookDir, 'index.html', '<p>TODO</p>');
+		const indexPath = path.join(tmp, 'sourcebook-index.json');
+		writeMinimalSourcebookModel(indexPath, sourcebookDir);
+
+		assert.throws(
+			() =>
+				validateSourcebookLinks({
+					sourcebookDir,
+					sourcebookIndexPath: indexPath,
+					govukSourcebookDir: path.join(tmp, 'govuk'),
+					validateQualityGates: true,
+				}),
+			/placeholder/
+		);
+	} finally {
+		fs.rmSync(tmp, { recursive: true });
+	}
+});
+
+test('validateSourcebookLinks fails quality gates when dc:modified is missing', () => {
+	const tmp = makeTempDir();
+	try {
+		const sourcebookDir = path.join(tmp, 'docs');
+		fs.mkdirSync(sourcebookDir);
+		writeHtml(sourcebookDir, 'index.html', '<p>Valid sourcebook page.</p>');
+		const indexPath = path.join(tmp, 'sourcebook-index.json');
+		writeMinimalSourcebookModel(indexPath, sourcebookDir);
+
+		assert.throws(
+			() =>
+				validateSourcebookLinks({
+					sourcebookDir,
+					sourcebookIndexPath: indexPath,
+					govukSourcebookDir: path.join(tmp, 'govuk'),
+					validateQualityGates: true,
+				}),
+			/dc:modified/
+		);
+	} finally {
+		fs.rmSync(tmp, { recursive: true });
+	}
+});
+
+test('validateSourcebookLinks fails quality gates when a pillar page has no change history', () => {
+	const tmp = makeTempDir();
+	try {
+		const sourcebookDir = path.join(tmp, 'docs');
+		fs.mkdirSync(sourcebookDir);
+		writeQualityHtml(sourcebookDir, 'index.html', '<p>Valid sourcebook index.</p>');
+		writeQualityHtml(sourcebookDir, 'scope.html', '<p>Valid sourcebook pillar.</p>');
+		const indexPath = path.join(tmp, 'sourcebook-index.json');
+		writeMinimalSourcebookModel(indexPath, sourcebookDir);
+
+		assert.throws(
+			() =>
+				validateSourcebookLinks({
+					sourcebookDir,
+					sourcebookIndexPath: indexPath,
+					govukSourcebookDir: path.join(tmp, 'govuk'),
+					validateQualityGates: true,
+				}),
+			/change history/
+		);
+	} finally {
+		fs.rmSync(tmp, { recursive: true });
+	}
+});
+
+test('validateSourcebookLinks fails quality gates when a badge is missing its label', () => {
+	const tmp = makeTempDir();
+	try {
+		const sourcebookDir = path.join(tmp, 'docs');
+		fs.mkdirSync(sourcebookDir);
+		writeQualityHtml(sourcebookDir, 'index.html', '<span class="sourcebook-clause-badge">R</span>');
+		const indexPath = path.join(tmp, 'sourcebook-index.json');
+		writeMinimalSourcebookModel(indexPath, sourcebookDir);
+
+		assert.throws(
+			() =>
+				validateSourcebookLinks({
+					sourcebookDir,
+					sourcebookIndexPath: indexPath,
+					govukSourcebookDir: path.join(tmp, 'govuk'),
+					validateQualityGates: true,
+				}),
+			/missing the Rule label/
+		);
+	} finally {
+		fs.rmSync(tmp, { recursive: true });
+	}
+});
+
+test('validateSourcebookLinks fails quality gates on orphaned templates', () => {
+	const tmp = makeTempDir();
+	try {
+		const sourcebookDir = path.join(tmp, 'docs');
+		fs.mkdirSync(sourcebookDir);
+		writeQualityHtml(sourcebookDir, 'index.html', '<p>Valid sourcebook index.</p>');
+		const indexPath = path.join(tmp, 'sourcebook-index.json');
+		writeMinimalSourcebookModel(indexPath, sourcebookDir, {
+			templates: [
+				{
+					id: 'TPL-USED',
+					title: 'Used template',
+					path: '/sourcebook/templates/used-template.md',
+				},
+				{
+					id: 'TPL-UNUSED',
+					title: 'Unused template',
+					path: '/sourcebook/templates/unused-template.md',
+				},
+			],
+		});
+		fs.writeFileSync(path.join(sourcebookDir, 'templates', 'unused-template.md'), '# Unused');
+
+		assert.throws(
+			() =>
+				validateSourcebookLinks({
+					sourcebookDir,
+					sourcebookIndexPath: indexPath,
+					govukSourcebookDir: path.join(tmp, 'govuk'),
+					validateQualityGates: true,
+				}),
+			/defined but not referenced/
+		);
+	} finally {
+		fs.rmSync(tmp, { recursive: true });
+	}
+});
+
+test('validateSourcebookLinks fails quality gates on unregistered template files', () => {
+	const tmp = makeTempDir();
+	try {
+		const sourcebookDir = path.join(tmp, 'docs');
+		fs.mkdirSync(sourcebookDir);
+		writeQualityHtml(sourcebookDir, 'index.html', '<p>Valid sourcebook index.</p>');
+		const indexPath = path.join(tmp, 'sourcebook-index.json');
+		writeMinimalSourcebookModel(indexPath, sourcebookDir);
+		fs.writeFileSync(path.join(sourcebookDir, 'templates', 'unregistered-template.md'), '# Orphan');
+
+		assert.throws(
+			() =>
+				validateSourcebookLinks({
+					sourcebookDir,
+					sourcebookIndexPath: indexPath,
+					govukSourcebookDir: path.join(tmp, 'govuk'),
+					validateQualityGates: true,
+				}),
+			/not registered/
+		);
 	} finally {
 		fs.rmSync(tmp, { recursive: true });
 	}

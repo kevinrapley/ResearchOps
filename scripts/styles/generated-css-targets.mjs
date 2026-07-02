@@ -41,6 +41,11 @@ export const generatedCssTargets = [
 		output: 'public/css/repository.css',
 	},
 	{
+		name: 'Sourcebook stylesheet',
+		source: 'src/styles/sourcebook.scss',
+		output: 'public/css/sourcebook.css',
+	},
+	{
 		name: 'Project dashboard stylesheet',
 		source: 'src/styles/project-dashboard.scss',
 		output: 'public/css/project-dashboard.css',
