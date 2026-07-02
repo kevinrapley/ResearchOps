@@ -8,9 +8,9 @@
 
 ## Task
 
-Investigate and fix a `401 authentication_required` error shown to
-`kevin.rapley@homeoffice.gov.uk` when submitting the Start a new research
-project flow from the check-answers step.
+Investigate and fix a `401 authentication_required` error shown to a synthetic
+ResearchOps user when submitting the Start a new research project flow from the
+check-answers step.
 
 The screenshot showed the shared header rendering the signed-in user while the
 project create POST returned `authentication_required`.

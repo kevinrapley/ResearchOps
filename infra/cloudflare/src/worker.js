@@ -35,7 +35,21 @@ function isResearchOpsPagesOrigin(origin) {
 	try {
 		const { hostname, protocol } = new URL(origin);
 		if (protocol !== "https:") return false;
-		return hostname === "researchops.pages.dev" || hostname.endsWith(".researchops.pages.dev");
+		return hostname === "researchops.pages.dev";
+	} catch {
+		return false;
+	}
+}
+
+function allowPreviewPagesWildcard(env) {
+	return String(env.RESEARCHOPS_ALLOW_PAGES_PREVIEW_ORIGINS || "").toLowerCase() === "true";
+}
+
+function isAllowedPreviewPagesOrigin(env, origin) {
+	if (!allowPreviewPagesWildcard(env)) return false;
+	try {
+		const { hostname, protocol } = new URL(origin);
+		return protocol === "https:" && hostname.endsWith(".researchops.pages.dev") && hostname !== "researchops.pages.dev";
 	} catch {
 		return false;
 	}
@@ -49,6 +63,7 @@ function resolveAllowedOrigin(env, request) {
 		if (!origin) return "*";
 		if (list.includes(origin)) return origin;
 		if (isResearchOpsPagesOrigin(origin)) return origin;
+		if (isAllowedPreviewPagesOrigin(env, origin)) return origin;
 		return "null";
 	} catch {
 		return "*";
@@ -60,7 +75,7 @@ function isAllowedRequestOrigin(env, request) {
 	if (!origin) return true;
 	const raw = env.ALLOWED_ORIGINS;
 	const list = Array.isArray(raw) ? raw : String(raw || "").split(",").map(s => s.trim()).filter(Boolean);
-	return list.includes(origin) || isResearchOpsPagesOrigin(origin);
+	return list.includes(origin) || isResearchOpsPagesOrigin(origin) || isAllowedPreviewPagesOrigin(env, origin);
 }
 
 function buildCorsHeaders(env, request) {
@@ -77,7 +92,35 @@ function isStateChangingMethod(method) {
 	return ["POST", "PUT", "PATCH", "DELETE"].includes(String(method || "").toUpperCase());
 }
 
-function assertTrustedMutationRequest(request, env) {
+function hasPasswordlessSessionCookie(request) {
+	return String(request.headers.get("Cookie") || "")
+		.split(";")
+		.map(part => part.trim())
+		.some(part => part.startsWith("rops_session="));
+}
+
+function sameOriginRequest(request) {
+	const origin = request.headers.get("Origin") || "";
+	if (!origin) return false;
+	try {
+		return new URL(origin).origin === new URL(request.url).origin;
+	} catch {
+		return false;
+	}
+}
+
+function isCsrfExemptPath(apiPath) {
+	return apiPath === "/api/auth/logout" ||
+		apiPath === "/api/auth/registration-requests" ||
+		apiPath.startsWith("/api/auth/email/");
+}
+
+function hasCsrfHeader(request) {
+	const value = String(request.headers.get("X-ResearchOps-CSRF") || "").trim().toLowerCase();
+	return value === "1" || value === "required" || value === "pages-proxy";
+}
+
+function assertTrustedMutationRequest(request, env, apiPath = "") {
 	if (!isStateChangingMethod(request.method)) return;
 	if (!isAllowedRequestOrigin(env, request)) {
 		const error = new Error("This request origin is not allowed.");
@@ -90,6 +133,12 @@ function assertTrustedMutationRequest(request, env) {
 		const error = new Error("Cross-site browser mutations require an allowed Origin header.");
 		error.status = 403;
 		error.code = "csrf_origin_required";
+		throw error;
+	}
+	if (!isCsrfExemptPath(apiPath) && hasPasswordlessSessionCookie(request) && !sameOriginRequest(request) && !hasCsrfHeader(request)) {
+		const error = new Error("Cookie-authenticated mutations require CSRF confirmation.");
+		error.status = 403;
+		error.code = "csrf_header_required";
 		throw error;
 	}
 }
@@ -199,8 +248,13 @@ const repositoryAuthDeclarationsReadyByDatabase = new WeakMap();
 const researchDataAuthDeclarationsReadyByDatabase = new WeakMap();
 
 const RESEARCH_DATA_AUTH_PERMISSIONS = [
+	["project.view", "View projects", "Can view project records and project-level research context."],
+	["project.manage", "Manage projects", "Can create or update project records."],
 	["study.view", "View studies", "Can view study records and associated research planning data."],
 	["study.manage", "Manage studies", "Can create or update study records."],
+	["research.content.view", "View research content", "Can view journal entries, memos, codes, guides, sessions and analysis."],
+	["research.content.manage", "Manage research content", "Can create, update or delete journal entries, memos, codes, guides, sessions and analysis."],
+	["research.integration.manage", "Manage research integrations", "Can use integrations that write or synchronise research data."],
 	["synthesis.view", "View synthesis", "Can view research evidence, clusters and themes."],
 	["synthesis.manage", "Manage synthesis", "Can create, update or delete research synthesis records."],
 	["consent.form.view", "View consent forms", "Can view consent form templates and versions."],
@@ -211,16 +265,26 @@ const RESEARCH_DATA_AUTH_PERMISSIONS = [
 ];
 
 const RESEARCH_DATA_ROLE_PERMISSIONS = [
+	["role_researcher", "project.view"],
+	["role_researcher", "project.manage"],
 	["role_researcher", "study.view"],
 	["role_researcher", "study.manage"],
+	["role_researcher", "research.content.view"],
+	["role_researcher", "research.content.manage"],
+	["role_researcher", "research.integration.manage"],
 	["role_researcher", "synthesis.view"],
 	["role_researcher", "synthesis.manage"],
 	["role_researcher", "consent.form.view"],
 	["role_researcher", "consent.form.manage"],
 	["role_researcher", "participant.consent.view"],
 	["role_researcher", "participant.consent.manage"],
+	["role_research_lead", "project.view"],
+	["role_research_lead", "project.manage"],
 	["role_research_lead", "study.view"],
 	["role_research_lead", "study.manage"],
+	["role_research_lead", "research.content.view"],
+	["role_research_lead", "research.content.manage"],
+	["role_research_lead", "research.integration.manage"],
 	["role_research_lead", "synthesis.view"],
 	["role_research_lead", "synthesis.manage"],
 	["role_research_lead", "consent.form.view"],
@@ -228,8 +292,13 @@ const RESEARCH_DATA_ROLE_PERMISSIONS = [
 	["role_research_lead", "participant.consent.view"],
 	["role_research_lead", "participant.consent.manage"],
 	["role_research_lead", "project.diagnostics.view"],
+	["role_team_admin", "project.view"],
+	["role_team_admin", "project.manage"],
 	["role_team_admin", "study.view"],
 	["role_team_admin", "study.manage"],
+	["role_team_admin", "research.content.view"],
+	["role_team_admin", "research.content.manage"],
+	["role_team_admin", "research.integration.manage"],
 	["role_team_admin", "synthesis.view"],
 	["role_team_admin", "synthesis.manage"],
 	["role_team_admin", "consent.form.view"],
@@ -240,11 +309,80 @@ const RESEARCH_DATA_ROLE_PERMISSIONS = [
 ];
 
 const RESEARCH_DATA_ROUTE_PERMISSIONS = [
+	["route_api_health_get", "GET", "/api/health", "[]", 0],
+	["route_api_diag_ping_get", "GET", "/api/_diag/ping", "[]", 0],
+	["route_api_diag_env_get", "GET", "/api/_diag/env", "[\"project.diagnostics.view\"]", 1],
+	["route_api_diag_airtable_get", "GET", "/api/_diag/airtable", "[\"project.diagnostics.view\"]", 1],
 	["route_api_diag_projects_source_get", "GET", "/api/_diag/projects-source", "[\"project.diagnostics.view\"]"],
 	["route_api_diag_project_linked_records_get", "GET", "/api/_diag/project-linked-records", "[\"project.diagnostics.view\"]"],
+	["route_api_projects_csv_get", "GET", "/api/projects.csv", "[\"project.view\"]", 1],
+	["route_api_project_details_csv_get", "GET", "/api/project-details.csv", "[\"project.view\"]", 1],
+	["route_api_studies_csv_get", "GET", "/api/studies.csv", "[\"study.view\"]", 1],
+	["route_api_projects_get", "GET", "/api/projects", "[\"project.view\"]", 1],
+	["route_api_projects_post", "POST", "/api/projects", "[\"project.manage\"]", 1],
+	["route_api_project_get", "GET", "/api/projects/:id", "[\"project.view\"]", 1],
+	["route_api_project_patch", "PATCH", "/api/projects/:id", "[\"project.manage\"]", 1],
 	["route_api_studies_get", "GET", "/api/studies", "[\"study.view\"]"],
 	["route_api_studies_post", "POST", "/api/studies", "[\"study.manage\"]"],
 	["route_api_studies_patch", "PATCH", "/api/studies/:id", "[\"study.manage\"]"],
+	["route_api_ai_rewrite_post", "POST", "/api/ai-rewrite", "[\"research.content.manage\"]", 1],
+	["route_api_journal_entries_get", "GET", "/api/journal-entries", "[\"research.content.view\"]", 1],
+	["route_api_journal_entries_post", "POST", "/api/journal-entries", "[\"research.content.manage\"]", 1],
+	["route_api_journal_entry_get", "GET", "/api/journal-entries/:id", "[\"research.content.view\"]", 1],
+	["route_api_journal_entry_patch", "PATCH", "/api/journal-entries/:id", "[\"research.content.manage\"]", 1],
+	["route_api_journal_entry_delete", "DELETE", "/api/journal-entries/:id", "[\"research.content.manage\"]", 1],
+	["route_api_excerpts_get", "GET", "/api/excerpts", "[\"research.content.view\"]", 1],
+	["route_api_excerpts_post", "POST", "/api/excerpts", "[\"research.content.manage\"]", 1],
+	["route_api_excerpt_patch", "PATCH", "/api/excerpts/:id", "[\"research.content.manage\"]", 1],
+	["route_api_memos_get", "GET", "/api/memos", "[\"research.content.view\"]", 1],
+	["route_api_memos_post", "POST", "/api/memos", "[\"research.content.manage\"]", 1],
+	["route_api_memo_patch", "PATCH", "/api/memos/:id", "[\"research.content.manage\"]", 1],
+	["route_api_memo_delete", "DELETE", "/api/memos/:id", "[\"research.content.manage\"]", 1],
+	["route_api_code_applications_get", "GET", "/api/code-applications", "[\"research.content.view\"]", 1],
+	["route_api_codes_get", "GET", "/api/codes", "[\"research.content.view\"]", 1],
+	["route_api_codes_post", "POST", "/api/codes", "[\"research.content.manage\"]", 1],
+	["route_api_code_patch", "PATCH", "/api/codes/:id", "[\"research.content.manage\"]", 1],
+	["route_api_code_delete", "DELETE", "/api/codes/:id", "[\"research.content.manage\"]", 1],
+	["route_api_analysis_timeline_get", "GET", "/api/analysis/timeline", "[\"research.content.view\"]", 1],
+	["route_api_analysis_cooccurrence_get", "GET", "/api/analysis/cooccurrence", "[\"research.content.view\"]", 1],
+	["route_api_analysis_retrieval_get", "GET", "/api/analysis/retrieval", "[\"research.content.view\"]", 1],
+	["route_api_analysis_export_get", "GET", "/api/analysis/export", "[\"research.content.view\"]", 1],
+	["route_api_impact_get", "GET", "/api/impact", "[\"repository.view\"]", 1],
+	["route_api_impact_post", "POST", "/api/impact", "[\"repository.curate\"]", 1],
+	["route_api_impact_record_get", "GET", "/api/impact/:id", "[\"repository.view\"]", 1],
+	["route_api_impact_record_patch", "PATCH", "/api/impact/:id", "[\"repository.curate\"]", 1],
+	["route_api_impact_record_delete", "DELETE", "/api/impact/:id", "[\"repository.curate\"]", 1],
+	["route_api_guides_get", "GET", "/api/guides", "[\"research.content.view\"]", 1],
+	["route_api_guides_post", "POST", "/api/guides", "[\"research.content.manage\"]", 1],
+	["route_api_guide_get", "GET", "/api/guides/:id", "[\"research.content.view\"]", 1],
+	["route_api_guide_patch", "PATCH", "/api/guides/:id", "[\"research.content.manage\"]", 1],
+	["route_api_guide_publish_post", "POST", "/api/guides/:id/publish", "[\"research.content.manage\"]", 1],
+	["route_api_partials_get", "GET", "/api/partials", "[\"research.content.view\"]", 1],
+	["route_api_partials_post", "POST", "/api/partials", "[\"research.content.manage\"]", 1],
+	["route_api_partial_get", "GET", "/api/partials/:id", "[\"research.content.view\"]", 1],
+	["route_api_partial_patch", "PATCH", "/api/partials/:id", "[\"research.content.manage\"]", 1],
+	["route_api_partial_delete", "DELETE", "/api/partials/:id", "[\"research.content.manage\"]", 1],
+	["route_api_sessions_get", "GET", "/api/sessions", "[\"research.content.view\"]", 1],
+	["route_api_sessions_post", "POST", "/api/sessions", "[\"research.content.manage\"]", 1],
+	["route_api_session_get", "GET", "/api/sessions/:id", "[\"research.content.view\"]", 1],
+	["route_api_session_patch", "PATCH", "/api/sessions/:id", "[\"research.content.manage\"]", 1],
+	["route_api_session_ics_get", "GET", "/api/sessions/:id/ics", "[\"research.content.view\"]", 1],
+	["route_api_session_notes_get", "GET", "/api/session-notes", "[\"research.content.view\"]", 1],
+	["route_api_session_notes_post", "POST", "/api/session-notes", "[\"research.content.manage\"]", 1],
+	["route_api_session_note_patch", "PATCH", "/api/session-notes/:id", "[\"research.content.manage\"]", 1],
+	["route_api_comms_send_post", "POST", "/api/comms/send", "[\"research.content.manage\"]", 1],
+	["route_api_agent_pages_deploy_post", "POST", "/api/agent-pages/deploy", "[]", 0],
+	["route_api_mural_auth_get", "GET", "/api/mural/auth", "[\"research.integration.manage\"]", 1],
+	["route_api_mural_callback_get", "GET", "/api/mural/callback", "[]", 0],
+	["route_api_mural_verify_get", "GET", "/api/mural/verify", "[\"research.integration.manage\"]", 1],
+	["route_api_mural_resolve_get", "GET", "/api/mural/resolve", "[\"research.integration.manage\"]", 1],
+	["route_api_mural_setup_post", "POST", "/api/mural/setup", "[\"research.integration.manage\"]", 1],
+	["route_api_mural_find_get", "GET", "/api/mural/find", "[\"research.integration.manage\"]", 1],
+	["route_api_mural_await_get", "GET", "/api/mural/await", "[\"research.integration.manage\"]", 1],
+	["route_api_mural_journal_sync_post", "POST", "/api/mural/journal-sync", "[\"research.integration.manage\"]", 1],
+	["route_api_mural_workspaces_get", "GET", "/api/mural/workspaces", "[\"research.integration.manage\"]", 1],
+	["route_api_mural_me_get", "GET", "/api/mural/me", "[\"research.integration.manage\"]", 1],
+	["route_api_mural_debug_env_get", "GET", "/api/mural/debug-env", "[\"project.diagnostics.view\"]", 1],
 	["route_api_synthesis_get", "GET", "/api/synthesis", "[\"synthesis.view\"]"],
 	["route_api_synthesis_evidence_get", "GET", "/api/synthesis/evidence", "[\"synthesis.view\"]"],
 	["route_api_synthesis_clusters_post", "POST", "/api/synthesis/clusters", "[\"synthesis.manage\"]"],
@@ -346,12 +484,12 @@ async function ensureResearchDataAuthDeclarations(env) {
 			`).bind(roleId, permissionCode).run();
 		}
 
-		for (const [id, method, routePattern, requiredPermissionsJson] of RESEARCH_DATA_ROUTE_PERMISSIONS) {
+		for (const [id, method, routePattern, requiredPermissionsJson, authRequired = 1] of RESEARCH_DATA_ROUTE_PERMISSIONS) {
 			await db.prepare(`
 				INSERT OR IGNORE INTO auth_route_permissions
 					(id, method, route_pattern, required_permissions_json, auth_required, implementation_status)
-				VALUES (?, ?, ?, ?, 1, 'implemented')
-			`).bind(id, method, routePattern, requiredPermissionsJson).run();
+				VALUES (?, ?, ?, ?, ?, 'implemented')
+			`).bind(id, method, routePattern, requiredPermissionsJson, authRequired).run();
 		}
 	})();
 
@@ -361,7 +499,19 @@ async function ensureResearchDataAuthDeclarations(env) {
 }
 
 function researchDataRoutePermissionRequest(request, apiPath) {
+	if (apiPath.match(/^\/api\/projects\/([^/]+)$/)) return requestForRoutePermission(request, "/api/projects/:id");
 	if (apiPath.match(/^\/api\/studies\/([^/]+)$/)) return requestForRoutePermission(request, "/api/studies/:id");
+	if (apiPath.match(/^\/api\/journal-entries\/([^/]+)$/)) return requestForRoutePermission(request, "/api/journal-entries/:id");
+	if (apiPath.match(/^\/api\/excerpts\/([^/]+)$/)) return requestForRoutePermission(request, "/api/excerpts/:id");
+	if (apiPath.match(/^\/api\/memos\/([^/]+)$/)) return requestForRoutePermission(request, "/api/memos/:id");
+	if (apiPath.match(/^\/api\/codes\/([^/]+)$/)) return requestForRoutePermission(request, "/api/codes/:id");
+	if (apiPath.match(/^\/api\/impact\/([^/]+)$/)) return requestForRoutePermission(request, "/api/impact/:id");
+	if (apiPath.match(/^\/api\/guides\/([^/]+)\/publish$/)) return requestForRoutePermission(request, "/api/guides/:id/publish");
+	if (apiPath.match(/^\/api\/guides\/([^/]+)$/)) return requestForRoutePermission(request, "/api/guides/:id");
+	if (apiPath.match(/^\/api\/partials\/([^/]+)$/)) return requestForRoutePermission(request, "/api/partials/:id");
+	if (apiPath.match(/^\/api\/sessions\/([^/]+)\/ics$/)) return requestForRoutePermission(request, "/api/sessions/:id/ics");
+	if (apiPath.match(/^\/api\/sessions\/([^/]+)$/)) return requestForRoutePermission(request, "/api/sessions/:id");
+	if (apiPath.match(/^\/api\/session-notes\/([^/]+)$/)) return requestForRoutePermission(request, "/api/session-notes/:id");
 	if (apiPath.match(/^\/api\/synthesis\/clusters\/([^/]+)$/)) return requestForRoutePermission(request, "/api/synthesis/clusters/:id");
 	if (apiPath.match(/^\/api\/consent-forms\/([^/]+)\/publish$/)) return requestForRoutePermission(request, "/api/consent-forms/:id/publish");
 	if (apiPath.match(/^\/api\/consent-forms\/([^/]+)$/)) return requestForRoutePermission(request, "/api/consent-forms/:id");
@@ -376,8 +526,41 @@ async function assertResearchDataRoutePermission(request, env, apiPath) {
 	return authContext;
 }
 
+async function assertFallbackApiRoutePermission(request, env, apiPath) {
+	await ensureResearchDataAuthDeclarations(env);
+	const routePermissionRequest = researchDataRoutePermissionRequest(request, apiPath);
+	const probeDeclaration = await assertRoutePermission(routePermissionRequest, env, { authenticated: false, permissions: [] })
+		.catch((error) => {
+			if (error?.code !== "authentication_required" && error?.code !== "permission_denied") throw error;
+			return null;
+		});
+	if (probeDeclaration?.authRequired === false) return null;
+	const authContext = await authContextFor(request, env);
+	await assertRoutePermission(routePermissionRequest, env, authContext);
+	return authContext;
+}
+
 function workerBuild(env) {
 	return { sha: env.RESEARCHOPS_BUILD_SHA || "unknown", branch: env.RESEARCHOPS_BUILD_BRANCH || "unknown" };
+}
+
+async function sanitizedApiErrorResponse(request, response) {
+	try {
+		const url = new URL(request.url);
+		if (!url.pathname.startsWith("/api/") || response.status < 500) return response;
+		const contentType = response.headers.get("content-type") || "";
+		if (!contentType.toLowerCase().includes("application/json")) return response;
+		const body = await response.clone().json().catch(() => null);
+		if (!body || typeof body !== "object" || (!("detail" in body) && !("errors" in body))) return response;
+		const headers = new Headers(response.headers);
+		return new Response(JSON.stringify({
+			ok: false,
+			error: body.error || "request_failed",
+			message: "The request could not be completed."
+		}), { status: response.status, headers });
+	} catch {
+		return response;
+	}
 }
 
 function isAirtableRecordId(value) {
@@ -468,16 +651,20 @@ async function handleProjectLinkedDiagnostics(request, env) {
 }
 
 async function handleProjects(request, env) {
+	await ensureResearchDataAuthDeclarations(env);
 	const authContext = await authContextFor(request, env);
+	await assertRoutePermission(request, env, authContext);
 	if (request.method === "GET") return listProjectRecords(request, env, authContext);
 	if (request.method === "POST") return createProjectRecord(request, env, authContext);
 	return new Response(JSON.stringify({ error: "Method not allowed" }), { status: 405, headers: { "content-type": "application/json; charset=utf-8" } });
 }
 
 async function handleProjectRecord(request, env, apiPath, executionCtx) {
+	await ensureResearchDataAuthDeclarations(env);
 	const authContext = await authContextFor(request, env);
 	const match = apiPath.match(/^\/api\/projects\/([^/]+)$/);
 	if (!match) return new Response(JSON.stringify({ error: "Not found", path: apiPath }), { status: 404, headers: { "content-type": "application/json; charset=utf-8" } });
+	await assertRoutePermission(researchDataRoutePermissionRequest(request, apiPath), env, authContext);
 	const projectId = decodeURIComponent(match[1]);
 	if (request.method === "GET") return getProjectRecord(request, env, projectId, authContext);
 	if (request.method === "PATCH") return updateProjectRecord(request, env, projectId, authContext, executionCtx);
@@ -605,10 +792,10 @@ export default {
 		const { method, url } = request;
 		const pathname = new URL(url).pathname;
 		const apiPath = normaliseApiPath(pathname);
-		if (method === "OPTIONS") return withCORS(env, request, new Response(null, { status: 204 }));
-		try {
-			assertTrustedMutationRequest(request, env);
-			let result;
+			if (method === "OPTIONS") return withCORS(env, request, new Response(null, { status: 204 }));
+			try {
+				assertTrustedMutationRequest(request, env, apiPath);
+				let result;
 			if ((method === "GET" || method === "POST") && apiPath === "/api/auth/registration-requests") result = await handleRegistrationRequestsRoute(request, env, apiPath);
 			else if (method === "POST" && apiPath.startsWith("/api/auth/email/")) result = await handlePasswordlessAuthRoute(request, env, apiPath);
 			else if (method === "POST" && apiPath === "/api/auth/logout") result = await handlePasswordlessAuthRoute(request, env, apiPath);
@@ -622,15 +809,20 @@ export default {
 			else if (apiPath === "/api/studies" || apiPath.startsWith("/api/studies/")) result = await handleStudies(request, env, apiPath);
 			else if (apiPath === "/api/synthesis" || apiPath.startsWith("/api/synthesis/")) result = await handleSynthesis(request, env, apiPath);
 			else if (apiPath === "/api/consent-forms" || apiPath.startsWith("/api/consent-forms/")) result = await handleConsentForms(request, env, apiPath);
-			else if (apiPath === "/api/participant-consent" || apiPath.startsWith("/api/participant-consent/")) result = await handleParticipantConsent(request, env, apiPath);
-			else if (apiPath === "/api/study-support" || apiPath.startsWith("/api/study-support/")) result = await handleStudySupport(request, env, apiPath);
-			else if (apiPath === "/api/repository" || apiPath.startsWith("/api/repository/")) result = await handleRepository(request, env, apiPath);
-			else result = await handleRequest(request, env, ctx);
-			return withCORS(env, request, coerceResponse(result));
-		} catch (e) {
-			if (e?.status && e?.code) return withCORS(env, request, authErrorResponse(e));
-			return withCORS(env, request, new Response(JSON.stringify({ error: "Internal error", detail: String(e?.message || e) }), { status: 500, headers: { "content-type": "application/json; charset=utf-8" } }));
-		}
+				else if (apiPath === "/api/participant-consent" || apiPath.startsWith("/api/participant-consent/")) result = await handleParticipantConsent(request, env, apiPath);
+				else if (apiPath === "/api/study-support" || apiPath.startsWith("/api/study-support/")) result = await handleStudySupport(request, env, apiPath);
+				else if (apiPath === "/api/repository" || apiPath.startsWith("/api/repository/")) result = await handleRepository(request, env, apiPath);
+				else if ((apiPath === "/api/health" || apiPath === "/api/_diag/ping") && method === "GET") result = await handleRequest(request, env, ctx);
+				else {
+					if (apiPath.startsWith("/api/")) await assertFallbackApiRoutePermission(request, env, apiPath);
+					result = await handleRequest(request, env, ctx);
+				}
+				return withCORS(env, request, await sanitizedApiErrorResponse(request, coerceResponse(result)));
+			} catch (e) {
+				if (e?.status && e?.code) return withCORS(env, request, authErrorResponse(e));
+				console.error("worker.unhandled", e);
+				return withCORS(env, request, new Response(JSON.stringify({ ok: false, error: "internal_error", message: "The request could not be completed." }), { status: 500, headers: { "content-type": "application/json; charset=utf-8" } }));
+			}
 	},
 
 	async scheduled(event, env, ctx) {

@@ -35,7 +35,7 @@ function corsHeadersForEnv(env, origin) {
 	const allowList = normalizeAllowedOrigins(env?.ALLOWED_ORIGINS);
 	const allow = allowList.includes(origin);
 	return {
-		"Access-Control-Allow-Origin": allow ? origin : (allowList[0] || "*"),
+		"Access-Control-Allow-Origin": allow ? origin : "null",
 		"Access-Control-Allow-Credentials": "true",
 		"Access-Control-Allow-Methods": "GET, POST, PATCH, DELETE, OPTIONS",
 		"Access-Control-Allow-Headers": "Content-Type, Authorization",

@@ -11,6 +11,6 @@ Future main D1 migrations must use a new, monotonically increasing four-digit pr
 
 Do not rename or renumber already-applied migration files. If an applied migration must be corrected, add a new migration with the next available main prefix and document the reason in the migration body or the related pull request.
 
-The next main migration prefix after 0024_security_hardening_controls.sql is `0025`.
+The next main migration prefix after 0025_security_review_route_permissions.sql is `0026`.
 
 Preview seed migrations under `infra/cloudflare/migrations/preview/` use an independent sequence. Scoped migration folders such as `infra/cloudflare/migrations/researchops-d1/` also have their own local ordering contract.

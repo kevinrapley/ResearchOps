@@ -1,0 +1,114 @@
+{
+	"date": "2026-07-02",
+	"branch": "fix/security-review-findings-hardening",
+	"traceRequired": true,
+	"traceReason": "fix/ branches require auditable traces for repository-affecting work",
+	"taskSummary": "Fix the remaining security review findings on a new branch and open a pull request for review.",
+	"operatingModelFilesLoaded": [
+		"AGENTS.md",
+		".agent-operating-model/orchestration.xml",
+		".agent-operating-model/bundle-registry.json",
+		".agent-operating-model/task-signal-catalog.json",
+		".agent-operating-model/selection-rules.json",
+		".agent-operating-model/bootstrap-checklist.md",
+		".agent-operating-model/precedence-policy.md",
+		".agent-operating-model/trace-policy.md",
+		".agent-operating-model/trace-layers.md",
+		".agent-operating-model/behavioural-evals.json",
+		".agent-operating-model/github-mutation-policy.md"
+	],
+	"modelCommand": "npm run agent:model -- \"Fix repository security review findings: fallback API permission gates, cross-site cookie CSRF, preview origin hardening, provider error leakage, API error sanitisation, CSP inline script hardening, and seeded PII reduction.\"",
+	"selectedBundles": [
+		{
+			"id": "github-diamond",
+			"canonicalPath": ".agent-operating-model/bundles/github/"
+		},
+		{
+			"id": "researchops-developer-control",
+			"canonicalPath": ".agent-operating-model/bundles/researchops-developer-control/"
+		},
+		{
+			"id": "multi-functional-team",
+			"canonicalPath": ".agent-operating-model/bundles/multi-functional-team/"
+		},
+		{
+			"id": "cloudflare",
+			"canonicalPath": ".agent-operating-model/bundles/cloudflare/"
+		},
+		{
+			"id": "govuk-design-system",
+			"canonicalPath": ".agent-operating-model/bundles/govuk-design-system/"
+		},
+		{
+			"id": "airtable-public-api",
+			"canonicalPath": ".agent-operating-model/bundles/airtable-public-api/"
+		},
+		{
+			"id": "mural-public-api",
+			"canonicalPath": ".agent-operating-model/bundles/mural-public-api/"
+		}
+	],
+	"precedenceDecisions": [
+		"GitHub Diamond governed branch naming, PR readiness, trace coverage and validation evidence.",
+		"ResearchOps Developer Control governed Cloudflare Worker route boundaries, D1 migration posture and ResearchOps-specific API behaviour.",
+		"Multi-Functional Team governed public-sector security, PII and GDPR assurance framing.",
+		"Cloudflare governed Worker request handling, CORS, security headers and Pages proxy behaviour.",
+		"GOV.UK Design System applied to static page delivery and frontend compatibility while tightening CSP.",
+		"Airtable and Mural bundles were treated as integration boundary checks; this branch only changed access gates and seeded/test data, not third-party API contracts."
+	],
+	"filesCreated": [
+		"infra/cloudflare/migrations/0025_security_review_route_permissions.sql",
+		"tests/security-review-hardening-runtime.test.js",
+		"docs/agent-audit/reasoning/2026/07/02/security-review-findings-hardening.md",
+		"docs/agent-audit/reasoning/2026/07/02/security-review-findings-hardening.json"
+	],
+	"implementationSummary": [
+		"Tightened Pages origin handling so researchops.pages.dev is allowed exactly and preview wildcard origins require RESEARCHOPS_ALLOW_PAGES_PREVIEW_ORIGINS=true.",
+		"Added Worker CSRF protection for cookie-authenticated state-changing API requests, with the Pages proxy adding x-researchops-csrf: pages-proxy for proxied mutations.",
+		"Added permission declarations and runtime permission checks for legacy fallback API routes, including project, research content, Mural and integration endpoints.",
+		"Required authentication for project CSV export routes and kept health/diagnostic public routes explicitly narrow.",
+		"Added nonce-based CSP handling for static HTML in the Pages Worker and removed script-src unsafe-inline from static header policy.",
+		"Sanitised provider email delivery failures and API 5xx responses so internal details are logged but not returned to users.",
+		"Reduced seeded/test PII by replacing named people and Home Office email addresses with synthetic names and example.test addresses.",
+		"Added D1 migration 0025_security_review_route_permissions.sql and updated migration ordering documentation."
+	],
+	"validation": [
+		{
+			"command": "rg -n \"<targeted real names and Home Office email domains>\" data infra tests public docs -g '!node_modules' -g '!coverage'",
+			"status": "passed",
+			"summary": "No matches for the targeted real names or Home Office email domains."
+		},
+		{
+			"command": "npm run format:check",
+			"status": "passed"
+		},
+		{
+			"command": "node --import ./tests/helpers/generated-govuk-page-source.mjs --test tests/auth-registration-requests-route-state.test.js tests/projects-route-contract.test.js tests/security-review-hardening-runtime.test.js tests/pages-advanced-worker-auth-route-state.test.js tests/security-hardening-controls-route-state.test.js tests/d1-migration-ordering-route-state.test.js tests/projects-parse-csv.test.js",
+			"status": "passed",
+			"summary": "21 tests, 0 failures."
+		},
+		{
+			"command": "npm run lint",
+			"status": "passed_with_warnings",
+			"summary": "0 errors; repository lint warnings remain."
+		},
+		{
+			"command": "npm test",
+			"status": "passed",
+			"summary": "302 tests, 0 failures."
+		},
+		{
+			"command": "npm run trace:coverage",
+			"status": "passed"
+		},
+		{
+			"command": "npm run validate",
+			"status": "passed"
+		}
+	],
+	"residualRisks": [
+		"CSP still permits inline styles for current frontend compatibility.",
+		"The CSRF header is a server-side same-site confirmation gate, not a per-session synchronizer token.",
+		"Preview Pages wildcard origins remain available behind an explicit environment flag for preview operations."
+	]
+}

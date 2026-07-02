@@ -83,6 +83,10 @@ function requestHeaders(request, target) {
 		headers.delete('cf-access-user-email');
 	}
 
+	if (!['GET', 'HEAD', 'OPTIONS'].includes(request.method.toUpperCase()) && !headers.has('x-researchops-csrf')) {
+		headers.set('x-researchops-csrf', 'pages-proxy');
+	}
+
 	return headers;
 }
 
@@ -188,6 +192,31 @@ function isHtmlResponse(response, pathname) {
 	return shouldDisableStaticCache(pathname) || contentType.toLowerCase().includes('text/html');
 }
 
+function htmlNonce() {
+	if (globalThis.crypto?.randomUUID) return globalThis.crypto.randomUUID().replace(/-/g, '');
+	const bytes = new Uint8Array(16);
+	globalThis.crypto?.getRandomValues?.(bytes);
+	return Array.from(bytes).map((byte) => byte.toString(16).padStart(2, '0')).join('') || String(Date.now());
+}
+
+function nonceInlineScripts(html, nonce) {
+	return String(html || '').replace(/<script\b(?![^>]*\bsrc=)(?![^>]*\bnonce=)([^>]*)>/gi, `<script nonce="${nonce}"$1>`);
+}
+
+function contentSecurityPolicy(nonce) {
+	return [
+		"default-src 'self'",
+		"connect-src 'self' https://rops-api.digikev-kevin-rapley.workers.dev https://rops-api-passwordless-preview.digikev-kevin-rapley.workers.dev",
+		"img-src 'self' data:",
+		"style-src 'self' 'unsafe-inline'",
+		`script-src 'self' 'nonce-${nonce}'`,
+		"font-src 'self'",
+		"frame-ancestors 'none'",
+		"base-uri 'self'",
+		"form-action 'self'",
+	].join('; ');
+}
+
 function brandHtmlAttributes(match, brand) {
 	let html = match;
 	if (/\sdata-researchops-brand=/.test(html)) {
@@ -226,7 +255,9 @@ async function staticAssetResponse(request, env) {
 	headers.delete('content-length');
 	const brand = requestBrand(url);
 	headers.set('x-researchops-brand', brand);
-	const body = injectBrandIntoHtml(await response.text(), brand);
+	const nonce = htmlNonce();
+	headers.set('content-security-policy', contentSecurityPolicy(nonce));
+	const body = nonceInlineScripts(injectBrandIntoHtml(await response.text(), brand), nonce);
 	return new Response(body, {
 		status: response.status,
 		statusText: response.statusText,

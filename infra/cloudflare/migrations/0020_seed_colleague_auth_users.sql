@@ -14,17 +14,17 @@ ON CONFLICT(id) DO UPDATE SET
 
 WITH seed_users(id, email, display_name) AS (
 	VALUES
-		('usr_seed_mansoor_mir', 'mansoor.mir@homeoffice.gov.uk', 'Mansoor Mir'),
-		('usr_seed_lucy_branford_white', 'lucy.branford-white@digital.homeoffice.gov.uk', 'Lucy Branford-White'),
-		('usr_seed_laurence_piercy', 'laurence.piercy@homeoffice.gov.uk', 'Laurence Piercy'),
-		('usr_seed_amy_everett', 'amy.everett1@homeoffice.gov.uk', 'Amy Everett'),
-		('usr_seed_rachael_sumner', 'rachael.sumner@homeoffice.gov.uk', 'Rachael Sumner'),
-		('usr_seed_erin_bramwell', 'erin.bramwell@homeoffice.gov.uk', 'Erin Bramwell'),
-		('usr_seed_helen_orlando', 'helen.orlando@homeoffice.gov.uk', 'Helen Orlando'),
-		('usr_seed_andrew_warner', 'andrew.warner@homeoffice.gov.uk', 'Andrew Warner'),
-		('usr_seed_andrew_barker', 'andrew.barker6@homeoffice.gov.uk', 'Andrew Barker'),
-		('usr_seed_gill_woodlock', 'gillian.woodlock@homeoffice.gov.uk', 'Gill Woodlock'),
-		('usr_seed_jenna_murison', 'jenna.murison@homeoffice.gov.uk', 'Jenna Murison')
+		('usr_seed_team_admin_one', 'team.admin.one@example.test', 'Team Admin One'),
+		('usr_seed_team_admin_two', 'team.admin.two@example.test', 'Team Admin Two'),
+		('usr_seed_researcher_two', 'researcher.two@example.test', 'Researcher Two'),
+		('usr_seed_research_lead_one', 'research.lead.one@example.test', 'Research Lead One'),
+		('usr_seed_researcher_three', 'researcher.three@example.test', 'Researcher Three'),
+		('usr_seed_researcher_four', 'researcher.four@example.test', 'Researcher Four'),
+		('usr_seed_researcher_five', 'researcher.five@example.test', 'Researcher Five'),
+		('usr_seed_researcher_six', 'researcher.six@example.test', 'Researcher Six'),
+		('usr_seed_researcher_seven', 'researcher.seven@example.test', 'Researcher Seven'),
+		('usr_seed_researcher_eight', 'researcher.eight@example.test', 'Researcher Eight'),
+		('usr_seed_researcher_nine', 'researcher.nine@example.test', 'Researcher Nine')
 )
 INSERT INTO auth_users (id, email, display_name, account_status)
 SELECT id, email, display_name, 'active'
@@ -35,17 +35,17 @@ WHERE NOT EXISTS (
 
 WITH seed_users(email, display_name) AS (
 	VALUES
-		('mansoor.mir@homeoffice.gov.uk', 'Mansoor Mir'),
-		('lucy.branford-white@digital.homeoffice.gov.uk', 'Lucy Branford-White'),
-		('laurence.piercy@homeoffice.gov.uk', 'Laurence Piercy'),
-		('amy.everett1@homeoffice.gov.uk', 'Amy Everett'),
-		('rachael.sumner@homeoffice.gov.uk', 'Rachael Sumner'),
-		('erin.bramwell@homeoffice.gov.uk', 'Erin Bramwell'),
-		('helen.orlando@homeoffice.gov.uk', 'Helen Orlando'),
-		('andrew.warner@homeoffice.gov.uk', 'Andrew Warner'),
-		('andrew.barker6@homeoffice.gov.uk', 'Andrew Barker'),
-		('gillian.woodlock@homeoffice.gov.uk', 'Gill Woodlock'),
-		('jenna.murison@homeoffice.gov.uk', 'Jenna Murison')
+		('team.admin.one@example.test', 'Team Admin One'),
+		('team.admin.two@example.test', 'Team Admin Two'),
+		('researcher.two@example.test', 'Researcher Two'),
+		('research.lead.one@example.test', 'Research Lead One'),
+		('researcher.three@example.test', 'Researcher Three'),
+		('researcher.four@example.test', 'Researcher Four'),
+		('researcher.five@example.test', 'Researcher Five'),
+		('researcher.six@example.test', 'Researcher Six'),
+		('researcher.seven@example.test', 'Researcher Seven'),
+		('researcher.eight@example.test', 'Researcher Eight'),
+		('researcher.nine@example.test', 'Researcher Nine')
 )
 UPDATE auth_users
 SET display_name = (
@@ -59,8 +59,8 @@ WHERE EXISTS (
 
 WITH team_members(email, membership_id) AS (
 	VALUES
-		('mansoor.mir@homeoffice.gov.uk', 'mbr_seed_mansoor_mir_researchops_core'),
-		('lucy.branford-white@digital.homeoffice.gov.uk', 'mbr_seed_lucy_branford_white_researchops_core')
+		('team.admin.one@example.test', 'mbr_seed_team_admin_one_researchops_core'),
+		('team.admin.two@example.test', 'mbr_seed_team_admin_two_researchops_core')
 )
 INSERT INTO auth_team_memberships (id, user_id, team_id, membership_status, removed_at)
 SELECT team_members.membership_id, u.id, 'team_researchops_core', 'active', NULL
@@ -72,39 +72,39 @@ ON CONFLICT(user_id, team_id) DO UPDATE SET
 
 WITH role_seed(email, role_id, scope_type, scope_id, assignment_id, requested_reason) AS (
 	VALUES
-		('mansoor.mir@homeoffice.gov.uk', 'role_team_admin', 'team', 'team_researchops_core', 'asn_seed_mansoor_mir_team_admin_core', 'Colleague access seeded by Team Admin: team_admin for ResearchOps Core Team.'),
-		('mansoor.mir@homeoffice.gov.uk', 'role_approver', 'team', 'team_researchops_core', 'asn_seed_mansoor_mir_approver_core', 'Colleague access seeded by Team Admin: approver for ResearchOps Core Team.'),
-		('mansoor.mir@homeoffice.gov.uk', 'role_safeguarding_lead', 'team', 'team_researchops_core', 'asn_seed_mansoor_mir_safeguarding_lead_core', 'Colleague access seeded by Team Admin: safeguarding_lead for ResearchOps Core Team.'),
-		('lucy.branford-white@digital.homeoffice.gov.uk', 'role_team_admin', 'team', 'team_researchops_core', 'asn_seed_lucy_branford_white_team_admin_core', 'Colleague access seeded by Team Admin: team_admin for ResearchOps Core Team.'),
-		('lucy.branford-white@digital.homeoffice.gov.uk', 'role_approver', 'team', 'team_researchops_core', 'asn_seed_lucy_branford_white_approver_core', 'Colleague access seeded by Team Admin: approver for ResearchOps Core Team.'),
-		('lucy.branford-white@digital.homeoffice.gov.uk', 'role_safeguarding_lead', 'team', 'team_researchops_core', 'asn_seed_lucy_branford_white_safeguarding_lead_core', 'Colleague access seeded by Team Admin: safeguarding_lead for ResearchOps Core Team.'),
-		('laurence.piercy@homeoffice.gov.uk', 'role_research_lead', 'project', 'recgdpwEI5hF07bUZ', 'asn_seed_laurence_piercy_research_lead_tp1', 'Colleague access seeded by Team Admin: research_lead for Test Project 1.'),
-		('laurence.piercy@homeoffice.gov.uk', 'role_approver', 'project', 'recgdpwEI5hF07bUZ', 'asn_seed_laurence_piercy_approver_tp1', 'Colleague access seeded by Team Admin: approver for Test Project 1.'),
-		('laurence.piercy@homeoffice.gov.uk', 'role_safeguarding_lead', 'project', 'recgdpwEI5hF07bUZ', 'asn_seed_laurence_piercy_safeguarding_lead_tp1', 'Colleague access seeded by Team Admin: safeguarding_lead for Test Project 1.'),
-		('amy.everett1@homeoffice.gov.uk', 'role_research_lead', 'project', 'recgdpwEI5hF07bUZ', 'asn_seed_amy_everett_research_lead_tp1', 'Colleague access seeded by Team Admin: research_lead for Test Project 1.'),
-		('amy.everett1@homeoffice.gov.uk', 'role_researcher', 'project', 'recgdpwEI5hF07bUZ', 'asn_seed_amy_everett_researcher_tp1', 'Colleague access seeded by Team Admin: researcher for Test Project 1.'),
-		('amy.everett1@homeoffice.gov.uk', 'role_observer', 'project', 'recgdpwEI5hF07bUZ', 'asn_seed_amy_everett_observer_tp1', 'Colleague access seeded by Team Admin: observer for Test Project 1.'),
-		('rachael.sumner@homeoffice.gov.uk', 'role_research_lead', 'project', 'recgdpwEI5hF07bUZ', 'asn_seed_rachael_sumner_research_lead_tp1', 'Colleague access seeded by Team Admin: research_lead for Test Project 1.'),
-		('rachael.sumner@homeoffice.gov.uk', 'role_researcher', 'project', 'recgdpwEI5hF07bUZ', 'asn_seed_rachael_sumner_researcher_tp1', 'Colleague access seeded by Team Admin: researcher for Test Project 1.'),
-		('rachael.sumner@homeoffice.gov.uk', 'role_observer', 'project', 'recgdpwEI5hF07bUZ', 'asn_seed_rachael_sumner_observer_tp1', 'Colleague access seeded by Team Admin: observer for Test Project 1.'),
-		('erin.bramwell@homeoffice.gov.uk', 'role_research_lead', 'project', 'recgdpwEI5hF07bUZ', 'asn_seed_erin_bramwell_research_lead_tp1', 'Colleague access seeded by Team Admin: research_lead for Test Project 1.'),
-		('erin.bramwell@homeoffice.gov.uk', 'role_researcher', 'project', 'recgdpwEI5hF07bUZ', 'asn_seed_erin_bramwell_researcher_tp1', 'Colleague access seeded by Team Admin: researcher for Test Project 1.'),
-		('erin.bramwell@homeoffice.gov.uk', 'role_observer', 'project', 'recgdpwEI5hF07bUZ', 'asn_seed_erin_bramwell_observer_tp1', 'Colleague access seeded by Team Admin: observer for Test Project 1.'),
-		('erin.bramwell@homeoffice.gov.uk', 'role_approver', 'project', 'recgdpwEI5hF07bUZ', 'asn_seed_erin_bramwell_approver_tp1', 'Colleague access seeded by Team Admin: approver for Test Project 1.'),
-		('erin.bramwell@homeoffice.gov.uk', 'role_safeguarding_lead', 'project', 'recgdpwEI5hF07bUZ', 'asn_seed_erin_bramwell_safeguarding_lead_tp1', 'Colleague access seeded by Team Admin: safeguarding_lead for Test Project 1.'),
-		('helen.orlando@homeoffice.gov.uk', 'role_researcher', 'project', 'recgdpwEI5hF07bUZ', 'asn_seed_helen_orlando_researcher_tp1', 'Colleague access seeded by Team Admin: researcher for Test Project 1.'),
-		('helen.orlando@homeoffice.gov.uk', 'role_observer', 'project', 'recgdpwEI5hF07bUZ', 'asn_seed_helen_orlando_observer_tp1', 'Colleague access seeded by Team Admin: observer for Test Project 1.'),
-		('andrew.warner@homeoffice.gov.uk', 'role_researcher', 'project', 'recgdpwEI5hF07bUZ', 'asn_seed_andrew_warner_researcher_tp1', 'Colleague access seeded by Team Admin: researcher for Test Project 1.'),
-		('andrew.warner@homeoffice.gov.uk', 'role_research_lead', 'project', 'recgdpwEI5hF07bUZ', 'asn_seed_andrew_warner_research_lead_tp1', 'Colleague access seeded by Team Admin: research_lead for Test Project 1.'),
-		('andrew.warner@homeoffice.gov.uk', 'role_observer', 'project', 'recgdpwEI5hF07bUZ', 'asn_seed_andrew_warner_observer_tp1', 'Colleague access seeded by Team Admin: observer for Test Project 1.'),
-		('andrew.barker6@homeoffice.gov.uk', 'role_researcher', 'project', 'recgdpwEI5hF07bUZ', 'asn_seed_andrew_barker_researcher_tp1', 'Colleague access seeded by Team Admin: researcher for Test Project 1.'),
-		('andrew.barker6@homeoffice.gov.uk', 'role_research_lead', 'project', 'recgdpwEI5hF07bUZ', 'asn_seed_andrew_barker_research_lead_tp1', 'Colleague access seeded by Team Admin: research_lead for Test Project 1.'),
-		('andrew.barker6@homeoffice.gov.uk', 'role_observer', 'project', 'recgdpwEI5hF07bUZ', 'asn_seed_andrew_barker_observer_tp1', 'Colleague access seeded by Team Admin: observer for Test Project 1.'),
-		('gillian.woodlock@homeoffice.gov.uk', 'role_researcher', 'project', 'recgdpwEI5hF07bUZ', 'asn_seed_gill_woodlock_researcher_tp1', 'Colleague access seeded by Team Admin: researcher for Test Project 1.'),
-		('gillian.woodlock@homeoffice.gov.uk', 'role_research_lead', 'project', 'recgdpwEI5hF07bUZ', 'asn_seed_gill_woodlock_research_lead_tp1', 'Colleague access seeded by Team Admin: research_lead for Test Project 1.'),
-		('gillian.woodlock@homeoffice.gov.uk', 'role_observer', 'project', 'recgdpwEI5hF07bUZ', 'asn_seed_gill_woodlock_observer_tp1', 'Colleague access seeded by Team Admin: observer for Test Project 1.'),
-		('jenna.murison@homeoffice.gov.uk', 'role_researcher', 'project', 'recgdpwEI5hF07bUZ', 'asn_seed_jenna_murison_researcher_tp1', 'Colleague access seeded by Team Admin: researcher for Test Project 1.'),
-		('jenna.murison@homeoffice.gov.uk', 'role_observer', 'project', 'recgdpwEI5hF07bUZ', 'asn_seed_jenna_murison_observer_tp1', 'Colleague access seeded by Team Admin: observer for Test Project 1.')
+		('team.admin.one@example.test', 'role_team_admin', 'team', 'team_researchops_core', 'asn_seed_team_admin_one_team_admin_core', 'Colleague access seeded by Team Admin: team_admin for ResearchOps Core Team.'),
+		('team.admin.one@example.test', 'role_approver', 'team', 'team_researchops_core', 'asn_seed_team_admin_one_approver_core', 'Colleague access seeded by Team Admin: approver for ResearchOps Core Team.'),
+		('team.admin.one@example.test', 'role_safeguarding_lead', 'team', 'team_researchops_core', 'asn_seed_team_admin_one_safeguarding_lead_core', 'Colleague access seeded by Team Admin: safeguarding_lead for ResearchOps Core Team.'),
+		('team.admin.two@example.test', 'role_team_admin', 'team', 'team_researchops_core', 'asn_seed_team_admin_two_team_admin_core', 'Colleague access seeded by Team Admin: team_admin for ResearchOps Core Team.'),
+		('team.admin.two@example.test', 'role_approver', 'team', 'team_researchops_core', 'asn_seed_team_admin_two_approver_core', 'Colleague access seeded by Team Admin: approver for ResearchOps Core Team.'),
+		('team.admin.two@example.test', 'role_safeguarding_lead', 'team', 'team_researchops_core', 'asn_seed_team_admin_two_safeguarding_lead_core', 'Colleague access seeded by Team Admin: safeguarding_lead for ResearchOps Core Team.'),
+		('researcher.two@example.test', 'role_research_lead', 'project', 'recgdpwEI5hF07bUZ', 'asn_seed_researcher_two_research_lead_tp1', 'Colleague access seeded by Team Admin: research_lead for Test Project 1.'),
+		('researcher.two@example.test', 'role_approver', 'project', 'recgdpwEI5hF07bUZ', 'asn_seed_researcher_two_approver_tp1', 'Colleague access seeded by Team Admin: approver for Test Project 1.'),
+		('researcher.two@example.test', 'role_safeguarding_lead', 'project', 'recgdpwEI5hF07bUZ', 'asn_seed_researcher_two_safeguarding_lead_tp1', 'Colleague access seeded by Team Admin: safeguarding_lead for Test Project 1.'),
+		('research.lead.one@example.test', 'role_research_lead', 'project', 'recgdpwEI5hF07bUZ', 'asn_seed_research_lead_one_research_lead_tp1', 'Colleague access seeded by Team Admin: research_lead for Test Project 1.'),
+		('research.lead.one@example.test', 'role_researcher', 'project', 'recgdpwEI5hF07bUZ', 'asn_seed_research_lead_one_researcher_tp1', 'Colleague access seeded by Team Admin: researcher for Test Project 1.'),
+		('research.lead.one@example.test', 'role_observer', 'project', 'recgdpwEI5hF07bUZ', 'asn_seed_research_lead_one_observer_tp1', 'Colleague access seeded by Team Admin: observer for Test Project 1.'),
+		('researcher.three@example.test', 'role_research_lead', 'project', 'recgdpwEI5hF07bUZ', 'asn_seed_researcher_three_research_lead_tp1', 'Colleague access seeded by Team Admin: research_lead for Test Project 1.'),
+		('researcher.three@example.test', 'role_researcher', 'project', 'recgdpwEI5hF07bUZ', 'asn_seed_researcher_three_researcher_tp1', 'Colleague access seeded by Team Admin: researcher for Test Project 1.'),
+		('researcher.three@example.test', 'role_observer', 'project', 'recgdpwEI5hF07bUZ', 'asn_seed_researcher_three_observer_tp1', 'Colleague access seeded by Team Admin: observer for Test Project 1.'),
+		('researcher.four@example.test', 'role_research_lead', 'project', 'recgdpwEI5hF07bUZ', 'asn_seed_researcher_four_research_lead_tp1', 'Colleague access seeded by Team Admin: research_lead for Test Project 1.'),
+		('researcher.four@example.test', 'role_researcher', 'project', 'recgdpwEI5hF07bUZ', 'asn_seed_researcher_four_researcher_tp1', 'Colleague access seeded by Team Admin: researcher for Test Project 1.'),
+		('researcher.four@example.test', 'role_observer', 'project', 'recgdpwEI5hF07bUZ', 'asn_seed_researcher_four_observer_tp1', 'Colleague access seeded by Team Admin: observer for Test Project 1.'),
+		('researcher.four@example.test', 'role_approver', 'project', 'recgdpwEI5hF07bUZ', 'asn_seed_researcher_four_approver_tp1', 'Colleague access seeded by Team Admin: approver for Test Project 1.'),
+		('researcher.four@example.test', 'role_safeguarding_lead', 'project', 'recgdpwEI5hF07bUZ', 'asn_seed_researcher_four_safeguarding_lead_tp1', 'Colleague access seeded by Team Admin: safeguarding_lead for Test Project 1.'),
+		('researcher.five@example.test', 'role_researcher', 'project', 'recgdpwEI5hF07bUZ', 'asn_seed_researcher_five_researcher_tp1', 'Colleague access seeded by Team Admin: researcher for Test Project 1.'),
+		('researcher.five@example.test', 'role_observer', 'project', 'recgdpwEI5hF07bUZ', 'asn_seed_researcher_five_observer_tp1', 'Colleague access seeded by Team Admin: observer for Test Project 1.'),
+		('researcher.six@example.test', 'role_researcher', 'project', 'recgdpwEI5hF07bUZ', 'asn_seed_researcher_six_researcher_tp1', 'Colleague access seeded by Team Admin: researcher for Test Project 1.'),
+		('researcher.six@example.test', 'role_research_lead', 'project', 'recgdpwEI5hF07bUZ', 'asn_seed_researcher_six_research_lead_tp1', 'Colleague access seeded by Team Admin: research_lead for Test Project 1.'),
+		('researcher.six@example.test', 'role_observer', 'project', 'recgdpwEI5hF07bUZ', 'asn_seed_researcher_six_observer_tp1', 'Colleague access seeded by Team Admin: observer for Test Project 1.'),
+		('researcher.seven@example.test', 'role_researcher', 'project', 'recgdpwEI5hF07bUZ', 'asn_seed_researcher_seven_researcher_tp1', 'Colleague access seeded by Team Admin: researcher for Test Project 1.'),
+		('researcher.seven@example.test', 'role_research_lead', 'project', 'recgdpwEI5hF07bUZ', 'asn_seed_researcher_seven_research_lead_tp1', 'Colleague access seeded by Team Admin: research_lead for Test Project 1.'),
+		('researcher.seven@example.test', 'role_observer', 'project', 'recgdpwEI5hF07bUZ', 'asn_seed_researcher_seven_observer_tp1', 'Colleague access seeded by Team Admin: observer for Test Project 1.'),
+		('researcher.eight@example.test', 'role_researcher', 'project', 'recgdpwEI5hF07bUZ', 'asn_seed_researcher_eight_researcher_tp1', 'Colleague access seeded by Team Admin: researcher for Test Project 1.'),
+		('researcher.eight@example.test', 'role_research_lead', 'project', 'recgdpwEI5hF07bUZ', 'asn_seed_researcher_eight_research_lead_tp1', 'Colleague access seeded by Team Admin: research_lead for Test Project 1.'),
+		('researcher.eight@example.test', 'role_observer', 'project', 'recgdpwEI5hF07bUZ', 'asn_seed_researcher_eight_observer_tp1', 'Colleague access seeded by Team Admin: observer for Test Project 1.'),
+		('researcher.nine@example.test', 'role_researcher', 'project', 'recgdpwEI5hF07bUZ', 'asn_seed_researcher_nine_researcher_tp1', 'Colleague access seeded by Team Admin: researcher for Test Project 1.'),
+		('researcher.nine@example.test', 'role_observer', 'project', 'recgdpwEI5hF07bUZ', 'asn_seed_researcher_nine_observer_tp1', 'Colleague access seeded by Team Admin: observer for Test Project 1.')
 )
 INSERT INTO auth_role_assignments (
 	id,
@@ -126,7 +126,7 @@ SELECT
 	role_seed.scope_id,
 	'active',
 	role_seed.requested_reason,
-	(SELECT id FROM auth_users WHERE lower(email) = lower('digikev.kevin.rapley@gmail.com') LIMIT 1),
+	(SELECT id FROM auth_users WHERE lower(email) = lower('system.admin@example.test') LIMIT 1),
 	strftime('%Y-%m-%dT%H:%M:%fZ', 'now'),
 	NULL
 FROM role_seed
@@ -141,17 +141,17 @@ ON CONFLICT(user_id, role_id, scope_type, scope_id) DO UPDATE SET
 
 WITH audit_seed(audit_id, email, scope_type, scope_id, roles_json) AS (
 	VALUES
-		('aud_seed_colleague_mansoor_mir', 'mansoor.mir@homeoffice.gov.uk', 'team', 'team_researchops_core', '["team_admin","approver","safeguarding_lead"]'),
-		('aud_seed_colleague_lucy_branford_white', 'lucy.branford-white@digital.homeoffice.gov.uk', 'team', 'team_researchops_core', '["team_admin","approver","safeguarding_lead"]'),
-		('aud_seed_colleague_laurence_piercy', 'laurence.piercy@homeoffice.gov.uk', 'project', 'recgdpwEI5hF07bUZ', '["research_lead","approver","safeguarding_lead"]'),
-		('aud_seed_colleague_amy_everett', 'amy.everett1@homeoffice.gov.uk', 'project', 'recgdpwEI5hF07bUZ', '["research_lead","researcher","observer"]'),
-		('aud_seed_colleague_rachael_sumner', 'rachael.sumner@homeoffice.gov.uk', 'project', 'recgdpwEI5hF07bUZ', '["research_lead","researcher","observer"]'),
-		('aud_seed_colleague_erin_bramwell', 'erin.bramwell@homeoffice.gov.uk', 'project', 'recgdpwEI5hF07bUZ', '["research_lead","researcher","observer","approver","safeguarding_lead"]'),
-		('aud_seed_colleague_helen_orlando', 'helen.orlando@homeoffice.gov.uk', 'project', 'recgdpwEI5hF07bUZ', '["researcher","observer"]'),
-		('aud_seed_colleague_andrew_warner', 'andrew.warner@homeoffice.gov.uk', 'project', 'recgdpwEI5hF07bUZ', '["researcher","research_lead","observer"]'),
-		('aud_seed_colleague_andrew_barker', 'andrew.barker6@homeoffice.gov.uk', 'project', 'recgdpwEI5hF07bUZ', '["researcher","research_lead","observer"]'),
-		('aud_seed_colleague_gill_woodlock', 'gillian.woodlock@homeoffice.gov.uk', 'project', 'recgdpwEI5hF07bUZ', '["researcher","research_lead","observer"]'),
-		('aud_seed_colleague_jenna_murison', 'jenna.murison@homeoffice.gov.uk', 'project', 'recgdpwEI5hF07bUZ', '["researcher","observer"]')
+		('aud_seed_colleague_team_admin_one', 'team.admin.one@example.test', 'team', 'team_researchops_core', '["team_admin","approver","safeguarding_lead"]'),
+		('aud_seed_colleague_team_admin_two', 'team.admin.two@example.test', 'team', 'team_researchops_core', '["team_admin","approver","safeguarding_lead"]'),
+		('aud_seed_colleague_researcher_two', 'researcher.two@example.test', 'project', 'recgdpwEI5hF07bUZ', '["research_lead","approver","safeguarding_lead"]'),
+		('aud_seed_colleague_research_lead_one', 'research.lead.one@example.test', 'project', 'recgdpwEI5hF07bUZ', '["research_lead","researcher","observer"]'),
+		('aud_seed_colleague_researcher_three', 'researcher.three@example.test', 'project', 'recgdpwEI5hF07bUZ', '["research_lead","researcher","observer"]'),
+		('aud_seed_colleague_researcher_four', 'researcher.four@example.test', 'project', 'recgdpwEI5hF07bUZ', '["research_lead","researcher","observer","approver","safeguarding_lead"]'),
+		('aud_seed_colleague_researcher_five', 'researcher.five@example.test', 'project', 'recgdpwEI5hF07bUZ', '["researcher","observer"]'),
+		('aud_seed_colleague_researcher_six', 'researcher.six@example.test', 'project', 'recgdpwEI5hF07bUZ', '["researcher","research_lead","observer"]'),
+		('aud_seed_colleague_researcher_seven', 'researcher.seven@example.test', 'project', 'recgdpwEI5hF07bUZ', '["researcher","research_lead","observer"]'),
+		('aud_seed_colleague_researcher_eight', 'researcher.eight@example.test', 'project', 'recgdpwEI5hF07bUZ', '["researcher","research_lead","observer"]'),
+		('aud_seed_colleague_researcher_nine', 'researcher.nine@example.test', 'project', 'recgdpwEI5hF07bUZ', '["researcher","observer"]')
 )
 INSERT INTO auth_audit_events (
 	id,
@@ -170,7 +170,7 @@ INSERT INTO auth_audit_events (
 SELECT
 	audit_seed.audit_id,
 	'auth.colleague_user.seeded_without_email',
-	(SELECT id FROM auth_users WHERE lower(email) = lower('digikev.kevin.rapley@gmail.com') LIMIT 1),
+	(SELECT id FROM auth_users WHERE lower(email) = lower('system.admin@example.test') LIMIT 1),
 	CASE WHEN audit_seed.scope_type = 'team' THEN audit_seed.scope_id ELSE NULL END,
 	'auth_users',
 	u.id,

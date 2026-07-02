@@ -6,6 +6,7 @@ const passwordless = fs.readFileSync('infra/cloudflare/src/core/auth/passwordles
 const access = fs.readFileSync('infra/cloudflare/src/core/auth/access.js', 'utf8');
 const retention = fs.readFileSync('infra/cloudflare/src/service/retention.js', 'utf8');
 const migration = fs.readFileSync('infra/cloudflare/migrations/0024_security_hardening_controls.sql', 'utf8');
+const routeClosureMigration = fs.readFileSync('infra/cloudflare/migrations/0025_security_review_route_permissions.sql', 'utf8');
 const headers = fs.readFileSync('public/_headers', 'utf8');
 const wrangler = fs.readFileSync('infra/cloudflare/wrangler.toml', 'utf8');
 const securityWorkflow = fs.readFileSync('.github/workflows/security.yml', 'utf8');
@@ -23,15 +24,22 @@ function assertSensitiveWorkerRoutesUseRoutePermissions() {
 	assert.match(worker, /"\/api\/participant-consent\/:id"/);
 	assert.match(migration, /route_api_studies_post/);
 	assert.match(migration, /route_api_participant_consent_patch/);
+	assert.match(routeClosureMigration, /route_api_session_notes_get/);
+	assert.match(routeClosureMigration, /route_api_mural_journal_sync_post/);
 }
 
 function assertCsrfAndSecurityHeadersExist() {
-	assert.match(worker, /function assertTrustedMutationRequest\(request, env\)/);
+	assert.match(worker, /function assertTrustedMutationRequest\(request, env, apiPath = ""\)/);
 	assert.match(worker, /Sec-Fetch-Site/);
 	assert.match(worker, /origin_not_allowed/);
+	assert.match(worker, /csrf_header_required/);
+	assert.match(worker, /hasPasswordlessSessionCookie\(request\)/);
 	assert.match(worker, /X-ResearchOps-CSRF/);
+	assert.match(worker, /assertFallbackApiRoutePermission\(request, env, apiPath\)/);
+	assert.match(worker, /"\/api\/session-notes"/);
 	assert.match(worker, /Strict-Transport-Security/);
 	assert.match(worker, /Content-Security-Policy/);
+	assert.doesNotMatch(headers, /script-src 'self' 'unsafe-inline'/);
 	assert.match(headers, /Referrer-Policy: strict-origin-when-cross-origin/);
 	assert.match(headers, /Permissions-Policy: camera=\(\), microphone=\(\), geolocation=\(\), payment=\(\), usb=\(\)/);
 	assert.match(headers, /X-Frame-Options: DENY/);

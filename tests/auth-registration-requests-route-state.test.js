@@ -47,7 +47,11 @@ function assertWorkerRoutesRegistrationRequests() {
 
 function assertWorkerAllowsResearchOpsPreviewOrigins() {
 	assert.match(workerSource, /function isResearchOpsPagesOrigin/);
-	assert.match(workerSource, /hostname === "researchops\.pages\.dev" \|\| hostname\.endsWith\("\.researchops\.pages\.dev"\)/);
+	assert.match(workerSource, /return hostname === "researchops\.pages\.dev";/);
+	assert.match(workerSource, /function allowPreviewPagesWildcard\(env\)/);
+	assert.match(workerSource, /RESEARCHOPS_ALLOW_PAGES_PREVIEW_ORIGINS/);
+	assert.match(workerSource, /isAllowedPreviewPagesOrigin\(env, origin\)/);
+	assert.doesNotMatch(workerSource, /hostname === "researchops\.pages\.dev" \|\| hostname\.endsWith\("\.researchops\.pages\.dev"\)/);
 	assert.match(workerSource, /if \(isResearchOpsPagesOrigin\(origin\)\) return origin/);
 }
 
