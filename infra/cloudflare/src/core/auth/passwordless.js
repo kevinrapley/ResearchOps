@@ -214,10 +214,11 @@ async function sendCode(env, email, code) {
 	}
 
 	if (deliveryErrors.length) {
+		console.error('auth.email_code.delivery_failed', { providersAttempted: deliveryErrors.length });
 		throw new AuthFlowError(
 			502,
 			'email_delivery_failed',
-			`The sign-in email provider could not send the code. ${deliveryErrors.join(' ')}`,
+			'The sign-in email provider could not send the code right now.',
 		);
 	}
 

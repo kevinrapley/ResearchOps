@@ -671,7 +671,7 @@ export function logError(message, meta = {}) {
    ResearchOps UI • Screen stylesheet
    Version:    v1.0.0
    Service:    Home Office Biometrics — ResearchOps
-   Author:     Kevin Rapley
+   Author:     ResearchOps team
    Date:       2025-09-29
    Build:      GOV.UK typography + colours; mobile-first
    Repo:       /css/screen.css

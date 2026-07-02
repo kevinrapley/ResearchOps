@@ -354,6 +354,11 @@ jobs:
               r'RESEARCHOPS_QA_BDD_AUTH_ENABLED\s*=\s*"[^"]*"',
               'RESEARCHOPS_QA_BDD_AUTH_ENABLED = "true"',
           )
+          content = replace_pattern_once(
+              content,
+              r'RESEARCHOPS_ALLOW_PAGES_PREVIEW_ORIGINS\s*=\s*"[^"]*"',
+              'RESEARCHOPS_ALLOW_PAGES_PREVIEW_ORIGINS = "true"',
+          )
           content = replace_once(
               content,
               'MURAL_REDIRECT_URI = "https://rops-api.digikev-kevin-rapley.workers.dev/api/mural/callback"',

@@ -18,11 +18,12 @@ const DAAS_OBJECTIVES = [
 ];
 const DAAS_USER_GROUPS = ["Law enforcement", "ACRO", "Borders and immigration", "Justice and legal", "Indirect operational users", "Technical and data users", "Policy and governance users"];
 const DAAS_STAKEHOLDERS = [
-	{ name: "Pam Thethi", role: "PSG - ILEC - Criminal Records Team", email: "pam.thethi@homeoffice.gov.uk" },
-	{ name: "Chris Moffitt", role: "PSG - ILEC - Criminal Records Team", email: "christopher.moffitt@homeoffice.gov.uk" },
-	{ name: "Maria Athayde", role: "PSG - ILEC - Criminal Records Team", email: "maria.athayde@homeoffice.gov.uk" },
+	{ name: "Stakeholder One", role: "PSG - ILEC - Criminal Records Team", email: "stakeholder.one@example.test" },
+	{ name: "Stakeholder Two", role: "PSG - ILEC - Criminal Records Team", email: "stakeholder.two@example.test" },
+	{ name: "Stakeholder Three", role: "PSG - ILEC - Criminal Records Team", email: "stakeholder.three@example.test" },
 ];
 const d1RunCalls = [];
+const d1RoutePermissions = new Map();
 let d1HasPartialProject = false;
 let d1ProjectCacheRow = null;
 let d1ProjectCacheRows = [];
@@ -85,6 +86,14 @@ function authenticatedRequest(url) {
 	});
 }
 
+function authenticatedMutationHeaders() {
+	return {
+		"content-type": "application/json",
+		cookie: `rops_session=${TEST_SESSION_TOKEN}`,
+		"x-researchops-csrf": "required",
+	};
+}
+
 function roleRows() {
 	return [
 		{
@@ -114,6 +123,20 @@ function permissionRows() {
 			code: "governed.create",
 			label: "Create governed records",
 			description: "Can create governed project records.",
+			is_sensitive: 0,
+			is_reserved: 0,
+		},
+		{
+			code: "project.view",
+			label: "View project records",
+			description: "Can view governed project records and summaries.",
+			is_sensitive: 0,
+			is_reserved: 0,
+		},
+		{
+			code: "project.manage",
+			label: "Manage project records",
+			description: "Can create and update governed project records.",
 			is_sensitive: 0,
 			is_reserved: 0,
 		},
@@ -172,7 +195,7 @@ function allRowsForSql(sql) {
 	return [];
 }
 
-function firstRowForSql(sql) {
+function firstRowForSql(sql, args = []) {
 	if (sql.includes("FROM auth_sessions s INNER JOIN auth_users u")) {
 		return {
 			session_id: "ses_project_contract",
@@ -185,6 +208,10 @@ function firstRowForSql(sql) {
 
 	if (sql.includes("SELECT ra.id") && sql.includes("ResearchOps Core Team")) {
 		return { id: "ra_core_admin" };
+	}
+
+	if (sql.includes("FROM auth_route_permissions") && sql.includes("WHERE method = ? AND route_pattern = ?")) {
+		return d1RoutePermissions.get(`${args[0]} ${args[1]}`) || null;
 	}
 
 	if (sql.includes("SELECT id FROM rops_projects_cache") && sql.includes("source = 'airtable-partial'")) {
@@ -208,12 +235,23 @@ function createMockStatement(sql, args = []) {
 			return createMockStatement(sql, nextArgs);
 		},
 		async first() {
-			return firstRowForSql(sql);
+			return firstRowForSql(sql, args);
 		},
 		async all() {
 			return { results: allRowsForSql(sql) };
 		},
 		async run() {
+			if (sql.includes("INSERT OR IGNORE INTO auth_route_permissions")) {
+				const [id, method, routePattern, requiredPermissionsJson, authRequired = 1] = args;
+				d1RoutePermissions.set(`${method} ${routePattern}`, {
+					id,
+					method,
+					route_pattern: routePattern,
+					required_permissions_json: requiredPermissionsJson,
+					auth_required: authRequired,
+					implementation_status: "implemented",
+				});
+			}
 			d1RunCalls.push({ sql, args });
 			return { success: true, meta: { changes: 1 }, args };
 		},
@@ -486,7 +524,7 @@ async function assertProjectsRouteUsesAirtableProjectsTable() {
 			PROJECT_RECORD_IDS,
 		);
 		assert.equal(
-			payload.projects.some((project) => String(project.name).includes("Kevin Rapley")),
+			payload.projects.some((project) => String(project.name).includes("Researcher One")),
 			false,
 		);
 		assert.equal(
@@ -561,8 +599,8 @@ async function assertProjectListUsesPreviewSeedD1WhenAirtableIsUnavailable() {
 				objectives: DAAS_OBJECTIVES,
 				user_groups: DAAS_USER_GROUPS,
 				stakeholders: DAAS_STAKEHOLDERS,
-				lead_researcher: "Amy Everett",
-				lead_researcher_email: "amy.everett@homeoffice.gov.uk",
+				lead_researcher: "Research Lead One",
+				lead_researcher_email: "research.lead.one@example.test",
 			},
 		}),
 	];
@@ -590,9 +628,9 @@ async function assertProjectListUsesPreviewSeedD1WhenAirtableIsUnavailable() {
 		assert.deepEqual(payload.projects[0].objectives, DAAS_OBJECTIVES);
 		assert.deepEqual(payload.projects[0].user_groups, DAAS_USER_GROUPS);
 		assert.equal(payload.projects[0].stakeholders.length, 3);
-		assert.equal(payload.projects[0].stakeholders[0].name, "Pam Thethi");
-		assert.equal(payload.projects[0].stakeholders[1].name, "Chris Moffitt");
-		assert.equal(payload.projects[0].stakeholders[2].name, "Maria Athayde");
+		assert.equal(payload.projects[0].stakeholders[0].name, "Stakeholder One");
+		assert.equal(payload.projects[0].stakeholders[1].name, "Stakeholder Two");
+		assert.equal(payload.projects[0].stakeholders[2].name, "Stakeholder Three");
 		assert.equal(payload.projects[1].id, PROJECT_RECORD_IDS[2]);
 	} finally {
 		d1ProjectCacheRows = [];
@@ -636,10 +674,7 @@ async function assertAuthenticatedProjectCreateUsesSessionContext() {
 		const response = await worker.fetch(
 			new Request("https://worker.test/api/projects", {
 				method: "POST",
-				headers: {
-					"content-type": "application/json",
-					cookie: `rops_session=${TEST_SESSION_TOKEN}`,
-				},
+				headers: authenticatedMutationHeaders(),
 				body: JSON.stringify({
 					name: "Third Country National Discovery",
 					description: "Discovery research project",
@@ -649,13 +684,13 @@ async function assertAuthenticatedProjectCreateUsesSessionContext() {
 					user_groups: ["Law enforcement", "Borders and immigration"],
 					stakeholders: [
 						{
-							name: "Pam Thethi",
+							name: "Stakeholder One",
 							role: "PSG - ILEC - Criminal Records Team",
-							email: "pam.thethi@homeoffice.gov.uk",
+							email: "stakeholder.one@example.test",
 						},
 					],
-					lead_researcher: "Amy Everett",
-					lead_researcher_email: "amy.everett@homeoffice.gov.uk",
+					lead_researcher: "Research Lead One",
+					lead_researcher_email: "research.lead.one@example.test",
 					notes: "Created from the start-project check answers flow",
 				}),
 			}),
@@ -671,8 +706,8 @@ async function assertAuthenticatedProjectCreateUsesSessionContext() {
 		assert.equal(payload.project["rops:servicePhase"], "Discovery");
 		assert.equal(payload.project["rops:projectStatus"], "Goal setting & problem defining");
 		assert.equal(payload.project.teamName, TEST_TEAM_NAME);
-		assert.equal(payload.project.lead_researcher, "Amy Everett");
-		assert.equal(payload.project.lead_researcher_email, "amy.everett@homeoffice.gov.uk");
+		assert.equal(payload.project.lead_researcher, "Research Lead One");
+		assert.equal(payload.project.lead_researcher_email, "research.lead.one@example.test");
 		assert.equal(payload.project.notes, "Created from the start-project check answers flow");
 
 		const projectCreateCall = calls.find(({ url, options }) => url.endsWith("/Projects") && options.method === "POST");
@@ -688,14 +723,14 @@ async function assertAuthenticatedProjectCreateUsesSessionContext() {
 		assert.equal(fields.Org, TEST_TEAM_NAME);
 		assert.equal(fields["Team ID"], TEST_TEAM_ID);
 		assert.equal(fields["Team Name"], TEST_TEAM_NAME);
-		assert.match(fields.Stakeholders, /Pam Thethi/);
+		assert.match(fields.Stakeholders, /Stakeholder One/);
 
 		const detailCreateCall = calls.find(({ url, options }) => url.endsWith("/Project%20Details") && options.method === "POST");
 		assert.ok(detailCreateCall);
 		const detailCreateBody = JSON.parse(detailCreateCall.options.body);
 		assert.deepEqual(detailCreateBody.records[0].fields.Project, [PROJECT_RECORD_IDS[0]]);
-		assert.equal(detailCreateBody.records[0].fields["Lead Researcher"], "Amy Everett");
-		assert.equal(detailCreateBody.records[0].fields["Lead Researcher Email"], "amy.everett@homeoffice.gov.uk");
+		assert.equal(detailCreateBody.records[0].fields["Lead Researcher"], "Research Lead One");
+		assert.equal(detailCreateBody.records[0].fields["Lead Researcher Email"], "research.lead.one@example.test");
 		assert.equal(detailCreateBody.records[0].fields.Notes, "Created from the start-project check answers flow");
 
 		assert.equal(
@@ -709,9 +744,9 @@ async function assertAuthenticatedProjectCreateUsesSessionContext() {
 		assert.deepEqual(cachedProject.objectives, ["Understand the problem space", "Map end-to-end workflows"]);
 		assert.deepEqual(cachedProject.user_groups, ["Law enforcement", "Borders and immigration"]);
 		assert.equal(cachedProject.stakeholders.length, 1);
-		assert.equal(cachedProject.stakeholders[0].name, "Pam Thethi");
-		assert.equal(cachedProject.lead_researcher, "Amy Everett");
-		assert.equal(cachedProject.lead_researcher_email, "amy.everett@homeoffice.gov.uk");
+		assert.equal(cachedProject.stakeholders[0].name, "Stakeholder One");
+		assert.equal(cachedProject.lead_researcher, "Research Lead One");
+		assert.equal(cachedProject.lead_researcher_email, "research.lead.one@example.test");
 	} finally {
 		globalThis.fetch = originalFetch;
 	}
@@ -726,10 +761,7 @@ async function assertProjectCreateDoesNotBlockWhenTeamFieldsAreMissing() {
 		const response = await worker.fetch(
 			new Request("https://worker.test/api/projects", {
 				method: "POST",
-				headers: {
-					"content-type": "application/json",
-					cookie: `rops_session=${TEST_SESSION_TOKEN}`,
-				},
+				headers: authenticatedMutationHeaders(),
 				body: JSON.stringify({
 					name: "Third Country National Discovery",
 					description: "Discovery research project",
@@ -782,10 +814,7 @@ async function assertProjectCreatePreservesSupportedTeamFields() {
 		const response = await worker.fetch(
 			new Request("https://worker.test/api/projects", {
 				method: "POST",
-				headers: {
-					"content-type": "application/json",
-					cookie: `rops_session=${TEST_SESSION_TOKEN}`,
-				},
+				headers: authenticatedMutationHeaders(),
 				body: JSON.stringify({
 					name: "Third Country National Discovery",
 					description: "Discovery research project",
@@ -826,10 +855,7 @@ async function assertProjectCreateDoesNotBlockWhenOrgFieldIsMissing() {
 		const response = await worker.fetch(
 			new Request("https://worker.test/api/projects", {
 				method: "POST",
-				headers: {
-					"content-type": "application/json",
-					cookie: `rops_session=${TEST_SESSION_TOKEN}`,
-				},
+				headers: authenticatedMutationHeaders(),
 				body: JSON.stringify({
 					name: "Third Country National Discovery",
 					description: "Discovery research project",
@@ -916,8 +942,8 @@ async function assertProjectReadUsesPreviewSeedD1WhenAirtableIsUnavailable() {
 			objectives: DAAS_OBJECTIVES,
 			user_groups: DAAS_USER_GROUPS,
 			stakeholders: DAAS_STAKEHOLDERS,
-			lead_researcher: "Amy Everett",
-			lead_researcher_email: "amy.everett@homeoffice.gov.uk",
+			lead_researcher: "Research Lead One",
+			lead_researcher_email: "research.lead.one@example.test",
 		},
 	});
 	globalThis.fetch = createMockFetch([]);
@@ -941,11 +967,11 @@ async function assertProjectReadUsesPreviewSeedD1WhenAirtableIsUnavailable() {
 		assert.deepEqual(project.objectives, DAAS_OBJECTIVES);
 		assert.deepEqual(project.user_groups, DAAS_USER_GROUPS);
 		assert.equal(project.stakeholders.length, 3);
-		assert.equal(project.stakeholders[0].name, "Pam Thethi");
-		assert.equal(project.stakeholders[1].name, "Chris Moffitt");
-		assert.equal(project.stakeholders[2].name, "Maria Athayde");
-		assert.equal(project.lead_researcher, "Amy Everett");
-		assert.equal(project.lead_researcher_email, "amy.everett@homeoffice.gov.uk");
+		assert.equal(project.stakeholders[0].name, "Stakeholder One");
+		assert.equal(project.stakeholders[1].name, "Stakeholder Two");
+		assert.equal(project.stakeholders[2].name, "Stakeholder Three");
+		assert.equal(project.lead_researcher, "Research Lead One");
+		assert.equal(project.lead_researcher_email, "research.lead.one@example.test");
 	} finally {
 		d1ProjectCacheRow = null;
 		globalThis.fetch = originalFetch;
@@ -992,10 +1018,7 @@ async function assertProjectPatchUsesD1WhenAirtableIsRateLimited() {
 		const response = await worker.fetch(
 			new Request(`https://worker.test/api/projects/${PROJECT_RECORD_IDS[2]}`, {
 				method: "PATCH",
-				headers: {
-					"content-type": "application/json",
-					cookie: `rops_session=${TEST_SESSION_TOKEN}`,
-				},
+				headers: authenticatedMutationHeaders(),
 				body: JSON.stringify({
 					description: "Updated project description",
 					objectives: ["Understand the problem space", "Map the current system"],
@@ -1050,10 +1073,7 @@ async function assertProjectPatchPreservesPreviewSeedD1SourceWhenAirtableIsRateL
 		const response = await worker.fetch(
 			new Request(`https://worker.test/api/projects/${PROJECT_RECORD_IDS[2]}`, {
 				method: "PATCH",
-				headers: {
-					"content-type": "application/json",
-					cookie: `rops_session=${TEST_SESSION_TOKEN}`,
-				},
+				headers: authenticatedMutationHeaders(),
 				body: JSON.stringify({
 					objectives: ["Keep D1 preview seed visible"],
 				}),
@@ -1095,7 +1115,10 @@ async function assertProjectsCsvRouteStillWorks() {
 	globalThis.fetch = createMockFetch(calls);
 
 	try {
-		const response = await worker.fetch(new Request("https://worker.test/api/projects.csv"), env, {});
+		const anonymousResponse = await worker.fetch(new Request("https://worker.test/api/projects.csv"), env, {});
+		assert.equal(anonymousResponse.status, 401);
+
+		const response = await worker.fetch(authenticatedRequest("https://worker.test/api/projects.csv"), env, {});
 		assert.equal(response.status, 200);
 		assert.match(response.headers.get("content-type") || "", /text\/csv/);
 
@@ -1126,9 +1149,9 @@ function assertPreviewMigrationSeedsDaaSProject() {
 	assert.equal(migration.includes("Map end-to-end workflows (UK <-> EU)"), true);
 	assert.equal(migration.includes('"ACRO"'), true);
 	assert.equal(migration.includes('"Policy and governance users"'), true);
-	assert.equal(migration.includes("Chris Moffitt"), true);
-	assert.equal(migration.includes("Maria Athayde"), true);
-	assert.equal(migration.includes('"lead_researcher":"Amy Everett"'), true);
+	assert.equal(migration.includes("Stakeholder Two"), true);
+	assert.equal(migration.includes("Stakeholder Three"), true);
+	assert.equal(migration.includes('"lead_researcher":"Research Lead One"'), true);
 	assert.equal(migration.includes('"team_ids":["team_daas"]'), true);
 	assert.equal(migration.includes('"teamName":"DaaS"'), true);
 }

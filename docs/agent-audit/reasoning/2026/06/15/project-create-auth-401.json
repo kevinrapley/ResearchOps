@@ -5,7 +5,7 @@
   "traceRequired": true,
   "traceDecision": "Required because repository-affecting work on branches starting with fix/ must have an auditable trace. PR #403 was merged before the Airtable team-field fallback reached main, so the follow-up fix was carried onto replacement branch fix/project-create-team-fields-nonblocking from current origin/main.",
   "relatedWork": "Fix authenticated project creation from the Start a new research project check-answers step",
-  "task": "Investigate and fix a 401 authentication_required error shown to kevin.rapley@homeoffice.gov.uk when submitting the start-project check-answers flow.",
+  "task": "Investigate and fix a 401 authentication_required error shown to a synthetic ResearchOps user when submitting the start-project check-answers flow.",
   "selectedBundles": [
     {
       "id": "github-diamond",

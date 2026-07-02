@@ -20,7 +20,7 @@ Does that sound okay?
 
 To begin, could you tell me a little about yourself and how you usually interact with {{topicContext}}?
 
-*(Aim for a relaxed, conversational tone — this section helps participants settle in.)*",,Published,Kevin Rapley,7/10/2025 00:06,
+*(Aim for a relaxed, conversational tone — this section helps participants settle in.)*",,Published,Researcher One,7/10/2025 00:06,
 consent_standard,Consent Standard,Consent,2,"{{! /components/guides/patterns/consent_standard.md }}
 ## Taking part in this research
 
@@ -109,7 +109,7 @@ By continuing, you confirm that:
 
 **Date:** ______________________________
 
-**Researcher signature:** ______________________________",,Published,Kevin Rapley,7/10/2025 13:11,
+**Researcher signature:** ______________________________",,Published,Researcher One,7/10/2025 13:11,
 task_observation_shell,Task Observation Shell,Tasks,1,"{{! /components/guides/patterns/task_observation_shell.md }}
 # Task {{meta.task_number}}: {{meta.task_title}}
 
@@ -313,7 +313,7 @@ A:
 ---
 
 **Observer:** {{meta.observer_name}}  
-**Note-taker:** {{meta.notetaker_name}}",,Published,Kevin Rapley,7/10/2025 13:18,
+**Note-taker:** {{meta.notetaker_name}}",,Published,Researcher One,7/10/2025 13:18,
 probe_error_recovery,Probe Error Recovery,Other,1,"{{! /components/guides/patterns/probe_error_recovery.md }}
 ## Error recovery: {{meta.error_context}}
 
@@ -503,7 +503,7 @@ probe_error_recovery,Probe Error Recovery,Other,1,"{{! /components/guides/patter
 ### Error message / design issues
 
 {{#meta.error_message_present}}
-**Error message shown:**",,Published,Kevin Rapley,7/10/2025 13:24,
+**Error message shown:**",,Published,Researcher One,7/10/2025 13:24,
 probe_trust_signals,Probe Trust Signals,Other,1,"{{! /components/guides/patterns/probe_trust_signals.md }}
 ## Trust signals: {{meta.trust_context}}
 
@@ -987,7 +987,7 @@ probe_trust_signals,Probe Trust Signals,Other,1,"{{! /components/guides/patterns
 ---
 
 **Observer:** {{meta.observer_name}}  
-**Session type:** {{#meta.session_type}}{{meta.session_type}}{{/meta.session_type}}{{^meta.session_type}}☐ Remote  ☐ In-person  ☐ Lab{{/meta.session_type}}",,Published,Kevin Rapley,7/10/2025 13:29,
+**Session type:** {{#meta.session_type}}{{meta.session_type}}{{/meta.session_type}}{{^meta.session_type}}☐ Remote  ☐ In-person  ☐ Lab{{/meta.session_type}}",,Published,Researcher One,7/10/2025 13:29,
 wrapup_debrief,Wrap-up Debrief,Debrief,1,"{{! /components/guides/patterns/wrapup_debrief.md }}
 # Session wrap-up
 
@@ -1258,7 +1258,7 @@ You won't be personally identified in any of these.""
 ---
 
 **Session completed by:** {{meta.observer_name}}  
-**Date:** {{meta.session_date}}",,Published,Kevin Rapley,7/10/2025 13:31,
+**Date:** {{meta.session_date}}",,Published,Researcher One,7/10/2025 13:31,
 note_observer_grid,Observer note-taking,Notes,1,"{{! /components/guides/patterns/note_observer_grid.md }}
 ## Observer notes: {{study.method}}
 
@@ -1420,4 +1420,4 @@ note_observer_grid,Observer note-taking,Notes,1,"{{! /components/guides/patterns
 ---
 
 **Session end time:** __________  
-**Observer signature:** __________",,Published,Kevin Rapley,7/10/2025 13:39,
+**Observer signature:** __________",,Published,Researcher One,7/10/2025 13:39,

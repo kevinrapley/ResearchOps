@@ -3,7 +3,7 @@ export function getCtx() {
   const org = localStorage.getItem("rops.org") || "home-office-biometrics";
   const project = localStorage.getItem("rops.project") || "demo";
   const study = localStorage.getItem("rops.study") || "demo";
-  const user = localStorage.getItem("rops.user") || "you@homeoffice.gov.uk";
+  const user = localStorage.getItem("rops.user") || "you@example.test";
   return { org, project, study, user };
 }
 export function setCtx({ org, project, study, user }) {

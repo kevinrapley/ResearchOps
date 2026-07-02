@@ -42,7 +42,7 @@ function getCtx() {
 		org: localStorage.getItem("rops.org") || "home-office-biometrics",
 		project: localStorage.getItem("rops.project") || "demo",
 		study: localStorage.getItem("rops.study") || "demo",
-		user: localStorage.getItem("rops.user") || "you@homeoffice.gov.uk"
+		user: localStorage.getItem("rops.user") || "you@example.test"
 	};
 }
 

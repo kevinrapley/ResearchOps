@@ -21,7 +21,7 @@ _Project:_ **{{project.name}}**
 
 {{> wrapup_debrief_v1}}
 
-{{> note_observer_grid_v1}}","{""version"":1}",Kevin Rapley,6/10/2025 8:27am,6/10/2025 4:26pm
+{{> note_observer_grid_v1}}","{""version"":1}",Researcher One,6/10/2025 8:27am,6/10/2025 4:26pm
 New guide,rect3o7dt,Draft,1,"# {{study.title}} — Discussion guide – version: {{version}}
 
 _Study:_ **{{study.title}}**

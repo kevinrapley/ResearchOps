@@ -244,3 +244,25 @@ test("Pages advanced worker strips Cloudflare Access headers from preview API re
 		assert.equal(response.headers.get("x-researchops-access-headers-forwarded"), "false");
 	});
 });
+
+test("Pages advanced worker adds CSRF confirmation to proxied API mutations", async () => {
+	await withMockedFetch(async (url, init = {}) => {
+		assert.equal(url, "https://rops-api.digikev-kevin-rapley.workers.dev/api/session-notes");
+		const headers = new Headers(init.headers);
+		assert.equal(headers.get("x-researchops-csrf"), "pages-proxy");
+		return new Response(JSON.stringify({ ok: true }), {
+			status: 200,
+			headers: { "content-type": "application/json; charset=utf-8" },
+		});
+	}, async () => {
+		const response = await worker.fetch(
+			new Request("https://researchops.pages.dev/api/session-notes", {
+				method: "POST",
+				headers: { "content-type": "application/json" },
+				body: JSON.stringify({ content: "Session note" }),
+			}),
+			assetEnv(),
+		);
+		assert.equal(response.status, 200);
+	});
+});

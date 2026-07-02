@@ -78,7 +78,7 @@ assertEqualRows(
 const stakeholdersCsv =
 	'Record ID,Name,Stakeholders\n' +
 	'recMtdmBbaFiIF2Tm,New Project,' +
-	'"[{""name"":""Kevin Rapley"",""role"":""User Researcher"",""email"":""kevin.rapley@homeoffice.gov.uk""}]"\n';
+	'"[{""name"":""Researcher One"",""role"":""User Researcher"",""email"":""researcher.one@example.test""}]"\n';
 const stakeholdersRows = parseCsv(stakeholdersCsv);
 assert.equal(stakeholdersRows.length, 1, 'parseCsv: stakeholders row count');
 assert.equal(
@@ -90,7 +90,7 @@ assert.equal(stakeholdersRows[0].Name, 'New Project', 'parseCsv: stakeholders na
 const parsedStakeholders = JSON.parse(stakeholdersRows[0].Stakeholders);
 assert.deepEqual(
 	parsedStakeholders,
-	[{ name: 'Kevin Rapley', role: 'User Researcher', email: 'kevin.rapley@homeoffice.gov.uk' }],
+	[{ name: 'Researcher One', role: 'User Researcher', email: 'researcher.one@example.test' }],
 	'parseCsv: stakeholders JSON round-trip'
 );
 
@@ -100,7 +100,7 @@ const fullRowCsv =
 	'Record ID,Name,Org,Phase,Status,Description,Stakeholders,Objectives,UserGroups,CreatedAt\n' +
 	'recMtdmBbaFiIF2Tm,New Project,Home Office Biometrics,Discovery,Planning research,' +
 	'Project description of the new project,' +
-	'"[{""name"":""Kevin Rapley"",""role"":""User Researcher"",""email"":""kevin.rapley@homeoffice.gov.uk""}]",' +
+	'"[{""name"":""Researcher One"",""role"":""User Researcher"",""email"":""researcher.one@example.test""}]",' +
 	'"Objective 1\nObjective 2",' +
 	'Caseworkers,2026-05-01T10:00:00.000Z\n';
 const fullRows = parseCsv(fullRowCsv);
