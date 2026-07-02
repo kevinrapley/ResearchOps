@@ -176,6 +176,8 @@ test('preview Worker deployment restores QA auth and preview mutation origins', 
 		/researchops\.pages\.dev,https:\/\/rops-api\.digikev-kevin-rapley\.workers\.dev,http:\/\/localhost:8080/,
 	);
 	assert.match(passwordlessPreviewWorkflowSource, /WRANGLER_VERSION: "4\.90\.0"/);
+	assert.match(passwordlessPreviewWorkflowSource, /Use Node\.js 22/);
+	assert.match(passwordlessPreviewWorkflowSource, /node-version: 22/);
 	assert.match(passwordlessPreviewWorkflowSource, /for attempt in 1 2 3/);
 	assert.match(passwordlessPreviewWorkflowSource, /Deploying preview Worker \(attempt \$\{attempt\}\)/);
 });

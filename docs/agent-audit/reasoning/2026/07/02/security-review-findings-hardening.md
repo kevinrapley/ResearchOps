@@ -56,7 +56,8 @@
 
 - The `lychee` check failed because `https://researchops.community/about/` timed out from the GitHub runner while the rest of the link set completed successfully.
 - The passwordless preview Worker deployment uploaded the Worker, then failed on Wrangler's follow-up Cloudflare API subdomain request with a 522 malformed response.
-- Disposition: excluded the timing-out external community page from `lychee.toml`, added `RESEARCHOPS_ALLOW_PAGES_PREVIEW_ORIGINS = "true"` to the passwordless preview Worker config, aligned the passwordless preview deployment to Wrangler 4.90.0, and wrapped the deploy command in a three-attempt retry loop.
+- A follow-up run then failed before deployment because the passwordless preview workflow still used Node 20 while Wrangler 4.90.0 requires Node 22.
+- Disposition: excluded the timing-out external community page from `lychee.toml`, added `RESEARCHOPS_ALLOW_PAGES_PREVIEW_ORIGINS = "true"` to the passwordless preview Worker config, aligned the passwordless preview deployment to Wrangler 4.90.0 on Node 22, and wrapped the deploy command in a three-attempt retry loop.
 
 ## Files created
 

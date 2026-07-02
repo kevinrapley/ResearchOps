@@ -72,7 +72,7 @@
 		"Reduced seeded/test PII by replacing named people and Home Office email addresses with synthetic names and example.test addresses.",
 		"Added D1 migration 0025_security_review_route_permissions.sql and updated migration ordering documentation.",
 		"After Codex review, added a production default RESEARCHOPS_ALLOW_PAGES_PREVIEW_ORIGINS=false and preview deployment rewrite to true so branch Pages preview mutations can pass the gated origin policy.",
-		"After CI failures, excluded the timing-out researchops.community about page from Lychee, enabled preview Pages origins in the passwordless preview Worker config, aligned the passwordless preview deployment to Wrangler 4.90.0, and added retry handling around the preview deploy command."
+		"After CI failures, excluded the timing-out researchops.community about page from Lychee, enabled preview Pages origins in the passwordless preview Worker config, aligned the passwordless preview deployment to Wrangler 4.90.0 on Node 22, and added retry handling around the preview deploy command."
 	],
 	"codexReviewThreadDisposition": [
 		{
@@ -101,8 +101,8 @@
 		{
 			"check": "Deploy passwordless preview Worker",
 			"classification": "transient Cloudflare API failure after upload plus preview-origin config gap",
-			"evidence": "Wrangler uploaded the Worker, then received a Cloudflare API 522 on the follow-up Worker subdomain request.",
-			"disposition": "Aligned the passwordless preview workflow to Wrangler 4.90.0, added a three-attempt deploy retry loop, and set RESEARCHOPS_ALLOW_PAGES_PREVIEW_ORIGINS=true in wrangler.passwordless-preview.toml."
+			"evidence": "Wrangler uploaded the Worker, then received a Cloudflare API 522 on the follow-up Worker subdomain request. The follow-up run then failed before deployment because Wrangler 4.90.0 requires Node 22 and the passwordless preview workflow still used Node 20.",
+			"disposition": "Aligned the passwordless preview workflow to Wrangler 4.90.0 on Node 22, added a three-attempt deploy retry loop, and set RESEARCHOPS_ALLOW_PAGES_PREVIEW_ORIGINS=true in wrangler.passwordless-preview.toml."
 		}
 	],
 	"filesModifiedForCiFollowup": [
