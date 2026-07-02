@@ -98,3 +98,12 @@ INSERT OR IGNORE INTO auth_route_permissions (id, method, route_pattern, require
 	('route_api_mural_workspaces_get', 'GET', '/api/mural/workspaces', '["research.integration.manage"]', 1, 'implemented'),
 	('route_api_mural_me_get', 'GET', '/api/mural/me', '["research.integration.manage"]', 1, 'implemented'),
 	('route_api_mural_debug_env_get', 'GET', '/api/mural/debug-env', '["project.diagnostics.view"]', 1, 'implemented');
+
+UPDATE auth_route_permissions
+SET
+	method = 'POST',
+	route_pattern = '/api/agent-pages/deploy',
+	required_permissions_json = '["deployment.trigger"]',
+	auth_required = 1,
+	implementation_status = 'implemented'
+WHERE id = 'route_api_agent_pages_deploy_post';

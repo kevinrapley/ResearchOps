@@ -67,8 +67,10 @@
 		"Mural endpoints now receive Worker auth context and anonymous uid fallback is removed from journal sync payload parsing.",
 		"Deploy hook route requires deployment.trigger permission and uses constant-time token comparison without returning Cloudflare hook response text.",
 		"Diagnostic endpoints are disabled unless RESEARCHOPS_DIAGNOSTICS_ENABLED=true.",
-		"Passwordless preview config uses separate storage identifiers and a tightened allowlist.",
-		"Security workflow now runs on relevant PR changes with Node 22 and package engine metadata is aligned."
+		"Passwordless preview config uses a separate preview D1 binding, a provisioned KV binding and a tightened allowlist.",
+		"Security workflow now runs on relevant PR changes with Node 22 and package engine metadata is aligned.",
+		"PR review follow-up tightens an existing route_api_agent_pages_deploy_post row by updating auth_route_permissions after the seed insert.",
+		"CI follow-up restores the passwordless preview KV binding to the provisioned namespace after Cloudflare rejected an unprovisioned namespace ID."
 	],
 	"validationPlanned": [
 		"Focused security route-state tests",
@@ -103,10 +105,21 @@
 			"command": "focused hardening test slices",
 			"status": "passed",
 			"summary": "Covered proxy CORS/CSRF, diagnostics, deployment permission, Mural OAuth state/token ownership and production/preview configuration contracts."
+		},
+		{
+			"command": "node --import ./tests/helpers/generated-govuk-page-source.mjs --test tests/security-hardening-controls-route-state.test.js tests/qa-bdd-authenticated-walkthrough-route-state.test.js tests/mural-ui-route-state.test.js",
+			"status": "passed",
+			"summary": "16 tests passed after PR review and CI follow-up fixes."
+		},
+		{
+			"command": "follow-up full local gates",
+			"status": "passed",
+			"summary": "npm run format:check, npm run lint, npm run trace:coverage, npm test and npm run validate passed after the Codex comment and preview deployment fixes."
 		}
 	],
 	"residualRisks": [
-		"Separate preview Cloudflare KV/D1 resources must exist before deploying the passwordless preview config.",
+		"Separate preview Cloudflare D1 resource must exist before deploying the passwordless preview config.",
+		"Preview KV storage remains on the provisioned namespace until a separate KV namespace is created and verified in Cloudflare.",
 		"Operators should review the first production retention run after deployment.",
 		"Mural OAuth state requires RESEARCHOPS_AUTH_SECRET or MURAL_OAUTH_STATE_SECRET."
 	]

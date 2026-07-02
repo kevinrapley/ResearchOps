@@ -49,8 +49,10 @@ Skipped bundles: GOV.UK design system, OpenAI Platform, MCP Agent Tooling and Ai
 - Bound Mural OAuth state and token storage to authenticated ResearchOps user IDs, signed OAuth state, removed anonymous token fallback use and routed Mural endpoints through Worker auth context.
 - Required the deploy hook route to pass ResearchOps route permission checks for `deployment.trigger` while retaining the deploy hook bearer secret.
 - Disabled `_diag/*` routes unless `RESEARCHOPS_DIAGNOSTICS_ENABLED=true`.
-- Separated passwordless preview KV/D1 identifiers from production config and removed stale preview origins/localhost from the checked-in allowlist.
+- Separated passwordless preview D1 identifiers from production config, kept the preview KV binding on the provisioned namespace and removed stale preview origins/localhost from the checked-in allowlist.
 - Updated the security workflow to run on relevant PR paths with Node 22 and aligned `package.json` engine metadata.
+- Follow-up on PR review: Codex identified that the deploy route migration only inserted fresh rows and did not tighten an existing public `route_api_agent_pages_deploy_post` row. The migration now explicitly updates that route after the seed insert.
+- Follow-up on CI: the passwordless preview Worker deployment failed because the replacement KV namespace ID was not present in Cloudflare. The preview config now uses the previously provisioned KV namespace while retaining the separate preview D1 binding.
 
 ## Validation plan
 
@@ -67,9 +69,12 @@ Skipped bundles: GOV.UK design system, OpenAI Platform, MCP Agent Tooling and Ai
 - `npm run validate` passed.
 - `npm test` passed: 305 tests, 305 pass, 0 fail.
 - Focused hardening tests passed during implementation for proxy CORS/CSRF, diagnostics, deployment permission, Mural OAuth state/token ownership and production/preview configuration contracts.
+- Follow-up focused tests passed for security hardening, QA BDD preview workflow/config and Mural UI route-state contracts.
+- Follow-up `npm run format:check`, `npm run lint`, `npm run trace:coverage`, `npm test` and `npm run validate` passed after the Codex comment and preview deployment fixes.
 
 ## Residual risks
 
-- The preview Worker config now references separate preview storage identifiers; those Cloudflare resources must exist before deploying that preview config.
+- The preview Worker config references a separate preview D1 database; that Cloudflare resource must exist before deploying that preview config.
+- Preview KV storage remains on the provisioned namespace until a separate KV namespace is created and verified in Cloudflare.
 - Production retention is enabled in configuration; operators should review first scheduled run output and data counts after deployment.
 - Mural OAuth state depends on `RESEARCHOPS_AUTH_SECRET` or `MURAL_OAUTH_STATE_SECRET` being configured.
