@@ -10,13 +10,9 @@
 	</ul>
 {% endmacro %}
 
-{% macro referenceList(items) %}
-	<span class="compliance-readiness__reference-list">
-		{% for item in items %}
-		<span class="compliance-readiness__reference">{{ item | complianceAbbreviations }}</span>{% if not loop.last %}, {% endif %}
-		{% endfor %}
-	</span>
-{% endmacro %}
+{% macro referenceList(items) -%}
+<span class="compliance-readiness__reference-list">{%- for item in items -%}<span class="compliance-readiness__reference">{{ item | complianceAbbreviations }}{%- if not loop.last -%},{% endif -%}</span>{% if not loop.last %} {% endif -%}{%- endfor -%}</span>
+{%- endmacro %}
 
 {% block content %}
 <div class="govuk-width-container" data-compliance-readiness-page>
@@ -36,6 +32,7 @@
 			</p>
 			{{ govukWarningText({
 				html: complianceScopeSummary.nonClaim | complianceAbbreviations,
+				classes: "compliance-readiness__warning",
 				iconFallbackText: "Warning"
 			}) }}
 		</div>

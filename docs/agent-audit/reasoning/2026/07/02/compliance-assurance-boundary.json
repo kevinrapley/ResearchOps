@@ -73,7 +73,11 @@
 		"Replaced visible bullet lists in the SOC 2 TSC and ISO/IEC Annex A matrix columns with comma-separated reference spans.",
 		"Added small GOV.UK text utility classes to the control matrix and a minimal Sass hook for top-aligned matrix cells and non-wrapping control references.",
 		"Updated the generated GOV.UK page test helper so route-state tests render pages with the same shared abbreviation filter as the static renderer.",
-		"Addressed follow-up browser review by removing abbreviation markup from the main page heading while retaining abbreviation markup in explanatory content and matrix headings."
+		"Addressed follow-up browser review by removing abbreviation markup from the main page heading while retaining abbreviation markup in explanatory content and matrix headings.",
+		"Addressed follow-up browser review by scoping warning-icon alignment to the compliance readiness warning component.",
+		"Changed control-reference rendering so commas belong to the preceding reference span and do not render with a space before the comma.",
+		"Added GDPR abbreviation markup through the shared compliance abbreviation filter.",
+		"Changed header and footer includes to bypass stale browser cache so the footer support link to /pages/compliance-readiness/ is visible after deployment updates."
 	],
 	"validationPlanned": [
 		"Focused compliance assurance boundary test",
@@ -235,6 +239,41 @@
 			"command": "npm test",
 			"status": "passed",
 			"summary": "315 tests, 315 pass, 0 fail after the H1 browser-comment fix."
+		},
+		{
+			"command": "npm run build:govuk-pages",
+			"status": "passed",
+			"summary": "Regenerated public/pages/compliance-readiness/index.html after footer and markup browser-comment fixes."
+		},
+		{
+			"command": "generated HTML markup probe",
+			"status": "passed",
+			"summary": "Confirmed 24 reference cells, no space before commas, GDPR abbreviation markup and the scoped warning class."
+		},
+		{
+			"command": "curl http://127.0.0.1:4173/partials/footer.html",
+			"status": "passed",
+			"summary": "Confirmed the /pages/compliance-readiness/ footer support link is present in the served footer partial."
+		},
+		{
+			"command": "node --import ./tests/helpers/generated-govuk-page-source.mjs --test tests/compliance-readiness-page-route-state.test.js tests/layout-footer-include-race.test.js tests/govuk-generated-html-test-source-route-state.test.js tests/govuk-pages-render-workflow-state.test.js",
+			"status": "passed",
+			"summary": "12 focused tests passed for the compliance readiness page, footer include cache behaviour, generated GOV.UK page helper coverage and render workflow."
+		},
+		{
+			"command": "npm run format:check",
+			"status": "passed",
+			"summary": "Footer and markup browser-comment formatting check passed."
+		},
+		{
+			"command": "npm run trace:coverage",
+			"status": "passed",
+			"summary": "Trace coverage confirmed after footer and markup browser-comment fixes."
+		},
+		{
+			"command": "npm test",
+			"status": "passed",
+			"summary": "316 tests, 316 pass, 0 fail after footer and markup browser-comment fixes."
 		}
 	],
 	"residualRisks": [

@@ -68,9 +68,11 @@ Skipped bundles: none. The follow-up page addition selected the GOV.UK Design Sy
 ## Files modified
 
 - `public/partials/footer.html`
+- `public/components/layout.js`
 - `scripts/govuk/render-govuk-pages.mjs`
 - `.github/workflows/render-govuk-pages.yml`
 - `tests/govuk-pages-render-workflow-state.test.js`
+- `tests/layout-footer-include-race.test.js`
 - `visual-walkthrough.config.mjs`
 - `public/assets/govuk/govuk-frontend.css`
 - `tests/govuk-generated-html-test-source-route-state.test.js`
@@ -95,6 +97,10 @@ Skipped bundles: none. The follow-up page addition selected the GOV.UK Design Sy
 - Added small GOV.UK text utility classes to the control matrix and a minimal Sass hook for top-aligned matrix cells and non-wrapping control references.
 - Updated the generated GOV.UK page test helper so route-state tests render pages with the same shared abbreviation filter as the static renderer.
 - Addressed follow-up browser review by removing abbreviation markup from the main page heading while retaining abbreviation markup in explanatory content and matrix headings.
+- Addressed follow-up browser review by scoping warning-icon alignment to the compliance readiness warning component.
+- Changed control-reference rendering so commas belong to the preceding reference span and do not render with a space before the comma.
+- Added GDPR abbreviation markup through the shared compliance abbreviation filter.
+- Changed header and footer includes to bypass stale browser cache so the footer support link to `/pages/compliance-readiness/` is visible after deployment updates.
 
 ## Validation planned
 
@@ -137,6 +143,13 @@ Skipped bundles: none. The follow-up page addition selected the GOV.UK Design Sy
 - Follow-up H1 browser-comment `npm run format:check` passed.
 - Follow-up H1 browser-comment `npm run trace:coverage` passed.
 - Follow-up H1 browser-comment `npm test` passed: 315 tests, 315 pass, 0 fail.
+- Footer and markup browser-comment fix `npm run build:govuk-pages` passed and regenerated `public/pages/compliance-readiness/index.html`.
+- Footer and markup browser-comment probe confirmed 24 reference cells, no space before commas, GDPR abbreviation markup, and the scoped warning class.
+- Footer partial probe confirmed the `/pages/compliance-readiness/` footer support link is present in `public/partials/footer.html` and served locally.
+- Footer and markup browser-comment focused tests passed: 12 tests, 12 pass across compliance readiness, footer include cache behaviour, generated GOV.UK page helper coverage and render workflow.
+- Footer and markup browser-comment `npm run format:check` passed.
+- Footer and markup browser-comment `npm run trace:coverage` passed.
+- Footer and markup browser-comment `npm test` passed: 316 tests, 316 pass, 0 fail.
 
 ## Residual risks
 

@@ -57,6 +57,10 @@ const complianceAbbreviations = [
 		markup: '<abbr title="Trust Services Criteria">TSC</abbr>',
 	},
 	{
+		pattern: /\bGDPR\b/g,
+		markup: '<abbr title="General Data Protection Regulation">GDPR</abbr>',
+	},
+	{
 		pattern: /\bDPIA\b/g,
 		markup: '<abbr title="Data Protection Impact Assessment">DPIA</abbr>',
 	},

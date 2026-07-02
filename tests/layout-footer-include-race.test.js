@@ -21,3 +21,10 @@ test('stale include fetches cannot overwrite newer rendered footer content', () 
 	assert.match(layoutSource, /if \(renderId !== this\._renderId\) return;/);
 	assert.match(layoutSource, /if \(this\._abort\) this\._abort\.abort\(\);/);
 });
+
+test('footer includes are fetched without stale cache', () => {
+	assert.match(
+		layoutSource,
+		/src\.includes\("\/partials\/header\.html"\) \|\| src\.includes\("\/partials\/footer\.html"\)/
+	);
+});

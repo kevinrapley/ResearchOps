@@ -33,6 +33,7 @@ test('compliance readiness source defines scope boundary and non-claim wording',
 	assert.match(template, /complianceAbbreviations/);
 	assert.match(template, /referenceList/);
 	assert.match(template, /govuk-!-font-size-16/);
+	assert.match(template, /classes: "compliance-readiness__warning"/);
 });
 
 test('control matrix maps readiness controls to SOC 2 and ISO Annex A', () => {
@@ -86,6 +87,7 @@ test('rendered compliance readiness page includes the expected public content', 
 	assert.match(page, /data-compliance-readiness-page/);
 	assert.match(page, /data-compliance-control-matrix/);
 	assert.match(page, /govuk-warning-text/);
+	assert.match(page, /compliance-readiness__warning/);
 	assert.match(page, /govuk-warning-text__icon/);
 	assert.match(page, /govuk-visually-hidden">Warning/);
 	assert.match(page, /compliance-readiness__control-matrix/);
@@ -103,6 +105,7 @@ test('rendered compliance readiness page includes the expected public content', 
 		page,
 		/<abbr title="International Organization for Standardization \/ International Electrotechnical Commission">ISO\/IEC<\/abbr>/
 	);
+	assert.match(page, /<abbr title="General Data Protection Regulation">GDPR<\/abbr>/);
 	assert.match(page, /<abbr title="Data Protection Impact Assessment">DPIA<\/abbr>/);
 	assert.match(page, /<abbr title="Record of Processing Activities">ROPA<\/abbr>/);
 	assert.match(page, /<abbr title="Service level objectives">SLOs<\/abbr>/);
@@ -131,5 +134,6 @@ test('rendered compliance readiness matrix uses non-bulleted reference columns',
 		assert.match(html, /compliance-readiness__reference/);
 		assert.doesNotMatch(html, /<ul\b/);
 		assert.doesNotMatch(html, /<li\b/);
+		assert.doesNotMatch(html, /<\/span>\s+,/);
 	}
 });
