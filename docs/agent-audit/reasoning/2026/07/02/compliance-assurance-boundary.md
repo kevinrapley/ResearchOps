@@ -102,6 +102,7 @@ Skipped bundles: none. The follow-up page addition selected the GOV.UK Design Sy
 - Added GDPR abbreviation markup through the shared compliance abbreviation filter.
 - Changed header and footer includes to bypass stale browser cache so the footer support link to `/pages/compliance-readiness/` is visible after deployment updates.
 - Reworked the footer cache-busting follow-up from a page-specific compliance readiness key to a shared generated GOV.UK page chrome cache key applied to all rendered pages.
+- Added ISMS scope, risk assessment, risk treatment plan and Statement of Applicability to the evidence still needed before a claim.
 
 ## Validation planned
 
@@ -158,6 +159,9 @@ Skipped bundles: none. The follow-up page addition selected the GOV.UK Design Sy
 - Shared footer cache-key `npm run validate` passed after the generated-page chrome key was applied across all GOV.UK-rendered pages.
 - Shared footer cache-key `npm run format:check` passed.
 - Shared footer cache-key `npm test` passed: 316 tests, 316 pass, 0 fail.
+- Follow-up evidence item `npm run build:govuk-pages` passed and regenerated the compliance readiness page.
+- Follow-up evidence item focused tests passed: 10 tests, 10 pass across the compliance readiness page and compliance evidence pack.
+- Follow-up evidence item `npm run validate` passed.
 
 ## Residual risks
 

@@ -24,7 +24,6 @@ The next PRs in this broader workstream should add:
 
 1. Asset and data inventory.
 2. Supplier and subprocessor register.
-3. Risk register and initial treatment plan.
+3. ISMS scope, risk assessment, risk treatment plan and Statement of Applicability.
 4. SOC 2 criteria mapping and ISO/IEC 27001 Statement of Applicability skeleton.
 5. DPIA and records-of-processing sign-off references.
-

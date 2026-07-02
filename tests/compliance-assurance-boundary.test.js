@@ -52,6 +52,7 @@ test('evidence index keeps readiness gaps visible', () => {
 		'Supplier assurance',
 		'Incident response',
 		'Secure development lifecycle',
+		'ISMS scope, risk assessment, risk treatment plan and Statement of Applicability',
 	]) {
 		assert.match(evidenceIndex, new RegExp(requiredGap));
 	}

@@ -177,6 +177,7 @@ export const readinessEvidenceGaps = [
 	'Service owner, information asset owner, senior risk owner and security representative sign-off',
 	'asset and data inventory',
 	'DPIA, ROPA and lawful-basis references',
+	'ISMS scope, risk assessment, risk treatment plan and Statement of Applicability',
 	'information security risk register and treatment plan',
 	'SOC 2 control-to-evidence mapping at criteria level',
 	'ISO/IEC 27001 Statement of Applicability',

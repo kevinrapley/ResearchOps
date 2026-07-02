@@ -78,7 +78,8 @@
 		"Changed control-reference rendering so commas belong to the preceding reference span and do not render with a space before the comma.",
 		"Added GDPR abbreviation markup through the shared compliance abbreviation filter.",
 		"Changed header and footer includes to bypass stale browser cache so the footer support link to /pages/compliance-readiness/ is visible after deployment updates.",
-		"Reworked the footer cache-busting follow-up from a page-specific compliance readiness key to a shared generated GOV.UK page chrome cache key applied to all rendered pages."
+		"Reworked the footer cache-busting follow-up from a page-specific compliance readiness key to a shared generated GOV.UK page chrome cache key applied to all rendered pages.",
+		"Added ISMS scope, risk assessment, risk treatment plan and Statement of Applicability to the evidence still needed before a claim."
 	],
 	"validationPlanned": [
 		"Focused compliance assurance boundary test",
@@ -310,6 +311,21 @@
 			"command": "npm test",
 			"status": "passed",
 			"summary": "316 tests, 316 pass, 0 fail after the shared chrome cache-key changes."
+		},
+		{
+			"command": "npm run build:govuk-pages",
+			"status": "passed",
+			"summary": "Regenerated the compliance readiness page after adding the ISMS scope, risk assessment, risk treatment plan and Statement of Applicability evidence item."
+		},
+		{
+			"command": "node --import ./tests/helpers/generated-govuk-page-source.mjs --test tests/compliance-readiness-page-route-state.test.js tests/compliance-assurance-boundary.test.js",
+			"status": "passed",
+			"summary": "10 focused tests passed for the compliance readiness page and compliance evidence pack."
+		},
+		{
+			"command": "npm run validate",
+			"status": "passed",
+			"summary": "Repository validation passed after adding the ISMS scope, risk assessment, risk treatment plan and Statement of Applicability evidence item."
 		}
 	],
 	"residualRisks": [
