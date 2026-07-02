@@ -69,7 +69,7 @@ includes(participantsPageSource, "<tbody id=\"sessions-tbody\" class=\"govuk-tab
 excludes(participantsPageSource, "role=\"table\"", "participants page");
 excludes(participantsPageSource, "role=\"columnheader\"", "participants page");
 
-includes(participantConsentPageSource, "href=\"/css/govuk/govuk-tables.css\"", "participant consent page");
+excludes(participantConsentPageSource, "href=\"/css/govuk/govuk-tables.css\"", "participant consent page");
 includes(participantConsentPageSource, "class=\"govuk-table participant-consent-table\"", "participant consent page");
 includes(participantConsentPageSource, "<tbody id=\"participant-consent-tbody\" class=\"govuk-table__body\">", "participant consent page");
 includes(participantConsentPageSource, "class=\"govuk-summary-list participant-consent-summary\"", "participant consent page");

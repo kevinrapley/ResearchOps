@@ -48,7 +48,7 @@ const breadcrumbPages = [
 	{
 		label: "Participant Consent route",
 		path: "public/pages/study/participant-consent/index.html",
-		requiredIds: ["breadcrumb-project", "breadcrumb-study", "back-to-study"],
+		requiredIds: ["breadcrumb-project", "breadcrumb-study"],
 		currentText: "Participant consent"
 	},
 	{
@@ -157,5 +157,5 @@ includes(consentFormsPage, "id=\"back-to-study\"", "Consent Forms route");
 includesNormalised(consentFormsPage, "Back to Study", "Consent Forms route");
 
 const participantConsentPage = fs.readFileSync("public/pages/study/participant-consent/index.html", "utf8");
-includes(participantConsentPage, "id=\"back-to-study\"", "Participant Consent route");
-includesNormalised(participantConsentPage, "Back to Study", "Participant Consent route");
+excludes(participantConsentPage, "id=\"back-to-study\"", "Participant Consent route");
+excludes(participantConsentPage, "Back to Study", "Participant Consent route");

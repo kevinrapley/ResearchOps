@@ -4,7 +4,7 @@
   "traceRequired": true,
   "taskSummary": "Move Study session and participant consent routes onto GOV.UK/Nunjucks layouts with D1-backed data access and browser-comment refinements.",
   "implementationHighlights": [
-    "Restored the participant consent Back to Study action and GOV.UK table stylesheet to satisfy the GOV.UK breadcrumb/back-link and table route-state contracts.",
+    "Removed the participant consent Back to Study action and updated route-state contracts so it does not return.",
     "Addressed Codex review comments for session API credentials, D1-empty Airtable consent fallback and legacy sid no longer being treated as a session-note id.",
     "Updated D1 migration ordering documentation so the next main migration prefix is 0024."
   ],

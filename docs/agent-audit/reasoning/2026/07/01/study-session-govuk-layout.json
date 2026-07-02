@@ -82,7 +82,7 @@
     "Adjusted study session GOV.UK summary-list rows so labels and values use the full datalist width.",
     "Follow-up review fixes added authenticated API fetches, routed session note saves through the configured API origin, removed legacy sid as a session-note id fallback, and fell back to Airtable when the D1 participant consent cache is empty.",
     "Updated the D1 migration ordering policy to identify 0024 as the next main migration prefix after 0023_session_consent_and_notes.sql.",
-    "Restored the participant consent page contract expected by the wider GOV.UK route-state suite: GOV.UK table stylesheet plus the Back to Study action."
+    "Updated the participant consent page contract so it excludes the Back to Study action and does not load the extra GOV.UK table stylesheet."
   ],
   "validation": [
     {
