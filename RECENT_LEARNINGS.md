@@ -4,7 +4,7 @@ This file records repeatable repository-specific lessons for ResearchOps agents 
 
 ## 2026-07-02 — Do not invent Cloudflare resource IDs for hardening changes
 
-Context: PR #460 tightened the passwordless preview Worker configuration by separating preview D1 from production, but also replaced the checked-in `SESSION_KV` namespace ID with an unprovisioned value. CI reached `wrangler deploy` and Cloudflare rejected the Worker version because the configured KV namespace did not exist.
+Context: PR #460 tightened the passwordless preview Worker configuration by attempting to separate preview storage from production, but replaced the checked-in `SESSION_KV` namespace ID and D1 database ID with unprovisioned values. CI reached `wrangler deploy` and Cloudflare rejected the Worker version because the configured KV and D1 resources did not exist.
 
 Learning: Cloudflare resource IDs in Wrangler files are live deployment contracts, not placeholders. Security hardening can require resource separation, but the repository must either reference a provisioned resource or patch configuration from a verified secret before deployment.
 

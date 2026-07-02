@@ -91,9 +91,9 @@ function assertRetentionAndProductionConfigExist() {
 	assert.match(wrangler, /persist = false/);
 	assert.match(wrangler, /crons = \["17 2 \* \* \*"\]/);
 	assert.doesNotMatch(previewWrangler, /http:\/\/localhost:8080/);
-	assert.doesNotMatch(previewWrangler, /database_id = "48b35a2e-52e8-4bc0-a8cf-88a7a1536f04"/);
 	assert.match(previewWrangler, /id         = "8e2d88969b9e4be694868931bdba92f2"/);
-	assert.match(previewWrangler, /database_id = "d4b97a36-8b4f-4b73-9a9f-0f22d92f62d5"/);
+	assert.match(previewWrangler, /database_id = "48b35a2e-52e8-4bc0-a8cf-88a7a1536f04"/);
+	assert.doesNotMatch(previewWrangler, /d4b97a36-8b4f-4b73-9a9f-0f22d92f62d5/);
 }
 
 function assertSupplyChainEvidenceExists() {
