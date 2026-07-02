@@ -71,7 +71,9 @@
 		"Security workflow now runs on relevant PR changes with Node 22 and package engine metadata is aligned.",
 		"PR review follow-up tightens an existing route_api_agent_pages_deploy_post row by updating auth_route_permissions after the seed insert.",
 		"CI follow-up restores the passwordless preview KV and D1 bindings to provisioned resources after Cloudflare rejected unprovisioned resource IDs.",
-		"Mural OAuth state signing now prefers the dedicated MURAL_OAUTH_STATE_SECRET, the Worker config marks it required and deployment workflows pass it to production, preview and passwordless preview Workers."
+		"Mural OAuth state signing now prefers the dedicated MURAL_OAUTH_STATE_SECRET, the Worker config marks it required and deployment workflows pass it to production, preview and passwordless preview Workers.",
+		"Codex review follow-up passes Worker authContext through the Mural journal sync safe-tag wrapper, injects the authenticated user id into the cloned request body and returns not_authenticated when no authenticated user reaches the wrapper.",
+		"Codex review follow-up runs 0025_security_review_route_permissions.sql during production, preview and passwordless preview deployments so existing D1 route rows are tightened."
 	],
 	"validationPlanned": [
 		"Focused security route-state tests",
@@ -126,11 +128,47 @@
 			"command": "GitHub and Cloudflare secret-name verification",
 			"status": "passed",
 			"summary": "MURAL_OAUTH_STATE_SECRET and RESEARCHOPS_AUTH_SECRET are present in GitHub repository secrets and both repo-backed Cloudflare Workers: rops-api and rops-api-passwordless-preview. Secret values were not printed."
+		},
+		{
+			"command": "node --import ./tests/helpers/generated-govuk-page-source.mjs --test tests/mural-journal-sync-safe-tags-runtime.test.js tests/mural-journal-sync-route-state.test.js tests/security-hardening-controls-route-state.test.js tests/mural-service-split-route-state.test.js",
+			"status": "passed",
+			"summary": "Focused tests passed for Mural journal sync auth-context propagation, safe-tag wrapper uid injection and deployment workflow execution of the security route-permission migration."
+		},
+		{
+			"command": "npm run format:check",
+			"status": "passed",
+			"summary": "Follow-up formatting check passed after Codex review fixes."
+		},
+		{
+			"command": "npm run lint",
+			"status": "passed",
+			"notes": "Exited 0 with existing warning-only lint debt."
+		},
+		{
+			"command": "npm test",
+			"status": "passed",
+			"summary": "305 tests, 305 pass, 0 fail after rerunning sequentially."
+		},
+		{
+			"command": "node --import ./tests/helpers/generated-govuk-page-source.mjs --test tests/deploy-asset-paths.test.js",
+			"status": "passed",
+			"summary": "Reran after a full-suite attempt overlapped with generated CSS work; the isolated asset-path test passed."
+		},
+		{
+			"command": "npm run trace:coverage",
+			"status": "passed",
+			"summary": "Trace coverage confirmed for fix/security-hardening-main."
+		},
+		{
+			"command": "npm run validate",
+			"status": "passed",
+			"summary": "Repository validation passed after the Codex review fixes."
 		}
 	],
 	"residualRisks": [
 		"Passwordless preview storage remains on the provisioned KV and D1 bindings until separate preview resources are created and verified in Cloudflare.",
 		"Operators should review the first production retention run after deployment.",
-		"Mural OAuth state now uses MURAL_OAUTH_STATE_SECRET when configured and keeps RESEARCHOPS_AUTH_SECRET as a compatibility fallback."
+		"Mural OAuth state now uses MURAL_OAUTH_STATE_SECRET when configured and keeps RESEARCHOPS_AUTH_SECRET as a compatibility fallback.",
+		"The deployment migration fix updates future deployments; operators should confirm the next deployment log shows 0025_security_review_route_permissions.sql applied successfully."
 	]
 }

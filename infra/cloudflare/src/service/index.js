@@ -121,7 +121,7 @@ export class ResearchOpsService {
 		this.corsHeaders = (origin) => corsHeaders(this.env, origin);
 		this.json = (body, status = 200, headers = {}) => jsonHelper(body, status, headers);
 		this.mural = new MuralServicePart(this);
-		this.mural.muralJournalSync = (req, origin) => MuralJournalSync.muralJournalSync(this, req, origin);
+		this.mural.muralJournalSync = (req, origin, authContext) => MuralJournalSync.muralJournalSync(this, req, origin, authContext);
 
 		/* Impact Tracking */
 		this.listImpact = ImpactService.listImpact(this);
@@ -160,7 +160,7 @@ export class ResearchOpsService {
 	getJournalEntry = (origin, entryId) => Journals.getJournalEntry(this, origin, entryId);
 	updateJournalEntry = (req, origin, entryId) => Journals.updateJournalEntry(this, req, origin, entryId);
 	deleteJournalEntry = (origin, entryId) => Journals.deleteJournalEntry(this, origin, entryId);
-	muralJournalSync = (req, origin) => MuralJournalSync.muralJournalSync(this, req, origin);
+	muralJournalSync = (req, origin, authContext) => MuralJournalSync.muralJournalSync(this, req, origin, authContext);
 
 	/* ─────────────── Excerpts ─────────────── */
 	listExcerpts = (origin, url) => Excerpts.listExcerpts(this, origin, url);

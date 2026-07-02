@@ -137,12 +137,18 @@ includes(safeTagsSource, "function appendAirtableMapping", "safe tags");
 includes(safeTagsSource, "AIRTABLE_TABLE_MURAL_JOURNAL_SYNC", "safe tags");
 includes(safeTagsSource, "function persistMappings", "safe tags");
 includes(safeTagsSource, "function annotateWidgetsWithMappings", "safe tags");
+includes(safeTagsSource, "function authenticatedUid(authContext)", "safe tags");
+includes(safeTagsSource, "function requestWithAuthenticatedUid(request, body, uid)", "safe tags");
+includes(safeTagsSource, "export async function muralJournalSync(svc, request, origin, authContext)", "safe tags");
+includes(safeTagsSource, "return svc.json({ ok: false, error: \"not_authenticated\" }, 401, svc.corsHeaders(origin));", "safe tags");
+includes(safeTagsSource, "BaseMuralJournalSync.muralJournalSync(svc, authenticatedRequest, origin)", "safe tags");
 includes(safeTagsSource, "delete next.title;", "safe tags");
 includes(safeTagsSource, "mappings", "safe tags");
 
 includes(indexSource, "./mural-journal-sync-safe-tags.js", "service index");
 includes(indexSource, "MuralJournalSync", "service index");
-includes(indexSource, "this.mural.muralJournalSync =", "service index");
+includes(indexSource, "this.mural.muralJournalSync = (req, origin, authContext)", "service index");
+includes(indexSource, "MuralJournalSync.muralJournalSync(this, req, origin, authContext)", "service index");
 
 includes(pageSource, "class=\"journal-entries-header\"", "page");
 includes(pageSource, "class=\"mural-sync-status\"", "page");

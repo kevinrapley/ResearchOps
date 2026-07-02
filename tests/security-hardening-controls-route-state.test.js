@@ -99,8 +99,12 @@ function assertRetentionAndProductionConfigExist() {
 	assert.doesNotMatch(previewWrangler, /d4b97a36-8b4f-4b73-9a9f-0f22d92f62d5/);
 	assert.match(deployWorkerWorkflow, /MURAL_OAUTH_STATE_SECRET: \$\{\{ secrets\.MURAL_OAUTH_STATE_SECRET \}\}/);
 	assert.match(deployWorkerWorkflow, /MURAL_OAUTH_STATE_SECRET\n/);
+	assert.match(deployWorkerWorkflow, /SECURITY_REVIEW_ROUTE_PERMISSIONS_MIGRATION: "infra\/cloudflare\/migrations\/0025_security_review_route_permissions\.sql"/);
+	assert.match(deployWorkerWorkflow, /--file "\$\{SECURITY_REVIEW_ROUTE_PERMISSIONS_MIGRATION\}"/);
 	assert.match(passwordlessPreviewWorkflow, /MURAL_OAUTH_STATE_SECRET: \$\{\{ secrets\.MURAL_OAUTH_STATE_SECRET \}\}/);
 	assert.match(passwordlessPreviewWorkflow, /"MURAL_OAUTH_STATE_SECRET"/);
+	assert.match(passwordlessPreviewWorkflow, /SECURITY_REVIEW_ROUTE_PERMISSIONS_MIGRATION: "infra\/cloudflare\/migrations\/0025_security_review_route_permissions\.sql"/);
+	assert.match(passwordlessPreviewWorkflow, /--file "\$\{SECURITY_REVIEW_ROUTE_PERMISSIONS_MIGRATION\}"/);
 }
 
 function assertSupplyChainEvidenceExists() {

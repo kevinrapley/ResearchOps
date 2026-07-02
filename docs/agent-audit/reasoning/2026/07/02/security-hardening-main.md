@@ -54,6 +54,8 @@ Skipped bundles: GOV.UK design system, OpenAI Platform, MCP Agent Tooling and Ai
 - Follow-up on PR review: Codex identified that the deploy route migration only inserted fresh rows and did not tighten an existing public `route_api_agent_pages_deploy_post` row. The migration now explicitly updates that route after the seed insert.
 - Follow-up on CI: the passwordless preview Worker deployment failed because the replacement KV namespace ID and D1 database ID were not present in Cloudflare. The preview config now uses the previously provisioned KV and D1 bindings.
 - Follow-up on secret separation: Mural OAuth state signing now prefers the dedicated `MURAL_OAUTH_STATE_SECRET`, the Worker config marks it required and deployment workflows pass it to production, preview and passwordless preview Workers.
+- Follow-up on Codex review: the Mural journal sync safe-tag wrapper now receives Worker `authContext`, injects the authenticated user ID into the cloned sync request and returns `not_authenticated` if no authenticated user reaches the wrapper.
+- Follow-up on Codex review: deployment workflows now execute `0025_security_review_route_permissions.sql` so the existing D1 `route_api_agent_pages_deploy_post` row is tightened during production, preview and passwordless preview deployments.
 
 ## Validation plan
 
@@ -74,9 +76,17 @@ Skipped bundles: GOV.UK design system, OpenAI Platform, MCP Agent Tooling and Ai
 - Follow-up `npm run format:check`, `npm run lint`, `npm run trace:coverage`, `npm test` and `npm run validate` passed after the Codex comment and preview deployment fixes.
 - Follow-up focused secret-separation tests passed for security hardening and Mural route-state contracts.
 - Live secret verification confirmed `MURAL_OAUTH_STATE_SECRET` and `RESEARCHOPS_AUTH_SECRET` are configured in GitHub repository secrets and both repo-backed Cloudflare Workers: `rops-api` and `rops-api-passwordless-preview`.
+- Follow-up focused tests passed for the Mural journal sync auth-context wrapper and deployment execution of the security route-permission migration.
+- Follow-up `npm run format:check` passed.
+- Follow-up `npm run lint` passed with existing warning-only lint debt.
+- Follow-up `npm test` passed: 305 tests, 305 pass, 0 fail.
+- Follow-up `npm run trace:coverage` passed.
+- Follow-up `npm run validate` passed.
+- During validation, one full-suite run failed while generated CSS work overlapped with another command. The affected `tests/deploy-asset-paths.test.js` passed when rerun sequentially, and the subsequent full `npm test` run passed.
 
 ## Residual risks
 
 - Passwordless preview storage remains on the provisioned KV and D1 bindings until separate preview resources are created and verified in Cloudflare.
 - Production retention is enabled in configuration; operators should review first scheduled run output and data counts after deployment.
 - Mural OAuth state now uses `MURAL_OAUTH_STATE_SECRET` when configured and keeps `RESEARCHOPS_AUTH_SECRET` as a compatibility fallback.
+- The deployment migration fix updates future deployments; operators should confirm the next deployment log shows `0025_security_review_route_permissions.sql` applied successfully.
