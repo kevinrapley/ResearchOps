@@ -66,7 +66,13 @@
 		"Added a GOV.UK footer link to the page without adding it to the main service navigation.",
 		"Added a formal internal readiness matrix mapped to SOC 2 Trust Services Criteria categories and ISO/IEC 27001:2022 Annex A controls.",
 		"Updated the GOV.UK render workflow to track the compliance-readiness data module.",
-		"Registered the compliance readiness page in the visual walkthrough registry after CI showed the route was discoverable but uncovered."
+		"Registered the compliance readiness page in the visual walkthrough registry after CI showed the route was discoverable but uncovered.",
+		"Addressed browser review comments by keeping the compliance readiness page authored in Nunjucks, rendered through GOV.UK Frontend macros and styled through the GOV.UK Sass build.",
+		"Switched the warning text to the official GOV.UK warning-text macro with HTML content so abbreviation markup renders inside the component.",
+		"Added a shared Nunjucks abbreviation filter for SOC, TSC, ISO/IEC, DPIA, ROPA, SLOs and RTO/RPO.",
+		"Replaced visible bullet lists in the SOC 2 TSC and ISO/IEC Annex A matrix columns with comma-separated reference spans.",
+		"Added small GOV.UK text utility classes to the control matrix and a minimal Sass hook for top-aligned matrix cells and non-wrapping control references.",
+		"Updated the generated GOV.UK page test helper so route-state tests render pages with the same shared abbreviation filter as the static renderer."
 	],
 	"validationPlanned": [
 		"Focused compliance assurance boundary test",
@@ -163,6 +169,41 @@
 			"command": "npm run validate",
 			"status": "passed",
 			"summary": "Repository validation passed after registering the compliance readiness visual walkthrough route."
+		},
+		{
+			"command": "npm run build",
+			"status": "passed",
+			"summary": "Regenerated GOV.UK Sass output and public/pages/compliance-readiness/index.html for browser-comment fixes."
+		},
+		{
+			"command": "node --import ./tests/helpers/generated-govuk-page-source.mjs --test tests/compliance-readiness-page-route-state.test.js tests/govuk-pages-render-workflow-state.test.js tests/visual-walkthrough-registry-coverage.test.js tests/govuk-generated-html-test-source-route-state.test.js",
+			"status": "passed",
+			"summary": "8 focused tests passed for the compliance readiness page, GOV.UK render workflow, visual walkthrough registry coverage and generated GOV.UK page helper coverage."
+		},
+		{
+			"command": "curl -I http://127.0.0.1:4173/pages/compliance-readiness/ plus generated HTML markup probe",
+			"status": "passed",
+			"summary": "Preview route returned HTTP 200; warning component rendered; requested abbreviation markup is present; 24 SOC 2 and ISO/IEC reference cells render without ul or li list markup."
+		},
+		{
+			"command": "npm run format:check",
+			"status": "passed",
+			"summary": "Browser-comment formatting check passed."
+		},
+		{
+			"command": "npm run lint",
+			"status": "passed",
+			"notes": "Exited 0 with existing warning-only lint debt."
+		},
+		{
+			"command": "npm test",
+			"status": "passed",
+			"summary": "314 tests, 314 pass, 0 fail after browser-comment fixes."
+		},
+		{
+			"command": "npm run validate",
+			"status": "passed",
+			"summary": "Repository validation passed after browser-comment fixes."
 		}
 	],
 	"residualRisks": [

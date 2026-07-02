@@ -42,6 +42,51 @@ function govukAttributes(attributes = {}) {
 	return new nunjucks.runtime.SafeString(html);
 }
 
+const complianceAbbreviations = [
+	{
+		pattern: /\bISO\/IEC\b/g,
+		markup:
+			'<abbr title="International Organization for Standardization / International Electrotechnical Commission">ISO/IEC</abbr>',
+	},
+	{
+		pattern: /\bSOC\b/g,
+		markup: '<abbr title="System and Organization Controls">SOC</abbr>',
+	},
+	{
+		pattern: /\bTSC\b/g,
+		markup: '<abbr title="Trust Services Criteria">TSC</abbr>',
+	},
+	{
+		pattern: /\bDPIA\b/g,
+		markup: '<abbr title="Data Protection Impact Assessment">DPIA</abbr>',
+	},
+	{
+		pattern: /\bROPA\b/g,
+		markup: '<abbr title="Record of Processing Activities">ROPA</abbr>',
+	},
+	{
+		pattern: /\bSLOs\b/g,
+		markup: '<abbr title="Service level objectives">SLOs</abbr>',
+	},
+	{
+		pattern: /\bRTO\/RPO\b/g,
+		markup: '<abbr title="Recovery Time Objective / Recovery Point Objective">RTO/RPO</abbr>',
+	},
+];
+
+export function complianceAbbreviationMarkup(value) {
+	let html = String(value)
+		.replaceAll('&', '&amp;')
+		.replaceAll('<', '&lt;')
+		.replaceAll('>', '&gt;');
+
+	for (const abbreviation of complianceAbbreviations) {
+		html = html.replace(abbreviation.pattern, abbreviation.markup);
+	}
+
+	return new nunjucks.runtime.SafeString(html);
+}
+
 async function formatRenderedHtml(html) {
 	return prettier.format(html, {
 		parser: 'html',
@@ -53,6 +98,7 @@ async function formatRenderedHtml(html) {
 }
 
 env.addFilter('govukAttributes', govukAttributes);
+env.addFilter('complianceAbbreviations', complianceAbbreviationMarkup);
 env.addGlobal('govukAttributes', govukAttributes);
 
 export const outcomesScriptVersion = '20260603-form-interactions';

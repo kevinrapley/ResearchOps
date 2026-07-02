@@ -30,6 +30,9 @@ test('compliance readiness source defines scope boundary and non-claim wording',
 	assert.match(template, /Compliance scope and system boundary/);
 	assert.match(template, /Formal control matrix/);
 	assert.match(template, /govukWarningText/);
+	assert.match(template, /complianceAbbreviations/);
+	assert.match(template, /referenceList/);
+	assert.match(template, /govuk-!-font-size-16/);
 });
 
 test('control matrix maps readiness controls to SOC 2 and ISO Annex A', () => {
@@ -81,6 +84,11 @@ test('rendered compliance readiness page includes the expected public content', 
 	assert.match(page, /SOC 2 and ISO 27001 readiness/);
 	assert.match(page, /data-compliance-readiness-page/);
 	assert.match(page, /data-compliance-control-matrix/);
+	assert.match(page, /govuk-warning-text/);
+	assert.match(page, /govuk-warning-text__icon/);
+	assert.match(page, /govuk-visually-hidden">Warning/);
+	assert.match(page, /compliance-readiness__control-matrix/);
+	assert.match(page, /govuk-!-font-size-16/);
 	assert.match(page, /Compliance scope and system boundary/);
 	assert.match(page, /Formal control matrix/);
 	assert.match(page, /Governance, scope and accountability/);
@@ -88,7 +96,32 @@ test('rendered compliance readiness page includes the expected public content', 
 	assert.match(page, /CC6/);
 	assert.match(page, /A\.5\.34/);
 	assert.match(page, /A\.8\.25/);
+	assert.match(page, /<abbr title="System and Organization Controls">SOC<\/abbr>/);
+	assert.match(page, /<abbr title="Trust Services Criteria">TSC<\/abbr>/);
+	assert.match(
+		page,
+		/<abbr title="International Organization for Standardization \/ International Electrotechnical Commission">ISO\/IEC<\/abbr>/
+	);
+	assert.match(page, /<abbr title="Data Protection Impact Assessment">DPIA<\/abbr>/);
+	assert.match(page, /<abbr title="Record of Processing Activities">ROPA<\/abbr>/);
+	assert.match(page, /<abbr title="Service level objectives">SLOs<\/abbr>/);
+	assert.match(page, /<abbr title="Recovery Time Objective \/ Recovery Point Objective">RTO\/RPO<\/abbr>/);
 	assert.doesNotMatch(page, /\bis SOC 2 compliant\b/i);
 	assert.doesNotMatch(page, /\bis ISO\/IEC 27001 certified\b/i);
 });
 
+test('rendered compliance readiness matrix uses non-bulleted reference columns', () => {
+	const referenceCells = [
+		...page.matchAll(
+			/<td class="govuk-table__cell govuk-!-font-size-16" data-control-references="(?:soc2|iso27001)">([\s\S]*?)<\/td>/g
+		),
+	];
+
+	assert.equal(referenceCells.length, controlMatrix.length * 2);
+
+	for (const [, html] of referenceCells) {
+		assert.match(html, /compliance-readiness__reference/);
+		assert.doesNotMatch(html, /<ul\b/);
+		assert.doesNotMatch(html, /<li\b/);
+	}
+});

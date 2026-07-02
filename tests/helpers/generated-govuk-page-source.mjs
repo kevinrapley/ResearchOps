@@ -4,6 +4,7 @@ import { fileURLToPath } from 'node:url';
 import nunjucks from 'nunjucks';
 import {
 	cacheBustOutcomesPageScripts,
+	complianceAbbreviationMarkup,
 	govukPages,
 } from '../../scripts/govuk/render-govuk-pages.mjs';
 
@@ -47,6 +48,7 @@ function govukAttributes(attributes = {}) {
 }
 
 env.addFilter('govukAttributes', govukAttributes);
+env.addFilter('complianceAbbreviations', complianceAbbreviationMarkup);
 env.addGlobal('govukAttributes', govukAttributes);
 
 function fileSystemPath(pathLike) {

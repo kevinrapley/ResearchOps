@@ -14,3 +14,14 @@
 	background-repeat: no-repeat;
 	background-size: 20px 20px;
 }
+
+.compliance-readiness__control-matrix {
+	.govuk-table__header,
+	.govuk-table__cell {
+		vertical-align: top;
+	}
+}
+
+.compliance-readiness__reference {
+	white-space: nowrap;
+}

@@ -21,6 +21,7 @@ includes(
 includes(packageJson.scripts.test, '--test', 'package test script');
 
 includes(helperSource, 'cacheBustOutcomesPageScripts,', 'generated GOV.UK page test helper');
+includes(helperSource, 'complianceAbbreviationMarkup,', 'generated GOV.UK page test helper');
 includes(helperSource, 'govukPages,', 'generated GOV.UK page test helper');
 includes(helperSource, "from '../../scripts/govuk/render-govuk-pages.mjs';", 'generated GOV.UK page test helper');
 includes(helperSource, 'const originalReadFileSync = fs.readFileSync.bind(fs);', 'generated GOV.UK page test helper');
@@ -29,6 +30,11 @@ includes(helperSource, 'govukPages.map((page) => [normalize(resolve(root, page.o
 includes(helperSource, "new nunjucks.FileSystemLoader(resolve(root, 'src/govuk/templates'))", 'generated GOV.UK page test helper');
 includes(helperSource, "new nunjucks.FileSystemLoader(resolve(root, 'node_modules/govuk-frontend/dist'))", 'generated GOV.UK page test helper');
 includes(helperSource, "env.addFilter('govukAttributes', govukAttributes);", 'generated GOV.UK page test helper');
+includes(
+	helperSource,
+	"env.addFilter('complianceAbbreviations', complianceAbbreviationMarkup);",
+	'generated GOV.UK page test helper',
+);
 includes(helperSource, "env.addGlobal('govukAttributes', govukAttributes);", 'generated GOV.UK page test helper');
 includes(helperSource, 'return cacheBustOutcomesPageScripts(env.render(page.template, page.context), page);', 'generated GOV.UK page test helper');
 includes(helperSource, 'fs.readFileSync = function readFileSyncWithGeneratedGovukPages(pathLike, options) {', 'generated GOV.UK page test helper');
@@ -37,6 +43,7 @@ includes(helperSource, 'return originalReadFileSync(pathLike, options);', 'gener
 
 includes(rendererSource, 'export const govukPages = [', 'GOV.UK page renderer');
 includes(rendererSource, 'export function cacheBustOutcomesPageScripts', 'GOV.UK page renderer');
+includes(rendererSource, 'export function complianceAbbreviationMarkup', 'GOV.UK page renderer');
 includes(rendererSource, "template: 'pages/account-register.njk'", 'GOV.UK page renderer');
 includes(rendererSource, "output: 'public/pages/account/register/index.html'", 'GOV.UK page renderer');
 includes(rendererSource, "template: 'pages/study-session.njk'", 'GOV.UK page renderer');

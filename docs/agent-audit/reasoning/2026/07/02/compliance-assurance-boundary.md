@@ -72,6 +72,10 @@ Skipped bundles: none. The follow-up page addition selected the GOV.UK Design Sy
 - `.github/workflows/render-govuk-pages.yml`
 - `tests/govuk-pages-render-workflow-state.test.js`
 - `visual-walkthrough.config.mjs`
+- `public/assets/govuk/govuk-frontend.css`
+- `tests/govuk-generated-html-test-source-route-state.test.js`
+- `tests/helpers/generated-govuk-page-source.mjs`
+- `src/styles/govuk.scss`
 
 ## Implementation decisions
 
@@ -84,6 +88,12 @@ Skipped bundles: none. The follow-up page addition selected the GOV.UK Design Sy
 - Added a formal internal readiness control matrix mapped to SOC 2 Trust Services Criteria categories and ISO/IEC 27001:2022 Annex A controls.
 - Updated the GOV.UK render workflow so changes to the compliance-readiness data module trigger static page rendering.
 - Registered the footer-linked compliance readiness page in the visual walkthrough registry after CI showed the discoverable static route was neither covered nor explicitly excluded.
+- Addressed browser review comments by keeping the compliance readiness page authored in Nunjucks, rendered through GOV.UK Frontend macros and styled through the GOV.UK Sass build.
+- Switched the warning text to the official GOV.UK warning-text macro with HTML content so abbreviation markup renders inside the component.
+- Added a shared Nunjucks abbreviation filter for SOC, TSC, ISO/IEC, DPIA, ROPA, SLOs and RTO/RPO.
+- Replaced visible bullet lists in the SOC 2 TSC and ISO/IEC Annex A matrix columns with comma-separated reference spans.
+- Added small GOV.UK text utility classes to the control matrix and a minimal Sass hook for top-aligned matrix cells and non-wrapping control references.
+- Updated the generated GOV.UK page test helper so route-state tests render pages with the same shared abbreviation filter as the static renderer.
 
 ## Validation planned
 
@@ -113,6 +123,13 @@ Skipped bundles: none. The follow-up page addition selected the GOV.UK Design Sy
 - CI fix `npm run trace:coverage` passed.
 - CI fix `npm test` passed: 313 tests, 313 pass, 0 fail.
 - CI fix `npm run validate` passed.
+- Browser-comment fix `npm run build` passed and regenerated GOV.UK Sass output plus `public/pages/compliance-readiness/index.html`.
+- Browser-comment fix focused route-state tests passed: 8 tests, 8 pass across compliance readiness, GOV.UK render workflow, visual walkthrough registry coverage and generated GOV.UK page helper coverage.
+- Browser-comment fix markup probe confirmed the preview route returns HTTP 200, the GOV.UK warning component renders, requested abbreviation markup is present, 24 SOC 2 and ISO/IEC reference cells render, and none of those cells contain `ul` or `li` list markup.
+- Browser-comment fix `npm run format:check` passed.
+- Browser-comment fix `npm run lint` passed with existing warning-only lint debt.
+- Browser-comment fix `npm test` passed: 314 tests, 314 pass, 0 fail.
+- Browser-comment fix `npm run validate` passed.
 
 ## Residual risks
 
