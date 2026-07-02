@@ -65,7 +65,8 @@
 		"Added a GOV.UK-rendered compliance readiness page at /pages/compliance-readiness/.",
 		"Added a GOV.UK footer link to the page without adding it to the main service navigation.",
 		"Added a formal internal readiness matrix mapped to SOC 2 Trust Services Criteria categories and ISO/IEC 27001:2022 Annex A controls.",
-		"Updated the GOV.UK render workflow to track the compliance-readiness data module."
+		"Updated the GOV.UK render workflow to track the compliance-readiness data module.",
+		"Registered the compliance readiness page in the visual walkthrough registry after CI showed the route was discoverable but uncovered."
 	],
 	"validationPlanned": [
 		"Focused compliance assurance boundary test",
@@ -132,6 +133,36 @@
 			"command": "npm run validate",
 			"status": "passed",
 			"summary": "Repository validation passed after adding the GOV.UK compliance readiness page."
+		},
+		{
+			"command": "npm test -- tests/visual-walkthrough-registry-coverage.test.js",
+			"status": "passed",
+			"summary": "CI failure reproduced locally and fixed by registering /pages/compliance-readiness/index.html in visual-walkthrough.config.mjs."
+		},
+		{
+			"command": "npm run format:check",
+			"status": "passed",
+			"summary": "Post-fix formatting check passed."
+		},
+		{
+			"command": "npm run lint",
+			"status": "passed",
+			"notes": "Exited 0 with existing warning-only lint debt."
+		},
+		{
+			"command": "npm run trace:coverage",
+			"status": "passed",
+			"summary": "Trace coverage confirmed after the visual walkthrough registry fix."
+		},
+		{
+			"command": "npm test",
+			"status": "passed",
+			"summary": "313 tests, 313 pass, 0 fail after registering the compliance readiness visual walkthrough route."
+		},
+		{
+			"command": "npm run validate",
+			"status": "passed",
+			"summary": "Repository validation passed after registering the compliance readiness visual walkthrough route."
 		}
 	],
 	"residualRisks": [
