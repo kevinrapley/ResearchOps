@@ -32,8 +32,8 @@ includes(pageSource, "rel=\"modulepreload\" href=\"/components/session-controlle
 includes(pageSource, "rel=\"modulepreload\" href=\"/components/session-consent-controller.js\"", "study session page");
 includes(pageSource, "src=\"/components/session-controller.js\"", "study session page");
 includes(pageSource, "src=\"/components/session-consent-controller.js\"", "study session page");
-includes(pageSource, "src=\"/components/layout.js\" defer", "study session page");
-includes(pageSource, "src=\"/js/govuk-frontend-init.js\" defer", "study session page");
+includes(pageSource, "src=\"/components/layout.js", "study session page");
+includes(pageSource, "src=\"/js/govuk-frontend-init.js", "study session page");
 includes(pageSource, "data-study-subpage-template=\"session\"", "study session page");
 includes(pageSource, "class=\"govuk-width-container study-session-page\"", "study session page");
 includes(pageSource, "class=\"govuk-breadcrumbs\"", "study session page");
@@ -155,8 +155,8 @@ includes(studyPageCssSource, "/* transparency begins in the cascade */", "study 
 
 includes(legacySessionsPageSource, "rel=\"modulepreload\" href=\"/js/sessions-page.js\"", "legacy sessions page");
 includes(legacySessionsPageSource, "src=\"/js/sessions-page.js\"", "legacy sessions page");
-includes(legacySessionsPageSource, "src=\"/components/layout.js\" defer", "legacy sessions page");
-includes(legacySessionsPageSource, "src=\"/js/govuk-frontend-init.js\" defer", "legacy sessions page");
+includes(legacySessionsPageSource, "src=\"/components/layout.js", "legacy sessions page");
+includes(legacySessionsPageSource, "src=\"/js/govuk-frontend-init.js", "legacy sessions page");
 includes(legacySessionsPageSource, "href=\"/assets/govuk/govuk-frontend.css\"", "legacy sessions page");
 includes(legacySessionsPageSource, "href=\"/css/sessions.css\"", "legacy sessions page");
 includes(

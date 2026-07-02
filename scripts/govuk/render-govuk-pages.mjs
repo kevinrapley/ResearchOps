@@ -9,6 +9,7 @@ import { repositoryPageContext, repositoryStaticPages } from '../../src/govuk/da
 import { sourcebookIndex, sourcebookPillarPages } from '../../src/govuk/data/sourcebook.mjs';
 
 const root = resolve(process.cwd());
+export const generatedGovukChromeCacheKey = 'govuk-page-chrome-20260702-1';
 const env = new nunjucks.Environment(
 	[
 		new nunjucks.FileSystemLoader(resolve(root, 'src/govuk/templates')),
@@ -295,7 +296,6 @@ export const govukPages = [
 			pageTitle: 'Your ResearchOps account - ResearchOps Demo Suite',
 			serviceName: 'ResearchOps Demo Suite',
 			activeNavigation: '',
-			layoutCacheKey: 'header-account-links-20260623-1',
 			navigation: accountNavigation,
 		},
 	},
@@ -603,7 +603,12 @@ export const govukPages = [
 
 export async function renderGovukPage(page) {
 	const outputPath = resolve(root, page.output);
-	const rawHtml = cacheBustOutcomesPageScripts(env.render(page.template, page.context), page);
+	const context = {
+		...page.context,
+		layoutCacheKey: generatedGovukChromeCacheKey,
+		footerCacheKey: generatedGovukChromeCacheKey,
+	};
+	const rawHtml = cacheBustOutcomesPageScripts(env.render(page.template, context), page);
 	const html = await formatRenderedHtml(rawHtml);
 	await mkdir(dirname(outputPath), { recursive: true });
 	await writeFile(outputPath, html.endsWith('\n') ? html : `${html}\n`, 'utf8');

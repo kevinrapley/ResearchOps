@@ -84,11 +84,14 @@ function assertHeaderPartialBypassesStaleIncludeCache() {
 	includes(layoutScript, 'return "no-store";', 'shared include loader');
 	includes(layoutScript, 'new CustomEvent("x-include:loaded", { bubbles: true', 'shared include loader');
 	includes(layoutScript, 'new CustomEvent("x-include:error", { bubbles: true', 'shared include loader');
-	includes(accountPage, '/components/layout.js?v=header-account-links-20260623-1', 'account page');
-	includes(accountPage, '/js/govuk-frontend-init.js?v=header-account-links-20260623-1', 'account page');
+	includes(accountPage, '/components/layout.js?v=govuk-page-chrome-20260702-1', 'account page');
+	includes(accountPage, '/js/govuk-frontend-init.js?v=govuk-page-chrome-20260702-1', 'account page');
+	includes(accountPage, '<x-include src="/partials/footer.html?v=govuk-page-chrome-20260702-1"></x-include>', 'account page');
 	includes(accountPage, '<x-include src="/partials/header.html"', 'account page');
 	includes(researchopsLayoutTemplate, '{% if layoutCacheKey %}?v={{ layoutCacheKey }}{% endif %}', 'ResearchOps layout template');
-	includes(govukPageRenderer, "layoutCacheKey: 'header-account-links-20260623-1'", 'GOV.UK page renderer');
+	includes(researchopsLayoutTemplate, '{% if footerCacheKey %}?v={{ footerCacheKey }}{% endif %}', 'ResearchOps layout template');
+	includes(govukPageRenderer, "generatedGovukChromeCacheKey = 'govuk-page-chrome-20260702-1'", 'GOV.UK page renderer');
+	includes(govukPageRenderer, 'footerCacheKey: generatedGovukChromeCacheKey', 'GOV.UK page renderer');
 	includes(servicePageNormaliser, 'function hasIncludeForPartial', 'service page normaliser');
 	includes(servicePageNormaliser, '(?:\\\\?[^"\']*)?', 'service page normaliser');
 }

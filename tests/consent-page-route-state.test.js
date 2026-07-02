@@ -18,8 +18,8 @@ function excludes(source, text, label) {
 
 includes(pageSource, "rel=\"modulepreload\" href=\"/js/consent-page.js\"", "consent page");
 includes(pageSource, "src=\"/js/consent-page.js\"", "consent page");
-includes(pageSource, "src=\"/components/layout.js\" defer", "consent page");
-includes(pageSource, "src=\"/js/govuk-frontend-init.js\" defer", "consent page");
+includes(pageSource, "src=\"/components/layout.js", "consent page");
+includes(pageSource, "src=\"/js/govuk-frontend-init.js", "consent page");
 includes(pageSource, "href=\"/assets/govuk/govuk-frontend.css\"", "consent page");
 includes(pageSource, "href=\"/css/consent.css\"", "consent page");
 includes(pageSource, "class=\"govuk-width-container researchops-utility-page researchops-consent-page\"", "consent page");

@@ -20,11 +20,15 @@ function excludes(source, text, label) {
 	assert.equal(source.includes(text), false, `Expected ${label} not to include: ${text}`);
 }
 
+function matches(source, pattern, label) {
+	assert.match(source, pattern, `Expected ${label} to match: ${pattern}`);
+}
+
 includes(renderGovukPagesSource, "template: 'pages/projects-journals.njk'", "GOV.UK page renderer");
 includes(renderGovukPagesSource, "output: 'public/pages/projects/journals/index.html'", "GOV.UK page renderer");
 
 includes(layoutSource, "<x-include src=\"/partials/header.html\"", "GOV.UK layout");
-includes(layoutSource, "<x-include src=\"/partials/footer.html\"></x-include>", "GOV.UK layout");
+matches(layoutSource, /<x-include src="\/partials\/footer\.html\{% if footerCacheKey %\}\?v=\{\{ footerCacheKey \}\}\{% endif %\}"><\/x-include>/, "GOV.UK layout");
 excludes(layoutSource, "fallbackHeaderHtml", "GOV.UK layout");
 excludes(layoutSource, "fallbackFooterHtml", "GOV.UK layout");
 
@@ -53,7 +57,7 @@ excludes(templateSource, "href=\"/css/tabs.css\"", "journals GOV.UK template");
 includes(pageSource, "class=\"govuk-template\"", "journals page");
 includes(pageSource, "href=\"/assets/govuk/govuk-frontend.css\"", "journals page");
 includes(pageSource, "<x-include src=\"/partials/header.html\"", "journals page");
-includes(pageSource, "<x-include src=\"/partials/footer.html\"", "journals page");
+matches(pageSource, /<x-include src="\/partials\/footer\.html(?:\?[^"]*)?"/, "journals page");
 includes(pageSource, "id=\"journal-error-summary\"", "journals page");
 includes(pageSource, "class=\"govuk-error-summary", "journals page");
 excludes(pageSource, "href=\"#content\"", "journals page");

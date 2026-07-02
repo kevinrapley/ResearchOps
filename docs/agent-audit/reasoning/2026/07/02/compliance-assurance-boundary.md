@@ -101,6 +101,7 @@ Skipped bundles: none. The follow-up page addition selected the GOV.UK Design Sy
 - Changed control-reference rendering so commas belong to the preceding reference span and do not render with a space before the comma.
 - Added GDPR abbreviation markup through the shared compliance abbreviation filter.
 - Changed header and footer includes to bypass stale browser cache so the footer support link to `/pages/compliance-readiness/` is visible after deployment updates.
+- Reworked the footer cache-busting follow-up from a page-specific compliance readiness key to a shared generated GOV.UK page chrome cache key applied to all rendered pages.
 
 ## Validation planned
 
@@ -150,6 +151,13 @@ Skipped bundles: none. The follow-up page addition selected the GOV.UK Design Sy
 - Footer and markup browser-comment `npm run format:check` passed.
 - Footer and markup browser-comment `npm run trace:coverage` passed.
 - Footer and markup browser-comment `npm test` passed: 316 tests, 316 pass, 0 fail.
+- Shared footer cache-key follow-up `npm run build:govuk-pages` passed and regenerated all GOV.UK-rendered pages with `govuk-page-chrome-20260702-1` on shared layout and footer includes.
+- Shared footer cache-key focused tests passed: 13 tests, 13 pass across compliance readiness, auth header links, GOV.UK frontend route-state coverage and footer include cache behaviour.
+- Shared footer cache-key live preview probe confirmed `/pages/compliance-readiness/` serves the cache-busted footer include and `/partials/footer.html?v=govuk-page-chrome-20260702-1` contains the `Compliance readiness` link.
+- Shared footer cache-key route-state follow-up updated affected generated-page tests to allow versioned shared layout, GOV.UK init and footer URLs while still requiring shared chrome.
+- Shared footer cache-key `npm run validate` passed after the generated-page chrome key was applied across all GOV.UK-rendered pages.
+- Shared footer cache-key `npm run format:check` passed.
+- Shared footer cache-key `npm test` passed: 316 tests, 316 pass, 0 fail.
 
 ## Residual risks
 

@@ -22,6 +22,7 @@ includes(packageJson.scripts.test, '--test', 'package test script');
 
 includes(helperSource, 'cacheBustOutcomesPageScripts,', 'generated GOV.UK page test helper');
 includes(helperSource, 'complianceAbbreviationMarkup,', 'generated GOV.UK page test helper');
+includes(helperSource, 'generatedGovukChromeCacheKey,', 'generated GOV.UK page test helper');
 includes(helperSource, 'govukPages,', 'generated GOV.UK page test helper');
 includes(helperSource, "from '../../scripts/govuk/render-govuk-pages.mjs';", 'generated GOV.UK page test helper');
 includes(helperSource, 'const originalReadFileSync = fs.readFileSync.bind(fs);', 'generated GOV.UK page test helper');
@@ -36,7 +37,9 @@ includes(
 	'generated GOV.UK page test helper',
 );
 includes(helperSource, "env.addGlobal('govukAttributes', govukAttributes);", 'generated GOV.UK page test helper');
-includes(helperSource, 'return cacheBustOutcomesPageScripts(env.render(page.template, page.context), page);', 'generated GOV.UK page test helper');
+includes(helperSource, 'layoutCacheKey: generatedGovukChromeCacheKey,', 'generated GOV.UK page test helper');
+includes(helperSource, 'footerCacheKey: generatedGovukChromeCacheKey,', 'generated GOV.UK page test helper');
+includes(helperSource, 'return cacheBustOutcomesPageScripts(env.render(page.template, context), page);', 'generated GOV.UK page test helper');
 includes(helperSource, 'fs.readFileSync = function readFileSyncWithGeneratedGovukPages(pathLike, options) {', 'generated GOV.UK page test helper');
 includes(helperSource, 'if (page) return encodedContent(renderPage(page), options);', 'generated GOV.UK page test helper');
 includes(helperSource, 'return originalReadFileSync(pathLike, options);', 'generated GOV.UK page test helper');

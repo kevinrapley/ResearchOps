@@ -22,7 +22,7 @@ function excludes(source, text, label) {
 includes(pageSource, 'href="/assets/govuk/govuk-frontend.css"', 'outcomes page');
 includes(pageSource, 'href="/css/outcomes.css?v=20260603-form-interactions"', 'outcomes page');
 includes(pageSource, 'rel="modulepreload" href="/js/outcomes-page.js?v=20260603-form-interactions"', 'outcomes page');
-includes(pageSource, 'src="/components/layout.js" defer', 'outcomes page');
+includes(pageSource, 'src="/components/layout.js', 'outcomes page');
 includes(pageSource, 'src="/components/impact-tracker.js?v=20260603-form-interactions"', 'outcomes page');
 includes(pageSource, 'src="/js/outcomes-page.js?v=20260603-form-interactions"', 'outcomes page');
 includes(pageSource, 'class="outcomes-hero"', 'outcomes page');

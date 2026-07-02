@@ -77,7 +77,8 @@
 		"Addressed follow-up browser review by scoping warning-icon alignment to the compliance readiness warning component.",
 		"Changed control-reference rendering so commas belong to the preceding reference span and do not render with a space before the comma.",
 		"Added GDPR abbreviation markup through the shared compliance abbreviation filter.",
-		"Changed header and footer includes to bypass stale browser cache so the footer support link to /pages/compliance-readiness/ is visible after deployment updates."
+		"Changed header and footer includes to bypass stale browser cache so the footer support link to /pages/compliance-readiness/ is visible after deployment updates.",
+		"Reworked the footer cache-busting follow-up from a page-specific compliance readiness key to a shared generated GOV.UK page chrome cache key applied to all rendered pages."
 	],
 	"validationPlanned": [
 		"Focused compliance assurance boundary test",
@@ -274,6 +275,41 @@
 			"command": "npm test",
 			"status": "passed",
 			"summary": "316 tests, 316 pass, 0 fail after footer and markup browser-comment fixes."
+		},
+		{
+			"command": "npm run build:govuk-pages",
+			"status": "passed",
+			"summary": "Regenerated all GOV.UK-rendered pages with govuk-page-chrome-20260702-1 on shared layout and footer includes."
+		},
+		{
+			"command": "node --import ./tests/helpers/generated-govuk-page-source.mjs --test tests/compliance-readiness-page-route-state.test.js tests/auth-header-links-route-state.test.js tests/govuk-frontend-service-pages-route-state.test.js tests/govuk-frontend-integration-route-state.test.js tests/layout-footer-include-race.test.js",
+			"status": "passed",
+			"summary": "13 focused tests passed for compliance readiness, auth header links, GOV.UK frontend route-state coverage and footer include cache behaviour."
+		},
+		{
+			"command": "curl http://127.0.0.1:4173/pages/compliance-readiness/ and curl http://127.0.0.1:4173/partials/footer.html?v=govuk-page-chrome-20260702-1",
+			"status": "passed",
+			"summary": "Live preview served the shared cache-busted footer include, and the cache-busted footer partial contained the Compliance readiness link."
+		},
+		{
+			"command": "affected generated-page route-state tests",
+			"status": "passed",
+			"summary": "Updated affected generated-page tests to allow versioned shared layout, GOV.UK init and footer URLs while still requiring shared chrome."
+		},
+		{
+			"command": "npm run validate",
+			"status": "passed",
+			"summary": "Repository validation passed after applying the generated-page chrome cache key across all GOV.UK-rendered pages."
+		},
+		{
+			"command": "npm run format:check",
+			"status": "passed",
+			"summary": "Formatting and generated CSS checks passed after the shared chrome cache-key changes."
+		},
+		{
+			"command": "npm test",
+			"status": "passed",
+			"summary": "316 tests, 316 pass, 0 fail after the shared chrome cache-key changes."
 		}
 	],
 	"residualRisks": [

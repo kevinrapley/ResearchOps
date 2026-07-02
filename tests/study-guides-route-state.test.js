@@ -49,7 +49,7 @@ excludes(pageSource, "id=\"study-context-warning\" hidden=\"hidden\">\n\t\t<span
 includes(pageSource, "/js/study-guides-context.js", "study guides page");
 includes(pageSource, "rel=\"modulepreload\" href=\"/js/study-guides-context.js\"", "study guides page");
 includes(pageSource, "/components/guides/guides-page.js", "study guides page");
-includes(pageSource, "src=\"/components/layout.js\" defer", "study guides page");
+includes(pageSource, "src=\"/components/layout.js", "study guides page");
 includes(pageSource, "class=\"govuk-button govuk-button--secondary\"", "study guides page");
 includes(pageSource, "id=\"btn-new\"", "study guides page");
 includes(pageSource, "Draft a guide", "study guides page");

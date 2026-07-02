@@ -85,6 +85,8 @@ test('rendered compliance readiness page includes the expected public content', 
 	assert.match(page, /SOC 2 and ISO 27001 readiness/);
 	assert.match(page, /<h1 class="govuk-heading-xl">\s*SOC 2 and ISO 27001 readiness\s*<\/h1>/);
 	assert.match(page, /data-compliance-readiness-page/);
+	assert.match(page, /\/components\/layout\.js\?v=govuk-page-chrome-20260702-1/);
+	assert.match(page, /<x-include src="\/partials\/footer\.html\?v=govuk-page-chrome-20260702-1"><\/x-include>/);
 	assert.match(page, /data-compliance-control-matrix/);
 	assert.match(page, /govuk-warning-text/);
 	assert.match(page, /compliance-readiness__warning/);

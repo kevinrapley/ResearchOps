@@ -5,6 +5,7 @@ import nunjucks from 'nunjucks';
 import {
 	cacheBustOutcomesPageScripts,
 	complianceAbbreviationMarkup,
+	generatedGovukChromeCacheKey,
 	govukPages,
 } from '../../scripts/govuk/render-govuk-pages.mjs';
 
@@ -57,7 +58,12 @@ function fileSystemPath(pathLike) {
 }
 
 function renderPage(page) {
-	return cacheBustOutcomesPageScripts(env.render(page.template, page.context), page);
+	const context = {
+		...page.context,
+		layoutCacheKey: generatedGovukChromeCacheKey,
+		footerCacheKey: generatedGovukChromeCacheKey,
+	};
+	return cacheBustOutcomesPageScripts(env.render(page.template, context), page);
 }
 
 function encodedContent(text, options) {
