@@ -4,6 +4,7 @@ import { normalize, resolve } from 'node:path';
 import test from 'node:test';
 
 import { govukPages } from '../scripts/govuk/render-govuk-pages.mjs';
+import { visualWalkthroughConfig } from '../visual-walkthrough.config.mjs';
 
 const sourcebook = JSON.parse(fs.readFileSync('sourcebook/sourcebook-index.json', 'utf8'));
 const clauseIdPattern = /^[A-Z]+(?:-[A-Z]+)* [0-9]+\.[0-9]+\.[0-9]+$/;
@@ -528,6 +529,25 @@ test('GOV.UK renderer exposes sourcebook routes for the index and every pillar',
 			outputs.has(normalize(resolve(`public/pages/sourcebook/${pillar.slug}/index.html`))),
 			true,
 			`${pillar.code} should have a generated GOV.UK page`
+		);
+	}
+});
+
+test('visual walkthrough registers the sourcebook index and every pillar page', () => {
+	const registeredRoutes = new Set(visualWalkthroughConfig.pages.map((page) => page.path));
+
+	assert.equal(
+		registeredRoutes.has('/pages/sourcebook/index.html'),
+		true,
+		'visual walkthrough should register the sourcebook index'
+	);
+
+	for (const pillar of sourcebook.pillars) {
+		const expectedRoute = `${pillar.route.replace(/\/$/, '')}/index.html`;
+		assert.equal(
+			registeredRoutes.has(expectedRoute),
+			true,
+			`visual walkthrough should register ${pillar.code}`
 		);
 	}
 });

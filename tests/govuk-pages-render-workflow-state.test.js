@@ -21,6 +21,8 @@ const requiredWorkflowSnippets = [
 	'workflow_dispatch: {}',
 	'contents: write',
 	'src/govuk/templates/**',
+	'src/govuk/data/sourcebook.mjs',
+	'sourcebook/sourcebook-index.json',
 	'scripts/govuk/render-govuk-pages.mjs',
 	'scripts/govuk/normalise-service-pages.mjs',
 	'package.json',

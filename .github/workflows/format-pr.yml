@@ -59,6 +59,7 @@ jobs:
             public/css/project-dashboard.css
             public/css/study-page.css
             public/css/outcomes.css
+            public/css/sourcebook.css
           )
 
           if git diff --quiet -- "${css_paths[@]}"; then
