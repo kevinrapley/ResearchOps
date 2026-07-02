@@ -46,6 +46,12 @@
 - Reduced seeded/test PII by replacing named people and Home Office email addresses with synthetic names and `example.test` addresses.
 - Added D1 migration `0025_security_review_route_permissions.sql` and updated migration ordering documentation.
 
+## Codex review follow-up
+
+- Thread: `PRRT_kwDOP3Td2M6N17F-` on `infra/cloudflare/src/worker.js`.
+- Classification: valid. The branch-preview Worker deployment rewrote `ALLOWED_ORIGINS` but did not enable `RESEARCHOPS_ALLOW_PAGES_PREVIEW_ORIGINS`, so preview POST/PATCH/DELETE requests from branch Pages origins could fail origin checks.
+- Disposition: added a thumbs-up reaction, set `RESEARCHOPS_ALLOW_PAGES_PREVIEW_ORIGINS = "false"` in production Worker config, rewrote it to `"true"` in the preview deployment workflow, and added route-state assertions for the preview deployment contract.
+
 ## Files created
 
 - `infra/cloudflare/migrations/0025_security_review_route_permissions.sql`
@@ -58,6 +64,8 @@
 - Personal-data scan for the targeted real names and Home Office email domains: passed with no matches.
 - `npm run format:check`: passed.
 - Focused security and route contract test run: passed, 21 tests and 0 failures.
+- Codex review follow-up targeted test run: passed, 18 tests and 0 failures.
+- `npx prettier -c .github/workflows/deploy-worker.yml infra/cloudflare/wrangler.toml tests/qa-bdd-authenticated-walkthrough-route-state.test.js`: passed.
 - `npm run lint`: passed with warnings only.
 - `npm test`: passed, 302 tests and 0 failures.
 - `npm run trace:coverage`: passed.
