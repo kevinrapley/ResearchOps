@@ -13,6 +13,7 @@
 
 {% block head %}
 	<meta property="schema:name" content="Participant consent - ResearchOps">
+	<link rel="stylesheet" href="/css/govuk/govuk-tables.css" media="screen">
 	<link rel="stylesheet" href="/css/participant-consent.css" media="screen">
 	<link rel="stylesheet" href="/css/daas-brand-panel.css?v=leds-brand-panel-20260624" media="screen">
 	<link rel="modulepreload" href="/js/study-route-context.js">
@@ -32,6 +33,17 @@
 	}) }}
 
 	{{ daasBrandPanel() }}
+
+	<div class="govuk-button-group">
+		{{ govukButton({
+			text: "Back to Study",
+			href: "/pages/study/",
+			classes: "govuk-button--secondary",
+			attributes: {
+				id: "back-to-study"
+			}
+		}) }}
+	</div>
 
 	<div id="consent-error" class="govuk-error-summary participant-consent-error" tabindex="-1" hidden aria-hidden="true" data-module="govuk-error-summary">
 		<div role="alert">

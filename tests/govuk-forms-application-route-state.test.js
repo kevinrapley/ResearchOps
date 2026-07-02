@@ -79,10 +79,10 @@ const participantConsentTemplate = read("src/govuk/templates/pages/study-partici
 includes(participantConsentPage, "href=\"/assets/govuk/govuk-frontend.css\"", "Participant consent route");
 includes(participantConsentPage, "href=\"/css/participant-consent.css\"", "Participant consent route");
 excludes(participantConsentPage, "href=\"/css/govuk/govuk-forms.css\"", "Participant consent route");
-excludes(participantConsentPage, "href=\"/css/govuk/govuk-tables.css\"", "Participant consent route");
+includes(participantConsentPage, "href=\"/css/govuk/govuk-tables.css\"", "Participant consent route");
 includes(participantConsentTemplate, "govukSelect({", "Participant consent template");
 includes(participantConsentTemplate, "govukInput({", "Participant consent template");
-excludes(participantConsentPage, "id=\"back-to-study\"", "Participant consent route");
+includes(participantConsentPage, "id=\"back-to-study\"", "Participant consent route");
 
 const synthesizePage = read("public/pages/study/synthesis/index.html");
 const synthesizeTemplate = read("src/govuk/templates/pages/study-synthesis.njk");

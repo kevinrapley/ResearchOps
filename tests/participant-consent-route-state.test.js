@@ -40,15 +40,15 @@ includes(rendererSource, "output: 'public/pages/study/participant-consent/index.
 
 includes(pageSource, "Participant consent - ResearchOps Demo Suite", "participant consent page");
 includes(pageSource, "href=\"/assets/govuk/govuk-frontend.css\"", "participant consent page");
+includes(pageSource, "href=\"/css/govuk/govuk-tables.css\"", "participant consent page");
 includes(pageSource, "href=\"/css/participant-consent.css\"", "participant consent page");
 excludes(pageSource, "href=\"/css/govuk/govuk-forms.css\"", "participant consent page");
-excludes(pageSource, "href=\"/css/govuk/govuk-tables.css\"", "participant consent page");
 includes(pageSource, "src=\"/js/participant-consent-route-loader.js?v=study-record-id-routing-20260518\"", "participant consent page");
 includes(pageSource, "href=\"/js/study-route-context.js\"", "participant consent page");
 includes(pageSource, "data-study-subpage-template=\"participant-consent\"", "participant consent page");
 includes(pageSource, "id=\"breadcrumb-project\"", "participant consent page");
 includes(pageSource, "id=\"breadcrumb-study\"", "participant consent page");
-excludes(pageSource, "id=\"back-to-study\"", "participant consent page");
+includes(pageSource, "id=\"back-to-study\"", "participant consent page");
 includes(pageSource, "id=\"no-context-state\"", "participant consent page");
 includes(pageSource, "The participant consent page needs a Study record ID in the URL.", "participant consent page");
 includes(pageSource, "id=\"participant-consent-form\"", "participant consent page");

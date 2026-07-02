@@ -112,6 +112,9 @@
 - Hid the saved notes section until the first note is saved.
 - Reworked the note formatting controls as a compact rich-text toolbar attached to the editor, preserving all seven square controls on small screens and using a larger optically centred typographic double quote for blockquote.
 - Adjusted study session GOV.UK summary-list rows so consent summary labels and values use the full datalist width instead of inheriting cramped default key/value proportions inside a half-width grid column.
+- Follow-up review fixes included authenticated `fetch` calls for participant and note APIs, posting session notes through the configured API origin, removing the legacy `sid` fallback as a session-note id, and falling back to Airtable when the D1 participant consent cache is empty.
+- Updated the D1 migration ordering policy so the next main prefix after `0023_session_consent_and_notes.sql` is `0024`.
+- Restored the participant consent generated page contract expected by the wider GOV.UK route-state suite: the page includes the GOV.UK table stylesheet and a `Back to Study` action hydrated by the participant consent route controller.
 
 ## Validation
 
@@ -124,6 +127,8 @@
 - `npm run format:check` passed.
 - `npm run build` passed.
 - `npm run lint` passed with existing repository warnings and no errors.
+- `node --import ./tests/helpers/generated-govuk-page-source.mjs --test tests/govuk-forms-application-route-state.test.js tests/govuk-breadcrumb-back-link-route-state.test.js tests/govuk-tables-summary-lists-application-route-state.test.js tests/participant-consent-route-state.test.js tests/study-session-route-state.test.js tests/d1-migration-ordering-route-state.test.js` passed.
+- `npm run build:govuk-pages && npm test` passed with 272 tests passing and 0 failing.
 - Browser verification at 1264 by 732 and 641 by 851 passed: the rich-text toolbar retained seven controls, stayed in one row on mobile, was attached to the note editor with no visible gap, used a larger centred typographic double quote for blockquote, had no horizontal overflow, consent summary used full-width summary-list rows after participant selection, saved notes stayed hidden until the first note was saved, and participant-load failure rendered in `#session-error-summary` rather than `#note-timestamps`.
 
 ## Local Preview

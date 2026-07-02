@@ -79,7 +79,10 @@
     "Used GOV.UK summary lists and error summary patterns for consent and participant-load states.",
     "Kept saved notes hidden until a note exists.",
     "Attached the full seven-button rich-text toolbar to the note editor as a compact row on small screens, using a larger optically centred typographic double quote for blockquote.",
-    "Adjusted study session GOV.UK summary-list rows so labels and values use the full datalist width."
+    "Adjusted study session GOV.UK summary-list rows so labels and values use the full datalist width.",
+    "Follow-up review fixes added authenticated API fetches, routed session note saves through the configured API origin, removed legacy sid as a session-note id fallback, and fell back to Airtable when the D1 participant consent cache is empty.",
+    "Updated the D1 migration ordering policy to identify 0024 as the next main migration prefix after 0023_session_consent_and_notes.sql.",
+    "Restored the participant consent page contract expected by the wider GOV.UK route-state suite: GOV.UK table stylesheet plus the Back to Study action."
   ],
   "validation": [
     {
@@ -119,17 +122,20 @@
       "result": "passed with existing warnings and no errors"
     },
     {
+      "command": "node --import ./tests/helpers/generated-govuk-page-source.mjs --test tests/govuk-forms-application-route-state.test.js tests/govuk-breadcrumb-back-link-route-state.test.js tests/govuk-tables-summary-lists-application-route-state.test.js tests/participant-consent-route-state.test.js tests/study-session-route-state.test.js tests/d1-migration-ordering-route-state.test.js",
+      "result": "passed"
+    },
+    {
+      "command": "npm run build:govuk-pages && npm test",
+      "result": "passed with 272 tests passing and 0 failing"
+    },
+    {
       "command": "Browser verification at 1264x732 and 641x851",
       "result": "passed: seven toolbar controls remained visible in one compact row, toolbar was attached to the editor, blockquote used a larger centred typographic double quote, no horizontal overflow, consent summary used full-width summary-list rows, saved notes appeared only after saving, and participant-load failure rendered in the GOV.UK error summary"
     }
   ],
   "localPreview": "http://127.0.0.1:4173/pages/study/session/?id=recVisualStudy001&session=recVisualSession001",
-  "validationNotRun": [
-    {
-      "check": "Full repository test suite",
-      "reason": "The change was covered by syntax checks, generated-page route-state tests, formatting, build, lint and targeted browser verification."
-    }
-  ],
+  "validationNotRun": [],
   "residualRisks": [
     "The populated local preview uses fixture/static responses; deployed behavior depends on applying the D1 migration and having the RESEARCHOPS_D1 binding available.",
     "Airtable is fallback-only by design; if D1 and Airtable are both unavailable, service endpoints return explicit unavailable responses."
