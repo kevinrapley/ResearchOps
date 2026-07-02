@@ -25,6 +25,7 @@ includes(serviceSource, "ensureWorkspace(this.root, accessToken, wsOverride)", "
 includes(serviceSource, "getValidAccessToken(this, uid)", "Mural service");
 includes(serviceSource, "async function signOAuthState(env, payload)", "Mural service");
 includes(serviceSource, "async function verifyOAuthState(env, state)", "Mural service");
+includes(serviceSource, "env.MURAL_OAUTH_STATE_SECRET || env.RESEARCHOPS_AUTH_SECRET", "Mural service");
 includes(serviceSource, "function authenticatedUid(authContext)", "Mural service");
 includes(serviceSource, "return `mural:user:${uid}:tokens`;", "Mural service");
 includes(serviceSource, "const uid = authenticatedUid(authContext);", "Mural service");

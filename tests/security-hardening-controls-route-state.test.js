@@ -12,6 +12,8 @@ const headers = fs.readFileSync('public/_headers', 'utf8');
 const wrangler = fs.readFileSync('infra/cloudflare/wrangler.toml', 'utf8');
 const previewWrangler = fs.readFileSync('infra/cloudflare/wrangler.passwordless-preview.toml', 'utf8');
 const securityWorkflow = fs.readFileSync('.github/workflows/security.yml', 'utf8');
+const deployWorkerWorkflow = fs.readFileSync('.github/workflows/deploy-worker.yml', 'utf8');
+const passwordlessPreviewWorkflow = fs.readFileSync('.github/workflows/deploy-passwordless-preview-worker.yml', 'utf8');
 const releaseProvenance = fs.readFileSync('scripts/release-provenance.mjs', 'utf8');
 const githubSettings = fs.readFileSync('github-settings.yaml', 'utf8');
 
@@ -83,6 +85,7 @@ function assertRetentionAndProductionConfigExist() {
 	assert.match(worker, /function diagnosticsEnabled\(env = \{\}\)/);
 	assert.match(router, /RESEARCHOPS_DIAGNOSTICS_ENABLED/);
 	assert.match(wrangler, /RESEARCHOPS_QA_BDD_AUTH_ENABLED = "false"/);
+	assert.match(wrangler, /"MURAL_OAUTH_STATE_SECRET"/);
 	assert.doesNotMatch(wrangler, /RESEARCHOPS_QA_BDD_AUTH_EMAILS/);
 	assert.match(wrangler, /RESEARCHOPS_RETENTION_ENFORCEMENT_ENABLED = "true"/);
 	assert.doesNotMatch(wrangler, /http:\/\/localhost:8080/);
@@ -94,6 +97,10 @@ function assertRetentionAndProductionConfigExist() {
 	assert.match(previewWrangler, /id         = "8e2d88969b9e4be694868931bdba92f2"/);
 	assert.match(previewWrangler, /database_id = "48b35a2e-52e8-4bc0-a8cf-88a7a1536f04"/);
 	assert.doesNotMatch(previewWrangler, /d4b97a36-8b4f-4b73-9a9f-0f22d92f62d5/);
+	assert.match(deployWorkerWorkflow, /MURAL_OAUTH_STATE_SECRET: \$\{\{ secrets\.MURAL_OAUTH_STATE_SECRET \}\}/);
+	assert.match(deployWorkerWorkflow, /MURAL_OAUTH_STATE_SECRET\n/);
+	assert.match(passwordlessPreviewWorkflow, /MURAL_OAUTH_STATE_SECRET: \$\{\{ secrets\.MURAL_OAUTH_STATE_SECRET \}\}/);
+	assert.match(passwordlessPreviewWorkflow, /"MURAL_OAUTH_STATE_SECRET"/);
 }
 
 function assertSupplyChainEvidenceExists() {

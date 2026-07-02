@@ -70,7 +70,8 @@
 		"Passwordless preview config uses provisioned Cloudflare KV/D1 bindings and a tightened allowlist.",
 		"Security workflow now runs on relevant PR changes with Node 22 and package engine metadata is aligned.",
 		"PR review follow-up tightens an existing route_api_agent_pages_deploy_post row by updating auth_route_permissions after the seed insert.",
-		"CI follow-up restores the passwordless preview KV and D1 bindings to provisioned resources after Cloudflare rejected unprovisioned resource IDs."
+		"CI follow-up restores the passwordless preview KV and D1 bindings to provisioned resources after Cloudflare rejected unprovisioned resource IDs.",
+		"Mural OAuth state signing now prefers the dedicated MURAL_OAUTH_STATE_SECRET, the Worker config marks it required and deployment workflows pass it to production, preview and passwordless preview Workers."
 	],
 	"validationPlanned": [
 		"Focused security route-state tests",
@@ -115,11 +116,21 @@
 			"command": "follow-up full local gates",
 			"status": "passed",
 			"summary": "npm run format:check, npm run lint, npm run trace:coverage, npm test and npm run validate passed after the Codex comment and preview deployment fixes."
+		},
+		{
+			"command": "follow-up focused secret-separation tests",
+			"status": "passed",
+			"summary": "Security hardening and Mural route-state contracts passed after adding MURAL_OAUTH_STATE_SECRET to code and deployment workflows."
+		},
+		{
+			"command": "GitHub and Cloudflare secret-name verification",
+			"status": "passed",
+			"summary": "MURAL_OAUTH_STATE_SECRET and RESEARCHOPS_AUTH_SECRET are present in GitHub repository secrets and both repo-backed Cloudflare Workers: rops-api and rops-api-passwordless-preview. Secret values were not printed."
 		}
 	],
 	"residualRisks": [
 		"Passwordless preview storage remains on the provisioned KV and D1 bindings until separate preview resources are created and verified in Cloudflare.",
 		"Operators should review the first production retention run after deployment.",
-		"Mural OAuth state requires RESEARCHOPS_AUTH_SECRET or MURAL_OAUTH_STATE_SECRET."
+		"Mural OAuth state now uses MURAL_OAUTH_STATE_SECRET when configured and keeps RESEARCHOPS_AUTH_SECRET as a compatibility fallback."
 	]
 }

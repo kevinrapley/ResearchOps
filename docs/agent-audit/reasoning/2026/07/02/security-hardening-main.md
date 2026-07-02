@@ -53,6 +53,7 @@ Skipped bundles: GOV.UK design system, OpenAI Platform, MCP Agent Tooling and Ai
 - Updated the security workflow to run on relevant PR paths with Node 22 and aligned `package.json` engine metadata.
 - Follow-up on PR review: Codex identified that the deploy route migration only inserted fresh rows and did not tighten an existing public `route_api_agent_pages_deploy_post` row. The migration now explicitly updates that route after the seed insert.
 - Follow-up on CI: the passwordless preview Worker deployment failed because the replacement KV namespace ID and D1 database ID were not present in Cloudflare. The preview config now uses the previously provisioned KV and D1 bindings.
+- Follow-up on secret separation: Mural OAuth state signing now prefers the dedicated `MURAL_OAUTH_STATE_SECRET`, the Worker config marks it required and deployment workflows pass it to production, preview and passwordless preview Workers.
 
 ## Validation plan
 
@@ -71,9 +72,11 @@ Skipped bundles: GOV.UK design system, OpenAI Platform, MCP Agent Tooling and Ai
 - Focused hardening tests passed during implementation for proxy CORS/CSRF, diagnostics, deployment permission, Mural OAuth state/token ownership and production/preview configuration contracts.
 - Follow-up focused tests passed for security hardening, QA BDD preview workflow/config and Mural UI route-state contracts.
 - Follow-up `npm run format:check`, `npm run lint`, `npm run trace:coverage`, `npm test` and `npm run validate` passed after the Codex comment and preview deployment fixes.
+- Follow-up focused secret-separation tests passed for security hardening and Mural route-state contracts.
+- Live secret verification confirmed `MURAL_OAUTH_STATE_SECRET` and `RESEARCHOPS_AUTH_SECRET` are configured in GitHub repository secrets and both repo-backed Cloudflare Workers: `rops-api` and `rops-api-passwordless-preview`.
 
 ## Residual risks
 
 - Passwordless preview storage remains on the provisioned KV and D1 bindings until separate preview resources are created and verified in Cloudflare.
 - Production retention is enabled in configuration; operators should review first scheduled run output and data counts after deployment.
-- Mural OAuth state depends on `RESEARCHOPS_AUTH_SECRET` or `MURAL_OAUTH_STATE_SECRET` being configured.
+- Mural OAuth state now uses `MURAL_OAUTH_STATE_SECRET` when configured and keeps `RESEARCHOPS_AUTH_SECRET` as a compatibility fallback.

@@ -60,7 +60,7 @@ function base64UrlDecodeJson(value) {
 }
 
 async function hmacKey(env) {
-	const secret = env.RESEARCHOPS_AUTH_SECRET || env.MURAL_OAUTH_STATE_SECRET || "";
+	const secret = env.MURAL_OAUTH_STATE_SECRET || env.RESEARCHOPS_AUTH_SECRET || "";
 	if (!secret) throw new Error("missing_oauth_state_secret");
 	return crypto.subtle.importKey(
 		"raw",
