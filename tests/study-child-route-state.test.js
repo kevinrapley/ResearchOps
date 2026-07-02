@@ -97,6 +97,8 @@ for (const [label, source] of Object.entries(loaders)) {
 		includes(source, "await import('/js/study-canonical-url-bridge.js?v=study-guides-delete-confirmation-20260605')", label);
 	} else if (label === "noteTakersObservers") {
 		includes(source, "await import(`/js/study-canonical-url-bridge.js?v=${version}`)", label);
+	} else if (label === "participantConsent") {
+		excludes(source, "study-canonical-url-bridge", label);
 	} else {
 		includes(source, "await import('/js/study-canonical-url-bridge.js?v=study-record-id-routing-20260518')", label);
 	}

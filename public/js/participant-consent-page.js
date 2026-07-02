@@ -47,6 +47,8 @@ const DEFAULT_CONSENT_ITEMS = [
 const state = {
 	projectId: "",
 	studyId: "",
+	sessionId: "",
+	routeParticipantId: "",
 	project: null,
 	study: null,
 	participants: [],
@@ -81,6 +83,15 @@ function setHidden(selector, hidden) {
 function setText(selector, value) {
 	const el = $(selector);
 	if (el) el.textContent = value || "—";
+}
+
+function setStatus(message, visible = true) {
+	const status = $("#participant-consent-status");
+	if (!status) return;
+	status.textContent = message || "";
+	status.hidden = !visible;
+	if (visible) status.removeAttribute("aria-hidden");
+	else status.setAttribute("aria-hidden", "true");
 }
 
 function clearErrors() {
@@ -145,8 +156,24 @@ function consentItemsForForm(form) {
 	return Array.isArray(form?.consentItems) && form.consentItems.length ? form.consentItems : DEFAULT_CONSENT_ITEMS;
 }
 
+function participantConsentIdentifiers(participant = {}) {
+	return new Set([
+		participant.id,
+		participant.participant_id,
+		participant.session_participant_id,
+		participant.participant_airtable_id,
+		participant.airtableId
+	].map(value => String(value || "").trim()).filter(Boolean));
+}
+
+function participantMatchesIdentifier(participant, identifier) {
+	return participantConsentIdentifiers(participant).has(String(identifier || "").trim());
+}
+
 function consentRecordForParticipant(participantId) {
-	return state.participantConsentRecords.find(record => record.participantId === participantId) || null;
+	const participant = state.participants.find(item => participantMatchesIdentifier(item, participantId));
+	const identifiers = participantConsentIdentifiers(participant || { id: participantId });
+	return state.participantConsentRecords.find(record => identifiers.has(record.participantId || record.participant_id)) || null;
 }
 
 function statusForParticipant(participant, record = consentRecordForParticipant(participant.id), form = latestPublishedForm()) {
@@ -160,17 +187,48 @@ function statusForParticipant(participant, record = consentRecordForParticipant(
 }
 
 function permissionTags(record, form = latestPublishedForm()) {
-	if (!record) return ["No permissions recorded"];
-	if (record.withdrawn) return ["Do not proceed"];
+	if (!record) return [{ text: "No permissions recorded", classes: "govuk-tag--grey" }];
+	if (record.withdrawn) return [{ text: "Do not proceed", classes: "govuk-tag--red" }];
 	return consentItemsForForm(form)
 		.filter(item => !item.required)
 		.map(item => {
 			const value = record.responses?.[item.id] || "not-asked";
-			const label = item.label.split(".")[0].replace(/^I agree to\s*/i, "");
-			if (value === "agreed") return `${label}: agreed`;
-			if (value === "declined") return `${label}: declined`;
-			return `${label}: not asked`;
+			const label = shortPermissionLabel(item);
+			if (value === "agreed") return { text: `${label} agreed`, classes: "govuk-tag--green" };
+			if (value === "declined") return { text: `${label} declined`, classes: "govuk-tag--yellow" };
+			return { text: `${label} not asked`, classes: "govuk-tag--grey" };
 		});
+}
+
+function shortPermissionLabel(item = {}) {
+	const id = normaliseStatus(item.id);
+	const labels = {
+		recording: "Recording",
+		observers: "Observers",
+		transcription: "Transcription"
+	};
+	if (labels[id]) return labels[id];
+	return String(item.label || "Permission")
+		.replace(/^I agree to\s*/i, "")
+		.replace(/\.$/, "")
+		.split(/\s+/)
+		.slice(0, 3)
+		.join(" ");
+}
+
+function formatConsentTime(value) {
+	if (!value) return "Not recorded";
+	const date = new Date(value);
+	if (Number.isNaN(date.getTime())) return String(value);
+	return new Intl.DateTimeFormat("en-GB", {
+		day: "numeric",
+		month: "long",
+		year: "numeric",
+		hour: "numeric",
+		minute: "2-digit",
+		timeZone: "Europe/London",
+		timeZoneName: "short"
+	}).format(date);
 }
 
 function updateRoutes() {
@@ -210,10 +268,10 @@ function renderPageState() {
 	setHidden("#no-participants-state", !hasContext || !hasPublishedForms || hasParticipants);
 	setHidden("#consent-workspace", !hasContext || !hasPublishedForms || !hasParticipants);
 
-	if (!hasContext) setText("#participant-consent-status", "Missing study context.");
-	else if (!hasPublishedForms) setText("#participant-consent-status", "Consent form materials are needed before participant consent can be recorded.");
-	else if (!hasParticipants) setText("#participant-consent-status", "Participants are needed before consent can be recorded.");
-	else setText("#participant-consent-status", "Participant consent loaded.");
+	if (!hasContext) setStatus("Missing study context.");
+	else if (!hasPublishedForms) setStatus("Consent form materials are needed before participant consent can be recorded.");
+	else if (!hasParticipants) setStatus("Participants are needed before consent can be recorded.");
+	else setStatus("", false);
 }
 
 function renderSummary() {
@@ -238,7 +296,7 @@ function renderParticipantTable() {
 		tr.dataset.participantConsentRow = participant.id;
 
 		const tags = permissionTags(record)
-			.map(tag => `<span class="participant-consent-tag${/declined|not asked|Do not proceed/i.test(tag) ? " participant-consent-tag--warning" : ""}">${escapeHtml(tag)}</span>`)
+			.map(tag => `<strong class="govuk-tag ${escapeHtml(tag.classes)}">${escapeHtml(tag.text)}</strong>`)
 			.join(" ");
 		const action = record ? "Review consent" : "Record consent";
 		const participantName = participant.display_name || participant.name || "Participant";
@@ -247,7 +305,7 @@ function renderParticipantTable() {
 			<th scope="row" class="govuk-table__header">${escapeHtml(participantName)}</th>
 			<td class="govuk-table__cell">${escapeHtml(status)}</td>
 			<td class="govuk-table__cell"><span class="participant-consent-tag-list">${tags}</span></td>
-			<td class="govuk-table__cell">${escapeHtml(record?.recordedAt || "Not recorded")}</td>
+			<td class="govuk-table__cell">${escapeHtml(formatConsentTime(record?.recordedAt))}</td>
 			<td class="govuk-table__cell"><button type="button" class="govuk-button govuk-button--secondary" data-record-consent="${escapeHtml(participant.id)}">${escapeHtml(action)}</button></td>
 		`;
 		tbody.appendChild(tr);
@@ -274,25 +332,28 @@ function renderConsentItems(record = null, form = latestPublishedForm()) {
 	list.innerHTML = "";
 	for (const item of consentItemsForForm(form)) {
 		const group = document.createElement("div");
-		group.className = "participant-consent-item";
+		group.className = "govuk-form-group participant-consent-item";
 		const current = record?.responses?.[item.id] || "not-asked";
 		const token = safeToken(item.id);
 		group.innerHTML = `
-			<p class="participant-consent-item__label">${escapeHtml(item.label)}<span class="participant-consent-item__requirement">${item.required ? "Required" : "Optional"}</span></p>
-			<div class="govuk-radios govuk-radios--inline">
-				<div class="govuk-radios__item">
-					<input id="consent-${token}-agreed" class="govuk-radios__input" name="consent-${token}" type="radio" value="agreed" ${current === "agreed" ? "checked" : ""} />
-					<label class="govuk-label govuk-radios__label" for="consent-${token}-agreed">Agreed</label>
+			<fieldset class="govuk-fieldset" aria-describedby="consent-${token}-hint">
+				<legend class="govuk-fieldset__legend govuk-fieldset__legend--s">${escapeHtml(item.label)}</legend>
+				<div id="consent-${token}-hint" class="govuk-hint">${item.required ? "Required" : "Optional"}</div>
+				<div class="govuk-radios govuk-radios--inline">
+					<div class="govuk-radios__item">
+						<input id="consent-${token}-agreed" class="govuk-radios__input" name="consent-${token}" type="radio" value="agreed" ${current === "agreed" ? "checked" : ""} />
+						<label class="govuk-label govuk-radios__label" for="consent-${token}-agreed">Agreed</label>
+					</div>
+					<div class="govuk-radios__item">
+						<input id="consent-${token}-declined" class="govuk-radios__input" name="consent-${token}" type="radio" value="declined" ${current === "declined" ? "checked" : ""} />
+						<label class="govuk-label govuk-radios__label" for="consent-${token}-declined">Declined</label>
+					</div>
+					<div class="govuk-radios__item">
+						<input id="consent-${token}-not-asked" class="govuk-radios__input" name="consent-${token}" type="radio" value="not-asked" ${current === "not-asked" ? "checked" : ""} />
+						<label class="govuk-label govuk-radios__label" for="consent-${token}-not-asked">Not asked</label>
+					</div>
 				</div>
-				<div class="govuk-radios__item">
-					<input id="consent-${token}-declined" class="govuk-radios__input" name="consent-${token}" type="radio" value="declined" ${current === "declined" ? "checked" : ""} />
-					<label class="govuk-label govuk-radios__label" for="consent-${token}-declined">Declined</label>
-				</div>
-				<div class="govuk-radios__item">
-					<input id="consent-${token}-not-asked" class="govuk-radios__input" name="consent-${token}" type="radio" value="not-asked" ${current === "not-asked" ? "checked" : ""} />
-					<label class="govuk-label govuk-radios__label" for="consent-${token}-not-asked">Not asked</label>
-				</div>
-			</div>
+			</fieldset>
 		`;
 		list.appendChild(group);
 	}
@@ -316,6 +377,12 @@ function selectParticipant(participantId) {
 	$("#withdrawal-reason").value = record?.withdrawalReason || "";
 	renderFormOptions(form?.id || "");
 	renderConsentItems(record, form);
+	const currentRoute = route("/pages/study/participant-consent/", {
+		id: state.studyId,
+		session: state.sessionId,
+		participant: participant.id
+	});
+	window.history.replaceState(null, "", currentRoute);
 	$("#consent-record-panel").scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
@@ -341,6 +408,7 @@ async function saveConsent(event) {
 	const participantId = $("#participant-id")?.value || "";
 	const recordId = $("#consent-record-id")?.value || "";
 	const formId = $("#consent-form-select")?.value || "";
+	const participant = state.participants.find(item => item.id === participantId) || {};
 	const form = state.consentForms.find(item => item.id === formId) || latestPublishedForm();
 	const responses = collectResponses(form);
 	const captureMethod = $("#capture-method")?.value || "";
@@ -361,6 +429,7 @@ async function saveConsent(event) {
 	const payload = {
 		studyId: state.studyId,
 		participantId,
+		participant_airtable_id: participant.session_participant_id || participant.participant_airtable_id || participant.airtableId || "",
 		consentFormId: formId,
 		consentFormVersion: Number(form?.version || 1),
 		responses,
@@ -382,13 +451,13 @@ async function saveConsent(event) {
 		if (!saved) throw new Error("Participant consent response was not returned.");
 		state.participantConsentRecords = state.participantConsentRecords.filter(record => record.id !== saved.id && record.participantId !== saved.participantId);
 		state.participantConsentRecords.push(saved);
-		setText("#participant-consent-status", "Participant consent saved.");
+		setStatus("Participant consent saved.");
 		setHidden("#consent-record-panel", true);
 		renderSummary();
 		renderParticipantTable();
 	} catch (error) {
 		console.error("[participant-consent] save failed", error);
-		showErrors(["Could not save participant consent. Check the Participant Consent Airtable table and try again."]);
+		showErrors(["Could not save participant consent. Check the service connection and try again."]);
 	}
 }
 
@@ -406,14 +475,23 @@ function wireEvents() {
 	});
 }
 
+function hasLegacyStudyContextParams(params) {
+	return params.has("pid") || params.has("sid");
+}
+
 function hasStudyContextParams(params) {
-	return ["id", "project", "projectId", "pid", "sid"].some(key => params.has(key));
+	return ["id", "project", "projectId", "session", "participant"].some(key => params.has(key));
 }
 
 async function init() {
 	clearErrors();
 	wireEvents();
 	const params = new URLSearchParams(window.location.search);
+	if (hasLegacyStudyContextParams(params)) {
+		showErrors(["Use the current participant consent link with ?id=, plus session or participant when needed."]);
+		renderPageState();
+		return;
+	}
 	let context = window.__studyRouteContext || null;
 	if (!context) {
 		try {
@@ -428,6 +506,8 @@ async function init() {
 	}
 	state.projectId = context.projectId || "";
 	state.studyId = context.studyId || "";
+	state.sessionId = params.get("session") || "";
+	state.routeParticipantId = params.get("participant") || "";
 	state.project = context.project || null;
 	state.study = context.study || null;
 
@@ -450,6 +530,10 @@ async function init() {
 		renderPageState();
 		renderSummary();
 		renderParticipantTable();
+		if (state.routeParticipantId) {
+			const routeParticipant = state.participants.find(participant => participantMatchesIdentifier(participant, state.routeParticipantId));
+			if (routeParticipant) selectParticipant(routeParticipant.id);
+		}
 	} catch (error) {
 		console.error("[participant-consent] init failed", error);
 		showErrors(["Could not load participant consent. Check the Study record link, then try again."]);

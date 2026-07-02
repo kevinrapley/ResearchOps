@@ -1,0 +1,143 @@
+{
+  "date": "2026-07-01/2026-07-02",
+  "branch": "fix/study-session-govuk-layout",
+  "traceRequired": true,
+  "traceReason": "fix/ branch prefix",
+  "taskSummary": "Convert the study session route to Nunjucks/GOV.UK/global Sass, use current id/session route parameters with legacy fallback only on the session route, and make participant consent plus session notes D1-backed with Airtable fallback only.",
+  "operatingModelFilesLoaded": [
+    "AGENTS.md",
+    ".agent-operating-model/orchestration.xml",
+    ".agent-operating-model/bundle-registry.json",
+    ".agent-operating-model/task-signal-catalog.json",
+    ".agent-operating-model/selection-rules.json",
+    ".agent-operating-model/bootstrap-checklist.md",
+    ".agent-operating-model/precedence-policy.md",
+    ".agent-operating-model/trace-policy.md",
+    ".agent-operating-model/trace-layers.md",
+    ".agent-operating-model/behavioural-evals.json",
+    ".agent-operating-model/github-mutation-policy.md"
+  ],
+  "selectedBundles": [
+    {
+      "id": "github-diamond",
+      "path": ".agent-operating-model/bundles/github/"
+    },
+    {
+      "id": "researchops-developer-control",
+      "path": ".agent-operating-model/bundles/researchops-developer-control/"
+    },
+    {
+      "id": "multi-functional-team",
+      "path": ".agent-operating-model/bundles/multi-functional-team/"
+    },
+    {
+      "id": "govuk-design-system",
+      "path": ".agent-operating-model/bundles/govuk-design-system/"
+    },
+    {
+      "id": "cloudflare",
+      "path": ".agent-operating-model/bundles/cloudflare/"
+    },
+    {
+      "id": "airtable-public-api",
+      "path": ".agent-operating-model/bundles/airtable-public-api/"
+    }
+  ],
+  "skippedBundles": [
+    "openai-platform",
+    "mcp-agent-tooling",
+    "mural-public-api"
+  ],
+  "filesCreatedOrModified": [
+    "src/govuk/templates/pages/study-session.njk",
+    "scripts/govuk/render-govuk-pages.mjs",
+    "src/styles/study-page.scss",
+    "public/css/study-page.css",
+    "public/pages/study/session/index.html",
+    "public/components/session-controller.js",
+    "public/components/session-consent-controller.js",
+    "public/js/participant-consent-page.js",
+    "infra/cloudflare/src/service/participant-consent.js",
+    "infra/cloudflare/src/service/session-notes.js",
+    "infra/cloudflare/migrations/0023_session_consent_and_notes.sql",
+    "tests/study-session-route-state.test.js",
+    "tests/participant-consent-route-state.test.js",
+    "tests/session-notes-route-state.test.js",
+    "tests/govuk-generated-html-test-source-route-state.test.js",
+    "tests/govuk-forms-application-route-state.test.js",
+    "docs/agent-audit/reasoning/2026/07/01/study-session-govuk-layout.md",
+    "docs/agent-audit/reasoning/2026/07/01/study-session-govuk-layout.json"
+  ],
+  "filesRemoved": [
+    "public/css/session.css"
+  ],
+  "implementationHighlights": [
+    "Added a generated Nunjucks/GOV.UK study-session page and removed the page-specific session stylesheet.",
+    "Kept study-session styles in global study-page Sass.",
+    "Loaded participants through the D1-canonical participants API instead of static mocks.",
+    "Made participant consent and session notes D1-first with Airtable fallback only.",
+    "Used GOV.UK summary lists and error summary patterns for consent and participant-load states.",
+    "Kept saved notes hidden until a note exists.",
+    "Attached the full seven-button rich-text toolbar to the note editor as a compact row on small screens, using a larger optically centred typographic double quote for blockquote.",
+    "Adjusted study session GOV.UK summary-list rows so labels and values use the full datalist width.",
+    "Follow-up review fixes added authenticated API fetches, routed session note saves through the configured API origin, removed legacy sid as a session-note id fallback, and fell back to Airtable when the D1 participant consent cache is empty.",
+    "Updated the D1 migration ordering policy to identify 0024 as the next main migration prefix after 0023_session_consent_and_notes.sql.",
+    "Restored the participant consent page contract expected by the wider GOV.UK route-state suite: GOV.UK table stylesheet plus the Back to Study action."
+  ],
+  "validation": [
+    {
+      "command": "node --check infra/cloudflare/src/service/participant-consent.js",
+      "result": "passed"
+    },
+    {
+      "command": "node --check infra/cloudflare/src/service/session-notes.js",
+      "result": "passed"
+    },
+    {
+      "command": "node --check public/components/session-controller.js",
+      "result": "passed"
+    },
+    {
+      "command": "node --check public/components/session-consent-controller.js",
+      "result": "passed"
+    },
+    {
+      "command": "node --check public/js/participant-consent-page.js",
+      "result": "passed"
+    },
+    {
+      "command": "node --import ./tests/helpers/generated-govuk-page-source.mjs --test tests/study-session-route-state.test.js tests/participant-consent-route-state.test.js tests/session-notes-route-state.test.js tests/govuk-generated-html-test-source-route-state.test.js tests/govuk-forms-application-route-state.test.js tests/govuk-page-chrome-navigation-route-state.test.js",
+      "result": "passed"
+    },
+    {
+      "command": "npm run format:check",
+      "result": "passed"
+    },
+    {
+      "command": "npm run build",
+      "result": "passed"
+    },
+    {
+      "command": "npm run lint",
+      "result": "passed with existing warnings and no errors"
+    },
+    {
+      "command": "node --import ./tests/helpers/generated-govuk-page-source.mjs --test tests/govuk-forms-application-route-state.test.js tests/govuk-breadcrumb-back-link-route-state.test.js tests/govuk-tables-summary-lists-application-route-state.test.js tests/participant-consent-route-state.test.js tests/study-session-route-state.test.js tests/d1-migration-ordering-route-state.test.js",
+      "result": "passed"
+    },
+    {
+      "command": "npm run build:govuk-pages && npm test",
+      "result": "passed with 272 tests passing and 0 failing"
+    },
+    {
+      "command": "Browser verification at 1264x732 and 641x851",
+      "result": "passed: seven toolbar controls remained visible in one compact row, toolbar was attached to the editor, blockquote used a larger centred typographic double quote, no horizontal overflow, consent summary used full-width summary-list rows, saved notes appeared only after saving, and participant-load failure rendered in the GOV.UK error summary"
+    }
+  ],
+  "localPreview": "http://127.0.0.1:4173/pages/study/session/?id=recVisualStudy001&session=recVisualSession001",
+  "validationNotRun": [],
+  "residualRisks": [
+    "The populated local preview uses fixture/static responses; deployed behavior depends on applying the D1 migration and having the RESEARCHOPS_D1 binding available.",
+    "Airtable is fallback-only by design; if D1 and Airtable are both unavailable, service endpoints return explicit unavailable responses."
+  ]
+}

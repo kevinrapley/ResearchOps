@@ -2,45 +2,33 @@
  * @file /components/session-controller.js
  * @summary Controller for study session UI: participant picker, consents, timer, and notes.
  * @description
- * - Participant dropdown (mock until wired to Airtable).
+ * - Participant dropdown loaded from the ResearchOps API.
  * - Participant details with RDFa (schema.org) attributes.
  * - Consent summary with RDFa ItemList.
  * - Session controls (start/pause/stop) with visible hh:mm:ss timer + RDFa duration.
  * - Notes editor:
  *    • Note START time captured on the first meaningful keystroke (not focus/click).
  *    • Clearing all content resets the pending start.
- *    • Save posts to /api/session-notes and injects returned Airtable record id into
+ *    • Save posts to /api/session-notes and injects returned note id into
  *      RDFa: resource="#note-<recordId>".
  *    • Each note includes schema:startTime / schema:endTime (absolute ISO)
  *      and schema:temporalCoverage "<start>/<end>".
  */
 
 const $  = (s, r = document) => r.querySelector(s);
-const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
 
-/* -------------------------------------------------------------------------- */
-/* Mock participants (replace with Airtable fetch later)                      */
-/* -------------------------------------------------------------------------- */
-const MOCK_PARTICIPANTS = [
-	{
-		id: "ptp_001",
-		airtableId: "recPARTICIPANT001",
-		pseudonym: "P01",
-		name: "Alex Johnson",
-		userType: "Public beta user",
-		session: { date: "2025-11-04", start: "10:00", end: "10:45" },
-		consents: { observers: true, noteTakers: true, recordVideo: false, recordAudio: true, transcription: true, videoOn: false }
-	},
-	{
-		id: "ptp_002",
-		airtableId: "recPARTICIPANT002",
-		pseudonym: "P02",
-		name: "Samira Ahmed",
-		userType: "Operational staff",
-		session: { date: "2025-11-04", start: "11:15", end: "12:00" },
-		consents: { observers: false, noteTakers: true, recordVideo: true, recordAudio: true, transcription: true, videoOn: true }
-	}
-];
+const API_ORIGIN =
+	document.documentElement?.dataset?.apiOrigin ||
+	window.API_ORIGIN ||
+	window.RESEARCHOPS_API_ORIGIN ||
+	(location.hostname.endsWith("pages.dev") ?
+		"https://rops-api.digikev-kevin-rapley.workers.dev" :
+		location.origin);
+
+const state = {
+	studyId: "",
+	participants: []
+};
 
 /* -------------------------------------------------------------------------- */
 /* State                                                                      */
@@ -84,7 +72,12 @@ function msToISODuration(ms) {
 async function postJson(url, body) {
 	const res = await fetch(url, {
 		method: "POST",
-		headers: { "Content-Type": "application/json; charset=utf-8" },
+		cache: "no-store",
+		credentials: "include",
+		headers: {
+			Accept: "application/json",
+			"Content-Type": "application/json; charset=utf-8"
+		},
 		body: JSON.stringify(body)
 	});
 	const txt = await res.text();
@@ -92,6 +85,28 @@ async function postJson(url, body) {
 	try { js = JSON.parse(txt); } catch { js = null; }
 	if (!res.ok || !js) throw new Error(js?.error || `HTTP ${res.status}: ${txt.slice(0,200)}`);
 	return js;
+}
+
+function apiUrl(path) {
+	const p = String(path || "");
+	return `${API_ORIGIN}${p.startsWith("/") ? p : "/" + p}`;
+}
+
+async function jsonFetch(url) {
+	const response = await fetch(url, {
+		cache: "no-store",
+		credentials: "include",
+		headers: { Accept: "application/json" }
+	});
+	const text = await response.text();
+	const body = text ? JSON.parse(text) : {};
+	if (!response.ok) throw new Error(body?.message || body?.error || `Request failed (${response.status})`);
+	return body;
+}
+
+function getStudyId() {
+	const url = new URL(location.href);
+	return url.searchParams.get("id") || url.searchParams.get("sid") || "";
 }
 
 function getSessionAirtableId() {
@@ -108,9 +123,22 @@ function getSessionAirtableId() {
 /* -------------------------------------------------------------------------- */
 function clearChildren(el){while(el?.firstChild)el.removeChild(el.firstChild);}
 
-function dd(text,rdfa={}){const el=document.createElement("dd");if(text!=null)el.textContent=text;for(const[k,v]of Object.entries(rdfa)){if(v!=null&&v!==false)el.setAttribute(k,String(v));}return el;}
-
-function dt(text){const el=document.createElement("dt");el.textContent=text;return el;}
+function summaryRow(term, value, rdfa = {}) {
+	const row = document.createElement("div");
+	row.className = "govuk-summary-list__row";
+	const key = document.createElement("dt");
+	key.className = "govuk-summary-list__key";
+	key.textContent = term;
+	const val = document.createElement("dd");
+	val.className = "govuk-summary-list__value";
+	if (value instanceof Node || value instanceof DocumentFragment) val.append(value);
+	else if (value != null) val.textContent = value;
+	for (const [k, v] of Object.entries(rdfa)) {
+		if (v != null && v !== false) val.setAttribute(k, String(v));
+	}
+	row.append(key, val);
+	return row;
+}
 
 /**
  * Ensure or set a <meta property="..."> under parent.
@@ -144,48 +172,100 @@ function setEventStatus(iri){
 	m.setAttribute("content", iri);
 }
 
+function setSessionError(message, href = "#participant-select") {
+	const summary = $("#session-error-summary");
+	const item = summary?.querySelector(".govuk-error-summary__list a");
+	if (!summary || !item) return;
+	item.textContent = message;
+	item.setAttribute("href", href);
+	summary.hidden = false;
+	summary.removeAttribute("aria-hidden");
+	summary.focus?.();
+}
+
+function clearSessionError() {
+	const summary = $("#session-error-summary");
+	if (!summary) return;
+	summary.hidden = true;
+	summary.setAttribute("aria-hidden", "true");
+}
+
 /* -------------------------------------------------------------------------- */
 /* Participant UI                                                             */
 /* -------------------------------------------------------------------------- */
+function participantIdForNote(p) {
+	return p?.airtableId || p?.id || "";
+}
+
+function mapApiParticipant(record) {
+	const id = String(record.id || record.participant_id || record.participant_airtable_id || "").trim();
+	const pseudonym = String(record.participant_ref || record.pseudonym || record.display_name || id || "Participant").trim();
+	const name = String(record.display_name || record.name || record.participant_ref || pseudonym).trim();
+	const status = String(record.status || "").trim();
+	const channel = String(record.channel_pref || "").trim();
+	const userType = [status, channel].filter(Boolean).join(" - ") || "Participant";
+	const session = record.session && typeof record.session === "object" ? record.session : {};
+
+	return {
+		id,
+		airtableId: String(record.session_participant_id || record.participant_airtable_id || record.airtableId || id).trim(),
+		pseudonym,
+		name,
+		userType,
+		session,
+		consents: record.consents && typeof record.consents === "object" ? record.consents : {},
+		accessNeeds: String(record.access_needs || "").trim()
+	};
+}
+
+async function loadParticipantsForStudy(studyId) {
+	if (!studyId) return [];
+	const url = new URL(apiUrl("/api/participants"));
+	url.searchParams.set("study", studyId);
+	const body = await jsonFetch(url.toString());
+	return Array.isArray(body.participants) ? body.participants.map(mapApiParticipant).filter(participant => participant.id) : [];
+}
+
 function populateParticipants(list){
 	const sel=$("#participant-select");
+	if (!sel) return;
+	while (sel.options.length > 1) sel.remove(1);
 	list.forEach(p=>{
 		const o=document.createElement("option");
-		o.value=p.id;o.textContent=`${p.pseudonym} — ${p.name}`;
+		o.value=p.id;o.textContent=`${p.pseudonym} - ${p.name}`;
 		o.dataset.airtableId=p.airtableId||"";
 		sel.appendChild(o);
 	});
 }
 function renderParticipantDetails(p){
 	const dl=$("#participant-details");clearChildren(dl);
-	dl.append(dt("Pseudonym"),dd(p.pseudonym,{"property":"schema:alternateName"}));
-	dl.append(dt("Name"),dd(p.name,{"property":"schema:name"}));
-	dl.append(dt("User type"),dd(p.userType,{"property":"schema:additionalType"}));
+	dl.append(summaryRow("Pseudonym",p.pseudonym,{"property":"schema:alternateName"}));
+	dl.append(summaryRow("Name",p.name,{"property":"schema:name"}));
+	dl.append(summaryRow("User type",p.userType,{"property":"schema:additionalType"}));
 	const date=p.session?.date||"";
 	if(date){
 		const human=new Date(date+"T00:00:00Z");
 		const text=human.toLocaleDateString("en-GB",{day:"numeric",month:"short",year:"numeric",timeZone:"UTC"});
-		dl.append(dt("Date"),dd(text,{"about":"#session","property":"schema:startDate","content":date}));
+		dl.append(summaryRow("Date",text,{"about":"#session","property":"schema:startDate","content":date}));
 	}else{
-		dl.append(dt("Date"),dd("—"));
+		dl.append(summaryRow("Date","-"));
 	}
 	const tStart=p.session?.start||"",tEnd=p.session?.end||"";
 	if(tStart&&tEnd){
-		const d=document.createElement("dd");
-		d.setAttribute("about","#session");
+		const fragment=document.createDocumentFragment();
 		const t1=document.createElement("time");
 		t1.setAttribute("property","schema:startTime");
 		t1.setAttribute("datetime",tStart);
 		t1.textContent=tStart;
-		const sep=document.createTextNode("–");
+		const sep=document.createTextNode("-");
 		const t2=document.createElement("time");
 		t2.setAttribute("property","schema:endTime");
 		t2.setAttribute("datetime",tEnd);
 		t2.textContent=tEnd;
-		d.append(t1,sep,t2);
-		dl.append(dt("Time"),d);
+		fragment.append(t1,sep,t2);
+		dl.append(summaryRow("Time",fragment,{"about":"#session"}));
 	}else{
-		dl.append(dt("Time"),dd("—"));
+		dl.append(summaryRow("Time","-"));
 	}
 
 	// Mirror onto #session-entity if present
@@ -201,12 +281,10 @@ function renderConsentSummary(p){
 	for(const[k,l]of Object.entries(labels)){
 		if(!(p.consents&&k in p.consents)) continue;
 		const ok=!!p.consents[k];
-		dl.append(dt(l));
-		const d=document.createElement("dd");
-		d.setAttribute("property","schema:acceptedAnswer");
-		d.setAttribute("content",String(ok));
-		d.innerHTML=ok?'<span aria-label="consented">✔</span>':'<span aria-label="not consented">✗</span>';
-		dl.append(d);
+		const value=document.createElement("span");
+		value.setAttribute("aria-label",ok?"consented":"not consented");
+		value.textContent=ok?"Yes":"No";
+		dl.append(summaryRow(l,value,{"property":"schema:acceptedAnswer","content":String(ok)}));
 	}
 }
 
@@ -315,7 +393,7 @@ async function saveNote(){
 	const html=$("#note-editor").innerHTML.trim();
 	const framework=$("#framework").value;
 	const category=$("#note-kind").value;
-	const participantId=currentParticipant?.airtableId||null;
+	const participantId=participantIdForNote(currentParticipant)||null;
 	const startIso=noteStartIso||nowIsoUtc();
 	const endIso=nowIsoUtc();
 	const sessionId=getSessionAirtableId();
@@ -335,7 +413,7 @@ async function saveNote(){
 
 	let createdId=null;
 	try{
-		const res=await postJson("/api/session-notes",payload);
+		const res=await postJson(apiUrl("/api/session-notes"),payload);
 		if(!res?.ok) throw new Error(res?.error||"Unknown error");
 		createdId=res.id||res.note?.id||null;
 		announce("Note saved.");
@@ -350,6 +428,8 @@ async function saveNote(){
 
 	// Render saved note (RDFa)
 	const ul=$("#notes-list");
+	const savedNotesSection=$("#saved-notes-section");
+	if(savedNotesSection) savedNotesSection.hidden=false;
 	const li=document.createElement("li");
 	li.setAttribute("property","schema:itemListElement");
 	li.setAttribute("typeof","schema:ListItem");
@@ -387,7 +467,7 @@ function wireEvents(){
 	$("#btn-save-note").addEventListener("click",saveNote);
 	$("#note-editor").addEventListener("input",onEditorInput);
 	$("#participant-select").addEventListener("change",(e)=>{
-		const p=MOCK_PARTICIPANTS.find(x=>x.id===e.target.value);
+		const p=state.participants.find(x=>x.id===e.target.value);
 		currentParticipant=p||null;
 		if(!p){ $("#participant-details").innerHTML=""; $("#consent-summary").innerHTML=""; return; }
 		renderParticipantDetails(p);
@@ -398,12 +478,25 @@ function wireEvents(){
 /* -------------------------------------------------------------------------- */
 /* Init                                                                       */
 /* -------------------------------------------------------------------------- */
-function init(){
+async function init(){
 	setEventStatus("https://schema.org/EventScheduled");
-	populateParticipants(MOCK_PARTICIPANTS);
+	state.studyId = getStudyId();
+	try {
+		state.participants = await loadParticipantsForStudy(state.studyId);
+		clearSessionError();
+		populateParticipants(state.participants);
+		if (!state.participants.length) {
+			setSessionError(state.studyId ? "No participants are available for this study." : "Missing study id. Add ?id= to load participants.");
+		}
+	} catch (error) {
+		console.error("participants.load.fail", error);
+		setSessionError("Participants could not be loaded.");
+		state.participants = [];
+		populateParticipants(state.participants);
+	}
 	setFramework("none");
 	wireEvents();
-	resetDraftNote();
+	if (state.participants.length) resetDraftNote();
 	updateTimerView();
 }
 document.addEventListener("DOMContentLoaded",init);

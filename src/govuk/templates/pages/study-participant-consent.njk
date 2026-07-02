@@ -13,7 +13,6 @@
 
 {% block head %}
 	<meta property="schema:name" content="Participant consent - ResearchOps">
-	<link rel="stylesheet" href="/css/govuk/govuk-forms.css" media="screen">
 	<link rel="stylesheet" href="/css/govuk/govuk-tables.css" media="screen">
 	<link rel="stylesheet" href="/css/participant-consent.css" media="screen">
 	<link rel="stylesheet" href="/css/daas-brand-panel.css?v=leds-brand-panel-20260624" media="screen">
@@ -35,6 +34,17 @@
 
 	{{ daasBrandPanel() }}
 
+	<div class="govuk-button-group">
+		{{ govukButton({
+			text: "Back to Study",
+			href: "/pages/study/",
+			classes: "govuk-button--secondary",
+			attributes: {
+				id: "back-to-study"
+			}
+		}) }}
+	</div>
+
 	<div id="consent-error" class="govuk-error-summary participant-consent-error" tabindex="-1" hidden aria-hidden="true" data-module="govuk-error-summary">
 		<div role="alert">
 			<h2 class="govuk-error-summary__title">There is a problem</h2>
@@ -49,14 +59,6 @@
 			<p id="study-context" class="govuk-caption-m">Study</p>
 			<h1 class="govuk-heading-l">Manage participant consent</h1>
 			<p class="govuk-body participant-consent-context govuk-!-width-two-thirds">Record, review or withdraw participant consent for this study. Consent is recorded against a specific published consent form version.</p>
-		</div>
-		<div class="participant-consent-hero__actions">
-			{{ govukButton({
-				text: "Back to Study",
-				href: "/pages/study/",
-				classes: "govuk-button--secondary",
-				attributes: { id: "back-to-study" }
-			}) }}
 		</div>
 	</header>
 
@@ -93,7 +95,7 @@
 			{{ govukSummaryList({
 				classes: "participant-consent-summary",
 				rows: [
-					{ key: { text: "Published form" }, value: { html: '<span id="summary-published-form">-</span>' } },
+					{ key: { text: "Form version" }, value: { html: '<span id="summary-published-form">-</span>' } },
 					{ key: { text: "Participants" }, value: { html: '<span id="summary-participants">-</span>' } },
 					{ key: { text: "Ready" }, value: { html: '<span id="summary-ready">-</span>' } },
 					{ key: { text: "Needs action" }, value: { html: '<span id="summary-action-needed">-</span>' } }
@@ -137,11 +139,15 @@
 				<input id="participant-id" type="hidden">
 				<input id="consent-record-id" type="hidden">
 
-				<div class="govuk-form-group">
-					<label class="govuk-label" for="consent-form-select">Consent form version</label>
-					<div id="consent-form-select-hint" class="govuk-hint">Use the published consent form shown, sent or read to the participant.</div>
-					<select id="consent-form-select" class="govuk-select" aria-describedby="consent-form-select-hint"></select>
-				</div>
+				{{ govukSelect({
+					id: "consent-form-select",
+					name: "consentFormId",
+					label: { text: "Consent form version" },
+					hint: { text: "Use the published consent form shown, sent or read to the participant." },
+					items: [
+						{ value: "", text: "Loading published consent forms" }
+					]
+				}) }}
 
 				<fieldset class="govuk-fieldset participant-consent-items" aria-describedby="consent-items-hint">
 					<legend class="govuk-fieldset__legend govuk-fieldset__legend--m">Consent statements</legend>

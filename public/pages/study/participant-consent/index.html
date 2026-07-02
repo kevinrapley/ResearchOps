@@ -7,7 +7,6 @@
 		<link rel="stylesheet" href="/assets/govuk/govuk-frontend.css" media="screen" />
 
 		<meta property="schema:name" content="Participant consent - ResearchOps" />
-		<link rel="stylesheet" href="/css/govuk/govuk-forms.css" media="screen" />
 		<link rel="stylesheet" href="/css/govuk/govuk-tables.css" media="screen" />
 		<link rel="stylesheet" href="/css/participant-consent.css" media="screen" />
 		<link rel="stylesheet" href="/css/daas-brand-panel.css?v=leds-brand-panel-20260624" media="screen" />
@@ -55,6 +54,19 @@
 					/>
 				</div>
 
+				<div class="govuk-button-group">
+					<a
+						href="/pages/study/"
+						role="button"
+						draggable="false"
+						class="govuk-button govuk-button--secondary"
+						data-module="govuk-button"
+						id="back-to-study"
+					>
+						Back to Study
+					</a>
+				</div>
+
 				<div
 					id="consent-error"
 					class="govuk-error-summary participant-consent-error"
@@ -79,18 +91,6 @@
 							Record, review or withdraw participant consent for this study. Consent is recorded against a specific
 							published consent form version.
 						</p>
-					</div>
-					<div class="participant-consent-hero__actions">
-						<a
-							href="/pages/study/"
-							role="button"
-							draggable="false"
-							class="govuk-button govuk-button--secondary"
-							data-module="govuk-button"
-							id="back-to-study"
-						>
-							Back to Study
-						</a>
 					</div>
 				</header>
 
@@ -149,7 +149,7 @@
 
 						<dl class="govuk-summary-list participant-consent-summary">
 							<div class="govuk-summary-list__row">
-								<dt class="govuk-summary-list__key">Published form</dt>
+								<dt class="govuk-summary-list__key">Form version</dt>
 								<dd class="govuk-summary-list__value">
 									<span id="summary-published-form">-</span>
 								</dd>
@@ -223,14 +223,19 @@
 
 							<div class="govuk-form-group">
 								<label class="govuk-label" for="consent-form-select">Consent form version</label>
+
 								<div id="consent-form-select-hint" class="govuk-hint">
 									Use the published consent form shown, sent or read to the participant.
 								</div>
+
 								<select
-									id="consent-form-select"
 									class="govuk-select"
+									id="consent-form-select"
+									name="consentFormId"
 									aria-describedby="consent-form-select-hint"
-								></select>
+								>
+									<option value="">Loading published consent forms</option>
+								</select>
 							</div>
 
 							<fieldset class="govuk-fieldset participant-consent-items" aria-describedby="consent-items-hint">

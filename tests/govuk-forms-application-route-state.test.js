@@ -9,9 +9,7 @@ const legacyFormRoutes = [
 	"public/pages/study/index.html",
 	"public/pages/study/guides/index.html",
 	"public/pages/study/consent-forms/index.html",
-	"public/pages/study/participant-consent/index.html",
 	"public/pages/study/participants/index.html",
-	"public/pages/study/session/index.html",
 ];
 
 function read(path) {
@@ -67,6 +65,24 @@ const sessionsPage = read("public/pages/sessions/index.html");
 includes(sessionsPage, "<label class=\"govuk-label\" for=\"when\">When</label>", "Sessions route");
 includes(sessionsPage, "aria-describedby=\"when-hint\"", "Sessions route");
 excludes(sessionsPage, "<label class=\"govuk-body sessions-field\">", "Sessions route");
+
+const studySessionPage = read("public/pages/study/session/index.html");
+includes(studySessionPage, "href=\"/assets/govuk/govuk-frontend.css\"", "Study session route");
+excludes(studySessionPage, "href=\"/css/govuk/govuk-forms.css\"", "Study session route");
+includes(studySessionPage, "id=\"participant-select\"", "Study session route");
+includes(studySessionPage, "class=\"govuk-select govuk-!-width-two-thirds\"", "Study session route");
+includes(studySessionPage, "id=\"note-editor\"", "Study session route");
+excludes(studySessionPage, "href=\"/css/session.css\"", "Study session route");
+
+const participantConsentPage = read("public/pages/study/participant-consent/index.html");
+const participantConsentTemplate = read("src/govuk/templates/pages/study-participant-consent.njk");
+includes(participantConsentPage, "href=\"/assets/govuk/govuk-frontend.css\"", "Participant consent route");
+includes(participantConsentPage, "href=\"/css/participant-consent.css\"", "Participant consent route");
+excludes(participantConsentPage, "href=\"/css/govuk/govuk-forms.css\"", "Participant consent route");
+includes(participantConsentPage, "href=\"/css/govuk/govuk-tables.css\"", "Participant consent route");
+includes(participantConsentTemplate, "govukSelect({", "Participant consent template");
+includes(participantConsentTemplate, "govukInput({", "Participant consent template");
+includes(participantConsentPage, "id=\"back-to-study\"", "Participant consent route");
 
 const synthesizePage = read("public/pages/study/synthesis/index.html");
 const synthesizeTemplate = read("src/govuk/templates/pages/study-synthesis.njk");

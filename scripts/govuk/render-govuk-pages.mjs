@@ -394,6 +394,16 @@ export const govukPages = [
 		},
 	},
 	{
+		template: 'pages/study-session.njk',
+		output: 'public/pages/study/session/index.html',
+		context: {
+			pageTitle: 'Research session - ResearchOps Demo Suite',
+			serviceName: 'ResearchOps Demo Suite',
+			activeNavigation: 'Projects',
+			navigation: projectNavigation,
+		},
+	},
+	{
 		template: 'pages/project-dashboard-participants.njk',
 		output: 'public/pages/project-dashboard/participants/index.html',
 		context: {
