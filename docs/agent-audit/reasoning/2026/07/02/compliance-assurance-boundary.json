@@ -32,6 +32,10 @@
 			"canonicalPath": ".agent-operating-model/bundles/multi-functional-team/"
 		},
 		{
+			"id": "govuk-design-system",
+			"canonicalPath": ".agent-operating-model/bundles/govuk-design-system/"
+		},
+		{
 			"id": "cloudflare",
 			"canonicalPath": ".agent-operating-model/bundles/cloudflare/"
 		},
@@ -52,17 +56,16 @@
 			"canonicalPath": ".agent-operating-model/bundles/mural-public-api/"
 		}
 	],
-	"bundlesSkipped": [
-		{
-			"id": "govuk-design-system",
-			"reason": "No GOV.UK UI, component or interaction behaviour changed."
-		}
-	],
+	"bundlesSkipped": [],
 	"implementationSummary": [
 		"Created a SOC 2 and ISO/IEC 27001 readiness documentation folder.",
 		"Defined the ResearchOps compliance scope and system boundary across service, data, users, suppliers, integrations and controls.",
 		"Added an evidence index that records current evidence and gaps before any compliance claim can be made.",
-		"Added a repository test to prevent unsupported compliance or certification wording."
+		"Added a repository test to prevent unsupported compliance or certification wording.",
+		"Added a GOV.UK-rendered compliance readiness page at /pages/compliance-readiness/.",
+		"Added a GOV.UK footer link to the page without adding it to the main service navigation.",
+		"Added a formal internal readiness matrix mapped to SOC 2 Trust Services Criteria categories and ISO/IEC 27001:2022 Annex A controls.",
+		"Updated the GOV.UK render workflow to track the compliance-readiness data module."
 	],
 	"validationPlanned": [
 		"Focused compliance assurance boundary test",
@@ -99,11 +102,42 @@
 		{
 			"command": "npm run validate",
 			"status": "passed"
+		},
+		{
+			"command": "node --import ./tests/helpers/generated-govuk-page-source.mjs --test tests/compliance-readiness-page-route-state.test.js tests/compliance-assurance-boundary.test.js tests/govuk-pages-render-workflow-state.test.js tests/deploy-asset-paths.test.js tests/govuk-frontend-service-pages-route-state.test.js",
+			"status": "passed",
+			"summary": "11 tests passed for the GOV.UK compliance readiness page, footer-only link, render workflow, deploy assets and GOV.UK page chrome."
+		},
+		{
+			"command": "npm run format:check",
+			"status": "passed",
+			"summary": "Follow-up formatting check passed after the page addition."
+		},
+		{
+			"command": "npm run lint",
+			"status": "passed",
+			"notes": "Exited 0 with existing warning-only lint debt."
+		},
+		{
+			"command": "npm run trace:coverage",
+			"status": "passed",
+			"summary": "Trace coverage confirmed after the page addition."
+		},
+		{
+			"command": "npm test",
+			"status": "passed",
+			"summary": "313 tests, 313 pass, 0 fail after adding the GOV.UK compliance readiness page."
+		},
+		{
+			"command": "npm run validate",
+			"status": "passed",
+			"summary": "Repository validation passed after adding the GOV.UK compliance readiness page."
 		}
 	],
 	"residualRisks": [
 		"The proposed boundary requires Home Office owner and security sign-off.",
 		"The branch does not create a full asset inventory, risk register, supplier assurance pack, SOC 2 mapping or ISO/IEC 27001 Statement of Applicability.",
-		"No SOC 2 compliance or ISO/IEC 27001 certification claim should be made from this PR alone."
+		"No SOC 2 compliance or ISO/IEC 27001 certification claim should be made from this PR alone.",
+		"The page uses category-level SOC 2 TSC mappings and selected ISO/IEC 27001 Annex A control references for readiness; final assessment needs assessor confirmation at criteria/control and evidence level."
 	]
 }

@@ -1,0 +1,109 @@
+{% extends "layouts/researchops.njk" %}
+{% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
+{% from "govuk/components/warning-text/macro.njk" import govukWarningText %}
+
+{% macro inlineList(items) %}
+	<ul class="govuk-list govuk-list--bullet govuk-!-margin-bottom-0">
+		{% for item in items %}
+		<li>{{ item }}</li>
+		{% endfor %}
+	</ul>
+{% endmacro %}
+
+{% block content %}
+<div class="govuk-width-container" data-compliance-readiness-page>
+	{{ govukBreadcrumbs({
+		items: [
+			{ text: "Home", href: "/" },
+			{ text: "Compliance readiness" }
+		]
+	}) }}
+
+	<div class="govuk-grid-row">
+		<div class="govuk-grid-column-two-thirds">
+			<span class="govuk-caption-xl">{{ complianceScopeSummary.status }}</span>
+			<h1 class="govuk-heading-xl">SOC 2 and ISO 27001 readiness</h1>
+			<p class="govuk-body-l">
+				This page records the ResearchOps platform readiness position for SOC 2 compliance work and ISO/IEC 27001 certification preparation.
+			</p>
+			{{ govukWarningText({
+				text: complianceScopeSummary.nonClaim,
+				iconFallbackText: "Warning"
+			}) }}
+		</div>
+	</div>
+
+	<section aria-labelledby="scope-boundary-heading">
+		<div class="govuk-grid-row">
+			<div class="govuk-grid-column-two-thirds">
+				<h2 class="govuk-heading-l" id="scope-boundary-heading">Compliance scope and system boundary</h2>
+				<p class="govuk-body">{{ complianceScopeSummary.boundary }}</p>
+				<p class="govuk-body">{{ complianceScopeSummary.assuranceScope }}</p>
+			</div>
+		</div>
+
+		<div class="govuk-grid-row">
+			{% for section in complianceBoundaryItems %}
+			<div class="govuk-grid-column-one-third">
+				<h3 class="govuk-heading-m">{{ section.title }}</h3>
+				{{ inlineList(section.items) }}
+			</div>
+			{% endfor %}
+		</div>
+	</section>
+
+	<section aria-labelledby="control-matrix-heading" class="govuk-!-margin-top-8">
+		<h2 class="govuk-heading-l" id="control-matrix-heading">Formal control matrix</h2>
+		<p class="govuk-body">
+			The matrix maps current readiness controls to SOC 2 Trust Services Criteria categories and ISO/IEC 27001:2022 Annex A controls. It is an internal readiness map. A qualified assessor must confirm the final criteria, evidence sufficiency and control operating effectiveness before any claim is made.
+		</p>
+
+		<div class="govuk-table__container">
+			<table class="govuk-table" data-compliance-control-matrix>
+				<caption class="govuk-table__caption govuk-table__caption--m">ResearchOps SOC 2 and ISO 27001 readiness control mapping</caption>
+				<thead class="govuk-table__head">
+					<tr class="govuk-table__row">
+						<th scope="col" class="govuk-table__header">Control area</th>
+						<th scope="col" class="govuk-table__header">Readiness expectation</th>
+						<th scope="col" class="govuk-table__header">SOC 2 TSC</th>
+						<th scope="col" class="govuk-table__header">ISO/IEC 27001 Annex A</th>
+						<th scope="col" class="govuk-table__header">Evidence and gap</th>
+					</tr>
+				</thead>
+				<tbody class="govuk-table__body">
+					{% for row in controlMatrix %}
+					<tr class="govuk-table__row" data-control-area="{{ row.controlArea }}">
+						<th scope="row" class="govuk-table__header">{{ row.controlArea }}<br><strong class="govuk-tag govuk-tag--blue govuk-!-margin-top-2">{{ row.status }}</strong></th>
+						<td class="govuk-table__cell">{{ row.readinessExpectation }}</td>
+						<td class="govuk-table__cell">{{ inlineList(row.soc2Tsc) }}</td>
+						<td class="govuk-table__cell">{{ inlineList(row.iso27001AnnexA) }}</td>
+						<td class="govuk-table__cell">
+							<p class="govuk-body-s"><strong>Current evidence:</strong> {{ row.currentEvidence }}</p>
+							<p class="govuk-body-s govuk-!-margin-bottom-0"><strong>Gap:</strong> {{ row.gap }}</p>
+						</td>
+					</tr>
+					{% endfor %}
+				</tbody>
+			</table>
+		</div>
+	</section>
+
+	<section aria-labelledby="remaining-gaps-heading" class="govuk-!-margin-top-8">
+		<div class="govuk-grid-row">
+			<div class="govuk-grid-column-two-thirds">
+				<h2 class="govuk-heading-l" id="remaining-gaps-heading">Evidence still needed before a claim</h2>
+				{{ inlineList(readinessEvidenceGaps) }}
+			</div>
+			<div class="govuk-grid-column-one-third">
+				<h2 class="govuk-heading-m">Standards references</h2>
+				<ul class="govuk-list">
+					{% for reference in standardsReferences %}
+					<li><a class="govuk-link" href="{{ reference.href }}">{{ reference.title }}</a></li>
+					{% endfor %}
+				</ul>
+			</div>
+		</div>
+	</section>
+</div>
+{% endblock %}
+

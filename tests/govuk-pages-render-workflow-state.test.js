@@ -21,6 +21,7 @@ const requiredWorkflowSnippets = [
 	'workflow_dispatch: {}',
 	'contents: write',
 	'src/govuk/templates/**',
+	'src/govuk/data/compliance-readiness.mjs',
 	'src/govuk/data/sourcebook.mjs',
 	'sourcebook/sourcebook-index.json',
 	'scripts/govuk/render-govuk-pages.mjs',
@@ -92,6 +93,12 @@ includes(renderer, "output: 'public/pages/projects/journals/index.html'", 'GOV.U
 includes(renderer, "template: 'pages/projects-journals.njk'", 'GOV.UK pages renderer');
 includes(renderer, "output: 'public/pages/start/index.html'", 'GOV.UK pages renderer');
 includes(renderer, "template: 'pages/start.njk'", 'GOV.UK pages renderer');
+includes(
+	renderer,
+	"output: 'public/pages/compliance-readiness/index.html'",
+	'GOV.UK pages renderer'
+);
+includes(renderer, "template: 'pages/compliance-readiness.njk'", 'GOV.UK pages renderer');
 
 for (const snippet of [
 	'Cloudflare Pages currently publishes the committed `public/` directory',

@@ -27,21 +27,21 @@
 - `github-diamond` at `.agent-operating-model/bundles/github/`
 - `researchops-developer-control` at `.agent-operating-model/bundles/researchops-developer-control/`
 - `multi-functional-team` at `.agent-operating-model/bundles/multi-functional-team/`
+- `govuk-design-system` at `.agent-operating-model/bundles/govuk-design-system/`
 - `cloudflare` at `.agent-operating-model/bundles/cloudflare/`
 - `openai-platform` at `.agent-operating-model/bundles/openai/`
 - `mcp-agent-tooling` at `.agent-operating-model/bundles/mcp-agent-tooling/`
 - `airtable-public-api` at `.agent-operating-model/bundles/airtable-public-api/`
 - `mural-public-api` at `.agent-operating-model/bundles/mural-public-api/`
 
-Skipped bundle:
-
-- `govuk-design-system`, because this change adds assurance documentation and tests rather than changing user-facing GOV.UK UI or interaction patterns.
+Skipped bundles: none. The follow-up page addition selected the GOV.UK Design System bundle because user-facing GOV.UK content and footer navigation changed.
 
 ## Precedence decisions
 
 - GitHub Diamond governed branch naming, trace requirement, PR readiness and validation evidence.
 - ResearchOps Developer Control governed service boundary, integration ownership and repository placement.
 - Multi-Functional Team governed public-sector assurance, privacy, risk, human accountability and non-claim wording.
+- GOV.UK Design System governed the rendered page structure, footer link placement and page-content patterns.
 - Cloudflare, OpenAI, MCP, Airtable and Mural bundles informed the supplier and integration boundary without changing API contracts or runtime behaviour.
 
 ## Files read
@@ -56,9 +56,20 @@ Skipped bundle:
 - `docs/compliance/soc2-iso27001-readiness/README.md`
 - `docs/compliance/soc2-iso27001-readiness/scope-and-system-boundary.md`
 - `docs/compliance/soc2-iso27001-readiness/evidence-index.md`
+- `src/govuk/data/compliance-readiness.mjs`
+- `src/govuk/templates/pages/compliance-readiness.njk`
+- `public/pages/compliance-readiness/index.html`
 - `tests/compliance-assurance-boundary.test.js`
+- `tests/compliance-readiness-page-route-state.test.js`
 - `docs/agent-audit/reasoning/2026/07/02/compliance-assurance-boundary.md`
 - `docs/agent-audit/reasoning/2026/07/02/compliance-assurance-boundary.json`
+
+## Files modified
+
+- `public/partials/footer.html`
+- `scripts/govuk/render-govuk-pages.mjs`
+- `.github/workflows/render-govuk-pages.yml`
+- `tests/govuk-pages-render-workflow-state.test.js`
 
 ## Implementation decisions
 
@@ -66,6 +77,10 @@ Skipped bundle:
 - Kept the wording to readiness and scope definition. The documents explicitly state they do not assert SOC 2 compliance or ISO/IEC 27001 certification.
 - Included users, data classes, suppliers, integrations, control boundary, inherited controls and open decisions so security reviewers can challenge the proposed boundary.
 - Added a test that protects the non-claim wording and verifies core privacy, supplier and evidence-gap content.
+- Added a GOV.UK-rendered compliance readiness page at `/pages/compliance-readiness/`.
+- Kept the page out of the main service navigation and added a GOV.UK footer support link instead.
+- Added a formal internal readiness control matrix mapped to SOC 2 Trust Services Criteria categories and ISO/IEC 27001:2022 Annex A controls.
+- Updated the GOV.UK render workflow so changes to the compliance-readiness data module trigger static page rendering.
 
 ## Validation planned
 
@@ -83,9 +98,16 @@ Skipped bundle:
 - `npm run trace:coverage` passed and confirmed trace coverage for `feature/compliance-assurance-boundary`.
 - `npm test` passed: 309 tests, 309 pass, 0 fail.
 - `npm run validate` passed.
+- Follow-up focused route-state tests passed for the GOV.UK compliance readiness page, footer-only link, render workflow, deploy assets and GOV.UK page chrome: 11 tests, 11 pass.
+- Follow-up `npm run format:check` passed after the page addition.
+- Follow-up `npm run lint` passed with existing warning-only lint debt.
+- Follow-up `npm run trace:coverage` passed.
+- Follow-up `npm test` passed: 313 tests, 313 pass, 0 fail.
+- Follow-up `npm run validate` passed.
 
 ## Residual risks
 
 - The scope still requires Home Office service owner, information asset owner, senior risk owner and security representative sign-off.
 - This PR does not create the asset inventory, risk register, supplier assurance pack, SOC 2 criteria mapping or ISO/IEC 27001 Statement of Applicability.
 - Formal compliance claims still require authorised assessment evidence outside this repository documentation.
+- The page uses category-level SOC 2 TSC mappings and selected ISO/IEC 27001 Annex A control references for readiness; final assessment needs assessor confirmation at criteria/control and evidence level.

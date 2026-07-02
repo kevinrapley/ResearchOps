@@ -4,6 +4,7 @@ import { fileURLToPath } from 'node:url';
 import nunjucks from 'nunjucks';
 import prettier from 'prettier';
 
+import { complianceReadinessContext } from '../../src/govuk/data/compliance-readiness.mjs';
 import { repositoryPageContext, repositoryStaticPages } from '../../src/govuk/data/repository-page.mjs';
 import { sourcebookIndex, sourcebookPillarPages } from '../../src/govuk/data/sourcebook.mjs';
 
@@ -213,6 +214,14 @@ export const govukPages = [
 			pageTitle: 'ResearchOps Product Proof - ResearchOps Demo Suite',
 			serviceName: 'ResearchOps Demo Suite',
 			activeNavigation: '',
+			navigation: accountNavigation,
+		},
+	},
+	{
+		template: 'pages/compliance-readiness.njk',
+		output: 'public/pages/compliance-readiness/index.html',
+		context: {
+			...complianceReadinessContext,
 			navigation: accountNavigation,
 		},
 	},
