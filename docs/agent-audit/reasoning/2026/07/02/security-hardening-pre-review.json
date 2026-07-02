@@ -1,0 +1,164 @@
+{
+	"date": "2026-07-02",
+	"branch": "fix/security-hardening-pre-review",
+	"traceRequired": true,
+	"traceReason": "fix/ branches require auditable traces for repository-affecting work",
+	"taskSummary": "Implement security hardening before Home Office security review for permission gates, CSRF/origin controls, active-account enforcement, rate limiting, headers, production configuration, supply-chain evidence, retention, and reduced audit/log PII.",
+	"operatingModelFilesLoaded": [
+		"AGENTS.md",
+		".agent-operating-model/orchestration.xml",
+		".agent-operating-model/bundle-registry.json",
+		".agent-operating-model/task-signal-catalog.json",
+		".agent-operating-model/selection-rules.json",
+		".agent-operating-model/bootstrap-checklist.md",
+		".agent-operating-model/precedence-policy.md",
+		".agent-operating-model/trace-policy.md",
+		".agent-operating-model/trace-layers.md",
+		".agent-operating-model/behavioural-evals.json",
+		".agent-operating-model/github-mutation-policy.md"
+	],
+	"modelCommand": "npm run agent:model -- \"complete security hardening before Home Office security review: permission gates CSRF account status rate limiting security headers production config supply chain retention audit PII\"",
+	"selectedBundles": [
+		{
+			"id": "github-diamond",
+			"canonicalPath": ".agent-operating-model/bundles/github/"
+		},
+		{
+			"id": "researchops-developer-control",
+			"canonicalPath": ".agent-operating-model/bundles/researchops-developer-control/"
+		},
+		{
+			"id": "multi-functional-team",
+			"canonicalPath": ".agent-operating-model/bundles/multi-functional-team/"
+		},
+		{
+			"id": "cloudflare",
+			"canonicalPath": ".agent-operating-model/bundles/cloudflare/"
+		}
+	],
+	"skippedBundles": [
+		"govuk-design-system",
+		"openai-platform",
+		"mcp-agent-tooling",
+		"airtable-public-api",
+		"mural-public-api"
+	],
+	"precedenceDecisions": [
+		"GitHub Diamond governed branch naming, trace requirement, validation evidence, and PR readiness.",
+		"ResearchOps Developer Control governed Worker/service boundaries and D1 migration approach.",
+		"Multi-Functional Team governed security and PII/GDPR assurance framing.",
+		"Cloudflare governed the preview Worker deployment configuration follow-up."
+	],
+	"filesRead": [
+		"infra/cloudflare/src/worker.js",
+		"infra/cloudflare/src/core/auth/passwordless.js",
+		"infra/cloudflare/src/core/auth/access.js",
+		"infra/cloudflare/src/service/session-notes.js",
+		"infra/cloudflare/src/service/participant-consent.js",
+		"infra/cloudflare/src/service/participants.js",
+		"infra/cloudflare/migrations/0023_session_consent_and_notes.sql",
+		"infra/cloudflare/migrations/0008_seed_test_project_1_participants.sql",
+		"public/_headers",
+		"infra/cloudflare/wrangler.toml",
+		".github/workflows/security.yml",
+		".github/workflows/deploy-worker.yml",
+		"github-settings.yaml",
+		"scripts/release-provenance.mjs",
+		"tests/"
+	],
+	"filesModified": [
+		".github/workflows/security.yml",
+		".github/workflows/deploy-worker.yml",
+		"docs/deployment/d1-migration-ordering.md",
+		"github-settings.yaml",
+		"infra/cloudflare/src/core/auth/access.js",
+		"infra/cloudflare/src/core/auth/passwordless.js",
+		"infra/cloudflare/src/worker.js",
+		"infra/cloudflare/wrangler.toml",
+		"public/_headers",
+		"scripts/release-provenance.mjs",
+		"tests/auth-sign-in-route-state.test.js",
+		"tests/qa-bdd-authenticated-walkthrough-route-state.test.js"
+	],
+	"filesCreated": [
+		"infra/cloudflare/migrations/0024_security_hardening_controls.sql",
+		"infra/cloudflare/src/service/retention.js",
+		"tests/security-hardening-controls-route-state.test.js",
+		"docs/agent-audit/reasoning/2026/07/02/security-hardening-pre-review.md",
+		"docs/agent-audit/reasoning/2026/07/02/security-hardening-pre-review.json"
+	],
+	"implementationSummary": [
+		"Added shared research-data route permission declarations and Worker checks.",
+		"Added trusted-origin mutation checks and security headers.",
+		"Blocked non-active accounts in passwordless and Cloudflare Access auth.",
+		"Added D1-backed rate limiting for passwordless auth.",
+		"Reduced auth audit metadata PII by replacing raw email metadata with keyed hashes.",
+		"Added disabled-by-default scheduled retention enforcement.",
+		"Tightened production Worker defaults.",
+		"Updated preview Worker config generation so preview deployments explicitly re-enable QA BDD auth and rewrite the full preview allowed-origin setting from the current production allowlist.",
+		"Added SBOM release evidence and retained intended repository settings for dependency review and code scanning while avoiding unsupported advanced CI jobs."
+	],
+	"validation": [
+		{
+			"command": "node --check infra/cloudflare/src/worker.js",
+			"status": "passed"
+		},
+		{
+			"command": "node --check infra/cloudflare/src/core/auth/passwordless.js",
+			"status": "passed"
+		},
+		{
+			"command": "node --check infra/cloudflare/src/core/auth/access.js",
+			"status": "passed"
+		},
+		{
+			"command": "node --check infra/cloudflare/src/service/retention.js",
+			"status": "passed"
+		},
+		{
+			"command": "npm test -- tests/security-hardening-controls-route-state.test.js tests/auth-sign-in-route-state.test.js tests/qa-bdd-authenticated-walkthrough-route-state.test.js tests/auth-route-permissions.test.js",
+			"status": "passed"
+		},
+		{
+			"command": "node scripts/release-provenance.mjs --output-dir artifacts/release-provenance-test",
+			"status": "passed"
+		},
+		{
+			"command": "npm run agent:model:validate",
+			"status": "passed"
+		},
+		{
+			"command": "npm run format:check",
+			"status": "passed"
+		},
+		{
+			"command": "npm run lint",
+			"status": "passed_with_existing_warnings"
+		},
+		{
+			"command": "npm test",
+			"status": "passed",
+			"summary": "297 tests, 0 failures"
+		},
+		{
+			"command": "npm test -- tests/qa-bdd-authenticated-walkthrough-route-state.test.js tests/security-hardening-controls-route-state.test.js",
+			"status": "passed",
+			"summary": "15 tests, 0 failures"
+		},
+		{
+			"command": "npm run trace:coverage",
+			"status": "passed"
+		},
+		{
+			"command": "npm run validate",
+			"status": "passed"
+		}
+	],
+	"residualRisks": [
+		"Retention enforcement is disabled by default until operational approval.",
+		"CSP still allows inline scripts/styles for current frontend compatibility.",
+		"Workflow action SHA pinning is not implemented in this branch.",
+		"CodeQL coverage depends on GitHub default setup while default setup remains enabled.",
+		"Dependency review enforcement depends on enabling GitHub dependency graph for the repository before adding the dependency review workflow back."
+	]
+}

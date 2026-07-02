@@ -129,7 +129,7 @@ function assertPasswordlessCodeAttemptLimitExists() {
 	assert.match(passwordless, /function assertChallengeCanBeAttempted\(challenge\)/);
 	assert.match(passwordless, /code_attempts_exceeded/);
 	assert.match(passwordless, /Too many incorrect codes/);
-	assert.match(passwordless, /function recordFailedAttempt\(db, request, challenge\)/);
+	assert.match(passwordless, /function recordFailedAttempt\(db, request, env, challenge\)/);
 	assert.match(passwordless, /challenge_status = 'locked'/);
 	assert.match(passwordless, /auth\.email_code\.locked/);
 	assert.match(passwordless, /attempts_remaining = \?/);

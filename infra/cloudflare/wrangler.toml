@@ -29,10 +29,12 @@ MODEL = "@cf/meta/llama-3.1-8b-instruct"
 AUDIT = "true"
 RESEARCHOPS_BUILD_SHA = "local"
 RESEARCHOPS_BUILD_BRANCH = "local"
-RESEARCHOPS_QA_BDD_AUTH_ENABLED = "true"
+RESEARCHOPS_QA_BDD_AUTH_ENABLED = "false"
 RESEARCHOPS_QA_BDD_AUTH_EMAILS = "qa-bdd.walkthrough@example.gov.uk"
+RESEARCHOPS_RETENTION_ENFORCEMENT_ENABLED = "false"
+RESEARCHOPS_RETENTION_GRACE_DAYS = "7"
 
-ALLOWED_ORIGINS = "https://researchops.pages.dev,https://rops-api.digikev-kevin-rapley.workers.dev,http://localhost:8080,https://reops-sourcebook.pages.dev"
+ALLOWED_ORIGINS = "https://researchops.pages.dev,https://rops-api.digikev-kevin-rapley.workers.dev,https://reops-sourcebook.pages.dev"
 
 # Airtable tables
 AIRTABLE_TABLE_AI_LOG            = "AI_Usage"
@@ -78,6 +80,9 @@ enabled = true
 head_sampling_rate = 1
 invocation_logs = true
 persist = true
+
+[triggers]
+crons = ["17 2 * * *"]
 
 # D1
 [[d1_databases]]

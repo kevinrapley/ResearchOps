@@ -143,8 +143,8 @@ test('passwordless QA BDD bypass is env gated and reuses the normal session path
 	assert.doesNotMatch(passwordlessSource, /qa-bdd\.walkthrough@example\.gov\.uk/);
 });
 
-test('Cloudflare Worker config enables QA BDD auth without storing the code', () => {
-	assert.match(cloudflareWranglerSource, /RESEARCHOPS_QA_BDD_AUTH_ENABLED = "true"/);
+test('Cloudflare Worker config keeps QA BDD auth disabled in production without storing the code', () => {
+	assert.match(cloudflareWranglerSource, /RESEARCHOPS_QA_BDD_AUTH_ENABLED = "false"/);
 	assert.match(
 		cloudflareWranglerSource,
 		/RESEARCHOPS_QA_BDD_AUTH_EMAILS = "qa-bdd\.walkthrough@example\.gov\.uk"/,
@@ -156,6 +156,21 @@ test('Cloudflare Worker config enables QA BDD auth without storing the code', ()
 		/RESEARCHOPS_QA_BDD_AUTH_EMAILS = "qa-bdd\.walkthrough@example\.gov\.uk"/,
 	);
 	assert.doesNotMatch(passwordlessPreviewWranglerSource, /RESEARCHOPS_QA_BDD_AUTH_CODE/);
+});
+
+test('preview Worker deployment restores QA auth and preview mutation origins', () => {
+	assert.match(deployWorkerWorkflowSource, /replace_pattern_once/);
+	assert.match(deployWorkerWorkflowSource, /RESEARCHOPS_QA_BDD_AUTH_ENABLED\\s\*=/);
+	assert.match(deployWorkerWorkflowSource, /RESEARCHOPS_QA_BDD_AUTH_ENABLED = "true"/);
+	assert.match(deployWorkerWorkflowSource, /ALLOWED_ORIGINS\\s\*=/);
+	assert.match(
+		deployWorkerWorkflowSource,
+		/https:\/\/rops-api-passwordless-preview\.digikev-kevin-rapley\.workers\.dev/,
+	);
+	assert.doesNotMatch(
+		deployWorkerWorkflowSource,
+		/researchops\.pages\.dev,https:\/\/rops-api\.digikev-kevin-rapley\.workers\.dev,http:\/\/localhost:8080/,
+	);
 });
 
 test('Cloudflare deploy workflows pass the QA BDD auth code secret to Workers', () => {

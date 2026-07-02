@@ -3,6 +3,9 @@ const COOKIE_NAME = 'rops_session';
 const CODE_TTL_SECONDS = 600;
 const SESSION_TTL_SECONDS = 43200;
 const SESSION_CONTEXT_CACHE_TTL_MS = 60 * 1000;
+const EMAIL_CODE_START_LIMIT = 5;
+const EMAIL_CODE_VERIFY_LIMIT = 10;
+const EMAIL_CODE_RATE_WINDOW_SECONDS = 10 * 60;
 const sessionContextCache = new Map();
 const JSON_HEADERS = {
 	'content-type': 'application/json; charset=utf-8',
@@ -96,6 +99,43 @@ async function hash(env, ...parts) {
 
 function after(seconds) {
 	return new Date(Date.now() + seconds * 1000).toISOString();
+}
+
+function nowIso() {
+	return new Date().toISOString();
+}
+
+async function ensureRateLimitTable(db) {
+	await db
+		.prepare(`
+		CREATE TABLE IF NOT EXISTS auth_rate_limits (
+			rate_key TEXT PRIMARY KEY,
+			window_start TEXT NOT NULL,
+			count INTEGER NOT NULL,
+			expires_at TEXT NOT NULL
+		)
+	`)
+		.run();
+}
+
+async function assertRateLimit(db, key, limit, windowSeconds) {
+	await ensureRateLimitTable(db);
+	const now = Date.now();
+	const nowText = new Date(now).toISOString();
+	const expiresAt = new Date(now + windowSeconds * 1000).toISOString();
+	const current = await db.prepare('SELECT rate_key, window_start, count, expires_at FROM auth_rate_limits WHERE rate_key = ? LIMIT 1').bind(key).first();
+	if (!current || Date.parse(current.expires_at) <= now) {
+		await db
+			.prepare('INSERT OR REPLACE INTO auth_rate_limits (rate_key, window_start, count, expires_at) VALUES (?, ?, 1, ?)')
+			.bind(key, nowText, expiresAt)
+			.run();
+		return;
+	}
+	const count = Number(current.count || 0) + 1;
+	if (count > limit) {
+		throw new AuthFlowError(429, 'rate_limited', 'Too many sign-in attempts. Try again later.');
+	}
+	await db.prepare('UPDATE auth_rate_limits SET count = ? WHERE rate_key = ?').bind(count, key).run();
 }
 
 async function readBody(request) {
@@ -206,6 +246,8 @@ async function start(request, env) {
 	const db = dbFor(env);
 	const body = await readBody(request);
 	const email = emailOf(body.email);
+	const emailHash = await hash(env, 'email', email);
+	await assertRateLimit(db, `auth:email:start:${emailHash}`, EMAIL_CODE_START_LIMIT, EMAIL_CODE_RATE_WINDOW_SECONDS);
 	const code = makeCode();
 	const challengeId = id('chl');
 	await db
@@ -217,7 +259,7 @@ async function start(request, env) {
 		.run();
 	const deliveryProvider = qaBddChallengeBypassEnabled(env, email) ? 'qa-bdd' : await sendCode(env, email, code);
 	await db.prepare("UPDATE auth_login_challenges SET delivery_status = 'sent' WHERE id = ?").bind(challengeId).run();
-	await recordAuthEvent(db, request, 'auth.email_code.requested', { email, challengeId, deliveryProvider });
+	await recordAuthEvent(db, request, 'auth.email_code.requested', { emailHash, challengeId, deliveryProvider });
 	return json({ ok: true, challengeId, expiresInSeconds: CODE_TTL_SECONDS, deliveryProvider });
 }
 
@@ -251,17 +293,18 @@ async function lockChallenge(db, challengeId) {
 	await db.prepare("UPDATE auth_login_challenges SET attempts_remaining = 0, challenge_status = 'locked' WHERE id = ?").bind(challengeId).run();
 }
 
-async function recordFailedAttempt(db, request, challenge) {
+async function recordFailedAttempt(db, request, env, challenge) {
+	const emailHash = await hash(env, 'email', challenge.email);
 	const remaining = Math.max(Number(challenge.attempts_remaining || 0) - 1, 0);
 	if (remaining === 0) {
 		await lockChallenge(db, challenge.id);
-		await recordAuthEvent(db, request, 'auth.email_code.locked', { email: challenge.email, challengeId: challenge.id });
+		await recordAuthEvent(db, request, 'auth.email_code.locked', { emailHash, challengeId: challenge.id });
 		return;
 	}
 
 	await db.prepare('UPDATE auth_login_challenges SET attempts_remaining = ? WHERE id = ?').bind(remaining, challenge.id).run();
 	await recordAuthEvent(db, request, 'auth.email_code.failed', {
-		email: challenge.email,
+		emailHash,
 		challengeId: challenge.id,
 		attemptsRemaining: remaining,
 	});
@@ -282,6 +325,7 @@ async function verify(request, env) {
 	const body = await readBody(request);
 	const challengeId = String(body.challengeId || '').trim();
 	const code = codeOf(body.code);
+	await assertRateLimit(db, `auth:email:verify:${await hash(env, 'challenge', challengeId)}`, EMAIL_CODE_VERIFY_LIMIT, EMAIL_CODE_RATE_WINDOW_SECONDS);
 	const challenge = await db
 		.prepare(`
 		SELECT id, email, code_hash, challenge_status, attempts_remaining, expires_at
@@ -293,24 +337,29 @@ async function verify(request, env) {
 	const codeHash = await hash(env, 'code', challenge.id, challenge.email, code);
 	const qaBddCodeAccepted = qaBddChallengeBypassEnabled(env, challenge.email) && code === qaBddAuthCode(env);
 	if (!qaBddCodeAccepted && codeHash !== challenge.code_hash) {
-		await recordFailedAttempt(db, request, challenge);
+		await recordFailedAttempt(db, request, env, challenge);
 		throw new AuthFlowError(400, 'code_invalid', 'The code is not valid.');
 	}
 	const user = await userForEmail(db, challenge.email);
+	const emailHash = await hash(env, 'email', challenge.email);
+	if (user.account_status !== 'active') {
+		await recordAuthEvent(db, request, 'auth.sign_in.blocked_inactive_account', { userId: user.id, emailHash, challengeId });
+		throw new AuthFlowError(403, 'account_not_active', 'Your ResearchOps account must be approved before you can sign in.');
+	}
 	await ensureIdentity(db, user, challenge.email);
 	await db
-		.prepare("UPDATE auth_login_challenges SET challenge_status = 'verified', verified_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now') WHERE id = ?")
-		.bind(challenge.id)
+		.prepare("UPDATE auth_login_challenges SET challenge_status = 'verified', verified_at = ? WHERE id = ?")
+		.bind(nowIso(), challenge.id)
 		.run();
 	const token = makeToken();
 	await db
 		.prepare(`
 		INSERT INTO auth_sessions (id, user_id, session_token_hash, expires_at, last_seen_at)
-		VALUES (?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
+		VALUES (?, ?, ?, ?, ?)
 	`)
-		.bind(id('ses'), user.id, await hash(env, 'session', token), after(SESSION_TTL_SECONDS))
+		.bind(id('ses'), user.id, await hash(env, 'session', token), after(SESSION_TTL_SECONDS), nowIso())
 		.run();
-	await recordAuthEvent(db, request, 'auth.sign_in.succeeded', { userId: user.id, email: challenge.email, challengeId });
+	await recordAuthEvent(db, request, 'auth.sign_in.succeeded', { userId: user.id, emailHash, challengeId });
 	return json({ ok: true, authenticated: true }, 200, { 'set-cookie': sessionCookie(request, token) });
 }
 
@@ -319,7 +368,10 @@ async function sessionUserByHash(db, sessionTokenHash) {
 		.prepare(`
 		SELECT s.id AS session_id, u.id, u.email, u.display_name, u.account_status
 		FROM auth_sessions s INNER JOIN auth_users u ON u.id = s.user_id
-		WHERE s.session_token_hash = ? AND s.session_status = 'active' AND s.expires_at > strftime('%Y-%m-%dT%H:%M:%fZ', 'now')
+		WHERE s.session_token_hash = ?
+			AND s.session_status = 'active'
+			AND s.expires_at > strftime('%Y-%m-%dT%H:%M:%fZ', 'now')
+			AND u.account_status = 'active'
 		LIMIT 1
 	`)
 		.bind(sessionTokenHash)
