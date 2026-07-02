@@ -27,6 +27,7 @@ exclude = [
   ".*\\.invalid",
   "^https://design-system\\.service\\.gov\\.uk/patterns/?$",
   "^https://design-system\\.service\\.gov\\.uk/patterns/create-accounts/?$",
+  "^https://researchops\\.community/about/?$",
   "^/api/repository(?:/.*)?(?:\\?.*)?$",
 ]
 

@@ -152,6 +152,7 @@ test('Cloudflare Worker config keeps QA BDD auth disabled in production without 
 	assert.doesNotMatch(cloudflareWranglerSource, /RESEARCHOPS_QA_BDD_AUTH_CODE/);
 	assert.match(cloudflareWranglerSource, /RESEARCHOPS_ALLOW_PAGES_PREVIEW_ORIGINS = "false"/);
 	assert.match(passwordlessPreviewWranglerSource, /RESEARCHOPS_QA_BDD_AUTH_ENABLED = "true"/);
+	assert.match(passwordlessPreviewWranglerSource, /RESEARCHOPS_ALLOW_PAGES_PREVIEW_ORIGINS = "true"/);
 	assert.match(
 		passwordlessPreviewWranglerSource,
 		/RESEARCHOPS_QA_BDD_AUTH_EMAILS = "qa-bdd\.walkthrough@example\.gov\.uk"/,
@@ -174,6 +175,9 @@ test('preview Worker deployment restores QA auth and preview mutation origins', 
 		deployWorkerWorkflowSource,
 		/researchops\.pages\.dev,https:\/\/rops-api\.digikev-kevin-rapley\.workers\.dev,http:\/\/localhost:8080/,
 	);
+	assert.match(passwordlessPreviewWorkflowSource, /WRANGLER_VERSION: "4\.90\.0"/);
+	assert.match(passwordlessPreviewWorkflowSource, /for attempt in 1 2 3/);
+	assert.match(passwordlessPreviewWorkflowSource, /Deploying preview Worker \(attempt \$\{attempt\}\)/);
 });
 
 test('Cloudflare deploy workflows pass the QA BDD auth code secret to Workers', () => {

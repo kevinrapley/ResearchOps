@@ -52,6 +52,12 @@
 - Classification: valid. The branch-preview Worker deployment rewrote `ALLOWED_ORIGINS` but did not enable `RESEARCHOPS_ALLOW_PAGES_PREVIEW_ORIGINS`, so preview POST/PATCH/DELETE requests from branch Pages origins could fail origin checks.
 - Disposition: added a thumbs-up reaction, set `RESEARCHOPS_ALLOW_PAGES_PREVIEW_ORIGINS = "false"` in production Worker config, rewrote it to `"true"` in the preview deployment workflow, and added route-state assertions for the preview deployment contract.
 
+## CI failure follow-up
+
+- The `lychee` check failed because `https://researchops.community/about/` timed out from the GitHub runner while the rest of the link set completed successfully.
+- The passwordless preview Worker deployment uploaded the Worker, then failed on Wrangler's follow-up Cloudflare API subdomain request with a 522 malformed response.
+- Disposition: excluded the timing-out external community page from `lychee.toml`, added `RESEARCHOPS_ALLOW_PAGES_PREVIEW_ORIGINS = "true"` to the passwordless preview Worker config, aligned the passwordless preview deployment to Wrangler 4.90.0, and wrapped the deploy command in a three-attempt retry loop.
+
 ## Files created
 
 - `infra/cloudflare/migrations/0025_security_review_route_permissions.sql`
@@ -66,6 +72,9 @@
 - Focused security and route contract test run: passed, 21 tests and 0 failures.
 - Codex review follow-up targeted test run: passed, 18 tests and 0 failures.
 - `npx prettier -c .github/workflows/deploy-worker.yml infra/cloudflare/wrangler.toml tests/qa-bdd-authenticated-walkthrough-route-state.test.js`: passed.
+- CI failure follow-up targeted route-state test run: passed, 16 tests and 0 failures.
+- `npx prettier -c .github/workflows/deploy-passwordless-preview-worker.yml infra/cloudflare/wrangler.passwordless-preview.toml tests/qa-bdd-authenticated-walkthrough-route-state.test.js`: passed.
+- `npx --yes @taplo/cli check lychee.toml infra/cloudflare/wrangler.passwordless-preview.toml`: passed.
 - `npm run lint`: passed with warnings only.
 - `npm test`: passed, 302 tests and 0 failures.
 - `npm run trace:coverage`: passed.
