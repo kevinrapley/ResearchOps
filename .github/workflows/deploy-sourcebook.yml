@@ -22,11 +22,11 @@ jobs:
       - name: Ensure site has an index
         run: |
           if [ ! -f "docs/devops/sourcebook/index.html" ]; then
-            cat > docs/devops/sourcebook/index.html <<'HTML'
-            <!doctype html><meta charset="utf-8">
-            <title>Sourcebook</title>
-            <h1>Sourcebook site not generated for this run.</h1>
-            HTML
+            {
+              printf '%s\n' '<!doctype html><meta charset="utf-8">'
+              printf '%s\n' '<title>Sourcebook</title>'
+              printf '%s\n' '<h1>Sourcebook site not generated for this run.</h1>'
+            } > docs/devops/sourcebook/index.html
           fi
 
       - name: Publish to Cloudflare Pages

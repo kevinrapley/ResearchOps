@@ -1,0 +1,66 @@
+{
+  "date": "2026-07-02",
+  "branch": "fix/sourcebook-deploy-heredoc",
+  "traceRequired": true,
+  "task": "Fix Sourcebook Cloudflare Pages deployment fallback index heredoc failure.",
+  "sourceEvidence": {
+    "attachedLog": "/Users/kevin.rapley/.codex/attachments/c2ff4399-113b-4282-a6e5-9180bc02760e/pasted-text.txt",
+    "workflow": ".github/workflows/deploy-sourcebook.yml",
+    "mainCommitInFailingRun": "9bbd5eceb43e002f99b3eb479e20db280e8d2faa",
+    "failure": "Bash did not recognise the indented heredoc terminator in the YAML run block."
+  },
+  "selectedBundles": [
+    {
+      "id": "github-diamond",
+      "path": ".agent-operating-model/bundles/github/"
+    },
+    {
+      "id": "researchops-developer-control",
+      "path": ".agent-operating-model/bundles/researchops-developer-control/"
+    },
+    {
+      "id": "multi-functional-team",
+      "path": ".agent-operating-model/bundles/multi-functional-team/"
+    },
+    {
+      "id": "cloudflare",
+      "path": ".agent-operating-model/bundles/cloudflare/"
+    }
+  ],
+  "skippedBundles": [
+    "govuk-design-system",
+    "openai-platform",
+    "mcp-agent-tooling",
+    "airtable-public-api",
+    "mural-public-api"
+  ],
+  "filesModified": [
+    ".github/workflows/deploy-sourcebook.yml",
+    "tests/cloudflare-pages-output-dir.test.js",
+    "docs/agent-audit/reasoning/2026/07/02/sourcebook-deploy-heredoc-fix.md",
+    "docs/agent-audit/reasoning/2026/07/02/sourcebook-deploy-heredoc-fix.json"
+  ],
+  "validation": [
+    {
+      "command": "node --test tests/cloudflare-pages-output-dir.test.js",
+      "result": "passed"
+    },
+    {
+      "command": "npm run format -c",
+      "result": "passed"
+    },
+    {
+      "command": "npm run trace:coverage",
+      "result": "passed"
+    },
+    {
+      "command": "git diff --check",
+      "result": "passed"
+    },
+    {
+      "command": "npm run validate",
+      "result": "passed"
+    }
+  ],
+  "residualRisk": "The failure occurred on main. The repair is staged on a follow-up PR branch and will only affect main after merge."
+}
