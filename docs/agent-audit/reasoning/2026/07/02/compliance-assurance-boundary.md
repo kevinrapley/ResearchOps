@@ -94,6 +94,7 @@ Skipped bundles: none. The follow-up page addition selected the GOV.UK Design Sy
 - Replaced visible bullet lists in the SOC 2 TSC and ISO/IEC Annex A matrix columns with comma-separated reference spans.
 - Added small GOV.UK text utility classes to the control matrix and a minimal Sass hook for top-aligned matrix cells and non-wrapping control references.
 - Updated the generated GOV.UK page test helper so route-state tests render pages with the same shared abbreviation filter as the static renderer.
+- Addressed follow-up browser review by removing abbreviation markup from the main page heading while retaining abbreviation markup in explanatory content and matrix headings.
 
 ## Validation planned
 
@@ -130,6 +131,12 @@ Skipped bundles: none. The follow-up page addition selected the GOV.UK Design Sy
 - Browser-comment fix `npm run lint` passed with existing warning-only lint debt.
 - Browser-comment fix `npm test` passed: 314 tests, 314 pass, 0 fail.
 - Browser-comment fix `npm run validate` passed.
+- Follow-up H1 browser-comment fix `npm run build:govuk-pages` passed and regenerated `public/pages/compliance-readiness/index.html`.
+- Follow-up H1 browser-comment markup probe confirmed the generated heading is `SOC 2 and ISO 27001 readiness` and contains no `abbr` element.
+- Follow-up H1 browser-comment focused tests passed: 7 tests, 7 pass across the compliance readiness route and GOV.UK render workflow.
+- Follow-up H1 browser-comment `npm run format:check` passed.
+- Follow-up H1 browser-comment `npm run trace:coverage` passed.
+- Follow-up H1 browser-comment `npm test` passed: 315 tests, 315 pass, 0 fail.
 
 ## Residual risks
 

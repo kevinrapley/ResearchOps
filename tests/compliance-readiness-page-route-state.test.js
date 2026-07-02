@@ -82,6 +82,7 @@ test('control matrix maps readiness controls to SOC 2 and ISO Annex A', () => {
 
 test('rendered compliance readiness page includes the expected public content', () => {
 	assert.match(page, /SOC 2 and ISO 27001 readiness/);
+	assert.match(page, /<h1 class="govuk-heading-xl">\s*SOC 2 and ISO 27001 readiness\s*<\/h1>/);
 	assert.match(page, /data-compliance-readiness-page/);
 	assert.match(page, /data-compliance-control-matrix/);
 	assert.match(page, /govuk-warning-text/);
@@ -108,6 +109,13 @@ test('rendered compliance readiness page includes the expected public content', 
 	assert.match(page, /<abbr title="Recovery Time Objective \/ Recovery Point Objective">RTO\/RPO<\/abbr>/);
 	assert.doesNotMatch(page, /\bis SOC 2 compliant\b/i);
 	assert.doesNotMatch(page, /\bis ISO\/IEC 27001 certified\b/i);
+});
+
+test('rendered compliance readiness heading does not use abbreviation markup', () => {
+	const heading = page.match(/<h1 class="govuk-heading-xl">([\s\S]*?)<\/h1>/);
+
+	assert.ok(heading);
+	assert.doesNotMatch(heading[1], /<abbr\b/);
 });
 
 test('rendered compliance readiness matrix uses non-bulleted reference columns', () => {

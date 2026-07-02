@@ -72,7 +72,8 @@
 		"Added a shared Nunjucks abbreviation filter for SOC, TSC, ISO/IEC, DPIA, ROPA, SLOs and RTO/RPO.",
 		"Replaced visible bullet lists in the SOC 2 TSC and ISO/IEC Annex A matrix columns with comma-separated reference spans.",
 		"Added small GOV.UK text utility classes to the control matrix and a minimal Sass hook for top-aligned matrix cells and non-wrapping control references.",
-		"Updated the generated GOV.UK page test helper so route-state tests render pages with the same shared abbreviation filter as the static renderer."
+		"Updated the generated GOV.UK page test helper so route-state tests render pages with the same shared abbreviation filter as the static renderer.",
+		"Addressed follow-up browser review by removing abbreviation markup from the main page heading while retaining abbreviation markup in explanatory content and matrix headings."
 	],
 	"validationPlanned": [
 		"Focused compliance assurance boundary test",
@@ -204,6 +205,36 @@
 			"command": "npm run validate",
 			"status": "passed",
 			"summary": "Repository validation passed after browser-comment fixes."
+		},
+		{
+			"command": "npm run build:govuk-pages",
+			"status": "passed",
+			"summary": "Regenerated public/pages/compliance-readiness/index.html after removing abbreviation markup from the H1."
+		},
+		{
+			"command": "generated HTML markup probe",
+			"status": "passed",
+			"summary": "Confirmed the generated H1 is SOC 2 and ISO 27001 readiness and contains no abbr element."
+		},
+		{
+			"command": "node --import ./tests/helpers/generated-govuk-page-source.mjs --test tests/compliance-readiness-page-route-state.test.js tests/govuk-pages-render-workflow-state.test.js",
+			"status": "passed",
+			"summary": "7 focused tests passed for the compliance readiness route and GOV.UK render workflow."
+		},
+		{
+			"command": "npm run format:check",
+			"status": "passed",
+			"summary": "Follow-up H1 browser-comment formatting check passed."
+		},
+		{
+			"command": "npm run trace:coverage",
+			"status": "passed",
+			"summary": "Trace coverage confirmed after the H1 browser-comment fix."
+		},
+		{
+			"command": "npm test",
+			"status": "passed",
+			"summary": "315 tests, 315 pass, 0 fail after the H1 browser-comment fix."
 		}
 	],
 	"residualRisks": [
