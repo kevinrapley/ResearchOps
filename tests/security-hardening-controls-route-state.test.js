@@ -72,10 +72,10 @@ function assertRetentionAndProductionConfigExist() {
 
 function assertSupplyChainEvidenceExists() {
 	assert.match(securityWorkflow, /actions\/dependency-review-action@v5/);
-	assert.match(securityWorkflow, /github\/codeql-action\/init@v4/);
-	assert.match(securityWorkflow, /github\/codeql-action\/analyze@v4/);
+	assert.doesNotMatch(securityWorkflow, /github\/codeql-action\//);
 	assert.match(releaseProvenance, /dependency-sbom\.cyclonedx\.json/);
 	assert.match(releaseProvenance, /bomFormat: "CycloneDX"/);
+	assert.match(githubSettings, /code_scanning: true/);
 	assert.match(githubSettings, /sbom_on_release: true/);
 }
 

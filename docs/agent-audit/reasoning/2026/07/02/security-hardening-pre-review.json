@@ -81,7 +81,7 @@
 		"Reduced auth audit metadata PII by replacing raw email metadata with keyed hashes.",
 		"Added disabled-by-default scheduled retention enforcement.",
 		"Tightened production Worker defaults.",
-		"Added dependency review, CodeQL, and SBOM release evidence."
+		"Added dependency review and SBOM release evidence while retaining code scanning as repository-level default setup evidence."
 	],
 	"validation": [
 		{
@@ -129,6 +129,7 @@
 	"residualRisks": [
 		"Retention enforcement is disabled by default until operational approval.",
 		"CSP still allows inline scripts/styles for current frontend compatibility.",
-		"Workflow action SHA pinning is not implemented in this branch."
+		"Workflow action SHA pinning is not implemented in this branch.",
+		"CodeQL coverage depends on GitHub default setup while default setup remains enabled."
 	]
 }
