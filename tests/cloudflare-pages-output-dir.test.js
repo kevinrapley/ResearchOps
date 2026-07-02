@@ -28,6 +28,12 @@ assert.match(
 	'The Sourcebook workflow must publish the generated Sourcebook site, not the root app output.'
 );
 
+assert.match(
+	sourcebookDeployWorkflow,
+	/- "\.github\/workflows\/deploy-sourcebook\.yml"/,
+	'The Sourcebook workflow must run when its own deploy rules change.'
+);
+
 assert.ok(
 	sourcebookDeployWorkflow.indexOf('Ensure site has an index') <
 		sourcebookDeployWorkflow.indexOf('cloudflare/pages-action@v1'),

@@ -42,9 +42,11 @@ Precedence: GitHub Diamond governs repository safety, branch hygiene, PR discipl
 ## Changes made
 
 - Replaced the workflow heredoc with a small grouped `printf` block so the fallback `index.html` can be written without heredoc indentation sensitivity.
+- Added `.github/workflows/deploy-sourcebook.yml` to the workflow path filter so changing the deploy workflow can trigger a Sourcebook deploy on merge.
 - Extended `tests/cloudflare-pages-output-dir.test.js` to assert:
   - the Sourcebook workflow still targets the `reops-sourcebook` Pages project
   - the workflow publishes `./docs/devops/sourcebook`
+  - the workflow runs when its own deploy rules change
   - the fallback index step runs before `cloudflare/pages-action@v1`
   - the fallback guard does not use the failed heredoc pattern
   - the fallback guard writes the expected doctype line with `printf`

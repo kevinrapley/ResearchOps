@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - "docs/devops/sourcebook/**"
+      - ".github/workflows/deploy-sourcebook.yml"
 
 permissions:
   contents: read
