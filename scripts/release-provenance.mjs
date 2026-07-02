@@ -171,6 +171,44 @@ function buildDsse(provenance, manifest) {
 	};
 }
 
+function buildDependencySbom() {
+	const lockBuffer = readIfExists("package-lock.json");
+	if (!lockBuffer) {
+		return {
+			bomFormat: "CycloneDX",
+			specVersion: "1.5",
+			version: 1,
+			metadata: { component: { type: "application", name: "researchops-sdk", version: "1.0.0" } },
+			components: [],
+		};
+	}
+
+	const lock = JSON.parse(lockBuffer.toString("utf8"));
+	const components = Object.entries(lock.packages || {})
+		.filter(([packagePath]) => packagePath.startsWith("node_modules/"))
+		.map(([packagePath, pkg]) => ({
+			type: "library",
+			name: packagePath.replace(/^node_modules\//, ""),
+			version: pkg.version || "",
+			scope: pkg.dev ? "optional" : "required",
+			purl: pkg.version ? `pkg:npm/${packagePath.replace(/^node_modules\//, "")}@${pkg.version}` : undefined,
+			hashes: pkg.integrity ? [{ alg: "SHA-512", content: pkg.integrity }] : undefined,
+		}))
+		.map((component) => Object.fromEntries(Object.entries(component).filter(([, value]) => value !== undefined)))
+		.sort((first, second) => first.name.localeCompare(second.name));
+
+	return {
+		bomFormat: "CycloneDX",
+		specVersion: "1.5",
+		version: 1,
+		metadata: {
+			timestamp: new Date().toISOString(),
+			component: { type: "application", name: lock.name || "researchops-sdk", version: lock.version || "1.0.0" },
+		},
+		components,
+	};
+}
+
 function writeJson(filePath, value) {
 	fs.writeFileSync(filePath, `${JSON.stringify(value, null, "\t")}\n`, "utf8");
 }
@@ -182,10 +220,12 @@ fs.mkdirSync(outputDir, { recursive: true });
 const manifest = buildManifest(options.files);
 const provenance = buildSlsa(manifest);
 const dsse = buildDsse(provenance, manifest);
+const sbom = buildDependencySbom();
 
 writeJson(path.join(outputDir, "release-provenance-manifest.json"), manifest);
 writeJson(path.join(outputDir, "slsa-provenance.json"), provenance);
 writeJson(path.join(outputDir, "dsse-envelope.json"), dsse);
+writeJson(path.join(outputDir, "dependency-sbom.cyclonedx.json"), sbom);
 
 process.stdout.write(
 	`Wrote release provenance artifacts to ${options.outputDir}\n`,

@@ -143,8 +143,8 @@ test('passwordless QA BDD bypass is env gated and reuses the normal session path
 	assert.doesNotMatch(passwordlessSource, /qa-bdd\.walkthrough@example\.gov\.uk/);
 });
 
-test('Cloudflare Worker config enables QA BDD auth without storing the code', () => {
-	assert.match(cloudflareWranglerSource, /RESEARCHOPS_QA_BDD_AUTH_ENABLED = "true"/);
+test('Cloudflare Worker config keeps QA BDD auth disabled in production without storing the code', () => {
+	assert.match(cloudflareWranglerSource, /RESEARCHOPS_QA_BDD_AUTH_ENABLED = "false"/);
 	assert.match(
 		cloudflareWranglerSource,
 		/RESEARCHOPS_QA_BDD_AUTH_EMAILS = "qa-bdd\.walkthrough@example\.gov\.uk"/,

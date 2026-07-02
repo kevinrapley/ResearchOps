@@ -397,12 +397,19 @@ export async function resolveAuthenticatedContext(request, env) {
 		const accessPayload = await validateAccessToken(request, env);
 		const db = dbFor(env);
 		const user = await ensureUserForAccessPayload(db, accessPayload);
+		if (user.account_status !== 'active') {
+			throw new AuthError(
+				403,
+				'account_not_active',
+				'Your ResearchOps account must be approved before you can use this service.',
+			);
+		}
 		await updateLastSeen(db, accessPayload.sub);
 
-			const teams = await listTeams(db, user.id);
-			const activeTeam = selectActiveTeam(request, teams);
-			const roles = await listRoles(db, user.id);
-			const permissions = await listPermissions(db, user.id);
+		const teams = await listTeams(db, user.id);
+		const activeTeam = selectActiveTeam(request, teams);
+		const roles = await listRoles(db, user.id);
+		const permissions = await listPermissions(db, user.id);
 
 		return {
 			authenticated: true,

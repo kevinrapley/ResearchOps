@@ -29,7 +29,7 @@ security_features:
   push_protection: true
   code_scanning: true
   dependency_review: true
-  sbom_on_release: false
+  sbom_on_release: true
 repository_rulesets:
   required: false
 environments:
