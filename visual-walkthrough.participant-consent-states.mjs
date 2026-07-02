@@ -21,8 +21,9 @@ export const participantConsentDefaultState = {
 	mockRoutes: participantConsentMockRoutes(),
 	actions: [
 		{
-			type: 'waitForText',
-			text: 'Participant consent loaded.',
+			type: 'waitForSelector',
+			selector: '#consent-workspace:not([hidden])',
+			state: 'visible',
 		},
 		{
 			type: 'waitForText',
@@ -57,8 +58,9 @@ export const participantConsentVisualStates = [
 		mockRoutes: participantConsentMockRoutes({ consentForms: [] }),
 		actions: [
 			{
-				type: 'waitForText',
-				text: 'Create and publish a consent form before recording participant consent',
+				type: 'waitForSelector',
+				selector: '#no-consent-form-state:not([hidden])',
+				state: 'visible',
 			},
 			{
 				type: 'waitForText',
@@ -78,8 +80,9 @@ export const participantConsentVisualStates = [
 		}),
 		actions: [
 			{
-				type: 'waitForText',
-				text: 'Add participants before recording consent',
+				type: 'waitForSelector',
+				selector: '#no-participants-state:not([hidden])',
+				state: 'visible',
 			},
 			{
 				type: 'waitForText',
@@ -96,8 +99,9 @@ export const participantConsentVisualStates = [
 		mockRoutes: participantConsentMockRoutes(),
 		actions: [
 			{
-				type: 'waitForText',
-				text: 'Participant consent loaded.',
+				type: 'waitForSelector',
+				selector: '#consent-workspace:not([hidden])',
+				state: 'visible',
 			},
 			{
 				type: 'click',

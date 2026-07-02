@@ -7,7 +7,7 @@
 
 export const participantConsentProjectId = 'recVisualConsentProject001';
 export const participantConsentStudyId = 'recVisualConsentStudy001';
-export const participantConsentPath = `/pages/study/participant-consent/?pid=${participantConsentProjectId}&sid=${participantConsentStudyId}`;
+export const participantConsentPath = `/pages/study/participant-consent/?id=${participantConsentStudyId}`;
 
 const projectsRoute = /\/api\/projects(?:\?.*)?$/;
 const studiesRoute = /\/api\/studies(?:\?.*)?$/;

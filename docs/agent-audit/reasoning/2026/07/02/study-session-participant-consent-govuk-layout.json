@@ -6,7 +6,8 @@
   "implementationHighlights": [
     "Removed the participant consent Back to Study action and updated route-state contracts so it does not return.",
     "Addressed Codex review comments for session API credentials, D1-empty Airtable consent fallback and legacy sid no longer being treated as a session-note id.",
-    "Updated D1 migration ordering documentation so the next main migration prefix is 0024."
+    "Updated D1 migration ordering documentation so the next main migration prefix is 0024.",
+    "Fixed manual visual walkthrough CI waits to use the current participant consent route, visible page-state containers and the operational participant fixture id."
   ],
   "selectedBundles": [
     {
@@ -59,6 +60,19 @@
       "command": "Browser preview verification",
       "result": "passed",
       "evidence": "Loaded participant consent verified at 641px viewport with aligned radio row, stacked tag gap and withdrawal checkbox label margin-top -5px."
+    },
+    {
+      "command": "node --test tests/qa-bdd-authenticated-walkthrough-route-state.test.js",
+      "result": "passed with 13 tests passing and 0 failing"
+    },
+    {
+      "command": "node --test tests/visual-walkthrough-registry-coverage.test.js tests/govuk-frontend-service-pages-route-state.test.js",
+      "result": "passed with 2 tests passing and 0 failing"
+    },
+    {
+      "command": "Targeted Playwright capture using captureState against http://127.0.0.1:4174",
+      "result": "passed",
+      "evidence": "Captured study-session/default and study-participant-consent/default, no-published-consent-form, no-participants and participant-selected across desktop and mobile."
     }
   ]
 }

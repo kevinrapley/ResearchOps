@@ -10,6 +10,7 @@ import {
 	operationalJournalMemos,
 	operationalPaths,
 } from '../visual-walkthrough.operational-fixtures.mjs';
+import { participantConsentPath } from '../visual-walkthrough.participant-consent-fixtures.mjs';
 import { repositoryStaticPages } from '../src/govuk/data/repository-page.mjs';
 
 const featureSource = fs.readFileSync('features/authenticated-walkthrough.feature', 'utf8');
@@ -219,10 +220,14 @@ test('data-dependent walkthrough pages keep operational defaults and explicit er
 	assert.equal(stateIds('study-guides').has('empty-guide-source-error'), true);
 
 	assert.deepEqual(pages.get('study-session').defaultState.actions.slice(0, 2), [
-		{ type: 'waitForSelector', selector: '#participant-select option[value="ptp_001"]', state: 'attached' },
-		{ type: 'select', selector: '#participant-select', value: 'ptp_001' },
+		{ type: 'waitForSelector', selector: '#participant-select option[value="recVisualParticipant001"]', state: 'attached' },
+		{ type: 'select', selector: '#participant-select', value: 'recVisualParticipant001' },
 	]);
 	assert.equal(stateIds('study-session').has('participant-consent-gate'), true);
+
+	assert.equal(participantConsentPath, '/pages/study/participant-consent/?id=recVisualConsentStudy001');
+	assert.equal(participantConsentPath.includes('pid='), false);
+	assert.equal(participantConsentPath.includes('sid='), false);
 
 	assert.equal(pages.get('team-access-requests').defaultState.path, operationalPaths.teamAccessRequests);
 	assert.equal(stateIds('team-access-requests').has('decision-error'), true);
