@@ -177,6 +177,8 @@ Skipped bundles:
 - `git diff --check` passed after adding the Sourcebook gate.
 - `npm run trace:coverage` passed after adding the Sourcebook gate and confirmed trace coverage for `feature/sourcebook-integration`.
 - `npm run validate` passed after adding the Sourcebook gate.
+- `node --import ./tests/helpers/generated-govuk-page-source.mjs --test tests/sourcebook-context-route-state.test.js` passed after fixing the SourcebookGate source assertion to be formatter-resistant: 5 tests, 5 pass.
+- `npm test` passed after fixing the SourcebookGate assertion: 352 tests, 352 pass.
 
 ## Residual risks
 

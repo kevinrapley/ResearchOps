@@ -311,6 +311,16 @@
 			"command": "npm run validate",
 			"status": "passed",
 			"summary": "Repository validation completed successfully after adding the Sourcebook gate."
+		},
+		{
+			"command": "node --import ./tests/helpers/generated-govuk-page-source.mjs --test tests/sourcebook-context-route-state.test.js",
+			"status": "passed",
+			"summary": "5 focused Sourcebook context, gate and ledger contract tests passed after fixing the SourcebookGate assertion to be formatter-resistant."
+		},
+		{
+			"command": "npm test",
+			"status": "passed",
+			"summary": "Full unit suite passed after fixing the SourcebookGate assertion: 352 tests, 352 pass."
 		}
 	],
 	"residualRisks": [

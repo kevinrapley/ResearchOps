@@ -81,8 +81,8 @@ test('SourcebookGate macro renders a decision from context and evidence checks',
 	for (const text of [
 		'const context = sourcebookContextForRoute({ route, condition, limit });',
 		'const evidenceLedger = sourcebookEvidenceLedgerForRoute({',
-		"status === 'blocked' ? 'Evidence needed'",
 		"status === 'blocked'",
+		"'Evidence needed'",
 		"'Add evidence before continuing'",
 	]) {
 		includes(dataSource, text, 'SourcebookGate data helper');
