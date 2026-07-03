@@ -61,7 +61,9 @@
 		"Marked supplier assurance as partially evidenced, not complete.",
 		"Kept supplier approval, contract review, data-processing terms, locations, assurance evidence, review cadence and sign-off as remaining gaps.",
 		"Generalised the compliance evidence page renderer so incident response and supplier assurance evidence pages share the same Nunjucks template.",
-		"Updated the GOV.UK render workflow path filters so supplier-assurance Markdown changes trigger regenerated static pages."
+		"Updated the GOV.UK render workflow path filters so supplier-assurance Markdown changes trigger regenerated static pages.",
+		"Replaced the wide supplier register table with one section per supplier after browser review showed the table content was squeezed into narrow columns.",
+		"Added a route-state assertion to prevent the supplier register from regressing to a wide GOV.UK table."
 	],
 	"validationEvidence": [
 		{
@@ -78,6 +80,16 @@
 			"command": "curl http://127.0.0.1:4173/pages/compliance-readiness/ and curl http://127.0.0.1:4173/pages/compliance-readiness/supplier-assurance/register/",
 			"status": "passed",
 			"summary": "Live preview probes confirmed the readiness page link and supplier register content."
+		},
+		{
+			"command": "npm run build:govuk-pages && node --import ./tests/helpers/generated-govuk-page-source.mjs --test tests/compliance-assurance-boundary.test.js tests/compliance-readiness-page-route-state.test.js tests/govuk-pages-render-workflow-state.test.js tests/visual-walkthrough-registry-coverage.test.js",
+			"status": "passed",
+			"summary": "17 focused tests passed after replacing the wide supplier table with supplier sections."
+		},
+		{
+			"command": "curl http://127.0.0.1:4173/pages/compliance-readiness/supplier-assurance/register/",
+			"status": "passed",
+			"summary": "Live preview confirmed the supplier register uses GOV.UK headings and bullet details rather than a table."
 		}
 	],
 	"residualRisks": [

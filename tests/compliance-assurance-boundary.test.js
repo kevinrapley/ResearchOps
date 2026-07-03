@@ -16,6 +16,9 @@ const supplierReadiness = read(
 const supplierRegister = read(
 	'docs/compliance/soc2-iso27001-readiness/supplier-assurance/supplier-assurance-register.md'
 );
+const supplierRegisterPage = read(
+	'public/pages/compliance-readiness/supplier-assurance/register/index.html'
+);
 const combined = `${readme}\n${scope}\n${evidenceIndex}`;
 
 test('compliance readiness pack avoids unsupported SOC 2 and ISO 27001 claims', () => {
@@ -94,4 +97,7 @@ test('supplier assurance readiness records named provider dependencies', () => {
 	assert.match(supplierReadiness, /does not assert supplier approval/);
 	assert.match(supplierRegister, /Not approved/);
 	assert.match(evidenceIndex, /Supplier assurance \| Partially evidenced/);
+	assert.doesNotMatch(supplierRegisterPage, /<table class="govuk-table"/);
+	assert.match(supplierRegisterPage, /<h3 class="govuk-heading-m">Cloudflare<\/h3>/);
+	assert.match(supplierRegisterPage, /<strong>ResearchOps role:<\/strong>/);
 });

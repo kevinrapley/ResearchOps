@@ -81,159 +81,184 @@
 								<li>approval decision and approver</li>
 							</ul>
 							<h2 class="govuk-heading-l">Current supplier register</h2>
-							<table class="govuk-table">
-								<thead class="govuk-table__head">
-									<tr class="govuk-table__row">
-										<th scope="col" class="govuk-table__header">Supplier or provider</th>
-										<th scope="col" class="govuk-table__header">ResearchOps role</th>
-										<th scope="col" class="govuk-table__header">Data or control dependency</th>
-										<th scope="col" class="govuk-table__header">Current status</th>
-										<th scope="col" class="govuk-table__header">Evidence needed before a claim</th>
-									</tr>
-								</thead>
-								<tbody class="govuk-table__body">
-									<tr class="govuk-table__row">
-										<td class="govuk-table__cell">Cloudflare</td>
-										<td class="govuk-table__cell">
-											Hosts Pages, Workers, D1, KV, secrets, deployment routes and may provide Workers AI where enabled.
-										</td>
-										<td class="govuk-table__cell">
-											Service availability, runtime controls, storage boundary, secrets, logs, access controls and AI
-											processing if the AI binding is used.
-										</td>
-										<td class="govuk-table__cell">
-											Partially evidenced by deployment model, validation gates and secret checks. Not approved for
-											compliance claim.
-										</td>
-										<td class="govuk-table__cell">
-											Confirm contract route, data-processing terms, locations, subprocessor position, security
-											assurance reports, incident notification route and owner review cadence.
-										</td>
-									</tr>
-									<tr class="govuk-table__row">
-										<td class="govuk-table__cell">GitHub</td>
-										<td class="govuk-table__cell">
-											Hosts source code, pull requests, actions, release evidence, code scanning, provenance and
-											repository controls.
-										</td>
-										<td class="govuk-table__cell">
-											Source control, CI, branch protection, pull request evidence, audit traces and secrets
-											configuration.
-										</td>
-										<td class="govuk-table__cell">
-											Partially evidenced by PR workflow, CI and release assurance. Not approved for compliance claim.
-										</td>
-										<td class="govuk-table__cell">
-											Confirm repository ownership, branch protection evidence, access review evidence, secrets
-											handling, GitHub Actions data exposure, security assurance evidence and retention of workflow
-											logs.
-										</td>
-									</tr>
-									<tr class="govuk-table__row">
-										<td class="govuk-table__cell">Airtable</td>
-										<td class="govuk-table__cell">
-											Provides configured record storage and sync paths for ResearchOps project, study, participant,
-											consent, session and communications data where enabled.
-										</td>
-										<td class="govuk-table__cell">
-											Operational research records, participant and staff contact details, consent state, session notes
-											and synchronised project data.
-										</td>
-										<td class="govuk-table__cell">Integration identified. Not approved for compliance claim.</td>
-										<td class="govuk-table__cell">
-											Confirm base ownership, data classes, lawful basis, processor position, data location, retention,
-											access review, API token ownership, backup/export route and supplier assurance evidence.
-										</td>
-									</tr>
-									<tr class="govuk-table__row">
-										<td class="govuk-table__cell">Mural</td>
-										<td class="govuk-table__cell">
-											Provides collaboration workspace, mural objects, OAuth integration and export or sync paths where
-											enabled.
-										</td>
-										<td class="govuk-table__cell">
-											Research artefacts, collaboration metadata, user identifiers, mural identifiers, exports and OAuth
-											tokens.
-										</td>
-										<td class="govuk-table__cell">Integration identified. Not approved for compliance claim.</td>
-										<td class="govuk-table__cell">
-											Confirm workspace ownership, permitted data classes, OAuth scope approval, export handling,
-											retention, access review, data location, processor position and supplier assurance evidence.
-										</td>
-									</tr>
-									<tr class="govuk-table__row">
-										<td class="govuk-table__cell">Resend</td>
-										<td class="govuk-table__cell">
-											Sends passwordless sign-in email codes when
-											<code class="govuk-code">RESEND_API_KEY</code>
-											and
-											<code class="govuk-code">RESEARCHOPS_EMAIL_FROM</code>
-											are configured.
-										</td>
-										<td class="govuk-table__cell">
-											Staff email address, sign-in code delivery metadata and authentication availability.
-										</td>
-										<td class="govuk-table__cell">
-											Conditional dependency identified from the passwordless email route. Not approved for compliance
-											claim.
-										</td>
-										<td class="govuk-table__cell">
-											Confirm contract route, data-processing terms, email content limits, retention, location, incident
-											notification, sender-domain controls and operational fallback.
-										</td>
-									</tr>
-									<tr class="govuk-table__row">
-										<td class="govuk-table__cell">future communications provider</td>
-										<td class="govuk-table__cell">
-											Sends participant or research-operation messages if the communications stub is replaced with a
-											real provider.
-										</td>
-										<td class="govuk-table__cell">
-											Participant contact details, message templates, delivery metadata and communications log entries.
-										</td>
-										<td class="govuk-table__cell">Not selected. Not approved for production personal data.</td>
-										<td class="govuk-table__cell">
-											Select provider through service-owner, commercial, privacy and security review before enabling;
-											confirm data-processing terms, special-category restrictions, message retention, opt-out handling
-											and incident route.
-										</td>
-									</tr>
-									<tr class="govuk-table__row">
-										<td class="govuk-table__cell">Cloudflare Workers AI</td>
-										<td class="govuk-table__cell">
-											Supports AI-assisted rewriting when the Cloudflare AI binding is configured.
-										</td>
-										<td class="govuk-table__cell">
-											User-entered text sent to the model, possible personal data in prompts, model output and
-											operational logs.
-										</td>
-										<td class="govuk-table__cell">
-											Conditional dependency identified in the AI rewrite route. Not approved for unrestricted personal
-											data.
-										</td>
-										<td class="govuk-table__cell">
-											Confirm whether enabled in production, permitted use cases, prompt data rules, retention, logging,
-											model selection, human review, privacy review and safety controls.
-										</td>
-									</tr>
-									<tr class="govuk-table__row">
-										<td class="govuk-table__cell">OpenAI or other external AI provider</td>
-										<td class="govuk-table__cell">
-											Future AI service if ResearchOps is configured to use an external AI provider outside Cloudflare
-											Workers AI.
-										</td>
-										<td class="govuk-table__cell">
-											Prompt text, generated output, evaluation data, possible research or participant data if not
-											restricted.
-										</td>
-										<td class="govuk-table__cell">Not selected. Not approved for production personal data.</td>
-										<td class="govuk-table__cell">
-											Complete separate AI supplier review before use, including data-processing terms, retention,
-											training-use position, model safety controls, DPIA screening, human review and incident route.
-										</td>
-									</tr>
-								</tbody>
-							</table>
+							<h3 class="govuk-heading-m">Cloudflare</h3>
+							<ul class="govuk-list govuk-list--bullet">
+								<li>
+									<strong>ResearchOps role:</strong>
+									hosts Pages, Workers, D1, KV, secrets, deployment routes and may provide Workers AI where enabled.
+								</li>
+								<li>
+									<strong>Data or control dependency:</strong>
+									service availability, runtime controls, storage boundary, secrets, logs, access controls and AI
+									processing if the AI binding is used.
+								</li>
+								<li>
+									<strong>Current status:</strong>
+									partially evidenced by deployment model, validation gates and secret checks. Not approved for
+									compliance claim.
+								</li>
+								<li>
+									<strong>Evidence needed before a claim:</strong>
+									confirm contract route, data-processing terms, locations, subprocessor position, security assurance
+									reports, incident notification route and owner review cadence.
+								</li>
+							</ul>
+							<h3 class="govuk-heading-m">GitHub</h3>
+							<ul class="govuk-list govuk-list--bullet">
+								<li>
+									<strong>ResearchOps role:</strong>
+									hosts source code, pull requests, actions, release evidence, code scanning, provenance and repository
+									controls.
+								</li>
+								<li>
+									<strong>Data or control dependency:</strong>
+									source control, CI, branch protection, pull request evidence, audit traces and secrets configuration.
+								</li>
+								<li>
+									<strong>Current status:</strong>
+									partially evidenced by PR workflow, CI and release assurance. Not approved for compliance claim.
+								</li>
+								<li>
+									<strong>Evidence needed before a claim:</strong>
+									confirm repository ownership, branch protection evidence, access review evidence, secrets handling,
+									GitHub Actions data exposure, security assurance evidence and retention of workflow logs.
+								</li>
+							</ul>
+							<h3 class="govuk-heading-m">Airtable</h3>
+							<ul class="govuk-list govuk-list--bullet">
+								<li>
+									<strong>ResearchOps role:</strong>
+									provides configured record storage and sync paths for ResearchOps project, study, participant,
+									consent, session and communications data where enabled.
+								</li>
+								<li>
+									<strong>Data or control dependency:</strong>
+									operational research records, participant and staff contact details, consent state, session notes and
+									synchronised project data.
+								</li>
+								<li>
+									<strong>Current status:</strong>
+									integration identified. Not approved for compliance claim.
+								</li>
+								<li>
+									<strong>Evidence needed before a claim:</strong>
+									confirm base ownership, data classes, lawful basis, processor position, data location, retention,
+									access review, API token ownership, backup/export route and supplier assurance evidence.
+								</li>
+							</ul>
+							<h3 class="govuk-heading-m">Mural</h3>
+							<ul class="govuk-list govuk-list--bullet">
+								<li>
+									<strong>ResearchOps role:</strong>
+									provides collaboration workspace, mural objects, OAuth integration and export or sync paths where
+									enabled.
+								</li>
+								<li>
+									<strong>Data or control dependency:</strong>
+									research artefacts, collaboration metadata, user identifiers, mural identifiers, exports and OAuth
+									tokens.
+								</li>
+								<li>
+									<strong>Current status:</strong>
+									integration identified. Not approved for compliance claim.
+								</li>
+								<li>
+									<strong>Evidence needed before a claim:</strong>
+									confirm workspace ownership, permitted data classes, OAuth scope approval, export handling, retention,
+									access review, data location, processor position and supplier assurance evidence.
+								</li>
+							</ul>
+							<h3 class="govuk-heading-m">Resend</h3>
+							<ul class="govuk-list govuk-list--bullet">
+								<li>
+									<strong>ResearchOps role:</strong>
+									sends passwordless sign-in email codes when
+									<code class="govuk-code">RESEND_API_KEY</code>
+									and
+									<code class="govuk-code">RESEARCHOPS_EMAIL_FROM</code>
+									are configured.
+								</li>
+								<li>
+									<strong>Data or control dependency:</strong>
+									staff email address, sign-in code delivery metadata and authentication availability.
+								</li>
+								<li>
+									<strong>Current status:</strong>
+									conditional dependency identified from the passwordless email route. Not approved for compliance
+									claim.
+								</li>
+								<li>
+									<strong>Evidence needed before a claim:</strong>
+									confirm contract route, data-processing terms, email content limits, retention, location, incident
+									notification, sender-domain controls and operational fallback.
+								</li>
+							</ul>
+							<h3 class="govuk-heading-m">future communications provider</h3>
+							<ul class="govuk-list govuk-list--bullet">
+								<li>
+									<strong>ResearchOps role:</strong>
+									sends participant or research-operation messages if the communications stub is replaced with a real
+									provider.
+								</li>
+								<li>
+									<strong>Data or control dependency:</strong>
+									participant contact details, message templates, delivery metadata and communications log entries.
+								</li>
+								<li>
+									<strong>Current status:</strong>
+									not selected. Not approved for production personal data.
+								</li>
+								<li>
+									<strong>Evidence needed before a claim:</strong>
+									select provider through service-owner, commercial, privacy and security review before enabling;
+									confirm data-processing terms, special-category restrictions, message retention, opt-out handling and
+									incident route.
+								</li>
+							</ul>
+							<h3 class="govuk-heading-m">Cloudflare Workers AI</h3>
+							<ul class="govuk-list govuk-list--bullet">
+								<li>
+									<strong>ResearchOps role:</strong>
+									supports AI-assisted rewriting when the Cloudflare AI binding is configured.
+								</li>
+								<li>
+									<strong>Data or control dependency:</strong>
+									user-entered text sent to the model, possible personal data in prompts, model output and operational
+									logs.
+								</li>
+								<li>
+									<strong>Current status:</strong>
+									conditional dependency identified in the AI rewrite route. Not approved for unrestricted personal
+									data.
+								</li>
+								<li>
+									<strong>Evidence needed before a claim:</strong>
+									confirm whether enabled in production, permitted use cases, prompt data rules, retention, logging,
+									model selection, human review, privacy review and safety controls.
+								</li>
+							</ul>
+							<h3 class="govuk-heading-m">OpenAI or other external AI provider</h3>
+							<ul class="govuk-list govuk-list--bullet">
+								<li>
+									<strong>ResearchOps role:</strong>
+									future AI service if ResearchOps is configured to use an external AI provider outside Cloudflare
+									Workers AI.
+								</li>
+								<li>
+									<strong>Data or control dependency:</strong>
+									prompt text, generated output, evaluation data, possible research or participant data if not
+									restricted.
+								</li>
+								<li>
+									<strong>Current status:</strong>
+									not selected. Not approved for production personal data.
+								</li>
+								<li>
+									<strong>Evidence needed before a claim:</strong>
+									complete separate AI supplier review before use, including data-processing terms, retention,
+									training-use position, model safety controls, DPIA screening, human review and incident route.
+								</li>
+							</ul>
 							<h2 class="govuk-heading-l">Minimum review cadence</h2>
 							<p class="govuk-body">Review the supplier register:</p>
 							<ul class="govuk-list govuk-list--bullet">

@@ -89,6 +89,8 @@ Skipped bundles:
 - Kept supplier approval, contract review, data-processing terms, locations, assurance evidence, review cadence and sign-off as the remaining gap.
 - Generalised the compliance evidence page renderer so incident response and supplier assurance evidence pages share the same Nunjucks template, warning-text pattern and visual registry coverage.
 - Updated the GOV.UK render workflow path filters so supplier-assurance Markdown changes trigger regenerated static pages.
+- Replaced the wide supplier register table with one section per supplier after browser review showed the table content was squeezed into narrow columns.
+- Added a route-state assertion to prevent the supplier register from regressing to a wide GOV.UK table.
 
 ## Validation evidence
 
@@ -96,6 +98,8 @@ Skipped bundles:
 - `node --import ./tests/helpers/generated-govuk-page-source.mjs --test tests/compliance-assurance-boundary.test.js tests/compliance-readiness-page-route-state.test.js tests/compliance-incident-response-readiness.test.js tests/govuk-pages-render-workflow-state.test.js tests/visual-walkthrough-registry-coverage.test.js` passed: 23 tests, 23 pass.
 - Live preview probe confirmed `/pages/compliance-readiness/` links to `/pages/compliance-readiness/supplier-assurance/register/`.
 - Live preview probe confirmed the supplier assurance register page names Cloudflare, GitHub, Airtable, Mural, Resend, Cloudflare Workers AI and future external AI providers while keeping the register marked draft and not approved.
+- `npm run build:govuk-pages && node --import ./tests/helpers/generated-govuk-page-source.mjs --test tests/compliance-assurance-boundary.test.js tests/compliance-readiness-page-route-state.test.js tests/govuk-pages-render-workflow-state.test.js tests/visual-walkthrough-registry-coverage.test.js` passed after replacing the wide supplier table with supplier sections: 17 tests, 17 pass.
+- Live preview probe confirmed the supplier register uses GOV.UK headings and bullet details rather than a table.
 
 ## Residual risks
 
