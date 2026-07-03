@@ -114,8 +114,8 @@ export const controlMatrix = [
 		soc2Tsc: ['CC4', 'CC7'],
 		iso27001AnnexA: ['A.5.28', 'A.8.15', 'A.8.16', 'A.8.17', 'A.8.34'],
 		currentEvidence:
-			'Audit event implementation, log-minimisation hardening and validation traces.',
-		gap: 'Define log retention, alert thresholds, review cadence and evidence collection responsibilities.',
+			'Audit event implementation, log-minimisation hardening, validation traces and monitoring readiness evidence.',
+		gap: 'Define log retention, alert thresholds, review cadence, escalation routes and evidence collection responsibilities.',
 		status: 'Partially evidenced',
 	},
 	{
@@ -157,9 +157,10 @@ export const controlMatrix = [
 			'Availability commitments, backup, recovery, continuity and resilience controls are defined and tested if in assurance scope.',
 		soc2Tsc: ['A', 'CC7'],
 		iso27001AnnexA: ['A.5.29', 'A.5.30', 'A.8.13', 'A.8.14'],
-		currentEvidence: 'Cloudflare deployment model, validation gates and release assurance.',
-		gap: 'Decide whether Availability is in SOC 2 scope, then define SLOs, RTO/RPO, backup and restore evidence.',
-		status: 'Open decision',
+		currentEvidence:
+			'Cloudflare deployment model, validation gates, release assurance, observability configuration and backup/restore readiness evidence.',
+		gap: 'Decide whether Availability is in SOC 2 scope, then approve SLOs, RTO/RPO, backup schedule, restore tests and monitoring evidence.',
+		status: 'Partially evidenced',
 	},
 	{
 		controlArea: 'Compliance evidence and independent review',
@@ -183,7 +184,7 @@ export const readinessEvidenceGaps = [
 	'SOC 2 control-to-evidence mapping at criteria level',
 	'ISO/IEC 27001 Statement of Applicability',
 	'approved supplier and subprocessor register',
-	'access review, completed incident response test evidence, backup and monitoring evidence',
+	'access review, completed incident response test evidence, completed restore test evidence and approved monitoring evidence',
 ];
 
 export const incidentResponseEvidencePages = [
@@ -261,10 +262,28 @@ export const privacyEvidencePages = [
 	},
 ];
 
+export const availabilityEvidencePages = [
+	{
+		id: 'backup-restore-availability-monitoring',
+		slug: 'backup-restore-availability-monitoring',
+		title: 'Backup, restore, availability and monitoring readiness',
+		evidenceCategory: 'Availability and monitoring evidence',
+		warningText:
+			'This page is readiness evidence. It does not assert that backups, restore testing, availability commitments or monitoring have been approved.',
+		summary:
+			'The draft continuity evidence structure for backup responsibilities, restore tests, availability scope, SLOs, RTO/RPO and monitoring decisions.',
+		sourcePath:
+			'docs/compliance/soc2-iso27001-readiness/availability-and-monitoring/backup-restore-availability-monitoring.md',
+		route:
+			'/pages/compliance-readiness/availability-and-monitoring/backup-restore-availability-monitoring/',
+	},
+];
+
 export const complianceEvidencePages = [
 	...incidentResponseEvidencePages,
 	...supplierAssuranceEvidencePages,
 	...privacyEvidencePages,
+	...availabilityEvidencePages,
 ];
 
 export const standardsReferences = [
@@ -288,6 +307,7 @@ export const complianceReadinessContext = {
 	incidentResponseEvidencePages,
 	supplierAssuranceEvidencePages,
 	privacyEvidencePages,
+	availabilityEvidencePages,
 	complianceEvidencePages,
 	readinessEvidenceGaps,
 	standardsReferences,

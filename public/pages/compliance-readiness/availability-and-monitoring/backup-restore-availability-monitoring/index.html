@@ -1,0 +1,268 @@
+<!doctype html>
+<html class="govuk-template" lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>Backup, restore, availability and monitoring readiness - ResearchOps Demo Suite</title>
+		<link rel="stylesheet" href="/assets/govuk/govuk-frontend.css" media="screen" />
+
+		<script type="module" src="/components/layout.js?v=govuk-page-chrome-20260702-1" defer></script>
+		<script type="module" src="/js/govuk-frontend-init.js?v=govuk-page-chrome-20260702-1" defer></script>
+	</head>
+	<body class="govuk-template__body">
+		<script>
+			document.body.className +=
+				" js-enabled" + ("noModule" in HTMLScriptElement.prototype ? " govuk-frontend-supported" : "");
+		</script>
+		<x-include src="/partials/header.html" vars='{"active":""}'></x-include>
+		<main class="govuk-main-wrapper" id="main-content" role="main" tabindex="-1">
+			<div class="govuk-width-container" data-compliance-evidence-document="backup-restore-availability-monitoring">
+				<nav class="govuk-breadcrumbs" aria-label="Breadcrumb">
+					<ol class="govuk-breadcrumbs__list">
+						<li class="govuk-breadcrumbs__list-item">
+							<a class="govuk-breadcrumbs__link" href="/">Home</a>
+						</li>
+
+						<li class="govuk-breadcrumbs__list-item">
+							<a class="govuk-breadcrumbs__link" href="/pages/compliance-readiness/">Compliance readiness</a>
+						</li>
+
+						<li class="govuk-breadcrumbs__list-item" aria-current="page">
+							Backup, restore, availability and monitoring readiness
+						</li>
+					</ol>
+				</nav>
+
+				<div class="govuk-grid-row">
+					<div class="govuk-grid-column-two-thirds">
+						<span class="govuk-caption-xl">Availability and monitoring evidence</span>
+						<h1 class="govuk-heading-xl">Backup, restore, availability and monitoring readiness</h1>
+						<p class="govuk-body-l">
+							The draft continuity evidence structure for backup responsibilities, restore tests, availability scope,
+							SLOs, RTO/RPO and monitoring decisions.
+						</p>
+						<div class="govuk-warning-text compliance-readiness__warning">
+							<span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+							<strong class="govuk-warning-text__text">
+								<span class="govuk-visually-hidden">Warning</span>
+								This page is readiness evidence. It does not assert that backups, restore testing, availability
+								commitments or monitoring have been approved.
+							</strong>
+						</div>
+
+						<p class="govuk-body">
+							<a class="govuk-link" href="/pages/compliance-readiness/">Back to compliance readiness</a>
+						</p>
+					</div>
+				</div>
+
+				<div class="govuk-grid-row">
+					<div class="govuk-grid-column-two-thirds">
+						<div class="compliance-readiness__document">
+							<p class="govuk-body">Status: draft, not approved.</p>
+							<p class="govuk-body">
+								This page is not completed backup evidence, restore evidence, availability assurance or monitoring
+								assurance. It is a working evidence record for Home Office service-owner, technical-owner,
+								information-asset-owner, security and operations review.
+							</p>
+							<h2 class="govuk-heading-l">Current deployment boundary</h2>
+							<p class="govuk-body">ResearchOps currently has version-controlled evidence for:</p>
+							<ul class="govuk-list govuk-list--bullet">
+								<li>
+									Cloudflare Pages publishing from
+									<code class="govuk-code">public/</code>
+								</li>
+								<li>
+									a Cloudflare Worker configured from
+									<code class="govuk-code">infra/cloudflare/wrangler.toml</code>
+								</li>
+								<li>
+									a production D1 binding named
+									<code class="govuk-code">RESEARCHOPS_D1</code>
+								</li>
+								<li>
+									a KV namespace binding named
+									<code class="govuk-code">SESSION_KV</code>
+								</li>
+								<li>Worker observability logs enabled with sampling configured</li>
+								<li>a scheduled retention trigger configured in UTC</li>
+								<li>production and preview Worker deployment workflows</li>
+								<li>validation, release-gate and release-evidence controls</li>
+							</ul>
+							<p class="govuk-body">
+								Current position: the deployment model is documented, but the evidence does not prove tested restore,
+								approved availability commitments or monitored service operation.
+							</p>
+							<h2 class="govuk-heading-l">Availability scope decision</h2>
+							<p class="govuk-body">
+								The service owner must decide whether Availability is in SOC 2 scope. If it is in scope, the evidence
+								pack needs:
+							</p>
+							<ul class="govuk-list govuk-list--bullet">
+								<li>service hours and support model</li>
+								<li>user-impact definitions for unavailable, degraded and data-loss states</li>
+								<li>SLOs for material user journeys and API routes</li>
+								<li>alert thresholds and escalation rules</li>
+								<li>
+									dependency assumptions for Cloudflare, GitHub, Airtable, Mural, email and AI services where enabled
+								</li>
+								<li>exception handling for prototype or non-production operation</li>
+							</ul>
+							<p class="govuk-body">Current position: Availability is still an open assurance decision.</p>
+							<h2 class="govuk-heading-l">Backup readiness</h2>
+							<p class="govuk-body">The backup position should cover each material store:</p>
+							<h3 class="govuk-heading-m">Static GOV.UK pages and source-controlled artefacts</h3>
+							<ul class="govuk-list govuk-list--bullet">
+								<li>
+									<strong>Current evidence:</strong>
+									source files, Nunjucks templates, generated
+									<code class="govuk-code">public/</code>
+									output, GitHub history, pull requests and release evidence.
+								</li>
+								<li>
+									<strong>Backup assumption:</strong>
+									source control can recover committed static content and generated pages can be rebuilt from source.
+								</li>
+								<li>
+									<strong>Evidence still needed:</strong>
+									confirm repository retention, release artefact retention, branch protection and owner-approved
+									recovery route.
+								</li>
+							</ul>
+							<h3 class="govuk-heading-m">Cloudflare Worker and deployment configuration</h3>
+							<ul class="govuk-list govuk-list--bullet">
+								<li>
+									<strong>Current evidence:</strong>
+									<code class="govuk-code">infra/cloudflare/wrangler.toml</code>
+									, deployment workflow, pinned Wrangler version and build metadata stamping.
+								</li>
+								<li>
+									<strong>Backup assumption:</strong>
+									Worker code and deployment configuration are recoverable from GitHub and deployment workflow history.
+								</li>
+								<li>
+									<strong>Evidence still needed:</strong>
+									confirm deployment rollback procedure, version identifiers, secrets rehydration route and
+									emergency-change approval.
+								</li>
+							</ul>
+							<h3 class="govuk-heading-m">D1 database</h3>
+							<ul class="govuk-list govuk-list--bullet">
+								<li>
+									<strong>Current evidence:</strong>
+									D1 binding, D1 migration files, production migration workflow and preview D1 separation checks.
+								</li>
+								<li>
+									<strong>Backup assumption:</strong>
+									schema and seed migrations are recoverable from source, but production data backup and restore
+									evidence is not present in this pack.
+								</li>
+								<li>
+									<strong>Evidence still needed:</strong>
+									define D1 export or backup schedule, backup storage location, access control, encryption, restore
+									owner, restore test data set and restore success criteria.
+								</li>
+							</ul>
+							<h3 class="govuk-heading-m">KV session namespace</h3>
+							<ul class="govuk-list govuk-list--bullet">
+								<li>
+									<strong>Current evidence:</strong>
+									<code class="govuk-code">SESSION_KV</code>
+									binding exists for session-related state.
+								</li>
+								<li>
+									<strong>Backup assumption:</strong>
+									session state is operationally important but may not require long-term backup if sessions can be
+									reissued safely.
+								</li>
+								<li>
+									<strong>Evidence still needed:</strong>
+									confirm whether KV data is recoverable, disposable or should be rebuilt; document impact of loss,
+									expiry policy and user recovery route.
+								</li>
+							</ul>
+							<h3 class="govuk-heading-m">Integration state and supplier data</h3>
+							<ul class="govuk-list govuk-list--bullet">
+								<li>
+									<strong>Current evidence:</strong>
+									supplier assurance register names Cloudflare, GitHub, Airtable, Mural, email and AI dependencies.
+								</li>
+								<li>
+									<strong>Backup assumption:</strong>
+									supplier-held data may be outside direct ResearchOps backup control.
+								</li>
+								<li>
+									<strong>Evidence still needed:</strong>
+									confirm supplier export, restore, retention and incident-notification responsibilities through
+									contract, data-processing and service-owner review.
+								</li>
+							</ul>
+							<h2 class="govuk-heading-l">Restore readiness</h2>
+							<p class="govuk-body">
+								Before this control can be treated as operating evidence, ResearchOps needs restore tests for:
+							</p>
+							<ul class="govuk-list govuk-list--bullet">
+								<li>
+									static page rebuild from source to committed
+									<code class="govuk-code">public/</code>
+									output
+								</li>
+								<li>Worker redeployment from a known commit</li>
+								<li>D1 schema and selected data restore into a controlled environment</li>
+								<li>KV session loss or reissue scenario</li>
+								<li>supplier-export or supplier-restore route where supplier data is material</li>
+								<li>rollback or forward-fix decision route for a failed deployment</li>
+							</ul>
+							<p class="govuk-body">Each restore test should record:</p>
+							<ul class="govuk-list govuk-list--bullet">
+								<li>test date and environment</li>
+								<li>data set used</li>
+								<li>person running the test and approver</li>
+								<li>start time, finish time and elapsed recovery time</li>
+								<li>target RTO/RPO and whether the test met it</li>
+								<li>validation evidence after restore</li>
+								<li>defects, follow-up actions and owner</li>
+							</ul>
+							<p class="govuk-body">
+								Current position: restore test structure is defined, but no completed restore test evidence is present
+								in this pack.
+							</p>
+							<h2 class="govuk-heading-l">Monitoring readiness</h2>
+							<p class="govuk-body">The monitoring position should cover:</p>
+							<ul class="govuk-list govuk-list--bullet">
+								<li>Worker errors, exceptions and route failures</li>
+								<li>D1 query or migration failures</li>
+								<li>authentication failures and account-state anomalies</li>
+								<li>rate-limit events and sensitive-route failures</li>
+								<li>Pages deployment and Worker deployment outcomes</li>
+								<li>scheduled retention execution</li>
+								<li>integration failures for Airtable, Mural, email and AI services where enabled</li>
+								<li>security and audit events with PII minimisation</li>
+							</ul>
+							<p class="govuk-body">
+								Cloudflare Worker logs are enabled in configuration, with sampling set in
+								<code class="govuk-code">infra/cloudflare/wrangler.toml</code>
+								. The monitoring claim still needs explicit operational evidence because the current pack does not
+								define alert thresholds, dashboard ownership, log retention, review cadence or escalation routes.
+							</p>
+							<h2 class="govuk-heading-l">Evidence still needed</h2>
+							<p class="govuk-body">Before ResearchOps can claim this control is complete, the service needs:</p>
+							<ul class="govuk-list govuk-list--bullet">
+								<li>approved availability scope decision</li>
+								<li>approved SLOs and RTO/RPO targets</li>
+								<li>backup schedule and owner for each material store</li>
+								<li>completed restore test evidence</li>
+								<li>monitoring dashboard or report evidence</li>
+								<li>alert thresholds and escalation rota</li>
+								<li>log sampling and retention decision</li>
+								<li>dependency failure playbooks</li>
+								<li>service-owner, security and operations sign-off</li>
+							</ul>
+						</div>
+					</div>
+				</div>
+			</div>
+		</main>
+		<x-include src="/partials/footer.html?v=govuk-page-chrome-20260702-1"></x-include>
+	</body>
+</html>

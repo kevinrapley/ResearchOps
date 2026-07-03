@@ -150,6 +150,25 @@
 		</div>
 	</section>
 
+	<section aria-labelledby="availability-evidence-heading" class="govuk-!-margin-top-8">
+		<div class="govuk-grid-row">
+			<div class="govuk-grid-column-two-thirds">
+				<h2 class="govuk-heading-l" id="availability-evidence-heading">Availability and monitoring evidence</h2>
+				<p class="govuk-body">
+					These pages make the backup, restore, availability and monitoring readiness position visible from the readiness artefact. They remain readiness evidence until service-owner, technical-owner, security and operations review are complete.
+				</p>
+				<ul class="govuk-list">
+					{% for evidencePage in availabilityEvidencePages %}
+					<li class="govuk-!-margin-bottom-4">
+						<a class="govuk-link govuk-link--no-visited-state" href="{{ evidencePage.route }}">{{ evidencePage.title | complianceAbbreviations }}</a>
+						<p class="govuk-body-s govuk-!-margin-bottom-0">{{ evidencePage.summary | complianceAbbreviations }}</p>
+					</li>
+					{% endfor %}
+				</ul>
+			</div>
+		</div>
+	</section>
+
 	<section aria-labelledby="remaining-gaps-heading" class="govuk-!-margin-top-8">
 		<div class="govuk-grid-row">
 			<div class="govuk-grid-column-two-thirds">

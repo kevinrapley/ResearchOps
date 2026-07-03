@@ -7,6 +7,15 @@ const read = (filePath) => fs.readFileSync(filePath, 'utf8');
 const readme = read('docs/compliance/soc2-iso27001-readiness/README.md');
 const scope = read('docs/compliance/soc2-iso27001-readiness/scope-and-system-boundary.md');
 const evidenceIndex = read('docs/compliance/soc2-iso27001-readiness/evidence-index.md');
+const availabilityReadiness = read(
+	'docs/compliance/soc2-iso27001-readiness/availability-and-monitoring/README.md'
+);
+const availabilityEvidence = read(
+	'docs/compliance/soc2-iso27001-readiness/availability-and-monitoring/backup-restore-availability-monitoring.md'
+);
+const availabilityEvidencePage = read(
+	'public/pages/compliance-readiness/availability-and-monitoring/backup-restore-availability-monitoring/index.html'
+);
 const incidentReadiness = read(
 	'docs/compliance/soc2-iso27001-readiness/incident-response/README.md'
 );
@@ -75,6 +84,7 @@ test('evidence index keeps readiness gaps visible', () => {
 		'Secure development lifecycle',
 		'ISMS scope, risk assessment, risk treatment plan and Statement of Applicability',
 		'Completed incident response test evidence and breach handling sign-off',
+		'Completed restore test evidence and approved monitoring evidence',
 	]) {
 		assert.match(evidenceIndex, new RegExp(requiredGap));
 	}
@@ -132,4 +142,29 @@ test('privacy readiness records DPIA, data map, ROPA and lawful-basis gaps', () 
 	assert.match(privacyEvidencePage, /This page is readiness evidence/);
 	assert.doesNotMatch(privacyEvidencePage, /DPIA is approved/i);
 	assert.doesNotMatch(privacyEvidencePage, /ROPA is complete/i);
+});
+
+test('availability readiness records backup, restore and monitoring gaps', () => {
+	for (const requiredTerm of [
+		'Cloudflare Pages',
+		'Cloudflare Worker',
+		'D1',
+		'KV',
+		'SLOs',
+		'RTO/RPO',
+		'backup schedule',
+		'restore tests',
+		'monitoring',
+		'alert thresholds',
+	]) {
+		assert.match(`${availabilityReadiness}\n${availabilityEvidence}`, new RegExp(requiredTerm));
+	}
+
+	assert.match(availabilityReadiness, /does not assert that availability is in SOC 2 scope/);
+	assert.match(availabilityEvidence, /Status: draft, not approved/);
+	assert.match(evidenceIndex, /Business continuity and availability \| Partially evidenced/);
+	assert.match(availabilityEvidencePage, /Availability and monitoring evidence/);
+	assert.match(availabilityEvidencePage, /This page is readiness evidence/);
+	assert.doesNotMatch(availabilityEvidencePage, /restore testing is complete/i);
+	assert.doesNotMatch(availabilityEvidencePage, /availability is approved/i);
 });

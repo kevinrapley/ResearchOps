@@ -3,6 +3,7 @@ import fs from 'node:fs';
 import test from 'node:test';
 
 import {
+	availabilityEvidencePages,
 	complianceEvidencePages,
 	complianceScopeSummary,
 	controlMatrix,
@@ -119,12 +120,20 @@ test('rendered compliance readiness page includes the expected public content', 
 		page,
 		/These pages make the DPIA, data map, records of processing and lawful-basis readiness position visible from the readiness artefact/
 	);
+	assert.match(page, /Availability and monitoring evidence/);
+	assert.match(
+		page,
+		/These pages make the backup, restore, availability and monitoring readiness position visible from the readiness artefact/
+	);
 	assert.match(page, /Governance, scope and accountability/);
 	assert.match(page, /service-specific runbooks, personal data breach handling process and planned test evidence structure/);
 	assert.match(page, /supplier and integration assurance register/);
 	assert.match(page, /privacy evidence structure for/);
 	assert.match(page, /data mapping, records of processing and lawful-basis decisions/);
+	assert.match(page, /continuity evidence structure for backup responsibilities/);
+	assert.match(page, /restore tests, availability scope/);
 	assert.match(page, /completed incident response test evidence/);
+	assert.match(page, /completed restore test evidence and approved monitoring evidence/);
 	assert.match(page, /Privacy, retention and data minimisation/);
 	assert.match(page, /CC6/);
 	assert.match(page, /A\.5\.34/);
@@ -172,8 +181,17 @@ test('compliance readiness page links to privacy and data protection evidence pa
 	}
 });
 
+test('compliance readiness page links to availability and monitoring evidence pages', () => {
+	assert.equal(availabilityEvidencePages.length, 1);
+
+	for (const evidencePage of availabilityEvidencePages) {
+		assert.match(page, new RegExp(`href="${evidencePage.route}"`));
+		assert.match(page, /Backup, restore, availability and monitoring readiness/);
+	}
+});
+
 test('compliance readiness evidence pages use the shared GOV.UK evidence renderer', () => {
-	assert.equal(complianceEvidencePages.length, 5);
+	assert.equal(complianceEvidencePages.length, 6);
 	assert.match(renderer, /complianceEvidencePages/);
 	assert.match(renderer, /public\$\{page\.route\}index\.html/);
 	assert.match(renderer, /template: 'pages\/compliance-evidence-document\.njk'/);

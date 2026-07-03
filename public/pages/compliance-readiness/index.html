@@ -454,11 +454,13 @@
 									<td class="govuk-table__cell govuk-!-font-size-16">
 										<p class="govuk-body-s">
 											<strong>Current evidence:</strong>
-											Audit event implementation, log-minimisation hardening and validation traces.
+											Audit event implementation, log-minimisation hardening, validation traces and monitoring readiness
+											evidence.
 										</p>
 										<p class="govuk-body-s govuk-!-margin-bottom-0">
 											<strong>Gap:</strong>
-											Define log retention, alert thresholds, review cadence and evidence collection responsibilities.
+											Define log retention, alert thresholds, review cadence, escalation routes and evidence collection
+											responsibilities.
 										</p>
 									</td>
 								</tr>
@@ -590,7 +592,7 @@
 									<th scope="row" class="govuk-table__header govuk-!-font-size-16">
 										Availability, continuity and recovery
 										<br />
-										<strong class="govuk-tag govuk-tag--blue govuk-!-margin-top-2">Open decision</strong>
+										<strong class="govuk-tag govuk-tag--blue govuk-!-margin-top-2">Partially evidenced</strong>
 									</th>
 									<td class="govuk-table__cell govuk-!-font-size-16">
 										Availability commitments, backup, recovery, continuity and resilience controls are defined and
@@ -613,17 +615,18 @@
 									<td class="govuk-table__cell govuk-!-font-size-16">
 										<p class="govuk-body-s">
 											<strong>Current evidence:</strong>
-											Cloudflare deployment model, validation gates and release assurance.
+											Cloudflare deployment model, validation gates, release assurance, observability configuration and
+											backup/restore readiness evidence.
 										</p>
 										<p class="govuk-body-s govuk-!-margin-bottom-0">
 											<strong>Gap:</strong>
 											Decide whether Availability is in
 											<abbr title="System and Organization Controls">SOC</abbr>
-											2 scope, then define
+											2 scope, then approve
 											<abbr title="Service level objectives">SLOs</abbr>
 											,
 											<abbr title="Recovery Time Objective / Recovery Point Objective">RTO/RPO</abbr>
-											, backup and restore evidence.
+											, backup schedule, restore tests and monitoring evidence.
 										</p>
 									</td>
 								</tr>
@@ -780,6 +783,37 @@
 					</div>
 				</section>
 
+				<section aria-labelledby="availability-evidence-heading" class="govuk-!-margin-top-8">
+					<div class="govuk-grid-row">
+						<div class="govuk-grid-column-two-thirds">
+							<h2 class="govuk-heading-l" id="availability-evidence-heading">Availability and monitoring evidence</h2>
+							<p class="govuk-body">
+								These pages make the backup, restore, availability and monitoring readiness position visible from the
+								readiness artefact. They remain readiness evidence until service-owner, technical-owner, security and
+								operations review are complete.
+							</p>
+							<ul class="govuk-list">
+								<li class="govuk-!-margin-bottom-4">
+									<a
+										class="govuk-link govuk-link--no-visited-state"
+										href="/pages/compliance-readiness/availability-and-monitoring/backup-restore-availability-monitoring/"
+									>
+										Backup, restore, availability and monitoring readiness
+									</a>
+									<p class="govuk-body-s govuk-!-margin-bottom-0">
+										The draft continuity evidence structure for backup responsibilities, restore tests, availability
+										scope,
+										<abbr title="Service level objectives">SLOs</abbr>
+										,
+										<abbr title="Recovery Time Objective / Recovery Point Objective">RTO/RPO</abbr>
+										and monitoring decisions.
+									</p>
+								</li>
+							</ul>
+						</div>
+					</div>
+				</section>
+
 				<section aria-labelledby="remaining-gaps-heading" class="govuk-!-margin-top-8">
 					<div class="govuk-grid-row">
 						<div class="govuk-grid-column-two-thirds">
@@ -815,7 +849,10 @@
 
 								<li>approved supplier and subprocessor register</li>
 
-								<li>access review, completed incident response test evidence, backup and monitoring evidence</li>
+								<li>
+									access review, completed incident response test evidence, completed restore test evidence and approved
+									monitoring evidence
+								</li>
 							</ul>
 						</div>
 						<div class="govuk-grid-column-one-third">

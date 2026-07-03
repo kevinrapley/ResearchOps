@@ -22,6 +22,7 @@ const requiredWorkflowSnippets = [
 	'contents: write',
 	'src/govuk/templates/**',
 	'src/govuk/data/compliance-readiness.mjs',
+	'docs/compliance/soc2-iso27001-readiness/availability-and-monitoring/**',
 	'docs/compliance/soc2-iso27001-readiness/incident-response/**',
 	'docs/compliance/soc2-iso27001-readiness/privacy-and-data-protection/**',
 	'docs/compliance/soc2-iso27001-readiness/supplier-assurance/**',

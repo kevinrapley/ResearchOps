@@ -1,0 +1,105 @@
+{
+	"date": "2026-07-03",
+	"branch": "feature/compliance-assurance-boundary",
+	"base": "main",
+	"traceRequired": true,
+	"traceReason": "feature/ branches require auditable traces for repository-affecting work",
+	"taskSummary": "Add backup, restore, availability and monitoring readiness evidence to the SOC 2 and ISO/IEC 27001 readiness workstream.",
+	"operatingModelFilesLoaded": [
+		"AGENTS.md",
+		".agent-operating-model/orchestration.xml",
+		".agent-operating-model/bundle-registry.json",
+		".agent-operating-model/task-signal-catalog.json",
+		".agent-operating-model/selection-rules.json",
+		".agent-operating-model/bootstrap-checklist.md",
+		".agent-operating-model/precedence-policy.md",
+		".agent-operating-model/trace-policy.md",
+		".agent-operating-model/trace-layers.md",
+		".agent-operating-model/github-mutation-policy.md"
+	],
+	"selectedBundles": [
+		{
+			"id": "github-diamond",
+			"canonicalPath": ".agent-operating-model/bundles/github/"
+		},
+		{
+			"id": "researchops-developer-control",
+			"canonicalPath": ".agent-operating-model/bundles/researchops-developer-control/"
+		},
+		{
+			"id": "multi-functional-team",
+			"canonicalPath": ".agent-operating-model/bundles/multi-functional-team/"
+		},
+		{
+			"id": "govuk-design-system",
+			"canonicalPath": ".agent-operating-model/bundles/govuk-design-system/"
+		},
+		{
+			"id": "cloudflare",
+			"canonicalPath": ".agent-operating-model/bundles/cloudflare/"
+		}
+	],
+	"bundlesSkipped": [
+		"openai-platform",
+		"mcp-agent-tooling",
+		"airtable-public-api",
+		"mural-public-api"
+	],
+	"cloudflareReferencesLoaded": [
+		".agent-operating-model/bundles/cloudflare/references/storage-and-state.xml",
+		".agent-operating-model/bundles/cloudflare/references/pages-and-deployment.xml",
+		".agent-operating-model/bundles/cloudflare/references/testing-and-observability.xml",
+		".agent-operating-model/bundles/cloudflare/references/deployment-versions-and-triggers.xml"
+	],
+	"implementationSummary": [
+		"Added an availability and monitoring evidence folder.",
+		"Added a visible GOV.UK evidence page linked from /pages/compliance-readiness/.",
+		"Recorded current evidence for Cloudflare Pages output, Worker configuration, D1, KV, observability logs, scheduled retention, deployment workflows, validation gates and release evidence.",
+		"Marked business continuity and availability as partially evidenced, not complete.",
+		"Kept availability scope, SLOs, RTO/RPO, backup schedule, restore tests, monitoring thresholds and operations sign-off as remaining gaps.",
+		"Updated the GOV.UK render workflow path filters so availability-and-monitoring Markdown changes trigger regenerated static pages.",
+		"Added route-state and evidence-pack tests to prevent unsupported claims that restore testing, availability approval or monitoring assurance is complete."
+	],
+	"validationEvidence": [
+		{
+			"command": "npm run build:govuk-pages",
+			"status": "passed",
+			"summary": "Generated /pages/compliance-readiness/availability-and-monitoring/backup-restore-availability-monitoring/."
+		},
+		{
+			"command": "node --import ./tests/helpers/generated-govuk-page-source.mjs --test tests/compliance-assurance-boundary.test.js tests/compliance-readiness-page-route-state.test.js tests/govuk-pages-render-workflow-state.test.js tests/visual-walkthrough-registry-coverage.test.js",
+			"status": "passed",
+			"summary": "21 focused tests passed for the assurance evidence pack, generated pages, render workflow and visual registry coverage."
+		},
+		{
+			"command": "rg \"Availability and monitoring evidence|backup-restore-availability-monitoring|Backup, restore\" public/pages/compliance-readiness/index.html public/pages/compliance-readiness/availability-and-monitoring/backup-restore-availability-monitoring/index.html",
+			"status": "passed",
+			"summary": "Rendered-page probe confirmed the readiness page link and availability evidence content."
+		},
+		{
+			"command": "npm run format:check",
+			"status": "passed",
+			"summary": "Formatting check passed."
+		},
+		{
+			"command": "npm run lint",
+			"status": "passed",
+			"summary": "Lint passed with existing warnings and no errors."
+		},
+		{
+			"command": "npm run trace:coverage",
+			"status": "passed",
+			"summary": "Trace coverage confirmed for feature/compliance-assurance-boundary."
+		},
+		{
+			"command": "npm run validate",
+			"status": "passed",
+			"summary": "Full repository validation passed, including generated GOV.UK pages, operating-model validation, trace coverage and route-state checks."
+		}
+	],
+	"residualRisks": [
+		"The service owner still needs to decide whether Availability is in SOC 2 scope.",
+		"SLOs, RTO/RPO, backup schedule, restore tests, log retention, alert thresholds, escalation routes and monitoring review cadence still need formal approval.",
+		"This branch still does not assert SOC 2 compliance, ISO/IEC 27001 certification, completed disaster recovery, completed restore testing or approved monitoring assurance."
+	]
+}
