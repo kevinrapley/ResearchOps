@@ -6,7 +6,7 @@
 - Branch: `feature/sourcebook-integration`
 - Base: `main`
 - Trace decision: required because `feature/` branches require auditable traces for repository-affecting work.
-- Task summary: add authenticated read endpoints under `/api/sourcebook` and surface mapped Sourcebook clauses in logged-in GOV.UK pages through a bespoke Nunjucks context component.
+- Task summary: add authenticated read endpoints under `/api/sourcebook`, surface mapped Sourcebook clauses in logged-in GOV.UK pages and add a five-layer North Star governance evaluator.
 
 ## Operating model evidence
 
@@ -117,6 +117,10 @@ Skipped bundles:
 - Added `sourcebookContextForRoute()` in the GOV.UK Sourcebook data layer to resolve mapped clauses by route and condition for page rendering.
 - Surfaced Sourcebook context on consent, team access request and role assignment pages where users are about to change consent or access state.
 - Added shared Sourcebook context Sass and generated route CSS, including a dedicated account team access stylesheet.
+- Added `GET /api/sourcebook/evaluate` as a read-only Sourcebook governance engine endpoint.
+- Added a deterministic five-layer North Star evaluator: North Star rule, operating context, Sourcebook clauses, evidence readiness and governance action.
+- Added `providedEvidence` support to the evaluator so callers can distinguish matched clauses from evidence-ready decisions.
+- Returned auditable governance outcomes such as `ready-with-required-controls`, `needs-evidence` and `no-sourcebook-match` without making an ungrounded AI judgement.
 
 ## Validation evidence
 
@@ -148,9 +152,15 @@ Skipped bundles:
 - `git diff --check` passed after adding the Nunjucks Sourcebook context component.
 - `npm run trace:coverage` passed after adding the Nunjucks Sourcebook context component and confirmed trace coverage for `feature/sourcebook-integration`.
 - `npm run validate` passed after adding the Nunjucks Sourcebook context component.
+- `node --import ./tests/helpers/generated-govuk-page-source.mjs --test tests/sourcebook-api.test.js tests/sourcebook-api-route-state.test.js` passed after adding the North Star governance evaluator: 16 tests, 16 pass.
+- `npm run format:check` passed after adding the North Star governance evaluator.
+- `git diff --check` passed after adding the North Star governance evaluator.
+- `npm run trace:coverage` passed after adding the North Star governance evaluator and confirmed trace coverage for `feature/sourcebook-integration`.
+- `npm run validate` passed after adding the North Star governance evaluator.
 
 ## Residual risks
 
 - The API derives some trigger labels from current Sourcebook text and metadata; future stronger Sourcebook governance should make triggers first-class clause metadata.
 - Conditional route mappings are currently curated in a separate Sourcebook mapping JSON file; future Sourcebook governance can promote them into the Sourcebook index if they become author-owned content.
 - Initial contextual surfacing is limited to consent and access-control journeys; other logged-in surfaces can adopt the component through the same route and condition mapping.
+- The North Star evaluator is deterministic and evidence-declaration based; it does not verify uploaded evidence artefacts or replace human governance sign-off.

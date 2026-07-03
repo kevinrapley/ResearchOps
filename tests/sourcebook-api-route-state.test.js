@@ -15,6 +15,7 @@ test("Sourcebook API service is composed into ResearchOpsService", () => {
 	includes(serviceIndexSource, "readSourcebook = (origin)", "service index");
 	includes(serviceIndexSource, "listSourcebookPillars = (origin, url)", "service index");
 	includes(serviceIndexSource, "listSourcebookClauses = (origin, url)", "service index");
+	includes(serviceIndexSource, "evaluateSourcebookGovernance = (origin, url)", "service index");
 	includes(serviceIndexSource, "readSourcebookClause = (origin, clauseId)", "service index");
 });
 
@@ -27,6 +28,7 @@ test("Sourcebook API Worker routes are declared and authenticated", () => {
 		"[\"route_api_sourcebook_get\", \"GET\", \"/api/sourcebook\", \"[\\\"sourcebook.view\\\"]\", 1]",
 		"[\"route_api_sourcebook_pillars_get\", \"GET\", \"/api/sourcebook/pillars\", \"[\\\"sourcebook.view\\\"]\", 1]",
 		"[\"route_api_sourcebook_clauses_get\", \"GET\", \"/api/sourcebook/clauses\", \"[\\\"sourcebook.view\\\"]\", 1]",
+		"[\"route_api_sourcebook_evaluate_get\", \"GET\", \"/api/sourcebook/evaluate\", \"[\\\"sourcebook.view\\\"]\", 1]",
 		"[\"route_api_sourcebook_clause_get\", \"GET\", \"/api/sourcebook/clauses/:id\", \"[\\\"sourcebook.view\\\"]\", 1]",
 		"requestForRoutePermission(request, \"/api/sourcebook/clauses/:id\")",
 		"async function handleSourcebook",
@@ -34,6 +36,7 @@ test("Sourcebook API Worker routes are declared and authenticated", () => {
 		"service.readSourcebook(origin)",
 		"service.listSourcebookPillars(origin, url)",
 		"service.listSourcebookClauses(origin, url)",
+		"service.evaluateSourcebookGovernance(origin, url)",
 		"service.readSourcebookClause(origin, decodeURIComponent(match[1]))",
 		"apiPath === \"/api/sourcebook\" || apiPath.startsWith(\"/api/sourcebook/\")"
 	]) {
@@ -58,7 +61,11 @@ test("Sourcebook API service supports clause query dimensions", () => {
 		"function routeMappingsForRecord",
 		"function matchesRouteContext",
 		"function deriveTriggers",
-		"sourcebook-index.json"
+		"sourcebook-index.json",
+		"const NORTH_STAR_RULE",
+		"function evaluateGovernance",
+		"function governanceLayers",
+		"evaluateSourcebookGovernance"
 	]) {
 		includes(sourcebookServiceSource, text, "Sourcebook service");
 	}

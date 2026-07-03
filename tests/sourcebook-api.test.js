@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 
 import {
+	evaluateSourcebookGovernance,
 	listSourcebookClauses,
 	listSourcebookPillars,
 	readSourcebook,
@@ -232,4 +233,59 @@ test('Sourcebook API queries clauses by evidence type, trigger and pillar', asyn
 		body.clauses.every((clause) => clause.triggers.includes('repository-readiness')),
 		true
 	);
+});
+
+test('Sourcebook governance evaluator returns the five North Star layers', async () => {
+	const response = await evaluateSourcebookGovernance(
+		testService(),
+		'',
+		new URL(
+			'https://worker.test/api/sourcebook/evaluate?route=/pages/consent/&condition=consent-review&providedEvidence=consent-form,consent-log'
+		)
+	);
+	assert.equal(response.status, 200);
+
+	const body = await json(response);
+	assert.equal(body.ok, true);
+	assert.equal(body.evaluation.engine.id, 'sourcebook-governance-engine');
+	assert.equal(body.evaluation.engine.layerCount, 5);
+	assert.equal(body.evaluation.engine.northStarRule.id, 'researchops-north-star');
+	assert.equal(body.evaluation.layers.length, 5);
+	assert.deepEqual(
+		body.evaluation.layers.map((layer) => layer.id),
+		[
+			'north-star',
+			'operating-context',
+			'sourcebook-clauses',
+			'evidence-readiness',
+			'governance-action',
+		]
+	);
+	assert.equal(body.evaluation.outcome.status, 'ready-with-required-controls');
+	assert.equal(body.evaluation.outcome.decision, 'proceed-with-controls');
+	assert.equal(body.evaluation.layers[2].clauses[0].id, 'REC-ADMN 3.1.1');
+	assert.equal(body.evaluation.layers[3].status, 'ready');
+	assert.deepEqual(body.evaluation.layers[3].missingEvidence, []);
+});
+
+test('Sourcebook governance evaluator pauses decisions when required evidence is missing', async () => {
+	const response = await evaluateSourcebookGovernance(
+		testService(),
+		'',
+		new URL(
+			'https://worker.test/api/sourcebook/evaluate?route=/pages/account/team-access/&condition=access-change'
+		)
+	);
+	assert.equal(response.status, 200);
+
+	const body = await json(response);
+	assert.equal(body.ok, true);
+	assert.equal(body.evaluation.outcome.status, 'needs-evidence');
+	assert.equal(body.evaluation.outcome.decision, 'pause-for-evidence');
+	assert.equal(body.evaluation.outcome.severity, 'high');
+	assert.equal(body.evaluation.layers[2].clauses[0].id, 'INFRA-PROV 3.1.1');
+	assert.deepEqual(body.evaluation.layers[3].missingEvidence, [
+		'access-request',
+		'role-permission-model',
+	]);
 });

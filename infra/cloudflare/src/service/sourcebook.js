@@ -10,6 +10,12 @@ import routeClauseMappings from "../../../../sourcebook/sourcebook-route-mapping
 const DEFAULT_LIMIT = 50;
 const MAX_LIMIT = 200;
 const TEXT_MODES = new Set(["summary", "title", "full", "verbose"]);
+const GOVERNANCE_ENGINE_VERSION = "2026-07-03";
+const NORTH_STAR_RULE = {
+	id: "researchops-north-star",
+	title: "North Star rule",
+	text: "ResearchOps decisions should be safe, lawful, inclusive, useful, proportionate and traceable to a real service decision."
+};
 
 function cleanText(value) {
 	return String(value || "").replace(/\s+/g, " ").trim();
@@ -325,12 +331,14 @@ function matchesRouteContext(record, routeValues, conditionValues) {
 	if (routeValues.length && !conditionValues.length && routeValues.includes(pillarRoute)) return true;
 
 	const mappings = routeMappingsForRecord(record);
-	return mappings.some(mapping => {
-		const routeMatches = !routeValues.length || routeValues.includes(mapping.route);
-		const mappingConditions = mapping.conditionIds || mappingConditionIds(mapping);
-		const conditionMatches = !conditionValues.length || conditionValues.some(value => mappingConditions.includes(value));
-		return routeMatches && conditionMatches;
-	});
+	return mappings.some(mapping => mappingMatchesContext(mapping, routeValues, conditionValues));
+}
+
+function mappingMatchesContext(mapping, routeValues, conditionValues) {
+	const routeMatches = !routeValues.length || routeValues.includes(mapping.route);
+	const mappingConditions = mapping.conditionIds || mappingConditionIds(mapping);
+	const conditionMatches = !conditionValues.length || conditionValues.some(value => mappingConditions.includes(value));
+	return routeMatches && conditionMatches;
 }
 
 function matchesEvidence(record, values) {
@@ -388,6 +396,161 @@ function filterClauses(url) {
 		matchesStatus(record, statusValues) &&
 		matchesSearch(record, search)
 	);
+}
+
+function governanceClause(record, routeValues, conditionValues) {
+	const routeMappings = routeMappingsForRecord(record).filter(mapping => mappingMatchesContext(mapping, routeValues, conditionValues));
+	return {
+		id: record.clause.id,
+		title: record.clause.title,
+		type: record.clause.type,
+		status: record.clause.status,
+		pillar: {
+			code: record.pillar.code,
+			title: record.pillar.title,
+			operatingQuestion: record.pillar.operatingQuestion
+		},
+		section: {
+			id: record.section.id,
+			title: record.section.title
+		},
+		evidence: asArray(record.clause.evidence),
+		triggers: deriveTriggers(record),
+		routeMappings,
+		strength: routeMappings.some(mapping => mapping.strength === "required") || record.clause.type === "rule" ? "required" : "advisory"
+	};
+}
+
+function uniqueSorted(values) {
+	return [...new Set(values.filter(Boolean))].sort();
+}
+
+function evidenceReadiness(clauses, providedEvidence) {
+	const requiredEvidence = uniqueSorted(clauses.flatMap(clause => clause.evidence).map(normaliseEvidence));
+	const missingEvidence = requiredEvidence.filter(item => !providedEvidence.includes(item));
+	const matchedEvidence = requiredEvidence.filter(item => providedEvidence.includes(item));
+	return {
+		requiredEvidence,
+		providedEvidence,
+		matchedEvidence,
+		missingEvidence,
+		status: !requiredEvidence.length ? "not-required" : missingEvidence.length ? "missing-evidence" : "ready"
+	};
+}
+
+function governanceOutcome(clauses, readiness) {
+	if (!clauses.length) {
+		return {
+			status: "no-sourcebook-match",
+			decision: "check-sourcebook-scope",
+			severity: "medium",
+			message: "No Sourcebook clause matched this route, condition or evidence context. Treat the decision as ungoverned until the scope is confirmed."
+		};
+	}
+	if (readiness.missingEvidence.length) {
+		return {
+			status: "needs-evidence",
+			decision: "pause-for-evidence",
+			severity: clauses.some(clause => clause.strength === "required") ? "high" : "medium",
+			message: "Matched Sourcebook clauses need more evidence before this decision should proceed."
+		};
+	}
+	if (clauses.some(clause => clause.strength === "required")) {
+		return {
+			status: "ready-with-required-controls",
+			decision: "proceed-with-controls",
+			severity: "medium",
+			message: "Required Sourcebook controls matched this context and the declared evidence is present."
+		};
+	}
+	return {
+		status: "ready-with-guidance",
+		decision: "proceed-with-guidance",
+		severity: "low",
+		message: "Sourcebook guidance matched this context and the declared evidence is present."
+	};
+}
+
+function governanceLayers({ clauses, filters, readiness, outcome }) {
+	const pillarCodes = uniqueSorted(clauses.map(clause => clause.pillar.code));
+	const triggerIds = uniqueSorted(clauses.flatMap(clause => clause.triggers));
+	const requiredClauses = clauses.filter(clause => clause.strength === "required");
+
+	return [
+		{
+			id: "north-star",
+			title: "North Star rule",
+			question: "Does this decision make research safer, more lawful, more inclusive, more useful and more traceable?",
+			status: outcome.status === "no-sourcebook-match" ? "needs-sourcebook-scope" : "in-scope",
+			rule: NORTH_STAR_RULE
+		},
+		{
+			id: "operating-context",
+			title: "Operating context",
+			question: "Which route, condition, pillar or trigger is creating governance responsibility?",
+			status: clauses.length ? "matched" : "unmatched",
+			inputs: filters,
+			matchedPillars: pillarCodes,
+			matchedTriggers: triggerIds
+		},
+		{
+			id: "sourcebook-clauses",
+			title: "Sourcebook clauses",
+			question: "Which Sourcebook clauses dictate the rule, guidance or conduct expectation?",
+			status: clauses.length ? "matched" : "missing",
+			requiredCount: requiredClauses.length,
+			advisoryCount: clauses.length - requiredClauses.length,
+			clauses
+		},
+		{
+			id: "evidence-readiness",
+			title: "Evidence readiness",
+			question: "What evidence must exist before this decision is treated as governed?",
+			status: readiness.status,
+			...readiness
+		},
+		{
+			id: "governance-action",
+			title: "Governance action",
+			question: "What should ResearchOps do next?",
+			status: outcome.status,
+			decision: outcome.decision,
+			severity: outcome.severity,
+			message: outcome.message
+		}
+	];
+}
+
+function evaluateGovernance(url) {
+	const records = filterClauses(url);
+	const routeValues = queryValues(url, "route", normaliseRoute);
+	const conditionValues = queryValues(url, "condition", normaliseEvidence);
+	const filters = {
+		route: routeValues,
+		condition: conditionValues,
+		pillar: queryValues(url, "pillar"),
+		evidence: queryValues(url, "evidence", normaliseEvidence),
+		trigger: queryValues(url, "trigger", normaliseEvidence),
+		type: queryValues(url, "type"),
+		status: queryValues(url, "status"),
+		q: normaliseLookup(url.searchParams.get("q"))
+	};
+	const providedEvidence = queryValues(url, "providedEvidence", normaliseEvidence);
+	const clauses = records.map(record => governanceClause(record, routeValues, conditionValues));
+	const readiness = evidenceReadiness(clauses, providedEvidence);
+	const outcome = governanceOutcome(clauses, readiness);
+
+	return {
+		engine: {
+			id: "sourcebook-governance-engine",
+			version: GOVERNANCE_ENGINE_VERSION,
+			layerCount: 5,
+			northStarRule: NORTH_STAR_RULE
+		},
+		filters,
+		outcome,
+		layers: governanceLayers({ clauses, filters, readiness, outcome })
+	};
 }
 
 export async function readSourcebook(svc, origin) {
@@ -448,6 +611,19 @@ export async function listSourcebookClauses(svc, origin, url) {
 				nextOffset: offset + limit < records.length ? offset + limit : null
 			},
 			clauses
+		},
+		200,
+		svc.corsHeaders(origin)
+	);
+}
+
+export async function evaluateSourcebookGovernance(svc, origin, url) {
+	const evaluation = evaluateGovernance(url);
+	return svc.json(
+		{
+			ok: true,
+			sourcebook: sourcebookSummary(),
+			evaluation
 		},
 		200,
 		svc.corsHeaders(origin)

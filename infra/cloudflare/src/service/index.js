@@ -218,6 +218,7 @@ export class ResearchOpsService {
 	readSourcebook = (origin) => Sourcebook.readSourcebook(this, origin);
 	listSourcebookPillars = (origin, url) => Sourcebook.listSourcebookPillars(this, origin, url);
 	listSourcebookClauses = (origin, url) => Sourcebook.listSourcebookClauses(this, origin, url);
+	evaluateSourcebookGovernance = (origin, url) => Sourcebook.evaluateSourcebookGovernance(this, origin, url);
 	readSourcebookClause = (origin, clauseId) => Sourcebook.readSourcebookClause(this, origin, clauseId);
 
 	/* ─────────────── Guides ─────────────── */

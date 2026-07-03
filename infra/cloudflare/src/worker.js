@@ -365,6 +365,7 @@ const RESEARCH_DATA_ROUTE_PERMISSIONS = [
 	["route_api_sourcebook_get", "GET", "/api/sourcebook", "[\"sourcebook.view\"]", 1],
 	["route_api_sourcebook_pillars_get", "GET", "/api/sourcebook/pillars", "[\"sourcebook.view\"]", 1],
 	["route_api_sourcebook_clauses_get", "GET", "/api/sourcebook/clauses", "[\"sourcebook.view\"]", 1],
+	["route_api_sourcebook_evaluate_get", "GET", "/api/sourcebook/evaluate", "[\"sourcebook.view\"]", 1],
 	["route_api_sourcebook_clause_get", "GET", "/api/sourcebook/clauses/:id", "[\"sourcebook.view\"]", 1],
 	["route_api_guides_get", "GET", "/api/guides", "[\"research.content.view\"]", 1],
 	["route_api_guides_post", "POST", "/api/guides", "[\"research.content.manage\"]", 1],
@@ -813,6 +814,7 @@ async function handleSourcebook(request, env, apiPath) {
 	if (apiPath === "/api/sourcebook" && request.method === "GET") return service.readSourcebook(origin);
 	if (apiPath === "/api/sourcebook/pillars" && request.method === "GET") return service.listSourcebookPillars(origin, url);
 	if (apiPath === "/api/sourcebook/clauses" && request.method === "GET") return service.listSourcebookClauses(origin, url);
+	if (apiPath === "/api/sourcebook/evaluate" && request.method === "GET") return service.evaluateSourcebookGovernance(origin, url);
 
 	const match = apiPath.match(/^\/api\/sourcebook\/clauses\/([^/]+)$/);
 	if (match && request.method === "GET") return service.readSourcebookClause(origin, decodeURIComponent(match[1]));
