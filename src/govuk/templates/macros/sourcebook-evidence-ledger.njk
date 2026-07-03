@@ -1,6 +1,6 @@
 {% macro SourcebookEvidenceLedger(params) %}
 	{% if params.items is defined and params.items.length %}
-		<section class="sourcebook-evidence-ledger {{ params.classes | default('') }}" aria-labelledby="{{ params.id | default('sourcebook-evidence-ledger-title') }}" id="{{ params.sectionId | default('sourcebook-evidence-ledger') }}">
+		<section class="sourcebook-evidence-ledger{% if params.classes %} {{ params.classes }}{% endif %}" aria-labelledby="{{ params.id | default('sourcebook-evidence-ledger-title') }}" id="{{ params.sectionId | default('sourcebook-evidence-ledger') }}">
 			<div class="sourcebook-evidence-ledger__header">
 				<p class="govuk-caption-m sourcebook-evidence-ledger__caption">{{ params.caption | default('Evidence ledger') }}</p>
 				<h2 class="govuk-heading-m sourcebook-evidence-ledger__title" id="{{ params.id | default('sourcebook-evidence-ledger-title') }}">{{ params.title }}</h2>

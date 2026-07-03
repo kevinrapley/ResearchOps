@@ -1,6 +1,6 @@
 {% macro SourcebookGate(params) %}
 	{% if params.checks is defined and params.checks.length %}
-		<section class="sourcebook-gate sourcebook-gate--{{ params.status }} {{ params.classes | default('') }}" aria-labelledby="{{ params.id | default('sourcebook-gate-title') }}" data-sourcebook-gate>
+		<section class="sourcebook-gate sourcebook-gate--{{ params.status }}{% if params.classes %} {{ params.classes }}{% endif %}" aria-labelledby="{{ params.id | default('sourcebook-gate-title') }}" data-sourcebook-gate>
 			<div class="sourcebook-gate__header">
 				<p class="govuk-caption-m sourcebook-gate__caption">{{ params.caption | default('Sourcebook gate') }}</p>
 				<h2 class="govuk-heading-m sourcebook-gate__title" id="{{ params.id | default('sourcebook-gate-title') }}">{{ params.title }}</h2>

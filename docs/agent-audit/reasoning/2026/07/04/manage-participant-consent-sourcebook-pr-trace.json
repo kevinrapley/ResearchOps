@@ -33,7 +33,8 @@
     "Added participant-aware ledger and gate updates to the participant consent page controller.",
     "Added responsive layout rules so Sourcebook context uses a right rail only at desktop widths and stacks cleanly on tablet and mobile.",
     "Refined Sourcebook component tag colours and narrow-width table layouts for accessible contrast and readable mobile presentation.",
-    "Regenerated GOV.UK pages and generated CSS outputs."
+    "Regenerated GOV.UK pages and generated CSS outputs.",
+    "Fixed the PR CI failure by removing trailing spaces from optional Sourcebook component class output and strengthening the participant-consent ledger ordering assertion against freshly rendered Nunjucks output."
   ],
   "validation": [
     {
@@ -69,6 +70,29 @@
     {
       "command": "npm run validate",
       "result": "passed"
+    },
+    {
+      "command": "npm test",
+      "result": "passed",
+      "details": "353 tests passed after the CI-fix patch."
+    },
+    {
+      "command": "npm run lint",
+      "result": "passed",
+      "details": "Ignored local Wrangler temp output was removed before rerunning lint."
+    },
+    {
+      "command": "npm run format:check",
+      "result": "passed"
+    },
+    {
+      "command": "npm run audit:performance --if-present",
+      "result": "passed"
+    },
+    {
+      "command": "npm run audit:security",
+      "result": "passed",
+      "details": "npm audit findings remained advisory under repository policy."
     }
   ],
   "residualRisk": ["Full CI remains the merge gate."]

@@ -38,6 +38,7 @@ Skipped:
 - Added responsive layout rules so Sourcebook context uses a right rail only at desktop widths and stacks cleanly on tablet and mobile.
 - Refined Sourcebook component tag colours and narrow-width table layouts for accessible contrast and readable mobile presentation.
 - Regenerated GOV.UK pages and generated CSS outputs.
+- Fixed the PR CI failure by removing trailing spaces from optional Sourcebook component class output and strengthening the participant-consent ledger ordering assertion against freshly rendered Nunjucks output.
 
 ## Validation
 
@@ -49,6 +50,11 @@ Skipped:
 - `npm run trace:coverage` passed.
 - `git diff --check` passed.
 - `npm run validate` passed.
+- `npm test` passed with 353 tests after the CI-fix patch.
+- `npm run lint` passed after removing ignored local Wrangler temp output.
+- `npm run format:check` passed.
+- `npm run audit:performance --if-present` passed.
+- `npm run audit:security` passed; npm audit findings remained advisory under repository policy.
 
 ## Residual Risk
 

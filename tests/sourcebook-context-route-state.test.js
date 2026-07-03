@@ -19,7 +19,7 @@ function includes(source, text, label) {
 test('SourcebookContext macro renders clause context from typed items', () => {
 	for (const text of [
 		'{% macro SourcebookContext(params) %}',
-		'class="sourcebook-context {{ params.classes | default',
+		'class="sourcebook-context{% if params.classes %} {{ params.classes }}{% endif %}"',
 		'aria-labelledby="{{ params.id | default',
 		"params.caption | default('Sourcebook')",
 		'item.typeNotation',
@@ -52,7 +52,7 @@ test('GOV.UK data layer resolves shared route mappings for pages', () => {
 test('SourcebookEvidenceLedger macro renders evidence rows from clauses', () => {
 	for (const text of [
 		'{% macro SourcebookEvidenceLedger(params) %}',
-		'class="sourcebook-evidence-ledger {{ params.classes | default',
+		'class="sourcebook-evidence-ledger{% if params.classes %} {{ params.classes }}{% endif %}"',
 		"params.caption | default('Evidence ledger')",
 		'data-sourcebook-evidence-id',
 		'item.detail',
@@ -69,7 +69,7 @@ test('SourcebookEvidenceLedger macro renders evidence rows from clauses', () => 
 test('SourcebookGate macro renders a decision from context and evidence checks', () => {
 	for (const text of [
 		'{% macro SourcebookGate(params) %}',
-		'class="sourcebook-gate sourcebook-gate--{{ params.status }} {{ params.classes | default',
+		'class="sourcebook-gate sourcebook-gate--{{ params.status }}{% if params.classes %} {{ params.classes }}{% endif %}"',
 		"params.caption | default('Sourcebook gate')",
 		'data-sourcebook-gate',
 		'data-sourcebook-check',

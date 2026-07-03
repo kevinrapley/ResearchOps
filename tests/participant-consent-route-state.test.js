@@ -90,10 +90,22 @@ includes(pageSource, "Consent Form", "participant consent page");
 includes(pageSource, "Consent Log", "participant consent page");
 includes(pageSource, "Present", "participant consent page");
 includes(pageSource, "Needed", "participant consent page");
+const participantsPanelIndex = pageSource.indexOf("id=\"participants-consent-title\"");
+const consentRecordPanelIndex = pageSource.indexOf("id=\"consent-record-panel\"");
+const evidenceLedgerIndex = pageSource.indexOf("class=\"sourcebook-evidence-ledger\"");
+const workspaceAsideIndex = pageSource.indexOf("participant-consent-workspace__aside");
+
+assert.ok(participantsPanelIndex > -1, "Expected the participant actions panel to be present.");
+assert.ok(consentRecordPanelIndex > -1, "Expected the consent record panel to be present.");
+assert.ok(evidenceLedgerIndex > -1, "Expected the sourcebook evidence ledger to be present.");
+assert.ok(workspaceAsideIndex > -1, "Expected the sourcebook aside to be present.");
 assert.ok(
-	pageSource.indexOf("id=\"consent-record-panel\"") <
-		pageSource.indexOf("class=\"sourcebook-evidence-ledger\""),
-	"Expected the sourcebook evidence ledger to be the last item in the main consent content."
+	participantsPanelIndex < consentRecordPanelIndex && consentRecordPanelIndex < evidenceLedgerIndex,
+	"Expected the sourcebook evidence ledger to follow the participant actions and consent record panels."
+);
+assert.ok(
+	evidenceLedgerIndex < workspaceAsideIndex,
+	"Expected the sourcebook evidence ledger to be the last item in the main consent content before the aside."
 );
 assert.ok(
 	pageSource.indexOf("sourcebook-context--mobile") <

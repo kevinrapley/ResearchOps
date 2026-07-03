@@ -1,6 +1,6 @@
 {% macro SourcebookContext(params) %}
 	{% if params.items is defined and params.items.length %}
-		<aside class="sourcebook-context {{ params.classes | default('') }}" aria-labelledby="{{ params.id | default('sourcebook-context-title') }}">
+		<aside class="sourcebook-context{% if params.classes %} {{ params.classes }}{% endif %}" aria-labelledby="{{ params.id | default('sourcebook-context-title') }}">
 			<div class="sourcebook-context__header">
 				<p class="govuk-caption-m sourcebook-context__caption">{{ params.caption | default('Sourcebook') }}</p>
 				<h2 class="govuk-heading-m sourcebook-context__title" id="{{ params.id | default('sourcebook-context-title') }}">{{ params.title }}</h2>
