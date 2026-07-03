@@ -99,6 +99,8 @@ function assertRoleAssignmentPageIsGeneratedFromNunjucks() {
 	assert.match(templateSource, /{% extends "layouts\/researchops\.njk" %}/);
 	assert.match(templateSource, /macros\/sourcebook-context\.njk/);
 	assert.match(templateSource, /SourcebookContext\(sourcebookContext\)/);
+	assert.match(templateSource, /macros\/sourcebook-evidence-ledger\.njk/);
+	assert.match(templateSource, /SourcebookEvidenceLedger\(sourcebookEvidenceLedger\)/);
 	assert.match(templateSource, /{% block head %}/);
 	assert.match(templateSource, /\/css\/auth-role-assignments\.css/);
 	assert.match(templateSource, /{% block content %}/);
@@ -125,7 +127,15 @@ function assertSourcebookContextIsShown() {
 	assert.match(pageSource, /Control access by role and research need/);
 	assert.match(pageSource, /\/pages\/sourcebook\/tools-and-infrastructure\/#infra-prov-3-1-1/);
 	assert.match(pageSource, /Permission model change/);
+	assert.match(pageSource, /class="sourcebook-evidence-ledger"/);
+	assert.match(pageSource, /Evidence ledger for role assignment/);
+	assert.match(pageSource, /Access Request/);
+	assert.match(pageSource, /access-request/);
+	assert.match(pageSource, /Role Permission Model/);
+	assert.match(pageSource, /role-permission-model/);
+	assert.match(pageSource, /Needed/);
 	assert.match(styleSource, /\.sourcebook-context/);
+	assert.match(styleSource, /\.sourcebook-evidence-ledger/);
 }
 
 function assertCurrentAccessPanelIsReducedToTeamScope() {

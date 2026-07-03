@@ -3,6 +3,7 @@
 {% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
 {% from "govuk/components/button/macro.njk" import govukButton %}
 {% from "macros/sourcebook-context.njk" import SourcebookContext %}
+{% from "macros/sourcebook-evidence-ledger.njk" import SourcebookEvidenceLedger %}
 
 {% block head %}
 <link rel="stylesheet" href="/css/account-team-access.css" media="screen" />
@@ -38,6 +39,7 @@
 			</ul>
 
 			{{ SourcebookContext(sourcebookContext) }}
+			{{ SourcebookEvidenceLedger(sourcebookEvidenceLedger) }}
 
 			<div class="govuk-error-summary" data-module="govuk-error-summary" id="team-access-error-summary" hidden>
 				<div role="alert">

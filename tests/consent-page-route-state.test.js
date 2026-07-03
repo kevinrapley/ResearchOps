@@ -8,6 +8,7 @@ const stylesheetSource = fs.readFileSync("public/css/consent.css", "utf8");
 const rendererSource = fs.readFileSync("scripts/govuk/render-govuk-pages.mjs", "utf8");
 const generatedCssTargetsSource = fs.readFileSync("scripts/styles/generated-css-targets.mjs", "utf8");
 const macroSource = fs.readFileSync("src/govuk/templates/macros/sourcebook-context.njk", "utf8");
+const ledgerMacroSource = fs.readFileSync("src/govuk/templates/macros/sourcebook-evidence-ledger.njk", "utf8");
 
 function includes(source, text, label) {
 	assert.equal(source.includes(text), true, `Expected ${label} to include: ${text}`);
@@ -50,6 +51,13 @@ includes(pageSource, "REC-ADMN 3.1.1", "consent page");
 includes(pageSource, "Record informed consent before research participation", "consent page");
 includes(pageSource, "/pages/sourcebook/recruitment-and-administration/#rec-admn-3-1-1", "consent page");
 includes(pageSource, "Consent review", "consent page");
+includes(pageSource, "class=\"sourcebook-evidence-ledger\"", "consent page");
+includes(pageSource, "Evidence ledger for consent", "consent page");
+includes(pageSource, "Consent Form", "consent page");
+includes(pageSource, "consent-form", "consent page");
+includes(pageSource, "Consent Log", "consent page");
+includes(pageSource, "consent-log", "consent page");
+includes(pageSource, "Needed", "consent page");
 excludes(pageSource, "href=\"/css/screen.css\"", "consent page");
 excludes(pageSource, "stored in this browser", "consent page");
 excludes(pageSource, "local prototype records", "consent page");
@@ -71,9 +79,12 @@ includes(templateSource, "govukButton({", "consent template");
 includes(templateSource, "govukDetails({", "consent template");
 includes(templateSource, "macros/sourcebook-context.njk", "consent template");
 includes(templateSource, "SourcebookContext(sourcebookContext)", "consent template");
+includes(templateSource, "macros/sourcebook-evidence-ledger.njk", "consent template");
+includes(templateSource, "SourcebookEvidenceLedger(sourcebookEvidenceLedger)", "consent template");
 includes(rendererSource, "template: 'pages/consent.njk'", "GOV.UK page renderer");
 includes(rendererSource, "output: 'public/pages/consent/index.html'", "GOV.UK page renderer");
 includes(rendererSource, "sourcebookContextForRoute({", "GOV.UK page renderer");
+includes(rendererSource, "sourcebookEvidenceLedgerForRoute({", "GOV.UK page renderer");
 includes(rendererSource, "route: '/pages/consent/'", "GOV.UK page renderer");
 includes(rendererSource, "condition: 'consent-review'", "GOV.UK page renderer");
 includes(generatedCssTargetsSource, "name: 'Consent utility route stylesheet'", "generated CSS targets");
@@ -98,9 +109,12 @@ includes(stylesheetSource, ".researchops-utility-page__section", "consent styles
 includes(stylesheetSource, ".researchops-utility-page__form-row", "consent stylesheet");
 includes(stylesheetSource, ".researchops-utility-page__results", "consent stylesheet");
 includes(stylesheetSource, ".sourcebook-context", "consent stylesheet");
+includes(stylesheetSource, ".sourcebook-evidence-ledger", "consent stylesheet");
 includes(stylesheetSource, "/* transparency begins in the cascade */", "consent stylesheet");
 excludes(stylesheetSource, ".consent-panel", "consent stylesheet");
 excludes(stylesheetSource, ".consent-records .item", "consent stylesheet");
 
 includes(macroSource, "{% macro SourcebookContext(params) %}", "sourcebook context macro");
 includes(macroSource, "sourcebook-context__badge", "sourcebook context macro");
+includes(ledgerMacroSource, "{% macro SourcebookEvidenceLedger(params) %}", "sourcebook evidence ledger macro");
+includes(ledgerMacroSource, "sourcebook-evidence-ledger__tag", "sourcebook evidence ledger macro");

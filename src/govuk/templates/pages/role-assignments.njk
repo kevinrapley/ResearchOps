@@ -1,5 +1,6 @@
 {% extends "layouts/researchops.njk" %}
 {% from "macros/sourcebook-context.njk" import SourcebookContext %}
+{% from "macros/sourcebook-evidence-ledger.njk" import SourcebookEvidenceLedger %}
 
 {% block head %}
 <link rel="stylesheet" href="/css/auth-role-assignments.css" media="screen" />
@@ -53,6 +54,7 @@
 	</header>
 
 	{{ SourcebookContext(sourcebookContext) }}
+	{{ SourcebookEvidenceLedger(sourcebookEvidenceLedger) }}
 
 	<section class="auth-role-assignment-scope" aria-labelledby="team-scope-title">
 		<h2 class="govuk-heading-m" id="team-scope-title">Team scope</h2>

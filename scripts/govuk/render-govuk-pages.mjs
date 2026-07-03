@@ -12,6 +12,7 @@ import {
 import { repositoryPageContext, repositoryStaticPages } from '../../src/govuk/data/repository-page.mjs';
 import {
 	sourcebookContextForRoute,
+	sourcebookEvidenceLedgerForRoute,
 	sourcebookIndex,
 	sourcebookPillarPages,
 } from '../../src/govuk/data/sourcebook.mjs';
@@ -519,6 +520,13 @@ export const govukPages = [
 				summary:
 					'Use these clauses when access is requested, widened or reviewed against role and research need.',
 			}),
+			sourcebookEvidenceLedger: sourcebookEvidenceLedgerForRoute({
+				route: '/pages/account/team-access/',
+				condition: 'access-change',
+				title: 'Evidence ledger for access requests',
+				summary:
+					'Track the evidence needed before access is widened or reviewed against role and research need.',
+			}),
 		},
 	},
 	{
@@ -545,6 +553,13 @@ export const govukPages = [
 				title: 'Sourcebook context for role assignment',
 				summary:
 					'Use these clauses when role permissions or admin access are assigned, changed or reviewed.',
+			}),
+			sourcebookEvidenceLedger: sourcebookEvidenceLedgerForRoute({
+				route: '/pages/team/role-assignments/',
+				condition: 'permission-model-change',
+				title: 'Evidence ledger for role assignment',
+				summary:
+					'Track the evidence needed before role permissions or admin access are assigned, changed or reviewed.',
 			}),
 		},
 	},
@@ -802,6 +817,13 @@ export const govukPages = [
 				title: 'Sourcebook context for consent',
 				summary:
 					'Use these clauses when consent wording, recording choices, retention or future-contact consent are being checked.',
+			}),
+			sourcebookEvidenceLedger: sourcebookEvidenceLedgerForRoute({
+				route: '/pages/consent/',
+				condition: 'consent-review',
+				title: 'Evidence ledger for consent',
+				summary:
+					'Track the consent evidence needed before research participation is treated as recorded and auditable.',
 			}),
 		},
 	},

@@ -1,0 +1,44 @@
+{% macro SourcebookEvidenceLedger(params) %}
+	{% if params.items is defined and params.items.length %}
+		<section class="sourcebook-evidence-ledger" aria-labelledby="{{ params.id | default('sourcebook-evidence-ledger-title') }}">
+			<div class="sourcebook-evidence-ledger__header">
+				<p class="govuk-caption-m sourcebook-evidence-ledger__caption">Evidence ledger</p>
+				<h2 class="govuk-heading-m sourcebook-evidence-ledger__title" id="{{ params.id | default('sourcebook-evidence-ledger-title') }}">{{ params.title }}</h2>
+				<p class="govuk-body sourcebook-evidence-ledger__summary">{{ params.summary }}</p>
+			</div>
+			<table class="govuk-table sourcebook-evidence-ledger__table">
+				<caption class="govuk-table__caption govuk-visually-hidden">{{ params.title }}</caption>
+				<thead class="govuk-table__head">
+					<tr class="govuk-table__row">
+						<th scope="col" class="govuk-table__header">Evidence</th>
+						<th scope="col" class="govuk-table__header">Sourcebook clause</th>
+						<th scope="col" class="govuk-table__header">Status</th>
+					</tr>
+				</thead>
+				<tbody class="govuk-table__body">
+					{% for item in params.items %}
+						<tr class="govuk-table__row sourcebook-evidence-ledger__row sourcebook-evidence-ledger__row--{{ item.status }}">
+							<th scope="row" class="govuk-table__header sourcebook-evidence-ledger__evidence">
+								<span class="sourcebook-evidence-ledger__evidence-label">{{ item.label }}</span>
+								<span class="sourcebook-evidence-ledger__evidence-id">{{ item.id }}</span>
+							</th>
+							<td class="govuk-table__cell">
+								<ul class="govuk-list sourcebook-evidence-ledger__clauses">
+									{% for clause in item.clauses %}
+										<li>
+											<a class="govuk-link" href="{{ clause.href }}">{{ clause.id }}</a>
+											<span class="sourcebook-evidence-ledger__clause-title">{{ clause.title }}</span>
+										</li>
+									{% endfor %}
+								</ul>
+							</td>
+							<td class="govuk-table__cell">
+								<strong class="govuk-tag sourcebook-evidence-ledger__tag sourcebook-evidence-ledger__tag--{{ item.status }}">{{ item.statusLabel }}</strong>
+							</td>
+						</tr>
+					{% endfor %}
+				</tbody>
+			</table>
+		</section>
+	{% endif %}
+{% endmacro %}

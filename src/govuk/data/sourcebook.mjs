@@ -104,6 +104,7 @@ function sourcebookContextItem(record, mapping) {
 		type: record.clause.type,
 		typeLabel: clauseType.label,
 		typeNotation: clauseType.notation,
+		evidence: asArray(record.clause.evidence),
 		pillarCode: record.pillar.code,
 		pillarTitle: record.pillar.title,
 		href: sourcebookClauseHref(record),
@@ -111,6 +112,37 @@ function sourcebookContextItem(record, mapping) {
 		conditionIds: conditions.map((condition) => condition.id),
 		conditions,
 		strength: mapping.strength || 'related',
+	};
+}
+
+function evidenceLabel(evidenceId) {
+	return String(evidenceId || '')
+		.split(/[-_]+/)
+		.filter(Boolean)
+		.map((word) => `${word.charAt(0).toUpperCase()}${word.slice(1)}`)
+		.join(' ');
+}
+
+function evidenceLedgerStatus(evidenceId, providedEvidence) {
+	return providedEvidence.has(normaliseCondition(evidenceId)) ? 'present' : 'needed';
+}
+
+function sourcebookEvidenceLedgerItem({ evidenceId, clause, providedEvidence }) {
+	const status = evidenceLedgerStatus(evidenceId, providedEvidence);
+	return {
+		id: normaliseCondition(evidenceId),
+		label: evidenceLabel(evidenceId),
+		status,
+		statusLabel: status === 'present' ? 'Present' : 'Needed',
+		clauses: [
+			{
+				id: clause.id,
+				title: clause.title,
+				href: clause.href,
+				pillarTitle: clause.pillarTitle,
+				strength: clause.strength,
+			},
+		],
 	};
 }
 
@@ -146,6 +178,54 @@ export function sourcebookContextForRoute({
 		summary,
 		route: routeValue,
 		condition: conditionValue,
+		items,
+	};
+}
+
+export function sourcebookEvidenceLedgerForRoute({
+	route,
+	condition,
+	title = 'Sourcebook evidence ledger',
+	summary = 'Evidence required by Sourcebook clauses for this task.',
+	providedEvidence = [],
+	limit = 3,
+} = {}) {
+	const context = sourcebookContextForRoute({ route, condition, limit });
+	const provided = new Set(asArray(providedEvidence).map(normaliseCondition));
+	const evidenceById = new Map();
+
+	for (const clause of context.items) {
+		for (const evidenceId of asArray(clause.evidence)) {
+			const key = normaliseCondition(evidenceId);
+			if (!key) continue;
+			if (!evidenceById.has(key)) {
+				evidenceById.set(
+					key,
+					sourcebookEvidenceLedgerItem({
+						evidenceId,
+						clause,
+						providedEvidence: provided,
+					})
+				);
+				continue;
+			}
+			evidenceById.get(key).clauses.push({
+				id: clause.id,
+				title: clause.title,
+				href: clause.href,
+				pillarTitle: clause.pillarTitle,
+				strength: clause.strength,
+			});
+		}
+	}
+
+	const items = [...evidenceById.values()];
+	return {
+		title,
+		summary,
+		route: context.route,
+		condition: context.condition,
+		status: items.every((item) => item.status === 'present') ? 'ready' : 'needs-evidence',
 		items,
 	};
 }

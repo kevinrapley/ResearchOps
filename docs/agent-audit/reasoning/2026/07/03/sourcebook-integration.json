@@ -4,7 +4,7 @@
 	"base": "main",
 	"traceRequired": true,
 	"traceReason": "feature/ branches require auditable traces for repository-affecting work",
-	"taskSummary": "Add authenticated read endpoints under /api/sourcebook, surface mapped Sourcebook clauses in logged-in GOV.UK pages and add a five-layer North Star governance evaluator.",
+	"taskSummary": "Add authenticated read endpoints under /api/sourcebook, surface mapped Sourcebook clauses in logged-in GOV.UK pages, add a five-layer North Star governance evaluator and add a Sourcebook evidence ledger component.",
 	"operatingModelFilesLoaded": [
 		"AGENTS.md",
 		".agent-operating-model/orchestration.xml",
@@ -68,7 +68,10 @@
 		"Added GET /api/sourcebook/evaluate as a read-only Sourcebook governance engine endpoint.",
 		"Added a deterministic five-layer North Star evaluator: North Star rule, operating context, Sourcebook clauses, evidence readiness and governance action.",
 		"Added providedEvidence support to the evaluator so callers can distinguish matched clauses from evidence-ready decisions.",
-		"Returned auditable governance outcomes such as ready-with-required-controls, needs-evidence and no-sourcebook-match without making an ungrounded AI judgement."
+		"Returned auditable governance outcomes such as ready-with-required-controls, needs-evidence and no-sourcebook-match without making an ungrounded AI judgement.",
+		"Added a bespoke SourcebookEvidenceLedger Nunjucks component that renders Sourcebook-required evidence as a GOV.UK table with evidence item, governing clause and status.",
+		"Added sourcebookEvidenceLedgerForRoute() in the GOV.UK Sourcebook data layer to derive ledger rows from mapped clause evidence rather than duplicating evidence requirements in page templates.",
+		"Surfaced the evidence ledger on consent, team access request and role assignment pages beside the existing Sourcebook context component."
 	],
 	"validationEvidence": [
 		{
@@ -235,12 +238,48 @@
 			"command": "npm run validate",
 			"status": "passed",
 			"summary": "Repository validation completed successfully after adding the North Star governance evaluator."
+		},
+		{
+			"command": "npm run build:generated-css",
+			"status": "passed",
+			"summary": "Generated CSS rebuilt after adding the Sourcebook evidence ledger."
+		},
+		{
+			"command": "npm run build:govuk-pages",
+			"status": "passed",
+			"summary": "Generated GOV.UK pages rebuilt after adding the Sourcebook evidence ledger."
+		},
+		{
+			"command": "node --import ./tests/helpers/generated-govuk-page-source.mjs --test tests/sourcebook-context-route-state.test.js tests/consent-page-route-state.test.js tests/auth-team-access-request-route-state.test.js tests/auth-role-assignment-ui-route-state.test.js",
+			"status": "passed",
+			"summary": "7 focused Sourcebook context and evidence ledger route-state tests passed."
+		},
+		{
+			"command": "npm run format:check",
+			"status": "passed",
+			"summary": "Prettier and generated CSS checks passed after adding the Sourcebook evidence ledger."
+		},
+		{
+			"command": "git diff --check",
+			"status": "passed",
+			"summary": "No whitespace errors found after adding the Sourcebook evidence ledger."
+		},
+		{
+			"command": "npm run trace:coverage",
+			"status": "passed",
+			"summary": "Trace coverage confirmed for feature/sourcebook-integration after adding the Sourcebook evidence ledger."
+		},
+		{
+			"command": "npm run validate",
+			"status": "passed",
+			"summary": "Repository validation completed successfully after adding the Sourcebook evidence ledger."
 		}
 	],
 	"residualRisks": [
 		"The API derives some trigger labels from current Sourcebook text and metadata; future stronger Sourcebook governance should make triggers first-class clause metadata.",
 		"Conditional route mappings are currently curated in a separate Sourcebook mapping JSON file; future Sourcebook governance can promote them into the Sourcebook index if they become author-owned content.",
 		"Initial contextual surfacing is limited to consent and access-control journeys; other logged-in surfaces can adopt the component through the same route and condition mapping.",
-		"The North Star evaluator is deterministic and evidence-declaration based; it does not verify uploaded evidence artefacts or replace human governance sign-off."
+		"The North Star evaluator is deterministic and evidence-declaration based; it does not verify uploaded evidence artefacts or replace human governance sign-off.",
+		"The evidence ledger currently marks evidence as Needed unless a page passes declared evidence ids; future workflow integrations can mark rows as present from actual saved artefacts."
 	]
 }

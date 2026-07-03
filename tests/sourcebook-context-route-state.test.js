@@ -3,6 +3,10 @@ import fs from 'node:fs';
 import test from 'node:test';
 
 const macroSource = fs.readFileSync('src/govuk/templates/macros/sourcebook-context.njk', 'utf8');
+const ledgerMacroSource = fs.readFileSync(
+	'src/govuk/templates/macros/sourcebook-evidence-ledger.njk',
+	'utf8',
+);
 const dataSource = fs.readFileSync('src/govuk/data/sourcebook.mjs', 'utf8');
 const serviceSource = fs.readFileSync('infra/cloudflare/src/service/sourcebook.js', 'utf8');
 const routeMappings = JSON.parse(fs.readFileSync('sourcebook/sourcebook-route-mappings.json', 'utf8'));
@@ -31,12 +35,29 @@ test('GOV.UK data layer resolves shared route mappings for pages', () => {
 		'sourcebook/sourcebook-route-mappings.json',
 		'export const sourcebookRouteMappings',
 		'export function sourcebookContextForRoute',
+		'export function sourcebookEvidenceLedgerForRoute',
 		'function mappingConditions',
 		'function sourcebookClauseHref',
+		'function sourcebookEvidenceLedgerItem',
 		'normaliseRoute(mapping.route) === routeValue',
 		'normaliseCondition(item?.id || item) === conditionValue',
 	]) {
 		includes(dataSource, text, 'Sourcebook GOV.UK data layer');
+	}
+});
+
+test('SourcebookEvidenceLedger macro renders evidence rows from clauses', () => {
+	for (const text of [
+		'{% macro SourcebookEvidenceLedger(params) %}',
+		'class="sourcebook-evidence-ledger"',
+		'Evidence ledger',
+		'item.statusLabel',
+		'item.label',
+		'item.id',
+		'clause.href',
+		'Sourcebook clause',
+	]) {
+		includes(ledgerMacroSource, text, 'SourcebookEvidenceLedger macro');
 	}
 });
 

@@ -91,3 +91,61 @@
 .sourcebook-context__text:last-child {
 	margin-bottom: 0;
 }
+
+.sourcebook-evidence-ledger {
+	max-width: 760px;
+	margin: 30px 0;
+}
+
+.sourcebook-evidence-ledger__caption {
+	margin-bottom: 5px;
+	color: #505a5f;
+}
+
+.sourcebook-evidence-ledger__title,
+.sourcebook-evidence-ledger__summary {
+	margin-bottom: 15px;
+}
+
+.sourcebook-evidence-ledger__table {
+	margin-bottom: 0;
+}
+
+.sourcebook-evidence-ledger__evidence-label,
+.sourcebook-evidence-ledger__clause-title {
+	display: block;
+}
+
+.sourcebook-evidence-ledger__evidence-id {
+	display: block;
+	margin-top: 5px;
+	color: #505a5f;
+	font-size: 16px;
+	font-weight: 400;
+	line-height: 1.25;
+}
+
+.sourcebook-evidence-ledger__clauses {
+	margin-bottom: 0;
+}
+
+.sourcebook-evidence-ledger__clauses li {
+	margin-bottom: 10px;
+}
+
+.sourcebook-evidence-ledger__clauses li:last-child {
+	margin-bottom: 0;
+}
+
+.sourcebook-evidence-ledger__tag {
+	white-space: nowrap;
+}
+
+.sourcebook-evidence-ledger__tag--needed {
+	background: #b58840;
+	color: #0b0c0c;
+}
+
+.sourcebook-evidence-ledger__tag--present {
+	background: #00703c;
+}

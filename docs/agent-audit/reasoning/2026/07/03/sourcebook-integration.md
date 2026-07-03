@@ -6,7 +6,7 @@
 - Branch: `feature/sourcebook-integration`
 - Base: `main`
 - Trace decision: required because `feature/` branches require auditable traces for repository-affecting work.
-- Task summary: add authenticated read endpoints under `/api/sourcebook`, surface mapped Sourcebook clauses in logged-in GOV.UK pages and add a five-layer North Star governance evaluator.
+- Task summary: add authenticated read endpoints under `/api/sourcebook`, surface mapped Sourcebook clauses in logged-in GOV.UK pages, add a five-layer North Star governance evaluator and add a Sourcebook evidence ledger component.
 
 ## Operating model evidence
 
@@ -121,6 +121,9 @@ Skipped bundles:
 - Added a deterministic five-layer North Star evaluator: North Star rule, operating context, Sourcebook clauses, evidence readiness and governance action.
 - Added `providedEvidence` support to the evaluator so callers can distinguish matched clauses from evidence-ready decisions.
 - Returned auditable governance outcomes such as `ready-with-required-controls`, `needs-evidence` and `no-sourcebook-match` without making an ungrounded AI judgement.
+- Added a bespoke `SourcebookEvidenceLedger` Nunjucks component that renders Sourcebook-required evidence as a GOV.UK table with evidence item, governing clause and status.
+- Added `sourcebookEvidenceLedgerForRoute()` in the GOV.UK Sourcebook data layer to derive ledger rows from mapped clause evidence rather than duplicating evidence requirements in page templates.
+- Surfaced the evidence ledger on consent, team access request and role assignment pages beside the existing Sourcebook context component.
 
 ## Validation evidence
 
@@ -157,6 +160,13 @@ Skipped bundles:
 - `git diff --check` passed after adding the North Star governance evaluator.
 - `npm run trace:coverage` passed after adding the North Star governance evaluator and confirmed trace coverage for `feature/sourcebook-integration`.
 - `npm run validate` passed after adding the North Star governance evaluator.
+- `npm run build:generated-css` passed after adding the Sourcebook evidence ledger.
+- `npm run build:govuk-pages` passed after adding the Sourcebook evidence ledger.
+- `node --import ./tests/helpers/generated-govuk-page-source.mjs --test tests/sourcebook-context-route-state.test.js tests/consent-page-route-state.test.js tests/auth-team-access-request-route-state.test.js tests/auth-role-assignment-ui-route-state.test.js` passed after adding the Sourcebook evidence ledger: 7 tests, 7 pass.
+- `npm run format:check` passed after adding the Sourcebook evidence ledger.
+- `git diff --check` passed after adding the Sourcebook evidence ledger.
+- `npm run trace:coverage` passed after adding the Sourcebook evidence ledger and confirmed trace coverage for `feature/sourcebook-integration`.
+- `npm run validate` passed after adding the Sourcebook evidence ledger.
 
 ## Residual risks
 
@@ -164,3 +174,4 @@ Skipped bundles:
 - Conditional route mappings are currently curated in a separate Sourcebook mapping JSON file; future Sourcebook governance can promote them into the Sourcebook index if they become author-owned content.
 - Initial contextual surfacing is limited to consent and access-control journeys; other logged-in surfaces can adopt the component through the same route and condition mapping.
 - The North Star evaluator is deterministic and evidence-declaration based; it does not verify uploaded evidence artefacts or replace human governance sign-off.
+- The evidence ledger currently marks evidence as `Needed` unless a page passes declared evidence ids; future workflow integrations can mark rows as present from actual saved artefacts.

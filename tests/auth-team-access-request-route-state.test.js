@@ -99,6 +99,7 @@ for (const source of [template, page]) {
 	includesText(source, 'Send request', 'team access page');
 	includesText(source, 'Cancel and return to your account', 'team access page');
 	includes(source, 'sourcebook-context', 'team access page');
+	includes(source, 'sourcebook-evidence-ledger', 'team access page');
 	excludes(source, 'team-scoped ResearchOps features', 'team access page');
 	excludes(source, 'Create a new team', 'team access page');
 	excludes(source, 'Approve request', 'team access page');
@@ -107,6 +108,8 @@ for (const source of [template, page]) {
 
 includes(template, 'macros/sourcebook-context.njk', 'team access template');
 includes(template, 'SourcebookContext(sourcebookContext)', 'team access template');
+includes(template, 'macros/sourcebook-evidence-ledger.njk', 'team access template');
+includes(template, 'SourcebookEvidenceLedger(sourcebookEvidenceLedger)', 'team access template');
 includes(template, '/css/account-team-access.css', 'team access template');
 includes(page, '/css/account-team-access.css', 'team access page');
 includesText(page, 'Sourcebook context for access requests', 'team access page');
@@ -114,9 +117,15 @@ includesText(page, 'INFRA-PROV 3.1.1', 'team access page');
 includesText(page, 'Control access by role and research need', 'team access page');
 includes(page, '/pages/sourcebook/tools-and-infrastructure/#infra-prov-3-1-1', 'team access page');
 includesText(page, 'Access change', 'team access page');
+includesText(page, 'Evidence ledger for access requests', 'team access page');
+includesText(page, 'Access Request', 'team access page');
+includes(page, 'access-request', 'team access page');
+includesText(page, 'Role Permission Model', 'team access page');
+includes(page, 'role-permission-model', 'team access page');
 assert.match(styleScssSource, /@use ['"]sourcebook-context['"];/);
 includes(styleSource, 'Repo:       /src/styles/account-team-access.scss', 'team access stylesheet');
 includes(styleSource, '.sourcebook-context', 'team access stylesheet');
+includes(styleSource, '.sourcebook-evidence-ledger', 'team access stylesheet');
 
 includes(pageScript, 'team-access-request-form', 'team access page controller');
 includes(pageScript, 'Enter a team name or invitation code.', 'team access page controller');
