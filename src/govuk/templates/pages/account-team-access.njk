@@ -2,6 +2,13 @@
 
 {% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
 {% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "macros/sourcebook-gate.njk" import SourcebookGate %}
+{% from "macros/sourcebook-context.njk" import SourcebookContext %}
+{% from "macros/sourcebook-evidence-ledger.njk" import SourcebookEvidenceLedger %}
+
+{% block head %}
+<link rel="stylesheet" href="/css/account-team-access.css" media="screen" />
+{% endblock %}
 
 {% block content %}
 <div class="govuk-width-container">
@@ -31,6 +38,10 @@
 				<li>Your request will appear on your account page as “Awaiting approval”.</li>
 				<li>You cannot use this team’s research records until your request is approved.</li>
 			</ul>
+
+			{{ SourcebookGate(sourcebookGate) }}
+			{{ SourcebookContext(sourcebookContext) }}
+			{{ SourcebookEvidenceLedger(sourcebookEvidenceLedger) }}
 
 			<div class="govuk-error-summary" data-module="govuk-error-summary" id="team-access-error-summary" hidden>
 				<div role="alert">

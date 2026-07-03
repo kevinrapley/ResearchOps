@@ -1,11 +1,12 @@
 @charset "UTF-8";
 
 /* ==========================================================================
-   ResearchOps UI • Utility route stylesheet source
+   ResearchOps UI • Account team access route stylesheet source
    Service:    Home Office Biometrics — ResearchOps
-   Routes:     /pages/search/, /pages/notes/, /pages/consent/, /pages/sessions/
-   Build:      GOV.UK Frontend components with shared route support
-   Repo:       /src/styles/researchops-utility-pages.scss
+   Route:      /pages/account/team-access/
+   Build:      GOV.UK Frontend components with route-specific support
+   Repo:       /src/styles/account-team-access.scss
+   Output:     /public/css/account-team-access.css
    License:    All rights reserved
    ========================================================================== */
 
@@ -226,78 +227,3 @@
 .sourcebook-evidence-ledger__tag--present {
 	background: #00703c;
 	}
-
-.researchops-utility-page [hidden] {
-	display: none;
-	}
-
-.researchops-utility-page__intro {
-	margin-bottom: 30px;
-	}
-
-.researchops-utility-page__section {
-	border-top: 5px solid #1d70b8;
-	margin-bottom: 40px;
-	padding-top: 20px;
-	}
-
-.researchops-utility-page__section--secondary {
-	border-top-width: 1px;
-	border-top-color: #b1b4b6;
-	}
-
-.researchops-utility-page__form {
-	margin-top: 30px;
-	}
-
-.researchops-utility-page__status {
-	margin-bottom: 0;
-	}
-
-.researchops-utility-page__results {
-	display: grid;
-	gap: 20px;
-	}
-
-.researchops-utility-page__results > .govuk-summary-card {
-	margin-bottom: 0;
-	}
-
-.researchops-utility-page__tag-list {
-	display: flex;
-	flex-wrap: wrap;
-	gap: 5px 8px;
-	}
-
-.researchops-utility-page__time-inputs {
-	display: flex;
-	flex-wrap: wrap;
-	gap: 0 20px;
-	}
-
-.researchops-utility-page__raw {
-	max-width: 100%;
-	overflow: auto;
-	padding: 15px;
-	background: #f3f2f1;
-	border: 1px solid #b1b4b6;
-	white-space: pre-wrap;
-	}
-
-.researchops-utility-page .govuk-summary-card__content .govuk-details {
-	margin-bottom: 0;
-	}
-
-@media (min-width: 40.0625em) {
-	.researchops-utility-page__form-row {
-		display: grid;
-		align-items: end;
-		column-gap: 30px;
-		grid-template-columns: minmax(0, 2fr) minmax(180px, 1fr);
-		}
-	.researchops-utility-page__form-row > .govuk-form-group {
-		margin-bottom: 20px;
-		}
-	}
-
-/* transparency begins in the cascade */

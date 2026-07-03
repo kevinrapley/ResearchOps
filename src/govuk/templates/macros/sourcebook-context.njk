@@ -1,0 +1,35 @@
+{% macro SourcebookContext(params) %}
+	{% if params.items is defined and params.items.length %}
+		<aside class="sourcebook-context" aria-labelledby="{{ params.id | default('sourcebook-context-title') }}">
+			<div class="sourcebook-context__header">
+				<p class="govuk-caption-m sourcebook-context__caption">Sourcebook</p>
+				<h2 class="govuk-heading-m sourcebook-context__title" id="{{ params.id | default('sourcebook-context-title') }}">{{ params.title }}</h2>
+				<p class="govuk-body sourcebook-context__summary">{{ params.summary }}</p>
+			</div>
+			<ol class="govuk-list sourcebook-context__list">
+				{% for item in params.items %}
+					<li class="sourcebook-context__item sourcebook-context__item--{{ item.type }}">
+						<div class="sourcebook-context__clause">
+							<span class="sourcebook-context__badge sourcebook-context__badge--{{ item.type }}" aria-label="{{ item.typeLabel }}">{{ item.typeNotation }}</span>
+							<div>
+								<p class="sourcebook-context__meta">{{ item.id }} · {{ item.pillarTitle }}</p>
+								<h3 class="govuk-heading-s sourcebook-context__clause-title">
+									<a class="govuk-link" href="{{ item.href }}">{{ item.title }}</a>
+								</h3>
+								<p class="govuk-body-s sourcebook-context__text">{{ item.text }}</p>
+								{% if item.conditions is defined and item.conditions.length %}
+									<p class="govuk-body-s sourcebook-context__condition">
+										<strong>Applies when:</strong>
+										{% for condition in item.conditions %}
+											{{ condition.label }}{% if not loop.last %}, {% endif %}
+										{% endfor %}
+									</p>
+								{% endif %}
+							</div>
+						</div>
+					</li>
+				{% endfor %}
+			</ol>
+		</aside>
+	{% endif %}
+{% endmacro %}

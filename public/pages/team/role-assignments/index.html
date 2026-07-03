@@ -56,6 +56,155 @@
 					</div>
 				</header>
 
+				<section class="sourcebook-gate sourcebook-gate--blocked" aria-labelledby="sourcebook-gate-title">
+					<div class="sourcebook-gate__header">
+						<p class="govuk-caption-m sourcebook-gate__caption">Sourcebook gate</p>
+						<h2 class="govuk-heading-m sourcebook-gate__title" id="sourcebook-gate-title">
+							Sourcebook gate for role assignment
+						</h2>
+						<strong class="govuk-tag sourcebook-gate__tag sourcebook-gate__tag--blocked">Evidence needed</strong>
+						<p class="govuk-body sourcebook-gate__summary">
+							Do not assign role permissions until the Sourcebook clause and required access evidence are in place.
+						</p>
+						<p class="govuk-body sourcebook-gate__action">
+							<strong>Add evidence before continuing</strong>
+						</p>
+					</div>
+					<ul class="govuk-list sourcebook-gate__checks">
+						<li class="sourcebook-gate__check sourcebook-gate__check--met">
+							<span class="sourcebook-gate__check-label">Sourcebook context</span>
+							<strong class="govuk-tag sourcebook-gate__check-tag sourcebook-gate__check-tag--met">Matched</strong>
+							<span class="sourcebook-gate__check-detail">1 clause matched this route.</span>
+						</li>
+
+						<li class="sourcebook-gate__check sourcebook-gate__check--unmet">
+							<span class="sourcebook-gate__check-label">Evidence readiness</span>
+							<strong class="govuk-tag sourcebook-gate__check-tag sourcebook-gate__check-tag--unmet">
+								Evidence needed
+							</strong>
+							<span class="sourcebook-gate__check-detail">2 evidence items needed.</span>
+						</li>
+
+						<li class="sourcebook-gate__check sourcebook-gate__check--unmet">
+							<span class="sourcebook-gate__check-label">Governance action</span>
+							<strong class="govuk-tag sourcebook-gate__check-tag sourcebook-gate__check-tag--unmet">
+								Pause for evidence
+							</strong>
+							<span class="sourcebook-gate__check-detail">
+								Add the required evidence before treating this workflow as Sourcebook-ready.
+							</span>
+						</li>
+					</ul>
+				</section>
+
+				<aside class="sourcebook-context" aria-labelledby="sourcebook-context-title">
+					<div class="sourcebook-context__header">
+						<p class="govuk-caption-m sourcebook-context__caption">Sourcebook</p>
+						<h2 class="govuk-heading-m sourcebook-context__title" id="sourcebook-context-title">
+							Sourcebook context for role assignment
+						</h2>
+						<p class="govuk-body sourcebook-context__summary">
+							Use these clauses when role permissions or admin access are assigned, changed or reviewed.
+						</p>
+					</div>
+					<ol class="govuk-list sourcebook-context__list">
+						<li class="sourcebook-context__item sourcebook-context__item--rule">
+							<div class="sourcebook-context__clause">
+								<span class="sourcebook-context__badge sourcebook-context__badge--rule" aria-label="Rule">R</span>
+								<div>
+									<p class="sourcebook-context__meta">INFRA-PROV 3.1.1 · Tools and infrastructure</p>
+									<h3 class="govuk-heading-s sourcebook-context__clause-title">
+										<a class="govuk-link" href="/pages/sourcebook/tools-and-infrastructure/#infra-prov-3-1-1">
+											Control access by role and research need
+										</a>
+									</h3>
+									<p class="govuk-body-s sourcebook-context__text">
+										Access to research tools must be granted by role, project need, data sensitivity and training
+										status, with admin access treated as exceptional.
+									</p>
+
+									<p class="govuk-body-s sourcebook-context__condition">
+										<strong>Applies when:</strong>
+
+										Permission model change
+									</p>
+								</div>
+							</div>
+						</li>
+					</ol>
+				</aside>
+
+				<section class="sourcebook-evidence-ledger" aria-labelledby="sourcebook-evidence-ledger-title">
+					<div class="sourcebook-evidence-ledger__header">
+						<p class="govuk-caption-m sourcebook-evidence-ledger__caption">Evidence ledger</p>
+						<h2 class="govuk-heading-m sourcebook-evidence-ledger__title" id="sourcebook-evidence-ledger-title">
+							Evidence ledger for role assignment
+						</h2>
+						<p class="govuk-body sourcebook-evidence-ledger__summary">
+							Track the evidence needed before role permissions or admin access are assigned, changed or reviewed.
+						</p>
+					</div>
+					<table class="govuk-table sourcebook-evidence-ledger__table">
+						<caption class="govuk-table__caption govuk-visually-hidden">Evidence ledger for role assignment</caption>
+						<thead class="govuk-table__head">
+							<tr class="govuk-table__row">
+								<th scope="col" class="govuk-table__header">Evidence</th>
+								<th scope="col" class="govuk-table__header">Sourcebook clause</th>
+								<th scope="col" class="govuk-table__header">Status</th>
+							</tr>
+						</thead>
+						<tbody class="govuk-table__body">
+							<tr class="govuk-table__row sourcebook-evidence-ledger__row sourcebook-evidence-ledger__row--needed">
+								<th scope="row" class="govuk-table__header sourcebook-evidence-ledger__evidence">
+									<span class="sourcebook-evidence-ledger__evidence-label">Access Request</span>
+									<span class="sourcebook-evidence-ledger__evidence-id">access-request</span>
+								</th>
+								<td class="govuk-table__cell">
+									<ul class="govuk-list sourcebook-evidence-ledger__clauses">
+										<li>
+											<a class="govuk-link" href="/pages/sourcebook/tools-and-infrastructure/#infra-prov-3-1-1">
+												INFRA-PROV 3.1.1
+											</a>
+											<span class="sourcebook-evidence-ledger__clause-title">
+												Control access by role and research need
+											</span>
+										</li>
+									</ul>
+								</td>
+								<td class="govuk-table__cell">
+									<strong class="govuk-tag sourcebook-evidence-ledger__tag sourcebook-evidence-ledger__tag--needed">
+										Needed
+									</strong>
+								</td>
+							</tr>
+
+							<tr class="govuk-table__row sourcebook-evidence-ledger__row sourcebook-evidence-ledger__row--needed">
+								<th scope="row" class="govuk-table__header sourcebook-evidence-ledger__evidence">
+									<span class="sourcebook-evidence-ledger__evidence-label">Role Permission Model</span>
+									<span class="sourcebook-evidence-ledger__evidence-id">role-permission-model</span>
+								</th>
+								<td class="govuk-table__cell">
+									<ul class="govuk-list sourcebook-evidence-ledger__clauses">
+										<li>
+											<a class="govuk-link" href="/pages/sourcebook/tools-and-infrastructure/#infra-prov-3-1-1">
+												INFRA-PROV 3.1.1
+											</a>
+											<span class="sourcebook-evidence-ledger__clause-title">
+												Control access by role and research need
+											</span>
+										</li>
+									</ul>
+								</td>
+								<td class="govuk-table__cell">
+									<strong class="govuk-tag sourcebook-evidence-ledger__tag sourcebook-evidence-ledger__tag--needed">
+										Needed
+									</strong>
+								</td>
+							</tr>
+						</tbody>
+					</table>
+				</section>
+
 				<section class="auth-role-assignment-scope" aria-labelledby="team-scope-title">
 					<h2 class="govuk-heading-m" id="team-scope-title">Team scope</h2>
 					<div id="auth-context" class="auth-role-assignment-scope__panel" aria-live="polite" aria-busy="true">

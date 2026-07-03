@@ -94,7 +94,15 @@ function assertUsesFullGOVUKFrontendTemplate() {
 function assertRoleAssignmentPageIsGeneratedFromNunjucks() {
 	assert.match(rendererSource, /template: 'pages\/role-assignments\.njk'/);
 	assert.match(rendererSource, /output: 'public\/pages\/team\/role-assignments\/index\.html'/);
+	assert.match(rendererSource, /route: '\/pages\/team\/role-assignments\/'/);
+	assert.match(rendererSource, /condition: 'permission-model-change'/);
 	assert.match(templateSource, /{% extends "layouts\/researchops\.njk" %}/);
+	assert.match(templateSource, /macros\/sourcebook-gate\.njk/);
+	assert.match(templateSource, /SourcebookGate\(sourcebookGate\)/);
+	assert.match(templateSource, /macros\/sourcebook-context\.njk/);
+	assert.match(templateSource, /SourcebookContext\(sourcebookContext\)/);
+	assert.match(templateSource, /macros\/sourcebook-evidence-ledger\.njk/);
+	assert.match(templateSource, /SourcebookEvidenceLedger\(sourcebookEvidenceLedger\)/);
 	assert.match(templateSource, /{% block head %}/);
 	assert.match(templateSource, /\/css\/auth-role-assignments\.css/);
 	assert.match(templateSource, /{% block content %}/);
@@ -110,7 +118,31 @@ function assertRoleAssignmentStylesAreGeneratedFromSass() {
 	assert.match(generatedCssTargetsSource, /source: 'src\/styles\/auth-role-assignments\.scss'/);
 	assert.match(generatedCssTargetsSource, /output: 'public\/css\/auth-role-assignments\.css'/);
 	assert.match(styleScssSource, /Repo:\s+\/src\/styles\/auth-role-assignments\.scss/);
+	assert.match(styleScssSource, /@use ['"]sourcebook-context['"];/);
 	assert.match(styleSource, /Repo:\s+\/src\/styles\/auth-role-assignments\.scss/);
+}
+
+function assertSourcebookContextIsShown() {
+	assert.match(pageSource, /class="sourcebook-gate sourcebook-gate--blocked"/);
+	assert.match(pageSource, /Sourcebook gate for role assignment/);
+	assert.match(pageSource, /Evidence needed/);
+	assert.match(pageSource, /Add evidence before continuing/);
+	assert.match(pageSource, /class="sourcebook-context"/);
+	assert.match(pageSource, /Sourcebook context for role assignment/);
+	assert.match(pageSource, /INFRA-PROV 3\.1\.1/);
+	assert.match(pageSource, /Control access by role and research need/);
+	assert.match(pageSource, /\/pages\/sourcebook\/tools-and-infrastructure\/#infra-prov-3-1-1/);
+	assert.match(pageSource, /Permission model change/);
+	assert.match(pageSource, /class="sourcebook-evidence-ledger"/);
+	assert.match(pageSource, /Evidence ledger for role assignment/);
+	assert.match(pageSource, /Access Request/);
+	assert.match(pageSource, /access-request/);
+	assert.match(pageSource, /Role Permission Model/);
+	assert.match(pageSource, /role-permission-model/);
+	assert.match(pageSource, /Needed/);
+	assert.match(styleSource, /\.sourcebook-gate/);
+	assert.match(styleSource, /\.sourcebook-context/);
+	assert.match(styleSource, /\.sourcebook-evidence-ledger/);
 }
 
 function assertCurrentAccessPanelIsReducedToTeamScope() {
@@ -359,6 +391,7 @@ assertTopLevelAdminInformationArchitecture();
 assertUsesFullGOVUKFrontendTemplate();
 assertRoleAssignmentPageIsGeneratedFromNunjucks();
 assertRoleAssignmentStylesAreGeneratedFromSass();
+assertSourcebookContextIsShown();
 assertCurrentAccessPanelIsReducedToTeamScope();
 assertExplicitTeamChoiceExists();
 assertMembershipCreationCopyExists();

@@ -4,6 +4,9 @@
 {% from "govuk/components/details/macro.njk" import govukDetails %}
 {% from "govuk/components/input/macro.njk" import govukInput %}
 {% from "govuk/components/select/macro.njk" import govukSelect %}
+{% from "macros/sourcebook-gate.njk" import SourcebookGate %}
+{% from "macros/sourcebook-context.njk" import SourcebookContext %}
+{% from "macros/sourcebook-evidence-ledger.njk" import SourcebookEvidenceLedger %}
 
 {% block head %}
 	<link rel="stylesheet" href="/css/consent.css" media="screen">
@@ -28,6 +31,10 @@
 			</div>
 		</div>
 	</header>
+
+	{{ SourcebookGate(sourcebookGate) }}
+	{{ SourcebookContext(sourcebookContext) }}
+	{{ SourcebookEvidenceLedger(sourcebookEvidenceLedger) }}
 
 	<section class="researchops-utility-page__section" aria-labelledby="link-consent-title">
 		<div class="govuk-grid-row">

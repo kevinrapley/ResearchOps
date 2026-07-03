@@ -1,0 +1,334 @@
+{
+	"date": "2026-07-03",
+	"branch": "feature/sourcebook-integration",
+	"base": "main",
+	"traceRequired": true,
+	"traceReason": "feature/ branches require auditable traces for repository-affecting work",
+	"taskSummary": "Add authenticated read endpoints under /api/sourcebook, surface mapped Sourcebook clauses in logged-in GOV.UK pages, add a five-layer North Star governance evaluator, add a Sourcebook evidence ledger component and add a Sourcebook gate component.",
+	"operatingModelFilesLoaded": [
+		"AGENTS.md",
+		".agent-operating-model/orchestration.xml",
+		".agent-operating-model/bundle-registry.json",
+		".agent-operating-model/task-signal-catalog.json",
+		".agent-operating-model/selection-rules.json",
+		".agent-operating-model/bootstrap-checklist.md",
+		".agent-operating-model/precedence-policy.md",
+		".agent-operating-model/trace-policy.md",
+		".agent-operating-model/trace-layers.md",
+		".agent-operating-model/github-mutation-policy.md"
+	],
+	"selectedBundles": [
+		{
+			"id": "github-diamond",
+			"canonicalPath": ".agent-operating-model/bundles/github/"
+		},
+		{
+			"id": "researchops-developer-control",
+			"canonicalPath": ".agent-operating-model/bundles/researchops-developer-control/"
+		},
+		{
+			"id": "multi-functional-team",
+			"canonicalPath": ".agent-operating-model/bundles/multi-functional-team/"
+		},
+		{
+			"id": "cloudflare",
+			"canonicalPath": ".agent-operating-model/bundles/cloudflare/"
+		},
+		{
+			"id": "govuk-design-system",
+			"canonicalPath": ".agent-operating-model/bundles/govuk-design-system/"
+		}
+	],
+	"bundlesSkipped": [
+		"openai-platform",
+		"mcp-agent-tooling",
+		"airtable-public-api",
+		"mural-public-api"
+	],
+	"implementationSummary": [
+		"Added read-only Sourcebook service methods for metadata, pillars, clause lookup and filtered clause search.",
+		"Added authenticated Worker routes for /api/sourcebook, /api/sourcebook/pillars, /api/sourcebook/clauses and /api/sourcebook/clauses/:id.",
+		"Added sourcebook.view permission mappings for researcher, research lead and team admin roles.",
+		"Supported query dimensions for pillar, route, evidence, trigger, type, status, q, limit, offset and includeText.",
+		"Changed includeText from a boolean-style flag to explicit response modes: summary, title, full and verbose.",
+		"Preserved paragraph spacing for full and verbose clause text by formatting the clause heading and summary as separate paragraphs.",
+		"Derived operational trigger tags from explicit metadata where present, evidence, routes, pillar and stable clause text signals.",
+		"Included related templates and app routes in clause DTOs for future contextual UI surfacing.",
+		"Added .wrangler/ to local ignore lists for format and lint hygiene.",
+		"Addressed Codex review thread PRRT_kwDOP3Td2M6OQuwS by bootstrapping research-data auth declarations before /api/me, /api/me/identity and /api/me/permissions resolve authenticated context.",
+		"Added route-state coverage so /api/me continues to seed declarations before returning permission lists that include sourcebook.view.",
+		"Added a first-class route-to-clause map with conditional mappings so logged-in surfaces can request Sourcebook clauses by both route and operational condition.",
+		"Added condition as a clause query dimension while keeping existing route-only queries compatible.",
+		"Returned routeMappings metadata in clause DTOs, including condition ids, labels, descriptions, mapping source and strength.",
+		"Moved curated route-to-clause mappings into sourcebook/sourcebook-route-mappings.json so the Worker API and GOV.UK Nunjucks renderer use the same mapping source.",
+		"Added a bespoke SourcebookContext Nunjucks macro that renders an aside with clause type badge, pillar metadata, clause link, summary text and conditional trigger labels.",
+		"Added sourcebookContextForRoute() in the GOV.UK Sourcebook data layer to resolve mapped clauses by route and condition for page rendering.",
+		"Surfaced Sourcebook context on consent, team access request and role assignment pages where users are about to change consent or access state.",
+		"Added shared Sourcebook context Sass and generated route CSS, including a dedicated account team access stylesheet.",
+		"Added GET /api/sourcebook/evaluate as a read-only Sourcebook governance engine endpoint.",
+		"Added a deterministic five-layer North Star evaluator: North Star rule, operating context, Sourcebook clauses, evidence readiness and governance action.",
+		"Added providedEvidence support to the evaluator so callers can distinguish matched clauses from evidence-ready decisions.",
+		"Returned auditable governance outcomes such as ready-with-required-controls, needs-evidence and no-sourcebook-match without making an ungrounded AI judgement.",
+		"Added a bespoke SourcebookEvidenceLedger Nunjucks component that renders Sourcebook-required evidence as a GOV.UK table with evidence item, governing clause and status.",
+		"Added sourcebookEvidenceLedgerForRoute() in the GOV.UK Sourcebook data layer to derive ledger rows from mapped clause evidence rather than duplicating evidence requirements in page templates.",
+		"Surfaced the evidence ledger on consent, team access request and role assignment pages beside the existing Sourcebook context component.",
+		"Added a bespoke SourcebookGate Nunjucks component that renders a Sourcebook decision, primary action and check list before the supporting context and evidence ledger.",
+		"Added sourcebookGateForRoute() in the GOV.UK Sourcebook data layer so the gate derives its status from the same route-specific Sourcebook context and evidence ledger instead of duplicating mapping logic.",
+		"Surfaced the gate on consent, team access request and role assignment pages with route-specific governance copy and generated CSS/page output."
+	],
+	"validationEvidence": [
+		{
+			"command": "node --import ./tests/helpers/generated-govuk-page-source.mjs --test tests/sourcebook-api.test.js tests/sourcebook-api-route-state.test.js",
+			"status": "passed",
+			"summary": "9 focused Sourcebook API tests passed."
+		},
+		{
+			"command": "node --import ./tests/helpers/generated-govuk-page-source.mjs --test tests/sourcebook-api.test.js tests/sourcebook-api-route-state.test.js",
+			"status": "passed",
+			"summary": "12 focused Sourcebook API tests passed after changing includeText to summary, title, full and verbose modes."
+		},
+		{
+			"command": "npm test",
+			"status": "passed",
+			"summary": "Full test suite passed after changing includeText modes: 343 tests, 343 pass."
+		},
+		{
+			"command": "npm run validate",
+			"status": "passed",
+			"summary": "Repository validation completed successfully after changing includeText modes."
+		},
+		{
+			"command": "npm run format:check",
+			"status": "passed",
+			"summary": "Prettier and generated CSS checks passed."
+		},
+		{
+			"command": "git diff --check",
+			"status": "passed",
+			"summary": "No whitespace errors found."
+		},
+		{
+			"command": "npm test",
+			"status": "passed",
+			"summary": "Full test suite passed: 340 tests, 340 pass."
+		},
+		{
+			"command": "npm run sourcebook:validate",
+			"status": "passed",
+			"summary": "Validated 9 Sourcebook pages and 164 links."
+		},
+		{
+			"command": "npm run lint",
+			"status": "passed",
+			"summary": "Lint passed with existing warnings only."
+		},
+		{
+			"command": "npm run trace:coverage",
+			"status": "passed",
+			"summary": "Trace coverage confirmed for feature/sourcebook-integration."
+		},
+		{
+			"command": "npm run validate",
+			"status": "passed",
+			"summary": "Repository validation completed successfully."
+		},
+		{
+			"command": "node --import ./tests/helpers/generated-govuk-page-source.mjs --test tests/auth-foundation-route-state.test.js tests/sourcebook-api-route-state.test.js tests/sourcebook-api.test.js",
+			"status": "passed",
+			"summary": "13 focused auth and Sourcebook API tests passed after the Codex review fix."
+		},
+		{
+			"command": "npm run format:check",
+			"status": "passed",
+			"summary": "Prettier and generated CSS checks passed after the Codex review fix."
+		},
+		{
+			"command": "git diff --check",
+			"status": "passed",
+			"summary": "No whitespace errors found after the Codex review fix."
+		},
+		{
+			"command": "npm run trace:coverage",
+			"status": "passed",
+			"summary": "Trace coverage confirmed for feature/sourcebook-integration after the Codex review fix."
+		},
+		{
+			"command": "npm run validate",
+			"status": "passed",
+			"summary": "Repository validation completed successfully after the Codex review fix."
+		},
+		{
+			"command": "node --import ./tests/helpers/generated-govuk-page-source.mjs --test tests/sourcebook-api.test.js tests/sourcebook-api-route-state.test.js",
+			"status": "passed",
+			"summary": "14 focused Sourcebook API tests passed after adding conditional route mappings."
+		},
+		{
+			"command": "npm run format:check",
+			"status": "passed",
+			"summary": "Prettier and generated CSS checks passed after adding conditional route mappings."
+		},
+		{
+			"command": "git diff --check",
+			"status": "passed",
+			"summary": "No whitespace errors found after adding conditional route mappings."
+		},
+		{
+			"command": "npm run trace:coverage",
+			"status": "passed",
+			"summary": "Trace coverage confirmed for feature/sourcebook-integration after adding conditional route mappings."
+		},
+		{
+			"command": "npm run validate",
+			"status": "passed",
+			"summary": "Repository validation completed successfully after adding conditional route mappings."
+		},
+		{
+			"command": "npm run build:generated-css",
+			"status": "passed",
+			"summary": "Generated CSS rebuilt after adding the Nunjucks Sourcebook context component."
+		},
+		{
+			"command": "npm run build:govuk-pages",
+			"status": "passed",
+			"summary": "Generated GOV.UK pages rebuilt after adding the Nunjucks Sourcebook context component."
+		},
+		{
+			"command": "node --import ./tests/helpers/generated-govuk-page-source.mjs --test tests/sourcebook-api.test.js tests/sourcebook-api-route-state.test.js tests/sourcebook-context-route-state.test.js tests/consent-page-route-state.test.js tests/auth-team-access-request-route-state.test.js tests/auth-role-assignment-ui-route-state.test.js",
+			"status": "passed",
+			"summary": "20 focused Sourcebook API and contextual UI route-state tests passed after adding the Nunjucks Sourcebook context component."
+		},
+		{
+			"command": "npm run format:check",
+			"status": "passed",
+			"summary": "Prettier and generated CSS checks passed after adding the Nunjucks Sourcebook context component."
+		},
+		{
+			"command": "git diff --check",
+			"status": "passed",
+			"summary": "No whitespace errors found after adding the Nunjucks Sourcebook context component."
+		},
+		{
+			"command": "npm run trace:coverage",
+			"status": "passed",
+			"summary": "Trace coverage confirmed for feature/sourcebook-integration after adding the Nunjucks Sourcebook context component."
+		},
+		{
+			"command": "npm run validate",
+			"status": "passed",
+			"summary": "Repository validation completed successfully after adding the Nunjucks Sourcebook context component."
+		},
+		{
+			"command": "node --import ./tests/helpers/generated-govuk-page-source.mjs --test tests/sourcebook-api.test.js tests/sourcebook-api-route-state.test.js",
+			"status": "passed",
+			"summary": "16 focused Sourcebook API tests passed after adding the North Star governance evaluator."
+		},
+		{
+			"command": "npm run format:check",
+			"status": "passed",
+			"summary": "Prettier and generated CSS checks passed after adding the North Star governance evaluator."
+		},
+		{
+			"command": "git diff --check",
+			"status": "passed",
+			"summary": "No whitespace errors found after adding the North Star governance evaluator."
+		},
+		{
+			"command": "npm run trace:coverage",
+			"status": "passed",
+			"summary": "Trace coverage confirmed for feature/sourcebook-integration after adding the North Star governance evaluator."
+		},
+		{
+			"command": "npm run validate",
+			"status": "passed",
+			"summary": "Repository validation completed successfully after adding the North Star governance evaluator."
+		},
+		{
+			"command": "npm run build:generated-css",
+			"status": "passed",
+			"summary": "Generated CSS rebuilt after adding the Sourcebook evidence ledger."
+		},
+		{
+			"command": "npm run build:govuk-pages",
+			"status": "passed",
+			"summary": "Generated GOV.UK pages rebuilt after adding the Sourcebook evidence ledger."
+		},
+		{
+			"command": "node --import ./tests/helpers/generated-govuk-page-source.mjs --test tests/sourcebook-context-route-state.test.js tests/consent-page-route-state.test.js tests/auth-team-access-request-route-state.test.js tests/auth-role-assignment-ui-route-state.test.js",
+			"status": "passed",
+			"summary": "7 focused Sourcebook context and evidence ledger route-state tests passed."
+		},
+		{
+			"command": "npm run format:check",
+			"status": "passed",
+			"summary": "Prettier and generated CSS checks passed after adding the Sourcebook evidence ledger."
+		},
+		{
+			"command": "git diff --check",
+			"status": "passed",
+			"summary": "No whitespace errors found after adding the Sourcebook evidence ledger."
+		},
+		{
+			"command": "npm run trace:coverage",
+			"status": "passed",
+			"summary": "Trace coverage confirmed for feature/sourcebook-integration after adding the Sourcebook evidence ledger."
+		},
+		{
+			"command": "npm run validate",
+			"status": "passed",
+			"summary": "Repository validation completed successfully after adding the Sourcebook evidence ledger."
+		},
+		{
+			"command": "npm run build:generated-css",
+			"status": "passed",
+			"summary": "Generated CSS rebuilt after adding the Sourcebook gate."
+		},
+		{
+			"command": "npm run build:govuk-pages",
+			"status": "passed",
+			"summary": "Generated GOV.UK pages rebuilt after adding the Sourcebook gate."
+		},
+		{
+			"command": "node --import ./tests/helpers/generated-govuk-page-source.mjs --test tests/sourcebook-context-route-state.test.js tests/consent-page-route-state.test.js tests/auth-team-access-request-route-state.test.js tests/auth-role-assignment-ui-route-state.test.js",
+			"status": "passed",
+			"summary": "8 focused Sourcebook gate, context and evidence ledger route-state tests passed."
+		},
+		{
+			"command": "npm run format:check",
+			"status": "passed",
+			"summary": "Prettier and generated CSS checks passed after adding the Sourcebook gate."
+		},
+		{
+			"command": "git diff --check",
+			"status": "passed",
+			"summary": "No whitespace errors found after adding the Sourcebook gate."
+		},
+		{
+			"command": "npm run trace:coverage",
+			"status": "passed",
+			"summary": "Trace coverage confirmed for feature/sourcebook-integration after adding the Sourcebook gate."
+		},
+		{
+			"command": "npm run validate",
+			"status": "passed",
+			"summary": "Repository validation completed successfully after adding the Sourcebook gate."
+		},
+		{
+			"command": "node --import ./tests/helpers/generated-govuk-page-source.mjs --test tests/sourcebook-context-route-state.test.js",
+			"status": "passed",
+			"summary": "5 focused Sourcebook context, gate and ledger contract tests passed after fixing the SourcebookGate assertion to be formatter-resistant."
+		},
+		{
+			"command": "npm test",
+			"status": "passed",
+			"summary": "Full unit suite passed after fixing the SourcebookGate assertion: 352 tests, 352 pass."
+		}
+	],
+	"residualRisks": [
+		"The API derives some trigger labels from current Sourcebook text and metadata; future stronger Sourcebook governance should make triggers first-class clause metadata.",
+		"Conditional route mappings are currently curated in a separate Sourcebook mapping JSON file; future Sourcebook governance can promote them into the Sourcebook index if they become author-owned content.",
+		"Initial contextual surfacing is limited to consent and access-control journeys; other logged-in surfaces can adopt the component through the same route and condition mapping.",
+		"The North Star evaluator is deterministic and evidence-declaration based; it does not verify uploaded evidence artefacts or replace human governance sign-off.",
+		"The evidence ledger currently marks evidence as Needed unless a page passes declared evidence ids; future workflow integrations can mark rows as present from actual saved artefacts.",
+		"The Sourcebook gate currently reports readiness from declared evidence ids in the page context; future workflow integrations can connect it to saved evidence artefacts for live blocking or enablement."
+	]
+}

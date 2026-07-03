@@ -19,6 +19,7 @@ import * as Participants from "./participants.js";
 import * as Sessions from "./sessions.js";
 import * as StudySupport from "./study-support.js";
 import * as Repository from "./repository.js";
+import * as Sourcebook from "./sourcebook.js";
 import * as Partials from "./partials.js";
 import * as Comms from "./comms.js";
 import * as Csv from "./csv.js";
@@ -212,6 +213,13 @@ export class ResearchOpsService {
 	createRepositoryCandidate = (req, origin, authContext) => Repository.createRepositoryCandidate(this, req, origin, authContext);
 	listRepositoryReviewQueue = (origin, queueKey, url, authContext) => Repository.listRepositoryReviewQueue(this, origin, queueKey, url, authContext);
 	applyRepositoryReviewAction = (req, origin, artefactId, authContext) => Repository.applyRepositoryReviewAction(this, req, origin, artefactId, authContext);
+
+	/* ─────────────── Sourcebook ─────────────── */
+	readSourcebook = (origin) => Sourcebook.readSourcebook(this, origin);
+	listSourcebookPillars = (origin, url) => Sourcebook.listSourcebookPillars(this, origin, url);
+	listSourcebookClauses = (origin, url) => Sourcebook.listSourcebookClauses(this, origin, url);
+	evaluateSourcebookGovernance = (origin, url) => Sourcebook.evaluateSourcebookGovernance(this, origin, url);
+	readSourcebookClause = (origin, clauseId) => Sourcebook.readSourcebookClause(this, origin, clauseId);
 
 	/* ─────────────── Guides ─────────────── */
 	listGuides = (origin, url) => Guides.listGuides(this, origin, url);

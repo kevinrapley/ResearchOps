@@ -9,6 +9,9 @@ const renderScript = fs.readFileSync('scripts/govuk/render-govuk-pages.mjs', 'ut
 const template = fs.readFileSync('src/govuk/templates/pages/account-team-access.njk', 'utf8');
 const page = fs.readFileSync('public/pages/account/team-access/index.html', 'utf8');
 const pageScript = fs.readFileSync('public/js/auth-team-access-page.js', 'utf8');
+const styleSource = fs.readFileSync('public/css/account-team-access.css', 'utf8');
+const styleScssSource = fs.readFileSync('src/styles/account-team-access.scss', 'utf8');
+const generatedCssTargetsSource = fs.readFileSync('scripts/styles/generated-css-targets.mjs', 'utf8');
 
 function includes(source, text, label) {
 	assert.equal(source.includes(text), true, `Expected ${label} to include: ${text}`);
@@ -66,6 +69,12 @@ excludes(handler, 'INSERT INTO auth_role_assignments', 'team access handler');
 includes(renderScript, "template: 'pages/account-team-access.njk'", 'GOV.UK page renderer');
 includes(renderScript, "output: 'public/pages/account/team-access/index.html'", 'GOV.UK page renderer');
 includes(renderScript, "pageTitle: 'Request access to a team - ResearchOps Demo Suite'", 'GOV.UK page renderer');
+includes(renderScript, "route: '/pages/account/team-access/'", 'GOV.UK page renderer');
+includes(renderScript, "condition: 'access-change'", 'GOV.UK page renderer');
+
+includes(generatedCssTargetsSource, "name: 'Account team access stylesheet'", 'generated CSS targets');
+includes(generatedCssTargetsSource, "source: 'src/styles/account-team-access.scss'", 'generated CSS targets');
+includes(generatedCssTargetsSource, "output: 'public/css/account-team-access.css'", 'generated CSS targets');
 
 for (const source of [template, page]) {
 	includesText(source, 'Request access to a team', 'team access page');
@@ -89,11 +98,41 @@ for (const source of [template, page]) {
 	includes(source, 'govuk-button-group', 'team access page');
 	includesText(source, 'Send request', 'team access page');
 	includesText(source, 'Cancel and return to your account', 'team access page');
+	includes(source, 'sourcebook-gate', 'team access page');
+	includes(source, 'sourcebook-context', 'team access page');
+	includes(source, 'sourcebook-evidence-ledger', 'team access page');
 	excludes(source, 'team-scoped ResearchOps features', 'team access page');
 	excludes(source, 'Create a new team', 'team access page');
 	excludes(source, 'Approve request', 'team access page');
 	excludes(source, 'Assign role', 'team access page');
 }
+
+includes(template, 'macros/sourcebook-gate.njk', 'team access template');
+includes(template, 'SourcebookGate(sourcebookGate)', 'team access template');
+includes(template, 'macros/sourcebook-context.njk', 'team access template');
+includes(template, 'SourcebookContext(sourcebookContext)', 'team access template');
+includes(template, 'macros/sourcebook-evidence-ledger.njk', 'team access template');
+includes(template, 'SourcebookEvidenceLedger(sourcebookEvidenceLedger)', 'team access template');
+includes(template, '/css/account-team-access.css', 'team access template');
+includes(page, '/css/account-team-access.css', 'team access page');
+includesText(page, 'Sourcebook gate for access requests', 'team access page');
+includesText(page, 'Evidence needed', 'team access page');
+includesText(page, 'Add evidence before continuing', 'team access page');
+includesText(page, 'Sourcebook context for access requests', 'team access page');
+includesText(page, 'INFRA-PROV 3.1.1', 'team access page');
+includesText(page, 'Control access by role and research need', 'team access page');
+includes(page, '/pages/sourcebook/tools-and-infrastructure/#infra-prov-3-1-1', 'team access page');
+includesText(page, 'Access change', 'team access page');
+includesText(page, 'Evidence ledger for access requests', 'team access page');
+includesText(page, 'Access Request', 'team access page');
+includes(page, 'access-request', 'team access page');
+includesText(page, 'Role Permission Model', 'team access page');
+includes(page, 'role-permission-model', 'team access page');
+assert.match(styleScssSource, /@use ['"]sourcebook-context['"];/);
+includes(styleSource, 'Repo:       /src/styles/account-team-access.scss', 'team access stylesheet');
+includes(styleSource, '.sourcebook-gate', 'team access stylesheet');
+includes(styleSource, '.sourcebook-context', 'team access stylesheet');
+includes(styleSource, '.sourcebook-evidence-ledger', 'team access stylesheet');
 
 includes(pageScript, 'team-access-request-form', 'team access page controller');
 includes(pageScript, 'Enter a team name or invitation code.', 'team access page controller');
