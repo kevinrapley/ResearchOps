@@ -3,10 +3,12 @@ import fs from 'node:fs';
 import test from 'node:test';
 
 import {
+	complianceEvidencePages,
 	complianceScopeSummary,
 	controlMatrix,
 	incidentResponseEvidencePages,
 	readinessEvidenceGaps,
+	supplierAssuranceEvidencePages,
 } from '../src/govuk/data/compliance-readiness.mjs';
 
 const page = fs.existsSync('public/pages/compliance-readiness/index.html')
@@ -106,8 +108,14 @@ test('rendered compliance readiness page includes the expected public content', 
 		page,
 		/These pages make the incident response runbooks, personal data breach handling process and test evidence structure visible from the readiness artefact/
 	);
+	assert.match(page, /Supplier assurance evidence/);
+	assert.match(
+		page,
+		/These pages make the supplier and integration assurance position visible for Cloudflare, GitHub, Airtable, Mural, email delivery and configured AI services/
+	);
 	assert.match(page, /Governance, scope and accountability/);
 	assert.match(page, /service-specific runbooks, personal data breach handling process and planned test evidence structure/);
+	assert.match(page, /supplier and integration assurance register/);
 	assert.match(page, /completed incident response test evidence/);
 	assert.match(page, /Privacy, retention and data minimisation/);
 	assert.match(page, /CC6/);
@@ -134,9 +142,23 @@ test('compliance readiness page links to incident response evidence pages', () =
 	for (const evidencePage of incidentResponseEvidencePages) {
 		assert.match(page, new RegExp(`href="${evidencePage.route}"`));
 		assert.match(page, new RegExp(evidencePage.title));
-		assert.match(renderer, new RegExp(`incident-response/\\$\\{page\\.slug\\}/index\\.html`));
-		assert.match(renderer, /template: 'pages\/compliance-evidence-document\.njk'/);
 	}
+});
+
+test('compliance readiness page links to supplier assurance evidence pages', () => {
+	assert.equal(supplierAssuranceEvidencePages.length, 1);
+
+	for (const evidencePage of supplierAssuranceEvidencePages) {
+		assert.match(page, new RegExp(`href="${evidencePage.route}"`));
+		assert.match(page, new RegExp(evidencePage.title));
+	}
+});
+
+test('compliance readiness evidence pages use the shared GOV.UK evidence renderer', () => {
+	assert.equal(complianceEvidencePages.length, 4);
+	assert.match(renderer, /complianceEvidencePages/);
+	assert.match(renderer, /public\$\{page\.route\}index\.html/);
+	assert.match(renderer, /template: 'pages\/compliance-evidence-document\.njk'/);
 });
 
 test('rendered compliance readiness heading does not use abbreviation markup', () => {

@@ -6,8 +6,8 @@ import nunjucks from 'nunjucks';
 import prettier from 'prettier';
 
 import {
+	complianceEvidencePages,
 	complianceReadinessContext,
-	incidentResponseEvidencePages,
 } from '../../src/govuk/data/compliance-readiness.mjs';
 import { repositoryPageContext, repositoryStaticPages } from '../../src/govuk/data/repository-page.mjs';
 import { sourcebookIndex, sourcebookPillarPages } from '../../src/govuk/data/sourcebook.mjs';
@@ -459,9 +459,9 @@ export const govukPages = [
 			navigation: accountNavigation,
 		},
 	},
-	...incidentResponseEvidencePages.map((page) => ({
+	...complianceEvidencePages.map((page) => ({
 		template: 'pages/compliance-evidence-document.njk',
-		output: `public/pages/compliance-readiness/incident-response/${page.slug}/index.html`,
+		output: `public${page.route}index.html`,
 		context: {
 			...complianceEvidencePageContext(page),
 			navigation: accountNavigation,

@@ -14,7 +14,7 @@ This index tracks evidence needed to support a future SOC 2 and ISO/IEC 27001 cl
 | Access review evidence | Partially evidenced | Auth and role-assignment tests, route-permission migrations and audit-event implementation traces | Define access-review cadence, privileged-access review evidence and joiner/mover/leaver control evidence. |
 | Logging, audit and monitoring | Partially evidenced | Security hardening trace, audit event tests and production logging configuration | Define what is logged, what PII is excluded, retention for logs, alert thresholds and review evidence. |
 | Incident response | Partially evidenced | Sourcebook incident templates and `docs/compliance/soc2-iso27001-readiness/incident-response/` runbooks, breach handling process and planned test evidence structure | Complete a tabletop or simulated incident exercise, record outcomes and obtain service-owner, security and privacy sign-off. |
-| Supplier assurance | Not complete | Cloudflare, GitHub, Airtable, Mural and email/AI integrations are identified in the boundary | Capture supplier roles, contracts, data processing terms, locations, certifications and review cadence. |
+| Supplier assurance | Partially evidenced | `docs/compliance/soc2-iso27001-readiness/supplier-assurance/` register identifies Cloudflare, GitHub, Airtable, Mural, Resend, future communications provider and AI service dependencies | Add named owners, evidence references, contract and data-processing terms, locations, assurance evidence, review cadence and formal approval decisions. |
 | Business continuity and availability | Not complete | Cloudflare deployment and release assurance evidence | Decide whether availability is in SOC 2 scope, then define SLOs, backup/restore evidence and recovery tests. |
 | Secure development lifecycle | Partially evidenced | CI, lint, tests, trace policy, security audit policy and branch protection evidence | Produce SDLC control evidence covering review, dependency management, release approval and change traceability. |
 
@@ -23,7 +23,7 @@ This index tracks evidence needed to support a future SOC 2 and ISO/IEC 27001 cl
 The next PRs in this broader workstream should add:
 
 1. Asset and data inventory.
-2. Supplier and subprocessor register.
+2. Approved supplier and subprocessor register with evidence references.
 3. ISMS scope, risk assessment, risk treatment plan and Statement of Applicability.
 4. SOC 2 criteria mapping and ISO/IEC 27001 Statement of Applicability skeleton.
 5. DPIA and records-of-processing sign-off references.

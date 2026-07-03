@@ -10,6 +10,12 @@ const evidenceIndex = read('docs/compliance/soc2-iso27001-readiness/evidence-ind
 const incidentReadiness = read(
 	'docs/compliance/soc2-iso27001-readiness/incident-response/README.md'
 );
+const supplierReadiness = read(
+	'docs/compliance/soc2-iso27001-readiness/supplier-assurance/README.md'
+);
+const supplierRegister = read(
+	'docs/compliance/soc2-iso27001-readiness/supplier-assurance/supplier-assurance-register.md'
+);
 const combined = `${readme}\n${scope}\n${evidenceIndex}`;
 
 test('compliance readiness pack avoids unsupported SOC 2 and ISO 27001 claims', () => {
@@ -69,4 +75,23 @@ test('incident response readiness remains framed as partial evidence', () => {
 		/must not be described as an exercised or independently assured incident response control/
 	);
 	assert.match(evidenceIndex, /Incident response \| Partially evidenced/);
+});
+
+test('supplier assurance readiness records named provider dependencies', () => {
+	for (const provider of [
+		'Cloudflare',
+		'GitHub',
+		'Airtable',
+		'Mural',
+		'Resend',
+		'future communications provider',
+		'Cloudflare Workers AI',
+		'OpenAI or other external AI provider',
+	]) {
+		assert.match(`${supplierReadiness}\n${supplierRegister}`, new RegExp(provider));
+	}
+
+	assert.match(supplierReadiness, /does not assert supplier approval/);
+	assert.match(supplierRegister, /Not approved/);
+	assert.match(evidenceIndex, /Supplier assurance \| Partially evidenced/);
 });

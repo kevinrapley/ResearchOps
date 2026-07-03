@@ -136,9 +136,9 @@ export const controlMatrix = [
 		soc2Tsc: ['CC2', 'CC3', 'CC9'],
 		iso27001AnnexA: ['A.5.19', 'A.5.20', 'A.5.21', 'A.5.22', 'A.5.23'],
 		currentEvidence:
-			'Boundary document identifies supplier integrations and inherited-control assumptions.',
-		gap: 'Create a supplier and subprocessor register with assurance evidence, review cadence and data-processing terms.',
-		status: 'Gap identified',
+			'Boundary document, supplier assurance register and inherited-control assumptions identify supplier roles, data flows and review questions.',
+		gap: 'Add named owners, evidence references, review cadence, data-processing terms and formal supplier approval decisions.',
+		status: 'Partially evidenced',
 	},
 	{
 		controlArea: 'Privacy, retention and data minimisation',
@@ -182,14 +182,18 @@ export const readinessEvidenceGaps = [
 	'information security risk register and treatment plan',
 	'SOC 2 control-to-evidence mapping at criteria level',
 	'ISO/IEC 27001 Statement of Applicability',
-	'supplier and subprocessor register',
+	'approved supplier and subprocessor register',
 	'access review, completed incident response test evidence, backup and monitoring evidence',
 ];
 
 export const incidentResponseEvidencePages = [
 	{
+		id: 'incident-response-runbooks',
 		slug: 'runbooks',
 		title: 'Incident response runbooks',
+		evidenceCategory: 'Incident response evidence',
+		warningText:
+			'This page is readiness evidence. It does not assert that incident response has been independently assured or exercised.',
 		summary:
 			'Service-specific first-response runbooks for likely ResearchOps security, privacy, supplier and availability incidents.',
 		sourcePath:
@@ -197,8 +201,12 @@ export const incidentResponseEvidencePages = [
 		route: '/pages/compliance-readiness/incident-response/runbooks/',
 	},
 	{
+		id: 'personal-data-breach-handling',
 		slug: 'personal-data-breach-handling',
 		title: 'Personal data breach handling',
+		evidenceCategory: 'Incident response evidence',
+		warningText:
+			'This page is readiness evidence. It does not assert that incident response has been independently assured or exercised.',
 		summary:
 			'The decision route for suspected personal data breaches, including escalation, notification assessment and evidence to retain.',
 		sourcePath:
@@ -206,14 +214,39 @@ export const incidentResponseEvidencePages = [
 		route: '/pages/compliance-readiness/incident-response/personal-data-breach-handling/',
 	},
 	{
+		id: 'incident-response-test-evidence',
 		slug: 'test-evidence',
 		title: 'Incident response test evidence',
+		evidenceCategory: 'Incident response evidence',
+		warningText:
+			'This page is readiness evidence. It does not assert that incident response has been independently assured or exercised.',
 		summary:
 			'The planned tabletop or simulated incident exercise evidence structure, completion criteria and outcome record needed before the control can be treated as tested.',
 		sourcePath:
 			'docs/compliance/soc2-iso27001-readiness/incident-response/incident-response-test-evidence.md',
 		route: '/pages/compliance-readiness/incident-response/test-evidence/',
 	},
+];
+
+export const supplierAssuranceEvidencePages = [
+	{
+		id: 'supplier-assurance-register',
+		slug: 'register',
+		title: 'Supplier assurance register',
+		evidenceCategory: 'Supplier assurance evidence',
+		warningText:
+			'This page is readiness evidence. It does not assert that supplier assurance has been approved or independently assessed.',
+		summary:
+			'The supplier and integration assurance register for Cloudflare, GitHub, Airtable, Mural, Resend, future communications providers and configured AI services.',
+		sourcePath:
+			'docs/compliance/soc2-iso27001-readiness/supplier-assurance/supplier-assurance-register.md',
+		route: '/pages/compliance-readiness/supplier-assurance/register/',
+	},
+];
+
+export const complianceEvidencePages = [
+	...incidentResponseEvidencePages,
+	...supplierAssuranceEvidencePages,
 ];
 
 export const standardsReferences = [
@@ -235,6 +268,8 @@ export const complianceReadinessContext = {
 	complianceBoundaryItems,
 	controlMatrix,
 	incidentResponseEvidencePages,
+	supplierAssuranceEvidencePages,
+	complianceEvidencePages,
 	readinessEvidenceGaps,
 	standardsReferences,
 };

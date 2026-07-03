@@ -14,11 +14,11 @@
 
 	<div class="govuk-grid-row">
 		<div class="govuk-grid-column-two-thirds">
-			<span class="govuk-caption-xl">Incident response evidence</span>
+			<span class="govuk-caption-xl">{{ evidenceCategory }}</span>
 			<h1 class="govuk-heading-xl">{{ title }}</h1>
 			<p class="govuk-body-l">{{ summary }}</p>
 			{{ govukWarningText({
-				text: "This page is readiness evidence. It does not assert that incident response has been independently assured or exercised.",
+				text: warningText,
 				classes: "compliance-readiness__warning",
 				iconFallbackText: "Warning"
 			}) }}

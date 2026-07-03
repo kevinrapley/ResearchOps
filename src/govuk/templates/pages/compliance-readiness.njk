@@ -112,6 +112,25 @@
 		</div>
 	</section>
 
+	<section aria-labelledby="supplier-assurance-evidence-heading" class="govuk-!-margin-top-8">
+		<div class="govuk-grid-row">
+			<div class="govuk-grid-column-two-thirds">
+				<h2 class="govuk-heading-l" id="supplier-assurance-evidence-heading">Supplier assurance evidence</h2>
+				<p class="govuk-body">
+					These pages make the supplier and integration assurance position visible for Cloudflare, GitHub, Airtable, Mural, email delivery and configured AI services. They remain readiness evidence until contract, data protection, security and service-owner review are complete.
+				</p>
+				<ul class="govuk-list">
+					{% for evidencePage in supplierAssuranceEvidencePages %}
+					<li class="govuk-!-margin-bottom-4">
+						<a class="govuk-link govuk-link--no-visited-state" href="{{ evidencePage.route }}">{{ evidencePage.title }}</a>
+						<p class="govuk-body-s govuk-!-margin-bottom-0">{{ evidencePage.summary }}</p>
+					</li>
+					{% endfor %}
+				</ul>
+			</div>
+		</div>
+	</section>
+
 	<section aria-labelledby="remaining-gaps-heading" class="govuk-!-margin-top-8">
 		<div class="govuk-grid-row">
 			<div class="govuk-grid-column-two-thirds">
