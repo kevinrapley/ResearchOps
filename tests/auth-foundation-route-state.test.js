@@ -59,6 +59,9 @@ function assertWorkerRoutesAuthThroughScopedAccessResolver() {
     workerSource,
     /import \{ handleMeRoute \} from "\.\/core\/auth\/access-scoped\.js";/,
   );
+  assert.match(workerSource, /async function handleAuthenticatedMeRoute\(request, env, apiPath\)/);
+  assert.match(workerSource, /await ensureResearchDataAuthDeclarations\(env\);/);
+  assert.match(workerSource, /result = await handleAuthenticatedMeRoute\(request, env, apiPath\)/);
   assert.match(workerSource, /apiPath === "\/api\/me"/);
   assert.match(workerSource, /apiPath === "\/api\/me\/identity"/);
   assert.match(workerSource, /apiPath === "\/api\/me\/permissions"/);

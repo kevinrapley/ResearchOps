@@ -61,6 +61,7 @@ Skipped bundles:
 - `.gitignore`
 - `.prettierignore`
 - `eslint.config.js`
+- `tests/auth-foundation-route-state.test.js`
 - `infra/cloudflare/src/service/index.js`
 - `infra/cloudflare/src/worker.js`
 
@@ -75,6 +76,8 @@ Skipped bundles:
 - Derived operational trigger tags from explicit clause metadata where available, plus stable Sourcebook evidence, route and pillar signals.
 - Returned template details and related app routes in clause DTOs so logged-in UI surfaces can connect a clause to templates and application context.
 - Added `.wrangler/` to ignore lists so local Cloudflare generated bundles do not pollute format or lint checks.
+- Addressed Codex review thread `PRRT_kwDOP3Td2M6OQuwS` by bootstrapping research-data auth declarations before `/api/me`, `/api/me/identity` and `/api/me/permissions` resolve their authenticated context.
+- Added route-state coverage so `/api/me` continues to seed declarations before returning permission lists that include `sourcebook.view`.
 
 ## Validation evidence
 
@@ -89,6 +92,11 @@ Skipped bundles:
 - `npm run lint` passed with existing warnings only.
 - `npm run trace:coverage` passed and confirmed trace coverage for `feature/sourcebook-integration`.
 - `npm run validate` passed.
+- `node --import ./tests/helpers/generated-govuk-page-source.mjs --test tests/auth-foundation-route-state.test.js tests/sourcebook-api-route-state.test.js tests/sourcebook-api.test.js` passed after the Codex review fix: 13 tests, 13 pass.
+- `npm run format:check` passed after the Codex review fix.
+- `git diff --check` passed after the Codex review fix.
+- `npm run trace:coverage` passed after the Codex review fix and confirmed trace coverage for `feature/sourcebook-integration`.
+- `npm run validate` passed after the Codex review fix.
 
 ## Residual risks
 

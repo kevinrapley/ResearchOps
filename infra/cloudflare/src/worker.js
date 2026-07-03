@@ -846,6 +846,11 @@ async function handleMural(request, env, apiPath) {
 	return new Response(JSON.stringify({ error: "Not found", path: apiPath }), { status: 404, headers: { "content-type": "application/json; charset=utf-8" } });
 }
 
+async function handleAuthenticatedMeRoute(request, env, apiPath) {
+	await ensureResearchDataAuthDeclarations(env);
+	return handleMeRoute(request, env, apiPath);
+}
+
 export default {
 	async fetch(request, env, ctx) {
 		const { method, url } = request;
@@ -858,7 +863,7 @@ export default {
 			if ((method === "GET" || method === "POST") && apiPath === "/api/auth/registration-requests") result = await handleRegistrationRequestsRoute(request, env, apiPath);
 			else if (method === "POST" && apiPath.startsWith("/api/auth/email/")) result = await handlePasswordlessAuthRoute(request, env, apiPath);
 			else if (method === "POST" && apiPath === "/api/auth/logout") result = await handlePasswordlessAuthRoute(request, env, apiPath);
-			else if (method === "GET" && (apiPath === "/api/me" || apiPath === "/api/me/identity" || apiPath === "/api/me/permissions")) result = await handleMeRoute(request, env, apiPath);
+			else if (method === "GET" && (apiPath === "/api/me" || apiPath === "/api/me/identity" || apiPath === "/api/me/permissions")) result = await handleAuthenticatedMeRoute(request, env, apiPath);
 			else if ((method === "GET" || method === "POST") && apiPath.startsWith("/api/team-access/requests")) result = await handleTeamAccessRequestsRoute(request, env, apiPath);
 			else if (method === "POST" && apiPath === "/api/auth/role-assignments") result = await handleRoleAssignmentsRoute(request, env);
 			else if (method === "GET" && apiPath === "/api/_diag/projects-source") result = await handleProjectSourceDiagnostics(request, env);

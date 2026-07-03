@@ -51,7 +51,9 @@
 		"Preserved paragraph spacing for full and verbose clause text by formatting the clause heading and summary as separate paragraphs.",
 		"Derived operational trigger tags from explicit metadata where present, evidence, routes, pillar and stable clause text signals.",
 		"Included related templates and app routes in clause DTOs for future contextual UI surfacing.",
-		"Added .wrangler/ to local ignore lists for format and lint hygiene."
+		"Added .wrangler/ to local ignore lists for format and lint hygiene.",
+		"Addressed Codex review thread PRRT_kwDOP3Td2M6OQuwS by bootstrapping research-data auth declarations before /api/me, /api/me/identity and /api/me/permissions resolve authenticated context.",
+		"Added route-state coverage so /api/me continues to seed declarations before returning permission lists that include sourcebook.view."
 	],
 	"validationEvidence": [
 		{
@@ -108,6 +110,31 @@
 			"command": "npm run validate",
 			"status": "passed",
 			"summary": "Repository validation completed successfully."
+		},
+		{
+			"command": "node --import ./tests/helpers/generated-govuk-page-source.mjs --test tests/auth-foundation-route-state.test.js tests/sourcebook-api-route-state.test.js tests/sourcebook-api.test.js",
+			"status": "passed",
+			"summary": "13 focused auth and Sourcebook API tests passed after the Codex review fix."
+		},
+		{
+			"command": "npm run format:check",
+			"status": "passed",
+			"summary": "Prettier and generated CSS checks passed after the Codex review fix."
+		},
+		{
+			"command": "git diff --check",
+			"status": "passed",
+			"summary": "No whitespace errors found after the Codex review fix."
+		},
+		{
+			"command": "npm run trace:coverage",
+			"status": "passed",
+			"summary": "Trace coverage confirmed for feature/sourcebook-integration after the Codex review fix."
+		},
+		{
+			"command": "npm run validate",
+			"status": "passed",
+			"summary": "Repository validation completed successfully after the Codex review fix."
 		}
 	],
 	"residualRisks": [
