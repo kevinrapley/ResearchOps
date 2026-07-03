@@ -266,6 +266,7 @@ const RESEARCH_DATA_AUTH_PERMISSIONS = [
 	["consent.form.manage", "Manage consent forms", "Can create, update or publish consent forms."],
 	["participant.consent.view", "View participant consent", "Can view participant consent status for a study."],
 	["participant.consent.manage", "Manage participant consent", "Can record or update participant consent."],
+	["sourcebook.view", "View sourcebook", "Can view Sourcebook pillars, clauses and governance guidance."],
 	["project.diagnostics.view", "View project diagnostics", "Can view project source diagnostics for operational assurance."]
 ];
 
@@ -283,6 +284,7 @@ const RESEARCH_DATA_ROLE_PERMISSIONS = [
 	["role_researcher", "consent.form.manage"],
 	["role_researcher", "participant.consent.view"],
 	["role_researcher", "participant.consent.manage"],
+	["role_researcher", "sourcebook.view"],
 	["role_research_lead", "project.view"],
 	["role_research_lead", "project.manage"],
 	["role_research_lead", "study.view"],
@@ -296,6 +298,7 @@ const RESEARCH_DATA_ROLE_PERMISSIONS = [
 	["role_research_lead", "consent.form.manage"],
 	["role_research_lead", "participant.consent.view"],
 	["role_research_lead", "participant.consent.manage"],
+	["role_research_lead", "sourcebook.view"],
 	["role_research_lead", "project.diagnostics.view"],
 	["role_team_admin", "project.view"],
 	["role_team_admin", "project.manage"],
@@ -311,6 +314,7 @@ const RESEARCH_DATA_ROLE_PERMISSIONS = [
 	["role_team_admin", "consent.form.manage"],
 	["role_team_admin", "participant.consent.view"],
 	["role_team_admin", "participant.consent.manage"],
+	["role_team_admin", "sourcebook.view"],
 	["role_team_admin", "project.diagnostics.view"]
 ];
 
@@ -358,6 +362,10 @@ const RESEARCH_DATA_ROUTE_PERMISSIONS = [
 	["route_api_impact_record_get", "GET", "/api/impact/:id", "[\"repository.view\"]", 1],
 	["route_api_impact_record_patch", "PATCH", "/api/impact/:id", "[\"repository.curate\"]", 1],
 	["route_api_impact_record_delete", "DELETE", "/api/impact/:id", "[\"repository.curate\"]", 1],
+	["route_api_sourcebook_get", "GET", "/api/sourcebook", "[\"sourcebook.view\"]", 1],
+	["route_api_sourcebook_pillars_get", "GET", "/api/sourcebook/pillars", "[\"sourcebook.view\"]", 1],
+	["route_api_sourcebook_clauses_get", "GET", "/api/sourcebook/clauses", "[\"sourcebook.view\"]", 1],
+	["route_api_sourcebook_clause_get", "GET", "/api/sourcebook/clauses/:id", "[\"sourcebook.view\"]", 1],
 	["route_api_guides_get", "GET", "/api/guides", "[\"research.content.view\"]", 1],
 	["route_api_guides_post", "POST", "/api/guides", "[\"research.content.manage\"]", 1],
 	["route_api_guide_get", "GET", "/api/guides/:id", "[\"research.content.view\"]", 1],
@@ -512,6 +520,7 @@ function researchDataRoutePermissionRequest(request, apiPath) {
 	if (apiPath.match(/^\/api\/memos\/([^/]+)$/)) return requestForRoutePermission(request, "/api/memos/:id");
 	if (apiPath.match(/^\/api\/codes\/([^/]+)$/)) return requestForRoutePermission(request, "/api/codes/:id");
 	if (apiPath.match(/^\/api\/impact\/([^/]+)$/)) return requestForRoutePermission(request, "/api/impact/:id");
+	if (apiPath.match(/^\/api\/sourcebook\/clauses\/([^/]+)$/)) return requestForRoutePermission(request, "/api/sourcebook/clauses/:id");
 	if (apiPath.match(/^\/api\/guides\/([^/]+)\/publish$/)) return requestForRoutePermission(request, "/api/guides/:id/publish");
 	if (apiPath.match(/^\/api\/guides\/([^/]+)$/)) return requestForRoutePermission(request, "/api/guides/:id");
 	if (apiPath.match(/^\/api\/partials\/([^/]+)$/)) return requestForRoutePermission(request, "/api/partials/:id");
@@ -795,6 +804,22 @@ async function handleRepository(request, env, apiPath) {
 	return new Response(JSON.stringify({ error: "Not found", path: apiPath }), { status: 404, headers: { "content-type": "application/json; charset=utf-8" } });
 }
 
+async function handleSourcebook(request, env, apiPath) {
+	const url = new URL(request.url);
+	const origin = request.headers.get("Origin") || "";
+	const service = serviceFor(env);
+	await assertResearchDataRoutePermission(request, env, apiPath);
+
+	if (apiPath === "/api/sourcebook" && request.method === "GET") return service.readSourcebook(origin);
+	if (apiPath === "/api/sourcebook/pillars" && request.method === "GET") return service.listSourcebookPillars(origin, url);
+	if (apiPath === "/api/sourcebook/clauses" && request.method === "GET") return service.listSourcebookClauses(origin, url);
+
+	const match = apiPath.match(/^\/api\/sourcebook\/clauses\/([^/]+)$/);
+	if (match && request.method === "GET") return service.readSourcebookClause(origin, decodeURIComponent(match[1]));
+
+	return new Response(JSON.stringify({ error: "Not found", path: apiPath }), { status: 404, headers: { "content-type": "application/json; charset=utf-8" } });
+}
+
 async function handleMural(request, env, apiPath) {
 	const url = new URL(request.url);
 	const origin = request.headers.get("Origin") || "";
@@ -846,6 +871,7 @@ export default {
 				else if (apiPath === "/api/participant-consent" || apiPath.startsWith("/api/participant-consent/")) result = await handleParticipantConsent(request, env, apiPath);
 				else if (apiPath === "/api/study-support" || apiPath.startsWith("/api/study-support/")) result = await handleStudySupport(request, env, apiPath);
 				else if (apiPath === "/api/repository" || apiPath.startsWith("/api/repository/")) result = await handleRepository(request, env, apiPath);
+				else if (apiPath === "/api/sourcebook" || apiPath.startsWith("/api/sourcebook/")) result = await handleSourcebook(request, env, apiPath);
 				else if (apiPath === "/api/mural/callback" || apiPath.startsWith("/api/mural/")) result = await handleMural(request, env, apiPath);
 				else if ((apiPath === "/api/health" || apiPath === "/api/_diag/ping") && method === "GET") result = await handleRequest(request, env, ctx);
 				else {

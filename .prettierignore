@@ -93,6 +93,7 @@ AGENTS.md
 # Cloudflare build output (if any)
 dist/
 .build/
+.wrangler/
 
 # QA / generated artifacts
 reports/

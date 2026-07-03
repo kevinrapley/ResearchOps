@@ -1,0 +1,100 @@
+{
+	"date": "2026-07-03",
+	"branch": "feature/sourcebook-integration",
+	"base": "main",
+	"traceRequired": true,
+	"traceReason": "feature/ branches require auditable traces for repository-affecting work",
+	"taskSummary": "Add authenticated read endpoints under /api/sourcebook so logged-in ResearchOps areas can list pillars, look up clauses and query clauses by route, evidence type, trigger and pillar.",
+	"operatingModelFilesLoaded": [
+		"AGENTS.md",
+		".agent-operating-model/orchestration.xml",
+		".agent-operating-model/bundle-registry.json",
+		".agent-operating-model/task-signal-catalog.json",
+		".agent-operating-model/selection-rules.json",
+		".agent-operating-model/bootstrap-checklist.md",
+		".agent-operating-model/precedence-policy.md",
+		".agent-operating-model/trace-policy.md",
+		".agent-operating-model/trace-layers.md",
+		".agent-operating-model/github-mutation-policy.md"
+	],
+	"selectedBundles": [
+		{
+			"id": "github-diamond",
+			"canonicalPath": ".agent-operating-model/bundles/github/"
+		},
+		{
+			"id": "researchops-developer-control",
+			"canonicalPath": ".agent-operating-model/bundles/researchops-developer-control/"
+		},
+		{
+			"id": "multi-functional-team",
+			"canonicalPath": ".agent-operating-model/bundles/multi-functional-team/"
+		},
+		{
+			"id": "cloudflare",
+			"canonicalPath": ".agent-operating-model/bundles/cloudflare/"
+		}
+	],
+	"bundlesSkipped": [
+		"govuk-design-system",
+		"openai-platform",
+		"mcp-agent-tooling",
+		"airtable-public-api",
+		"mural-public-api"
+	],
+	"implementationSummary": [
+		"Added read-only Sourcebook service methods for metadata, pillars, clause lookup and filtered clause search.",
+		"Added authenticated Worker routes for /api/sourcebook, /api/sourcebook/pillars, /api/sourcebook/clauses and /api/sourcebook/clauses/:id.",
+		"Added sourcebook.view permission mappings for researcher, research lead and team admin roles.",
+		"Supported query dimensions for pillar, route, evidence, trigger, type, status, q, limit, offset and includeText.",
+		"Derived operational trigger tags from explicit metadata where present, evidence, routes, pillar and stable clause text signals.",
+		"Included related templates and app routes in clause DTOs for future contextual UI surfacing.",
+		"Added .wrangler/ to local ignore lists for format and lint hygiene."
+	],
+	"validationEvidence": [
+		{
+			"command": "node --import ./tests/helpers/generated-govuk-page-source.mjs --test tests/sourcebook-api.test.js tests/sourcebook-api-route-state.test.js",
+			"status": "passed",
+			"summary": "9 focused Sourcebook API tests passed."
+		},
+		{
+			"command": "npm run format:check",
+			"status": "passed",
+			"summary": "Prettier and generated CSS checks passed."
+		},
+		{
+			"command": "git diff --check",
+			"status": "passed",
+			"summary": "No whitespace errors found."
+		},
+		{
+			"command": "npm test",
+			"status": "passed",
+			"summary": "Full test suite passed: 340 tests, 340 pass."
+		},
+		{
+			"command": "npm run sourcebook:validate",
+			"status": "passed",
+			"summary": "Validated 9 Sourcebook pages and 164 links."
+		},
+		{
+			"command": "npm run lint",
+			"status": "passed",
+			"summary": "Lint passed with existing warnings only."
+		},
+		{
+			"command": "npm run trace:coverage",
+			"status": "passed",
+			"summary": "Trace coverage confirmed for feature/sourcebook-integration."
+		},
+		{
+			"command": "npm run validate",
+			"status": "passed",
+			"summary": "Repository validation completed successfully."
+		}
+	],
+	"residualRisks": [
+		"The API derives some trigger labels from current Sourcebook text and metadata; future stronger Sourcebook governance should make triggers first-class clause metadata.",
+		"This branch adds the read API foundation only; logged-in UI affordances that surface the clauses in context can build on these endpoints separately."
+	]
+}

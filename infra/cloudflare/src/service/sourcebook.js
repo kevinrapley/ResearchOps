@@ -1,0 +1,359 @@
+/**
+ * @file sourcebook.js
+ * @module sourcebook
+ * @summary Read-only Sourcebook API endpoints for ResearchOps.
+ */
+
+import sourcebookIndex from "../../../../sourcebook/sourcebook-index.json" with { type: "json" };
+
+const DEFAULT_LIMIT = 50;
+const MAX_LIMIT = 200;
+
+function cleanText(value) {
+	return String(value || "").replace(/\s+/g, " ").trim();
+}
+
+function normaliseLookup(value) {
+	return cleanText(value).toLowerCase();
+}
+
+function normaliseRoute(value) {
+	const route = cleanText(value);
+	if (!route) return "";
+	const [pathname] = route.split(/[?#]/);
+	const collapsed = pathname.replace(/\/{2,}/g, "/");
+	if (collapsed === "/") return collapsed;
+	return collapsed.endsWith("/") ? collapsed : `${collapsed}/`;
+}
+
+function normaliseEvidence(value) {
+	return normaliseLookup(value).replace(/[\s_]+/g, "-");
+}
+
+function asArray(value) {
+	return Array.isArray(value) ? value : [];
+}
+
+function sourcebookSummary() {
+	return {
+		schemaVersion: sourcebookIndex.schemaVersion,
+		title: sourcebookIndex.title,
+		shortTitle: sourcebookIndex.shortTitle,
+		description: sourcebookIndex.description,
+		status: sourcebookIndex.status,
+		language: sourcebookIndex.language,
+		modified: sourcebookIndex.modified,
+		canonicalRoute: sourcebookIndex.canonicalRoute,
+		contentTypes: sourcebookIndex.contentTypes,
+		clauseModel: sourcebookIndex.clauseModel
+	};
+}
+
+function allTemplatesById() {
+	return new Map(asArray(sourcebookIndex.templates).map(template => [template.id, template]));
+}
+
+function templateRefs(ids = []) {
+	const templates = allTemplatesById();
+	return asArray(ids)
+		.map(id => templates.get(id))
+		.filter(Boolean)
+		.map(template => ({
+			id: template.id,
+			title: template.title,
+			path: template.path
+		}));
+}
+
+function allClauses() {
+	return asArray(sourcebookIndex.pillars).flatMap(pillar =>
+		asArray(pillar.sections).flatMap(section =>
+			asArray(section.clauses).map(clause => ({
+				pillar,
+				section,
+				clause
+			}))
+		)
+	);
+}
+
+function deriveTriggers({ pillar, section, clause }) {
+	const explicit = asArray(clause.triggers);
+	const evidence = asArray(clause.evidence).map(normaliseEvidence);
+	const routes = asArray(clause.relatedAppRoutes).map(normaliseRoute);
+	const text = normaliseLookup(`${section.title} ${clause.title} ${clause.text} ${evidence.join(" ")}`);
+	const triggers = new Set(explicit.map(normaliseEvidence).filter(Boolean));
+
+	if (/\bbefore\b|\bstarts?\b|\bstarts before\b|\bbefore work starts\b|\bbefore delivery starts\b/.test(text)) {
+		triggers.add("before-work-starts");
+	}
+	if (text.includes("before participant contact") || text.includes("before outreach") || evidence.includes("research-intake")) {
+		triggers.add("before-participant-contact");
+	}
+	if (
+		text.includes("before research participation") ||
+		text.includes("consent") ||
+		evidence.includes("consent-form") ||
+		evidence.includes("consent-log") ||
+		routes.includes("/pages/consent/")
+	) {
+		triggers.add("before-session-start");
+		triggers.add("consent-review");
+	}
+	if (text.includes("remote readiness") || evidence.includes("remote-readiness-check")) {
+		triggers.add("before-remote-session");
+	}
+	if (text.includes("fieldwork") || evidence.includes("fieldwork-risk-plan")) {
+		triggers.add("before-fieldwork");
+	}
+	if (
+		pillar.code === "DATA-STO-ACC" ||
+		routes.some(route => route.startsWith("/pages/repository/")) ||
+		evidence.includes("repository-entry")
+	) {
+		triggers.add("repository-readiness");
+	}
+	if (text.includes("access") || evidence.some(item => item.includes("access"))) {
+		triggers.add("before-access-change");
+	}
+	if (
+		pillar.code === "INFRA-PROV" ||
+		text.includes("tool") ||
+		text.includes("integration") ||
+		evidence.includes("integration-record")
+	) {
+		triggers.add("before-tool-use");
+	}
+
+	return [...triggers].sort();
+}
+
+function clauseDto(record, { includeText = true } = {}) {
+	const { pillar, section, clause } = record;
+	return {
+		id: clause.id,
+		type: clause.type,
+		status: clause.status,
+		effectiveDate: clause.effectiveDate,
+		title: clause.title,
+		...(includeText ? { text: clause.text } : {}),
+		appliesTo: asArray(clause.appliesTo),
+		evidence: asArray(clause.evidence),
+		relatedTemplates: asArray(clause.relatedTemplates),
+		relatedTemplateDetails: templateRefs(clause.relatedTemplates),
+		relatedAppRoutes: asArray(clause.relatedAppRoutes),
+		triggers: deriveTriggers(record),
+		pillar: {
+			code: pillar.code,
+			slug: pillar.slug,
+			title: pillar.title,
+			route: pillar.route
+		},
+		section: {
+			id: section.id,
+			title: section.title
+		},
+		sourcebookRoute: pillar.route
+	};
+}
+
+function pillarDto(pillar, { includeSections = false } = {}) {
+	const clauses = asArray(pillar.sections).flatMap(section => asArray(section.clauses));
+	const base = {
+		code: pillar.code,
+		slug: pillar.slug,
+		legacySlug: pillar.legacySlug,
+		title: pillar.title,
+		route: pillar.route,
+		owner: pillar.owner,
+		operatingQuestion: pillar.operatingQuestion,
+		definition: pillar.definition,
+		valueFrame: pillar.valueFrame,
+		sectionCount: asArray(pillar.sections).length,
+		clauseCount: clauses.length,
+		clauseTypes: [...new Set(clauses.map(clause => clause.type).filter(Boolean))].sort()
+	};
+	if (!includeSections) return base;
+	return {
+		...base,
+		sections: asArray(pillar.sections).map(section => ({
+			id: section.id,
+			title: section.title,
+			definition: section.definition,
+			clauseCount: asArray(section.clauses).length
+		}))
+	};
+}
+
+function parseLimit(url) {
+	const parsed = Number.parseInt(url.searchParams.get("limit") || "", 10);
+	if (!Number.isFinite(parsed)) return DEFAULT_LIMIT;
+	return Math.max(1, Math.min(parsed, MAX_LIMIT));
+}
+
+function parseOffset(url) {
+	const parsed = Number.parseInt(url.searchParams.get("offset") || "", 10);
+	if (!Number.isFinite(parsed)) return 0;
+	return Math.max(0, parsed);
+}
+
+function queryValues(url, key, normalise = normaliseLookup) {
+	return [
+		...new Set(
+			url.searchParams
+				.getAll(key)
+				.flatMap(value => String(value).split(","))
+				.map(normalise)
+				.filter(Boolean)
+		)
+	];
+}
+
+function matchesPillar(record, values) {
+	if (!values.length) return true;
+	const candidates = [record.pillar.code, record.pillar.slug, record.pillar.legacySlug, record.pillar.title]
+		.map(normaliseLookup)
+		.filter(Boolean);
+	return values.some(value => candidates.includes(value));
+}
+
+function matchesRoute(record, values) {
+	if (!values.length) return true;
+	const routes = [record.pillar.route, ...asArray(record.clause.relatedAppRoutes)].map(normaliseRoute);
+	return values.some(value => routes.includes(value));
+}
+
+function matchesEvidence(record, values) {
+	if (!values.length) return true;
+	const evidence = asArray(record.clause.evidence).map(normaliseEvidence);
+	return values.some(value => evidence.includes(value));
+}
+
+function matchesTrigger(record, values) {
+	if (!values.length) return true;
+	const triggers = deriveTriggers(record);
+	return values.some(value => triggers.includes(value));
+}
+
+function matchesType(record, values) {
+	if (!values.length) return true;
+	return values.includes(normaliseLookup(record.clause.type));
+}
+
+function matchesStatus(record, values) {
+	if (!values.length) return true;
+	return values.includes(normaliseLookup(record.clause.status));
+}
+
+function matchesSearch(record, value) {
+	if (!value) return true;
+	const haystack = normaliseLookup([
+		record.pillar.code,
+		record.pillar.title,
+		record.section.title,
+		record.clause.id,
+		record.clause.title,
+		record.clause.text,
+		...asArray(record.clause.evidence)
+	].join(" "));
+	return haystack.includes(value);
+}
+
+function filterClauses(url) {
+	const pillarValues = queryValues(url, "pillar");
+	const routeValues = queryValues(url, "route", normaliseRoute);
+	const evidenceValues = queryValues(url, "evidence", normaliseEvidence);
+	const triggerValues = queryValues(url, "trigger", normaliseEvidence);
+	const typeValues = queryValues(url, "type");
+	const statusValues = queryValues(url, "status");
+	const search = normaliseLookup(url.searchParams.get("q"));
+
+	return allClauses().filter(record =>
+		matchesPillar(record, pillarValues) &&
+		matchesRoute(record, routeValues) &&
+		matchesEvidence(record, evidenceValues) &&
+		matchesTrigger(record, triggerValues) &&
+		matchesType(record, typeValues) &&
+		matchesStatus(record, statusValues) &&
+		matchesSearch(record, search)
+	);
+}
+
+export async function readSourcebook(svc, origin) {
+	return svc.json(
+		{
+			ok: true,
+			sourcebook: sourcebookSummary(),
+			counts: {
+				pillars: asArray(sourcebookIndex.pillars).length,
+				clauses: allClauses().length,
+				templates: asArray(sourcebookIndex.templates).length
+			}
+		},
+		200,
+		svc.corsHeaders(origin)
+	);
+}
+
+export async function listSourcebookPillars(svc, origin, url) {
+	const includeSections = url.searchParams.get("include") === "sections";
+	return svc.json(
+		{
+			ok: true,
+			sourcebook: sourcebookSummary(),
+			pillars: asArray(sourcebookIndex.pillars).map(pillar => pillarDto(pillar, { includeSections }))
+		},
+		200,
+		svc.corsHeaders(origin)
+	);
+}
+
+export async function listSourcebookClauses(svc, origin, url) {
+	const records = filterClauses(url);
+	const limit = parseLimit(url);
+	const offset = parseOffset(url);
+	const includeText = url.searchParams.get("includeText") !== "false";
+	const clauses = records.slice(offset, offset + limit).map(record => clauseDto(record, { includeText }));
+
+	return svc.json(
+		{
+			ok: true,
+			sourcebook: sourcebookSummary(),
+			filters: {
+				pillar: queryValues(url, "pillar"),
+				route: queryValues(url, "route", normaliseRoute),
+				evidence: queryValues(url, "evidence", normaliseEvidence),
+				trigger: queryValues(url, "trigger", normaliseEvidence),
+				type: queryValues(url, "type"),
+				status: queryValues(url, "status"),
+				q: normaliseLookup(url.searchParams.get("q"))
+			},
+			pagination: {
+				limit,
+				offset,
+				total: records.length,
+				nextOffset: offset + limit < records.length ? offset + limit : null
+			},
+			clauses
+		},
+		200,
+		svc.corsHeaders(origin)
+	);
+}
+
+export async function readSourcebookClause(svc, origin, clauseId) {
+	const wanted = normaliseLookup(decodeURIComponent(clauseId || ""));
+	const record = allClauses().find(item => normaliseLookup(item.clause.id) === wanted);
+	if (!record) {
+		return svc.json({ ok: false, error: "sourcebook_clause_not_found", clauseId }, 404, svc.corsHeaders(origin));
+	}
+	return svc.json(
+		{
+			ok: true,
+			sourcebook: sourcebookSummary(),
+			clause: clauseDto(record)
+		},
+		200,
+		svc.corsHeaders(origin)
+	);
+}
