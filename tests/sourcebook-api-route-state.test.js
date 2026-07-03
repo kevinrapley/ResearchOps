@@ -48,10 +48,14 @@ test("Sourcebook API service supports clause query dimensions", () => {
 		"readSourcebookClause",
 		"queryValues(url, \"pillar\")",
 		"queryValues(url, \"route\", normaliseRoute)",
+		"queryValues(url, \"condition\", normaliseEvidence)",
 		"queryValues(url, \"evidence\", normaliseEvidence)",
 		"queryValues(url, \"trigger\", normaliseEvidence)",
 		"function parseTextMode",
 		"const TEXT_MODES = new Set([\"summary\", \"title\", \"full\", \"verbose\"])",
+		"const ROUTE_CLAUSE_MAPPINGS = [",
+		"function routeMappingsForRecord",
+		"function matchesRouteContext",
 		"function deriveTriggers",
 		"sourcebook-index.json"
 	]) {

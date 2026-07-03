@@ -97,10 +97,59 @@ test('Sourcebook API queries clauses by related route', async () => {
 	);
 	assert.equal(body.filters.route[0], '/pages/consent/');
 	assert.equal(body.filters.includeText, 'summary');
+	assert.deepEqual(
+		body.clauses.find((clause) => clause.id === 'REC-ADMN 3.1.1').routeMappings[0].conditionIds,
+		['consent-review']
+	);
 	assert.equal(
 		body.clauses.find((clause) => clause.id === 'REC-ADMN 3.1.1').text,
 		'Participants must receive clear study information and give recorded informed consent before taking part, including consent choices for recording, quotation and future contact.'
 	);
+});
+
+test('Sourcebook API narrows route mappings by condition', async () => {
+	const response = await listSourcebookClauses(
+		testService(),
+		'',
+		new URL(
+			'https://worker.test/api/sourcebook/clauses?route=/pages/account/team-access/&condition=access-change'
+		)
+	);
+	assert.equal(response.status, 200);
+
+	const body = await json(response);
+	assert.equal(body.ok, true);
+	assert.deepEqual(body.filters.condition, ['access-change']);
+	assert.equal(body.clauses.length, 1);
+
+	const clause = body.clauses[0];
+	assert.equal(clause.id, 'INFRA-PROV 3.1.1');
+	assert.equal(clause.routeMappings.length >= 2, true);
+	assert.equal(
+		clause.routeMappings.some(
+			(mapping) =>
+				mapping.route === '/pages/account/team-access/' &&
+				mapping.conditionIds.includes('access-change') &&
+				mapping.strength === 'required'
+		),
+		true
+	);
+});
+
+test('Sourcebook API excludes conditional route mappings when the condition does not apply', async () => {
+	const response = await listSourcebookClauses(
+		testService(),
+		'',
+		new URL(
+			'https://worker.test/api/sourcebook/clauses?route=/pages/account/team-access/&condition=permission-model-change'
+		)
+	);
+	assert.equal(response.status, 200);
+
+	const body = await json(response);
+	assert.equal(body.ok, true);
+	assert.deepEqual(body.filters.condition, ['permission-model-change']);
+	assert.equal(body.clauses.length, 0);
 });
 
 test('Sourcebook API can return clause title text only', async () => {

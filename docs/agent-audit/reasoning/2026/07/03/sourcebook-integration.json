@@ -53,7 +53,10 @@
 		"Included related templates and app routes in clause DTOs for future contextual UI surfacing.",
 		"Added .wrangler/ to local ignore lists for format and lint hygiene.",
 		"Addressed Codex review thread PRRT_kwDOP3Td2M6OQuwS by bootstrapping research-data auth declarations before /api/me, /api/me/identity and /api/me/permissions resolve authenticated context.",
-		"Added route-state coverage so /api/me continues to seed declarations before returning permission lists that include sourcebook.view."
+		"Added route-state coverage so /api/me continues to seed declarations before returning permission lists that include sourcebook.view.",
+		"Added a first-class route-to-clause map with conditional mappings so logged-in surfaces can request Sourcebook clauses by both route and operational condition.",
+		"Added condition as a clause query dimension while keeping existing route-only queries compatible.",
+		"Returned routeMappings metadata in clause DTOs, including condition ids, labels, descriptions, mapping source and strength."
 	],
 	"validationEvidence": [
 		{
@@ -135,10 +138,36 @@
 			"command": "npm run validate",
 			"status": "passed",
 			"summary": "Repository validation completed successfully after the Codex review fix."
+		},
+		{
+			"command": "node --import ./tests/helpers/generated-govuk-page-source.mjs --test tests/sourcebook-api.test.js tests/sourcebook-api-route-state.test.js",
+			"status": "passed",
+			"summary": "14 focused Sourcebook API tests passed after adding conditional route mappings."
+		},
+		{
+			"command": "npm run format:check",
+			"status": "passed",
+			"summary": "Prettier and generated CSS checks passed after adding conditional route mappings."
+		},
+		{
+			"command": "git diff --check",
+			"status": "passed",
+			"summary": "No whitespace errors found after adding conditional route mappings."
+		},
+		{
+			"command": "npm run trace:coverage",
+			"status": "passed",
+			"summary": "Trace coverage confirmed for feature/sourcebook-integration after adding conditional route mappings."
+		},
+		{
+			"command": "npm run validate",
+			"status": "passed",
+			"summary": "Repository validation completed successfully after adding conditional route mappings."
 		}
 	],
 	"residualRisks": [
 		"The API derives some trigger labels from current Sourcebook text and metadata; future stronger Sourcebook governance should make triggers first-class clause metadata.",
+		"Conditional route mappings are currently curated in the Sourcebook service from existing clause metadata; future Sourcebook governance can promote them into the Sourcebook index if they become author-owned content.",
 		"This branch adds the read API foundation only; logged-in UI affordances that surface the clauses in context can build on these endpoints separately."
 	]
 }

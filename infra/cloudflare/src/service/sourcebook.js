@@ -9,6 +9,118 @@ import sourcebookIndex from "../../../../sourcebook/sourcebook-index.json" with 
 const DEFAULT_LIMIT = 50;
 const MAX_LIMIT = 200;
 const TEXT_MODES = new Set(["summary", "title", "full", "verbose"]);
+const ROUTE_CLAUSE_MAPPINGS = [
+	{
+		id: "map_consent_review",
+		route: "/pages/consent/",
+		clauseId: "REC-ADMN 3.1.1",
+		condition: {
+			id: "consent-review",
+			label: "Consent review",
+			description: "Surface when consent wording, recording choices, quotation consent or future-contact consent need review."
+		},
+		strength: "required"
+	},
+	{
+		id: "map_session_reminders",
+		route: "/pages/sessions/",
+		clauseId: "REC-ADMN 5.1.2",
+		condition: {
+			id: "session-reminder-automation",
+			label: "Session reminder automation",
+			description: "Surface when a session workflow uses automated reminders or reusable participant message templates."
+		},
+		strength: "advisory"
+	},
+	{
+		id: "map_repository_entry",
+		route: "/pages/repository/",
+		clauseId: "DATA-STO-ACC 2.1.1",
+		condition: {
+			id: "study-close",
+			label: "Study close",
+			description: "Surface when completed research needs a durable repository entry or publication record."
+		},
+		strength: "required"
+	},
+	{
+		id: "map_repository_service_area_taxonomy",
+		route: "/pages/repository/service-areas/",
+		clauseId: "DATA-STO-ACC 3.1.1",
+		condition: {
+			id: "taxonomy-change",
+			label: "Taxonomy change",
+			description: "Surface when service-area taxonomy labels are created, changed, applied or excepted."
+		},
+		strength: "required"
+	},
+	{
+		id: "map_repository_user_group_taxonomy",
+		route: "/pages/repository/user-groups/",
+		clauseId: "DATA-STO-ACC 3.1.1",
+		condition: {
+			id: "taxonomy-change",
+			label: "Taxonomy change",
+			description: "Surface when user-group taxonomy labels are created, changed, applied or excepted."
+		},
+		strength: "required"
+	},
+	{
+		id: "map_repository_method_taxonomy",
+		route: "/pages/repository/methods/",
+		clauseId: "DATA-STO-ACC 3.1.1",
+		condition: {
+			id: "taxonomy-change",
+			label: "Taxonomy change",
+			description: "Surface when method taxonomy labels are created, changed, applied or excepted."
+		},
+		strength: "required"
+	},
+	{
+		id: "map_repository_risk_taxonomy",
+		route: "/pages/repository/risks/",
+		clauseId: "DATA-STO-ACC 3.1.1",
+		condition: {
+			id: "taxonomy-change",
+			label: "Taxonomy change",
+			description: "Surface when risk taxonomy labels are created, changed, applied or excepted."
+		},
+		strength: "required"
+	},
+	{
+		id: "map_search_existing_evidence",
+		route: "/pages/search/",
+		clauseId: "DATA-STO-ACC 6.1.1",
+		condition: {
+			id: "new-research-request",
+			label: "New research request",
+			description: "Surface before commissioning, approving or scoping new research that may duplicate existing evidence."
+		},
+		strength: "required"
+	},
+	{
+		id: "map_team_access_request",
+		route: "/pages/account/team-access/",
+		clauseId: "INFRA-PROV 3.1.1",
+		condition: {
+			id: "access-change",
+			label: "Access change",
+			description: "Surface when access is requested, widened, changed or reviewed against role and research need."
+		},
+		strength: "required"
+	},
+	{
+		id: "map_role_assignment",
+		route: "/pages/team/role-assignments/",
+		clauseId: "INFRA-PROV 3.1.1",
+		condition: {
+			id: "permission-model-change",
+			label: "Permission model change",
+			description: "Surface when role permissions or admin access are assigned, changed or reviewed."
+		},
+		strength: "required"
+	}
+];
 
 function cleanText(value) {
 	return String(value || "").replace(/\s+/g, " ").trim();
@@ -69,6 +181,69 @@ function templateRefs(ids = []) {
 			title: template.title,
 			path: template.path
 		}));
+}
+
+function mappingConditions(mapping) {
+	const conditions = mapping.conditions ?? mapping.condition;
+	if (!conditions) return [];
+	return Array.isArray(conditions) ? conditions : [conditions];
+}
+
+function mappingConditionIds(mapping) {
+	return mappingConditions(mapping)
+		.map(condition => normaliseEvidence(condition?.id || condition))
+		.filter(Boolean);
+}
+
+function routeMappingDto(mapping, { source = "route-map" } = {}) {
+	const conditions = mappingConditions(mapping)
+		.map(condition => {
+			if (typeof condition === "string") {
+				return {
+					id: normaliseEvidence(condition),
+					label: cleanText(condition),
+					description: ""
+				};
+			}
+			return {
+				id: normaliseEvidence(condition?.id),
+				label: cleanText(condition?.label || condition?.id),
+				description: cleanText(condition?.description)
+			};
+		})
+		.filter(condition => condition.id);
+
+	return {
+		id: mapping.id,
+		route: normaliseRoute(mapping.route),
+		source,
+		conditionIds: conditions.map(condition => condition.id),
+		conditions,
+		strength: mapping.strength || "related"
+	};
+}
+
+function routeMappingsForRecord(record) {
+	const explicitMappings = ROUTE_CLAUSE_MAPPINGS
+		.filter(mapping => normaliseLookup(mapping.clauseId) === normaliseLookup(record.clause.id))
+		.map(mapping => routeMappingDto(mapping));
+	const explicitRoutes = new Set(explicitMappings.map(mapping => mapping.route));
+	const fallbackMappings = asArray(record.clause.relatedAppRoutes)
+		.map(normaliseRoute)
+		.filter(route => route && !explicitRoutes.has(route))
+		.map(route =>
+			routeMappingDto(
+				{
+					id: `map_related_${normaliseLookup(record.clause.id).replace(/[^a-z0-9]+/g, "_")}_${route.replace(/[^a-z0-9]+/g, "_")}`,
+					route,
+					condition: [],
+					strength: "related"
+				},
+				{ source: "clause-related-route" }
+			)
+		);
+
+	return [...explicitMappings, ...fallbackMappings];
 }
 
 function allClauses() {
@@ -155,6 +330,7 @@ function clauseMetadata(record) {
 		relatedTemplates: asArray(clause.relatedTemplates),
 		relatedTemplateDetails: templateRefs(clause.relatedTemplates),
 		relatedAppRoutes: asArray(clause.relatedAppRoutes),
+		routeMappings: routeMappingsForRecord(record),
 		triggers: deriveTriggers(record),
 		pillar: {
 			code: pillar.code,
@@ -254,10 +430,18 @@ function matchesPillar(record, values) {
 	return values.some(value => candidates.includes(value));
 }
 
-function matchesRoute(record, values) {
-	if (!values.length) return true;
-	const routes = [record.pillar.route, ...asArray(record.clause.relatedAppRoutes)].map(normaliseRoute);
-	return values.some(value => routes.includes(value));
+function matchesRouteContext(record, routeValues, conditionValues) {
+	if (!routeValues.length && !conditionValues.length) return true;
+	const pillarRoute = normaliseRoute(record.pillar.route);
+	if (routeValues.length && !conditionValues.length && routeValues.includes(pillarRoute)) return true;
+
+	const mappings = routeMappingsForRecord(record);
+	return mappings.some(mapping => {
+		const routeMatches = !routeValues.length || routeValues.includes(mapping.route);
+		const mappingConditions = mapping.conditionIds || mappingConditionIds(mapping);
+		const conditionMatches = !conditionValues.length || conditionValues.some(value => mappingConditions.includes(value));
+		return routeMatches && conditionMatches;
+	});
 }
 
 function matchesEvidence(record, values) {
@@ -299,6 +483,7 @@ function matchesSearch(record, value) {
 function filterClauses(url) {
 	const pillarValues = queryValues(url, "pillar");
 	const routeValues = queryValues(url, "route", normaliseRoute);
+	const conditionValues = queryValues(url, "condition", normaliseEvidence);
 	const evidenceValues = queryValues(url, "evidence", normaliseEvidence);
 	const triggerValues = queryValues(url, "trigger", normaliseEvidence);
 	const typeValues = queryValues(url, "type");
@@ -307,7 +492,7 @@ function filterClauses(url) {
 
 	return allClauses().filter(record =>
 		matchesPillar(record, pillarValues) &&
-		matchesRoute(record, routeValues) &&
+		matchesRouteContext(record, routeValues, conditionValues) &&
 		matchesEvidence(record, evidenceValues) &&
 		matchesTrigger(record, triggerValues) &&
 		matchesType(record, typeValues) &&
@@ -359,6 +544,7 @@ export async function listSourcebookClauses(svc, origin, url) {
 			filters: {
 				pillar: queryValues(url, "pillar"),
 				route: queryValues(url, "route", normaliseRoute),
+				condition: queryValues(url, "condition", normaliseEvidence),
 				evidence: queryValues(url, "evidence", normaliseEvidence),
 				trigger: queryValues(url, "trigger", normaliseEvidence),
 				type: queryValues(url, "type"),

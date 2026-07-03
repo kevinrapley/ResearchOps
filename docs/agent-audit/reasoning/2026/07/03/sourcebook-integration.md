@@ -62,7 +62,10 @@ Skipped bundles:
 - `.prettierignore`
 - `eslint.config.js`
 - `tests/auth-foundation-route-state.test.js`
+- `tests/sourcebook-api-route-state.test.js`
+- `tests/sourcebook-api.test.js`
 - `infra/cloudflare/src/service/index.js`
+- `infra/cloudflare/src/service/sourcebook.js`
 - `infra/cloudflare/src/worker.js`
 
 ## Implementation decisions
@@ -78,6 +81,9 @@ Skipped bundles:
 - Added `.wrangler/` to ignore lists so local Cloudflare generated bundles do not pollute format or lint checks.
 - Addressed Codex review thread `PRRT_kwDOP3Td2M6OQuwS` by bootstrapping research-data auth declarations before `/api/me`, `/api/me/identity` and `/api/me/permissions` resolve their authenticated context.
 - Added route-state coverage so `/api/me` continues to seed declarations before returning permission lists that include `sourcebook.view`.
+- Added a first-class route-to-clause map with conditional mappings so logged-in surfaces can request Sourcebook clauses by both route and operational condition.
+- Added `condition` as a clause query dimension while keeping existing route-only queries compatible.
+- Returned `routeMappings` metadata in clause DTOs, including condition ids, labels, descriptions, mapping source and strength.
 
 ## Validation evidence
 
@@ -97,8 +103,14 @@ Skipped bundles:
 - `git diff --check` passed after the Codex review fix.
 - `npm run trace:coverage` passed after the Codex review fix and confirmed trace coverage for `feature/sourcebook-integration`.
 - `npm run validate` passed after the Codex review fix.
+- `node --import ./tests/helpers/generated-govuk-page-source.mjs --test tests/sourcebook-api.test.js tests/sourcebook-api-route-state.test.js` passed after conditional route mappings: 14 tests, 14 pass.
+- `npm run format:check` passed after conditional route mappings.
+- `git diff --check` passed after conditional route mappings.
+- `npm run trace:coverage` passed after conditional route mappings and confirmed trace coverage for `feature/sourcebook-integration`.
+- `npm run validate` passed after conditional route mappings.
 
 ## Residual risks
 
 - The API derives some trigger labels from current Sourcebook text and metadata; future stronger Sourcebook governance should make triggers first-class clause metadata.
+- Conditional route mappings are currently curated in the Sourcebook service from existing clause metadata; future Sourcebook governance can promote them into the Sourcebook index if they become author-owned content.
 - This branch adds the read API foundation only; logged-in UI affordances that surface the clauses in context can build on these endpoints separately.
