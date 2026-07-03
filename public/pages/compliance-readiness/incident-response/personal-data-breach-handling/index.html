@@ -110,102 +110,106 @@
 							</p>
 							<h2 class="govuk-heading-l">Decision route</h2>
 							<ol class="govuk-list govuk-list--number">
-								<li><strong>Start the timer</strong></li>
+								<li>
+									<strong>Start the timer</strong>
+									<ul class="govuk-list govuk-list--bullet">
+										<li>Record when ResearchOps became aware of the suspected breach.</li>
+										<li>Record who raised it and how it was detected.</li>
+										<li>Open an incident record and preserve evidence.</li>
+									</ul>
+								</li>
+								<li>
+									<strong>Contain first, but preserve evidence</strong>
+									<ul class="govuk-list govuk-list--bullet">
+										<li>Remove public or unauthorised access.</li>
+										<li>Revoke exposed secrets or sessions if needed.</li>
+										<li>Stop affected jobs, integrations or routes if ongoing harm is possible.</li>
+										<li>Avoid deleting logs, audit records or affected artefacts before evidence is captured.</li>
+									</ul>
+								</li>
+								<li>
+									<strong>Describe the personal data</strong>
+									<ul class="govuk-list govuk-list--bullet">
+										<li>Identify data classes affected.</li>
+										<li>Estimate number and type of people affected.</li>
+										<li>
+											Note whether participant, special-category, safeguarding or sensitive operational information may
+											be present.
+										</li>
+										<li>
+											Record whether data was viewed, copied, changed, deleted, retained longer than agreed or made
+											unavailable.
+										</li>
+									</ul>
+								</li>
+								<li>
+									<strong>Assess risk to people</strong>
+									<ul class="govuk-list govuk-list--bullet">
+										<li>
+											Consider distress, discrimination, safeguarding, identity misuse, loss of confidentiality,
+											operational harm and loss of trust.
+										</li>
+										<li>
+											Consider whether the people affected include vulnerable participants or people in sensitive
+											research contexts.
+										</li>
+										<li>Record the basis for the risk decision.</li>
+									</ul>
+								</li>
+								<li>
+									<strong>Escalate the decision</strong>
+									<ul class="govuk-list govuk-list--bullet">
+										<li>Notify the ResearchOps service owner.</li>
+										<li>Notify the information asset owner or agreed data owner route.</li>
+										<li>Notify the security representative.</li>
+										<li>Notify the privacy representative or Data Protection Officer route.</li>
+										<li>Involve legal or senior risk ownership where Home Office procedure requires it.</li>
+									</ul>
+								</li>
+								<li>
+									<strong>Decide whether to notify the ICO</strong>
+									<ul class="govuk-list govuk-list--bullet">
+										<li>
+											The notification decision belongs to the authorised Home Office privacy and accountability route,
+											not to an individual developer.
+										</li>
+										<li>
+											If risk to people's rights and freedoms is likely, prepare for notification as soon as possible
+											and, where feasible, within 72 hours of awareness.
+										</li>
+										<li>If notification is not made, record the decision, reasoning and who approved it.</li>
+										<li>
+											If the 72-hour window cannot be met, record the reason for delay and what information will follow
+											later.
+										</li>
+									</ul>
+								</li>
+								<li>
+									<strong>Decide whether to notify affected people</strong>
+									<ul class="govuk-list govuk-list--bullet">
+										<li>
+											If risk is high, prepare affected-person communication without undue delay through the authorised
+											Home Office route.
+										</li>
+										<li>
+											Communication should explain what happened, what data was involved, likely consequences, actions
+											already taken, recommended steps and a contact route.
+										</li>
+										<li>
+											Do not contact affected people informally or before the authorised route agrees the message.
+										</li>
+									</ul>
+								</li>
+								<li>
+									<strong>Close with learning</strong>
+									<ul class="govuk-list govuk-list--bullet">
+										<li>Record containment, recovery and prevention actions.</li>
+										<li>Link fix commits, deployment evidence and tests.</li>
+										<li>Record lessons learned and owners for follow-up actions.</li>
+										<li>Update runbooks if the real incident showed they were unclear or incomplete.</li>
+									</ul>
+								</li>
 							</ol>
-							<ul class="govuk-list govuk-list--bullet">
-								<li>Record when ResearchOps became aware of the suspected breach.</li>
-								<li>Record who raised it and how it was detected.</li>
-								<li>Open an incident record and preserve evidence.</li>
-							</ul>
-							<ol class="govuk-list govuk-list--number">
-								<li><strong>Contain first, but preserve evidence</strong></li>
-							</ol>
-							<ul class="govuk-list govuk-list--bullet">
-								<li>Remove public or unauthorised access.</li>
-								<li>Revoke exposed secrets or sessions if needed.</li>
-								<li>Stop affected jobs, integrations or routes if ongoing harm is possible.</li>
-								<li>Avoid deleting logs, audit records or affected artefacts before evidence is captured.</li>
-							</ul>
-							<ol class="govuk-list govuk-list--number">
-								<li><strong>Describe the personal data</strong></li>
-							</ol>
-							<ul class="govuk-list govuk-list--bullet">
-								<li>Identify data classes affected.</li>
-								<li>Estimate number and type of people affected.</li>
-								<li>
-									Note whether participant, special-category, safeguarding or sensitive operational information may be
-									present.
-								</li>
-								<li>
-									Record whether data was viewed, copied, changed, deleted, retained longer than agreed or made
-									unavailable.
-								</li>
-							</ul>
-							<ol class="govuk-list govuk-list--number">
-								<li><strong>Assess risk to people</strong></li>
-							</ol>
-							<ul class="govuk-list govuk-list--bullet">
-								<li>
-									Consider distress, discrimination, safeguarding, identity misuse, loss of confidentiality, operational
-									harm and loss of trust.
-								</li>
-								<li>
-									Consider whether the people affected include vulnerable participants or people in sensitive research
-									contexts.
-								</li>
-								<li>Record the basis for the risk decision.</li>
-							</ul>
-							<ol class="govuk-list govuk-list--number">
-								<li><strong>Escalate the decision</strong></li>
-							</ol>
-							<ul class="govuk-list govuk-list--bullet">
-								<li>Notify the ResearchOps service owner.</li>
-								<li>Notify the information asset owner or agreed data owner route.</li>
-								<li>Notify the security representative.</li>
-								<li>Notify the privacy representative or Data Protection Officer route.</li>
-								<li>Involve legal or senior risk ownership where Home Office procedure requires it.</li>
-							</ul>
-							<ol class="govuk-list govuk-list--number">
-								<li><strong>Decide whether to notify the ICO</strong></li>
-							</ol>
-							<ul class="govuk-list govuk-list--bullet">
-								<li>
-									The notification decision belongs to the authorised Home Office privacy and accountability route, not
-									to an individual developer.
-								</li>
-								<li>
-									If risk to people's rights and freedoms is likely, prepare for notification as soon as possible and,
-									where feasible, within 72 hours of awareness.
-								</li>
-								<li>If notification is not made, record the decision, reasoning and who approved it.</li>
-								<li>
-									If the 72-hour window cannot be met, record the reason for delay and what information will follow
-									later.
-								</li>
-							</ul>
-							<ol class="govuk-list govuk-list--number">
-								<li><strong>Decide whether to notify affected people</strong></li>
-							</ol>
-							<ul class="govuk-list govuk-list--bullet">
-								<li>
-									If risk is high, prepare affected-person communication without undue delay through the authorised Home
-									Office route.
-								</li>
-								<li>
-									Communication should explain what happened, what data was involved, likely consequences, actions
-									already taken, recommended steps and a contact route.
-								</li>
-								<li>Do not contact affected people informally or before the authorised route agrees the message.</li>
-							</ul>
-							<ol class="govuk-list govuk-list--number">
-								<li><strong>Close with learning</strong></li>
-							</ol>
-							<ul class="govuk-list govuk-list--bullet">
-								<li>Record containment, recovery and prevention actions.</li>
-								<li>Link fix commits, deployment evidence and tests.</li>
-								<li>Record lessons learned and owners for follow-up actions.</li>
-								<li>Update runbooks if the real incident showed they were unclear or incomplete.</li>
-							</ul>
 							<h2 class="govuk-heading-l">Minimum breach record</h2>
 							<p class="govuk-body">The incident record must include:</p>
 							<ul class="govuk-list govuk-list--bullet">

@@ -164,29 +164,47 @@ function isMarkdownTableStart(lines, index) {
 	);
 }
 
-function closeList(htmlParts, listType) {
-	if (!listType) return null;
-	htmlParts.push(`</${listType}>`);
-	return null;
-}
-
 export function renderComplianceMarkdownDocument(markdown) {
 	const lines = markdown.replace(/\r\n/g, '\n').split('\n');
 	const bodyLines = lines[0]?.startsWith('# ') ? lines.slice(1) : lines;
 	const htmlParts = [];
 	let listType = null;
+	let orderedItemOpen = false;
+	let nestedListType = null;
+
+	function closeNestedList() {
+		if (!nestedListType) return;
+		htmlParts.push(`</${nestedListType}>`);
+		nestedListType = null;
+	}
+
+	function closeOrderedItem() {
+		if (!orderedItemOpen) return;
+		closeNestedList();
+		htmlParts.push('</li>');
+		orderedItemOpen = false;
+	}
+
+	function closeList() {
+		if (!listType) return;
+		closeOrderedItem();
+		htmlParts.push(`</${listType}>`);
+		listType = null;
+	}
 
 	for (let index = 0; index < bodyLines.length; index += 1) {
 		const rawLine = bodyLines[index];
 		const line = rawLine.trim();
 
 		if (!line) {
-			listType = closeList(htmlParts, listType);
+			if (listType !== 'ol') {
+				closeList();
+			}
 			continue;
 		}
 
 		if (isMarkdownTableStart(bodyLines, index)) {
-			listType = closeList(htmlParts, listType);
+			closeList();
 			const table = markdownTable(bodyLines, index);
 			htmlParts.push(table.html);
 			index = table.nextIndex - 1;
@@ -195,7 +213,7 @@ export function renderComplianceMarkdownDocument(markdown) {
 
 		const heading = line.match(/^(#{2,4})\s+(.+)$/);
 		if (heading) {
-			listType = closeList(htmlParts, listType);
+			closeList();
 			const level = heading[1].length;
 			const className = level === 2 ? 'govuk-heading-l' : level === 3 ? 'govuk-heading-m' : 'govuk-heading-s';
 			htmlParts.push(`<h${level} class="${className}">${inlineMarkdown(heading[2])}</h${level}>`);
@@ -205,18 +223,30 @@ export function renderComplianceMarkdownDocument(markdown) {
 		const orderedItem = line.match(/^\d+\.\s+(.+)$/);
 		if (orderedItem) {
 			if (listType !== 'ol') {
-				listType = closeList(htmlParts, listType);
+				closeList();
 				htmlParts.push('<ol class="govuk-list govuk-list--number">');
 				listType = 'ol';
+			} else {
+				closeOrderedItem();
 			}
-			htmlParts.push(`<li>${inlineMarkdown(orderedItem[1])}</li>`);
+			htmlParts.push(`<li>${inlineMarkdown(orderedItem[1])}`);
+			orderedItemOpen = true;
 			continue;
 		}
 
 		const bulletItem = line.match(/^-\s+(.+)$/);
 		if (bulletItem) {
+			if (/^\s+-\s+/.test(rawLine) && listType === 'ol' && orderedItemOpen) {
+				if (nestedListType !== 'ul') {
+					htmlParts.push('<ul class="govuk-list govuk-list--bullet">');
+					nestedListType = 'ul';
+				}
+				htmlParts.push(`<li>${inlineMarkdown(bulletItem[1])}</li>`);
+				continue;
+			}
+
 			if (listType !== 'ul') {
-				listType = closeList(htmlParts, listType);
+				closeList();
 				htmlParts.push('<ul class="govuk-list govuk-list--bullet">');
 				listType = 'ul';
 			}
@@ -224,11 +254,11 @@ export function renderComplianceMarkdownDocument(markdown) {
 			continue;
 		}
 
-		listType = closeList(htmlParts, listType);
+		closeList();
 		htmlParts.push(`<p class="govuk-body">${inlineMarkdown(line)}</p>`);
 	}
 
-	closeList(htmlParts, listType);
+	closeList();
 
 	return new nunjucks.runtime.SafeString(htmlParts.join('\n'));
 }

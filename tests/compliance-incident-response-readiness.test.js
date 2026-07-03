@@ -129,3 +129,30 @@ test('incident response evidence is rendered as visible GOV.UK pages', () => {
 	);
 	assert.doesNotMatch(exerciseHtml, /\bexercise has been completed\b/i);
 });
+
+test('personal data breach decision route renders nested bullet lists inside one ordered list', () => {
+	const html = read(
+		'public/pages/compliance-readiness/incident-response/personal-data-breach-handling/index.html'
+	);
+	const [, decisionRoute] = html.match(
+		/<h2 class="govuk-heading-l">Decision route<\/h2>([\s\S]*?)<h2 class="govuk-heading-l">Minimum breach record<\/h2>/
+	);
+
+	assert.equal(
+		(decisionRoute.match(/<ol class="govuk-list govuk-list--number">/g) || []).length,
+		1
+	);
+	assert.equal(
+		(decisionRoute.match(/<ul class="govuk-list govuk-list--bullet">/g) || []).length,
+		8
+	);
+	assert.match(
+		decisionRoute,
+		/<li><strong>Start the timer<\/strong>\s*<ul class="govuk-list govuk-list--bullet">\s*<li>Record when ResearchOps became aware of the suspected breach\.<\/li>/
+	);
+	assert.match(
+		decisionRoute,
+		/<\/ul>\s*<\/li>\s*<li><strong>Contain first, but preserve evidence<\/strong>/
+	);
+	assert.doesNotMatch(decisionRoute, /<\/ol>\s*<ul class="govuk-list govuk-list--bullet">/);
+});

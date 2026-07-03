@@ -84,6 +84,8 @@ Skipped bundles:
 - Registered the new pages in the visual walkthrough configuration and render workflow inputs so the generated routes remain covered when documentation changes.
 - Replaced generated-page URL checks that used regular expressions with plain string checks after CodeQL flagged the URL-hostname regex shape.
 - Updated the compliance readiness page H1, page metadata, generated HTML, route-state test and visual walkthrough title to `SOC 2 and ISO/IEC 27001 readiness documentation`.
+- Updated the Markdown-to-GOV.UK renderer so indented bullet items nested under numbered Markdown steps render inside the parent `<li>` rather than as separate top-level lists.
+- Regenerated the personal data breach handling page so the decision route is one ordered GOV.UK list with nested unordered GOV.UK lists under each step.
 
 ## Validation evidence
 
@@ -92,6 +94,8 @@ Skipped bundles:
 - `node --import ./tests/helpers/generated-govuk-page-source.mjs --test tests/compliance-readiness-page-route-state.test.js tests/compliance-incident-response-readiness.test.js tests/govuk-pages-render-workflow-state.test.js tests/visual-walkthrough-registry-coverage.test.js` passed: 14 tests, 14 pass.
 - `node --import ./tests/helpers/generated-govuk-page-source.mjs --test tests/compliance-incident-response-readiness.test.js && npm run format:check` passed after the CodeQL assertion adjustment.
 - `npm run build:govuk-pages && node --import ./tests/helpers/generated-govuk-page-source.mjs --test tests/compliance-readiness-page-route-state.test.js tests/visual-walkthrough-registry-coverage.test.js` passed after the heading wording correction.
+- `npm run build:govuk-pages && node --import ./tests/helpers/generated-govuk-page-source.mjs --test tests/compliance-incident-response-readiness.test.js` passed after the nested-list rendering fix.
+- Live preview probe confirmed the personal data breach handling decision route renders as a single ordered list with nested unordered lists.
 - Live preview probe confirmed the compliance readiness page shows service-specific runbooks, personal data breach handling process and completed incident response test evidence as the remaining gap.
 - `npm run format:check` passed.
 - `npm run trace:coverage` passed and confirmed trace coverage for `feature/compliance-assurance-boundary`.
