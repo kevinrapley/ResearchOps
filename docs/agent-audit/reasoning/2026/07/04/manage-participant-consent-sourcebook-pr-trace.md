@@ -39,6 +39,7 @@ Skipped:
 - Refined Sourcebook component tag colours and narrow-width table layouts for accessible contrast and readable mobile presentation.
 - Regenerated GOV.UK pages and generated CSS outputs.
 - Fixed the PR CI failure by removing trailing spaces from optional Sourcebook component class output and strengthening the participant-consent ledger ordering assertion against freshly rendered Nunjucks output.
+- Addressed Codex review thread `discussion_r3522161402` by evaluating participant Sourcebook readiness against the current published consent form while preserving the saved record form for display and editing.
 
 ## Validation
 
@@ -55,6 +56,12 @@ Skipped:
 - `npm run format:check` passed.
 - `npm run audit:performance --if-present` passed.
 - `npm run audit:security` passed; npm audit findings remained advisory under repository policy.
+- `node --test tests/participant-consent-route-state.test.js` passed after the review-thread fix.
+- `npx prettier -c public/js/participant-consent-page.js tests/participant-consent-route-state.test.js docs/agent-audit/reasoning/2026/07/04/manage-participant-consent-sourcebook-pr-trace.md docs/agent-audit/reasoning/2026/07/04/manage-participant-consent-sourcebook-pr-trace.json` passed.
+- `git diff --check` passed after the review-thread fix.
+- `npm test` passed with 353 tests after the review-thread fix.
+- `npm run validate` passed after the review-thread fix.
+- `npm run trace:coverage` passed after the review-thread fix.
 
 ## Residual Risk
 

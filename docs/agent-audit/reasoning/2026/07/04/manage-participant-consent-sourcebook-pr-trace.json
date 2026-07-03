@@ -34,7 +34,8 @@
     "Added responsive layout rules so Sourcebook context uses a right rail only at desktop widths and stacks cleanly on tablet and mobile.",
     "Refined Sourcebook component tag colours and narrow-width table layouts for accessible contrast and readable mobile presentation.",
     "Regenerated GOV.UK pages and generated CSS outputs.",
-    "Fixed the PR CI failure by removing trailing spaces from optional Sourcebook component class output and strengthening the participant-consent ledger ordering assertion against freshly rendered Nunjucks output."
+    "Fixed the PR CI failure by removing trailing spaces from optional Sourcebook component class output and strengthening the participant-consent ledger ordering assertion against freshly rendered Nunjucks output.",
+    "Addressed Codex review thread discussion_r3522161402 by evaluating participant Sourcebook readiness against the current published consent form while preserving the saved record form for display and editing."
   ],
   "validation": [
     {
@@ -93,6 +94,36 @@
       "command": "npm run audit:security",
       "result": "passed",
       "details": "npm audit findings remained advisory under repository policy."
+    },
+    {
+      "command": "node --test tests/participant-consent-route-state.test.js",
+      "result": "passed",
+      "details": "Review-thread fix validation."
+    },
+    {
+      "command": "npx prettier -c public/js/participant-consent-page.js tests/participant-consent-route-state.test.js docs/agent-audit/reasoning/2026/07/04/manage-participant-consent-sourcebook-pr-trace.md docs/agent-audit/reasoning/2026/07/04/manage-participant-consent-sourcebook-pr-trace.json",
+      "result": "passed",
+      "details": "Review-thread fix validation."
+    },
+    {
+      "command": "git diff --check",
+      "result": "passed",
+      "details": "Review-thread fix validation."
+    },
+    {
+      "command": "npm test",
+      "result": "passed",
+      "details": "353 tests passed after the review-thread fix."
+    },
+    {
+      "command": "npm run validate",
+      "result": "passed",
+      "details": "Review-thread fix validation."
+    },
+    {
+      "command": "npm run trace:coverage",
+      "result": "passed",
+      "details": "Review-thread fix validation."
     }
   ],
   "residualRisk": ["Full CI remains the merge gate."]

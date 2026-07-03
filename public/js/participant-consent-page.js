@@ -487,8 +487,10 @@ function selectParticipant(participantId) {
 	const participant = state.participants.find(item => item.id === participantId);
 	if (!participant) return;
 	const record = consentRecordForParticipant(participantId);
-	const form = state.consentForms.find(item => item.id === record?.consentFormId) || latestPublishedForm();
-	const status = statusForParticipant(participant, record, form);
+	const recordForm = state.consentForms.find(item => item.id === record?.consentFormId);
+	const currentForm = latestPublishedForm();
+	const form = recordForm || currentForm;
+	const status = statusForParticipant(participant, record, currentForm);
 	setHidden("#consent-record-panel", false);
 	setText("#record-consent-title", record ? `Review consent for ${participant.display_name}` : `Record consent for ${participant.display_name}`);
 	setText(
@@ -505,7 +507,7 @@ function selectParticipant(participantId) {
 	$("#withdrawal-reason").value = record?.withdrawalReason || "";
 	renderFormOptions(form?.id || "");
 	renderConsentItems(record, form);
-	updateSourcebookAssurance(participant, record, form);
+	updateSourcebookAssurance(participant, record, currentForm);
 	const currentRoute = route("/pages/study/participant-consent/", {
 		id: state.studyId,
 		session: state.sessionId,

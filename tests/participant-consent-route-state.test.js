@@ -148,6 +148,10 @@ includes(controllerSource, "function updateSourcebookAssurance", "participant co
 includes(controllerSource, "function updateLedgerRow", "participant consent controller");
 includes(controllerSource, "Consent evidence incomplete", "participant consent controller");
 includes(controllerSource, "Consent record for", "participant consent controller");
+includes(controllerSource, "const recordForm = state.consentForms.find(item => item.id === record?.consentFormId);", "participant consent controller");
+includes(controllerSource, "const currentForm = latestPublishedForm();", "participant consent controller");
+includes(controllerSource, "const status = statusForParticipant(participant, record, currentForm);", "participant consent controller");
+includes(controllerSource, "updateSourcebookAssurance(participant, record, currentForm);", "participant consent controller");
 includes(controllerSource, "function statusForParticipant", "participant consent controller");
 includes(controllerSource, "function renderParticipantTable", "participant consent controller");
 includes(controllerSource, "function renderConsentItems", "participant consent controller");
