@@ -116,7 +116,11 @@ test('incident response evidence is rendered as visible GOV.UK pages', () => {
 		assert.match(html, /govuk-warning-text/);
 
 		for (const expectedContent of page.expectedContent) {
-			assert.match(html, new RegExp(expectedContent.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
+			assert.equal(
+				html.includes(expectedContent),
+				true,
+				`Expected ${page.filePath} to include ${expectedContent}`
+			);
 		}
 	}
 
