@@ -70,6 +70,8 @@ Skipped bundles:
 - Added authenticated Worker routes for `/api/sourcebook`, `/api/sourcebook/pillars`, `/api/sourcebook/clauses` and `/api/sourcebook/clauses/:id`.
 - Added a `sourcebook.view` permission to researcher, research lead and team admin roles so Sourcebook guidance can be surfaced in logged-in operational contexts.
 - Kept clause query dimensions explicit: `pillar`, `route`, `evidence`, `trigger`, `type`, `status`, `q`, `limit`, `offset` and `includeText`.
+- Changed `includeText` from a boolean-style flag to explicit response modes: `summary`, `title`, `full` and `verbose`.
+- Preserved paragraph spacing for `full` and `verbose` clause text by formatting the clause heading and summary as separate paragraphs.
 - Derived operational trigger tags from explicit clause metadata where available, plus stable Sourcebook evidence, route and pillar signals.
 - Returned template details and related app routes in clause DTOs so logged-in UI surfaces can connect a clause to templates and application context.
 - Added `.wrangler/` to ignore lists so local Cloudflare generated bundles do not pollute format or lint checks.
@@ -77,6 +79,9 @@ Skipped bundles:
 ## Validation evidence
 
 - `node --import ./tests/helpers/generated-govuk-page-source.mjs --test tests/sourcebook-api.test.js tests/sourcebook-api-route-state.test.js` passed: 9 tests, 9 pass.
+- `node --import ./tests/helpers/generated-govuk-page-source.mjs --test tests/sourcebook-api.test.js tests/sourcebook-api-route-state.test.js` passed after the `includeText` mode change: 12 tests, 12 pass.
+- `npm test` passed after the `includeText` mode change: 343 tests, 343 pass.
+- `npm run validate` passed after the `includeText` mode change.
 - `npm run format:check` passed.
 - `git diff --check` passed.
 - `npm test` passed: 340 tests, 340 pass.

@@ -8,6 +8,7 @@ import sourcebookIndex from "../../../../sourcebook/sourcebook-index.json" with 
 
 const DEFAULT_LIMIT = 50;
 const MAX_LIMIT = 200;
+const TEXT_MODES = new Set(["summary", "title", "full", "verbose"]);
 
 function cleanText(value) {
 	return String(value || "").replace(/\s+/g, " ").trim();
@@ -32,6 +33,11 @@ function normaliseEvidence(value) {
 
 function asArray(value) {
 	return Array.isArray(value) ? value : [];
+}
+
+function parseTextMode(url) {
+	const requested = normaliseLookup(url.searchParams.get("includeText") || "summary");
+	return TEXT_MODES.has(requested) ? requested : "summary";
 }
 
 function sourcebookSummary() {
@@ -128,15 +134,22 @@ function deriveTriggers({ pillar, section, clause }) {
 	return [...triggers].sort();
 }
 
-function clauseDto(record, { includeText = true } = {}) {
+function clauseFullText(clause) {
+	return `${clause.id}: ${clause.title}\n\n${clause.text}`;
+}
+
+function clauseText(clause, textMode) {
+	if (textMode === "title") return clause.title;
+	if (textMode === "full" || textMode === "verbose") return clauseFullText(clause);
+	return clause.text;
+}
+
+function clauseMetadata(record) {
 	const { pillar, section, clause } = record;
 	return {
-		id: clause.id,
 		type: clause.type,
 		status: clause.status,
 		effectiveDate: clause.effectiveDate,
-		title: clause.title,
-		...(includeText ? { text: clause.text } : {}),
 		appliesTo: asArray(clause.appliesTo),
 		evidence: asArray(clause.evidence),
 		relatedTemplates: asArray(clause.relatedTemplates),
@@ -154,6 +167,30 @@ function clauseDto(record, { includeText = true } = {}) {
 			title: section.title
 		},
 		sourcebookRoute: pillar.route
+	};
+}
+
+function clauseDto(record, { textMode = "summary" } = {}) {
+	const { clause } = record;
+	const metadata = clauseMetadata(record);
+	return {
+		id: clause.id,
+		type: clause.type,
+		status: clause.status,
+		effectiveDate: clause.effectiveDate,
+		title: clause.title,
+		textMode,
+		text: clauseText(clause, textMode),
+		...metadata,
+		...(textMode === "verbose"
+			? {
+					metadata: {
+						id: clause.id,
+						title: clause.title,
+						...metadata
+					}
+				}
+			: {})
 	};
 }
 
@@ -312,8 +349,8 @@ export async function listSourcebookClauses(svc, origin, url) {
 	const records = filterClauses(url);
 	const limit = parseLimit(url);
 	const offset = parseOffset(url);
-	const includeText = url.searchParams.get("includeText") !== "false";
-	const clauses = records.slice(offset, offset + limit).map(record => clauseDto(record, { includeText }));
+	const textMode = parseTextMode(url);
+	const clauses = records.slice(offset, offset + limit).map(record => clauseDto(record, { textMode }));
 
 	return svc.json(
 		{
@@ -326,7 +363,8 @@ export async function listSourcebookClauses(svc, origin, url) {
 				trigger: queryValues(url, "trigger", normaliseEvidence),
 				type: queryValues(url, "type"),
 				status: queryValues(url, "status"),
-				q: normaliseLookup(url.searchParams.get("q"))
+				q: normaliseLookup(url.searchParams.get("q")),
+				includeText: textMode
 			},
 			pagination: {
 				limit,
@@ -351,7 +389,7 @@ export async function readSourcebookClause(svc, origin, clauseId) {
 		{
 			ok: true,
 			sourcebook: sourcebookSummary(),
-			clause: clauseDto(record)
+			clause: clauseDto(record, { textMode: "verbose" })
 		},
 		200,
 		svc.corsHeaders(origin)

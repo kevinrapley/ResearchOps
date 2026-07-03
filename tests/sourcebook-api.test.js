@@ -85,7 +85,7 @@ test('Sourcebook API queries clauses by related route', async () => {
 	const response = await listSourcebookClauses(
 		testService(),
 		'',
-		new URL('https://worker.test/api/sourcebook/clauses?route=/pages/consent/')
+		new URL('https://worker.test/api/sourcebook/clauses?route=/pages/consent/&includeText=summary')
 	);
 	assert.equal(response.status, 200);
 
@@ -96,6 +96,66 @@ test('Sourcebook API queries clauses by related route', async () => {
 		true
 	);
 	assert.equal(body.filters.route[0], '/pages/consent/');
+	assert.equal(body.filters.includeText, 'summary');
+	assert.equal(
+		body.clauses.find((clause) => clause.id === 'REC-ADMN 3.1.1').text,
+		'Participants must receive clear study information and give recorded informed consent before taking part, including consent choices for recording, quotation and future contact.'
+	);
+});
+
+test('Sourcebook API can return clause title text only', async () => {
+	const response = await listSourcebookClauses(
+		testService(),
+		'',
+		new URL('https://worker.test/api/sourcebook/clauses?q=ENVIRO%201.1.2&includeText=title')
+	);
+	assert.equal(response.status, 200);
+
+	const body = await json(response);
+	const clause = body.clauses.find((item) => item.id === 'ENVIRO 1.1.2');
+	assert.equal(body.filters.includeText, 'title');
+	assert.equal(clause.textMode, 'title');
+	assert.equal(clause.text, 'Assess the setting before research starts');
+});
+
+test('Sourcebook API can return full formatted clause text', async () => {
+	const response = await listSourcebookClauses(
+		testService(),
+		'',
+		new URL('https://worker.test/api/sourcebook/clauses?q=ENVIRO%201.1.2&includeText=full')
+	);
+	assert.equal(response.status, 200);
+
+	const body = await json(response);
+	const clause = body.clauses.find((item) => item.id === 'ENVIRO 1.1.2');
+	assert.equal(body.filters.includeText, 'full');
+	assert.equal(clause.textMode, 'full');
+	assert.equal(
+		clause.text,
+		'ENVIRO 1.1.2: Assess the setting before research starts\n\nEvery study must assess whether the physical, remote or field setting supports the method, participant needs, confidentiality, safeguarding and researcher safety before sessions begin.'
+	);
+});
+
+test('Sourcebook API verbose text includes the full clause and metadata block', async () => {
+	const response = await listSourcebookClauses(
+		testService(),
+		'',
+		new URL('https://worker.test/api/sourcebook/clauses?q=ENVIRO%201.1.2&includeText=verbose')
+	);
+	assert.equal(response.status, 200);
+
+	const body = await json(response);
+	const clause = body.clauses.find((item) => item.id === 'ENVIRO 1.1.2');
+	assert.equal(body.filters.includeText, 'verbose');
+	assert.equal(clause.textMode, 'verbose');
+	assert.equal(
+		clause.text,
+		'ENVIRO 1.1.2: Assess the setting before research starts\n\nEvery study must assess whether the physical, remote or field setting supports the method, participant needs, confidentiality, safeguarding and researcher safety before sessions begin.'
+	);
+	assert.equal(clause.metadata.id, 'ENVIRO 1.1.2');
+	assert.equal(clause.metadata.pillar.code, 'ENVIRO');
+	assert.equal(clause.metadata.section.id, 'ENVIRO 1.0.0');
+	assert.equal(clause.metadata.evidence.includes('environment-risk-assessment'), true);
 });
 
 test('Sourcebook API queries clauses by evidence type, trigger and pillar', async () => {

@@ -50,6 +50,8 @@ test("Sourcebook API service supports clause query dimensions", () => {
 		"queryValues(url, \"route\", normaliseRoute)",
 		"queryValues(url, \"evidence\", normaliseEvidence)",
 		"queryValues(url, \"trigger\", normaliseEvidence)",
+		"function parseTextMode",
+		"const TEXT_MODES = new Set([\"summary\", \"title\", \"full\", \"verbose\"])",
 		"function deriveTriggers",
 		"sourcebook-index.json"
 	]) {
