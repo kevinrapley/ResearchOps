@@ -124,6 +124,9 @@ Skipped bundles:
 - Added a bespoke `SourcebookEvidenceLedger` Nunjucks component that renders Sourcebook-required evidence as a GOV.UK table with evidence item, governing clause and status.
 - Added `sourcebookEvidenceLedgerForRoute()` in the GOV.UK Sourcebook data layer to derive ledger rows from mapped clause evidence rather than duplicating evidence requirements in page templates.
 - Surfaced the evidence ledger on consent, team access request and role assignment pages beside the existing Sourcebook context component.
+- Added a bespoke `SourcebookGate` Nunjucks component that renders a Sourcebook decision, primary action and check list before the supporting context and evidence ledger.
+- Added `sourcebookGateForRoute()` in the GOV.UK Sourcebook data layer so the gate derives its status from the same route-specific Sourcebook context and evidence ledger instead of duplicating mapping logic.
+- Surfaced the gate on consent, team access request and role assignment pages with route-specific governance copy and generated CSS/page output.
 
 ## Validation evidence
 
@@ -167,6 +170,13 @@ Skipped bundles:
 - `git diff --check` passed after adding the Sourcebook evidence ledger.
 - `npm run trace:coverage` passed after adding the Sourcebook evidence ledger and confirmed trace coverage for `feature/sourcebook-integration`.
 - `npm run validate` passed after adding the Sourcebook evidence ledger.
+- `npm run build:generated-css` passed after adding the Sourcebook gate.
+- `npm run build:govuk-pages` passed after adding the Sourcebook gate.
+- `node --import ./tests/helpers/generated-govuk-page-source.mjs --test tests/sourcebook-context-route-state.test.js tests/consent-page-route-state.test.js tests/auth-team-access-request-route-state.test.js tests/auth-role-assignment-ui-route-state.test.js` passed after adding the Sourcebook gate: 8 tests, 8 pass.
+- `npm run format:check` passed after adding the Sourcebook gate.
+- `git diff --check` passed after adding the Sourcebook gate.
+- `npm run trace:coverage` passed after adding the Sourcebook gate and confirmed trace coverage for `feature/sourcebook-integration`.
+- `npm run validate` passed after adding the Sourcebook gate.
 
 ## Residual risks
 
@@ -175,3 +185,4 @@ Skipped bundles:
 - Initial contextual surfacing is limited to consent and access-control journeys; other logged-in surfaces can adopt the component through the same route and condition mapping.
 - The North Star evaluator is deterministic and evidence-declaration based; it does not verify uploaded evidence artefacts or replace human governance sign-off.
 - The evidence ledger currently marks evidence as `Needed` unless a page passes declared evidence ids; future workflow integrations can mark rows as present from actual saved artefacts.
+- The Sourcebook gate currently reports readiness from declared evidence ids in the page context; future workflow integrations can connect it to saved evidence artefacts for live blocking or enablement.

@@ -97,6 +97,8 @@ function assertRoleAssignmentPageIsGeneratedFromNunjucks() {
 	assert.match(rendererSource, /route: '\/pages\/team\/role-assignments\/'/);
 	assert.match(rendererSource, /condition: 'permission-model-change'/);
 	assert.match(templateSource, /{% extends "layouts\/researchops\.njk" %}/);
+	assert.match(templateSource, /macros\/sourcebook-gate\.njk/);
+	assert.match(templateSource, /SourcebookGate\(sourcebookGate\)/);
 	assert.match(templateSource, /macros\/sourcebook-context\.njk/);
 	assert.match(templateSource, /SourcebookContext\(sourcebookContext\)/);
 	assert.match(templateSource, /macros\/sourcebook-evidence-ledger\.njk/);
@@ -121,6 +123,10 @@ function assertRoleAssignmentStylesAreGeneratedFromSass() {
 }
 
 function assertSourcebookContextIsShown() {
+	assert.match(pageSource, /class="sourcebook-gate sourcebook-gate--blocked"/);
+	assert.match(pageSource, /Sourcebook gate for role assignment/);
+	assert.match(pageSource, /Evidence needed/);
+	assert.match(pageSource, /Add evidence before continuing/);
 	assert.match(pageSource, /class="sourcebook-context"/);
 	assert.match(pageSource, /Sourcebook context for role assignment/);
 	assert.match(pageSource, /INFRA-PROV 3\.1\.1/);
@@ -134,6 +140,7 @@ function assertSourcebookContextIsShown() {
 	assert.match(pageSource, /Role Permission Model/);
 	assert.match(pageSource, /role-permission-model/);
 	assert.match(pageSource, /Needed/);
+	assert.match(styleSource, /\.sourcebook-gate/);
 	assert.match(styleSource, /\.sourcebook-context/);
 	assert.match(styleSource, /\.sourcebook-evidence-ledger/);
 }

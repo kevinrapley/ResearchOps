@@ -4,6 +4,7 @@
 {% from "govuk/components/details/macro.njk" import govukDetails %}
 {% from "govuk/components/input/macro.njk" import govukInput %}
 {% from "govuk/components/select/macro.njk" import govukSelect %}
+{% from "macros/sourcebook-gate.njk" import SourcebookGate %}
 {% from "macros/sourcebook-context.njk" import SourcebookContext %}
 {% from "macros/sourcebook-evidence-ledger.njk" import SourcebookEvidenceLedger %}
 
@@ -31,6 +32,7 @@
 		</div>
 	</header>
 
+	{{ SourcebookGate(sourcebookGate) }}
 	{{ SourcebookContext(sourcebookContext) }}
 	{{ SourcebookEvidenceLedger(sourcebookEvidenceLedger) }}
 

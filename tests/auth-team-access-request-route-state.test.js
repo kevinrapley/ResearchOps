@@ -98,6 +98,7 @@ for (const source of [template, page]) {
 	includes(source, 'govuk-button-group', 'team access page');
 	includesText(source, 'Send request', 'team access page');
 	includesText(source, 'Cancel and return to your account', 'team access page');
+	includes(source, 'sourcebook-gate', 'team access page');
 	includes(source, 'sourcebook-context', 'team access page');
 	includes(source, 'sourcebook-evidence-ledger', 'team access page');
 	excludes(source, 'team-scoped ResearchOps features', 'team access page');
@@ -106,12 +107,17 @@ for (const source of [template, page]) {
 	excludes(source, 'Assign role', 'team access page');
 }
 
+includes(template, 'macros/sourcebook-gate.njk', 'team access template');
+includes(template, 'SourcebookGate(sourcebookGate)', 'team access template');
 includes(template, 'macros/sourcebook-context.njk', 'team access template');
 includes(template, 'SourcebookContext(sourcebookContext)', 'team access template');
 includes(template, 'macros/sourcebook-evidence-ledger.njk', 'team access template');
 includes(template, 'SourcebookEvidenceLedger(sourcebookEvidenceLedger)', 'team access template');
 includes(template, '/css/account-team-access.css', 'team access template');
 includes(page, '/css/account-team-access.css', 'team access page');
+includesText(page, 'Sourcebook gate for access requests', 'team access page');
+includesText(page, 'Evidence needed', 'team access page');
+includesText(page, 'Add evidence before continuing', 'team access page');
 includesText(page, 'Sourcebook context for access requests', 'team access page');
 includesText(page, 'INFRA-PROV 3.1.1', 'team access page');
 includesText(page, 'Control access by role and research need', 'team access page');
@@ -124,6 +130,7 @@ includesText(page, 'Role Permission Model', 'team access page');
 includes(page, 'role-permission-model', 'team access page');
 assert.match(styleScssSource, /@use ['"]sourcebook-context['"];/);
 includes(styleSource, 'Repo:       /src/styles/account-team-access.scss', 'team access stylesheet');
+includes(styleSource, '.sourcebook-gate', 'team access stylesheet');
 includes(styleSource, '.sourcebook-context', 'team access stylesheet');
 includes(styleSource, '.sourcebook-evidence-ledger', 'team access stylesheet');
 

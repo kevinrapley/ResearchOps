@@ -13,6 +13,7 @@ import { repositoryPageContext, repositoryStaticPages } from '../../src/govuk/da
 import {
 	sourcebookContextForRoute,
 	sourcebookEvidenceLedgerForRoute,
+	sourcebookGateForRoute,
 	sourcebookIndex,
 	sourcebookPillarPages,
 } from '../../src/govuk/data/sourcebook.mjs';
@@ -513,6 +514,13 @@ export const govukPages = [
 			serviceName: 'ResearchOps Demo Suite',
 			activeNavigation: '',
 			navigation: accountNavigation,
+			sourcebookGate: sourcebookGateForRoute({
+				route: '/pages/account/team-access/',
+				condition: 'access-change',
+				title: 'Sourcebook gate for access requests',
+				summary:
+					'Do not widen access until the Sourcebook clause and required access evidence are in place.',
+			}),
 			sourcebookContext: sourcebookContextForRoute({
 				route: '/pages/account/team-access/',
 				condition: 'access-change',
@@ -547,6 +555,13 @@ export const govukPages = [
 			serviceName: 'ResearchOps Demo Suite',
 			activeNavigation: '',
 			navigation: accountNavigation,
+			sourcebookGate: sourcebookGateForRoute({
+				route: '/pages/team/role-assignments/',
+				condition: 'permission-model-change',
+				title: 'Sourcebook gate for role assignment',
+				summary:
+					'Do not assign role permissions until the Sourcebook clause and required access evidence are in place.',
+			}),
 			sourcebookContext: sourcebookContextForRoute({
 				route: '/pages/team/role-assignments/',
 				condition: 'permission-model-change',
@@ -811,6 +826,13 @@ export const govukPages = [
 			serviceName: 'ResearchOps Demo Suite',
 			activeNavigation: 'Projects',
 			navigation: projectNavigation,
+			sourcebookGate: sourcebookGateForRoute({
+				route: '/pages/consent/',
+				condition: 'consent-review',
+				title: 'Sourcebook gate for consent',
+				summary:
+					'Do not treat consent as governed until the Sourcebook clause and required consent evidence are in place.',
+			}),
 			sourcebookContext: sourcebookContextForRoute({
 				route: '/pages/consent/',
 				condition: 'consent-review',

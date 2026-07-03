@@ -3,6 +3,7 @@ import fs from 'node:fs';
 import test from 'node:test';
 
 const macroSource = fs.readFileSync('src/govuk/templates/macros/sourcebook-context.njk', 'utf8');
+const gateMacroSource = fs.readFileSync('src/govuk/templates/macros/sourcebook-gate.njk', 'utf8');
 const ledgerMacroSource = fs.readFileSync(
 	'src/govuk/templates/macros/sourcebook-evidence-ledger.njk',
 	'utf8',
@@ -36,9 +37,11 @@ test('GOV.UK data layer resolves shared route mappings for pages', () => {
 		'export const sourcebookRouteMappings',
 		'export function sourcebookContextForRoute',
 		'export function sourcebookEvidenceLedgerForRoute',
+		'export function sourcebookGateForRoute',
 		'function mappingConditions',
 		'function sourcebookClauseHref',
 		'function sourcebookEvidenceLedgerItem',
+		'function sourcebookGateChecks',
 		'normaliseRoute(mapping.route) === routeValue',
 		'normaliseCondition(item?.id || item) === conditionValue',
 	]) {
@@ -58,6 +61,31 @@ test('SourcebookEvidenceLedger macro renders evidence rows from clauses', () => 
 		'Sourcebook clause',
 	]) {
 		includes(ledgerMacroSource, text, 'SourcebookEvidenceLedger macro');
+	}
+});
+
+test('SourcebookGate macro renders a decision from context and evidence checks', () => {
+	for (const text of [
+		'{% macro SourcebookGate(params) %}',
+		'class="sourcebook-gate sourcebook-gate--{{ params.status }}"',
+		'Sourcebook gate',
+		'params.statusLabel',
+		'params.primaryAction',
+		'params.checks',
+		'check.statusLabel',
+		'check.detail',
+	]) {
+		includes(gateMacroSource, text, 'SourcebookGate macro');
+	}
+
+	for (const text of [
+		'const context = sourcebookContextForRoute({ route, condition, limit });',
+		'const evidenceLedger = sourcebookEvidenceLedgerForRoute({',
+		"status === 'blocked' ? 'Evidence needed'",
+		"status === 'blocked'",
+		"'Add evidence before continuing'",
+	]) {
+		includes(dataSource, text, 'SourcebookGate data helper');
 	}
 });
 

@@ -229,3 +229,93 @@ export function sourcebookEvidenceLedgerForRoute({
 		items,
 	};
 }
+
+function sourcebookGateChecks({ context, ledger }) {
+	const hasContext = context.items.length > 0;
+	const neededEvidence = ledger.items.filter((item) => item.status !== 'present');
+	const hasEvidenceRequirements = ledger.items.length > 0;
+	const evidenceReady = hasEvidenceRequirements && neededEvidence.length === 0;
+
+	return [
+		{
+			id: 'sourcebook-context',
+			label: 'Sourcebook context',
+			status: hasContext ? 'met' : 'unmet',
+			statusLabel: hasContext ? 'Matched' : 'No match',
+			detail: hasContext
+				? `${context.items.length} clause${context.items.length === 1 ? '' : 's'} matched this route.`
+				: 'No Sourcebook clause is mapped to this route and condition.',
+		},
+		{
+			id: 'evidence-readiness',
+			label: 'Evidence readiness',
+			status: evidenceReady ? 'met' : 'unmet',
+			statusLabel: evidenceReady ? 'Ready' : 'Evidence needed',
+			detail: hasEvidenceRequirements
+				? `${neededEvidence.length} evidence item${neededEvidence.length === 1 ? '' : 's'} needed.`
+				: 'No Sourcebook evidence requirements are mapped to this route and condition.',
+		},
+		{
+			id: 'governance-action',
+			label: 'Governance action',
+			status: hasContext && evidenceReady ? 'met' : 'unmet',
+			statusLabel: hasContext && evidenceReady ? 'Proceed with controls' : 'Pause for evidence',
+			detail:
+				hasContext && evidenceReady
+					? 'The mapped Sourcebook clause and required evidence are present.'
+					: 'Add the required evidence before treating this workflow as Sourcebook-ready.',
+		},
+	];
+}
+
+export function sourcebookGateForRoute({
+	route,
+	condition,
+	title = 'Sourcebook gate',
+	summary = 'Checks whether this task has the Sourcebook context and evidence needed before it proceeds.',
+	providedEvidence = [],
+	limit = 3,
+} = {}) {
+	const context = sourcebookContextForRoute({ route, condition, limit });
+	const evidenceLedger = sourcebookEvidenceLedgerForRoute({
+		route,
+		condition,
+		providedEvidence,
+		limit,
+	});
+	const checks = sourcebookGateChecks({ context, ledger: evidenceLedger });
+	const hasContext = context.items.length > 0;
+	const evidenceReady =
+		evidenceLedger.items.length > 0 &&
+		evidenceLedger.items.every((item) => item.status === 'present');
+	const status = !hasContext ? 'not-applicable' : evidenceReady ? 'ready' : 'blocked';
+
+	return {
+		title,
+		summary,
+		route: context.route,
+		condition: context.condition,
+		status,
+		statusLabel:
+			status === 'ready'
+				? 'Ready to proceed'
+				: status === 'blocked'
+					? 'Evidence needed'
+					: 'No gate required',
+		decision:
+			status === 'ready'
+				? 'proceed-with-controls'
+				: status === 'blocked'
+					? 'pause-for-evidence'
+					: 'check-sourcebook-scope',
+		primaryAction:
+			status === 'ready'
+				? 'Proceed with controls'
+				: status === 'blocked'
+					? 'Add evidence before continuing'
+					: 'Check Sourcebook scope',
+		checks,
+		context,
+		evidenceLedger,
+	};
+}
