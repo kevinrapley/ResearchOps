@@ -19,13 +19,13 @@ function includes(source, text, label) {
 test('SourcebookContext macro renders clause context from typed items', () => {
 	for (const text of [
 		'{% macro SourcebookContext(params) %}',
-		'class="sourcebook-context"',
+		'class="sourcebook-context {{ params.classes | default',
 		'aria-labelledby="{{ params.id | default',
-		'Sourcebook',
+		"params.caption | default('Sourcebook')",
 		'item.typeNotation',
 		'item.typeLabel',
 		'item.href',
-		'Applies when:',
+		"params.conditionLabel | default('Applies when:')",
 	]) {
 		includes(macroSource, text, 'SourcebookContext macro');
 	}
@@ -52,8 +52,10 @@ test('GOV.UK data layer resolves shared route mappings for pages', () => {
 test('SourcebookEvidenceLedger macro renders evidence rows from clauses', () => {
 	for (const text of [
 		'{% macro SourcebookEvidenceLedger(params) %}',
-		'class="sourcebook-evidence-ledger"',
-		'Evidence ledger',
+		'class="sourcebook-evidence-ledger {{ params.classes | default',
+		"params.caption | default('Evidence ledger')",
+		'data-sourcebook-evidence-id',
+		'item.detail',
 		'item.statusLabel',
 		'item.label',
 		'item.id',
@@ -67,8 +69,10 @@ test('SourcebookEvidenceLedger macro renders evidence rows from clauses', () => 
 test('SourcebookGate macro renders a decision from context and evidence checks', () => {
 	for (const text of [
 		'{% macro SourcebookGate(params) %}',
-		'class="sourcebook-gate sourcebook-gate--{{ params.status }}"',
-		'Sourcebook gate',
+		'class="sourcebook-gate sourcebook-gate--{{ params.status }} {{ params.classes | default',
+		"params.caption | default('Sourcebook gate')",
+		'data-sourcebook-gate',
+		'data-sourcebook-check',
 		'params.statusLabel',
 		'params.primaryAction',
 		'params.checks',
@@ -95,6 +99,7 @@ test('API and Nunjucks use the same route-to-clause mapping source', () => {
 
 	for (const expectedMapping of [
 		['/pages/consent/', 'REC-ADMN 3.1.1', 'consent-review'],
+		['/pages/study/participant-consent/', 'REC-ADMN 3.1.1', 'participant-consent-recording'],
 		['/pages/account/team-access/', 'INFRA-PROV 3.1.1', 'access-change'],
 		['/pages/team/role-assignments/', 'INFRA-PROV 3.1.1', 'permission-model-change'],
 	]) {

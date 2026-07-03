@@ -1,8 +1,8 @@
 {% macro SourcebookEvidenceLedger(params) %}
 	{% if params.items is defined and params.items.length %}
-		<section class="sourcebook-evidence-ledger" aria-labelledby="{{ params.id | default('sourcebook-evidence-ledger-title') }}">
+		<section class="sourcebook-evidence-ledger {{ params.classes | default('') }}" aria-labelledby="{{ params.id | default('sourcebook-evidence-ledger-title') }}" id="{{ params.sectionId | default('sourcebook-evidence-ledger') }}">
 			<div class="sourcebook-evidence-ledger__header">
-				<p class="govuk-caption-m sourcebook-evidence-ledger__caption">Evidence ledger</p>
+				<p class="govuk-caption-m sourcebook-evidence-ledger__caption">{{ params.caption | default('Evidence ledger') }}</p>
 				<h2 class="govuk-heading-m sourcebook-evidence-ledger__title" id="{{ params.id | default('sourcebook-evidence-ledger-title') }}">{{ params.title }}</h2>
 				<p class="govuk-body sourcebook-evidence-ledger__summary">{{ params.summary }}</p>
 			</div>
@@ -17,10 +17,13 @@
 				</thead>
 				<tbody class="govuk-table__body">
 					{% for item in params.items %}
-						<tr class="govuk-table__row sourcebook-evidence-ledger__row sourcebook-evidence-ledger__row--{{ item.status }}">
+						<tr class="govuk-table__row sourcebook-evidence-ledger__row sourcebook-evidence-ledger__row--{{ item.status }}" data-sourcebook-evidence-id="{{ item.id }}">
 							<th scope="row" class="govuk-table__header sourcebook-evidence-ledger__evidence">
 								<span class="sourcebook-evidence-ledger__evidence-label">{{ item.label }}</span>
 								<span class="sourcebook-evidence-ledger__evidence-id">{{ item.id }}</span>
+								{% if item.detail %}
+									<span class="sourcebook-evidence-ledger__evidence-detail">{{ item.detail }}</span>
+								{% endif %}
 							</th>
 							<td class="govuk-table__cell">
 								<ul class="govuk-list sourcebook-evidence-ledger__clauses">

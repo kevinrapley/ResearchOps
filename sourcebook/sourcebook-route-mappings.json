@@ -11,6 +11,17 @@
 		"strength": "required"
 	},
 	{
+		"id": "map_study_participant_consent",
+		"route": "/pages/study/participant-consent/",
+		"clauseId": "REC-ADMN 3.1.1",
+		"condition": {
+			"id": "participant-consent-recording",
+			"label": "Participant consent recording",
+			"description": "Surface when participant consent is recorded, reviewed or withdrawn before research participation."
+		},
+		"strength": "required"
+	},
+	{
 		"id": "map_session_reminders",
 		"route": "/pages/sessions/",
 		"clauseId": "REC-ADMN 5.1.2",

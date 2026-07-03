@@ -1,8 +1,8 @@
 {% macro SourcebookContext(params) %}
 	{% if params.items is defined and params.items.length %}
-		<aside class="sourcebook-context" aria-labelledby="{{ params.id | default('sourcebook-context-title') }}">
+		<aside class="sourcebook-context {{ params.classes | default('') }}" aria-labelledby="{{ params.id | default('sourcebook-context-title') }}">
 			<div class="sourcebook-context__header">
-				<p class="govuk-caption-m sourcebook-context__caption">Sourcebook</p>
+				<p class="govuk-caption-m sourcebook-context__caption">{{ params.caption | default('Sourcebook') }}</p>
 				<h2 class="govuk-heading-m sourcebook-context__title" id="{{ params.id | default('sourcebook-context-title') }}">{{ params.title }}</h2>
 				<p class="govuk-body sourcebook-context__summary">{{ params.summary }}</p>
 			</div>
@@ -19,7 +19,7 @@
 								<p class="govuk-body-s sourcebook-context__text">{{ item.text }}</p>
 								{% if item.conditions is defined and item.conditions.length %}
 									<p class="govuk-body-s sourcebook-context__condition">
-										<strong>Applies when:</strong>
+										<strong>{{ params.conditionLabel | default('Applies when:') }}</strong>
 										{% for condition in item.conditions %}
 											{{ condition.label }}{% if not loop.last %}, {% endif %}
 										{% endfor %}

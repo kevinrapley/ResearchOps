@@ -686,6 +686,50 @@ export const govukPages = [
 			serviceName: 'ResearchOps Demo Suite',
 			activeNavigation: 'Projects',
 			navigation: projectNavigation,
+			sourcebookContext: sourcebookContextForRoute({
+				route: '/pages/study/participant-consent/',
+				condition: 'participant-consent-recording',
+				title: 'Why this page is governed',
+				summary:
+					'Before marking a participant ready, check that informed consent has been recorded against the current consent form.',
+				caption: 'Sourcebook',
+				conditionLabel: 'Relevant to:',
+			}),
+			sourcebookMobileContext: sourcebookContextForRoute({
+				route: '/pages/study/participant-consent/',
+				condition: 'participant-consent-recording',
+				title: 'Why this page is governed',
+				summary:
+					'Before marking a participant ready, check that informed consent has been recorded against the current consent form.',
+				id: 'sourcebook-context-mobile-title',
+				classes: 'sourcebook-context--mobile',
+				caption: 'Sourcebook',
+				conditionLabel: 'Relevant to:',
+			}),
+			sourcebookEvidenceLedger: sourcebookEvidenceLedgerForRoute({
+				route: '/pages/study/participant-consent/',
+				condition: 'participant-consent-recording',
+				title: 'Consent evidence',
+				summary:
+					'Check the evidence held for the selected participant before treating them as ready for research.',
+				caption: 'Evidence',
+				providedEvidence: ['consent-form'],
+			}),
+			sourcebookGate: sourcebookGateForRoute({
+				route: '/pages/study/participant-consent/',
+				condition: 'participant-consent-recording',
+				title: 'Consent assurance requirements',
+				summary:
+					'A participant is ready only when a published consent form version is selected and all required consent statements are recorded.',
+				caption: 'Readiness check',
+				classes: 'sourcebook-gate--attention',
+				blockedStatusLabel: 'Consent evidence incomplete',
+				blockedPrimaryAction:
+					'Complete required consent before treating this participant as ready.',
+				readyStatusLabel: 'Consent evidence complete',
+				readyPrimaryAction: 'Participant can be treated as ready for research.',
+				providedEvidence: ['consent-form'],
+			}),
 		},
 	},
 	{

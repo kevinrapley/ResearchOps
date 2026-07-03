@@ -149,6 +149,10 @@ function sourcebookEvidenceLedgerItem({ evidenceId, clause, providedEvidence }) 
 export function sourcebookContextForRoute({
 	route,
 	condition,
+	id,
+	classes = '',
+	caption = 'Sourcebook',
+	conditionLabel = 'Applies when:',
 	title = 'Sourcebook context',
 	summary = 'Relevant Sourcebook clauses for this task.',
 	limit = 3,
@@ -174,6 +178,10 @@ export function sourcebookContextForRoute({
 		.slice(0, limit);
 
 	return {
+		id,
+		classes,
+		caption,
+		conditionLabel,
 		title,
 		summary,
 		route: routeValue,
@@ -185,6 +193,10 @@ export function sourcebookContextForRoute({
 export function sourcebookEvidenceLedgerForRoute({
 	route,
 	condition,
+	id,
+	sectionId,
+	classes = '',
+	caption = 'Evidence ledger',
 	title = 'Sourcebook evidence ledger',
 	summary = 'Evidence required by Sourcebook clauses for this task.',
 	providedEvidence = [],
@@ -221,6 +233,10 @@ export function sourcebookEvidenceLedgerForRoute({
 
 	const items = [...evidenceById.values()];
 	return {
+		id,
+		sectionId,
+		classes,
+		caption,
 		title,
 		summary,
 		route: context.route,
@@ -271,9 +287,18 @@ function sourcebookGateChecks({ context, ledger }) {
 export function sourcebookGateForRoute({
 	route,
 	condition,
+	id,
+	classes = '',
+	caption = 'Sourcebook gate',
 	title = 'Sourcebook gate',
 	summary = 'Checks whether this task has the Sourcebook context and evidence needed before it proceeds.',
 	providedEvidence = [],
+	readyStatusLabel = 'Ready to proceed',
+	blockedStatusLabel = 'Evidence needed',
+	notApplicableStatusLabel = 'No gate required',
+	readyPrimaryAction = 'Proceed with controls',
+	blockedPrimaryAction = 'Add evidence before continuing',
+	notApplicablePrimaryAction = 'Check Sourcebook scope',
 	limit = 3,
 } = {}) {
 	const context = sourcebookContextForRoute({ route, condition, limit });
@@ -291,6 +316,9 @@ export function sourcebookGateForRoute({
 	const status = !hasContext ? 'not-applicable' : evidenceReady ? 'ready' : 'blocked';
 
 	return {
+		id,
+		classes,
+		caption,
 		title,
 		summary,
 		route: context.route,
@@ -298,10 +326,10 @@ export function sourcebookGateForRoute({
 		status,
 		statusLabel:
 			status === 'ready'
-				? 'Ready to proceed'
+				? readyStatusLabel
 				: status === 'blocked'
-					? 'Evidence needed'
-					: 'No gate required',
+					? blockedStatusLabel
+					: notApplicableStatusLabel,
 		decision:
 			status === 'ready'
 				? 'proceed-with-controls'
@@ -310,10 +338,10 @@ export function sourcebookGateForRoute({
 					: 'check-sourcebook-scope',
 		primaryAction:
 			status === 'ready'
-				? 'Proceed with controls'
+				? readyPrimaryAction
 				: status === 'blocked'
-					? 'Add evidence before continuing'
-					: 'Check Sourcebook scope',
+					? blockedPrimaryAction
+					: notApplicablePrimaryAction,
 		checks,
 		context,
 		evidenceLedger,

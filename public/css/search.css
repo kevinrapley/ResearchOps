@@ -21,6 +21,10 @@
 	border-left-color: #d4351c;
 	}
 
+.sourcebook-gate--attention {
+	border-left-color: #1d70b8;
+	}
+
 .sourcebook-gate--ready {
 	border-left-color: #00703c;
 	}
@@ -38,16 +42,24 @@
 	margin-bottom: 15px;
 	}
 
-.sourcebook-gate__tag--blocked, .sourcebook-gate__check-tag--unmet {
-	background: #d4351c;
+.sourcebook-gate .govuk-tag.sourcebook-gate__tag--blocked, .sourcebook-gate .govuk-tag.sourcebook-gate__tag--attention, .sourcebook-gate .govuk-tag.sourcebook-gate__check-tag--unmet {
+	background: #1d70b8;
+	color: #ffffff;
 	}
 
-.sourcebook-gate__tag--ready, .sourcebook-gate__check-tag--met {
+.sourcebook-gate .sourcebook-gate__check--governance-action .govuk-tag.sourcebook-gate__check-tag--unmet {
+	background: #1d70b8;
+	color: #ffffff;
+	}
+
+.sourcebook-gate .govuk-tag.sourcebook-gate__tag--ready, .sourcebook-gate .govuk-tag.sourcebook-gate__check-tag--met {
 	background: #00703c;
+	color: #ffffff;
 	}
 
-.sourcebook-gate__tag--not-applicable {
+.sourcebook-gate .govuk-tag.sourcebook-gate__tag--not-applicable {
 	background: #505a5f;
+	color: #ffffff;
 	}
 
 .sourcebook-gate__checks {
@@ -202,6 +214,15 @@
 	line-height: 1.25;
 	}
 
+.sourcebook-evidence-ledger__evidence-detail {
+	display: block;
+	margin-top: 5px;
+	color: #505a5f;
+	font-size: 16px;
+	font-weight: 400;
+	line-height: 1.25;
+	}
+
 .sourcebook-evidence-ledger__clauses {
 	margin-bottom: 0;
 	}
@@ -218,13 +239,61 @@
 	white-space: nowrap;
 	}
 
-.sourcebook-evidence-ledger__tag--needed {
-	background: #b58840;
-	color: #0b0c0c;
+.sourcebook-evidence-ledger .govuk-tag.sourcebook-evidence-ledger__tag--needed {
+	background: #1d70b8;
+	color: #ffffff;
 	}
 
-.sourcebook-evidence-ledger__tag--present {
+.sourcebook-evidence-ledger .govuk-tag.sourcebook-evidence-ledger__tag--present {
 	background: #00703c;
+	color: #ffffff;
+	}
+
+@media (max-width: 760px) {
+	.sourcebook-gate__check {
+		display: block;
+		}
+	.sourcebook-gate__check-label, .sourcebook-gate__check-detail {
+		display: block;
+		}
+	.sourcebook-gate__check-tag {
+		justify-self: start;
+		margin: 5px 0;
+		white-space: normal;
+		}
+	.sourcebook-evidence-ledger__table, .sourcebook-evidence-ledger__table .govuk-table__body, .sourcebook-evidence-ledger__table .govuk-table__row, .sourcebook-evidence-ledger__table .govuk-table__header, .sourcebook-evidence-ledger__table .govuk-table__cell {
+		display: block;
+		box-sizing: border-box;
+		width: 100%;
+		}
+	.sourcebook-evidence-ledger__table .govuk-table__head {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		clip: rect(0 0 0 0);
+		clip-path: inset(50%);
+		overflow: hidden;
+		white-space: nowrap;
+		}
+	.sourcebook-evidence-ledger__table .govuk-table__row {
+		border-top: 1px solid #b1b4b6;
+		padding: 12px 0;
+		}
+	.sourcebook-evidence-ledger__table .govuk-table__header, .sourcebook-evidence-ledger__table .govuk-table__cell {
+		border-bottom: 0;
+		padding: 0 0 10px;
+		}
+	.sourcebook-evidence-ledger__table .govuk-table__cell:nth-of-type(1)::before, .sourcebook-evidence-ledger__table .govuk-table__cell:nth-of-type(2)::before {
+		display: block;
+		margin-bottom: 5px;
+		font-weight: 700;
+		}
+	.sourcebook-evidence-ledger__table .govuk-table__cell:nth-of-type(1)::before {
+		content: "Sourcebook clause";
+		}
+	.sourcebook-evidence-ledger__table .govuk-table__cell:nth-of-type(2)::before {
+		content: "Status";
+		}
 	}
 
 .researchops-utility-page [hidden] {

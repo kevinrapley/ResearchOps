@@ -74,8 +74,7 @@
 						<p id="study-context" class="govuk-caption-m">Study</p>
 						<h1 class="govuk-heading-l">Manage participant consent</h1>
 						<p class="govuk-body participant-consent-context govuk-!-width-two-thirds">
-							Record, review or withdraw participant consent for this study. Consent is recorded against a specific
-							published consent form version.
+							Record, review or withdraw consent for this study. Consent is recorded against a published form version.
 						</p>
 					</div>
 				</header>
@@ -130,178 +129,431 @@
 				</section>
 
 				<section id="consent-workspace" class="participant-consent-workspace" hidden>
-					<section class="participant-consent-panel" aria-labelledby="consent-summary-title">
-						<h2 id="consent-summary-title" class="govuk-heading-m">Consent coverage</h2>
+					<div class="participant-consent-workspace__main">
+						<section class="participant-consent-panel" aria-labelledby="consent-summary-title">
+							<h2 id="consent-summary-title" class="govuk-heading-m">Consent summary</h2>
 
-						<dl class="govuk-summary-list participant-consent-summary">
-							<div class="govuk-summary-list__row">
-								<dt class="govuk-summary-list__key">Form version</dt>
-								<dd class="govuk-summary-list__value">
-									<span id="summary-published-form">-</span>
-								</dd>
-							</div>
+							<dl class="govuk-summary-list participant-consent-summary">
+								<div class="govuk-summary-list__row">
+									<dt class="govuk-summary-list__key">Form version</dt>
+									<dd class="govuk-summary-list__value">
+										<span id="summary-published-form">-</span>
+									</dd>
+								</div>
 
-							<div class="govuk-summary-list__row">
-								<dt class="govuk-summary-list__key">Participants</dt>
-								<dd class="govuk-summary-list__value">
-									<span id="summary-participants">-</span>
-								</dd>
-							</div>
+								<div class="govuk-summary-list__row">
+									<dt class="govuk-summary-list__key">Participants</dt>
+									<dd class="govuk-summary-list__value">
+										<span id="summary-participants">-</span>
+									</dd>
+								</div>
 
-							<div class="govuk-summary-list__row">
-								<dt class="govuk-summary-list__key">Ready</dt>
-								<dd class="govuk-summary-list__value">
-									<span id="summary-ready">-</span>
-								</dd>
-							</div>
+								<div class="govuk-summary-list__row">
+									<dt class="govuk-summary-list__key">Ready for session</dt>
+									<dd class="govuk-summary-list__value">
+										<span id="summary-ready">-</span>
+									</dd>
+								</div>
 
-							<div class="govuk-summary-list__row">
-								<dt class="govuk-summary-list__key">Needs action</dt>
-								<dd class="govuk-summary-list__value">
-									<span id="summary-action-needed">-</span>
-								</dd>
-							</div>
-						</dl>
-					</section>
+								<div class="govuk-summary-list__row">
+									<dt class="govuk-summary-list__key">Consent not complete</dt>
+									<dd class="govuk-summary-list__value">
+										<span id="summary-action-needed">-</span>
+									</dd>
+								</div>
+							</dl>
+						</section>
 
-					<section class="participant-consent-panel" aria-labelledby="participants-consent-title">
-						<div class="participant-consent-panel__header">
-							<div>
-								<h2 id="participants-consent-title" class="govuk-heading-m">Participants</h2>
-								<p class="govuk-body">
-									Select a participant to record or review consent. Status is shown in text and does not rely on colour.
-								</p>
-							</div>
+						<div class="participant-consent-workspace__mobile-context">
+							<aside
+								class="sourcebook-context sourcebook-context--mobile"
+								aria-labelledby="sourcebook-context-mobile-title"
+							>
+								<div class="sourcebook-context__header">
+									<p class="govuk-caption-m sourcebook-context__caption">Sourcebook</p>
+									<h2 class="govuk-heading-m sourcebook-context__title" id="sourcebook-context-mobile-title">
+										Why this page is governed
+									</h2>
+									<p class="govuk-body sourcebook-context__summary">
+										Before marking a participant ready, check that informed consent has been recorded against the
+										current consent form.
+									</p>
+								</div>
+								<ol class="govuk-list sourcebook-context__list">
+									<li class="sourcebook-context__item sourcebook-context__item--rule">
+										<div class="sourcebook-context__clause">
+											<span class="sourcebook-context__badge sourcebook-context__badge--rule" aria-label="Rule">R</span>
+											<div>
+												<p class="sourcebook-context__meta">REC-ADMN 3.1.1 · Recruitment and administration</p>
+												<h3 class="govuk-heading-s sourcebook-context__clause-title">
+													<a class="govuk-link" href="/pages/sourcebook/recruitment-and-administration/#rec-admn-3-1-1">
+														Record informed consent before research participation
+													</a>
+												</h3>
+												<p class="govuk-body-s sourcebook-context__text">
+													Participants must receive clear study information and give recorded informed consent before
+													taking part, including consent choices for recording, quotation and future contact.
+												</p>
+
+												<p class="govuk-body-s sourcebook-context__condition">
+													<strong>Relevant to:</strong>
+
+													Participant consent recording
+												</p>
+											</div>
+										</div>
+									</li>
+								</ol>
+							</aside>
 						</div>
 
-						<div class="table-wrap">
-							<table class="govuk-table participant-consent-table" aria-label="Participant consent">
+						<section class="participant-consent-panel" aria-labelledby="participants-consent-title">
+							<div class="participant-consent-panel__header">
+								<div>
+									<h2 id="participants-consent-title" class="govuk-heading-m">Participants</h2>
+									<p class="govuk-body">
+										Select a participant to record or review consent. Status is shown in text and does not rely on
+										colour.
+									</p>
+								</div>
+							</div>
+
+							<div class="table-wrap">
+								<table class="govuk-table participant-consent-table" aria-label="Participant consent">
+									<thead class="govuk-table__head">
+										<tr class="govuk-table__row">
+											<th scope="col" class="govuk-table__header">Participant</th>
+											<th scope="col" class="govuk-table__header">Consent status</th>
+											<th scope="col" class="govuk-table__header">Permissions</th>
+											<th scope="col" class="govuk-table__header">Recorded</th>
+											<th scope="col" class="govuk-table__header">
+												<span class="govuk-visually-hidden">Actions</span>
+											</th>
+										</tr>
+									</thead>
+									<tbody id="participant-consent-tbody" class="govuk-table__body">
+										<tr class="govuk-table__row">
+											<td class="govuk-table__cell" colspan="5">Loading participants.</td>
+										</tr>
+									</tbody>
+								</table>
+							</div>
+						</section>
+
+						<section
+							id="consent-record-panel"
+							class="participant-consent-panel"
+							aria-labelledby="record-consent-title"
+							hidden
+						>
+							<h2 id="record-consent-title" class="govuk-heading-m">Record participant consent</h2>
+							<p id="record-consent-hint" class="govuk-body">Choose a participant to record or review consent.</p>
+
+							<section
+								class="sourcebook-gate sourcebook-gate--blocked sourcebook-gate--attention"
+								aria-labelledby="sourcebook-gate-title"
+								data-sourcebook-gate
+							>
+								<div class="sourcebook-gate__header">
+									<p class="govuk-caption-m sourcebook-gate__caption">Readiness check</p>
+									<h2 class="govuk-heading-m sourcebook-gate__title" id="sourcebook-gate-title">
+										Consent assurance requirements
+									</h2>
+									<strong
+										class="govuk-tag sourcebook-gate__tag sourcebook-gate__tag--blocked"
+										data-sourcebook-gate-status
+									>
+										Consent evidence incomplete
+									</strong>
+									<p class="govuk-body sourcebook-gate__summary" data-sourcebook-gate-summary>
+										A participant is ready only when a published consent form version is selected and all required
+										consent statements are recorded.
+									</p>
+									<p class="govuk-body sourcebook-gate__action">
+										<strong data-sourcebook-gate-action>
+											Complete required consent before treating this participant as ready.
+										</strong>
+									</p>
+								</div>
+								<ul class="govuk-list sourcebook-gate__checks">
+									<li
+										class="sourcebook-gate__check sourcebook-gate__check--met sourcebook-gate__check--sourcebook-context"
+										data-sourcebook-check="sourcebook-context"
+									>
+										<span class="sourcebook-gate__check-label">Sourcebook context</span>
+										<strong
+											class="govuk-tag sourcebook-gate__check-tag sourcebook-gate__check-tag--met"
+											data-sourcebook-check-status
+										>
+											Matched
+										</strong>
+										<span class="sourcebook-gate__check-detail" data-sourcebook-check-detail>
+											1 clause matched this route.
+										</span>
+									</li>
+
+									<li
+										class="sourcebook-gate__check sourcebook-gate__check--unmet sourcebook-gate__check--evidence-readiness"
+										data-sourcebook-check="evidence-readiness"
+									>
+										<span class="sourcebook-gate__check-label">Evidence readiness</span>
+										<strong
+											class="govuk-tag sourcebook-gate__check-tag sourcebook-gate__check-tag--unmet"
+											data-sourcebook-check-status
+										>
+											Evidence needed
+										</strong>
+										<span class="sourcebook-gate__check-detail" data-sourcebook-check-detail>
+											1 evidence item needed.
+										</span>
+									</li>
+
+									<li
+										class="sourcebook-gate__check sourcebook-gate__check--unmet sourcebook-gate__check--governance-action"
+										data-sourcebook-check="governance-action"
+									>
+										<span class="sourcebook-gate__check-label">Governance action</span>
+										<strong
+											class="govuk-tag sourcebook-gate__check-tag sourcebook-gate__check-tag--unmet"
+											data-sourcebook-check-status
+										>
+											Pause for evidence
+										</strong>
+										<span class="sourcebook-gate__check-detail" data-sourcebook-check-detail>
+											Add the required evidence before treating this workflow as Sourcebook-ready.
+										</span>
+									</li>
+								</ul>
+							</section>
+
+							<form id="participant-consent-form" novalidate>
+								<input id="participant-id" type="hidden" />
+								<input id="consent-record-id" type="hidden" />
+
+								<div class="govuk-form-group">
+									<label class="govuk-label" for="consent-form-select">Consent form version</label>
+
+									<div id="consent-form-select-hint" class="govuk-hint">
+										Use the published consent form shown, sent or read to the participant.
+									</div>
+
+									<select
+										class="govuk-select"
+										id="consent-form-select"
+										name="consentFormId"
+										aria-describedby="consent-form-select-hint"
+									>
+										<option value="">Loading published consent forms</option>
+									</select>
+								</div>
+
+								<fieldset class="govuk-fieldset participant-consent-items" aria-describedby="consent-items-hint">
+									<legend class="govuk-fieldset__legend govuk-fieldset__legend--m">Consent statements</legend>
+									<div id="consent-items-hint" class="govuk-hint">
+										Required statements must be agreed before a participant is ready for a session. Optional declined
+										permissions should still be visible to the research team.
+									</div>
+									<div id="consent-items-list"></div>
+								</fieldset>
+
+								<div class="govuk-form-group">
+									<label class="govuk-label" for="capture-method">Capture method</label>
+
+									<select class="govuk-select" id="capture-method" name="captureMethod">
+										<option value="">Select a capture method</option>
+
+										<option value="Verbal">Verbal</option>
+
+										<option value="Signed form">Signed form</option>
+
+										<option value="Email">Email</option>
+
+										<option value="Imported">Imported</option>
+									</select>
+								</div>
+
+								<div class="govuk-form-group">
+									<label class="govuk-label" for="recorded-by">Recorded by</label>
+
+									<input class="govuk-input" id="recorded-by" name="recordedBy" type="text" autocomplete="name" />
+								</div>
+
+								<details class="govuk-details participant-consent-withdrawal">
+									<summary class="govuk-details__summary">
+										<span class="govuk-details__summary-text">Record withdrawal or do not proceed</span>
+									</summary>
+									<div class="govuk-details__text">
+										<div class="govuk-form-group">
+											<div class="govuk-checkboxes" data-module="govuk-checkboxes">
+												<div class="govuk-checkboxes__item">
+													<input
+														class="govuk-checkboxes__input"
+														id="consent-withdrawn"
+														name="consentWithdrawn"
+														type="checkbox"
+														value="yes"
+														id="consent-withdrawn"
+													/>
+													<label class="govuk-label govuk-checkboxes__label" for="consent-withdrawn">
+														Consent has been withdrawn or the session should not proceed
+													</label>
+												</div>
+											</div>
+										</div>
+
+										<div class="govuk-form-group">
+											<label class="govuk-label" for="withdrawal-reason">Reason or note</label>
+
+											<textarea
+												class="govuk-textarea"
+												id="withdrawal-reason"
+												name="withdrawalReason"
+												rows="3"
+											></textarea>
+										</div>
+									</div>
+								</details>
+
+								<div class="govuk-button-group participant-consent-form__actions">
+									<button type="submit" class="govuk-button" data-module="govuk-button" id="save-participant-consent">
+										Save consent response
+									</button>
+
+									<button
+										type="button"
+										class="govuk-button govuk-button--secondary"
+										data-module="govuk-button"
+										id="cancel-participant-consent"
+									>
+										Cancel
+									</button>
+								</div>
+							</form>
+						</section>
+
+						<section
+							class="sourcebook-evidence-ledger"
+							aria-labelledby="sourcebook-evidence-ledger-title"
+							id="sourcebook-evidence-ledger"
+						>
+							<div class="sourcebook-evidence-ledger__header">
+								<p class="govuk-caption-m sourcebook-evidence-ledger__caption">Evidence</p>
+								<h2 class="govuk-heading-m sourcebook-evidence-ledger__title" id="sourcebook-evidence-ledger-title">
+									Consent evidence
+								</h2>
+								<p class="govuk-body sourcebook-evidence-ledger__summary">
+									Check the evidence held for the selected participant before treating them as ready for research.
+								</p>
+							</div>
+							<table class="govuk-table sourcebook-evidence-ledger__table">
+								<caption class="govuk-table__caption govuk-visually-hidden">Consent evidence</caption>
 								<thead class="govuk-table__head">
 									<tr class="govuk-table__row">
-										<th scope="col" class="govuk-table__header">Participant</th>
-										<th scope="col" class="govuk-table__header">Consent status</th>
-										<th scope="col" class="govuk-table__header">Permissions</th>
-										<th scope="col" class="govuk-table__header">Recorded</th>
-										<th scope="col" class="govuk-table__header"><span class="govuk-visually-hidden">Actions</span></th>
+										<th scope="col" class="govuk-table__header">Evidence</th>
+										<th scope="col" class="govuk-table__header">Sourcebook clause</th>
+										<th scope="col" class="govuk-table__header">Status</th>
 									</tr>
 								</thead>
-								<tbody id="participant-consent-tbody" class="govuk-table__body">
-									<tr class="govuk-table__row">
-										<td class="govuk-table__cell" colspan="5">Loading participants.</td>
+								<tbody class="govuk-table__body">
+									<tr
+										class="govuk-table__row sourcebook-evidence-ledger__row sourcebook-evidence-ledger__row--present"
+										data-sourcebook-evidence-id="consent-form"
+									>
+										<th scope="row" class="govuk-table__header sourcebook-evidence-ledger__evidence">
+											<span class="sourcebook-evidence-ledger__evidence-label">Consent Form</span>
+											<span class="sourcebook-evidence-ledger__evidence-id">consent-form</span>
+										</th>
+										<td class="govuk-table__cell">
+											<ul class="govuk-list sourcebook-evidence-ledger__clauses">
+												<li>
+													<a class="govuk-link" href="/pages/sourcebook/recruitment-and-administration/#rec-admn-3-1-1">
+														REC-ADMN 3.1.1
+													</a>
+													<span class="sourcebook-evidence-ledger__clause-title">
+														Record informed consent before research participation
+													</span>
+												</li>
+											</ul>
+										</td>
+										<td class="govuk-table__cell">
+											<strong
+												class="govuk-tag sourcebook-evidence-ledger__tag sourcebook-evidence-ledger__tag--present"
+											>
+												Present
+											</strong>
+										</td>
+									</tr>
+
+									<tr
+										class="govuk-table__row sourcebook-evidence-ledger__row sourcebook-evidence-ledger__row--needed"
+										data-sourcebook-evidence-id="consent-log"
+									>
+										<th scope="row" class="govuk-table__header sourcebook-evidence-ledger__evidence">
+											<span class="sourcebook-evidence-ledger__evidence-label">Consent Log</span>
+											<span class="sourcebook-evidence-ledger__evidence-id">consent-log</span>
+										</th>
+										<td class="govuk-table__cell">
+											<ul class="govuk-list sourcebook-evidence-ledger__clauses">
+												<li>
+													<a class="govuk-link" href="/pages/sourcebook/recruitment-and-administration/#rec-admn-3-1-1">
+														REC-ADMN 3.1.1
+													</a>
+													<span class="sourcebook-evidence-ledger__clause-title">
+														Record informed consent before research participation
+													</span>
+												</li>
+											</ul>
+										</td>
+										<td class="govuk-table__cell">
+											<strong class="govuk-tag sourcebook-evidence-ledger__tag sourcebook-evidence-ledger__tag--needed">
+												Needed
+											</strong>
+										</td>
 									</tr>
 								</tbody>
 							</table>
-						</div>
-					</section>
+						</section>
+					</div>
 
-					<section
-						id="consent-record-panel"
-						class="participant-consent-panel"
-						aria-labelledby="record-consent-title"
-						hidden
-					>
-						<h2 id="record-consent-title" class="govuk-heading-m">Record participant consent</h2>
-						<p id="record-consent-hint" class="govuk-body">Choose a participant to record or review consent.</p>
-
-						<form id="participant-consent-form" novalidate>
-							<input id="participant-id" type="hidden" />
-							<input id="consent-record-id" type="hidden" />
-
-							<div class="govuk-form-group">
-								<label class="govuk-label" for="consent-form-select">Consent form version</label>
-
-								<div id="consent-form-select-hint" class="govuk-hint">
-									Use the published consent form shown, sent or read to the participant.
-								</div>
-
-								<select
-									class="govuk-select"
-									id="consent-form-select"
-									name="consentFormId"
-									aria-describedby="consent-form-select-hint"
-								>
-									<option value="">Loading published consent forms</option>
-								</select>
+					<div class="participant-consent-workspace__aside">
+						<aside class="sourcebook-context" aria-labelledby="sourcebook-context-title">
+							<div class="sourcebook-context__header">
+								<p class="govuk-caption-m sourcebook-context__caption">Sourcebook</p>
+								<h2 class="govuk-heading-m sourcebook-context__title" id="sourcebook-context-title">
+									Why this page is governed
+								</h2>
+								<p class="govuk-body sourcebook-context__summary">
+									Before marking a participant ready, check that informed consent has been recorded against the current
+									consent form.
+								</p>
 							</div>
+							<ol class="govuk-list sourcebook-context__list">
+								<li class="sourcebook-context__item sourcebook-context__item--rule">
+									<div class="sourcebook-context__clause">
+										<span class="sourcebook-context__badge sourcebook-context__badge--rule" aria-label="Rule">R</span>
+										<div>
+											<p class="sourcebook-context__meta">REC-ADMN 3.1.1 · Recruitment and administration</p>
+											<h3 class="govuk-heading-s sourcebook-context__clause-title">
+												<a class="govuk-link" href="/pages/sourcebook/recruitment-and-administration/#rec-admn-3-1-1">
+													Record informed consent before research participation
+												</a>
+											</h3>
+											<p class="govuk-body-s sourcebook-context__text">
+												Participants must receive clear study information and give recorded informed consent before
+												taking part, including consent choices for recording, quotation and future contact.
+											</p>
 
-							<fieldset class="govuk-fieldset participant-consent-items" aria-describedby="consent-items-hint">
-								<legend class="govuk-fieldset__legend govuk-fieldset__legend--m">Consent statements</legend>
-								<div id="consent-items-hint" class="govuk-hint">
-									Required statements must be agreed before a participant is ready for a session. Optional declined
-									permissions should still be visible to the research team.
-								</div>
-								<div id="consent-items-list"></div>
-							</fieldset>
+											<p class="govuk-body-s sourcebook-context__condition">
+												<strong>Relevant to:</strong>
 
-							<div class="govuk-form-group">
-								<label class="govuk-label" for="capture-method">Capture method</label>
-
-								<select class="govuk-select" id="capture-method" name="captureMethod">
-									<option value="">Select a capture method</option>
-
-									<option value="Verbal">Verbal</option>
-
-									<option value="Signed form">Signed form</option>
-
-									<option value="Email">Email</option>
-
-									<option value="Imported">Imported</option>
-								</select>
-							</div>
-
-							<div class="govuk-form-group">
-								<label class="govuk-label" for="recorded-by">Recorded by</label>
-
-								<input class="govuk-input" id="recorded-by" name="recordedBy" type="text" autocomplete="name" />
-							</div>
-
-							<details class="govuk-details participant-consent-withdrawal">
-								<summary class="govuk-details__summary">
-									<span class="govuk-details__summary-text">Record withdrawal or do not proceed</span>
-								</summary>
-								<div class="govuk-details__text">
-									<div class="govuk-form-group">
-										<div class="govuk-checkboxes" data-module="govuk-checkboxes">
-											<div class="govuk-checkboxes__item">
-												<input
-													class="govuk-checkboxes__input"
-													id="consent-withdrawn"
-													name="consentWithdrawn"
-													type="checkbox"
-													value="yes"
-													id="consent-withdrawn"
-												/>
-												<label class="govuk-label govuk-checkboxes__label" for="consent-withdrawn">
-													Consent has been withdrawn or the session should not proceed
-												</label>
-											</div>
+												Participant consent recording
+											</p>
 										</div>
 									</div>
-
-									<div class="govuk-form-group">
-										<label class="govuk-label" for="withdrawal-reason">Reason or note</label>
-
-										<textarea class="govuk-textarea" id="withdrawal-reason" name="withdrawalReason" rows="3"></textarea>
-									</div>
-								</div>
-							</details>
-
-							<div class="govuk-button-group participant-consent-form__actions">
-								<button type="submit" class="govuk-button" data-module="govuk-button" id="save-participant-consent">
-									Save consent response
-								</button>
-
-								<button
-									type="button"
-									class="govuk-button govuk-button--secondary"
-									data-module="govuk-button"
-									id="cancel-participant-consent"
-								>
-									Cancel
-								</button>
-							</div>
-						</form>
-					</section>
+								</li>
+							</ol>
+						</aside>
+					</div>
 				</section>
 			</div>
 		</main>
