@@ -125,7 +125,7 @@ export const controlMatrix = [
 		soc2Tsc: ['CC7'],
 		iso27001AnnexA: ['A.5.24', 'A.5.25', 'A.5.26', 'A.5.27', 'A.5.28', 'A.6.8'],
 		currentEvidence:
-			'Research operations incident templates, service-specific runbooks, personal data breach handling process and planned exercise record.',
+			'Research operations incident templates, service-specific runbooks, personal data breach handling process and planned test evidence structure.',
 		gap: 'Complete a tabletop or simulated incident exercise, record outcomes and obtain service-owner, security and privacy sign-off.',
 		status: 'Partially evidenced',
 	},
@@ -206,13 +206,13 @@ export const incidentResponseEvidencePages = [
 		route: '/pages/compliance-readiness/incident-response/personal-data-breach-handling/',
 	},
 	{
-		slug: 'incident-exercise-record',
-		title: 'Incident exercise record',
+		slug: 'test-evidence',
+		title: 'Incident response test evidence',
 		summary:
-			'The planned tabletop or simulated incident exercise structure and the evidence needed before the control can be treated as tested.',
+			'The planned tabletop or simulated incident exercise evidence structure, completion criteria and outcome record needed before the control can be treated as tested.',
 		sourcePath:
-			'docs/compliance/soc2-iso27001-readiness/incident-response/incident-exercise-record.md',
-		route: '/pages/compliance-readiness/incident-response/incident-exercise-record/',
+			'docs/compliance/soc2-iso27001-readiness/incident-response/incident-response-test-evidence.md',
+		route: '/pages/compliance-readiness/incident-response/test-evidence/',
 	},
 ];
 

@@ -1,10 +1,10 @@
-# ResearchOps incident response exercise record
+# ResearchOps incident response test evidence
 
-This record defines the incident response exercise needed before ResearchOps can claim the incident process has been tested.
+This record defines the incident response test evidence needed before ResearchOps can claim the incident process has been tested.
 
 Exercise status: planned, not yet completed.
 
-This document is not completed test evidence. It is the test plan and evidence structure. A completed exercise record must be added after a tabletop or simulated incident has been run with the right Home Office service, security, privacy and technical roles.
+This document is not completed test evidence. It is the test plan and evidence structure. A completed test evidence record must be added after a tabletop or simulated incident has been run with the right Home Office service, security, privacy and technical roles.
 
 ## Exercise objective
 
@@ -80,4 +80,3 @@ The exercise can be treated as passed only when:
 ## Current gap
 
 The process remains partially evidenced until the exercise is run and the dated outcome is added.
-

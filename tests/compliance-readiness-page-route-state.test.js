@@ -104,10 +104,10 @@ test('rendered compliance readiness page includes the expected public content', 
 	assert.match(page, /Incident response evidence/);
 	assert.match(
 		page,
-		/These pages make the incident response runbooks, personal data breach handling process and exercise record visible from the readiness artefact/
+		/These pages make the incident response runbooks, personal data breach handling process and test evidence structure visible from the readiness artefact/
 	);
 	assert.match(page, /Governance, scope and accountability/);
-	assert.match(page, /service-specific runbooks, personal data breach handling process and planned exercise record/);
+	assert.match(page, /service-specific runbooks, personal data breach handling process and planned test evidence structure/);
 	assert.match(page, /completed incident response test evidence/);
 	assert.match(page, /Privacy, retention and data minimisation/);
 	assert.match(page, /CC6/);

@@ -57,7 +57,7 @@ Skipped bundles:
 - `docs/compliance/soc2-iso27001-readiness/incident-response/README.md`
 - `docs/compliance/soc2-iso27001-readiness/incident-response/incident-response-runbooks.md`
 - `docs/compliance/soc2-iso27001-readiness/incident-response/personal-data-breach-handling.md`
-- `docs/compliance/soc2-iso27001-readiness/incident-response/incident-exercise-record.md`
+- `docs/compliance/soc2-iso27001-readiness/incident-response/incident-response-test-evidence.md`
 - `tests/compliance-incident-response-readiness.test.js`
 - `docs/agent-audit/reasoning/2026/07/03/compliance-incident-response-readiness.md`
 - `docs/agent-audit/reasoning/2026/07/03/compliance-incident-response-readiness.json`
@@ -86,6 +86,9 @@ Skipped bundles:
 - Updated the compliance readiness page H1, page metadata, generated HTML, route-state test and visual walkthrough title to `SOC 2 and ISO/IEC 27001 readiness documentation`.
 - Updated the Markdown-to-GOV.UK renderer so indented bullet items nested under numbered Markdown steps render inside the parent `<li>` rather than as separate top-level lists.
 - Regenerated the personal data breach handling page so the decision route is one ordered GOV.UK list with nested unordered GOV.UK lists under each step.
+- Reframed the third incident response evidence artefact as `Incident response test evidence` and moved its generated public route from `/pages/compliance-readiness/incident-response/incident-exercise-record/` to `/pages/compliance-readiness/incident-response/test-evidence/`.
+- Renamed the source document to `incident-response-test-evidence.md` so the source, route and visible page label all describe the planned test-evidence structure.
+- Kept the evidence wording explicit that this is planned and not completed test evidence until a tabletop or simulated incident has been run and signed off.
 
 ## Validation evidence
 
@@ -97,6 +100,9 @@ Skipped bundles:
 - `npm run build:govuk-pages && node --import ./tests/helpers/generated-govuk-page-source.mjs --test tests/compliance-incident-response-readiness.test.js` passed after the nested-list rendering fix.
 - Live preview probe confirmed the personal data breach handling decision route renders as a single ordered list with nested unordered lists.
 - Live preview probe confirmed the compliance readiness page shows service-specific runbooks, personal data breach handling process and completed incident response test evidence as the remaining gap.
+- `npm run build:govuk-pages` passed after reframing the third incident response artefact as test evidence and regenerating `/pages/compliance-readiness/incident-response/test-evidence/`.
+- `node --import ./tests/helpers/generated-govuk-page-source.mjs --test tests/compliance-readiness-page-route-state.test.js tests/compliance-incident-response-readiness.test.js tests/visual-walkthrough-registry-coverage.test.js tests/govuk-pages-render-workflow-state.test.js` passed: 15 tests, 15 pass.
+- Live preview probes confirmed `/pages/compliance-readiness/` links to `/pages/compliance-readiness/incident-response/test-evidence/` and the test evidence page states `Exercise status: planned, not yet completed`.
 - `npm run format:check` passed.
 - `npm run trace:coverage` passed and confirmed trace coverage for `feature/compliance-assurance-boundary`.
 - `npm run validate` passed.

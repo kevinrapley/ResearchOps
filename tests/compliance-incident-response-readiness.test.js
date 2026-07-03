@@ -8,8 +8,8 @@ const incidentRoot = 'docs/compliance/soc2-iso27001-readiness/incident-response'
 const readme = read(`${incidentRoot}/README.md`);
 const runbooks = read(`${incidentRoot}/incident-response-runbooks.md`);
 const breachHandling = read(`${incidentRoot}/personal-data-breach-handling.md`);
-const exerciseRecord = read(`${incidentRoot}/incident-exercise-record.md`);
-const combined = `${readme}\n${runbooks}\n${breachHandling}\n${exerciseRecord}`;
+const testEvidence = read(`${incidentRoot}/incident-response-test-evidence.md`);
+const combined = `${readme}\n${runbooks}\n${breachHandling}\n${testEvidence}`;
 
 const generatedPages = [
 	{
@@ -31,10 +31,9 @@ const generatedPages = [
 		],
 	},
 	{
-		filePath:
-			'public/pages/compliance-readiness/incident-response/incident-exercise-record/index.html',
-		slug: 'incident-exercise-record',
-		title: 'Incident exercise record',
+		filePath: 'public/pages/compliance-readiness/incident-response/test-evidence/index.html',
+		slug: 'test-evidence',
+		title: 'Incident response test evidence',
 		expectedContent: ['Exercise status: planned, not yet completed', 'Passing criteria'],
 	},
 ];
@@ -43,7 +42,7 @@ test('incident response readiness pack defines the required artefacts', () => {
 	for (const fileName of [
 		'incident-response-runbooks.md',
 		'personal-data-breach-handling.md',
-		'incident-exercise-record.md',
+		'incident-response-test-evidence.md',
 	]) {
 		assert.match(readme, new RegExp(fileName));
 	}
@@ -94,12 +93,13 @@ test('breach handling process protects UK GDPR decision points', () => {
 	);
 });
 
-test('exercise record keeps test evidence honest until an exercise is completed', () => {
-	assert.match(exerciseRecord, /Exercise status: planned, not yet completed/);
-	assert.match(exerciseRecord, /This document is not completed test evidence/);
-	assert.match(exerciseRecord, /Minimum exercise scenario/);
-	assert.match(exerciseRecord, /Passing criteria/);
-	assert.match(exerciseRecord, /Current gap/);
+test('incident response test evidence stays honest until an exercise is completed', () => {
+	assert.match(testEvidence, /# ResearchOps incident response test evidence/);
+	assert.match(testEvidence, /Exercise status: planned, not yet completed/);
+	assert.match(testEvidence, /This document is not completed test evidence/);
+	assert.match(testEvidence, /Minimum exercise scenario/);
+	assert.match(testEvidence, /Passing criteria/);
+	assert.match(testEvidence, /Current gap/);
 
 	assert.doesNotMatch(combined, /\bexercise has been completed\b/i);
 	assert.doesNotMatch(combined, /\bincident response control is tested and effective\b/i);
@@ -124,10 +124,10 @@ test('incident response evidence is rendered as visible GOV.UK pages', () => {
 		}
 	}
 
-	const exerciseHtml = read(
-		'public/pages/compliance-readiness/incident-response/incident-exercise-record/index.html'
+	const testEvidenceHtml = read(
+		'public/pages/compliance-readiness/incident-response/test-evidence/index.html'
 	);
-	assert.doesNotMatch(exerciseHtml, /\bexercise has been completed\b/i);
+	assert.doesNotMatch(testEvidenceHtml, /\bexercise has been completed\b/i);
 });
 
 test('personal data breach decision route renders nested bullet lists inside one ordered list', () => {
