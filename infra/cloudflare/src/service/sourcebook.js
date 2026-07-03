@@ -5,122 +5,11 @@
  */
 
 import sourcebookIndex from "../../../../sourcebook/sourcebook-index.json" with { type: "json" };
+import routeClauseMappings from "../../../../sourcebook/sourcebook-route-mappings.json" with { type: "json" };
 
 const DEFAULT_LIMIT = 50;
 const MAX_LIMIT = 200;
 const TEXT_MODES = new Set(["summary", "title", "full", "verbose"]);
-const ROUTE_CLAUSE_MAPPINGS = [
-	{
-		id: "map_consent_review",
-		route: "/pages/consent/",
-		clauseId: "REC-ADMN 3.1.1",
-		condition: {
-			id: "consent-review",
-			label: "Consent review",
-			description: "Surface when consent wording, recording choices, quotation consent or future-contact consent need review."
-		},
-		strength: "required"
-	},
-	{
-		id: "map_session_reminders",
-		route: "/pages/sessions/",
-		clauseId: "REC-ADMN 5.1.2",
-		condition: {
-			id: "session-reminder-automation",
-			label: "Session reminder automation",
-			description: "Surface when a session workflow uses automated reminders or reusable participant message templates."
-		},
-		strength: "advisory"
-	},
-	{
-		id: "map_repository_entry",
-		route: "/pages/repository/",
-		clauseId: "DATA-STO-ACC 2.1.1",
-		condition: {
-			id: "study-close",
-			label: "Study close",
-			description: "Surface when completed research needs a durable repository entry or publication record."
-		},
-		strength: "required"
-	},
-	{
-		id: "map_repository_service_area_taxonomy",
-		route: "/pages/repository/service-areas/",
-		clauseId: "DATA-STO-ACC 3.1.1",
-		condition: {
-			id: "taxonomy-change",
-			label: "Taxonomy change",
-			description: "Surface when service-area taxonomy labels are created, changed, applied or excepted."
-		},
-		strength: "required"
-	},
-	{
-		id: "map_repository_user_group_taxonomy",
-		route: "/pages/repository/user-groups/",
-		clauseId: "DATA-STO-ACC 3.1.1",
-		condition: {
-			id: "taxonomy-change",
-			label: "Taxonomy change",
-			description: "Surface when user-group taxonomy labels are created, changed, applied or excepted."
-		},
-		strength: "required"
-	},
-	{
-		id: "map_repository_method_taxonomy",
-		route: "/pages/repository/methods/",
-		clauseId: "DATA-STO-ACC 3.1.1",
-		condition: {
-			id: "taxonomy-change",
-			label: "Taxonomy change",
-			description: "Surface when method taxonomy labels are created, changed, applied or excepted."
-		},
-		strength: "required"
-	},
-	{
-		id: "map_repository_risk_taxonomy",
-		route: "/pages/repository/risks/",
-		clauseId: "DATA-STO-ACC 3.1.1",
-		condition: {
-			id: "taxonomy-change",
-			label: "Taxonomy change",
-			description: "Surface when risk taxonomy labels are created, changed, applied or excepted."
-		},
-		strength: "required"
-	},
-	{
-		id: "map_search_existing_evidence",
-		route: "/pages/search/",
-		clauseId: "DATA-STO-ACC 6.1.1",
-		condition: {
-			id: "new-research-request",
-			label: "New research request",
-			description: "Surface before commissioning, approving or scoping new research that may duplicate existing evidence."
-		},
-		strength: "required"
-	},
-	{
-		id: "map_team_access_request",
-		route: "/pages/account/team-access/",
-		clauseId: "INFRA-PROV 3.1.1",
-		condition: {
-			id: "access-change",
-			label: "Access change",
-			description: "Surface when access is requested, widened, changed or reviewed against role and research need."
-		},
-		strength: "required"
-	},
-	{
-		id: "map_role_assignment",
-		route: "/pages/team/role-assignments/",
-		clauseId: "INFRA-PROV 3.1.1",
-		condition: {
-			id: "permission-model-change",
-			label: "Permission model change",
-			description: "Surface when role permissions or admin access are assigned, changed or reviewed."
-		},
-		strength: "required"
-	}
-];
 
 function cleanText(value) {
 	return String(value || "").replace(/\s+/g, " ").trim();
@@ -224,7 +113,7 @@ function routeMappingDto(mapping, { source = "route-map" } = {}) {
 }
 
 function routeMappingsForRecord(record) {
-	const explicitMappings = ROUTE_CLAUSE_MAPPINGS
+	const explicitMappings = routeClauseMappings
 		.filter(mapping => normaliseLookup(mapping.clauseId) === normaliseLookup(record.clause.id))
 		.map(mapping => routeMappingDto(mapping));
 	const explicitRoutes = new Set(explicitMappings.map(mapping => mapping.route));

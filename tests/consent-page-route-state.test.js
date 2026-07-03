@@ -7,6 +7,7 @@ const controllerSource = fs.readFileSync("public/js/consent-page.js", "utf8");
 const stylesheetSource = fs.readFileSync("public/css/consent.css", "utf8");
 const rendererSource = fs.readFileSync("scripts/govuk/render-govuk-pages.mjs", "utf8");
 const generatedCssTargetsSource = fs.readFileSync("scripts/styles/generated-css-targets.mjs", "utf8");
+const macroSource = fs.readFileSync("src/govuk/templates/macros/sourcebook-context.njk", "utf8");
 
 function includes(source, text, label) {
 	assert.equal(source.includes(text), true, `Expected ${label} to include: ${text}`);
@@ -43,6 +44,12 @@ includes(pageSource, "id=\"notes\"", "consent page");
 includes(pageSource, "id=\"link\"", "consent page");
 includes(pageSource, "id=\"status\"", "consent page");
 includes(pageSource, "id=\"consents\"", "consent page");
+includes(pageSource, "class=\"sourcebook-context\"", "consent page");
+includes(pageSource, "Sourcebook context for consent", "consent page");
+includes(pageSource, "REC-ADMN 3.1.1", "consent page");
+includes(pageSource, "Record informed consent before research participation", "consent page");
+includes(pageSource, "/pages/sourcebook/recruitment-and-administration/#rec-admn-3-1-1", "consent page");
+includes(pageSource, "Consent review", "consent page");
 excludes(pageSource, "href=\"/css/screen.css\"", "consent page");
 excludes(pageSource, "stored in this browser", "consent page");
 excludes(pageSource, "local prototype records", "consent page");
@@ -62,8 +69,13 @@ includes(templateSource, "govukInput({", "consent template");
 includes(templateSource, "govukSelect({", "consent template");
 includes(templateSource, "govukButton({", "consent template");
 includes(templateSource, "govukDetails({", "consent template");
+includes(templateSource, "macros/sourcebook-context.njk", "consent template");
+includes(templateSource, "SourcebookContext(sourcebookContext)", "consent template");
 includes(rendererSource, "template: 'pages/consent.njk'", "GOV.UK page renderer");
 includes(rendererSource, "output: 'public/pages/consent/index.html'", "GOV.UK page renderer");
+includes(rendererSource, "sourcebookContextForRoute({", "GOV.UK page renderer");
+includes(rendererSource, "route: '/pages/consent/'", "GOV.UK page renderer");
+includes(rendererSource, "condition: 'consent-review'", "GOV.UK page renderer");
 includes(generatedCssTargetsSource, "name: 'Consent utility route stylesheet'", "generated CSS targets");
 includes(generatedCssTargetsSource, "source: 'src/styles/researchops-utility-pages.scss'", "generated CSS targets");
 includes(generatedCssTargetsSource, "output: 'public/css/consent.css'", "generated CSS targets");
@@ -85,6 +97,10 @@ includes(stylesheetSource, "Repo:       /src/styles/researchops-utility-pages.sc
 includes(stylesheetSource, ".researchops-utility-page__section", "consent stylesheet");
 includes(stylesheetSource, ".researchops-utility-page__form-row", "consent stylesheet");
 includes(stylesheetSource, ".researchops-utility-page__results", "consent stylesheet");
+includes(stylesheetSource, ".sourcebook-context", "consent stylesheet");
 includes(stylesheetSource, "/* transparency begins in the cascade */", "consent stylesheet");
 excludes(stylesheetSource, ".consent-panel", "consent stylesheet");
 excludes(stylesheetSource, ".consent-records .item", "consent stylesheet");
+
+includes(macroSource, "{% macro SourcebookContext(params) %}", "sourcebook context macro");
+includes(macroSource, "sourcebook-context__badge", "sourcebook context macro");

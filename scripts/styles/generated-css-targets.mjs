@@ -96,6 +96,11 @@ export const generatedCssTargets = [
 		output: 'public/css/auth-role-assignments.css',
 	},
 	{
+		name: 'Account team access stylesheet',
+		source: 'src/styles/account-team-access.scss',
+		output: 'public/css/account-team-access.css',
+	},
+	{
 		name: 'Search utility route stylesheet',
 		source: 'src/styles/researchops-utility-pages.scss',
 		output: 'public/css/search.css',

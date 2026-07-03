@@ -1,0 +1,93 @@
+.sourcebook-context {
+	max-width: 760px;
+	margin: 30px 0;
+	padding: 20px;
+	border-left: 5px solid #1d70b8;
+	background: #f3f2f1;
+}
+
+.sourcebook-context__caption {
+	margin-bottom: 5px;
+	color: #505a5f;
+}
+
+.sourcebook-context__title,
+.sourcebook-context__summary,
+.sourcebook-context__list {
+	margin-bottom: 15px;
+}
+
+.sourcebook-context__list {
+	padding-left: 0;
+	list-style: none;
+}
+
+.sourcebook-context__item {
+	margin-bottom: 15px;
+	padding-top: 15px;
+	border-top: 1px solid #b1b4b6;
+}
+
+.sourcebook-context__item:first-child {
+	padding-top: 0;
+	border-top: 0;
+}
+
+.sourcebook-context__item:last-child {
+	margin-bottom: 0;
+}
+
+.sourcebook-context__clause {
+	display: flex;
+	gap: 12px;
+	align-items: flex-start;
+}
+
+.sourcebook-context__badge {
+	display: inline-flex;
+	min-width: 32px;
+	min-height: 32px;
+	align-items: center;
+	justify-content: center;
+	background: #1d70b8;
+	color: #ffffff;
+	font-weight: 700;
+	line-height: 1;
+}
+
+.sourcebook-context__badge--rule {
+	background: #d4351c;
+}
+
+.sourcebook-context__badge--principle {
+	background: #1d70b8;
+}
+
+.sourcebook-context__badge--guidance {
+	background: #00703c;
+}
+
+.sourcebook-context__badge--conduct {
+	background: #4c2c92;
+}
+
+.sourcebook-context__meta {
+	margin: 0 0 5px;
+	color: #505a5f;
+	font-size: 16px;
+	line-height: 1.25;
+}
+
+.sourcebook-context__clause-title {
+	margin-bottom: 10px;
+}
+
+.sourcebook-context__text,
+.sourcebook-context__condition {
+	margin-bottom: 10px;
+}
+
+.sourcebook-context__condition:last-child,
+.sourcebook-context__text:last-child {
+	margin-bottom: 0;
+}

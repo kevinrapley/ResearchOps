@@ -4,7 +4,7 @@
 	"base": "main",
 	"traceRequired": true,
 	"traceReason": "feature/ branches require auditable traces for repository-affecting work",
-	"taskSummary": "Add authenticated read endpoints under /api/sourcebook so logged-in ResearchOps areas can list pillars, look up clauses and query clauses by route, evidence type, trigger and pillar.",
+	"taskSummary": "Add authenticated read endpoints under /api/sourcebook and surface mapped Sourcebook clauses in logged-in GOV.UK pages through a bespoke Nunjucks context component.",
 	"operatingModelFilesLoaded": [
 		"AGENTS.md",
 		".agent-operating-model/orchestration.xml",
@@ -33,10 +33,13 @@
 		{
 			"id": "cloudflare",
 			"canonicalPath": ".agent-operating-model/bundles/cloudflare/"
+		},
+		{
+			"id": "govuk-design-system",
+			"canonicalPath": ".agent-operating-model/bundles/govuk-design-system/"
 		}
 	],
 	"bundlesSkipped": [
-		"govuk-design-system",
 		"openai-platform",
 		"mcp-agent-tooling",
 		"airtable-public-api",
@@ -56,7 +59,12 @@
 		"Added route-state coverage so /api/me continues to seed declarations before returning permission lists that include sourcebook.view.",
 		"Added a first-class route-to-clause map with conditional mappings so logged-in surfaces can request Sourcebook clauses by both route and operational condition.",
 		"Added condition as a clause query dimension while keeping existing route-only queries compatible.",
-		"Returned routeMappings metadata in clause DTOs, including condition ids, labels, descriptions, mapping source and strength."
+		"Returned routeMappings metadata in clause DTOs, including condition ids, labels, descriptions, mapping source and strength.",
+		"Moved curated route-to-clause mappings into sourcebook/sourcebook-route-mappings.json so the Worker API and GOV.UK Nunjucks renderer use the same mapping source.",
+		"Added a bespoke SourcebookContext Nunjucks macro that renders an aside with clause type badge, pillar metadata, clause link, summary text and conditional trigger labels.",
+		"Added sourcebookContextForRoute() in the GOV.UK Sourcebook data layer to resolve mapped clauses by route and condition for page rendering.",
+		"Surfaced Sourcebook context on consent, team access request and role assignment pages where users are about to change consent or access state.",
+		"Added shared Sourcebook context Sass and generated route CSS, including a dedicated account team access stylesheet."
 	],
 	"validationEvidence": [
 		{
@@ -163,11 +171,46 @@
 			"command": "npm run validate",
 			"status": "passed",
 			"summary": "Repository validation completed successfully after adding conditional route mappings."
+		},
+		{
+			"command": "npm run build:generated-css",
+			"status": "passed",
+			"summary": "Generated CSS rebuilt after adding the Nunjucks Sourcebook context component."
+		},
+		{
+			"command": "npm run build:govuk-pages",
+			"status": "passed",
+			"summary": "Generated GOV.UK pages rebuilt after adding the Nunjucks Sourcebook context component."
+		},
+		{
+			"command": "node --import ./tests/helpers/generated-govuk-page-source.mjs --test tests/sourcebook-api.test.js tests/sourcebook-api-route-state.test.js tests/sourcebook-context-route-state.test.js tests/consent-page-route-state.test.js tests/auth-team-access-request-route-state.test.js tests/auth-role-assignment-ui-route-state.test.js",
+			"status": "passed",
+			"summary": "20 focused Sourcebook API and contextual UI route-state tests passed after adding the Nunjucks Sourcebook context component."
+		},
+		{
+			"command": "npm run format:check",
+			"status": "passed",
+			"summary": "Prettier and generated CSS checks passed after adding the Nunjucks Sourcebook context component."
+		},
+		{
+			"command": "git diff --check",
+			"status": "passed",
+			"summary": "No whitespace errors found after adding the Nunjucks Sourcebook context component."
+		},
+		{
+			"command": "npm run trace:coverage",
+			"status": "passed",
+			"summary": "Trace coverage confirmed for feature/sourcebook-integration after adding the Nunjucks Sourcebook context component."
+		},
+		{
+			"command": "npm run validate",
+			"status": "passed",
+			"summary": "Repository validation completed successfully after adding the Nunjucks Sourcebook context component."
 		}
 	],
 	"residualRisks": [
 		"The API derives some trigger labels from current Sourcebook text and metadata; future stronger Sourcebook governance should make triggers first-class clause metadata.",
-		"Conditional route mappings are currently curated in the Sourcebook service from existing clause metadata; future Sourcebook governance can promote them into the Sourcebook index if they become author-owned content.",
-		"This branch adds the read API foundation only; logged-in UI affordances that surface the clauses in context can build on these endpoints separately."
+		"Conditional route mappings are currently curated in a separate Sourcebook mapping JSON file; future Sourcebook governance can promote them into the Sourcebook index if they become author-owned content.",
+		"Initial contextual surfacing is limited to consent and access-control journeys; other logged-in surfaces can adopt the component through the same route and condition mapping."
 	]
 }

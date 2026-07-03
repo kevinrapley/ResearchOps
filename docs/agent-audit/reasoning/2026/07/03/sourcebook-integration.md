@@ -6,7 +6,7 @@
 - Branch: `feature/sourcebook-integration`
 - Base: `main`
 - Trace decision: required because `feature/` branches require auditable traces for repository-affecting work.
-- Task summary: add authenticated read endpoints under `/api/sourcebook` so logged-in ResearchOps areas can list pillars, look up clauses and query clauses by route, evidence type, trigger and pillar.
+- Task summary: add authenticated read endpoints under `/api/sourcebook` and surface mapped Sourcebook clauses in logged-in GOV.UK pages through a bespoke Nunjucks context component.
 
 ## Operating model evidence
 
@@ -28,10 +28,11 @@
 - `researchops-developer-control` at `.agent-operating-model/bundles/researchops-developer-control/`
 - `multi-functional-team` at `.agent-operating-model/bundles/multi-functional-team/`
 - `cloudflare` at `.agent-operating-model/bundles/cloudflare/`
+- `govuk-design-system` at `.agent-operating-model/bundles/govuk-design-system/`
 
 Skipped bundles:
 
-- `govuk-design-system`, `openai-platform`, `mcp-agent-tooling`, `airtable-public-api` and `mural-public-api` were not implementation-control bundles for this change because it adds Worker read endpoints and Sourcebook service shaping without changing GOV.UK page rendering, model calls, MCP contracts or external provider APIs.
+- `openai-platform`, `mcp-agent-tooling`, `airtable-public-api` and `mural-public-api` were not implementation-control bundles for this change because it does not add model calls, MCP contracts or external provider APIs.
 
 ## Precedence decisions
 
@@ -39,6 +40,7 @@ Skipped bundles:
 - ResearchOps Developer Control governed Worker/service placement, authenticated route registration and keeping Sourcebook logic inside the platform service boundary.
 - Multi-Functional Team governed public-sector assurance framing, evidence traceability and human-accountable use of Sourcebook clauses.
 - Cloudflare governed Worker route behaviour, valid `Response` objects, runtime-safe read endpoints and no hard-coded secrets.
+- GOV.UK Design System governed the Nunjucks component integration, semantic aside placement and generated page styling.
 
 ## Files read
 
@@ -47,6 +49,7 @@ Skipped bundles:
 - Existing `ResearchOpsService` composition.
 - Existing Sourcebook index JSON and Sourcebook validation tests.
 - Existing route-state test patterns.
+- Existing GOV.UK page renderer, Nunjucks page templates and generated stylesheet targets.
 
 ## Files created
 
@@ -55,6 +58,12 @@ Skipped bundles:
 - `tests/sourcebook-api-route-state.test.js`
 - `docs/agent-audit/reasoning/2026/07/03/sourcebook-integration.md`
 - `docs/agent-audit/reasoning/2026/07/03/sourcebook-integration.json`
+- `sourcebook/sourcebook-route-mappings.json`
+- `src/govuk/templates/macros/sourcebook-context.njk`
+- `src/styles/_sourcebook-context.scss`
+- `src/styles/account-team-access.scss`
+- `public/css/account-team-access.css`
+- `tests/sourcebook-context-route-state.test.js`
 
 ## Files modified
 
@@ -67,6 +76,25 @@ Skipped bundles:
 - `infra/cloudflare/src/service/index.js`
 - `infra/cloudflare/src/service/sourcebook.js`
 - `infra/cloudflare/src/worker.js`
+- `scripts/govuk/render-govuk-pages.mjs`
+- `scripts/styles/generated-css-targets.mjs`
+- `src/govuk/data/sourcebook.mjs`
+- `src/govuk/templates/pages/account-team-access.njk`
+- `src/govuk/templates/pages/consent.njk`
+- `src/govuk/templates/pages/role-assignments.njk`
+- `src/styles/auth-role-assignments.scss`
+- `src/styles/researchops-utility-pages.scss`
+- `public/css/auth-role-assignments.css`
+- `public/css/consent.css`
+- `public/css/notes.css`
+- `public/css/search.css`
+- `public/css/sessions.css`
+- `public/pages/account/team-access/index.html`
+- `public/pages/consent/index.html`
+- `public/pages/team/role-assignments/index.html`
+- `tests/auth-role-assignment-ui-route-state.test.js`
+- `tests/auth-team-access-request-route-state.test.js`
+- `tests/consent-page-route-state.test.js`
 
 ## Implementation decisions
 
@@ -84,6 +112,11 @@ Skipped bundles:
 - Added a first-class route-to-clause map with conditional mappings so logged-in surfaces can request Sourcebook clauses by both route and operational condition.
 - Added `condition` as a clause query dimension while keeping existing route-only queries compatible.
 - Returned `routeMappings` metadata in clause DTOs, including condition ids, labels, descriptions, mapping source and strength.
+- Moved curated route-to-clause mappings into `sourcebook/sourcebook-route-mappings.json` so the Worker API and GOV.UK Nunjucks renderer use the same mapping source.
+- Added a bespoke `SourcebookContext` Nunjucks macro that renders an aside with clause type badge, pillar metadata, clause link, summary text and conditional trigger labels.
+- Added `sourcebookContextForRoute()` in the GOV.UK Sourcebook data layer to resolve mapped clauses by route and condition for page rendering.
+- Surfaced Sourcebook context on consent, team access request and role assignment pages where users are about to change consent or access state.
+- Added shared Sourcebook context Sass and generated route CSS, including a dedicated account team access stylesheet.
 
 ## Validation evidence
 
@@ -108,9 +141,16 @@ Skipped bundles:
 - `git diff --check` passed after conditional route mappings.
 - `npm run trace:coverage` passed after conditional route mappings and confirmed trace coverage for `feature/sourcebook-integration`.
 - `npm run validate` passed after conditional route mappings.
+- `npm run build:generated-css` passed after adding the Nunjucks Sourcebook context component.
+- `npm run build:govuk-pages` passed after adding the Nunjucks Sourcebook context component.
+- `node --import ./tests/helpers/generated-govuk-page-source.mjs --test tests/sourcebook-api.test.js tests/sourcebook-api-route-state.test.js tests/sourcebook-context-route-state.test.js tests/consent-page-route-state.test.js tests/auth-team-access-request-route-state.test.js tests/auth-role-assignment-ui-route-state.test.js` passed after adding the Nunjucks Sourcebook context component: 20 tests, 20 pass.
+- `npm run format:check` passed after adding the Nunjucks Sourcebook context component.
+- `git diff --check` passed after adding the Nunjucks Sourcebook context component.
+- `npm run trace:coverage` passed after adding the Nunjucks Sourcebook context component and confirmed trace coverage for `feature/sourcebook-integration`.
+- `npm run validate` passed after adding the Nunjucks Sourcebook context component.
 
 ## Residual risks
 
 - The API derives some trigger labels from current Sourcebook text and metadata; future stronger Sourcebook governance should make triggers first-class clause metadata.
-- Conditional route mappings are currently curated in the Sourcebook service from existing clause metadata; future Sourcebook governance can promote them into the Sourcebook index if they become author-owned content.
-- This branch adds the read API foundation only; logged-in UI affordances that surface the clauses in context can build on these endpoints separately.
+- Conditional route mappings are currently curated in a separate Sourcebook mapping JSON file; future Sourcebook governance can promote them into the Sourcebook index if they become author-owned content.
+- Initial contextual surfacing is limited to consent and access-control journeys; other logged-in surfaces can adopt the component through the same route and condition mapping.

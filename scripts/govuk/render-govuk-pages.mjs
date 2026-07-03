@@ -10,7 +10,11 @@ import {
 	complianceReadinessContext,
 } from '../../src/govuk/data/compliance-readiness.mjs';
 import { repositoryPageContext, repositoryStaticPages } from '../../src/govuk/data/repository-page.mjs';
-import { sourcebookIndex, sourcebookPillarPages } from '../../src/govuk/data/sourcebook.mjs';
+import {
+	sourcebookContextForRoute,
+	sourcebookIndex,
+	sourcebookPillarPages,
+} from '../../src/govuk/data/sourcebook.mjs';
 
 const root = resolve(process.cwd());
 export const generatedGovukChromeCacheKey = 'govuk-page-chrome-20260702-1';
@@ -508,6 +512,13 @@ export const govukPages = [
 			serviceName: 'ResearchOps Demo Suite',
 			activeNavigation: '',
 			navigation: accountNavigation,
+			sourcebookContext: sourcebookContextForRoute({
+				route: '/pages/account/team-access/',
+				condition: 'access-change',
+				title: 'Sourcebook context for access requests',
+				summary:
+					'Use these clauses when access is requested, widened or reviewed against role and research need.',
+			}),
 		},
 	},
 	{
@@ -528,6 +539,13 @@ export const govukPages = [
 			serviceName: 'ResearchOps Demo Suite',
 			activeNavigation: '',
 			navigation: accountNavigation,
+			sourcebookContext: sourcebookContextForRoute({
+				route: '/pages/team/role-assignments/',
+				condition: 'permission-model-change',
+				title: 'Sourcebook context for role assignment',
+				summary:
+					'Use these clauses when role permissions or admin access are assigned, changed or reviewed.',
+			}),
 		},
 	},
 	{
@@ -778,6 +796,13 @@ export const govukPages = [
 			serviceName: 'ResearchOps Demo Suite',
 			activeNavigation: 'Projects',
 			navigation: projectNavigation,
+			sourcebookContext: sourcebookContextForRoute({
+				route: '/pages/consent/',
+				condition: 'consent-review',
+				title: 'Sourcebook context for consent',
+				summary:
+					'Use these clauses when consent wording, recording choices, retention or future-contact consent are being checked.',
+			}),
 		},
 	},
 	{
