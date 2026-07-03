@@ -38,6 +38,10 @@ function excludes(source, text, label) {
 	assert.equal(source.includes(text), false, `Expected ${label} not to include: ${text}`);
 }
 
+function matches(source, pattern, label) {
+	assert.match(source, pattern, `Expected ${label} to match: ${pattern}`);
+}
+
 includes(pageChromeCss, ".govuk-skip-link", "page chrome stylesheet");
 includes(pageChromeCss, ".govuk-header", "page chrome stylesheet");
 includes(pageChromeCss, ".govuk-header__container", "page chrome stylesheet");
@@ -120,5 +124,5 @@ for (const pagePath of pagesUsingSharedChrome) {
 	const source = fs.readFileSync(pagePath, "utf8");
 
 	includes(source, "src=\"/partials/header.html\"", pagePath);
-	includes(source, "src=\"/partials/footer.html\"", pagePath);
+	matches(source, /src="\/partials\/footer\.html(?:\?[^"]*)?"/, pagePath);
 }

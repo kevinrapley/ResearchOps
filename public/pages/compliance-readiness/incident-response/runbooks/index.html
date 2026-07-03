@@ -1,0 +1,336 @@
+<!doctype html>
+<html class="govuk-template" lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>Incident response runbooks - ResearchOps Demo Suite</title>
+		<link rel="stylesheet" href="/assets/govuk/govuk-frontend.css" media="screen" />
+
+		<script type="module" src="/components/layout.js?v=govuk-page-chrome-20260702-1" defer></script>
+		<script type="module" src="/js/govuk-frontend-init.js?v=govuk-page-chrome-20260702-1" defer></script>
+	</head>
+	<body class="govuk-template__body">
+		<script>
+			document.body.className +=
+				" js-enabled" + ("noModule" in HTMLScriptElement.prototype ? " govuk-frontend-supported" : "");
+		</script>
+		<x-include src="/partials/header.html" vars='{"active":""}'></x-include>
+		<main class="govuk-main-wrapper" id="main-content" role="main" tabindex="-1">
+			<div class="govuk-width-container" data-compliance-evidence-document="runbooks">
+				<nav class="govuk-breadcrumbs" aria-label="Breadcrumb">
+					<ol class="govuk-breadcrumbs__list">
+						<li class="govuk-breadcrumbs__list-item">
+							<a class="govuk-breadcrumbs__link" href="/">Home</a>
+						</li>
+
+						<li class="govuk-breadcrumbs__list-item">
+							<a class="govuk-breadcrumbs__link" href="/pages/compliance-readiness/">Compliance readiness</a>
+						</li>
+
+						<li class="govuk-breadcrumbs__list-item" aria-current="page">Incident response runbooks</li>
+					</ol>
+				</nav>
+
+				<div class="govuk-grid-row">
+					<div class="govuk-grid-column-two-thirds">
+						<span class="govuk-caption-xl">Incident response evidence</span>
+						<h1 class="govuk-heading-xl">Incident response runbooks</h1>
+						<p class="govuk-body-l">
+							Service-specific first-response runbooks for likely ResearchOps security, privacy, supplier and
+							availability incidents.
+						</p>
+						<div class="govuk-warning-text compliance-readiness__warning">
+							<span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+							<strong class="govuk-warning-text__text">
+								<span class="govuk-visually-hidden">Warning</span>
+								This page is readiness evidence. It does not assert that incident response has been independently
+								assured or exercised.
+							</strong>
+						</div>
+
+						<p class="govuk-body">
+							<a class="govuk-link" href="/pages/compliance-readiness/">Back to compliance readiness</a>
+						</p>
+					</div>
+				</div>
+
+				<div class="govuk-grid-row">
+					<div class="govuk-grid-column-two-thirds">
+						<div class="compliance-readiness__document">
+							<p class="govuk-body">
+								These runbooks describe the first response for likely ResearchOps incidents. They are written for
+								practitioners who need to move quickly, preserve evidence and route the incident to the right Home
+								Office roles.
+							</p>
+							<p class="govuk-body">
+								They do not replace Home Office security, privacy, legal or operational incident procedures. If there is
+								a conflict, the Home Office procedure wins and this record should be updated afterwards.
+							</p>
+							<h2 class="govuk-heading-l">Common rules</h2>
+							<p class="govuk-body">Use these rules for every incident:</p>
+							<ol class="govuk-list govuk-list--number">
+								<li>Start an incident record as soon as the issue is suspected.</li>
+								<li>Preserve evidence before making broad changes.</li>
+								<li>Contain the issue without destroying audit trails.</li>
+								<li>
+									Escalate early when personal data, privileged access, production secrets, supplier systems or service
+									availability may be affected.
+								</li>
+								<li>Record what is known, what is assumed and what is still unknown.</li>
+								<li>
+									Keep personal data out of chat, tickets and logs unless there is a clear operational need and an
+									approved secure channel.
+								</li>
+								<li>Close the incident only after lessons, follow-up actions and evidence links are recorded.</li>
+							</ol>
+							<h2 class="govuk-heading-l">Severity model</h2>
+							<table class="govuk-table">
+								<thead class="govuk-table__head">
+									<tr class="govuk-table__row">
+										<th scope="col" class="govuk-table__header">Severity</th>
+										<th scope="col" class="govuk-table__header">Use when</th>
+										<th scope="col" class="govuk-table__header">Expected response</th>
+									</tr>
+								</thead>
+								<tbody class="govuk-table__body">
+									<tr class="govuk-table__row">
+										<td class="govuk-table__cell">Critical</td>
+										<td class="govuk-table__cell">
+											Confirmed or strongly suspected unauthorised access, active data exfiltration, leaked production
+											secret, high-risk personal data breach or live service compromise.
+										</td>
+										<td class="govuk-table__cell">
+											Immediate containment, security escalation and service-owner notification. Start breach assessment
+											immediately.
+										</td>
+									</tr>
+									<tr class="govuk-table__row">
+										<td class="govuk-table__cell">High</td>
+										<td class="govuk-table__cell">
+											Suspected personal data exposure, broken access control, failed retention deletion involving
+											personal data, supplier incident affecting ResearchOps data or production data corruption.
+										</td>
+										<td class="govuk-table__cell">
+											Same working day containment and escalation. Start breach assessment if personal data may be
+											involved.
+										</td>
+									</tr>
+									<tr class="govuk-table__row">
+										<td class="govuk-table__cell">Medium</td>
+										<td class="govuk-table__cell">
+											Security control weakness, failed monitoring, non-production secret exposure, isolated audit-log
+											issue or limited service degradation.
+										</td>
+										<td class="govuk-table__cell">Triage, assign owner and agree treatment route.</td>
+									</tr>
+									<tr class="govuk-table__row">
+										<td class="govuk-table__cell">Low</td>
+										<td class="govuk-table__cell">
+											Minor process deviation with no known personal data, security or availability impact.
+										</td>
+										<td class="govuk-table__cell">Record, review and decide whether preventive action is needed.</td>
+									</tr>
+								</tbody>
+							</table>
+							<h2 class="govuk-heading-l">Runbook: suspected PII exposure</h2>
+							<p class="govuk-body">Trigger examples:</p>
+							<ul class="govuk-list govuk-list--bullet">
+								<li>
+									participant record, contact detail, consent record, session note or journal entry visible to the wrong
+									user
+								</li>
+								<li>
+									personal data appears in a public page, repository artefact, screenshot, log, issue, pull request,
+									email or exported file
+								</li>
+								<li>AI, Mural, Airtable or email integration receives personal data outside the agreed boundary</li>
+							</ul>
+							<p class="govuk-body">First actions:</p>
+							<ol class="govuk-list govuk-list--number">
+								<li>Start the incident record and timestamp when ResearchOps became aware.</li>
+								<li>
+									Capture the route, page, artefact, log entry or integration path without copying unnecessary personal
+									data.
+								</li>
+								<li>Restrict access to the exposed item or route.</li>
+								<li>
+									Preserve relevant audit events, deployment version, request identifiers and access-control state.
+								</li>
+								<li>
+									Escalate to the service owner, information asset owner, privacy representative and security
+									representative.
+								</li>
+								<li>Begin the personal data breach handling process.</li>
+							</ol>
+							<p class="govuk-body">Evidence to retain:</p>
+							<ul class="govuk-list govuk-list--bullet">
+								<li>where the data appeared</li>
+								<li>data classes affected</li>
+								<li>number or type of people affected</li>
+								<li>who could access it</li>
+								<li>containment action and timing</li>
+								<li>decision on ICO and affected-person notification</li>
+								<li>follow-up action to prevent recurrence</li>
+							</ul>
+							<h2 class="govuk-heading-l">Runbook: unauthorised access or broken permission</h2>
+							<p class="govuk-body">Trigger examples:</p>
+							<ul class="govuk-list govuk-list--bullet">
+								<li>
+									user can access a project, study, participant, journal, repository record or admin action outside
+									their role
+								</li>
+								<li>disabled account can still use an authenticated route</li>
+								<li>route permission gate is missing or misconfigured</li>
+							</ul>
+							<p class="govuk-body">First actions:</p>
+							<ol class="govuk-list govuk-list--number">
+								<li>Preserve the user, team, route, request and audit context.</li>
+								<li>Disable or restrict the affected access path.</li>
+								<li>Check whether data was viewed, changed, exported or deleted.</li>
+								<li>Review recent deployment and permission changes.</li>
+								<li>Escalate to security and the service owner.</li>
+								<li>Start the personal data breach handling process if personal data may have been accessed.</li>
+							</ol>
+							<p class="govuk-body">Evidence to retain:</p>
+							<ul class="govuk-list govuk-list--bullet">
+								<li>affected routes and records</li>
+								<li>account and role state at the time of access</li>
+								<li>audit events and request traces</li>
+								<li>fix commit, test evidence and deployment evidence</li>
+								<li>access review outcome</li>
+							</ul>
+							<h2 class="govuk-heading-l">Runbook: leaked integration token, OAuth state or production secret</h2>
+							<p class="govuk-body">Trigger examples:</p>
+							<ul class="govuk-list govuk-list--bullet">
+								<li>
+									Cloudflare, GitHub, Mural, Airtable, email, OpenAI or other provider secret appears in logs, code,
+									screenshots, issues, pull requests or local output
+								</li>
+								<li>
+									OAuth state, session token or callback secret is suspected to be predictable, reused or disclosed
+								</li>
+							</ul>
+							<p class="govuk-body">First actions:</p>
+							<ol class="govuk-list govuk-list--number">
+								<li>Do not paste the secret into tickets, chat or commit history.</li>
+								<li>Record the secret type and where it was seen without recording the secret value.</li>
+								<li>Revoke or rotate the affected secret through the approved owner.</li>
+								<li>Review provider access logs and recent API activity.</li>
+								<li>Redeploy or restart affected services if rotation requires it.</li>
+								<li>Assess whether the secret could have exposed personal data or privileged actions.</li>
+							</ol>
+							<p class="govuk-body">Evidence to retain:</p>
+							<ul class="govuk-list govuk-list--bullet">
+								<li>secret class and owner</li>
+								<li>exposure location and time window</li>
+								<li>rotation time and confirmation</li>
+								<li>provider logs reviewed</li>
+								<li>data exposure assessment</li>
+								<li>follow-up control change</li>
+							</ul>
+							<h2 class="govuk-heading-l">Runbook: production data corruption or failed retention deletion</h2>
+							<p class="govuk-body">Trigger examples:</p>
+							<ul class="govuk-list govuk-list--bullet">
+								<li>
+									participant, consent, journal, synthesis or repository records are unexpectedly changed or missing
+								</li>
+								<li>scheduled retention deletion fails or deletes the wrong records</li>
+								<li>migration or deployment changes D1 or KV data unexpectedly</li>
+							</ul>
+							<p class="govuk-body">First actions:</p>
+							<ol class="govuk-list govuk-list--number">
+								<li>Stop the affected write path if corruption may continue.</li>
+								<li>Preserve affected record identifiers, migration versions and deployment evidence.</li>
+								<li>
+									Identify whether personal data has been lost, altered, disclosed or retained longer than agreed.
+								</li>
+								<li>
+									Escalate to service owner, technical maintainer, privacy representative and security representative.
+								</li>
+								<li>Decide whether backup, restore or manual correction is safer than live repair.</li>
+								<li>
+									Start breach handling if personal data integrity, confidentiality or availability may be affected.
+								</li>
+							</ol>
+							<p class="govuk-body">Evidence to retain:</p>
+							<ul class="govuk-list govuk-list--bullet">
+								<li>affected data classes and stores</li>
+								<li>migration, deployment or retention job details</li>
+								<li>before and after state where available</li>
+								<li>restore or correction decision</li>
+								<li>affected user or participant impact</li>
+								<li>prevention action</li>
+							</ul>
+							<h2 class="govuk-heading-l">Runbook: supplier or integration incident</h2>
+							<p class="govuk-body">Trigger examples:</p>
+							<ul class="govuk-list govuk-list--bullet">
+								<li>Cloudflare, GitHub, Airtable, Mural, email or AI provider reports a security incident</li>
+								<li>supplier availability or integrity issue affects ResearchOps data</li>
+								<li>
+									provider changes subprocessors, regions or retention behaviour in a way that affects the boundary
+								</li>
+							</ul>
+							<p class="govuk-body">First actions:</p>
+							<ol class="govuk-list govuk-list--number">
+								<li>Record the supplier notice, time received and affected service.</li>
+								<li>Map the supplier issue to ResearchOps data flows and data classes.</li>
+								<li>Confirm whether ResearchOps data is affected, potentially affected or not affected.</li>
+								<li>Escalate to service owner, supplier owner, information asset owner and security representative.</li>
+								<li>Preserve supplier notices, status updates and assurance evidence.</li>
+								<li>Start breach handling if personal data may be affected.</li>
+							</ol>
+							<p class="govuk-body">Evidence to retain:</p>
+							<ul class="govuk-list govuk-list--bullet">
+								<li>supplier communications</li>
+								<li>affected integration path</li>
+								<li>data exposure or availability assessment</li>
+								<li>supplier assurance evidence</li>
+								<li>ResearchOps mitigation and communication decisions</li>
+							</ul>
+							<h2 class="govuk-heading-l">Runbook: unavailable service or degraded access</h2>
+							<p class="govuk-body">Trigger examples:</p>
+							<ul class="govuk-list govuk-list--bullet">
+								<li>users cannot access ResearchOps pages or authenticated workflows</li>
+								<li>Cloudflare deployment, Worker route, D1, KV or provider dependency is unavailable</li>
+								<li>release blocks access to consent, participant, journal or repository workflows</li>
+							</ul>
+							<p class="govuk-body">First actions:</p>
+							<ol class="govuk-list govuk-list--number">
+								<li>Confirm affected pages, routes, data stores and user groups.</li>
+								<li>Check deployment, Cloudflare status, Worker errors and recent release changes.</li>
+								<li>Decide whether rollback, temporary disablement or degraded operation is required.</li>
+								<li>Escalate to service owner and technical maintainer.</li>
+								<li>
+									Assess whether personal data availability risk or missed retention action creates breach handling
+									obligations.
+								</li>
+								<li>Record user impact and recovery timing.</li>
+							</ol>
+							<p class="govuk-body">Evidence to retain:</p>
+							<ul class="govuk-list govuk-list--bullet">
+								<li>incident start and end time</li>
+								<li>affected users and workflows</li>
+								<li>root cause and recovery action</li>
+								<li>rollback or fix evidence</li>
+								<li>communication decisions</li>
+								<li>follow-up reliability actions</li>
+							</ul>
+							<h2 class="govuk-heading-l">Post-incident review</h2>
+							<p class="govuk-body">Every high or critical incident needs a short review covering:</p>
+							<ul class="govuk-list govuk-list--bullet">
+								<li>what happened</li>
+								<li>how it was detected</li>
+								<li>how long containment took</li>
+								<li>whether the right people were involved</li>
+								<li>what evidence was retained</li>
+								<li>whether breach handling was started at the right time</li>
+								<li>what will change in controls, monitoring, documentation or training</li>
+							</ul>
+						</div>
+					</div>
+				</div>
+			</div>
+		</main>
+		<x-include src="/partials/footer.html?v=govuk-page-chrome-20260702-1"></x-include>
+	</body>
+</html>

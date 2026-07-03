@@ -6,6 +6,7 @@
  */
 
 import { SIGN_IN_EMAIL, signInMockRoutes } from './scripts/walkthrough-playwright.mjs';
+import { complianceEvidencePages } from './src/govuk/data/compliance-readiness.mjs';
 import { repositoryStaticPages } from './src/govuk/data/repository-page.mjs';
 import { sourcebookIndex, sourcebookPillarPages } from './src/govuk/data/sourcebook.mjs';
 import { operationalPaths } from './visual-walkthrough.operational-fixtures.mjs';
@@ -584,6 +585,24 @@ const sourcebookPages = [
 	...sourcebookPillarPages.map(sourcebookStaticPageEntry),
 ];
 
+function complianceEvidencePageEntry(page) {
+	return {
+		id: `compliance-${page.id}`,
+		title: page.title,
+		group: 'Assurance',
+		path: routeToGeneratedHtmlPath(page.route),
+		description: page.summary,
+		authenticated: false,
+		defaultState: {
+			id: 'default',
+			title: `${page.title} evidence page`,
+			description: page.summary,
+			path: page.route,
+			actions: [{ type: 'waitForText', text: page.title }],
+		},
+	};
+}
+
 export const visualWalkthroughConfig = {
 	title: 'ResearchOps application visual walkthrough',
 	description: 'Generated evidence of the current application build, covering registered pages and important interaction states.',
@@ -683,6 +702,24 @@ export const visualWalkthroughConfig = {
 		registeredPage('notes', 'Notes', 'Utilities', '/pages/notes/index.html', 'Notes page.'),
 		registeredPage('consent', 'Consent', 'Utilities', '/pages/consent/index.html', 'Consent page.'),
 		registeredPage('sessions', 'Sessions', 'Utilities', '/pages/sessions/index.html', 'Sessions list page.'),
+		{
+			...registeredPage(
+				'compliance-readiness',
+				'SOC 2 and ISO/IEC 27001 readiness documentation',
+				'Assurance',
+				'/pages/compliance-readiness/index.html',
+				'Footer-linked readiness page defining the platform boundary and control matrix.'
+			),
+			authenticated: false,
+			defaultState: {
+				id: 'default',
+				title: 'Compliance readiness boundary and control matrix',
+				description: 'Compliance readiness page captured as a public assurance support page.',
+				path: '/pages/compliance-readiness/',
+				actions: [{ type: 'waitForText', text: 'This page does not assert SOC 2 compliance' }],
+			},
+		},
+		...complianceEvidencePages.map(complianceEvidencePageEntry),
 		...repositoryPages,
 		...sourcebookPages,
 	],

@@ -1,0 +1,100 @@
+{
+	"date": "2026-07-03",
+	"branch": "feature/compliance-assurance-boundary",
+	"base": "main",
+	"traceRequired": true,
+	"traceReason": "feature/ branches require auditable traces for repository-affecting work",
+	"taskSummary": "Add supplier assurance readiness evidence for Cloudflare, GitHub, Airtable, Mural, email provider and any AI services.",
+	"operatingModelFilesLoaded": [
+		"AGENTS.md",
+		".agent-operating-model/orchestration.xml",
+		".agent-operating-model/bundle-registry.json",
+		".agent-operating-model/task-signal-catalog.json",
+		".agent-operating-model/selection-rules.json",
+		".agent-operating-model/bootstrap-checklist.md",
+		".agent-operating-model/precedence-policy.md",
+		".agent-operating-model/trace-policy.md",
+		".agent-operating-model/trace-layers.md",
+		".agent-operating-model/github-mutation-policy.md"
+	],
+	"selectedBundles": [
+		{
+			"id": "github-diamond",
+			"canonicalPath": ".agent-operating-model/bundles/github/"
+		},
+		{
+			"id": "researchops-developer-control",
+			"canonicalPath": ".agent-operating-model/bundles/researchops-developer-control/"
+		},
+		{
+			"id": "multi-functional-team",
+			"canonicalPath": ".agent-operating-model/bundles/multi-functional-team/"
+		},
+		{
+			"id": "govuk-design-system",
+			"canonicalPath": ".agent-operating-model/bundles/govuk-design-system/"
+		},
+		{
+			"id": "cloudflare",
+			"canonicalPath": ".agent-operating-model/bundles/cloudflare/"
+		},
+		{
+			"id": "openai-platform",
+			"canonicalPath": ".agent-operating-model/bundles/openai/"
+		},
+		{
+			"id": "airtable-public-api",
+			"canonicalPath": ".agent-operating-model/bundles/airtable-public-api/"
+		},
+		{
+			"id": "mural-public-api",
+			"canonicalPath": ".agent-operating-model/bundles/mural-public-api/"
+		}
+	],
+	"bundlesSkipped": [
+		"mcp-agent-tooling"
+	],
+	"implementationSummary": [
+		"Added a supplier-assurance evidence folder.",
+		"Added a visible GOV.UK supplier assurance register page linked from /pages/compliance-readiness/.",
+		"Included Cloudflare, GitHub, Airtable, Mural, Resend, future communications provider, Cloudflare Workers AI and any future OpenAI or external AI provider.",
+		"Marked supplier assurance as partially evidenced, not complete.",
+		"Kept supplier approval, contract review, data-processing terms, locations, assurance evidence, review cadence and sign-off as remaining gaps.",
+		"Generalised the compliance evidence page renderer so incident response and supplier assurance evidence pages share the same Nunjucks template.",
+		"Updated the GOV.UK render workflow path filters so supplier-assurance Markdown changes trigger regenerated static pages.",
+		"Replaced the wide supplier register table with one section per supplier after browser review showed the table content was squeezed into narrow columns.",
+		"Added a route-state assertion to prevent the supplier register from regressing to a wide GOV.UK table."
+	],
+	"validationEvidence": [
+		{
+			"command": "npm run build:govuk-pages",
+			"status": "passed",
+			"summary": "Generated /pages/compliance-readiness/supplier-assurance/register/."
+		},
+		{
+			"command": "node --import ./tests/helpers/generated-govuk-page-source.mjs --test tests/compliance-assurance-boundary.test.js tests/compliance-readiness-page-route-state.test.js tests/compliance-incident-response-readiness.test.js tests/govuk-pages-render-workflow-state.test.js tests/visual-walkthrough-registry-coverage.test.js",
+			"status": "passed",
+			"summary": "23 focused tests passed for the assurance evidence pack, generated pages, render workflow and visual registry coverage."
+		},
+		{
+			"command": "curl http://127.0.0.1:4173/pages/compliance-readiness/ and curl http://127.0.0.1:4173/pages/compliance-readiness/supplier-assurance/register/",
+			"status": "passed",
+			"summary": "Live preview probes confirmed the readiness page link and supplier register content."
+		},
+		{
+			"command": "npm run build:govuk-pages && node --import ./tests/helpers/generated-govuk-page-source.mjs --test tests/compliance-assurance-boundary.test.js tests/compliance-readiness-page-route-state.test.js tests/govuk-pages-render-workflow-state.test.js tests/visual-walkthrough-registry-coverage.test.js",
+			"status": "passed",
+			"summary": "17 focused tests passed after replacing the wide supplier table with supplier sections."
+		},
+		{
+			"command": "curl http://127.0.0.1:4173/pages/compliance-readiness/supplier-assurance/register/",
+			"status": "passed",
+			"summary": "Live preview confirmed the supplier register uses GOV.UK headings and bullet details rather than a table."
+		}
+	],
+	"residualRisks": [
+		"The supplier register still needs named owners, evidence references, review dates and formal approval decisions.",
+		"Contract, data-processing, location, subprocessor, assurance-report and incident-notification evidence still needs review by Home Office service-owner, commercial, privacy and security roles.",
+		"This branch still does not assert SOC 2 compliance or ISO/IEC 27001 certification."
+	]
+}

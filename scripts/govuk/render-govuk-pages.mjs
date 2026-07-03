@@ -1,13 +1,19 @@
+import { readFileSync } from 'node:fs';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import nunjucks from 'nunjucks';
 import prettier from 'prettier';
 
+import {
+	complianceEvidencePages,
+	complianceReadinessContext,
+} from '../../src/govuk/data/compliance-readiness.mjs';
 import { repositoryPageContext, repositoryStaticPages } from '../../src/govuk/data/repository-page.mjs';
 import { sourcebookIndex, sourcebookPillarPages } from '../../src/govuk/data/sourcebook.mjs';
 
 const root = resolve(process.cwd());
+export const generatedGovukChromeCacheKey = 'govuk-page-chrome-20260702-1';
 const env = new nunjucks.Environment(
 	[
 		new nunjucks.FileSystemLoader(resolve(root, 'src/govuk/templates')),
@@ -27,6 +33,13 @@ function escapeHtmlAttribute(value) {
 		.replaceAll('>', '&gt;');
 }
 
+function escapeHtml(value) {
+	return String(value)
+		.replaceAll('&', '&amp;')
+		.replaceAll('<', '&lt;')
+		.replaceAll('>', '&gt;');
+}
+
 function govukAttributes(attributes = {}) {
 	if (!attributes || typeof attributes !== 'object') return '';
 
@@ -41,6 +54,227 @@ function govukAttributes(attributes = {}) {
 	return new nunjucks.runtime.SafeString(html);
 }
 
+const complianceAbbreviations = [
+	{
+		pattern: /\bISO\/IEC\b/g,
+		markup:
+			'<abbr title="International Organization for Standardization / International Electrotechnical Commission">ISO/IEC</abbr>',
+	},
+	{
+		pattern: /\bSOC\b/g,
+		markup: '<abbr title="System and Organization Controls">SOC</abbr>',
+	},
+	{
+		pattern: /\bTSC\b/g,
+		markup: '<abbr title="Trust Services Criteria">TSC</abbr>',
+	},
+	{
+		pattern: /\bGDPR\b/g,
+		markup: '<abbr title="General Data Protection Regulation">GDPR</abbr>',
+	},
+	{
+		pattern: /\bDPIA\b/g,
+		markup: '<abbr title="Data Protection Impact Assessment">DPIA</abbr>',
+	},
+	{
+		pattern: /\bROPA\b/g,
+		markup: '<abbr title="Record of Processing Activities">ROPA</abbr>',
+	},
+	{
+		pattern: /\bSLOs\b/g,
+		markup: '<abbr title="Service level objectives">SLOs</abbr>',
+	},
+	{
+		pattern: /\bRTO\/RPO\b/g,
+		markup: '<abbr title="Recovery Time Objective / Recovery Point Objective">RTO/RPO</abbr>',
+	},
+];
+
+export function complianceAbbreviationMarkup(value) {
+	let html = String(value)
+		.replaceAll('&', '&amp;')
+		.replaceAll('<', '&lt;')
+		.replaceAll('>', '&gt;');
+
+	for (const abbreviation of complianceAbbreviations) {
+		html = html.replace(abbreviation.pattern, abbreviation.markup);
+	}
+
+	return new nunjucks.runtime.SafeString(html);
+}
+
+function inlineMarkdown(value) {
+	return escapeHtml(value)
+		.replace(
+			/\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)/g,
+			(_match, label, href) =>
+				`<a class="govuk-link" href="${escapeHtmlAttribute(href)}">${label}</a>`,
+		)
+		.replace(/`([^`]+)`/g, '<code class="govuk-code">$1</code>')
+		.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+}
+
+function markdownTable(lines, startIndex) {
+	const rows = [];
+	let index = startIndex;
+
+	while (index < lines.length && /^\|.*\|$/.test(lines[index].trim())) {
+		rows.push(
+			lines[index]
+				.trim()
+				.slice(1, -1)
+				.split('|')
+				.map((cell) => cell.trim()),
+		);
+		index += 1;
+	}
+
+	if (rows.length < 2) return { html: '', nextIndex: startIndex };
+
+	const header = rows[0];
+	const body = rows.slice(2);
+	const headerHtml = header
+		.map((cell) => `<th scope="col" class="govuk-table__header">${inlineMarkdown(cell)}</th>`)
+		.join('');
+	const bodyHtml = body
+		.map(
+			(row) =>
+				`<tr class="govuk-table__row">${row
+					.map((cell) => `<td class="govuk-table__cell">${inlineMarkdown(cell)}</td>`)
+					.join('')}</tr>`,
+		)
+		.join('');
+
+	return {
+		html:
+			'<table class="govuk-table"><thead class="govuk-table__head"><tr class="govuk-table__row">' +
+			headerHtml +
+			'</tr></thead><tbody class="govuk-table__body">' +
+			bodyHtml +
+			'</tbody></table>',
+		nextIndex: index,
+	};
+}
+
+function isMarkdownTableStart(lines, index) {
+	return (
+		index + 1 < lines.length &&
+		/^\|.*\|$/.test(lines[index].trim()) &&
+		/^\|[\s:-]+\|/.test(lines[index + 1].trim())
+	);
+}
+
+export function renderComplianceMarkdownDocument(markdown) {
+	const lines = markdown.replace(/\r\n/g, '\n').split('\n');
+	const bodyLines = lines[0]?.startsWith('# ') ? lines.slice(1) : lines;
+	const htmlParts = [];
+	let listType = null;
+	let orderedItemOpen = false;
+	let nestedListType = null;
+
+	function closeNestedList() {
+		if (!nestedListType) return;
+		htmlParts.push(`</${nestedListType}>`);
+		nestedListType = null;
+	}
+
+	function closeOrderedItem() {
+		if (!orderedItemOpen) return;
+		closeNestedList();
+		htmlParts.push('</li>');
+		orderedItemOpen = false;
+	}
+
+	function closeList() {
+		if (!listType) return;
+		closeOrderedItem();
+		htmlParts.push(`</${listType}>`);
+		listType = null;
+	}
+
+	for (let index = 0; index < bodyLines.length; index += 1) {
+		const rawLine = bodyLines[index];
+		const line = rawLine.trim();
+
+		if (!line) {
+			if (listType !== 'ol') {
+				closeList();
+			}
+			continue;
+		}
+
+		if (isMarkdownTableStart(bodyLines, index)) {
+			closeList();
+			const table = markdownTable(bodyLines, index);
+			htmlParts.push(table.html);
+			index = table.nextIndex - 1;
+			continue;
+		}
+
+		const heading = line.match(/^(#{2,4})\s+(.+)$/);
+		if (heading) {
+			closeList();
+			const level = heading[1].length;
+			const className = level === 2 ? 'govuk-heading-l' : level === 3 ? 'govuk-heading-m' : 'govuk-heading-s';
+			htmlParts.push(`<h${level} class="${className}">${inlineMarkdown(heading[2])}</h${level}>`);
+			continue;
+		}
+
+		const orderedItem = line.match(/^\d+\.\s+(.+)$/);
+		if (orderedItem) {
+			if (listType !== 'ol') {
+				closeList();
+				htmlParts.push('<ol class="govuk-list govuk-list--number">');
+				listType = 'ol';
+			} else {
+				closeOrderedItem();
+			}
+			htmlParts.push(`<li>${inlineMarkdown(orderedItem[1])}`);
+			orderedItemOpen = true;
+			continue;
+		}
+
+		const bulletItem = line.match(/^-\s+(.+)$/);
+		if (bulletItem) {
+			if (/^\s+-\s+/.test(rawLine) && listType === 'ol' && orderedItemOpen) {
+				if (nestedListType !== 'ul') {
+					htmlParts.push('<ul class="govuk-list govuk-list--bullet">');
+					nestedListType = 'ul';
+				}
+				htmlParts.push(`<li>${inlineMarkdown(bulletItem[1])}</li>`);
+				continue;
+			}
+
+			if (listType !== 'ul') {
+				closeList();
+				htmlParts.push('<ul class="govuk-list govuk-list--bullet">');
+				listType = 'ul';
+			}
+			htmlParts.push(`<li>${inlineMarkdown(bulletItem[1])}</li>`);
+			continue;
+		}
+
+		closeList();
+		htmlParts.push(`<p class="govuk-body">${inlineMarkdown(line)}</p>`);
+	}
+
+	closeList();
+
+	return new nunjucks.runtime.SafeString(htmlParts.join('\n'));
+}
+
+function complianceEvidencePageContext(page) {
+	const markdown = readFileSync(resolve(root, page.sourcePath), 'utf8');
+
+	return {
+		...page,
+		pageTitle: `${page.title} - ResearchOps Demo Suite`,
+		serviceName: 'ResearchOps Demo Suite',
+		activeNavigation: '',
+		documentHtml: renderComplianceMarkdownDocument(markdown),
+	};
+}
+
 async function formatRenderedHtml(html) {
 	return prettier.format(html, {
 		parser: 'html',
@@ -52,6 +286,7 @@ async function formatRenderedHtml(html) {
 }
 
 env.addFilter('govukAttributes', govukAttributes);
+env.addFilter('complianceAbbreviations', complianceAbbreviationMarkup);
 env.addGlobal('govukAttributes', govukAttributes);
 
 export const outcomesScriptVersion = '20260603-form-interactions';
@@ -217,6 +452,22 @@ export const govukPages = [
 		},
 	},
 	{
+		template: 'pages/compliance-readiness.njk',
+		output: 'public/pages/compliance-readiness/index.html',
+		context: {
+			...complianceReadinessContext,
+			navigation: accountNavigation,
+		},
+	},
+	...complianceEvidencePages.map((page) => ({
+		template: 'pages/compliance-evidence-document.njk',
+		output: `public${page.route}index.html`,
+		context: {
+			...complianceEvidencePageContext(page),
+			navigation: accountNavigation,
+		},
+	})),
+	{
 		template: 'pages/start.njk',
 		output: 'public/pages/start/index.html',
 		context: {
@@ -236,7 +487,6 @@ export const govukPages = [
 			pageTitle: 'Your ResearchOps account - ResearchOps Demo Suite',
 			serviceName: 'ResearchOps Demo Suite',
 			activeNavigation: '',
-			layoutCacheKey: 'header-account-links-20260623-1',
 			navigation: accountNavigation,
 		},
 	},
@@ -544,7 +794,12 @@ export const govukPages = [
 
 export async function renderGovukPage(page) {
 	const outputPath = resolve(root, page.output);
-	const rawHtml = cacheBustOutcomesPageScripts(env.render(page.template, page.context), page);
+	const context = {
+		...page.context,
+		layoutCacheKey: generatedGovukChromeCacheKey,
+		footerCacheKey: generatedGovukChromeCacheKey,
+	};
+	const rawHtml = cacheBustOutcomesPageScripts(env.render(page.template, context), page);
 	const html = await formatRenderedHtml(rawHtml);
 	await mkdir(dirname(outputPath), { recursive: true });
 	await writeFile(outputPath, html.endsWith('\n') ? html : `${html}\n`, 'utf8');

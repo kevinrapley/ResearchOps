@@ -1,0 +1,31 @@
+# SOC 2 and ISO 27001 readiness evidence index
+
+This index tracks evidence needed to support a future SOC 2 and ISO/IEC 27001 claim for the ResearchOps platform. It does not assert SOC 2 compliance or ISO/IEC 27001 certification.
+
+| Evidence area | Status | Current evidence | Gap to close before a claim |
+| --- | --- | --- | --- |
+| Compliance scope and system boundary | Defined in this PR | `docs/compliance/soc2-iso27001-readiness/scope-and-system-boundary.md` | Requires service owner, information asset owner and security representative sign-off. |
+| Security hardening baseline | Partially evidenced | `docs/agent-audit/reasoning/2026/07/02/security-hardening-main.md` and merged PR #460 | Requires deployment evidence and operational monitoring review after production rollout. |
+| Asset and data inventory | Not complete | Existing repository, Cloudflare, D1, KV, Mural and Airtable references | Produce an owned inventory covering systems, stores, bindings, secrets, data classes and suppliers. |
+| DPIA and GDPR records | Partially evidenced | `docs/compliance/soc2-iso27001-readiness/privacy-and-data-protection/` defines the draft DPIA screening position, data map, ROPA fields and lawful-basis decisions to confirm | Confirm DPIA screening approval, lawful basis, ROPA reference, data sharing, processor/subprocessor positions, retention rules and special-category handling. |
+| Risk assessment and treatment plan | Not complete | `gap-register.yaml`, `security-audit-triage.yaml` and release assurance documents | Create an information security risk register for the scoped service and map each risk to an owner, treatment and review date. |
+| ISO/IEC 27001 Statement of Applicability | Not started | None in this evidence pack | Create a Statement of Applicability after the risk assessment and control selection are agreed. |
+| SOC 2 control mapping | Not started | Security hardening tests and route permission tests | Map implemented controls to the selected SOC 2 Trust Services Criteria and mark evidence owner/frequency. |
+| Access review evidence | Partially evidenced | Auth and role-assignment tests, route-permission migrations and audit-event implementation traces | Define access-review cadence, privileged-access review evidence and joiner/mover/leaver control evidence. |
+| Logging, audit and monitoring | Partially evidenced | Security hardening trace, audit event tests, production logging configuration and `docs/compliance/soc2-iso27001-readiness/availability-and-monitoring/` monitoring readiness evidence | Define what is logged, what PII is excluded, retention for logs, alert thresholds, escalation routes and review evidence. |
+| Incident response | Partially evidenced | Sourcebook incident templates and `docs/compliance/soc2-iso27001-readiness/incident-response/` runbooks, breach handling process and planned test evidence structure | Complete a tabletop or simulated incident exercise, record outcomes and obtain service-owner, security and privacy sign-off. |
+| Supplier assurance | Partially evidenced | `docs/compliance/soc2-iso27001-readiness/supplier-assurance/` register identifies Cloudflare, GitHub, Airtable, Mural, Resend, future communications provider and AI service dependencies | Add named owners, evidence references, contract and data-processing terms, locations, assurance evidence, review cadence and formal approval decisions. |
+| Business continuity and availability | Partially evidenced | `docs/compliance/soc2-iso27001-readiness/availability-and-monitoring/` identifies Cloudflare deployment configuration, D1 and KV storage dependencies, observability settings, backup responsibilities and restore-test evidence needed | Decide whether availability is in SOC 2 scope, then approve SLOs, RTO/RPO, backup schedule, restore tests, monitoring evidence and recovery exercises. |
+| Secure development lifecycle | Partially evidenced | CI, lint, tests, trace policy, security audit policy and branch protection evidence | Produce SDLC control evidence covering review, dependency management, release approval and change traceability. |
+
+## Next control artefacts
+
+The next PRs in this broader workstream should add:
+
+1. Asset and data inventory.
+2. Approved supplier and subprocessor register with evidence references.
+3. ISMS scope, risk assessment, risk treatment plan and Statement of Applicability.
+4. SOC 2 criteria mapping and ISO/IEC 27001 Statement of Applicability skeleton.
+5. Approved DPIA, records-of-processing and lawful-basis sign-off references.
+6. Completed incident response test evidence and breach handling sign-off.
+7. Completed restore test evidence and approved monitoring evidence.

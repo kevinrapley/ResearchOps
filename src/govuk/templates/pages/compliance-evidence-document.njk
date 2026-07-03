@@ -1,0 +1,39 @@
+{% extends "layouts/researchops.njk" %}
+{% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
+{% from "govuk/components/warning-text/macro.njk" import govukWarningText %}
+
+{% block content %}
+<div class="govuk-width-container" data-compliance-evidence-document="{{ slug }}">
+	{{ govukBreadcrumbs({
+		items: [
+			{ text: "Home", href: "/" },
+			{ text: "Compliance readiness", href: "/pages/compliance-readiness/" },
+			{ text: title }
+		]
+	}) }}
+
+	<div class="govuk-grid-row">
+		<div class="govuk-grid-column-two-thirds">
+			<span class="govuk-caption-xl">{{ evidenceCategory }}</span>
+			<h1 class="govuk-heading-xl">{{ title }}</h1>
+			<p class="govuk-body-l">{{ summary }}</p>
+			{{ govukWarningText({
+				text: warningText,
+				classes: "compliance-readiness__warning",
+				iconFallbackText: "Warning"
+			}) }}
+			<p class="govuk-body">
+				<a class="govuk-link" href="/pages/compliance-readiness/">Back to compliance readiness</a>
+			</p>
+		</div>
+	</div>
+
+	<div class="govuk-grid-row">
+		<div class="govuk-grid-column-two-thirds">
+			<div class="compliance-readiness__document">
+				{{ documentHtml }}
+			</div>
+		</div>
+	</div>
+</div>
+{% endblock %}

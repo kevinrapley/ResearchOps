@@ -1,0 +1,284 @@
+<!doctype html>
+<html class="govuk-template" lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>Supplier assurance register - ResearchOps Demo Suite</title>
+		<link rel="stylesheet" href="/assets/govuk/govuk-frontend.css" media="screen" />
+
+		<script type="module" src="/components/layout.js?v=govuk-page-chrome-20260702-1" defer></script>
+		<script type="module" src="/js/govuk-frontend-init.js?v=govuk-page-chrome-20260702-1" defer></script>
+	</head>
+	<body class="govuk-template__body">
+		<script>
+			document.body.className +=
+				" js-enabled" + ("noModule" in HTMLScriptElement.prototype ? " govuk-frontend-supported" : "");
+		</script>
+		<x-include src="/partials/header.html" vars='{"active":""}'></x-include>
+		<main class="govuk-main-wrapper" id="main-content" role="main" tabindex="-1">
+			<div class="govuk-width-container" data-compliance-evidence-document="register">
+				<nav class="govuk-breadcrumbs" aria-label="Breadcrumb">
+					<ol class="govuk-breadcrumbs__list">
+						<li class="govuk-breadcrumbs__list-item">
+							<a class="govuk-breadcrumbs__link" href="/">Home</a>
+						</li>
+
+						<li class="govuk-breadcrumbs__list-item">
+							<a class="govuk-breadcrumbs__link" href="/pages/compliance-readiness/">Compliance readiness</a>
+						</li>
+
+						<li class="govuk-breadcrumbs__list-item" aria-current="page">Supplier assurance register</li>
+					</ol>
+				</nav>
+
+				<div class="govuk-grid-row">
+					<div class="govuk-grid-column-two-thirds">
+						<span class="govuk-caption-xl">Supplier assurance evidence</span>
+						<h1 class="govuk-heading-xl">Supplier assurance register</h1>
+						<p class="govuk-body-l">
+							The supplier and integration assurance register for Cloudflare, GitHub, Airtable, Mural, Resend, future
+							communications providers and configured AI services.
+						</p>
+						<div class="govuk-warning-text compliance-readiness__warning">
+							<span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+							<strong class="govuk-warning-text__text">
+								<span class="govuk-visually-hidden">Warning</span>
+								This page is readiness evidence. It does not assert that supplier assurance has been approved or
+								independently assessed.
+							</strong>
+						</div>
+
+						<p class="govuk-body">
+							<a class="govuk-link" href="/pages/compliance-readiness/">Back to compliance readiness</a>
+						</p>
+					</div>
+				</div>
+
+				<div class="govuk-grid-row">
+					<div class="govuk-grid-column-two-thirds">
+						<div class="compliance-readiness__document">
+							<p class="govuk-body">
+								This register defines the supplier assurance evidence needed before ResearchOps can treat supplier and
+								integration controls as ready for SOC 2 or ISO/IEC 27001 review.
+							</p>
+							<p class="govuk-body">Register status: draft, not approved.</p>
+							<p class="govuk-body">
+								This page is not a supplier approval decision. It is the working register for service-owner,
+								information-asset-owner, commercial, privacy and security review.
+							</p>
+							<h2 class="govuk-heading-l">Review rule</h2>
+							<p class="govuk-body">Before a supplier is treated as approved for production personal data, record:</p>
+							<ul class="govuk-list govuk-list--bullet">
+								<li>supplier role</li>
+								<li>ResearchOps use case</li>
+								<li>personal data and special-category data position</li>
+								<li>contract and data-processing terms</li>
+								<li>location and transfer position</li>
+								<li>subprocessor position</li>
+								<li>security assurance evidence reviewed</li>
+								<li>incident notification route</li>
+								<li>owner and review date</li>
+								<li>approval decision and approver</li>
+							</ul>
+							<h2 class="govuk-heading-l">Current supplier register</h2>
+							<h3 class="govuk-heading-m">Cloudflare</h3>
+							<ul class="govuk-list govuk-list--bullet">
+								<li>
+									<strong>ResearchOps role:</strong>
+									hosts Pages, Workers, D1, KV, secrets, deployment routes and may provide Workers AI where enabled.
+								</li>
+								<li>
+									<strong>Data or control dependency:</strong>
+									service availability, runtime controls, storage boundary, secrets, logs, access controls and AI
+									processing if the AI binding is used.
+								</li>
+								<li>
+									<strong>Current status:</strong>
+									partially evidenced by deployment model, validation gates and secret checks. Not approved for
+									compliance claim.
+								</li>
+								<li>
+									<strong>Evidence needed before a claim:</strong>
+									confirm contract route, data-processing terms, locations, subprocessor position, security assurance
+									reports, incident notification route and owner review cadence.
+								</li>
+							</ul>
+							<h3 class="govuk-heading-m">GitHub</h3>
+							<ul class="govuk-list govuk-list--bullet">
+								<li>
+									<strong>ResearchOps role:</strong>
+									hosts source code, pull requests, actions, release evidence, code scanning, provenance and repository
+									controls.
+								</li>
+								<li>
+									<strong>Data or control dependency:</strong>
+									source control, CI, branch protection, pull request evidence, audit traces and secrets configuration.
+								</li>
+								<li>
+									<strong>Current status:</strong>
+									partially evidenced by PR workflow, CI and release assurance. Not approved for compliance claim.
+								</li>
+								<li>
+									<strong>Evidence needed before a claim:</strong>
+									confirm repository ownership, branch protection evidence, access review evidence, secrets handling,
+									GitHub Actions data exposure, security assurance evidence and retention of workflow logs.
+								</li>
+							</ul>
+							<h3 class="govuk-heading-m">Airtable</h3>
+							<ul class="govuk-list govuk-list--bullet">
+								<li>
+									<strong>ResearchOps role:</strong>
+									provides configured record storage and sync paths for ResearchOps project, study, participant,
+									consent, session and communications data where enabled.
+								</li>
+								<li>
+									<strong>Data or control dependency:</strong>
+									operational research records, participant and staff contact details, consent state, session notes and
+									synchronised project data.
+								</li>
+								<li>
+									<strong>Current status:</strong>
+									integration identified. Not approved for compliance claim.
+								</li>
+								<li>
+									<strong>Evidence needed before a claim:</strong>
+									confirm base ownership, data classes, lawful basis, processor position, data location, retention,
+									access review, API token ownership, backup/export route and supplier assurance evidence.
+								</li>
+							</ul>
+							<h3 class="govuk-heading-m">Mural</h3>
+							<ul class="govuk-list govuk-list--bullet">
+								<li>
+									<strong>ResearchOps role:</strong>
+									provides collaboration workspace, mural objects, OAuth integration and export or sync paths where
+									enabled.
+								</li>
+								<li>
+									<strong>Data or control dependency:</strong>
+									research artefacts, collaboration metadata, user identifiers, mural identifiers, exports and OAuth
+									tokens.
+								</li>
+								<li>
+									<strong>Current status:</strong>
+									integration identified. Not approved for compliance claim.
+								</li>
+								<li>
+									<strong>Evidence needed before a claim:</strong>
+									confirm workspace ownership, permitted data classes, OAuth scope approval, export handling, retention,
+									access review, data location, processor position and supplier assurance evidence.
+								</li>
+							</ul>
+							<h3 class="govuk-heading-m">Resend</h3>
+							<ul class="govuk-list govuk-list--bullet">
+								<li>
+									<strong>ResearchOps role:</strong>
+									sends passwordless sign-in email codes when
+									<code class="govuk-code">RESEND_API_KEY</code>
+									and
+									<code class="govuk-code">RESEARCHOPS_EMAIL_FROM</code>
+									are configured.
+								</li>
+								<li>
+									<strong>Data or control dependency:</strong>
+									staff email address, sign-in code delivery metadata and authentication availability.
+								</li>
+								<li>
+									<strong>Current status:</strong>
+									conditional dependency identified from the passwordless email route. Not approved for compliance
+									claim.
+								</li>
+								<li>
+									<strong>Evidence needed before a claim:</strong>
+									confirm contract route, data-processing terms, email content limits, retention, location, incident
+									notification, sender-domain controls and operational fallback.
+								</li>
+							</ul>
+							<h3 class="govuk-heading-m">future communications provider</h3>
+							<ul class="govuk-list govuk-list--bullet">
+								<li>
+									<strong>ResearchOps role:</strong>
+									sends participant or research-operation messages if the communications stub is replaced with a real
+									provider.
+								</li>
+								<li>
+									<strong>Data or control dependency:</strong>
+									participant contact details, message templates, delivery metadata and communications log entries.
+								</li>
+								<li>
+									<strong>Current status:</strong>
+									not selected. Not approved for production personal data.
+								</li>
+								<li>
+									<strong>Evidence needed before a claim:</strong>
+									select provider through service-owner, commercial, privacy and security review before enabling;
+									confirm data-processing terms, special-category restrictions, message retention, opt-out handling and
+									incident route.
+								</li>
+							</ul>
+							<h3 class="govuk-heading-m">Cloudflare Workers AI</h3>
+							<ul class="govuk-list govuk-list--bullet">
+								<li>
+									<strong>ResearchOps role:</strong>
+									supports AI-assisted rewriting when the Cloudflare AI binding is configured.
+								</li>
+								<li>
+									<strong>Data or control dependency:</strong>
+									user-entered text sent to the model, possible personal data in prompts, model output and operational
+									logs.
+								</li>
+								<li>
+									<strong>Current status:</strong>
+									conditional dependency identified in the AI rewrite route. Not approved for unrestricted personal
+									data.
+								</li>
+								<li>
+									<strong>Evidence needed before a claim:</strong>
+									confirm whether enabled in production, permitted use cases, prompt data rules, retention, logging,
+									model selection, human review, privacy review and safety controls.
+								</li>
+							</ul>
+							<h3 class="govuk-heading-m">OpenAI or other external AI provider</h3>
+							<ul class="govuk-list govuk-list--bullet">
+								<li>
+									<strong>ResearchOps role:</strong>
+									future AI service if ResearchOps is configured to use an external AI provider outside Cloudflare
+									Workers AI.
+								</li>
+								<li>
+									<strong>Data or control dependency:</strong>
+									prompt text, generated output, evaluation data, possible research or participant data if not
+									restricted.
+								</li>
+								<li>
+									<strong>Current status:</strong>
+									not selected. Not approved for production personal data.
+								</li>
+								<li>
+									<strong>Evidence needed before a claim:</strong>
+									complete separate AI supplier review before use, including data-processing terms, retention,
+									training-use position, model safety controls, DPIA screening, human review and incident route.
+								</li>
+							</ul>
+							<h2 class="govuk-heading-l">Minimum review cadence</h2>
+							<p class="govuk-body">Review the supplier register:</p>
+							<ul class="govuk-list govuk-list--bullet">
+								<li>before production go-live</li>
+								<li>before enabling any new supplier or integration</li>
+								<li>before sending new personal data classes to an existing supplier</li>
+								<li>after a supplier incident or material terms change</li>
+								<li>at least every 12 months while the service remains in scope</li>
+							</ul>
+							<h2 class="govuk-heading-l">Current gap</h2>
+							<p class="govuk-body">
+								The register names the supplier dependencies and assurance questions. It still needs named owners,
+								evidence references, review dates and formal approval decisions before ResearchOps can treat supplier
+								assurance as complete.
+							</p>
+						</div>
+					</div>
+				</div>
+			</div>
+		</main>
+		<x-include src="/partials/footer.html?v=govuk-page-chrome-20260702-1"></x-include>
+	</body>
+</html>

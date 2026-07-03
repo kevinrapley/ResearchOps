@@ -1,0 +1,189 @@
+{% extends "layouts/researchops.njk" %}
+{% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
+{% from "govuk/components/warning-text/macro.njk" import govukWarningText %}
+
+{% macro inlineList(items) %}
+	<ul class="govuk-list govuk-list--bullet govuk-!-margin-bottom-0">
+		{% for item in items %}
+		<li>{{ item | complianceAbbreviations }}</li>
+		{% endfor %}
+	</ul>
+{% endmacro %}
+
+{% macro referenceList(items) -%}
+<span class="compliance-readiness__reference-list">{%- for item in items -%}<span class="compliance-readiness__reference">{{ item | complianceAbbreviations }}{%- if not loop.last -%},{% endif -%}</span>{% if not loop.last %} {% endif -%}{%- endfor -%}</span>
+{%- endmacro %}
+
+{% block content %}
+<div class="govuk-width-container" data-compliance-readiness-page>
+	{{ govukBreadcrumbs({
+		items: [
+			{ text: "Home", href: "/" },
+			{ text: "Compliance readiness" }
+		]
+	}) }}
+
+	<div class="govuk-grid-row">
+		<div class="govuk-grid-column-two-thirds">
+			<span class="govuk-caption-xl">{{ complianceScopeSummary.status }}</span>
+			<h1 class="govuk-heading-xl">SOC 2 and ISO/IEC 27001 readiness documentation</h1>
+			<p class="govuk-body-l">
+				{{ "This page records the ResearchOps platform readiness position for SOC 2 compliance work and ISO/IEC 27001 certification preparation." | complianceAbbreviations }}
+			</p>
+			{{ govukWarningText({
+				html: complianceScopeSummary.nonClaim | complianceAbbreviations,
+				classes: "compliance-readiness__warning",
+				iconFallbackText: "Warning"
+			}) }}
+		</div>
+	</div>
+
+	<section aria-labelledby="scope-boundary-heading">
+		<div class="govuk-grid-row">
+			<div class="govuk-grid-column-two-thirds">
+				<h2 class="govuk-heading-l" id="scope-boundary-heading">Compliance scope and system boundary</h2>
+				<p class="govuk-body">{{ complianceScopeSummary.boundary | complianceAbbreviations }}</p>
+				<p class="govuk-body">{{ complianceScopeSummary.assuranceScope | complianceAbbreviations }}</p>
+			</div>
+		</div>
+
+		<div class="govuk-grid-row">
+			{% for section in complianceBoundaryItems %}
+			<div class="govuk-grid-column-one-third">
+				<h3 class="govuk-heading-m">{{ section.title }}</h3>
+				{{ inlineList(section.items) }}
+			</div>
+			{% endfor %}
+		</div>
+	</section>
+
+	<section aria-labelledby="control-matrix-heading" class="govuk-!-margin-top-8">
+		<h2 class="govuk-heading-l" id="control-matrix-heading">Formal control matrix</h2>
+		<p class="govuk-body">
+			{{ "The matrix maps current readiness controls to SOC 2 Trust Services Criteria categories and ISO/IEC 27001:2022 Annex A controls. It is an internal readiness map. A qualified assessor must confirm the final criteria, evidence sufficiency and control operating effectiveness before any claim is made." | complianceAbbreviations }}
+		</p>
+
+		<div class="govuk-table__container">
+			<table class="govuk-table govuk-!-font-size-16 compliance-readiness__control-matrix" data-compliance-control-matrix>
+				<caption class="govuk-table__caption govuk-table__caption--m">{{ "ResearchOps SOC 2 and ISO/IEC 27001 readiness control mapping" | complianceAbbreviations }}</caption>
+				<thead class="govuk-table__head">
+					<tr class="govuk-table__row">
+						<th scope="col" class="govuk-table__header govuk-!-font-size-16">Control area</th>
+						<th scope="col" class="govuk-table__header govuk-!-font-size-16">Readiness expectation</th>
+						<th scope="col" class="govuk-table__header govuk-!-font-size-16">{{ "SOC 2 TSC" | complianceAbbreviations }}</th>
+						<th scope="col" class="govuk-table__header govuk-!-font-size-16">{{ "ISO/IEC 27001 Annex A" | complianceAbbreviations }}</th>
+						<th scope="col" class="govuk-table__header govuk-!-font-size-16">Evidence and gap</th>
+					</tr>
+				</thead>
+				<tbody class="govuk-table__body">
+					{% for row in controlMatrix %}
+					<tr class="govuk-table__row" data-control-area="{{ row.controlArea }}">
+						<th scope="row" class="govuk-table__header govuk-!-font-size-16">{{ row.controlArea | complianceAbbreviations }}<br><strong class="govuk-tag govuk-tag--blue govuk-!-margin-top-2">{{ row.status }}</strong></th>
+						<td class="govuk-table__cell govuk-!-font-size-16">{{ row.readinessExpectation | complianceAbbreviations }}</td>
+						<td class="govuk-table__cell govuk-!-font-size-16" data-control-references="soc2">{{ referenceList(row.soc2Tsc) }}</td>
+						<td class="govuk-table__cell govuk-!-font-size-16" data-control-references="iso27001">{{ referenceList(row.iso27001AnnexA) }}</td>
+						<td class="govuk-table__cell govuk-!-font-size-16">
+							<p class="govuk-body-s"><strong>Current evidence:</strong> {{ row.currentEvidence | complianceAbbreviations }}</p>
+							<p class="govuk-body-s govuk-!-margin-bottom-0"><strong>Gap:</strong> {{ row.gap | complianceAbbreviations }}</p>
+						</td>
+					</tr>
+					{% endfor %}
+				</tbody>
+			</table>
+		</div>
+	</section>
+
+	<section aria-labelledby="incident-response-evidence-heading" class="govuk-!-margin-top-8">
+		<div class="govuk-grid-row">
+			<div class="govuk-grid-column-two-thirds">
+				<h2 class="govuk-heading-l" id="incident-response-evidence-heading">Incident response evidence</h2>
+				<p class="govuk-body">
+					These pages make the incident response runbooks, personal data breach handling process and test evidence structure visible from the readiness artefact. They remain readiness evidence until Home Office review and exercise sign-off are complete.
+				</p>
+				<ul class="govuk-list">
+					{% for evidencePage in incidentResponseEvidencePages %}
+					<li class="govuk-!-margin-bottom-4">
+						<a class="govuk-link govuk-link--no-visited-state" href="{{ evidencePage.route }}">{{ evidencePage.title }}</a>
+						<p class="govuk-body-s govuk-!-margin-bottom-0">{{ evidencePage.summary }}</p>
+					</li>
+					{% endfor %}
+				</ul>
+			</div>
+		</div>
+	</section>
+
+	<section aria-labelledby="supplier-assurance-evidence-heading" class="govuk-!-margin-top-8">
+		<div class="govuk-grid-row">
+			<div class="govuk-grid-column-two-thirds">
+				<h2 class="govuk-heading-l" id="supplier-assurance-evidence-heading">Supplier assurance evidence</h2>
+				<p class="govuk-body">
+					These pages make the supplier and integration assurance position visible for Cloudflare, GitHub, Airtable, Mural, email delivery and configured AI services. They remain readiness evidence until contract, data protection, security and service-owner review are complete.
+				</p>
+				<ul class="govuk-list">
+					{% for evidencePage in supplierAssuranceEvidencePages %}
+					<li class="govuk-!-margin-bottom-4">
+						<a class="govuk-link govuk-link--no-visited-state" href="{{ evidencePage.route }}">{{ evidencePage.title }}</a>
+						<p class="govuk-body-s govuk-!-margin-bottom-0">{{ evidencePage.summary }}</p>
+					</li>
+					{% endfor %}
+				</ul>
+			</div>
+		</div>
+	</section>
+
+	<section aria-labelledby="privacy-evidence-heading" class="govuk-!-margin-top-8">
+		<div class="govuk-grid-row">
+			<div class="govuk-grid-column-two-thirds">
+				<h2 class="govuk-heading-l" id="privacy-evidence-heading">Privacy and data protection evidence</h2>
+				<p class="govuk-body">
+					These pages make the DPIA, data map, records of processing and lawful-basis readiness position visible from the readiness artefact. They remain readiness evidence until privacy, information-asset-owner, legal and service-owner review are complete.
+				</p>
+				<ul class="govuk-list">
+					{% for evidencePage in privacyEvidencePages %}
+					<li class="govuk-!-margin-bottom-4">
+						<a class="govuk-link govuk-link--no-visited-state" href="{{ evidencePage.route }}">{{ evidencePage.title | complianceAbbreviations }}</a>
+						<p class="govuk-body-s govuk-!-margin-bottom-0">{{ evidencePage.summary | complianceAbbreviations }}</p>
+					</li>
+					{% endfor %}
+				</ul>
+			</div>
+		</div>
+	</section>
+
+	<section aria-labelledby="availability-evidence-heading" class="govuk-!-margin-top-8">
+		<div class="govuk-grid-row">
+			<div class="govuk-grid-column-two-thirds">
+				<h2 class="govuk-heading-l" id="availability-evidence-heading">Availability and monitoring evidence</h2>
+				<p class="govuk-body">
+					These pages make the backup, restore, availability and monitoring readiness position visible from the readiness artefact. They remain readiness evidence until service-owner, technical-owner, security and operations review are complete.
+				</p>
+				<ul class="govuk-list">
+					{% for evidencePage in availabilityEvidencePages %}
+					<li class="govuk-!-margin-bottom-4">
+						<a class="govuk-link govuk-link--no-visited-state" href="{{ evidencePage.route }}">{{ evidencePage.title | complianceAbbreviations }}</a>
+						<p class="govuk-body-s govuk-!-margin-bottom-0">{{ evidencePage.summary | complianceAbbreviations }}</p>
+					</li>
+					{% endfor %}
+				</ul>
+			</div>
+		</div>
+	</section>
+
+	<section aria-labelledby="remaining-gaps-heading" class="govuk-!-margin-top-8">
+		<div class="govuk-grid-row">
+			<div class="govuk-grid-column-two-thirds">
+				<h2 class="govuk-heading-l" id="remaining-gaps-heading">Evidence still needed before a claim</h2>
+				{{ inlineList(readinessEvidenceGaps) }}
+			</div>
+			<div class="govuk-grid-column-one-third">
+				<h2 class="govuk-heading-m">Standards references</h2>
+				<ul class="govuk-list">
+					{% for reference in standardsReferences %}
+					<li><a class="govuk-link" href="{{ reference.href }}">{{ reference.title | complianceAbbreviations }}</a></li>
+					{% endfor %}
+				</ul>
+			</div>
+		</div>
+	</section>
+</div>
+{% endblock %}

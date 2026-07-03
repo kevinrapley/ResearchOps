@@ -54,7 +54,7 @@ assert.equal(
 	true
 );
 assert.equal(overviewPage.includes('src="/partials/header.html"'), true);
-assert.equal(overviewPage.includes('src="/partials/footer.html"'), true);
+assert.match(overviewPage, /src="\/partials\/footer\.html(?:\?[^"]*)?"/);
 assert.equal(
 	linkHref(overviewPage, 'Start now'),
 	'/pages/start/',

@@ -111,7 +111,7 @@ class XInclude extends HTMLElement {
 	}
 
 	fetchCacheMode(src) {
-		if (src.includes("/partials/header.html")) return "no-store";
+		if (src.includes("/partials/header.html") || src.includes("/partials/footer.html")) return "no-store";
 		return src.includes("/partials/debug") ? "no-store" : "force-cache";
 	}
 

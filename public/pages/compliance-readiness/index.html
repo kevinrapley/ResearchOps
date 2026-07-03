@@ -1,0 +1,890 @@
+<!doctype html>
+<html class="govuk-template" lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>SOC 2 and ISO/IEC 27001 readiness documentation - ResearchOps Demo Suite</title>
+		<link rel="stylesheet" href="/assets/govuk/govuk-frontend.css" media="screen" />
+
+		<script type="module" src="/components/layout.js?v=govuk-page-chrome-20260702-1" defer></script>
+		<script type="module" src="/js/govuk-frontend-init.js?v=govuk-page-chrome-20260702-1" defer></script>
+	</head>
+	<body class="govuk-template__body">
+		<script>
+			document.body.className +=
+				" js-enabled" + ("noModule" in HTMLScriptElement.prototype ? " govuk-frontend-supported" : "");
+		</script>
+		<x-include src="/partials/header.html" vars='{"active":""}'></x-include>
+		<main class="govuk-main-wrapper" id="main-content" role="main" tabindex="-1">
+			<div class="govuk-width-container" data-compliance-readiness-page>
+				<nav class="govuk-breadcrumbs" aria-label="Breadcrumb">
+					<ol class="govuk-breadcrumbs__list">
+						<li class="govuk-breadcrumbs__list-item">
+							<a class="govuk-breadcrumbs__link" href="/">Home</a>
+						</li>
+
+						<li class="govuk-breadcrumbs__list-item" aria-current="page">Compliance readiness</li>
+					</ol>
+				</nav>
+
+				<div class="govuk-grid-row">
+					<div class="govuk-grid-column-two-thirds">
+						<span class="govuk-caption-xl">Readiness artefact</span>
+						<h1 class="govuk-heading-xl">SOC 2 and ISO/IEC 27001 readiness documentation</h1>
+						<p class="govuk-body-l">
+							This page records the ResearchOps platform readiness position for
+							<abbr title="System and Organization Controls">SOC</abbr>
+							2 compliance work and
+							<abbr title="International Organization for Standardization / International Electrotechnical Commission">
+								ISO/IEC
+							</abbr>
+							27001 certification preparation.
+						</p>
+						<div class="govuk-warning-text compliance-readiness__warning">
+							<span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+							<strong class="govuk-warning-text__text">
+								<span class="govuk-visually-hidden">Warning</span>
+								This page does not assert
+								<abbr title="System and Organization Controls">SOC</abbr>
+								2 compliance or
+								<abbr
+									title="International Organization for Standardization / International Electrotechnical Commission"
+								>
+									ISO/IEC
+								</abbr>
+								27001 certification. It records readiness evidence and gaps for review by security, privacy and
+								service-owner roles.
+							</strong>
+						</div>
+					</div>
+				</div>
+
+				<section aria-labelledby="scope-boundary-heading">
+					<div class="govuk-grid-row">
+						<div class="govuk-grid-column-two-thirds">
+							<h2 class="govuk-heading-l" id="scope-boundary-heading">Compliance scope and system boundary</h2>
+							<p class="govuk-body">
+								The scoped service is the ResearchOps web service, Worker API, data stores, deployment pipeline,
+								integrations and operating controls used to plan, run, evidence, reuse and govern research operations.
+							</p>
+							<p class="govuk-body">
+								<abbr title="System and Organization Controls">SOC</abbr>
+								2 readiness starts with Security, with Confidentiality and Privacy treated as expected candidates
+								because the service can process participant consent records, session notes, research artefacts and other
+								personal data.
+								<abbr
+									title="International Organization for Standardization / International Electrotechnical Commission"
+								>
+									ISO/IEC
+								</abbr>
+								27001 readiness covers the ISMS boundary for the platform and the governance, risk, access, supplier,
+								incident, retention and monitoring processes that support it.
+							</p>
+						</div>
+					</div>
+
+					<div class="govuk-grid-row">
+						<div class="govuk-grid-column-one-third">
+							<h3 class="govuk-heading-m">Included systems</h3>
+
+							<ul class="govuk-list govuk-list--bullet govuk-!-margin-bottom-0">
+								<li>ResearchOps GOV.UK-rendered pages and authenticated workflows</li>
+
+								<li>Cloudflare Pages Functions and Workers API routes</li>
+
+								<li>Cloudflare D1 and KV stores used by ResearchOps</li>
+
+								<li>GitHub repository controls, CI, release and deployment workflows</li>
+
+								<li>Mural, Airtable, email and AI integrations where production data is used</li>
+							</ul>
+						</div>
+
+						<div class="govuk-grid-column-one-third">
+							<h3 class="govuk-heading-m">Included data</h3>
+
+							<ul class="govuk-list govuk-list--bullet govuk-!-margin-bottom-0">
+								<li>user identifiers, email addresses, team roles and route permissions</li>
+
+								<li>participant identifiers, contact details, access needs and consent state</li>
+
+								<li>projects, studies, session notes, journals, synthesis outputs and repository records</li>
+
+								<li>audit events, security events, retention state and deployment evidence</li>
+
+								<li>integration tokens, OAuth state and provider object identifiers</li>
+							</ul>
+						</div>
+
+						<div class="govuk-grid-column-one-third">
+							<h3 class="govuk-heading-m">Explicit exclusions</h3>
+
+							<ul class="govuk-list govuk-list--bullet govuk-!-margin-bottom-0">
+								<li>wider Home Office enterprise identity, device, HR, finance and network controls</li>
+
+								<li>supplier internal control environments beyond supplier-assurance evidence</li>
+
+								<li>local developer endpoints except for secure-development access and secret-handling expectations</li>
+
+								<li>
+									external research tools unless integrated, imported, exported or synchronised through ResearchOps
+								</li>
+							</ul>
+						</div>
+					</div>
+				</section>
+
+				<section aria-labelledby="control-matrix-heading" class="govuk-!-margin-top-8">
+					<h2 class="govuk-heading-l" id="control-matrix-heading">Formal control matrix</h2>
+					<p class="govuk-body">
+						The matrix maps current readiness controls to
+						<abbr title="System and Organization Controls">SOC</abbr>
+						2 Trust Services Criteria categories and
+						<abbr title="International Organization for Standardization / International Electrotechnical Commission">
+							ISO/IEC
+						</abbr>
+						27001:2022 Annex A controls. It is an internal readiness map. A qualified assessor must confirm the final
+						criteria, evidence sufficiency and control operating effectiveness before any claim is made.
+					</p>
+
+					<div class="govuk-table__container">
+						<table
+							class="govuk-table govuk-!-font-size-16 compliance-readiness__control-matrix"
+							data-compliance-control-matrix
+						>
+							<caption class="govuk-table__caption govuk-table__caption--m">
+								ResearchOps
+								<abbr title="System and Organization Controls">SOC</abbr>
+								2 and
+								<abbr
+									title="International Organization for Standardization / International Electrotechnical Commission"
+								>
+									ISO/IEC
+								</abbr>
+								27001 readiness control mapping
+							</caption>
+							<thead class="govuk-table__head">
+								<tr class="govuk-table__row">
+									<th scope="col" class="govuk-table__header govuk-!-font-size-16">Control area</th>
+									<th scope="col" class="govuk-table__header govuk-!-font-size-16">Readiness expectation</th>
+									<th scope="col" class="govuk-table__header govuk-!-font-size-16">
+										<abbr title="System and Organization Controls">SOC</abbr>
+										2
+										<abbr title="Trust Services Criteria">TSC</abbr>
+									</th>
+									<th scope="col" class="govuk-table__header govuk-!-font-size-16">
+										<abbr
+											title="International Organization for Standardization / International Electrotechnical Commission"
+										>
+											ISO/IEC
+										</abbr>
+										27001 Annex A
+									</th>
+									<th scope="col" class="govuk-table__header govuk-!-font-size-16">Evidence and gap</th>
+								</tr>
+							</thead>
+							<tbody class="govuk-table__body">
+								<tr class="govuk-table__row" data-control-area="Governance, scope and accountability">
+									<th scope="row" class="govuk-table__header govuk-!-font-size-16">
+										Governance, scope and accountability
+										<br />
+										<strong class="govuk-tag govuk-tag--blue govuk-!-margin-top-2">Partially evidenced</strong>
+									</th>
+									<td class="govuk-table__cell govuk-!-font-size-16">
+										Service ownership, risk ownership, ISMS accountability, scope approval and policy responsibilities
+										are documented and reviewed.
+									</td>
+									<td class="govuk-table__cell govuk-!-font-size-16" data-control-references="soc2">
+										<span class="compliance-readiness__reference-list">
+											<span class="compliance-readiness__reference">CC1,</span>
+											<span class="compliance-readiness__reference">CC2,</span>
+											<span class="compliance-readiness__reference">CC3,</span>
+											<span class="compliance-readiness__reference">CC5</span>
+										</span>
+									</td>
+									<td class="govuk-table__cell govuk-!-font-size-16" data-control-references="iso27001">
+										<span class="compliance-readiness__reference-list">
+											<span class="compliance-readiness__reference">A.5.1,</span>
+											<span class="compliance-readiness__reference">A.5.2,</span>
+											<span class="compliance-readiness__reference">A.5.31,</span>
+											<span class="compliance-readiness__reference">A.5.35,</span>
+											<span class="compliance-readiness__reference">A.5.36</span>
+										</span>
+									</td>
+									<td class="govuk-table__cell govuk-!-font-size-16">
+										<p class="govuk-body-s">
+											<strong>Current evidence:</strong>
+											Scope and system boundary, agent trace, repository governance rules.
+										</p>
+										<p class="govuk-body-s govuk-!-margin-bottom-0">
+											<strong>Gap:</strong>
+											Needs named Home Office service owner, information asset owner, senior risk owner and security
+											sign-off.
+										</p>
+									</td>
+								</tr>
+
+								<tr class="govuk-table__row" data-control-area="Risk assessment and treatment">
+									<th scope="row" class="govuk-table__header govuk-!-font-size-16">
+										Risk assessment and treatment
+										<br />
+										<strong class="govuk-tag govuk-tag--blue govuk-!-margin-top-2">Gap identified</strong>
+									</th>
+									<td class="govuk-table__cell govuk-!-font-size-16">
+										Information-security risks are identified, assessed, treated, reviewed and connected to control
+										selection.
+									</td>
+									<td class="govuk-table__cell govuk-!-font-size-16" data-control-references="soc2">
+										<span class="compliance-readiness__reference-list">
+											<span class="compliance-readiness__reference">CC3,</span>
+											<span class="compliance-readiness__reference">CC4,</span>
+											<span class="compliance-readiness__reference">CC9</span>
+										</span>
+									</td>
+									<td class="govuk-table__cell govuk-!-font-size-16" data-control-references="iso27001">
+										<span class="compliance-readiness__reference-list">
+											<span class="compliance-readiness__reference">A.5.7,</span>
+											<span class="compliance-readiness__reference">A.5.8,</span>
+											<span class="compliance-readiness__reference">A.5.30,</span>
+											<span class="compliance-readiness__reference">A.5.31</span>
+										</span>
+									</td>
+									<td class="govuk-table__cell govuk-!-font-size-16">
+										<p class="govuk-body-s">
+											<strong>Current evidence:</strong>
+											Gap register, security audit triage, release assurance and readiness evidence index.
+										</p>
+										<p class="govuk-body-s govuk-!-margin-bottom-0">
+											<strong>Gap:</strong>
+											Create a service-specific risk register and treatment plan before a
+											<abbr title="System and Organization Controls">SOC</abbr>
+											2 or
+											<abbr
+												title="International Organization for Standardization / International Electrotechnical Commission"
+											>
+												ISO/IEC
+											</abbr>
+											27001 claim.
+										</p>
+									</td>
+								</tr>
+
+								<tr class="govuk-table__row" data-control-area="Asset, data and classification inventory">
+									<th scope="row" class="govuk-table__header govuk-!-font-size-16">
+										Asset, data and classification inventory
+										<br />
+										<strong class="govuk-tag govuk-tag--blue govuk-!-margin-top-2">Partially evidenced</strong>
+									</th>
+									<td class="govuk-table__cell govuk-!-font-size-16">
+										Systems, stores, bindings, secrets, suppliers and data classes are inventoried, owned and
+										classified.
+									</td>
+									<td class="govuk-table__cell govuk-!-font-size-16" data-control-references="soc2">
+										<span class="compliance-readiness__reference-list">
+											<span class="compliance-readiness__reference">CC2,</span>
+											<span class="compliance-readiness__reference">CC3,</span>
+											<span class="compliance-readiness__reference">CC6</span>
+										</span>
+									</td>
+									<td class="govuk-table__cell govuk-!-font-size-16" data-control-references="iso27001">
+										<span class="compliance-readiness__reference-list">
+											<span class="compliance-readiness__reference">A.5.9,</span>
+											<span class="compliance-readiness__reference">A.5.12,</span>
+											<span class="compliance-readiness__reference">A.5.13,</span>
+											<span class="compliance-readiness__reference">A.5.34</span>
+										</span>
+									</td>
+									<td class="govuk-table__cell govuk-!-font-size-16">
+										<p class="govuk-body-s">
+											<strong>Current evidence:</strong>
+											Boundary document identifies service components, data classes and integrations.
+										</p>
+										<p class="govuk-body-s govuk-!-margin-bottom-0">
+											<strong>Gap:</strong>
+											Produce an owned asset and data inventory with data classification, retention and supplier roles.
+										</p>
+									</td>
+								</tr>
+
+								<tr class="govuk-table__row" data-control-area="Identity, access and privileged actions">
+									<th scope="row" class="govuk-table__header govuk-!-font-size-16">
+										Identity, access and privileged actions
+										<br />
+										<strong class="govuk-tag govuk-tag--blue govuk-!-margin-top-2">Partially evidenced</strong>
+									</th>
+									<td class="govuk-table__cell govuk-!-font-size-16">
+										Authentication, active-account state, team membership, route permissions and privileged actions are
+										enforced and reviewable.
+									</td>
+									<td class="govuk-table__cell govuk-!-font-size-16" data-control-references="soc2">
+										<span class="compliance-readiness__reference-list">
+											<span class="compliance-readiness__reference">CC6</span>
+										</span>
+									</td>
+									<td class="govuk-table__cell govuk-!-font-size-16" data-control-references="iso27001">
+										<span class="compliance-readiness__reference-list">
+											<span class="compliance-readiness__reference">A.5.15,</span>
+											<span class="compliance-readiness__reference">A.5.16,</span>
+											<span class="compliance-readiness__reference">A.5.17,</span>
+											<span class="compliance-readiness__reference">A.5.18,</span>
+											<span class="compliance-readiness__reference">A.8.2,</span>
+											<span class="compliance-readiness__reference">A.8.3,</span>
+											<span class="compliance-readiness__reference">A.8.5</span>
+										</span>
+									</td>
+									<td class="govuk-table__cell govuk-!-font-size-16">
+										<p class="govuk-body-s">
+											<strong>Current evidence:</strong>
+											Passwordless auth, active-account checks, route permissions, team roles and auth route tests.
+										</p>
+										<p class="govuk-body-s govuk-!-margin-bottom-0">
+											<strong>Gap:</strong>
+											Define access-review cadence, privileged-access evidence and joiner, mover and leaver control
+											evidence.
+										</p>
+									</td>
+								</tr>
+
+								<tr class="govuk-table__row" data-control-area="Secure development and change management">
+									<th scope="row" class="govuk-table__header govuk-!-font-size-16">
+										Secure development and change management
+										<br />
+										<strong class="govuk-tag govuk-tag--blue govuk-!-margin-top-2">Partially evidenced</strong>
+									</th>
+									<td class="govuk-table__cell govuk-!-font-size-16">
+										Code, infrastructure and content changes are reviewed, tested, traceable and deployed through
+										controlled workflows.
+									</td>
+									<td class="govuk-table__cell govuk-!-font-size-16" data-control-references="soc2">
+										<span class="compliance-readiness__reference-list">
+											<span class="compliance-readiness__reference">CC7,</span>
+											<span class="compliance-readiness__reference">CC8</span>
+										</span>
+									</td>
+									<td class="govuk-table__cell govuk-!-font-size-16" data-control-references="iso27001">
+										<span class="compliance-readiness__reference-list">
+											<span class="compliance-readiness__reference">A.5.8,</span>
+											<span class="compliance-readiness__reference">A.8.25,</span>
+											<span class="compliance-readiness__reference">A.8.26,</span>
+											<span class="compliance-readiness__reference">A.8.27,</span>
+											<span class="compliance-readiness__reference">A.8.28,</span>
+											<span class="compliance-readiness__reference">A.8.29,</span>
+											<span class="compliance-readiness__reference">A.8.31,</span>
+											<span class="compliance-readiness__reference">A.8.32</span>
+										</span>
+									</td>
+									<td class="govuk-table__cell govuk-!-font-size-16">
+										<p class="govuk-body-s">
+											<strong>Current evidence:</strong>
+											Pull-request workflow, CI, route-state tests, trace policy, linting, build and validation gates.
+										</p>
+										<p class="govuk-body-s govuk-!-margin-bottom-0">
+											<strong>Gap:</strong>
+											Document formal SDLC control ownership, release approval evidence and emergency-change handling.
+										</p>
+									</td>
+								</tr>
+
+								<tr class="govuk-table__row" data-control-area="Application, network and cryptographic protection">
+									<th scope="row" class="govuk-table__header govuk-!-font-size-16">
+										Application, network and cryptographic protection
+										<br />
+										<strong class="govuk-tag govuk-tag--blue govuk-!-margin-top-2">Partially evidenced</strong>
+									</th>
+									<td class="govuk-table__cell govuk-!-font-size-16">
+										The application is protected against unauthorised access, unsafe browser behaviour, weak
+										configuration and exposed secrets.
+									</td>
+									<td class="govuk-table__cell govuk-!-font-size-16" data-control-references="soc2">
+										<span class="compliance-readiness__reference-list">
+											<span class="compliance-readiness__reference">CC6,</span>
+											<span class="compliance-readiness__reference">CC7</span>
+										</span>
+									</td>
+									<td class="govuk-table__cell govuk-!-font-size-16" data-control-references="iso27001">
+										<span class="compliance-readiness__reference-list">
+											<span class="compliance-readiness__reference">A.8.8,</span>
+											<span class="compliance-readiness__reference">A.8.9,</span>
+											<span class="compliance-readiness__reference">A.8.20,</span>
+											<span class="compliance-readiness__reference">A.8.21,</span>
+											<span class="compliance-readiness__reference">A.8.22,</span>
+											<span class="compliance-readiness__reference">A.8.24,</span>
+											<span class="compliance-readiness__reference">A.8.26,</span>
+											<span class="compliance-readiness__reference">A.8.29</span>
+										</span>
+									</td>
+									<td class="govuk-table__cell govuk-!-font-size-16">
+										<p class="govuk-body-s">
+											<strong>Current evidence:</strong>
+											Security headers, CSRF controls, rate limits, secret-name checks and Worker hardening from PR
+											#460.
+										</p>
+										<p class="govuk-body-s govuk-!-margin-bottom-0">
+											<strong>Gap:</strong>
+											Add recurring vulnerability-management evidence and configuration review evidence for production.
+										</p>
+									</td>
+								</tr>
+
+								<tr class="govuk-table__row" data-control-area="Logging, monitoring and audit evidence">
+									<th scope="row" class="govuk-table__header govuk-!-font-size-16">
+										Logging, monitoring and audit evidence
+										<br />
+										<strong class="govuk-tag govuk-tag--blue govuk-!-margin-top-2">Partially evidenced</strong>
+									</th>
+									<td class="govuk-table__cell govuk-!-font-size-16">
+										Security, auth, deployment and operational events are logged with PII minimisation and reviewed
+										through agreed monitoring routines.
+									</td>
+									<td class="govuk-table__cell govuk-!-font-size-16" data-control-references="soc2">
+										<span class="compliance-readiness__reference-list">
+											<span class="compliance-readiness__reference">CC4,</span>
+											<span class="compliance-readiness__reference">CC7</span>
+										</span>
+									</td>
+									<td class="govuk-table__cell govuk-!-font-size-16" data-control-references="iso27001">
+										<span class="compliance-readiness__reference-list">
+											<span class="compliance-readiness__reference">A.5.28,</span>
+											<span class="compliance-readiness__reference">A.8.15,</span>
+											<span class="compliance-readiness__reference">A.8.16,</span>
+											<span class="compliance-readiness__reference">A.8.17,</span>
+											<span class="compliance-readiness__reference">A.8.34</span>
+										</span>
+									</td>
+									<td class="govuk-table__cell govuk-!-font-size-16">
+										<p class="govuk-body-s">
+											<strong>Current evidence:</strong>
+											Audit event implementation, log-minimisation hardening, validation traces and monitoring readiness
+											evidence.
+										</p>
+										<p class="govuk-body-s govuk-!-margin-bottom-0">
+											<strong>Gap:</strong>
+											Define log retention, alert thresholds, review cadence, escalation routes and evidence collection
+											responsibilities.
+										</p>
+									</td>
+								</tr>
+
+								<tr class="govuk-table__row" data-control-area="Incident response and learning">
+									<th scope="row" class="govuk-table__header govuk-!-font-size-16">
+										Incident response and learning
+										<br />
+										<strong class="govuk-tag govuk-tag--blue govuk-!-margin-top-2">Partially evidenced</strong>
+									</th>
+									<td class="govuk-table__cell govuk-!-font-size-16">
+										Security events are reported, assessed, escalated, resolved, evidenced and reviewed for learning.
+									</td>
+									<td class="govuk-table__cell govuk-!-font-size-16" data-control-references="soc2">
+										<span class="compliance-readiness__reference-list">
+											<span class="compliance-readiness__reference">CC7</span>
+										</span>
+									</td>
+									<td class="govuk-table__cell govuk-!-font-size-16" data-control-references="iso27001">
+										<span class="compliance-readiness__reference-list">
+											<span class="compliance-readiness__reference">A.5.24,</span>
+											<span class="compliance-readiness__reference">A.5.25,</span>
+											<span class="compliance-readiness__reference">A.5.26,</span>
+											<span class="compliance-readiness__reference">A.5.27,</span>
+											<span class="compliance-readiness__reference">A.5.28,</span>
+											<span class="compliance-readiness__reference">A.6.8</span>
+										</span>
+									</td>
+									<td class="govuk-table__cell govuk-!-font-size-16">
+										<p class="govuk-body-s">
+											<strong>Current evidence:</strong>
+											Research operations incident templates, service-specific runbooks, personal data breach handling
+											process and planned test evidence structure.
+										</p>
+										<p class="govuk-body-s govuk-!-margin-bottom-0">
+											<strong>Gap:</strong>
+											Complete a tabletop or simulated incident exercise, record outcomes and obtain service-owner,
+											security and privacy sign-off.
+										</p>
+									</td>
+								</tr>
+
+								<tr class="govuk-table__row" data-control-area="Supplier and integration assurance">
+									<th scope="row" class="govuk-table__header govuk-!-font-size-16">
+										Supplier and integration assurance
+										<br />
+										<strong class="govuk-tag govuk-tag--blue govuk-!-margin-top-2">Partially evidenced</strong>
+									</th>
+									<td class="govuk-table__cell govuk-!-font-size-16">
+										Cloudflare, GitHub, Airtable, Mural, email and AI providers are assessed for role, data flow,
+										contract, location and assurance evidence.
+									</td>
+									<td class="govuk-table__cell govuk-!-font-size-16" data-control-references="soc2">
+										<span class="compliance-readiness__reference-list">
+											<span class="compliance-readiness__reference">CC2,</span>
+											<span class="compliance-readiness__reference">CC3,</span>
+											<span class="compliance-readiness__reference">CC9</span>
+										</span>
+									</td>
+									<td class="govuk-table__cell govuk-!-font-size-16" data-control-references="iso27001">
+										<span class="compliance-readiness__reference-list">
+											<span class="compliance-readiness__reference">A.5.19,</span>
+											<span class="compliance-readiness__reference">A.5.20,</span>
+											<span class="compliance-readiness__reference">A.5.21,</span>
+											<span class="compliance-readiness__reference">A.5.22,</span>
+											<span class="compliance-readiness__reference">A.5.23</span>
+										</span>
+									</td>
+									<td class="govuk-table__cell govuk-!-font-size-16">
+										<p class="govuk-body-s">
+											<strong>Current evidence:</strong>
+											Boundary document, supplier assurance register and inherited-control assumptions identify supplier
+											roles, data flows and review questions.
+										</p>
+										<p class="govuk-body-s govuk-!-margin-bottom-0">
+											<strong>Gap:</strong>
+											Add named owners, evidence references, review cadence, data-processing terms and formal supplier
+											approval decisions.
+										</p>
+									</td>
+								</tr>
+
+								<tr class="govuk-table__row" data-control-area="Privacy, retention and data minimisation">
+									<th scope="row" class="govuk-table__header govuk-!-font-size-16">
+										Privacy, retention and data minimisation
+										<br />
+										<strong class="govuk-tag govuk-tag--blue govuk-!-margin-top-2">Partially evidenced</strong>
+									</th>
+									<td class="govuk-table__cell govuk-!-font-size-16">
+										Personal data is minimised, retained only as needed, protected in logs and handled under agreed
+										<abbr title="General Data Protection Regulation">GDPR</abbr>
+										and
+										<abbr title="Data Protection Impact Assessment">DPIA</abbr>
+										controls.
+									</td>
+									<td class="govuk-table__cell govuk-!-font-size-16" data-control-references="soc2">
+										<span class="compliance-readiness__reference-list">
+											<span class="compliance-readiness__reference">CC6,</span>
+											<span class="compliance-readiness__reference">P</span>
+										</span>
+									</td>
+									<td class="govuk-table__cell govuk-!-font-size-16" data-control-references="iso27001">
+										<span class="compliance-readiness__reference-list">
+											<span class="compliance-readiness__reference">A.5.33,</span>
+											<span class="compliance-readiness__reference">A.5.34,</span>
+											<span class="compliance-readiness__reference">A.8.10,</span>
+											<span class="compliance-readiness__reference">A.8.11,</span>
+											<span class="compliance-readiness__reference">A.8.12</span>
+										</span>
+									</td>
+									<td class="govuk-table__cell govuk-!-font-size-16">
+										<p class="govuk-body-s">
+											<strong>Current evidence:</strong>
+											Retention policy, retention enforcement, PII warnings, audit-log minimisation, consent workflows
+											and privacy readiness evidence.
+										</p>
+										<p class="govuk-body-s govuk-!-margin-bottom-0">
+											<strong>Gap:</strong>
+											Confirm
+											<abbr title="Data Protection Impact Assessment">DPIA</abbr>
+											,
+											<abbr title="Record of Processing Activities">ROPA</abbr>
+											references, lawful basis, data-sharing positions and special-category handling.
+										</p>
+									</td>
+								</tr>
+
+								<tr class="govuk-table__row" data-control-area="Availability, continuity and recovery">
+									<th scope="row" class="govuk-table__header govuk-!-font-size-16">
+										Availability, continuity and recovery
+										<br />
+										<strong class="govuk-tag govuk-tag--blue govuk-!-margin-top-2">Partially evidenced</strong>
+									</th>
+									<td class="govuk-table__cell govuk-!-font-size-16">
+										Availability commitments, backup, recovery, continuity and resilience controls are defined and
+										tested if in assurance scope.
+									</td>
+									<td class="govuk-table__cell govuk-!-font-size-16" data-control-references="soc2">
+										<span class="compliance-readiness__reference-list">
+											<span class="compliance-readiness__reference">A,</span>
+											<span class="compliance-readiness__reference">CC7</span>
+										</span>
+									</td>
+									<td class="govuk-table__cell govuk-!-font-size-16" data-control-references="iso27001">
+										<span class="compliance-readiness__reference-list">
+											<span class="compliance-readiness__reference">A.5.29,</span>
+											<span class="compliance-readiness__reference">A.5.30,</span>
+											<span class="compliance-readiness__reference">A.8.13,</span>
+											<span class="compliance-readiness__reference">A.8.14</span>
+										</span>
+									</td>
+									<td class="govuk-table__cell govuk-!-font-size-16">
+										<p class="govuk-body-s">
+											<strong>Current evidence:</strong>
+											Cloudflare deployment model, validation gates, release assurance, observability configuration and
+											backup/restore readiness evidence.
+										</p>
+										<p class="govuk-body-s govuk-!-margin-bottom-0">
+											<strong>Gap:</strong>
+											Decide whether Availability is in
+											<abbr title="System and Organization Controls">SOC</abbr>
+											2 scope, then approve
+											<abbr title="Service level objectives">SLOs</abbr>
+											,
+											<abbr title="Recovery Time Objective / Recovery Point Objective">RTO/RPO</abbr>
+											, backup schedule, restore tests and monitoring evidence.
+										</p>
+									</td>
+								</tr>
+
+								<tr class="govuk-table__row" data-control-area="Compliance evidence and independent review">
+									<th scope="row" class="govuk-table__header govuk-!-font-size-16">
+										Compliance evidence and independent review
+										<br />
+										<strong class="govuk-tag govuk-tag--blue govuk-!-margin-top-2">Gap identified</strong>
+									</th>
+									<td class="govuk-table__cell govuk-!-font-size-16">
+										Control evidence is versioned, reviewed, approved and available for internal assurance and external
+										assessment.
+									</td>
+									<td class="govuk-table__cell govuk-!-font-size-16" data-control-references="soc2">
+										<span class="compliance-readiness__reference-list">
+											<span class="compliance-readiness__reference">CC4,</span>
+											<span class="compliance-readiness__reference">CC5</span>
+										</span>
+									</td>
+									<td class="govuk-table__cell govuk-!-font-size-16" data-control-references="iso27001">
+										<span class="compliance-readiness__reference-list">
+											<span class="compliance-readiness__reference">A.5.35,</span>
+											<span class="compliance-readiness__reference">A.5.36,</span>
+											<span class="compliance-readiness__reference">A.5.37</span>
+										</span>
+									</td>
+									<td class="govuk-table__cell govuk-!-font-size-16">
+										<p class="govuk-body-s">
+											<strong>Current evidence:</strong>
+											Evidence index, trace artefacts, validation summaries and release assurance documents.
+										</p>
+										<p class="govuk-body-s govuk-!-margin-bottom-0">
+											<strong>Gap:</strong>
+											Create a Statement of Applicability and a
+											<abbr title="System and Organization Controls">SOC</abbr>
+											2 control-to-evidence mapping with owners and frequencies.
+										</p>
+									</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+				</section>
+
+				<section aria-labelledby="incident-response-evidence-heading" class="govuk-!-margin-top-8">
+					<div class="govuk-grid-row">
+						<div class="govuk-grid-column-two-thirds">
+							<h2 class="govuk-heading-l" id="incident-response-evidence-heading">Incident response evidence</h2>
+							<p class="govuk-body">
+								These pages make the incident response runbooks, personal data breach handling process and test evidence
+								structure visible from the readiness artefact. They remain readiness evidence until Home Office review
+								and exercise sign-off are complete.
+							</p>
+							<ul class="govuk-list">
+								<li class="govuk-!-margin-bottom-4">
+									<a
+										class="govuk-link govuk-link--no-visited-state"
+										href="/pages/compliance-readiness/incident-response/runbooks/"
+									>
+										Incident response runbooks
+									</a>
+									<p class="govuk-body-s govuk-!-margin-bottom-0">
+										Service-specific first-response runbooks for likely ResearchOps security, privacy, supplier and
+										availability incidents.
+									</p>
+								</li>
+
+								<li class="govuk-!-margin-bottom-4">
+									<a
+										class="govuk-link govuk-link--no-visited-state"
+										href="/pages/compliance-readiness/incident-response/personal-data-breach-handling/"
+									>
+										Personal data breach handling
+									</a>
+									<p class="govuk-body-s govuk-!-margin-bottom-0">
+										The decision route for suspected personal data breaches, including escalation, notification
+										assessment and evidence to retain.
+									</p>
+								</li>
+
+								<li class="govuk-!-margin-bottom-4">
+									<a
+										class="govuk-link govuk-link--no-visited-state"
+										href="/pages/compliance-readiness/incident-response/test-evidence/"
+									>
+										Incident response test evidence
+									</a>
+									<p class="govuk-body-s govuk-!-margin-bottom-0">
+										The planned tabletop or simulated incident exercise evidence structure, completion criteria and
+										outcome record needed before the control can be treated as tested.
+									</p>
+								</li>
+							</ul>
+						</div>
+					</div>
+				</section>
+
+				<section aria-labelledby="supplier-assurance-evidence-heading" class="govuk-!-margin-top-8">
+					<div class="govuk-grid-row">
+						<div class="govuk-grid-column-two-thirds">
+							<h2 class="govuk-heading-l" id="supplier-assurance-evidence-heading">Supplier assurance evidence</h2>
+							<p class="govuk-body">
+								These pages make the supplier and integration assurance position visible for Cloudflare, GitHub,
+								Airtable, Mural, email delivery and configured AI services. They remain readiness evidence until
+								contract, data protection, security and service-owner review are complete.
+							</p>
+							<ul class="govuk-list">
+								<li class="govuk-!-margin-bottom-4">
+									<a
+										class="govuk-link govuk-link--no-visited-state"
+										href="/pages/compliance-readiness/supplier-assurance/register/"
+									>
+										Supplier assurance register
+									</a>
+									<p class="govuk-body-s govuk-!-margin-bottom-0">
+										The supplier and integration assurance register for Cloudflare, GitHub, Airtable, Mural, Resend,
+										future communications providers and configured AI services.
+									</p>
+								</li>
+							</ul>
+						</div>
+					</div>
+				</section>
+
+				<section aria-labelledby="privacy-evidence-heading" class="govuk-!-margin-top-8">
+					<div class="govuk-grid-row">
+						<div class="govuk-grid-column-two-thirds">
+							<h2 class="govuk-heading-l" id="privacy-evidence-heading">Privacy and data protection evidence</h2>
+							<p class="govuk-body">
+								These pages make the DPIA, data map, records of processing and lawful-basis readiness position visible
+								from the readiness artefact. They remain readiness evidence until privacy, information-asset-owner,
+								legal and service-owner review are complete.
+							</p>
+							<ul class="govuk-list">
+								<li class="govuk-!-margin-bottom-4">
+									<a
+										class="govuk-link govuk-link--no-visited-state"
+										href="/pages/compliance-readiness/privacy-and-data-protection/dpia-data-map-ropa-lawful-basis/"
+									>
+										<abbr title="Data Protection Impact Assessment">DPIA</abbr>
+										, data map,
+										<abbr title="Record of Processing Activities">ROPA</abbr>
+										and lawful-basis readiness
+									</a>
+									<p class="govuk-body-s govuk-!-margin-bottom-0">
+										The draft privacy evidence structure for
+										<abbr title="Data Protection Impact Assessment">DPIA</abbr>
+										screening, data mapping, records of processing and lawful-basis decisions.
+									</p>
+								</li>
+							</ul>
+						</div>
+					</div>
+				</section>
+
+				<section aria-labelledby="availability-evidence-heading" class="govuk-!-margin-top-8">
+					<div class="govuk-grid-row">
+						<div class="govuk-grid-column-two-thirds">
+							<h2 class="govuk-heading-l" id="availability-evidence-heading">Availability and monitoring evidence</h2>
+							<p class="govuk-body">
+								These pages make the backup, restore, availability and monitoring readiness position visible from the
+								readiness artefact. They remain readiness evidence until service-owner, technical-owner, security and
+								operations review are complete.
+							</p>
+							<ul class="govuk-list">
+								<li class="govuk-!-margin-bottom-4">
+									<a
+										class="govuk-link govuk-link--no-visited-state"
+										href="/pages/compliance-readiness/availability-and-monitoring/backup-restore-availability-monitoring/"
+									>
+										Backup, restore, availability and monitoring readiness
+									</a>
+									<p class="govuk-body-s govuk-!-margin-bottom-0">
+										The draft continuity evidence structure for backup responsibilities, restore tests, availability
+										scope,
+										<abbr title="Service level objectives">SLOs</abbr>
+										,
+										<abbr title="Recovery Time Objective / Recovery Point Objective">RTO/RPO</abbr>
+										and monitoring decisions.
+									</p>
+								</li>
+							</ul>
+						</div>
+					</div>
+				</section>
+
+				<section aria-labelledby="remaining-gaps-heading" class="govuk-!-margin-top-8">
+					<div class="govuk-grid-row">
+						<div class="govuk-grid-column-two-thirds">
+							<h2 class="govuk-heading-l" id="remaining-gaps-heading">Evidence still needed before a claim</h2>
+
+							<ul class="govuk-list govuk-list--bullet govuk-!-margin-bottom-0">
+								<li>Service owner, information asset owner, senior risk owner and security representative sign-off</li>
+
+								<li>asset and data inventory</li>
+
+								<li>
+									<abbr title="Data Protection Impact Assessment">DPIA</abbr>
+									, data map, records of processing and lawful-basis documentation
+								</li>
+
+								<li>ISMS scope, risk assessment, risk treatment plan and Statement of Applicability</li>
+
+								<li>information security risk register and treatment plan</li>
+
+								<li>
+									<abbr title="System and Organization Controls">SOC</abbr>
+									2 control-to-evidence mapping at criteria level
+								</li>
+
+								<li>
+									<abbr
+										title="International Organization for Standardization / International Electrotechnical Commission"
+									>
+										ISO/IEC
+									</abbr>
+									27001 Statement of Applicability
+								</li>
+
+								<li>approved supplier and subprocessor register</li>
+
+								<li>
+									access review, completed incident response test evidence, completed restore test evidence and approved
+									monitoring evidence
+								</li>
+							</ul>
+						</div>
+						<div class="govuk-grid-column-one-third">
+							<h2 class="govuk-heading-m">Standards references</h2>
+							<ul class="govuk-list">
+								<li>
+									<a
+										class="govuk-link"
+										href="https://www.aicpa-cima.com/resources/landing/system-and-organization-controls-soc-suite-of-services"
+									>
+										AICPA
+										<abbr title="System and Organization Controls">SOC</abbr>
+										suite of services
+									</a>
+								</li>
+
+								<li>
+									<a class="govuk-link" href="https://www.iso.org/standard/27001">
+										<abbr
+											title="International Organization for Standardization / International Electrotechnical Commission"
+										>
+											ISO/IEC
+										</abbr>
+										27001 information security management systems
+									</a>
+								</li>
+							</ul>
+						</div>
+					</div>
+				</section>
+			</div>
+		</main>
+		<x-include src="/partials/footer.html?v=govuk-page-chrome-20260702-1"></x-include>
+	</body>
+</html>

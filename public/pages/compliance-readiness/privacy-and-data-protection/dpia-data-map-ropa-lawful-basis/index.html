@@ -1,0 +1,345 @@
+<!doctype html>
+<html class="govuk-template" lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>DPIA, data map, ROPA and lawful-basis readiness - ResearchOps Demo Suite</title>
+		<link rel="stylesheet" href="/assets/govuk/govuk-frontend.css" media="screen" />
+
+		<script type="module" src="/components/layout.js?v=govuk-page-chrome-20260702-1" defer></script>
+		<script type="module" src="/js/govuk-frontend-init.js?v=govuk-page-chrome-20260702-1" defer></script>
+	</head>
+	<body class="govuk-template__body">
+		<script>
+			document.body.className +=
+				" js-enabled" + ("noModule" in HTMLScriptElement.prototype ? " govuk-frontend-supported" : "");
+		</script>
+		<x-include src="/partials/header.html" vars='{"active":""}'></x-include>
+		<main class="govuk-main-wrapper" id="main-content" role="main" tabindex="-1">
+			<div class="govuk-width-container" data-compliance-evidence-document="dpia-data-map-ropa-lawful-basis">
+				<nav class="govuk-breadcrumbs" aria-label="Breadcrumb">
+					<ol class="govuk-breadcrumbs__list">
+						<li class="govuk-breadcrumbs__list-item">
+							<a class="govuk-breadcrumbs__link" href="/">Home</a>
+						</li>
+
+						<li class="govuk-breadcrumbs__list-item">
+							<a class="govuk-breadcrumbs__link" href="/pages/compliance-readiness/">Compliance readiness</a>
+						</li>
+
+						<li class="govuk-breadcrumbs__list-item" aria-current="page">
+							DPIA, data map, ROPA and lawful-basis readiness
+						</li>
+					</ol>
+				</nav>
+
+				<div class="govuk-grid-row">
+					<div class="govuk-grid-column-two-thirds">
+						<span class="govuk-caption-xl">Privacy and data protection evidence</span>
+						<h1 class="govuk-heading-xl">DPIA, data map, ROPA and lawful-basis readiness</h1>
+						<p class="govuk-body-l">
+							The draft privacy evidence structure for DPIA screening, data mapping, records of processing and
+							lawful-basis decisions.
+						</p>
+						<div class="govuk-warning-text compliance-readiness__warning">
+							<span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+							<strong class="govuk-warning-text__text">
+								<span class="govuk-visually-hidden">Warning</span>
+								This page is readiness evidence. It does not assert that the DPIA, ROPA, data map or lawful-basis
+								position has been approved.
+							</strong>
+						</div>
+
+						<p class="govuk-body">
+							<a class="govuk-link" href="/pages/compliance-readiness/">Back to compliance readiness</a>
+						</p>
+					</div>
+				</div>
+
+				<div class="govuk-grid-row">
+					<div class="govuk-grid-column-two-thirds">
+						<div class="compliance-readiness__document">
+							<p class="govuk-body">Status: draft, not approved.</p>
+							<p class="govuk-body">
+								This page is not an approved DPIA, ROPA entry or lawful-basis decision. It is a working evidence record
+								for Home Office privacy, legal, service-owner, information-asset-owner and security review.
+							</p>
+							<h2 class="govuk-heading-l">DPIA readiness</h2>
+							<p class="govuk-body">
+								ResearchOps should be screened for DPIA need before production use with real participant or staff
+								personal data because the platform can involve:
+							</p>
+							<ul class="govuk-list govuk-list--bullet">
+								<li>participant contact details, consent state, access needs and research-session records</li>
+								<li>research notes, repository artefacts, synthesis outputs and operational decisions</li>
+								<li>special-category, safeguarding or sensitive operational information depending on study context</li>
+								<li>
+									supplier integrations for hosting, storage, email, collaboration, repository management and
+									AI-assisted processing where enabled
+								</li>
+								<li>retention, deletion, access-control and audit-log decisions that affect personal data</li>
+							</ul>
+							<p class="govuk-body">
+								Current position: the evidence pack identifies the triggers and likely data flows, but the DPIA is not
+								approved. A named Home Office privacy route must confirm whether a full DPIA is required, record the
+								residual risks and approve the mitigation position before a compliance claim is made.
+							</p>
+							<h2 class="govuk-heading-l">Data map</h2>
+							<h3 class="govuk-heading-m">Account and access data</h3>
+							<ul class="govuk-list govuk-list--bullet">
+								<li>
+									<strong>Data classes:</strong>
+									staff email address, user identifier, team role, active-account state, access request reason, approval
+									decision and audit event.
+								</li>
+								<li>
+									<strong>Source:</strong>
+									staff member, team approver, authentication workflow and system-generated access events.
+								</li>
+								<li>
+									<strong>Stores and routes:</strong>
+									authentication routes, team-access routes, audit records and Cloudflare storage bindings where
+									configured.
+								</li>
+								<li>
+									<strong>Sharing and suppliers:</strong>
+									Cloudflare for hosting and runtime, GitHub for change evidence, email provider for sign-in messages
+									where configured.
+								</li>
+								<li>
+									<strong>Retention and deletion position:</strong>
+									retain only for account operation, access review, audit and security purposes; deletion and account
+									closure rules need owner sign-off.
+								</li>
+								<li>
+									<strong>Open decision:</strong>
+									confirm owner, retention period, access-review cadence and whether any exported support evidence is
+									permitted.
+								</li>
+							</ul>
+							<h3 class="govuk-heading-m">Participant and consent data</h3>
+							<ul class="govuk-list govuk-list--bullet">
+								<li>
+									<strong>Data classes:</strong>
+									participant reference, contact details, access needs, consent state, study participation,
+									communication preference and consent notes.
+								</li>
+								<li>
+									<strong>Source:</strong>
+									researcher entry, participant consent workflow or imported research-operation records.
+								</li>
+								<li>
+									<strong>Stores and routes:</strong>
+									participant, consent, study and communications routes; Airtable sync paths where enabled.
+								</li>
+								<li>
+									<strong>Sharing and suppliers:</strong>
+									Cloudflare, Airtable where enabled, email or communications provider if participant messaging is
+									enabled.
+								</li>
+								<li>
+									<strong>Retention and deletion position:</strong>
+									retain only for the research purpose and agreed evidence needs; deletion, withdrawal and anonymisation
+									rules need privacy sign-off.
+								</li>
+								<li>
+									<strong>Open decision:</strong>
+									confirm lawful basis, transparency wording, consent evidence standard and special-category handling.
+								</li>
+							</ul>
+							<h3 class="govuk-heading-m">Research planning and session data</h3>
+							<ul class="govuk-list govuk-list--bullet">
+								<li>
+									<strong>Data classes:</strong>
+									project metadata, study plans, session schedules, observers, note-taker assignments, session notes and
+									operational context.
+								</li>
+								<li>
+									<strong>Source:</strong>
+									researchers, ResearchOps coordinators and study delivery workflows.
+								</li>
+								<li>
+									<strong>Stores and routes:</strong>
+									project, study, session, note and journal records.
+								</li>
+								<li>
+									<strong>Sharing and suppliers:</strong>
+									Cloudflare for runtime and storage; Airtable or Mural where sync or collaboration is enabled.
+								</li>
+								<li>
+									<strong>Retention and deletion position:</strong>
+									retain only while needed for research governance, synthesis and reuse decisions; final schedule
+									requires information-asset-owner approval.
+								</li>
+								<li>
+									<strong>Open decision:</strong>
+									confirm whether session notes may include participant identifiers or sensitive research context, then
+									set minimisation and redaction rules.
+								</li>
+							</ul>
+							<h3 class="govuk-heading-m">Research artefacts and repository records</h3>
+							<ul class="govuk-list govuk-list--bullet">
+								<li>
+									<strong>Data classes:</strong>
+									evidence records, files or references, synthesis outputs, findings, recommendations, repository
+									metadata and reuse decisions.
+								</li>
+								<li>
+									<strong>Source:</strong>
+									researchers, repository curators, collaboration tools and imported artefacts.
+								</li>
+								<li>
+									<strong>Stores and routes:</strong>
+									research repository pages, sourcebook references, linked integration records and generated outputs.
+								</li>
+								<li>
+									<strong>Sharing and suppliers:</strong>
+									Cloudflare, GitHub for committed evidence where applicable, Mural or Airtable if artefacts are
+									synchronised.
+								</li>
+								<li>
+									<strong>Retention and deletion position:</strong>
+									repository records should avoid direct PII by design unless a controlled purpose is approved; reuse
+									and archive rules need sign-off.
+								</li>
+								<li>
+									<strong>Open decision:</strong>
+									confirm classification, redaction, reuse, archive and disposal rules for artefacts that may contain
+									personal data.
+								</li>
+							</ul>
+							<h3 class="govuk-heading-m">Audit, security and operational logs</h3>
+							<ul class="govuk-list govuk-list--bullet">
+								<li>
+									<strong>Data classes:</strong>
+									route access, authentication events, security events, deployment evidence, error context and
+									operational metadata.
+								</li>
+								<li>
+									<strong>Source:</strong>
+									application, Worker routes, CI, deployment and security controls.
+								</li>
+								<li>
+									<strong>Stores and routes:</strong>
+									audit event records, Cloudflare logs and GitHub Actions logs.
+								</li>
+								<li>
+									<strong>Sharing and suppliers:</strong>
+									Cloudflare and GitHub, with support or incident evidence shared only through approved routes.
+								</li>
+								<li>
+									<strong>Retention and deletion position:</strong>
+									logs should minimise PII and retain only what is needed for security, audit and operational assurance;
+									retention periods need approval.
+								</li>
+								<li>
+									<strong>Open decision:</strong>
+									confirm log-retention schedule, alert review cadence and redaction rules for incident evidence.
+								</li>
+							</ul>
+							<h3 class="govuk-heading-m">AI-assisted text processing if enabled</h3>
+							<ul class="govuk-list govuk-list--bullet">
+								<li>
+									<strong>Data classes:</strong>
+									user-entered prompt text, generated output, model metadata and operational logs.
+								</li>
+								<li>
+									<strong>Source:</strong>
+									staff-entered text in AI-assisted workflows.
+								</li>
+								<li>
+									<strong>Stores and routes:</strong>
+									AI rewrite route, model provider boundary and any output saved back to ResearchOps records.
+								</li>
+								<li>
+									<strong>Sharing and suppliers:</strong>
+									Cloudflare Workers AI where enabled, or a separately approved external AI provider if configured
+									later.
+								</li>
+								<li>
+									<strong>Retention and deletion position:</strong>
+									do not send participant personal data, special-category data or sensitive operational information to
+									AI services unless the approved DPIA, supplier and lawful-basis position permits it.
+								</li>
+								<li>
+									<strong>Open decision:</strong>
+									confirm permitted prompts, provider terms, retention, logging, model training-use position and human
+									review controls.
+								</li>
+							</ul>
+							<h2 class="govuk-heading-l">Records of processing readiness</h2>
+							<p class="govuk-body">The ResearchOps ROPA entry should record:</p>
+							<ul class="govuk-list govuk-list--bullet">
+								<li>controller, processor and joint-controller positions for the platform and each integration</li>
+								<li>
+									processing purposes for account management, research planning, participant management, consent
+									records, repository evidence, audit and security monitoring
+								</li>
+								<li>
+									data-subject categories, including staff, researchers, approvers, participants and potential
+									participants
+								</li>
+								<li>
+									personal-data categories, including contact details, identifiers, access needs, consent state,
+									research context and audit metadata
+								</li>
+								<li>special-category data position and safeguards where a study context may include it</li>
+								<li>recipients, suppliers, subprocessors, transfers and storage locations</li>
+								<li>retention periods, deletion triggers and archive rules by data class</li>
+								<li>
+									technical and organisational controls, including access control, audit, minimisation, incident
+									response and supplier assurance
+								</li>
+								<li>evidence owner, review cadence and approval reference</li>
+							</ul>
+							<p class="govuk-body">
+								Current position: the required ROPA fields are identified, but the ROPA is not complete or approved.
+							</p>
+							<h2 class="govuk-heading-l">Lawful-basis readiness</h2>
+							<p class="govuk-body">
+								The lawful-basis position must be confirmed by the authorised Home Office privacy and legal route. The
+								working assumptions are:
+							</p>
+							<ul class="govuk-list govuk-list--bullet">
+								<li>
+									staff account and access data needs a basis for service administration, access control and security
+									monitoring
+								</li>
+								<li>
+									participant recruitment, consent and contact data needs a basis for research operations and
+									participant communication
+								</li>
+								<li>
+									research notes and artefacts need a basis that reflects the study purpose, participant information and
+									reuse limits
+								</li>
+								<li>
+									access needs, special-category data or safeguarding context needs a confirmed Article 9 condition and
+									safeguards if processed
+								</li>
+								<li>
+									AI-assisted processing needs a separate permitted-use decision before personal data is sent to a model
+									provider
+								</li>
+								<li>
+									audit and security logs need a basis that supports accountability, misuse detection and incident
+									investigation while minimising PII
+								</li>
+							</ul>
+							<p class="govuk-body">
+								Current position: lawful-basis decisions are named as required controls, but they are not approved.
+							</p>
+							<h2 class="govuk-heading-l">Current gap</h2>
+							<p class="govuk-body">
+								Before ResearchOps can claim this control is complete, the service needs approved DPIA screening, a
+								signed ROPA reference, an owned data map, confirmed lawful-basis decisions, data-sharing and processor
+								positions, retention rules and privacy-notice alignment.
+							</p>
+						</div>
+					</div>
+				</div>
+			</div>
+		</main>
+		<x-include src="/partials/footer.html?v=govuk-page-chrome-20260702-1"></x-include>
+	</body>
+</html>
