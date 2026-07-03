@@ -51,6 +51,9 @@ includes(templateSource, "govuk/components/button/macro.njk", "search template")
 includes(templateSource, "govukInput({", "search template");
 includes(templateSource, "govukSelect({", "search template");
 includes(templateSource, "govukButton({", "search template");
+excludes(templateSource, "SourcebookGate(sourcebookGate)", "search template");
+excludes(templateSource, "SourcebookContext(sourcebookContext)", "search template");
+excludes(templateSource, "SourcebookEvidenceLedger(sourcebookEvidenceLedger)", "search template");
 includes(rendererSource, "template: 'pages/search.njk'", "GOV.UK page renderer");
 includes(rendererSource, "output: 'public/pages/search/index.html'", "GOV.UK page renderer");
 includes(generatedCssTargetsSource, "name: 'Search utility route stylesheet'", "generated CSS targets");

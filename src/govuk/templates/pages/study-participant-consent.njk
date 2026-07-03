@@ -8,6 +8,9 @@
 {% from "govuk/components/summary-list/macro.njk" import govukSummaryList %}
 {% from "govuk/components/textarea/macro.njk" import govukTextarea %}
 {% from "macros/daas-brand-panel.njk" import daasBrandPanel %}
+{% from "macros/sourcebook-context.njk" import SourcebookContext %}
+{% from "macros/sourcebook-evidence-ledger.njk" import SourcebookEvidenceLedger %}
+{% from "macros/sourcebook-gate.njk" import SourcebookGate %}
 
 {% set studyPageScriptVersion = "study-record-id-routing-20260518" %}
 
@@ -46,7 +49,7 @@
 		<div>
 			<p id="study-context" class="govuk-caption-m">Study</p>
 			<h1 class="govuk-heading-l">Manage participant consent</h1>
-			<p class="govuk-body participant-consent-context govuk-!-width-two-thirds">Record, review or withdraw participant consent for this study. Consent is recorded against a specific published consent form version.</p>
+			<p class="govuk-body participant-consent-context govuk-!-width-two-thirds">Record, review or withdraw consent for this study. Consent is recorded against a published form version.</p>
 		</div>
 	</header>
 
@@ -78,52 +81,59 @@
 	</section>
 
 	<section id="consent-workspace" class="participant-consent-workspace" hidden>
-		<section class="participant-consent-panel" aria-labelledby="consent-summary-title">
-			<h2 id="consent-summary-title" class="govuk-heading-m">Consent coverage</h2>
-			{{ govukSummaryList({
-				classes: "participant-consent-summary",
-				rows: [
-					{ key: { text: "Form version" }, value: { html: '<span id="summary-published-form">-</span>' } },
-					{ key: { text: "Participants" }, value: { html: '<span id="summary-participants">-</span>' } },
-					{ key: { text: "Ready" }, value: { html: '<span id="summary-ready">-</span>' } },
-					{ key: { text: "Needs action" }, value: { html: '<span id="summary-action-needed">-</span>' } }
-				]
-			}) }}
-		</section>
+		<div class="participant-consent-workspace__main">
+			<section class="participant-consent-panel" aria-labelledby="consent-summary-title">
+				<h2 id="consent-summary-title" class="govuk-heading-m">Consent summary</h2>
+				{{ govukSummaryList({
+					classes: "participant-consent-summary",
+					rows: [
+						{ key: { text: "Form version" }, value: { html: '<span id="summary-published-form">-</span>' } },
+						{ key: { text: "Participants" }, value: { html: '<span id="summary-participants">-</span>' } },
+						{ key: { text: "Ready for session" }, value: { html: '<span id="summary-ready">-</span>' } },
+						{ key: { text: "Consent not complete" }, value: { html: '<span id="summary-action-needed">-</span>' } }
+					]
+				}) }}
+			</section>
 
-		<section class="participant-consent-panel" aria-labelledby="participants-consent-title">
-			<div class="participant-consent-panel__header">
-				<div>
-					<h2 id="participants-consent-title" class="govuk-heading-m">Participants</h2>
-					<p class="govuk-body">Select a participant to record or review consent. Status is shown in text and does not rely on colour.</p>
+			<div class="participant-consent-workspace__mobile-context">
+				{{ SourcebookContext(sourcebookMobileContext) }}
+			</div>
+
+			<section class="participant-consent-panel" aria-labelledby="participants-consent-title">
+				<div class="participant-consent-panel__header">
+					<div>
+						<h2 id="participants-consent-title" class="govuk-heading-m">Participants</h2>
+						<p class="govuk-body">Select a participant to record or review consent. Status is shown in text and does not rely on colour.</p>
+					</div>
 				</div>
-			</div>
 
-			<div class="table-wrap">
-				<table class="govuk-table participant-consent-table" aria-label="Participant consent">
-					<thead class="govuk-table__head">
-						<tr class="govuk-table__row">
-							<th scope="col" class="govuk-table__header">Participant</th>
-							<th scope="col" class="govuk-table__header">Consent status</th>
-							<th scope="col" class="govuk-table__header">Permissions</th>
-							<th scope="col" class="govuk-table__header">Recorded</th>
-							<th scope="col" class="govuk-table__header"><span class="govuk-visually-hidden">Actions</span></th>
-						</tr>
-					</thead>
-					<tbody id="participant-consent-tbody" class="govuk-table__body">
-						<tr class="govuk-table__row">
-							<td class="govuk-table__cell" colspan="5">Loading participants.</td>
-						</tr>
-					</tbody>
-				</table>
-			</div>
-		</section>
+				<div class="table-wrap">
+					<table class="govuk-table participant-consent-table" aria-label="Participant consent">
+						<thead class="govuk-table__head">
+							<tr class="govuk-table__row">
+								<th scope="col" class="govuk-table__header">Participant</th>
+								<th scope="col" class="govuk-table__header">Consent status</th>
+								<th scope="col" class="govuk-table__header">Permissions</th>
+								<th scope="col" class="govuk-table__header">Recorded</th>
+								<th scope="col" class="govuk-table__header"><span class="govuk-visually-hidden">Actions</span></th>
+							</tr>
+						</thead>
+						<tbody id="participant-consent-tbody" class="govuk-table__body">
+							<tr class="govuk-table__row">
+								<td class="govuk-table__cell" colspan="5">Loading participants.</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+			</section>
 
-		<section id="consent-record-panel" class="participant-consent-panel" aria-labelledby="record-consent-title" hidden>
-			<h2 id="record-consent-title" class="govuk-heading-m">Record participant consent</h2>
-			<p id="record-consent-hint" class="govuk-body">Choose a participant to record or review consent.</p>
+			<section id="consent-record-panel" class="participant-consent-panel" aria-labelledby="record-consent-title" hidden>
+				<h2 id="record-consent-title" class="govuk-heading-m">Record participant consent</h2>
+				<p id="record-consent-hint" class="govuk-body">Choose a participant to record or review consent.</p>
 
-			<form id="participant-consent-form" novalidate>
+				{{ SourcebookGate(sourcebookGate) }}
+
+				<form id="participant-consent-form" novalidate>
 				<input id="participant-id" type="hidden">
 				<input id="consent-record-id" type="hidden">
 
@@ -199,7 +209,14 @@
 					}) }}
 				</div>
 			</form>
-		</section>
+			</section>
+
+			{{ SourcebookEvidenceLedger(sourcebookEvidenceLedger) }}
+		</div>
+
+		<div class="participant-consent-workspace__aside">
+			{{ SourcebookContext(sourcebookContext) }}
+		</div>
 	</section>
 </div>
 {% endblock %}

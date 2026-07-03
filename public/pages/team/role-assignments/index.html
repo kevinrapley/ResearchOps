@@ -56,41 +56,69 @@
 					</div>
 				</header>
 
-				<section class="sourcebook-gate sourcebook-gate--blocked" aria-labelledby="sourcebook-gate-title">
+				<section
+					class="sourcebook-gate sourcebook-gate--blocked"
+					aria-labelledby="sourcebook-gate-title"
+					data-sourcebook-gate
+				>
 					<div class="sourcebook-gate__header">
 						<p class="govuk-caption-m sourcebook-gate__caption">Sourcebook gate</p>
 						<h2 class="govuk-heading-m sourcebook-gate__title" id="sourcebook-gate-title">
 							Sourcebook gate for role assignment
 						</h2>
-						<strong class="govuk-tag sourcebook-gate__tag sourcebook-gate__tag--blocked">Evidence needed</strong>
-						<p class="govuk-body sourcebook-gate__summary">
+						<strong class="govuk-tag sourcebook-gate__tag sourcebook-gate__tag--blocked" data-sourcebook-gate-status>
+							Evidence needed
+						</strong>
+						<p class="govuk-body sourcebook-gate__summary" data-sourcebook-gate-summary>
 							Do not assign role permissions until the Sourcebook clause and required access evidence are in place.
 						</p>
 						<p class="govuk-body sourcebook-gate__action">
-							<strong>Add evidence before continuing</strong>
+							<strong data-sourcebook-gate-action>Add evidence before continuing</strong>
 						</p>
 					</div>
 					<ul class="govuk-list sourcebook-gate__checks">
-						<li class="sourcebook-gate__check sourcebook-gate__check--met">
+						<li
+							class="sourcebook-gate__check sourcebook-gate__check--met sourcebook-gate__check--sourcebook-context"
+							data-sourcebook-check="sourcebook-context"
+						>
 							<span class="sourcebook-gate__check-label">Sourcebook context</span>
-							<strong class="govuk-tag sourcebook-gate__check-tag sourcebook-gate__check-tag--met">Matched</strong>
-							<span class="sourcebook-gate__check-detail">1 clause matched this route.</span>
+							<strong
+								class="govuk-tag sourcebook-gate__check-tag sourcebook-gate__check-tag--met"
+								data-sourcebook-check-status
+							>
+								Matched
+							</strong>
+							<span class="sourcebook-gate__check-detail" data-sourcebook-check-detail>
+								1 clause matched this route.
+							</span>
 						</li>
 
-						<li class="sourcebook-gate__check sourcebook-gate__check--unmet">
+						<li
+							class="sourcebook-gate__check sourcebook-gate__check--unmet sourcebook-gate__check--evidence-readiness"
+							data-sourcebook-check="evidence-readiness"
+						>
 							<span class="sourcebook-gate__check-label">Evidence readiness</span>
-							<strong class="govuk-tag sourcebook-gate__check-tag sourcebook-gate__check-tag--unmet">
+							<strong
+								class="govuk-tag sourcebook-gate__check-tag sourcebook-gate__check-tag--unmet"
+								data-sourcebook-check-status
+							>
 								Evidence needed
 							</strong>
-							<span class="sourcebook-gate__check-detail">2 evidence items needed.</span>
+							<span class="sourcebook-gate__check-detail" data-sourcebook-check-detail>2 evidence items needed.</span>
 						</li>
 
-						<li class="sourcebook-gate__check sourcebook-gate__check--unmet">
+						<li
+							class="sourcebook-gate__check sourcebook-gate__check--unmet sourcebook-gate__check--governance-action"
+							data-sourcebook-check="governance-action"
+						>
 							<span class="sourcebook-gate__check-label">Governance action</span>
-							<strong class="govuk-tag sourcebook-gate__check-tag sourcebook-gate__check-tag--unmet">
+							<strong
+								class="govuk-tag sourcebook-gate__check-tag sourcebook-gate__check-tag--unmet"
+								data-sourcebook-check-status
+							>
 								Pause for evidence
 							</strong>
-							<span class="sourcebook-gate__check-detail">
+							<span class="sourcebook-gate__check-detail" data-sourcebook-check-detail>
 								Add the required evidence before treating this workflow as Sourcebook-ready.
 							</span>
 						</li>
@@ -134,7 +162,11 @@
 					</ol>
 				</aside>
 
-				<section class="sourcebook-evidence-ledger" aria-labelledby="sourcebook-evidence-ledger-title">
+				<section
+					class="sourcebook-evidence-ledger"
+					aria-labelledby="sourcebook-evidence-ledger-title"
+					id="sourcebook-evidence-ledger"
+				>
 					<div class="sourcebook-evidence-ledger__header">
 						<p class="govuk-caption-m sourcebook-evidence-ledger__caption">Evidence ledger</p>
 						<h2 class="govuk-heading-m sourcebook-evidence-ledger__title" id="sourcebook-evidence-ledger-title">
@@ -154,7 +186,10 @@
 							</tr>
 						</thead>
 						<tbody class="govuk-table__body">
-							<tr class="govuk-table__row sourcebook-evidence-ledger__row sourcebook-evidence-ledger__row--needed">
+							<tr
+								class="govuk-table__row sourcebook-evidence-ledger__row sourcebook-evidence-ledger__row--needed"
+								data-sourcebook-evidence-id="access-request"
+							>
 								<th scope="row" class="govuk-table__header sourcebook-evidence-ledger__evidence">
 									<span class="sourcebook-evidence-ledger__evidence-label">Access Request</span>
 									<span class="sourcebook-evidence-ledger__evidence-id">access-request</span>
@@ -178,7 +213,10 @@
 								</td>
 							</tr>
 
-							<tr class="govuk-table__row sourcebook-evidence-ledger__row sourcebook-evidence-ledger__row--needed">
+							<tr
+								class="govuk-table__row sourcebook-evidence-ledger__row sourcebook-evidence-ledger__row--needed"
+								data-sourcebook-evidence-id="role-permission-model"
+							>
 								<th scope="row" class="govuk-table__header sourcebook-evidence-ledger__evidence">
 									<span class="sourcebook-evidence-ledger__evidence-label">Role Permission Model</span>
 									<span class="sourcebook-evidence-ledger__evidence-id">role-permission-model</span>

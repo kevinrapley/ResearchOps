@@ -187,7 +187,7 @@ function statusForParticipant(participant, record = consentRecordForParticipant(
 }
 
 function permissionTags(record, form = latestPublishedForm()) {
-	if (!record) return [{ text: "No permissions recorded", classes: "govuk-tag--grey" }];
+	if (!record) return [{ text: "No consent response recorded", classes: "govuk-tag--grey" }];
 	if (record.withdrawn) return [{ text: "Do not proceed", classes: "govuk-tag--red" }];
 	return consentItemsForForm(form)
 		.filter(item => !item.required)
@@ -204,7 +204,7 @@ function shortPermissionLabel(item = {}) {
 	const id = normaliseStatus(item.id);
 	const labels = {
 		recording: "Recording",
-		observers: "Observers",
+		observers: "Observer consent",
 		transcription: "Transcription"
 	};
 	if (labels[id]) return labels[id];
@@ -229,6 +229,128 @@ function formatConsentTime(value) {
 		timeZone: "Europe/London",
 		timeZoneName: "short"
 	}).format(date);
+}
+
+function setSourcebookStatusClass(element, prefix, status) {
+	if (!element) return;
+	for (const className of [...element.classList]) {
+		if (className.startsWith(prefix)) element.classList.remove(className);
+	}
+	element.classList.add(`${prefix}${status}`);
+}
+
+function updateGateCheck(id, { label, status, statusLabel, detail }) {
+	const check = document.querySelector(`[data-sourcebook-check="${id}"]`);
+	if (!check) return;
+	setSourcebookStatusClass(check, "sourcebook-gate__check--", status);
+	const labelElement = $(".sourcebook-gate__check-label", check);
+	const statusElement = $("[data-sourcebook-check-status]", check);
+	const detailElement = $("[data-sourcebook-check-detail]", check);
+	if (labelElement) labelElement.textContent = label;
+	if (statusElement) {
+		statusElement.textContent = statusLabel;
+		setSourcebookStatusClass(statusElement, "sourcebook-gate__check-tag--", status);
+	}
+	if (detailElement) detailElement.textContent = detail;
+}
+
+function updateLedgerRow(id, { label, evidenceId, status, statusLabel, detail }) {
+	const row = document.querySelector(`[data-sourcebook-evidence-id="${id}"]`);
+	if (!row) return;
+	setSourcebookStatusClass(row, "sourcebook-evidence-ledger__row--", status);
+	const labelElement = $(".sourcebook-evidence-ledger__evidence-label", row);
+	const idElement = $(".sourcebook-evidence-ledger__evidence-id", row);
+	const statusElement = $(".sourcebook-evidence-ledger__tag", row);
+	let detailElement = $(".sourcebook-evidence-ledger__evidence-detail", row);
+	if (!detailElement) {
+		detailElement = document.createElement("span");
+		detailElement.className = "sourcebook-evidence-ledger__evidence-detail";
+		idElement?.after(detailElement);
+	}
+	if (labelElement) labelElement.textContent = label;
+	if (idElement) idElement.textContent = evidenceId;
+	if (detailElement) detailElement.textContent = detail;
+	if (statusElement) {
+		statusElement.textContent = statusLabel;
+		setSourcebookStatusClass(statusElement, "sourcebook-evidence-ledger__tag--", status);
+	}
+}
+
+function updateSourcebookAssurance(participant = null, record = null, form = latestPublishedForm()) {
+	const participantName = participant?.display_name || participant?.name || "the selected participant";
+	const participantSelected = !!participant;
+	const status = participantSelected ? statusForParticipant(participant, record, form) : "";
+	const consentRecordPresent = !!record;
+	const ready = status === "Ready for session";
+	const gate = $("[data-sourcebook-gate]");
+	const gateStatus = $("[data-sourcebook-gate-status]");
+	const gateSummary = $("[data-sourcebook-gate-summary]");
+	const gateAction = $("[data-sourcebook-gate-action]");
+
+	if (gate) {
+		const variant = ready ? "ready" : "attention";
+		setSourcebookStatusClass(gate, "sourcebook-gate--", variant);
+	}
+	if (gateStatus) {
+		gateStatus.textContent = ready ? "Consent evidence complete" : "Consent evidence incomplete";
+		setSourcebookStatusClass(gateStatus, "sourcebook-gate__tag--", ready ? "ready" : "attention");
+	}
+	if (gateSummary) {
+		gateSummary.textContent = participantSelected
+			? `${participantName} is ready only when the current consent form and all required consent statements are recorded.`
+			: "A participant is ready only when a published consent form version is selected and all required consent statements are recorded.";
+	}
+	if (gateAction) {
+		gateAction.textContent = ready
+			? `${participantName} can be treated as ready for research.`
+			: "Complete required consent before treating this participant as ready.";
+	}
+
+	updateGateCheck("sourcebook-context", {
+		label: "Sourcebook rule",
+		status: "met",
+		statusLabel: "Mapped",
+		detail: "REC-ADMN 3.1.1 is the governing clause for recorded informed consent."
+	});
+	updateGateCheck("evidence-readiness", {
+		label: "Consent record",
+		status: consentRecordPresent ? "met" : "unmet",
+		statusLabel: consentRecordPresent ? "Present" : "Needed",
+		detail: participantSelected
+			? consentRecordPresent
+				? `A consent record exists for ${participantName}.`
+				: `No consent record has been saved for ${participantName}.`
+			: "Select a participant to check their consent record evidence."
+	});
+	updateGateCheck("governance-action", {
+		label: "Participant readiness",
+		status: ready ? "met" : "unmet",
+		statusLabel: ready ? "Ready" : "Incomplete",
+		detail: participantSelected
+			? ready
+				? "All required consent statements are agreed for the current form version."
+				: "Required consent evidence is missing or incomplete, so this participant is not ready for a session."
+			: "Readiness is checked once a participant is selected."
+	});
+
+	updateLedgerRow("consent-form", {
+		label: "Current consent form version",
+		evidenceId: form ? `version-${form.version || 1}` : "consent-form",
+		status: form ? "present" : "needed",
+		statusLabel: form ? "Present" : "Needed",
+		detail: form ? `${form.title || "Published consent form"} — version ${form.version || 1}` : "Publish a consent form before recording consent."
+	});
+	updateLedgerRow("consent-log", {
+		label: participantSelected ? `Consent record for ${participantName}` : "Participant consent record",
+		evidenceId: participantSelected ? `participant-${participant.id}` : "select-participant",
+		status: consentRecordPresent ? "present" : "needed",
+		statusLabel: consentRecordPresent ? "Present" : "Needed",
+		detail: participantSelected
+			? consentRecordPresent
+				? `Recorded ${formatConsentTime(record.recordedAt)}. Current status: ${status}.`
+				: "Save a consent response to create this evidence."
+			: "Select a participant to see whether their consent record is present."
+	});
 }
 
 function updateRoutes() {
@@ -365,10 +487,18 @@ function selectParticipant(participantId) {
 	const participant = state.participants.find(item => item.id === participantId);
 	if (!participant) return;
 	const record = consentRecordForParticipant(participantId);
-	const form = state.consentForms.find(item => item.id === record?.consentFormId) || latestPublishedForm();
+	const recordForm = state.consentForms.find(item => item.id === record?.consentFormId);
+	const currentForm = latestPublishedForm();
+	const form = recordForm || currentForm;
+	const status = statusForParticipant(participant, record, currentForm);
 	setHidden("#consent-record-panel", false);
 	setText("#record-consent-title", record ? `Review consent for ${participant.display_name}` : `Record consent for ${participant.display_name}`);
-	setText("#record-consent-hint", "Consent can be reviewed, updated or withdrawn. Required consent is needed before a session can start.");
+	setText(
+		"#record-consent-hint",
+		status === "Ready for session"
+			? "Review the consent record before changing this participant's readiness."
+			: "Complete the required statements before saving this participant as ready for research."
+	);
 	$("#participant-id").value = participantId;
 	$("#consent-record-id").value = record?.id || "";
 	$("#capture-method").value = record?.captureMethod || "";
@@ -377,6 +507,7 @@ function selectParticipant(participantId) {
 	$("#withdrawal-reason").value = record?.withdrawalReason || "";
 	renderFormOptions(form?.id || "");
 	renderConsentItems(record, form);
+	updateSourcebookAssurance(participant, record, currentForm);
 	const currentRoute = route("/pages/study/participant-consent/", {
 		id: state.studyId,
 		session: state.sessionId,
@@ -455,6 +586,7 @@ async function saveConsent(event) {
 		setHidden("#consent-record-panel", true);
 		renderSummary();
 		renderParticipantTable();
+		updateSourcebookAssurance(participant, saved, form);
 	} catch (error) {
 		console.error("[participant-consent] save failed", error);
 		showErrors(["Could not save participant consent. Check the service connection and try again."]);
@@ -530,6 +662,7 @@ async function init() {
 		renderPageState();
 		renderSummary();
 		renderParticipantTable();
+		updateSourcebookAssurance();
 		if (state.routeParticipantId) {
 			const routeParticipant = state.participants.find(participant => participantMatchesIdentifier(participant, state.routeParticipantId));
 			if (routeParticipant) selectParticipant(routeParticipant.id);

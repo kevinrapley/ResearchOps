@@ -1,0 +1,130 @@
+{
+  "date": "2026-07-04",
+  "branch": "feature/manage-participant-consent-sourcebook",
+  "task": "Create a ready-for-review PR for adding Sourcebook components to the manage participant consent page after PR #462 merged to main.",
+  "operatingModel": {
+    "loaded": [
+      "AGENTS.md",
+      ".agent-operating-model/orchestration.xml",
+      ".agent-operating-model/bundle-registry.json",
+      ".agent-operating-model/task-signal-catalog.json",
+      ".agent-operating-model/selection-rules.json",
+      ".agent-operating-model/precedence-policy.md"
+    ],
+    "selectedBundles": [
+      ".agent-operating-model/bundles/github/",
+      ".agent-operating-model/bundles/researchops-developer-control/",
+      ".agent-operating-model/bundles/multi-functional-team/",
+      ".agent-operating-model/bundles/govuk-design-system/"
+    ],
+    "skippedBundles": [
+      ".agent-operating-model/bundles/cloudflare/",
+      ".agent-operating-model/bundles/openai/",
+      ".agent-operating-model/bundles/mcp-agent-tooling/",
+      ".agent-operating-model/bundles/airtable-public-api/",
+      ".agent-operating-model/bundles/mural-public-api/"
+    ],
+    "traceDecision": "Trace required because the repository-affecting work is on feature/manage-participant-consent-sourcebook."
+  },
+  "changes": [
+    "Created feature/manage-participant-consent-sourcebook from origin/main after PR #462 merged.",
+    "Added route mapping for /pages/study/participant-consent/ to REC-ADMN 3.1.1.",
+    "Added Sourcebook context, evidence ledger and consent assurance gate to the participant consent page.",
+    "Added participant-aware ledger and gate updates to the participant consent page controller.",
+    "Added responsive layout rules so Sourcebook context uses a right rail only at desktop widths and stacks cleanly on tablet and mobile.",
+    "Refined Sourcebook component tag colours and narrow-width table layouts for accessible contrast and readable mobile presentation.",
+    "Regenerated GOV.UK pages and generated CSS outputs.",
+    "Fixed the PR CI failure by removing trailing spaces from optional Sourcebook component class output and strengthening the participant-consent ledger ordering assertion against freshly rendered Nunjucks output.",
+    "Addressed Codex review thread discussion_r3522161402 by evaluating participant Sourcebook readiness against the current published consent form while preserving the saved record form for display and editing."
+  ],
+  "validation": [
+    {
+      "command": "npm run build:generated-css",
+      "result": "passed"
+    },
+    {
+      "command": "npm run build:govuk-pages",
+      "result": "passed"
+    },
+    {
+      "command": "node --test tests/participant-consent-route-state.test.js tests/sourcebook-context-route-state.test.js tests/search-page-route-state.test.js tests/consent-page-route-state.test.js tests/auth-team-access-request-route-state.test.js tests/auth-role-assignment-ui-route-state.test.js tests/sourcebook-api.test.js tests/sourcebook-api-route-state.test.js",
+      "result": "passed",
+      "details": "27 tests passed."
+    },
+    {
+      "command": "Playwright rendered checks at 1272x739, 1100x900, 900x900, 700x900, 470x858, 390x858 and 319x858",
+      "result": "passed",
+      "details": "Confirmed desktop Sourcebook rail, tablet/mobile Sourcebook context, 50/50 summary split at 470px, and stacked participant table labels on phone widths."
+    },
+    {
+      "command": "git diff --name-only --diff-filter=ACM origin/main | rg -v '\\.njk$' | xargs npx prettier -c",
+      "result": "passed"
+    },
+    {
+      "command": "npm run trace:coverage",
+      "result": "passed"
+    },
+    {
+      "command": "git diff --check",
+      "result": "passed"
+    },
+    {
+      "command": "npm run validate",
+      "result": "passed"
+    },
+    {
+      "command": "npm test",
+      "result": "passed",
+      "details": "353 tests passed after the CI-fix patch."
+    },
+    {
+      "command": "npm run lint",
+      "result": "passed",
+      "details": "Ignored local Wrangler temp output was removed before rerunning lint."
+    },
+    {
+      "command": "npm run format:check",
+      "result": "passed"
+    },
+    {
+      "command": "npm run audit:performance --if-present",
+      "result": "passed"
+    },
+    {
+      "command": "npm run audit:security",
+      "result": "passed",
+      "details": "npm audit findings remained advisory under repository policy."
+    },
+    {
+      "command": "node --test tests/participant-consent-route-state.test.js",
+      "result": "passed",
+      "details": "Review-thread fix validation."
+    },
+    {
+      "command": "npx prettier -c public/js/participant-consent-page.js tests/participant-consent-route-state.test.js docs/agent-audit/reasoning/2026/07/04/manage-participant-consent-sourcebook-pr-trace.md docs/agent-audit/reasoning/2026/07/04/manage-participant-consent-sourcebook-pr-trace.json",
+      "result": "passed",
+      "details": "Review-thread fix validation."
+    },
+    {
+      "command": "git diff --check",
+      "result": "passed",
+      "details": "Review-thread fix validation."
+    },
+    {
+      "command": "npm test",
+      "result": "passed",
+      "details": "353 tests passed after the review-thread fix."
+    },
+    {
+      "command": "npm run validate",
+      "result": "passed",
+      "details": "Review-thread fix validation."
+    },
+    {
+      "command": "npm run trace:coverage",
+      "result": "passed",
+      "details": "Review-thread fix validation."
+    }
+  ],
+  "residualRisk": ["Full CI remains the merge gate."]
+}

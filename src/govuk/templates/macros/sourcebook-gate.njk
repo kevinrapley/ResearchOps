@@ -1,21 +1,21 @@
 {% macro SourcebookGate(params) %}
 	{% if params.checks is defined and params.checks.length %}
-		<section class="sourcebook-gate sourcebook-gate--{{ params.status }}" aria-labelledby="{{ params.id | default('sourcebook-gate-title') }}">
+		<section class="sourcebook-gate sourcebook-gate--{{ params.status }}{% if params.classes %} {{ params.classes }}{% endif %}" aria-labelledby="{{ params.id | default('sourcebook-gate-title') }}" data-sourcebook-gate>
 			<div class="sourcebook-gate__header">
-				<p class="govuk-caption-m sourcebook-gate__caption">Sourcebook gate</p>
+				<p class="govuk-caption-m sourcebook-gate__caption">{{ params.caption | default('Sourcebook gate') }}</p>
 				<h2 class="govuk-heading-m sourcebook-gate__title" id="{{ params.id | default('sourcebook-gate-title') }}">{{ params.title }}</h2>
-				<strong class="govuk-tag sourcebook-gate__tag sourcebook-gate__tag--{{ params.status }}">{{ params.statusLabel }}</strong>
-				<p class="govuk-body sourcebook-gate__summary">{{ params.summary }}</p>
+				<strong class="govuk-tag sourcebook-gate__tag sourcebook-gate__tag--{{ params.status }}" data-sourcebook-gate-status>{{ params.statusLabel }}</strong>
+				<p class="govuk-body sourcebook-gate__summary" data-sourcebook-gate-summary>{{ params.summary }}</p>
 				<p class="govuk-body sourcebook-gate__action">
-					<strong>{{ params.primaryAction }}</strong>
+					<strong data-sourcebook-gate-action>{{ params.primaryAction }}</strong>
 				</p>
 			</div>
 			<ul class="govuk-list sourcebook-gate__checks">
 				{% for check in params.checks %}
-					<li class="sourcebook-gate__check sourcebook-gate__check--{{ check.status }}">
+					<li class="sourcebook-gate__check sourcebook-gate__check--{{ check.status }} sourcebook-gate__check--{{ check.id }}" data-sourcebook-check="{{ check.id }}">
 						<span class="sourcebook-gate__check-label">{{ check.label }}</span>
-						<strong class="govuk-tag sourcebook-gate__check-tag sourcebook-gate__check-tag--{{ check.status }}">{{ check.statusLabel }}</strong>
-						<span class="sourcebook-gate__check-detail">{{ check.detail }}</span>
+						<strong class="govuk-tag sourcebook-gate__check-tag sourcebook-gate__check-tag--{{ check.status }}" data-sourcebook-check-status>{{ check.statusLabel }}</strong>
+						<span class="sourcebook-gate__check-detail" data-sourcebook-check-detail>{{ check.detail }}</span>
 					</li>
 				{% endfor %}
 			</ul>
