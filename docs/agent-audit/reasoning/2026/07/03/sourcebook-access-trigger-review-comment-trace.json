@@ -1,0 +1,53 @@
+{
+  "date": "2026-07-03",
+  "updated": "2026-07-04",
+  "branch": "feature/sourcebook-integration",
+  "task": "Review and address the Codex PR #462 comment about broad access-change trigger derivation.",
+  "operatingModel": {
+    "loaded": [
+      "AGENTS.md",
+      ".agent-operating-model/orchestration.xml",
+      ".agent-operating-model/bundle-registry.json",
+      ".agent-operating-model/task-signal-catalog.json",
+      ".agent-operating-model/selection-rules.json",
+      ".agent-operating-model/precedence-policy.md"
+    ],
+    "selectedBundles": [
+      ".agent-operating-model/bundles/github/",
+      ".agent-operating-model/bundles/researchops-developer-control/",
+      ".agent-operating-model/bundles/multi-functional-team/"
+    ],
+    "skippedBundles": [
+      ".agent-operating-model/bundles/govuk-design-system/",
+      ".agent-operating-model/bundles/cloudflare/",
+      ".agent-operating-model/bundles/openai/",
+      ".agent-operating-model/bundles/mcp-agent-tooling/",
+      ".agent-operating-model/bundles/airtable-public-api/",
+      ".agent-operating-model/bundles/mural-public-api/"
+    ],
+    "traceDecision": "Trace required because the repository-affecting work is on feature/sourcebook-integration."
+  },
+  "prComment": {
+    "pr": "https://github.com/kevinrapley/ResearchOps/pull/462",
+    "threadId": "PRRT_kwDOP3Td2M6OSbW2",
+    "commentUrl": "https://github.com/kevinrapley/ResearchOps/pull/462#discussion_r3522098786",
+    "classification": "valid",
+    "reason": "deriveTriggers used a broad access text/evidence substring check, which could classify accessibility, access-needs and participant-access clauses as before-access-change."
+  },
+  "changes": [
+    "Replaced broad access substring trigger derivation with structured access governance signals.",
+    "Added explicit access-change route condition detection for access-change and permission-model-change.",
+    "Added explicit evidence detection for access-control, access-review, access-request, access-model, role-permission-model and related repository-access evidence.",
+    "Added a regression test proving trigger=before-access-change includes access governance clauses and excludes ENVIRO accessibility/access-needs clauses."
+  ],
+  "validation": [
+    {
+      "command": "node --test tests/sourcebook-api.test.js tests/sourcebook-api-route-state.test.js tests/sourcebook-context-route-state.test.js",
+      "result": "passed",
+      "details": "22 tests passed."
+    }
+  ],
+  "residualRisk": [
+    "GitHub reaction, reply and thread resolution are completed after the fix commit is pushed because they require the pushed commit reference."
+  ]
+}

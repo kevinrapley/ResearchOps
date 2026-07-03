@@ -235,6 +235,47 @@ test('Sourcebook API queries clauses by evidence type, trigger and pillar', asyn
 	);
 });
 
+test('Sourcebook API keeps access-change trigger to access governance signals', async () => {
+	const response = await listSourcebookClauses(
+		testService(),
+		'',
+		new URL('https://worker.test/api/sourcebook/clauses?trigger=before-access-change&limit=200')
+	);
+	assert.equal(response.status, 200);
+
+	const body = await json(response);
+	const clauseIds = body.clauses.map((clause) => clause.id);
+	assert.equal(body.ok, true);
+	assert.equal(clauseIds.includes('INFRA-PROV 3.1.1'), true);
+	assert.equal(clauseIds.includes('DATA-STO-ACC 4.1.1'), true);
+	assert.equal(clauseIds.includes('ENVIRO 1.1.2'), false);
+	assert.equal(clauseIds.includes('ENVIRO 2.1.1'), false);
+	assert.equal(clauseIds.includes('ENVIRO 2.1.3'), false);
+	assert.equal(
+		body.clauses.every(
+			(clause) =>
+				clause.evidence.some((evidence) =>
+					[
+						'access-control',
+						'access-model',
+						'access-request',
+						'access-review',
+						'need-to-know-review',
+						'repository-access-review',
+						'role-permission-model',
+						'specialist-access-approval',
+					].includes(evidence)
+				) ||
+				clause.routeMappings.some((mapping) =>
+					mapping.conditionIds.some((condition) =>
+						['access-change', 'permission-model-change'].includes(condition)
+					)
+				)
+		),
+		true
+	);
+});
+
 test('Sourcebook governance evaluator returns the five North Star layers', async () => {
 	const response = await evaluateSourcebookGovernance(
 		testService(),

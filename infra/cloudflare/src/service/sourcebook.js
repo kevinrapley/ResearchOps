@@ -10,6 +10,17 @@ import routeClauseMappings from "../../../../sourcebook/sourcebook-route-mapping
 const DEFAULT_LIMIT = 50;
 const MAX_LIMIT = 200;
 const TEXT_MODES = new Set(["summary", "title", "full", "verbose"]);
+const ACCESS_CHANGE_CONDITIONS = new Set(["access-change", "permission-model-change"]);
+const ACCESS_CHANGE_EVIDENCE = new Set([
+	"access-control",
+	"access-model",
+	"access-request",
+	"access-review",
+	"need-to-know-review",
+	"repository-access-review",
+	"role-permission-model",
+	"specialist-access-approval"
+]);
 const GOVERNANCE_ENGINE_VERSION = "2026-07-03";
 const NORTH_STAR_RULE = {
 	id: "researchops-north-star",
@@ -141,6 +152,16 @@ function routeMappingsForRecord(record) {
 	return [...explicitMappings, ...fallbackMappings];
 }
 
+function hasAccessChangeRouteMapping(record) {
+	return routeMappingsForRecord(record).some(mapping =>
+		asArray(mapping.conditionIds).some(condition => ACCESS_CHANGE_CONDITIONS.has(condition))
+	);
+}
+
+function hasAccessChangeEvidence(evidence) {
+	return evidence.some(item => ACCESS_CHANGE_EVIDENCE.has(item));
+}
+
 function allClauses() {
 	return asArray(sourcebookIndex.pillars).flatMap(pillar =>
 		asArray(pillar.sections).flatMap(section =>
@@ -189,7 +210,7 @@ function deriveTriggers({ pillar, section, clause }) {
 	) {
 		triggers.add("repository-readiness");
 	}
-	if (text.includes("access") || evidence.some(item => item.includes("access"))) {
+	if (hasAccessChangeRouteMapping({ pillar, section, clause }) || hasAccessChangeEvidence(evidence)) {
 		triggers.add("before-access-change");
 	}
 	if (
