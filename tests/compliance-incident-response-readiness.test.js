@@ -1,0 +1,78 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import test from 'node:test';
+
+const read = (filePath) => fs.readFileSync(filePath, 'utf8');
+
+const incidentRoot = 'docs/compliance/soc2-iso27001-readiness/incident-response';
+const readme = read(`${incidentRoot}/README.md`);
+const runbooks = read(`${incidentRoot}/incident-response-runbooks.md`);
+const breachHandling = read(`${incidentRoot}/personal-data-breach-handling.md`);
+const exerciseRecord = read(`${incidentRoot}/incident-exercise-record.md`);
+const combined = `${readme}\n${runbooks}\n${breachHandling}\n${exerciseRecord}`;
+
+test('incident response readiness pack defines the required artefacts', () => {
+	for (const fileName of [
+		'incident-response-runbooks.md',
+		'personal-data-breach-handling.md',
+		'incident-exercise-record.md',
+	]) {
+		assert.match(readme, new RegExp(fileName));
+	}
+
+	assert.match(readme, /does not assert SOC 2 compliance or ISO\/IEC 27001 certification/);
+	assert.match(
+		readme,
+		/must not be described as an exercised or independently assured incident response control/
+	);
+});
+
+test('incident runbooks cover ResearchOps-specific incident scenarios', () => {
+	for (const requiredScenario of [
+		'suspected PII exposure',
+		'unauthorised access or broken permission',
+		'leaked integration token, OAuth state or production secret',
+		'production data corruption or failed retention deletion',
+		'supplier or integration incident',
+		'unavailable service or degraded access',
+	]) {
+		assert.match(runbooks, new RegExp(requiredScenario));
+	}
+
+	assert.match(runbooks, /preserve evidence/i);
+	assert.match(runbooks, /personal data breach handling process/i);
+});
+
+test('breach handling process protects UK GDPR decision points', () => {
+	for (const requiredText of [
+		'rights and freedoms',
+		'within 72 hours',
+		'without undue delay',
+		'decisions not to report',
+		'Data Protection Officer',
+		'ICO notification decision',
+		'affected-person notification decision',
+	]) {
+		assert.match(breachHandling, new RegExp(requiredText));
+	}
+
+	assert.match(
+		breachHandling,
+		/https:\/\/ico\.org\.uk\/for-organisations\/report-a-breach\/personal-data-breach\//
+	);
+	assert.match(
+		breachHandling,
+		/https:\/\/ico\.org\.uk\/for-organisations\/advice-and-services\/audits\/data-protection-audit-framework\/toolkits\/personal-data-breach-management\/reporting-processes\//
+	);
+});
+
+test('exercise record keeps test evidence honest until an exercise is completed', () => {
+	assert.match(exerciseRecord, /Exercise status: planned, not yet completed/);
+	assert.match(exerciseRecord, /This document is not completed test evidence/);
+	assert.match(exerciseRecord, /Minimum exercise scenario/);
+	assert.match(exerciseRecord, /Passing criteria/);
+	assert.match(exerciseRecord, /Current gap/);
+
+	assert.doesNotMatch(combined, /\bexercise has been completed\b/i);
+	assert.doesNotMatch(combined, /\bincident response control is tested and effective\b/i);
+});

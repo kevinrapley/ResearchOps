@@ -98,6 +98,8 @@ test('rendered compliance readiness page includes the expected public content', 
 	assert.match(page, /Formal control matrix/);
 	assert.match(page, /ISMS scope, risk assessment, risk treatment plan and Statement of Applicability/);
 	assert.match(page, /Governance, scope and accountability/);
+	assert.match(page, /service-specific runbooks, personal data breach handling process and planned exercise record/);
+	assert.match(page, /completed incident response test evidence/);
 	assert.match(page, /Privacy, retention and data minimisation/);
 	assert.match(page, /CC6/);
 	assert.match(page, /A\.5\.34/);

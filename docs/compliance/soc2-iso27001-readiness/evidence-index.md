@@ -13,7 +13,7 @@ This index tracks evidence needed to support a future SOC 2 and ISO/IEC 27001 cl
 | SOC 2 control mapping | Not started | Security hardening tests and route permission tests | Map implemented controls to the selected SOC 2 Trust Services Criteria and mark evidence owner/frequency. |
 | Access review evidence | Partially evidenced | Auth and role-assignment tests, route-permission migrations and audit-event implementation traces | Define access-review cadence, privileged-access review evidence and joiner/mover/leaver control evidence. |
 | Logging, audit and monitoring | Partially evidenced | Security hardening trace, audit event tests and production logging configuration | Define what is logged, what PII is excluded, retention for logs, alert thresholds and review evidence. |
-| Incident response | Not complete | Sourcebook incident templates exist for research operations | Create a service-specific security incident process, severity model, escalation path and exercise record. |
+| Incident response | Partially evidenced | Sourcebook incident templates and `docs/compliance/soc2-iso27001-readiness/incident-response/` runbooks, breach handling process and planned exercise record | Complete a tabletop or simulated incident exercise, record outcomes and obtain service-owner, security and privacy sign-off. |
 | Supplier assurance | Not complete | Cloudflare, GitHub, Airtable, Mural and email/AI integrations are identified in the boundary | Capture supplier roles, contracts, data processing terms, locations, certifications and review cadence. |
 | Business continuity and availability | Not complete | Cloudflare deployment and release assurance evidence | Decide whether availability is in SOC 2 scope, then define SLOs, backup/restore evidence and recovery tests. |
 | Secure development lifecycle | Partially evidenced | CI, lint, tests, trace policy, security audit policy and branch protection evidence | Produce SDLC control evidence covering review, dependency management, release approval and change traceability. |
@@ -27,3 +27,4 @@ The next PRs in this broader workstream should add:
 3. ISMS scope, risk assessment, risk treatment plan and Statement of Applicability.
 4. SOC 2 criteria mapping and ISO/IEC 27001 Statement of Applicability skeleton.
 5. DPIA and records-of-processing sign-off references.
+6. Completed incident response test evidence and breach handling sign-off.

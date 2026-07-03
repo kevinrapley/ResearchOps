@@ -124,9 +124,10 @@ export const controlMatrix = [
 			'Security events are reported, assessed, escalated, resolved, evidenced and reviewed for learning.',
 		soc2Tsc: ['CC7'],
 		iso27001AnnexA: ['A.5.24', 'A.5.25', 'A.5.26', 'A.5.27', 'A.5.28', 'A.6.8'],
-		currentEvidence: 'Research operations incident templates and security hardening traces.',
-		gap: 'Create a service-specific security incident process, severity model, escalation route and exercise evidence.',
-		status: 'Gap identified',
+		currentEvidence:
+			'Research operations incident templates, service-specific runbooks, personal data breach handling process and planned exercise record.',
+		gap: 'Complete a tabletop or simulated incident exercise, record outcomes and obtain service-owner, security and privacy sign-off.',
+		status: 'Partially evidenced',
 	},
 	{
 		controlArea: 'Supplier and integration assurance',
@@ -182,7 +183,7 @@ export const readinessEvidenceGaps = [
 	'SOC 2 control-to-evidence mapping at criteria level',
 	'ISO/IEC 27001 Statement of Applicability',
 	'supplier and subprocessor register',
-	'access review, incident response, backup and monitoring evidence',
+	'access review, completed incident response test evidence, backup and monitoring evidence',
 ];
 
 export const standardsReferences = [

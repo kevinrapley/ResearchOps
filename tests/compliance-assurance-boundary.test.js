@@ -7,6 +7,9 @@ const read = (filePath) => fs.readFileSync(filePath, 'utf8');
 const readme = read('docs/compliance/soc2-iso27001-readiness/README.md');
 const scope = read('docs/compliance/soc2-iso27001-readiness/scope-and-system-boundary.md');
 const evidenceIndex = read('docs/compliance/soc2-iso27001-readiness/evidence-index.md');
+const incidentReadiness = read(
+	'docs/compliance/soc2-iso27001-readiness/incident-response/README.md'
+);
 const combined = `${readme}\n${scope}\n${evidenceIndex}`;
 
 test('compliance readiness pack avoids unsupported SOC 2 and ISO 27001 claims', () => {
@@ -53,7 +56,17 @@ test('evidence index keeps readiness gaps visible', () => {
 		'Incident response',
 		'Secure development lifecycle',
 		'ISMS scope, risk assessment, risk treatment plan and Statement of Applicability',
+		'Completed incident response test evidence and breach handling sign-off',
 	]) {
 		assert.match(evidenceIndex, new RegExp(requiredGap));
 	}
+});
+
+test('incident response readiness remains framed as partial evidence', () => {
+	assert.match(incidentReadiness, /Partially evidenced|partially evidenced/);
+	assert.match(
+		incidentReadiness,
+		/must not be described as an exercised or independently assured incident response control/
+	);
+	assert.match(evidenceIndex, /Incident response \| Partially evidenced/);
 });
