@@ -6,6 +6,7 @@ on:
     paths:
       - 'src/govuk/templates/**'
       - 'src/govuk/data/compliance-readiness.mjs'
+      - 'docs/compliance/soc2-iso27001-readiness/incident-response/**'
       - 'src/govuk/data/sourcebook.mjs'
       - 'sourcebook/sourcebook-index.json'
       - 'scripts/govuk/render-govuk-pages.mjs'
@@ -66,6 +67,7 @@ jobs:
           git diff --name-only "origin/${base_ref}"...HEAD -- \
             'src/govuk/templates/**' \
             'src/govuk/data/compliance-readiness.mjs' \
+            'docs/compliance/soc2-iso27001-readiness/incident-response/**' \
             'src/govuk/data/sourcebook.mjs' \
             'sourcebook/sourcebook-index.json' \
             'scripts/govuk/render-govuk-pages.mjs' \

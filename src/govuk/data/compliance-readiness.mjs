@@ -186,6 +186,36 @@ export const readinessEvidenceGaps = [
 	'access review, completed incident response test evidence, backup and monitoring evidence',
 ];
 
+export const incidentResponseEvidencePages = [
+	{
+		slug: 'runbooks',
+		title: 'Incident response runbooks',
+		summary:
+			'Service-specific first-response runbooks for likely ResearchOps security, privacy, supplier and availability incidents.',
+		sourcePath:
+			'docs/compliance/soc2-iso27001-readiness/incident-response/incident-response-runbooks.md',
+		route: '/pages/compliance-readiness/incident-response/runbooks/',
+	},
+	{
+		slug: 'personal-data-breach-handling',
+		title: 'Personal data breach handling',
+		summary:
+			'The decision route for suspected personal data breaches, including escalation, notification assessment and evidence to retain.',
+		sourcePath:
+			'docs/compliance/soc2-iso27001-readiness/incident-response/personal-data-breach-handling.md',
+		route: '/pages/compliance-readiness/incident-response/personal-data-breach-handling/',
+	},
+	{
+		slug: 'incident-exercise-record',
+		title: 'Incident exercise record',
+		summary:
+			'The planned tabletop or simulated incident exercise structure and the evidence needed before the control can be treated as tested.',
+		sourcePath:
+			'docs/compliance/soc2-iso27001-readiness/incident-response/incident-exercise-record.md',
+		route: '/pages/compliance-readiness/incident-response/incident-exercise-record/',
+	},
+];
+
 export const standardsReferences = [
 	{
 		title: 'AICPA SOC suite of services',
@@ -204,6 +234,7 @@ export const complianceReadinessContext = {
 	complianceScopeSummary,
 	complianceBoundaryItems,
 	controlMatrix,
+	incidentResponseEvidencePages,
 	readinessEvidenceGaps,
 	standardsReferences,
 };

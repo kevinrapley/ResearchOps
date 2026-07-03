@@ -1,0 +1,149 @@
+<!doctype html>
+<html class="govuk-template" lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>Incident exercise record - ResearchOps Demo Suite</title>
+		<link rel="stylesheet" href="/assets/govuk/govuk-frontend.css" media="screen" />
+
+		<script type="module" src="/components/layout.js?v=govuk-page-chrome-20260702-1" defer></script>
+		<script type="module" src="/js/govuk-frontend-init.js?v=govuk-page-chrome-20260702-1" defer></script>
+	</head>
+	<body class="govuk-template__body">
+		<script>
+			document.body.className +=
+				" js-enabled" + ("noModule" in HTMLScriptElement.prototype ? " govuk-frontend-supported" : "");
+		</script>
+		<x-include src="/partials/header.html" vars='{"active":""}'></x-include>
+		<main class="govuk-main-wrapper" id="main-content" role="main" tabindex="-1">
+			<div class="govuk-width-container" data-compliance-evidence-document="incident-exercise-record">
+				<nav class="govuk-breadcrumbs" aria-label="Breadcrumb">
+					<ol class="govuk-breadcrumbs__list">
+						<li class="govuk-breadcrumbs__list-item">
+							<a class="govuk-breadcrumbs__link" href="/">Home</a>
+						</li>
+
+						<li class="govuk-breadcrumbs__list-item">
+							<a class="govuk-breadcrumbs__link" href="/pages/compliance-readiness/">Compliance readiness</a>
+						</li>
+
+						<li class="govuk-breadcrumbs__list-item" aria-current="page">Incident exercise record</li>
+					</ol>
+				</nav>
+
+				<div class="govuk-grid-row">
+					<div class="govuk-grid-column-two-thirds">
+						<span class="govuk-caption-xl">Incident response evidence</span>
+						<h1 class="govuk-heading-xl">Incident exercise record</h1>
+						<p class="govuk-body-l">
+							The planned tabletop or simulated incident exercise structure and the evidence needed before the control
+							can be treated as tested.
+						</p>
+						<div class="govuk-warning-text compliance-readiness__warning">
+							<span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+							<strong class="govuk-warning-text__text">
+								<span class="govuk-visually-hidden">Warning</span>
+								This page is readiness evidence. It does not assert that incident response has been independently
+								assured or exercised.
+							</strong>
+						</div>
+
+						<p class="govuk-body">
+							<a class="govuk-link" href="/pages/compliance-readiness/">Back to compliance readiness</a>
+						</p>
+					</div>
+				</div>
+
+				<div class="govuk-grid-row">
+					<div class="govuk-grid-column-two-thirds">
+						<div class="compliance-readiness__document">
+							<p class="govuk-body">
+								This record defines the incident response exercise needed before ResearchOps can claim the incident
+								process has been tested.
+							</p>
+							<p class="govuk-body">Exercise status: planned, not yet completed.</p>
+							<p class="govuk-body">
+								This document is not completed test evidence. It is the test plan and evidence structure. A completed
+								exercise record must be added after a tabletop or simulated incident has been run with the right Home
+								Office service, security, privacy and technical roles.
+							</p>
+							<h2 class="govuk-heading-l">Exercise objective</h2>
+							<p class="govuk-body">Demonstrate that ResearchOps can:</p>
+							<ul class="govuk-list govuk-list--bullet">
+								<li>detect and triage a suspected security or privacy incident</li>
+								<li>preserve useful evidence without spreading personal data</li>
+								<li>contain the issue through the right technical and operational actions</li>
+								<li>start the personal data breach handling process early</li>
+								<li>involve service owner, information asset owner, security and privacy roles</li>
+								<li>make and record notification decisions</li>
+								<li>identify improvements and assign follow-up actions</li>
+							</ul>
+							<h2 class="govuk-heading-l">Minimum exercise scenario</h2>
+							<p class="govuk-body">Use this scenario for the first tabletop exercise:</p>
+							<p class="govuk-body">
+								A researcher reports that a participant consent artefact appears visible to a user who should only have
+								access to another project. The artefact includes a participant identifier, contact detail and consent
+								state. The same deployment also changed route-permission checks and audit-log behaviour.
+							</p>
+							<p class="govuk-body">The exercise should walk through:</p>
+							<ol class="govuk-list govuk-list--number">
+								<li>how the report enters the incident route</li>
+								<li>how the team confirms the affected route and data class</li>
+								<li>how access is contained</li>
+								<li>how audit and deployment evidence is preserved</li>
+								<li>how the team decides whether this is a personal data breach</li>
+								<li>how the authorised route decides whether ICO notification is required</li>
+								<li>how affected-person notification would be considered</li>
+								<li>how the fix, tests, release evidence and lessons are captured</li>
+							</ol>
+							<h2 class="govuk-heading-l">Participants required</h2>
+							<p class="govuk-body">The first exercise should include, or explicitly record delegate coverage for:</p>
+							<ul class="govuk-list govuk-list--bullet">
+								<li>ResearchOps service owner</li>
+								<li>information asset owner or agreed data owner route</li>
+								<li>senior risk owner or delegated risk route</li>
+								<li>security representative</li>
+								<li>privacy representative or Data Protection Officer route</li>
+								<li>technical maintainer</li>
+								<li>ResearchOps practitioner who can explain the affected workflow</li>
+							</ul>
+							<h2 class="govuk-heading-l">Evidence to record after the exercise</h2>
+							<p class="govuk-body">Add a dated exercise outcome section with:</p>
+							<ul class="govuk-list govuk-list--bullet">
+								<li>exercise date and duration</li>
+								<li>participants and roles</li>
+								<li>scenario used</li>
+								<li>key timeline decisions</li>
+								<li>containment decision</li>
+								<li>breach assessment decision</li>
+								<li>ICO notification decision route</li>
+								<li>affected-person notification decision route</li>
+								<li>evidence retained</li>
+								<li>controls that worked</li>
+								<li>controls that failed or were unclear</li>
+								<li>follow-up actions, owners and due dates</li>
+								<li>sign-off decision</li>
+							</ul>
+							<h2 class="govuk-heading-l">Passing criteria</h2>
+							<p class="govuk-body">The exercise can be treated as passed only when:</p>
+							<ul class="govuk-list govuk-list--bullet">
+								<li>the team starts breach assessment before all facts are known</li>
+								<li>the team identifies the likely personal data classes and affected people</li>
+								<li>containment actions are proportionate and evidence-preserving</li>
+								<li>the authorised privacy route owns the ICO and affected-person notification decisions</li>
+								<li>decisions not to report, or reasons for delayed reporting, would be recorded</li>
+								<li>follow-up actions have named owners</li>
+								<li>the service owner and security representative accept the outcome</li>
+							</ul>
+							<h2 class="govuk-heading-l">Current gap</h2>
+							<p class="govuk-body">
+								The process remains partially evidenced until the exercise is run and the dated outcome is added.
+							</p>
+						</div>
+					</div>
+				</div>
+			</div>
+		</main>
+		<x-include src="/partials/footer.html?v=govuk-page-chrome-20260702-1"></x-include>
+	</body>
+</html>

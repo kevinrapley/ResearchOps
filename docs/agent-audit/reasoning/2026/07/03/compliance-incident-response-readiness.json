@@ -52,7 +52,10 @@
 		"Added a personal data breach handling process grounded in ICO guidance and routed through Home Office privacy, security and service-owner decision points.",
 		"Added a planned incident exercise record that prevents the process being described as tested before an exercise is completed.",
 		"Updated the compliance readiness page data and evidence index to mark incident response as partially evidenced while keeping completed exercise evidence open.",
-		"Added documentation and route-state tests for the incident response readiness pack."
+		"Added documentation and route-state tests for the incident response readiness pack.",
+		"Presented the incident response runbooks, personal data breach handling process and incident exercise record as generated GOV.UK pages linked from /pages/compliance-readiness/.",
+		"Kept the Markdown documents as the source of truth and added a GOV.UK evidence-document template plus a small Markdown-to-GOV.UK renderer for this readiness evidence.",
+		"Registered the new pages in the visual walkthrough configuration and render workflow inputs so the generated routes remain covered when documentation changes."
 	],
 	"validationEvidence": [
 		{
@@ -64,6 +67,11 @@
 			"command": "node --import ./tests/helpers/generated-govuk-page-source.mjs --test tests/compliance-incident-response-readiness.test.js tests/compliance-assurance-boundary.test.js tests/compliance-readiness-page-route-state.test.js",
 			"status": "passed",
 			"summary": "15 focused tests passed for the incident response readiness pack, compliance evidence pack and compliance readiness page."
+		},
+		{
+			"command": "node --import ./tests/helpers/generated-govuk-page-source.mjs --test tests/compliance-readiness-page-route-state.test.js tests/compliance-incident-response-readiness.test.js tests/govuk-pages-render-workflow-state.test.js tests/visual-walkthrough-registry-coverage.test.js",
+			"status": "passed",
+			"summary": "14 focused tests passed for the generated incident response evidence pages, compliance readiness links, render workflow and visual registry coverage."
 		},
 		{
 			"command": "curl http://127.0.0.1:4173/pages/compliance-readiness/",

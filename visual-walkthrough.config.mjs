@@ -6,6 +6,7 @@
  */
 
 import { SIGN_IN_EMAIL, signInMockRoutes } from './scripts/walkthrough-playwright.mjs';
+import { incidentResponseEvidencePages } from './src/govuk/data/compliance-readiness.mjs';
 import { repositoryStaticPages } from './src/govuk/data/repository-page.mjs';
 import { sourcebookIndex, sourcebookPillarPages } from './src/govuk/data/sourcebook.mjs';
 import { operationalPaths } from './visual-walkthrough.operational-fixtures.mjs';
@@ -584,6 +585,24 @@ const sourcebookPages = [
 	...sourcebookPillarPages.map(sourcebookStaticPageEntry),
 ];
 
+function complianceIncidentEvidencePageEntry(page) {
+	return {
+		id: `compliance-incident-response-${page.slug}`,
+		title: page.title,
+		group: 'Assurance',
+		path: routeToGeneratedHtmlPath(page.route),
+		description: page.summary,
+		authenticated: false,
+		defaultState: {
+			id: 'default',
+			title: `${page.title} evidence page`,
+			description: page.summary,
+			path: page.route,
+			actions: [{ type: 'waitForText', text: page.title }],
+		},
+	};
+}
+
 export const visualWalkthroughConfig = {
 	title: 'ResearchOps application visual walkthrough',
 	description: 'Generated evidence of the current application build, covering registered pages and important interaction states.',
@@ -700,6 +719,7 @@ export const visualWalkthroughConfig = {
 				actions: [{ type: 'waitForText', text: 'This page does not assert SOC 2 compliance' }],
 			},
 		},
+		...incidentResponseEvidencePages.map(complianceIncidentEvidencePageEntry),
 		...repositoryPages,
 		...sourcebookPages,
 	],

@@ -79,11 +79,15 @@ Skipped bundles:
 - Marked the incident response control as partially evidenced on the readiness page.
 - Kept completed tabletop or simulated incident evidence as the remaining gap.
 - Added route-state and documentation tests to prevent unsupported claims that the incident response process has already been exercised.
+- Presented the incident response runbooks, personal data breach handling process and incident exercise record as generated GOV.UK pages linked from `/pages/compliance-readiness/`.
+- Kept the Markdown documents as the source of truth and added a GOV.UK evidence-document template plus a small Markdown-to-GOV.UK renderer for this readiness evidence.
+- Registered the new pages in the visual walkthrough configuration and render workflow inputs so the generated routes remain covered when documentation changes.
 
 ## Validation evidence
 
 - `npm run build:govuk-pages` passed and regenerated the compliance readiness page.
 - `node --import ./tests/helpers/generated-govuk-page-source.mjs --test tests/compliance-incident-response-readiness.test.js tests/compliance-assurance-boundary.test.js tests/compliance-readiness-page-route-state.test.js` passed: 15 tests, 15 pass.
+- `node --import ./tests/helpers/generated-govuk-page-source.mjs --test tests/compliance-readiness-page-route-state.test.js tests/compliance-incident-response-readiness.test.js tests/govuk-pages-render-workflow-state.test.js tests/visual-walkthrough-registry-coverage.test.js` passed: 14 tests, 14 pass.
 - Live preview probe confirmed the compliance readiness page shows service-specific runbooks, personal data breach handling process and completed incident response test evidence as the remaining gap.
 - `npm run format:check` passed.
 - `npm run trace:coverage` passed and confirmed trace coverage for `feature/compliance-assurance-boundary`.

@@ -1,10 +1,14 @@
+import { readFileSync } from 'node:fs';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import nunjucks from 'nunjucks';
 import prettier from 'prettier';
 
-import { complianceReadinessContext } from '../../src/govuk/data/compliance-readiness.mjs';
+import {
+	complianceReadinessContext,
+	incidentResponseEvidencePages,
+} from '../../src/govuk/data/compliance-readiness.mjs';
 import { repositoryPageContext, repositoryStaticPages } from '../../src/govuk/data/repository-page.mjs';
 import { sourcebookIndex, sourcebookPillarPages } from '../../src/govuk/data/sourcebook.mjs';
 
@@ -25,6 +29,13 @@ function escapeHtmlAttribute(value) {
 	return String(value)
 		.replaceAll('&', '&amp;')
 		.replaceAll('"', '&quot;')
+		.replaceAll('<', '&lt;')
+		.replaceAll('>', '&gt;');
+}
+
+function escapeHtml(value) {
+	return String(value)
+		.replaceAll('&', '&amp;')
 		.replaceAll('<', '&lt;')
 		.replaceAll('>', '&gt;');
 }
@@ -90,6 +101,148 @@ export function complianceAbbreviationMarkup(value) {
 	}
 
 	return new nunjucks.runtime.SafeString(html);
+}
+
+function inlineMarkdown(value) {
+	return escapeHtml(value)
+		.replace(
+			/\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)/g,
+			(_match, label, href) =>
+				`<a class="govuk-link" href="${escapeHtmlAttribute(href)}">${label}</a>`,
+		)
+		.replace(/`([^`]+)`/g, '<code class="govuk-code">$1</code>')
+		.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+}
+
+function markdownTable(lines, startIndex) {
+	const rows = [];
+	let index = startIndex;
+
+	while (index < lines.length && /^\|.*\|$/.test(lines[index].trim())) {
+		rows.push(
+			lines[index]
+				.trim()
+				.slice(1, -1)
+				.split('|')
+				.map((cell) => cell.trim()),
+		);
+		index += 1;
+	}
+
+	if (rows.length < 2) return { html: '', nextIndex: startIndex };
+
+	const header = rows[0];
+	const body = rows.slice(2);
+	const headerHtml = header
+		.map((cell) => `<th scope="col" class="govuk-table__header">${inlineMarkdown(cell)}</th>`)
+		.join('');
+	const bodyHtml = body
+		.map(
+			(row) =>
+				`<tr class="govuk-table__row">${row
+					.map((cell) => `<td class="govuk-table__cell">${inlineMarkdown(cell)}</td>`)
+					.join('')}</tr>`,
+		)
+		.join('');
+
+	return {
+		html:
+			'<table class="govuk-table"><thead class="govuk-table__head"><tr class="govuk-table__row">' +
+			headerHtml +
+			'</tr></thead><tbody class="govuk-table__body">' +
+			bodyHtml +
+			'</tbody></table>',
+		nextIndex: index,
+	};
+}
+
+function isMarkdownTableStart(lines, index) {
+	return (
+		index + 1 < lines.length &&
+		/^\|.*\|$/.test(lines[index].trim()) &&
+		/^\|[\s:-]+\|/.test(lines[index + 1].trim())
+	);
+}
+
+function closeList(htmlParts, listType) {
+	if (!listType) return null;
+	htmlParts.push(`</${listType}>`);
+	return null;
+}
+
+export function renderComplianceMarkdownDocument(markdown) {
+	const lines = markdown.replace(/\r\n/g, '\n').split('\n');
+	const bodyLines = lines[0]?.startsWith('# ') ? lines.slice(1) : lines;
+	const htmlParts = [];
+	let listType = null;
+
+	for (let index = 0; index < bodyLines.length; index += 1) {
+		const rawLine = bodyLines[index];
+		const line = rawLine.trim();
+
+		if (!line) {
+			listType = closeList(htmlParts, listType);
+			continue;
+		}
+
+		if (isMarkdownTableStart(bodyLines, index)) {
+			listType = closeList(htmlParts, listType);
+			const table = markdownTable(bodyLines, index);
+			htmlParts.push(table.html);
+			index = table.nextIndex - 1;
+			continue;
+		}
+
+		const heading = line.match(/^(#{2,4})\s+(.+)$/);
+		if (heading) {
+			listType = closeList(htmlParts, listType);
+			const level = heading[1].length;
+			const className = level === 2 ? 'govuk-heading-l' : level === 3 ? 'govuk-heading-m' : 'govuk-heading-s';
+			htmlParts.push(`<h${level} class="${className}">${inlineMarkdown(heading[2])}</h${level}>`);
+			continue;
+		}
+
+		const orderedItem = line.match(/^\d+\.\s+(.+)$/);
+		if (orderedItem) {
+			if (listType !== 'ol') {
+				listType = closeList(htmlParts, listType);
+				htmlParts.push('<ol class="govuk-list govuk-list--number">');
+				listType = 'ol';
+			}
+			htmlParts.push(`<li>${inlineMarkdown(orderedItem[1])}</li>`);
+			continue;
+		}
+
+		const bulletItem = line.match(/^-\s+(.+)$/);
+		if (bulletItem) {
+			if (listType !== 'ul') {
+				listType = closeList(htmlParts, listType);
+				htmlParts.push('<ul class="govuk-list govuk-list--bullet">');
+				listType = 'ul';
+			}
+			htmlParts.push(`<li>${inlineMarkdown(bulletItem[1])}</li>`);
+			continue;
+		}
+
+		listType = closeList(htmlParts, listType);
+		htmlParts.push(`<p class="govuk-body">${inlineMarkdown(line)}</p>`);
+	}
+
+	closeList(htmlParts, listType);
+
+	return new nunjucks.runtime.SafeString(htmlParts.join('\n'));
+}
+
+function complianceEvidencePageContext(page) {
+	const markdown = readFileSync(resolve(root, page.sourcePath), 'utf8');
+
+	return {
+		...page,
+		pageTitle: `${page.title} - ResearchOps Demo Suite`,
+		serviceName: 'ResearchOps Demo Suite',
+		activeNavigation: '',
+		documentHtml: renderComplianceMarkdownDocument(markdown),
+	};
 }
 
 async function formatRenderedHtml(html) {
@@ -276,6 +429,14 @@ export const govukPages = [
 			navigation: accountNavigation,
 		},
 	},
+	...incidentResponseEvidencePages.map((page) => ({
+		template: 'pages/compliance-evidence-document.njk',
+		output: `public/pages/compliance-readiness/incident-response/${page.slug}/index.html`,
+		context: {
+			...complianceEvidencePageContext(page),
+			navigation: accountNavigation,
+		},
+	})),
 	{
 		template: 'pages/start.njk',
 		output: 'public/pages/start/index.html',

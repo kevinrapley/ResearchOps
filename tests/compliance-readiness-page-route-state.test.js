@@ -5,6 +5,7 @@ import test from 'node:test';
 import {
 	complianceScopeSummary,
 	controlMatrix,
+	incidentResponseEvidencePages,
 	readinessEvidenceGaps,
 } from '../src/govuk/data/compliance-readiness.mjs';
 
@@ -97,6 +98,11 @@ test('rendered compliance readiness page includes the expected public content', 
 	assert.match(page, /Compliance scope and system boundary/);
 	assert.match(page, /Formal control matrix/);
 	assert.match(page, /ISMS scope, risk assessment, risk treatment plan and Statement of Applicability/);
+	assert.match(page, /Incident response evidence/);
+	assert.match(
+		page,
+		/These pages make the incident response runbooks, personal data breach handling process and exercise record visible from the readiness artefact/
+	);
 	assert.match(page, /Governance, scope and accountability/);
 	assert.match(page, /service-specific runbooks, personal data breach handling process and planned exercise record/);
 	assert.match(page, /completed incident response test evidence/);
@@ -117,6 +123,17 @@ test('rendered compliance readiness page includes the expected public content', 
 	assert.match(page, /<abbr title="Recovery Time Objective \/ Recovery Point Objective">RTO\/RPO<\/abbr>/);
 	assert.doesNotMatch(page, /\bis SOC 2 compliant\b/i);
 	assert.doesNotMatch(page, /\bis ISO\/IEC 27001 certified\b/i);
+});
+
+test('compliance readiness page links to incident response evidence pages', () => {
+	assert.equal(incidentResponseEvidencePages.length, 3);
+
+	for (const evidencePage of incidentResponseEvidencePages) {
+		assert.match(page, new RegExp(`href="${evidencePage.route}"`));
+		assert.match(page, new RegExp(evidencePage.title));
+		assert.match(renderer, new RegExp(`incident-response/\\$\\{page\\.slug\\}/index\\.html`));
+		assert.match(renderer, /template: 'pages\/compliance-evidence-document\.njk'/);
+	}
 });
 
 test('rendered compliance readiness heading does not use abbreviation markup', () => {

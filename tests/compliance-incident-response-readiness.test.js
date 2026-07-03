@@ -11,6 +11,34 @@ const breachHandling = read(`${incidentRoot}/personal-data-breach-handling.md`);
 const exerciseRecord = read(`${incidentRoot}/incident-exercise-record.md`);
 const combined = `${readme}\n${runbooks}\n${breachHandling}\n${exerciseRecord}`;
 
+const generatedPages = [
+	{
+		filePath: 'public/pages/compliance-readiness/incident-response/runbooks/index.html',
+		slug: 'runbooks',
+		title: 'Incident response runbooks',
+		expectedContent: ['Severity model', 'Runbook: suspected PII exposure'],
+	},
+	{
+		filePath:
+			'public/pages/compliance-readiness/incident-response/personal-data-breach-handling/index.html',
+		slug: 'personal-data-breach-handling',
+		title: 'Personal data breach handling',
+		expectedContent: [
+			'within 72 hours',
+			'without undue delay',
+			'https://ico.org.uk/for-organisations/report-a-breach/personal-data-breach/',
+			'https://ico.org.uk/for-organisations/advice-and-services/audits/data-protection-audit-framework/toolkits/personal-data-breach-management/reporting-processes/',
+		],
+	},
+	{
+		filePath:
+			'public/pages/compliance-readiness/incident-response/incident-exercise-record/index.html',
+		slug: 'incident-exercise-record',
+		title: 'Incident exercise record',
+		expectedContent: ['Exercise status: planned, not yet completed', 'Passing criteria'],
+	},
+];
+
 test('incident response readiness pack defines the required artefacts', () => {
 	for (const fileName of [
 		'incident-response-runbooks.md',
@@ -75,4 +103,25 @@ test('exercise record keeps test evidence honest until an exercise is completed'
 
 	assert.doesNotMatch(combined, /\bexercise has been completed\b/i);
 	assert.doesNotMatch(combined, /\bincident response control is tested and effective\b/i);
+});
+
+test('incident response evidence is rendered as visible GOV.UK pages', () => {
+	for (const page of generatedPages) {
+		const html = read(page.filePath);
+
+		assert.match(html, new RegExp(`data-compliance-evidence-document="${page.slug}"`));
+		assert.match(html, new RegExp(`<h1 class="govuk-heading-xl">\\s*${page.title}\\s*</h1>`));
+		assert.match(html, /href="\/pages\/compliance-readiness\/">Back to compliance readiness<\/a>/);
+		assert.match(html, /This page is readiness evidence/);
+		assert.match(html, /govuk-warning-text/);
+
+		for (const expectedContent of page.expectedContent) {
+			assert.match(html, new RegExp(expectedContent.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
+		}
+	}
+
+	const exerciseHtml = read(
+		'public/pages/compliance-readiness/incident-response/incident-exercise-record/index.html'
+	);
+	assert.doesNotMatch(exerciseHtml, /\bexercise has been completed\b/i);
 });
