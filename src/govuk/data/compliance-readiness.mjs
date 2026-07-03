@@ -228,7 +228,7 @@ export const standardsReferences = [
 ];
 
 export const complianceReadinessContext = {
-	pageTitle: 'SOC 2 and ISO 27001 readiness - ResearchOps Demo Suite',
+	pageTitle: 'SOC 2 and ISO/IEC 27001 readiness documentation - ResearchOps Demo Suite',
 	serviceName: 'ResearchOps Demo Suite',
 	activeNavigation: '',
 	complianceScopeSummary,

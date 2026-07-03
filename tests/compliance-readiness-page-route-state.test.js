@@ -83,8 +83,11 @@ test('control matrix maps readiness controls to SOC 2 and ISO Annex A', () => {
 });
 
 test('rendered compliance readiness page includes the expected public content', () => {
-	assert.match(page, /SOC 2 and ISO 27001 readiness/);
-	assert.match(page, /<h1 class="govuk-heading-xl">\s*SOC 2 and ISO 27001 readiness\s*<\/h1>/);
+	assert.match(page, /SOC 2 and ISO\/IEC 27001 readiness documentation/);
+	assert.match(
+		page,
+		/<h1 class="govuk-heading-xl">\s*SOC 2 and ISO\/IEC 27001 readiness documentation\s*<\/h1>/
+	);
 	assert.match(page, /data-compliance-readiness-page/);
 	assert.match(page, /\/components\/layout\.js\?v=govuk-page-chrome-20260702-1/);
 	assert.match(page, /<x-include src="\/partials\/footer\.html\?v=govuk-page-chrome-20260702-1"><\/x-include>/);

@@ -705,7 +705,7 @@ export const visualWalkthroughConfig = {
 		{
 			...registeredPage(
 				'compliance-readiness',
-				'SOC 2 and ISO 27001 readiness',
+				'SOC 2 and ISO/IEC 27001 readiness documentation',
 				'Assurance',
 				'/pages/compliance-readiness/index.html',
 				'Footer-linked readiness page defining the platform boundary and control matrix.'

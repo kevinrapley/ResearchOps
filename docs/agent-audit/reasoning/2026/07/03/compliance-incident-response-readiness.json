@@ -56,7 +56,8 @@
 		"Presented the incident response runbooks, personal data breach handling process and incident exercise record as generated GOV.UK pages linked from /pages/compliance-readiness/.",
 		"Kept the Markdown documents as the source of truth and added a GOV.UK evidence-document template plus a small Markdown-to-GOV.UK renderer for this readiness evidence.",
 		"Registered the new pages in the visual walkthrough configuration and render workflow inputs so the generated routes remain covered when documentation changes.",
-		"Replaced generated-page URL checks that used regular expressions with plain string checks after CodeQL flagged the URL-hostname regex shape."
+		"Replaced generated-page URL checks that used regular expressions with plain string checks after CodeQL flagged the URL-hostname regex shape.",
+		"Updated the compliance readiness page H1, page metadata, generated HTML, route-state test and visual walkthrough title to SOC 2 and ISO/IEC 27001 readiness documentation."
 	],
 	"validationEvidence": [
 		{
@@ -78,6 +79,11 @@
 			"command": "node --import ./tests/helpers/generated-govuk-page-source.mjs --test tests/compliance-incident-response-readiness.test.js && npm run format:check",
 			"status": "passed",
 			"summary": "Focused generated-page tests and formatting passed after replacing URL regular-expression assertions with string containment checks."
+		},
+		{
+			"command": "npm run build:govuk-pages && node --import ./tests/helpers/generated-govuk-page-source.mjs --test tests/compliance-readiness-page-route-state.test.js tests/visual-walkthrough-registry-coverage.test.js",
+			"status": "passed",
+			"summary": "Generated GOV.UK pages and focused route-state and visual registry tests passed after the heading wording correction."
 		},
 		{
 			"command": "curl http://127.0.0.1:4173/pages/compliance-readiness/",
