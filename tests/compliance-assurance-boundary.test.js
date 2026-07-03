@@ -10,6 +10,15 @@ const evidenceIndex = read('docs/compliance/soc2-iso27001-readiness/evidence-ind
 const incidentReadiness = read(
 	'docs/compliance/soc2-iso27001-readiness/incident-response/README.md'
 );
+const privacyReadiness = read(
+	'docs/compliance/soc2-iso27001-readiness/privacy-and-data-protection/README.md'
+);
+const privacyEvidence = read(
+	'docs/compliance/soc2-iso27001-readiness/privacy-and-data-protection/dpia-data-map-ropa-lawful-basis.md'
+);
+const privacyEvidencePage = read(
+	'public/pages/compliance-readiness/privacy-and-data-protection/dpia-data-map-ropa-lawful-basis/index.html'
+);
 const supplierReadiness = read(
 	'docs/compliance/soc2-iso27001-readiness/supplier-assurance/README.md'
 );
@@ -100,4 +109,27 @@ test('supplier assurance readiness records named provider dependencies', () => {
 	assert.doesNotMatch(supplierRegisterPage, /<table class="govuk-table"/);
 	assert.match(supplierRegisterPage, /<h3 class="govuk-heading-m">Cloudflare<\/h3>/);
 	assert.match(supplierRegisterPage, /<strong>ResearchOps role:<\/strong>/);
+});
+
+test('privacy readiness records DPIA, data map, ROPA and lawful-basis gaps', () => {
+	for (const requiredTerm of [
+		'DPIA',
+		'data map',
+		'ROPA',
+		'lawful basis',
+		'special-category',
+		'consent',
+		'participant contact details',
+		'Article 9 condition',
+	]) {
+		assert.match(`${privacyReadiness}\n${privacyEvidence}`, new RegExp(requiredTerm));
+	}
+
+	assert.match(privacyReadiness, /does not assert DPIA approval/);
+	assert.match(privacyEvidence, /Status: draft, not approved/);
+	assert.match(evidenceIndex, /DPIA and GDPR records \| Partially evidenced/);
+	assert.match(privacyEvidencePage, /Privacy and data protection evidence/);
+	assert.match(privacyEvidencePage, /This page is readiness evidence/);
+	assert.doesNotMatch(privacyEvidencePage, /DPIA is approved/i);
+	assert.doesNotMatch(privacyEvidencePage, /ROPA is complete/i);
 });

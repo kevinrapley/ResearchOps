@@ -7,6 +7,7 @@ import {
 	complianceScopeSummary,
 	controlMatrix,
 	incidentResponseEvidencePages,
+	privacyEvidencePages,
 	readinessEvidenceGaps,
 	supplierAssuranceEvidencePages,
 } from '../src/govuk/data/compliance-readiness.mjs';
@@ -113,9 +114,16 @@ test('rendered compliance readiness page includes the expected public content', 
 		page,
 		/These pages make the supplier and integration assurance position visible for Cloudflare, GitHub, Airtable, Mural, email delivery and configured AI services/
 	);
+	assert.match(page, /Privacy and data protection evidence/);
+	assert.match(
+		page,
+		/These pages make the DPIA, data map, records of processing and lawful-basis readiness position visible from the readiness artefact/
+	);
 	assert.match(page, /Governance, scope and accountability/);
 	assert.match(page, /service-specific runbooks, personal data breach handling process and planned test evidence structure/);
 	assert.match(page, /supplier and integration assurance register/);
+	assert.match(page, /privacy evidence structure for/);
+	assert.match(page, /data mapping, records of processing and lawful-basis decisions/);
 	assert.match(page, /completed incident response test evidence/);
 	assert.match(page, /Privacy, retention and data minimisation/);
 	assert.match(page, /CC6/);
@@ -154,8 +162,18 @@ test('compliance readiness page links to supplier assurance evidence pages', () 
 	}
 });
 
+test('compliance readiness page links to privacy and data protection evidence pages', () => {
+	assert.equal(privacyEvidencePages.length, 1);
+
+	for (const evidencePage of privacyEvidencePages) {
+		assert.match(page, new RegExp(`href="${evidencePage.route}"`));
+		assert.match(page, /data map/);
+		assert.match(page, /lawful-basis readiness/);
+	}
+});
+
 test('compliance readiness evidence pages use the shared GOV.UK evidence renderer', () => {
-	assert.equal(complianceEvidencePages.length, 4);
+	assert.equal(complianceEvidencePages.length, 5);
 	assert.match(renderer, /complianceEvidencePages/);
 	assert.match(renderer, /public\$\{page\.route\}index\.html/);
 	assert.match(renderer, /template: 'pages\/compliance-evidence-document\.njk'/);

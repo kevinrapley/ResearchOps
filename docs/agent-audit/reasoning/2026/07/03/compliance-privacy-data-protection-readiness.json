@@ -1,0 +1,96 @@
+{
+	"date": "2026-07-03",
+	"branch": "feature/compliance-assurance-boundary",
+	"base": "main",
+	"traceRequired": true,
+	"traceReason": "feature/ branches require auditable traces for repository-affecting work",
+	"taskSummary": "Add DPIA, data map, records of processing and lawful-basis readiness documentation to the SOC 2 and ISO/IEC 27001 readiness workstream.",
+	"operatingModelFilesLoaded": [
+		"AGENTS.md",
+		".agent-operating-model/orchestration.xml",
+		".agent-operating-model/bundle-registry.json",
+		".agent-operating-model/task-signal-catalog.json",
+		".agent-operating-model/selection-rules.json",
+		".agent-operating-model/bootstrap-checklist.md",
+		".agent-operating-model/precedence-policy.md",
+		".agent-operating-model/trace-policy.md",
+		".agent-operating-model/trace-layers.md",
+		".agent-operating-model/github-mutation-policy.md"
+	],
+	"selectedBundles": [
+		{
+			"id": "github-diamond",
+			"canonicalPath": ".agent-operating-model/bundles/github/"
+		},
+		{
+			"id": "researchops-developer-control",
+			"canonicalPath": ".agent-operating-model/bundles/researchops-developer-control/"
+		},
+		{
+			"id": "multi-functional-team",
+			"canonicalPath": ".agent-operating-model/bundles/multi-functional-team/"
+		},
+		{
+			"id": "govuk-design-system",
+			"canonicalPath": ".agent-operating-model/bundles/govuk-design-system/"
+		}
+	],
+	"bundlesSkipped": [
+		"cloudflare",
+		"openai-platform",
+		"mcp-agent-tooling",
+		"airtable-public-api",
+		"mural-public-api"
+	],
+	"implementationSummary": [
+		"Added a privacy and data protection evidence folder.",
+		"Added a visible GOV.UK privacy evidence page linked from /pages/compliance-readiness/.",
+		"Defined draft DPIA screening triggers, data map, ROPA fields and lawful-basis decisions that need Home Office confirmation.",
+		"Marked DPIA and GDPR records as partially evidenced, not complete.",
+		"Kept DPIA screening approval, ROPA reference, lawful basis, data sharing, processor/subprocessor positions, retention rules and special-category handling as remaining gaps.",
+		"Updated the GOV.UK render workflow path filters so privacy-and-data-protection Markdown changes trigger regenerated static pages.",
+		"Added route-state and evidence-pack tests to prevent unsupported claims that the DPIA, ROPA or lawful-basis position is approved."
+	],
+	"validationEvidence": [
+		{
+			"command": "npm run build:govuk-pages",
+			"status": "passed",
+			"summary": "Generated /pages/compliance-readiness/privacy-and-data-protection/dpia-data-map-ropa-lawful-basis/."
+		},
+		{
+			"command": "node --import ./tests/helpers/generated-govuk-page-source.mjs --test tests/compliance-assurance-boundary.test.js tests/compliance-readiness-page-route-state.test.js tests/govuk-pages-render-workflow-state.test.js tests/visual-walkthrough-registry-coverage.test.js",
+			"status": "passed",
+			"summary": "19 focused tests passed for the assurance evidence pack, generated pages, render workflow and visual registry coverage."
+		},
+		{
+			"command": "rg \"Privacy and data protection evidence|dpia-data-map-ropa-lawful-basis|DPIA, data map\" public/pages/compliance-readiness/index.html public/pages/compliance-readiness/privacy-and-data-protection/dpia-data-map-ropa-lawful-basis/index.html",
+			"status": "passed",
+			"summary": "Rendered-page probe confirmed the readiness page link and privacy evidence content."
+		},
+		{
+			"command": "npm run lint",
+			"status": "passed",
+			"summary": "Lint passed with existing warnings only."
+		},
+		{
+			"command": "npm run format:check",
+			"status": "passed",
+			"summary": "Prettier and generated CSS checks passed."
+		},
+		{
+			"command": "npm run trace:coverage",
+			"status": "passed",
+			"summary": "Trace coverage confirmed for feature/compliance-assurance-boundary."
+		},
+		{
+			"command": "npm run validate",
+			"status": "passed",
+			"summary": "Repository validation completed successfully."
+		}
+	],
+	"residualRisks": [
+		"The DPIA screening decision still needs the authorised Home Office privacy route.",
+		"The ROPA entry, lawful-basis decisions, data map owner, data-sharing positions, processor/subprocessor positions and retention rules still need formal approval.",
+		"This branch still does not assert SOC 2 compliance, ISO/IEC 27001 certification, DPIA approval, ROPA completion or GDPR compliance."
+	]
+}

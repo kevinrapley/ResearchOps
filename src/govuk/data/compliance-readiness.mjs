@@ -147,7 +147,7 @@ export const controlMatrix = [
 		soc2Tsc: ['CC6', 'P'],
 		iso27001AnnexA: ['A.5.33', 'A.5.34', 'A.8.10', 'A.8.11', 'A.8.12'],
 		currentEvidence:
-			'Retention policy, retention enforcement, PII warnings, audit-log minimisation and consent workflows.',
+			'Retention policy, retention enforcement, PII warnings, audit-log minimisation, consent workflows and privacy readiness evidence.',
 		gap: 'Confirm DPIA, ROPA references, lawful basis, data-sharing positions and special-category handling.',
 		status: 'Partially evidenced',
 	},
@@ -177,7 +177,7 @@ export const controlMatrix = [
 export const readinessEvidenceGaps = [
 	'Service owner, information asset owner, senior risk owner and security representative sign-off',
 	'asset and data inventory',
-	'DPIA, ROPA and lawful-basis references',
+	'DPIA, data map, records of processing and lawful-basis documentation',
 	'ISMS scope, risk assessment, risk treatment plan and Statement of Applicability',
 	'information security risk register and treatment plan',
 	'SOC 2 control-to-evidence mapping at criteria level',
@@ -244,9 +244,27 @@ export const supplierAssuranceEvidencePages = [
 	},
 ];
 
+export const privacyEvidencePages = [
+	{
+		id: 'privacy-dpia-data-map-ropa-lawful-basis',
+		slug: 'dpia-data-map-ropa-lawful-basis',
+		title: 'DPIA, data map, ROPA and lawful-basis readiness',
+		evidenceCategory: 'Privacy and data protection evidence',
+		warningText:
+			'This page is readiness evidence. It does not assert that the DPIA, ROPA, data map or lawful-basis position has been approved.',
+		summary:
+			'The draft privacy evidence structure for DPIA screening, data mapping, records of processing and lawful-basis decisions.',
+		sourcePath:
+			'docs/compliance/soc2-iso27001-readiness/privacy-and-data-protection/dpia-data-map-ropa-lawful-basis.md',
+		route:
+			'/pages/compliance-readiness/privacy-and-data-protection/dpia-data-map-ropa-lawful-basis/',
+	},
+];
+
 export const complianceEvidencePages = [
 	...incidentResponseEvidencePages,
 	...supplierAssuranceEvidencePages,
+	...privacyEvidencePages,
 ];
 
 export const standardsReferences = [
@@ -269,6 +287,7 @@ export const complianceReadinessContext = {
 	controlMatrix,
 	incidentResponseEvidencePages,
 	supplierAssuranceEvidencePages,
+	privacyEvidencePages,
 	complianceEvidencePages,
 	readinessEvidenceGaps,
 	standardsReferences,

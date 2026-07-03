@@ -15,6 +15,7 @@ The workstream supports future assessment against:
 
 - [Scope and system boundary](scope-and-system-boundary.md)
 - [Evidence index](evidence-index.md)
+- [Privacy and data protection readiness](privacy-and-data-protection/README.md)
 - [Supplier assurance readiness](supplier-assurance/README.md)
 
 ## Readiness rule
