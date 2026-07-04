@@ -157,6 +157,7 @@ Skipped:
 - Updated study readiness evidence mapping so incomplete risk answers no longer satisfy `risk-assessment`, `triage-outcome` or `participant-risk-rationale` evidence.
 - Confirmed the production gap: live `https://research-operations.com/pages/study/` expects Sourcebook risk evidence but does not yet include the `Assess ethics and research risk` setup task or `/pages/study/ethics-risk/` route from this branch.
 - Moved the ethics-risk availability work onto `feature/study-ethics-risk-assessment` from current `origin/main` so the PR is focused on the standalone study risk checkpoint.
+- Addressed PR #467 Codex review by limiting browser localStorage risk outcomes to local preview origins, returning a non-ready outcome when production persistence fails, and restoring compatibility with existing `risk-assessment`, `triage-outcome` and `participant-risk-rationale` evidence records.
 - Restarted `http://127.0.0.1:8082` against the current working-copy `public/` directory and verified the new local risk outcome POST/GET round trip.
 - `npm run build:generated-css -- public/css/study-ethics-risk.css` passed.
 - `npm run build:govuk-pages` passed.
@@ -170,6 +171,10 @@ Skipped:
 - `npx eslint public/js/study-ethics-risk-model.js public/js/study-ethics-risk-page.js public/js/study-page.js tests/study-ethics-risk-route-state.test.js tests/study-page-route-state.test.js tests/study-child-route-state.test.js` completed with no errors and existing `public/js/study-page.js` console warnings only.
 - `curl -ks 'https://research-operations/pages/study/?id=rect3o7dt&project=recgdpwEI5hFO7bUZ'` confirmed the local HTTPS preview serves `#link-ethics-risk`, `Assess ethics and research risk`, and the ethics-risk readiness/setup status elements.
 - `curl -ks 'https://research-operations/pages/study/ethics-risk/?id=rect3o7dt&project=recgdpwEI5hFO7bUZ'` confirmed the local HTTPS preview serves the standalone form, outcome panel, shared Sourcebook component stylesheet and `GOVERN 2.1.1` reference.
+- After PR #467 Codex review remediation, `node --import ./tests/helpers/generated-govuk-page-source.mjs --test tests/study-ethics-risk-route-state.test.js tests/study-page-route-state.test.js tests/study-child-route-state.test.js` passed with 3 tests.
+- After PR #467 Codex review remediation, `npx eslint public/js/study-ethics-risk-model.js public/js/study-page.js tests/study-ethics-risk-route-state.test.js tests/study-page-route-state.test.js` completed with no errors and existing `public/js/study-page.js` console warnings only.
+- After PR #467 Codex review remediation, `npx prettier -c public/js/study-ethics-risk-model.js public/js/study-page.js tests/study-ethics-risk-route-state.test.js tests/study-page-route-state.test.js` passed.
+- After PR #467 Codex review remediation, `git diff --check` passed.
 
 ## Residual Risk
 

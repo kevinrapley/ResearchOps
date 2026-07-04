@@ -77,6 +77,11 @@ function sourcebookClausesFromIds(ids = []) {
 	return [...new Set(ids)].map(id => SOURCEBOOK_CLAUSES[id]).filter(Boolean);
 }
 
+function isLocalPreviewOrigin() {
+	const hostname = window.location?.hostname || "";
+	return ["research-operations", "localhost", "127.0.0.1", "0.0.0.0"].includes(hostname) || hostname.endsWith(".local");
+}
+
 function addRiskTrigger(triggers, controls, trigger) {
 	triggers.push({
 		family: trigger.family,
@@ -391,6 +396,7 @@ export function ethicsRiskStorageKey(studyId) {
 
 export function loadStudyEthicsRisk(studyId) {
 	if (!studyId) return evaluateStudyEthicsRisk({});
+	if (!isLocalPreviewOrigin()) return evaluateStudyEthicsRisk({});
 	try {
 		const saved = JSON.parse(window.localStorage.getItem(ethicsRiskStorageKey(studyId)) || "null");
 		if (saved?.answers) {
@@ -479,17 +485,37 @@ export function saveStudyEthicsRisk(studyId, answers) {
 		savedAt,
 		recordedBy: "Local preview user"
 	});
-	if (!studyId) return outcome;
+	if (!studyId || !isLocalPreviewOrigin()) return outcome;
 	const payload = studyEthicsRiskRecord(studyId, outcome, { savedAt });
 	window.localStorage.setItem(ethicsRiskStorageKey(studyId), JSON.stringify(payload));
 	return outcome;
 }
 
 export async function recordStudyEthicsRisk(studyId, answers) {
-	const outcome = saveStudyEthicsRisk(studyId, answers);
+	const savedAt = new Date().toISOString();
+	const outcome = evaluateStudyEthicsRisk(answers, {
+		savedAt,
+		recordedBy: "Local preview user"
+	});
 	if (!studyId || !outcome.started || outcome.route === "incomplete-assessment") return outcome;
 	const record = studyEthicsRiskRecord(studyId, outcome);
 	const persisted = await persistStudyEthicsRiskRecord(record);
+	if (!persisted && !isLocalPreviewOrigin()) {
+		return {
+			...outcome,
+			ready: false,
+			status: "not-started",
+			statusLabel: "Action needed",
+			readinessState: "Action needed",
+			route: "not-recorded",
+			summary: "The risk outcome could not be recorded. Try again before treating this study as ready.",
+			nextAction: "Record the study risk outcome before recruitment, fieldwork or participant sessions begin.",
+			savedAt: "",
+			recordedBy: "",
+			persisted
+		};
+	}
+	if (!persisted) saveStudyEthicsRisk(studyId, answers);
 	return {
 		...outcome,
 		persisted
