@@ -1,7 +1,7 @@
 # Study Readiness Sourcebook Local Trace
 
 Date: 2026-07-04
-Branch: `feature/study-readiness-sourcebook`
+Branch: `feature/study-ethics-risk-assessment`
 Task: Apply Sourcebook components locally to the study readiness page for preview review.
 
 ## Operating Model Bootstrap
@@ -49,6 +49,22 @@ Skipped:
 - Moved the final PR work onto `feature/study-readiness-sourcebook` from current `origin/main` after PR #463 was merged, preserving the local study readiness changes while avoiding reuse of the merged participant-consent branch.
 - Addressed Codex review on PR #464 by requiring loaded evidence records before `risk-assessment` and `triage-outcome` rows become present, so a normal study status no longer counts as governance evidence.
 - Addressed Codex review on PR #464 by adding `public/css/sourcebook-components.css` to the generated CSS format workflow allowlist.
+- Added an `Assess ethics and research risk` study setup task, readiness row and Nunjucks risk discovery section using GOV.UK checkboxes, radios and buttons.
+- Added a browser-side study ethics risk evaluator that asks factual questions, records a local preview outcome per study, fires sensitive research triggers and gives action-led controls.
+- Connected the explicit ethics risk outcome to study readiness and Sourcebook evidence so `risk-assessment`, `triage-outcome` and `participant-risk-rationale` come from the risk checkpoint instead of inferred free-text evidence.
+- Added SASS for the ethics risk section so the outcome panel sits beside the questions on wider screens and stacks under the form on smaller screens.
+- Added explicit "none" answers and minimum-answer checks so a partial risk form cannot be treated as a completed low-risk assessment.
+- Regenerated `public/css/study-page.css` and `public/pages/study/index.html`.
+- Moved the ethics and research risk questionnaire out of the study overview into a dedicated `/pages/study/ethics-risk/` Nunjucks subpage.
+- Split the risk evaluator and local preview storage into `public/js/study-ethics-risk-model.js` so the study overview and form page share the same outcome model.
+- Added `public/js/study-ethics-risk-page.js` to resolve study context, populate saved answers, record or clear the local outcome and keep the back-to-study link canonical.
+- Added `src/styles/study-ethics-risk.scss`, generated `public/css/study-ethics-risk.css`, registered the route in the GOV.UK renderer and added the page to the visual walkthrough inventory.
+- Updated the study overview so it keeps only the readiness row and task-list link, primes the ethics-risk link from the current URL and carries the study context to the form route.
+- Linked `/css/sourcebook-components.css` from the ethics and research risk subpage so Sourcebook references use the shared component stylesheet there as well as on the study overview.
+- Corrected the ethics and research risk outcome panel so single trigger or direction items render as direct `<p>` elements, multiple items render as `<ul>`, and no wrapper element is introduced for the outcome text.
+- Added GOV.UK exclusive checkbox behaviour for the "none" answers and a controller guard so "none" cannot be submitted alongside specific risk answers.
+- Seeded six local preview studies in `/Users/kevin.rapley/.hermes/scripts/serve_research_operations.py` with different ethics and research risk answer shapes, plus a local `/api/study-ethics-risk` endpoint backed by the local SQLite database.
+- Updated the study overview and ethics risk page to load seeded database risk outcomes before falling back to local browser state.
 
 ## Validation
 
@@ -114,7 +130,48 @@ Skipped:
 - After PR #464 Codex review remediation, `npx prettier -c .github/workflows/format-pr.yml public/js/study-page.js tests/study-page-route-state.test.js` passed.
 - After PR #464 Codex review remediation, `git diff --check` passed.
 - After PR #464 Codex review remediation, Playwright confirmed the preview keeps setup tasks ready, shows `Evidence record incomplete`, keeps `risk-assessment` and `triage-outcome` rows as `Needed` without loaded evidence records, loads `/css/sourcebook-components.css`, and has no failed page requests.
+- For the ethics risk setup slice, `npm run build:generated-css` passed.
+- For the ethics risk setup slice, `npm run build:govuk-pages` passed.
+- For the ethics risk setup slice, `node --import ./tests/helpers/generated-govuk-page-source.mjs --test tests/study-page-route-state.test.js` passed.
+- For the ethics risk setup slice, `npx eslint public/js/study-page.js tests/study-page-route-state.test.js` completed with no errors and existing console warnings only.
+- For the ethics risk setup slice, `npm run generated-css:check` passed.
+- Playwright checked `http://127.0.0.1:8082/pages/study/?id=rect3o7dt` at `1272x739` and `390x858`, confirming the new risk section renders, the standard professional-user path records `Managed research risk`, and no horizontal overflow is introduced.
+- Playwright checked a sensitive mobile path on the same route, confirming service-user, trauma/safeguarding, uncontrolled-setting and gatekeeper answers produce `Ethics advice needed` with trigger/control direction and no horizontal overflow.
+- After moving the form to a subpage, `npm run build:generated-css` passed.
+- After moving the form to a subpage, `npm run build:govuk-pages` passed.
+- After moving the form to a subpage, `node --import ./tests/helpers/generated-govuk-page-source.mjs --test tests/study-page-route-state.test.js tests/study-ethics-risk-route-state.test.js tests/study-child-route-state.test.js` passed.
+- After moving the form to a subpage, `npx eslint public/js/study-ethics-risk-page.js public/js/study-ethics-risk-model.js tests/study-ethics-risk-route-state.test.js public/js/study-page.js tests/study-page-route-state.test.js tests/study-child-route-state.test.js` completed with no errors and existing study-page console warnings only.
+- After moving the form to a subpage, `npm run generated-css:check` and `git diff --check` passed.
+- Playwright checked `http://127.0.0.1:8082/pages/study/?id=rect3o7dt&project=recgdpwEI5hFO7bUZ` and `http://127.0.0.1:8082/pages/study/ethics-risk/?id=rect3o7dt&project=recgdpwEI5hFO7bUZ` at `1272x739` and `390x858`, confirming the overview has no form, the task link carries study context, the form records `Managed research risk` and `Ethics advice needed`, and neither path introduces horizontal overflow.
+- After linking the shared Sourcebook component stylesheet from the ethics and research risk subpage, `npm run build:govuk-pages`, `node --import ./tests/helpers/generated-govuk-page-source.mjs --test tests/study-page-route-state.test.js tests/study-ethics-risk-route-state.test.js tests/study-child-route-state.test.js`, `npm run generated-css:check` and `git diff --check` passed.
+- After correcting outcome text semantics and exclusive checkboxes, `npm run build:generated-css`, `npm run build:govuk-pages`, `node --import ./tests/helpers/generated-govuk-page-source.mjs --test tests/study-page-route-state.test.js tests/study-ethics-risk-route-state.test.js tests/study-child-route-state.test.js`, `npx eslint public/js/study-ethics-risk-page.js public/js/study-ethics-risk-model.js tests/study-ethics-risk-route-state.test.js`, `npm run generated-css:check` and `git diff --check` passed.
+- Playwright checked the ethics and research risk page at `1272x739` and `390x858`, confirming single-item trigger and direction states are direct `<p>` elements, multiple-item states render as `<ul>`, exclusive "none" checkboxes clear conflicting answers in both directions, the outcome panel has `20px` bottom padding, and no horizontal overflow is introduced.
+- After adding the local seeded risk studies, `python3 -m py_compile /Users/kevin.rapley/.hermes/scripts/serve_research_operations.py`, `node --import ./tests/helpers/generated-govuk-page-source.mjs --test tests/study-page-route-state.test.js tests/study-ethics-risk-route-state.test.js tests/study-child-route-state.test.js`, `npx eslint public/js/study-page.js public/js/study-ethics-risk-model.js public/js/study-ethics-risk-page.js tests/study-page-route-state.test.js tests/study-ethics-risk-route-state.test.js`, `npm run generated-css:check` and `git diff --check` passed. ESLint reported only existing `public/js/study-page.js` console warnings.
+- Restarted `http://127.0.0.1:8082` against the current working-copy `public/` directory and verified `/api/study-ethics-risk?study=recRiskManaged03` returns seeded SQLite answers.
+- Playwright checked all six seeded ethics risk links, confirming expected outcomes for not started, incomplete, managed risk, extra controls, ethics advice and ethics submission likely states with no horizontal overflow.
+- Hardened the ethics and research risk evaluator so required question groups are explicit, incomplete answers do not count as recorded Sourcebook evidence, and recorded outcomes include answers, route, status, next action, triggers, controls, Sourcebook clause references, saved time and recorder.
+- Added Sourcebook-driven clause output to the outcome panel so participant, topic, setting, data, recruitment and researcher-support triggers map to the clauses that explain the governance direction.
+- Added field-level validation and multi-link error-summary rendering for missing question groups.
+- Added a local preview `POST /api/study-ethics-risk` write path and changed seeded records to insert only when missing, so local saved outcomes are not overwritten by the seed refresher.
+- Updated the outcome panel to show a clearer next action, Sourcebook clauses and recorded-state metadata; incomplete assessments now show `Risk assessment incomplete` and `Not recorded yet`.
+- Updated study readiness evidence mapping so incomplete risk answers no longer satisfy `risk-assessment`, `triage-outcome` or `participant-risk-rationale` evidence.
+- Confirmed the production gap: live `https://research-operations.com/pages/study/` expects Sourcebook risk evidence but does not yet include the `Assess ethics and research risk` setup task or `/pages/study/ethics-risk/` route from this branch.
+- Moved the ethics-risk availability work onto `feature/study-ethics-risk-assessment` from current `origin/main` so the PR is focused on the standalone study risk checkpoint.
+- Restarted `http://127.0.0.1:8082` against the current working-copy `public/` directory and verified the new local risk outcome POST/GET round trip.
+- `npm run build:generated-css -- public/css/study-ethics-risk.css` passed.
+- `npm run build:govuk-pages` passed.
+- `node --import ./tests/helpers/generated-govuk-page-source.mjs --test tests/study-ethics-risk-route-state.test.js tests/study-page-route-state.test.js tests/study-child-route-state.test.js` passed.
+- `npx eslint public/js/study-ethics-risk-model.js public/js/study-ethics-risk-page.js public/js/study-page.js tests/study-ethics-risk-route-state.test.js tests/study-page-route-state.test.js` completed with no errors and existing `public/js/study-page.js` console warnings only.
+- `npx prettier -c public/js/study-ethics-risk-model.js public/js/study-ethics-risk-page.js public/js/study-page.js src/styles/study-ethics-risk.scss tests/study-ethics-risk-route-state.test.js tests/study-page-route-state.test.js public/css/study-ethics-risk.css public/pages/study/ethics-risk/index.html public/pages/study/index.html` passed.
+- `python3 -m py_compile /Users/kevin.rapley/.hermes/scripts/serve_research_operations.py` passed.
+- `npm run generated-css:check && git diff --check` passed.
+- Playwright checked the incomplete and ethics-submission seeded examples at desktop and mobile sizes, confirming the new outcome title, recorded-state handling, Sourcebook clause list and no horizontal overflow.
+- For the live-route availability check, `npm run build:generated-css`, `npm run build:govuk-pages`, `node tests/study-ethics-risk-route-state.test.js`, `node tests/study-page-route-state.test.js`, `node tests/study-child-route-state.test.js`, `node --import ./tests/helpers/generated-govuk-page-source.mjs --test tests/study-ethics-risk-route-state.test.js tests/study-page-route-state.test.js tests/study-child-route-state.test.js`, `npm run generated-css:check`, `git diff --check`, `npm run trace:coverage` and supported-file `npx prettier -c ...` checks passed.
+- `npx eslint public/js/study-ethics-risk-model.js public/js/study-ethics-risk-page.js public/js/study-page.js tests/study-ethics-risk-route-state.test.js tests/study-page-route-state.test.js tests/study-child-route-state.test.js` completed with no errors and existing `public/js/study-page.js` console warnings only.
+- `curl -ks 'https://research-operations/pages/study/?id=rect3o7dt&project=recgdpwEI5hFO7bUZ'` confirmed the local HTTPS preview serves `#link-ethics-risk`, `Assess ethics and research risk`, and the ethics-risk readiness/setup status elements.
+- `curl -ks 'https://research-operations/pages/study/ethics-risk/?id=rect3o7dt&project=recgdpwEI5hFO7bUZ'` confirmed the local HTTPS preview serves the standalone form, outcome panel, shared Sourcebook component stylesheet and `GOVERN 2.1.1` reference.
 
 ## Residual Risk
 
-- No known residual implementation risk. CI remains the authoritative post-push validation gate after the PR is opened.
+- The browser now uses a production-shaped risk outcome record and local POST boundary, but the production Worker/API persistence still needs to be implemented before release.
+- The Sourcebook clause mapping is explicit in the evaluator, but the policy thresholds should still receive ethics/governance review before being treated as authoritative.

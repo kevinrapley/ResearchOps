@@ -719,6 +719,16 @@ export const govukPages = [
 		},
 	},
 	{
+		template: 'pages/study-ethics-risk.njk',
+		output: 'public/pages/study/ethics-risk/index.html',
+		context: {
+			pageTitle: 'Ethics and research risk - ResearchOps Demo Suite',
+			serviceName: 'ResearchOps Demo Suite',
+			activeNavigation: 'Projects',
+			navigation: projectNavigation,
+		},
+	},
+	{
 		template: 'pages/study-participant-consent.njk',
 		output: 'public/pages/study/participant-consent/index.html',
 		context: {

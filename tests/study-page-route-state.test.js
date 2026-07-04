@@ -61,6 +61,8 @@ for (const text of [
 	"id=\"study-session-gate-summary\"",
 	"id=\"study-session-blockers\"",
 	"id=\"study-session-action\"",
+	"id=\"study-readiness-ethics-risk-status\"",
+	"id=\"study-readiness-ethics-risk-hint\"",
 	"Checking study readiness",
 	"Checking the required setup tasks before fieldwork can begin.",
 	"Checking readiness tasks.",
@@ -69,6 +71,9 @@ for (const text of [
 	"id=\"study-readiness-participant-consent-hint\"",
 	"id: \"link-session\"",
 	"hidden: \"hidden\"",
+	"id=\"link-ethics-risk\"",
+	"Assess ethics and research risk",
+	"href=\"/pages/study/ethics-risk/\"",
 	"id=\"link-consent-forms\"",
 	"id=\"link-participant-consent\"",
 	"id=\"link-participants\"",
@@ -115,6 +120,7 @@ for (const text of [
 		"Evidence checked by Sourcebook",
 		"Sourcebook evidence check",
 		"Evidence record incomplete",
+		"Assess ethics and research risk",
 		"study-sourcebook-reference",
 		"REC-ADMN 3.1.1",
 		"GOVERN 2.1.1",
@@ -124,6 +130,7 @@ for (const text of [
 	"data-sourcebook-evidence-id=\"research-intake\"",
 	"data-sourcebook-evidence-id=\"consent-log\"",
 	"id=\"study-setup-consent-forms-status\"",
+	"id=\"study-setup-ethics-risk-status\"",
 	"id=\"study-setup-participant-consent-status\"",
 	"id=\"study-setup-participants-status\"",
 	"id=\"study-setup-guide-status\"",
@@ -174,6 +181,9 @@ excludes(pageSource, "Requires study context", "study page");
 excludes(pageSource, "<script type=\"module\">", "study page");
 excludes(pageSource, "id=\"back-to-project\"", "study page");
 excludes(pageSource, "Back to Project", "study page");
+excludes(pageSource, "id=\"study-ethics-risk-form\"", "study page");
+excludes(pageSource, "Who may take part?", "study page");
+excludes(pageSource, "Record risk outcome", "study page");
 excludes(templateSource, "3 setup tasks need attention", "study template static fallback");
 excludes(templateSource, "Publish a discussion guide", "study template static fallback");
 excludes(pageSource, "3 setup tasks need attention", "study page static fallback");
@@ -225,12 +235,20 @@ for (const text of [
 	"function updateSourcebookLedger",
 		"function updateSourcebookGate",
 		"function renderSetupTaskStatuses",
+		"from \"./study-ethics-risk-model.js\"",
+		"function primeEthicsRiskLinkFromUrl",
+		"primeEthicsRiskLinkFromUrl();",
+		"loadSeededStudyEthicsRisk(studyId)",
+		"studyEthicsRisk",
+		"setReadinessItem(\"ethics-risk\", readiness.ethicsRisk.state, readiness.ethicsRisk.text)",
+		"setSetupTaskStatus(\"#study-setup-ethics-risk-status\", readiness.ethicsRisk.state)",
 		"setSetupTaskStatus(\"#study-setup-consent-forms-status\", readiness.consentMaterials.state)",
 		"setSetupTaskStatus(\"#study-setup-guide-status\", readiness.guide.state)",
 		"provided.add(\"research-intake\")",
 		"provided.add(\"research-plan\")",
-		"hasSourcebookEvidenceRecord(evidenceRecords, \"risk-assessment\"",
-		"hasSourcebookEvidenceRecord(evidenceRecords, \"triage-outcome\"",
+		"if (studyEthicsRisk.started && studyEthicsRisk.route !== \"incomplete-assessment\") {",
+		"provided.add(\"risk-assessment\")",
+		"provided.add(\"triage-outcome\")",
 		"provided.add(\"method-rationale\")",
 		"provided.add(\"participant-risk-rationale\")",
 		"provided.add(\"environment-risk-assessment\")",
@@ -247,6 +265,7 @@ for (const text of [
 	"const legacySessionParams = { pid: projectId, sid: studyId }",
 	"route(\"/pages/study/guides/\", studyParams)",
 	"route(\"/pages/study/participants/\", studyParams)",
+	"route(\"/pages/study/ethics-risk/\", studyParams)",
 	"route(\"/pages/study/participant-consent/\", studyParams)",
 	"route(\"/pages/study/note-takers-observers/\", studyParams)",
 	"route(\"/pages/study/session/\", legacySessionParams)",

@@ -4,6 +4,11 @@
  * @summary Loads a study page and renders a readiness-led control page.
  */
 
+import {
+	evaluateStudyEthicsRisk,
+	loadSeededStudyEthicsRisk
+} from "./study-ethics-risk-model.js";
+
 function resolveApiBase() {
 	const explicit =
 		document.documentElement?.dataset?.apiOrigin ||
@@ -196,7 +201,7 @@ async function loadStudySynthesisSummary(studyId) {
 }
 
 async function loadReadinessContext(studyId) {
-	const [participants, guides, consentForms, participantConsentRecords, supportSetup, evidence, synthesisSummary] =
+	const [participants, guides, consentForms, participantConsentRecords, supportSetup, evidence, synthesisSummary, studyEthicsRisk] =
 		await Promise.all([
 			loadStudyCollection("/api/participants", studyId, "participants"),
 			loadStudyCollection("/api/guides", studyId, "guides"),
@@ -204,7 +209,8 @@ async function loadReadinessContext(studyId) {
 			loadStudyCollection("/api/participant-consent", studyId, "participantConsentRecords"),
 			loadStudySupportSetup(studyId),
 			loadStudyCollection("/api/synthesis/evidence", studyId, "evidence"),
-			loadStudySynthesisSummary(studyId)
+			loadStudySynthesisSummary(studyId),
+			loadSeededStudyEthicsRisk(studyId)
 		]);
 
 	return {
@@ -214,7 +220,8 @@ async function loadReadinessContext(studyId) {
 		participantConsentRecords,
 		supportSetup,
 		evidence,
-		synthesisSummary
+		synthesisSummary,
+		studyEthicsRisk
 	};
 }
 
@@ -262,7 +269,8 @@ function readinessTagClass(state) {
 	const normalised = String(state || "").trim().toLowerCase();
 	if (["ready", "available"].includes(normalised)) return "govuk-tag--green";
 	if (["set", "checking", "not available yet"].includes(normalised)) return "govuk-tag--grey";
-	if (["action needed", "needs attention"].includes(normalised)) return "govuk-tag--yellow";
+	if (["action needed", "needs attention", "extra controls needed", "ethics advice needed"].includes(normalised)) return "govuk-tag--yellow";
+	if (["pause before recruitment", "ethics submission likely needed"].includes(normalised)) return "govuk-tag--red";
 	return "govuk-tag--grey";
 }
 
@@ -284,6 +292,7 @@ function setSetupTaskStatus(selector, state) {
 }
 
 function renderSetupTaskStatuses(readiness) {
+	setSetupTaskStatus("#study-setup-ethics-risk-status", readiness.ethicsRisk.state);
 	setSetupTaskStatus("#study-setup-consent-forms-status", readiness.consentMaterials.state);
 	setSetupTaskStatus("#study-setup-participant-consent-status", readiness.participantConsent.state);
 	setSetupTaskStatus("#study-setup-participants-status", readiness.participants.state);
@@ -294,6 +303,7 @@ function blockerActionForKey(key) {
 	const actions = {
 		description: { label: "Edit the study description", selector: "#btn-edit-desc" },
 		status: { label: "Review the study status", selector: "#edit-study" },
+		ethicsRisk: { label: "Assess ethics and research risk", selector: "#link-ethics-risk" },
 		participants: { label: "Add or review participants", selector: "#link-participants" },
 		guide: { label: "Publish a discussion guide", selector: "#link-guides" },
 		consentMaterials: { label: "Create or review consent forms", selector: "#link-consent-forms" },
@@ -358,6 +368,7 @@ function evaluateReadiness(study, context = {}) {
 	const guides = Array.isArray(context.guides) ? context.guides : [];
 	const consentForms = Array.isArray(context.consentForms) ? context.consentForms : [];
 	const participantConsentRecords = Array.isArray(context.participantConsentRecords) ? context.participantConsentRecords : [];
+	const studyEthicsRisk = context.studyEthicsRisk || evaluateStudyEthicsRisk({});
 
 	const participantsReady = participants.length > 0;
 	const guideReady = guides.some(isPublishedLike);
@@ -375,6 +386,13 @@ function evaluateReadiness(study, context = {}) {
 			ready: hasStatus,
 			state: hasStatus ? "Ready" : "Needs attention",
 			text: hasStatus ? `Study status is ${status}.` : "Set the study status before running sessions."
+		},
+		ethicsRisk: {
+			ready: studyEthicsRisk.ready === true,
+			state: studyEthicsRisk.readinessState || "Action needed",
+			text: studyEthicsRisk.started
+				? `${studyEthicsRisk.statusLabel}. ${studyEthicsRisk.summary}`
+				: "Assess ethics and research risk before recruitment or fieldwork."
 		},
 		participants: {
 			ready: participantsReady,
@@ -434,52 +452,20 @@ function setSourcebookStatusClass(element, prefix, status) {
 	element.classList.add(`${prefix}${status}`);
 }
 
-function normaliseEvidenceText(value) {
-	return String(value || "")
-		.trim()
-		.toLowerCase()
-		.replace(/[_\s]+/g, "-");
-}
-
-function hasSourcebookEvidenceRecord(records, evidenceId, aliases = []) {
-	const needles = [evidenceId, ...aliases].map(normaliseEvidenceText).filter(Boolean);
-	if (!needles.length) return false;
-	return (Array.isArray(records) ? records : []).some(record => {
-		const haystack = [
-			record.id,
-			record.evidenceId,
-			record.sourcebookEvidenceId,
-			record.type,
-			record.category,
-			record.label,
-			record.title,
-			record.summary,
-			record.note,
-			record.text,
-			record.tags,
-			Array.isArray(record.sourcebookEvidenceIds) ? record.sourcebookEvidenceIds.join(" ") : "",
-			Array.isArray(record.evidenceIds) ? record.evidenceIds.join(" ") : ""
-		]
-			.map(normaliseEvidenceText)
-			.join(" ");
-		return needles.some(needle => haystack.includes(needle));
-	});
-}
-
 function studySourcebookEvidenceIds(readiness, context = {}) {
 	const provided = new Set();
 	if (readiness.description?.ready) provided.add("research-intake");
-	const evidenceRecords = Array.isArray(context.evidence) ? context.evidence : [];
-	if (hasSourcebookEvidenceRecord(evidenceRecords, "risk-assessment", ["risk assessment", "risk-rating"])) provided.add("risk-assessment");
-	if (hasSourcebookEvidenceRecord(evidenceRecords, "triage-outcome", ["governance-triage", "scope-triage", "triage outcome"])) {
+	const studyEthicsRisk = context.studyEthicsRisk || {};
+	if (studyEthicsRisk.started && studyEthicsRisk.route !== "incomplete-assessment") {
+		provided.add("risk-assessment");
 		provided.add("triage-outcome");
+		provided.add("participant-risk-rationale");
 	}
 	if (readiness.guide?.ready) {
 		provided.add("research-plan");
 		provided.add("method-rationale");
 	}
 	if (readiness.participants?.ready) {
-		provided.add("participant-risk-rationale");
 		provided.add("access-needs-check");
 	}
 	if (readiness.consentMaterials?.ready) provided.add("consent-form");
@@ -620,6 +606,7 @@ function renderReadiness(study, context, sessionHref) {
 
 	setReadinessItem("description", readiness.description.state, readiness.description.text);
 	setReadinessItem("status", readiness.status.state, readiness.status.text);
+	setReadinessItem("ethics-risk", readiness.ethicsRisk.state, readiness.ethicsRisk.text);
 	setReadinessItem("participants", readiness.participants.state, readiness.participants.text);
 	setReadinessItem("guide", readiness.guide.state, readiness.guide.text);
 	setReadinessItem("consent-materials", readiness.consentMaterials.state, readiness.consentMaterials.text);
@@ -730,12 +717,22 @@ function renderRoutes(projectId, studyId) {
 	enableLink("#link-note-takers-observers", route("/pages/study/note-takers-observers/", studyParams));
 	enableLink("#link-synthesis", route("/pages/study/synthesis/", studyParams));
 
+	enableLink("#link-ethics-risk", route("/pages/study/ethics-risk/", studyParams));
+
 	const editStudy = $("#edit-study");
 	if (editStudy) editStudy.href = `${route("/pages/study/", { id: studyId })}#edit`;
 
 	return {
 		sessionHref: route("/pages/study/session/", legacySessionParams)
 	};
+}
+
+function primeEthicsRiskLinkFromUrl() {
+	const params = new URLSearchParams(window.location.search);
+	const studyId = params.get("id") || params.get("sid") || "";
+	const projectId = params.get("project") || params.get("projectId") || params.get("pid") || "";
+	if (!studyId) return;
+	enableLink("#link-ethics-risk", route("/pages/study/ethics-risk/", { id: studyId, project: projectId }));
 }
 
 function renderStudy(project, study, projectId, studyId, readinessContext) {
@@ -797,4 +794,5 @@ document.addEventListener("study:desc:save", async event => {
 	}
 });
 
+primeEthicsRiskLinkFromUrl();
 init();
