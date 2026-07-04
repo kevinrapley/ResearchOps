@@ -7,6 +7,8 @@ const controllerSource = fs.readFileSync("public/js/study-page.js", "utf8");
 const descControllerSource = fs.readFileSync("public/pages/study/study-desc-controller.js", "utf8");
 const studyCssSource = fs.readFileSync("public/css/study-page.css", "utf8");
 const studyScssSource = fs.readFileSync("src/styles/study-page.scss", "utf8");
+const sourcebookComponentsCssSource = fs.readFileSync("public/css/sourcebook-components.css", "utf8");
+const sourcebookComponentsScssSource = fs.readFileSync("src/styles/sourcebook-components.scss", "utf8");
 const rendererSource = fs.readFileSync("scripts/govuk/render-govuk-pages.mjs", "utf8");
 const generatedCssTargetsSource = fs.readFileSync("scripts/styles/generated-css-targets.mjs", "utf8");
 const formatWorkflowSource = fs.readFileSync(".github/workflows/format-pr.yml", "utf8");
@@ -33,6 +35,14 @@ for (const macro of [
 	includes(templateSource, macro, "study template");
 }
 
+for (const macro of [
+	"SourcebookContext(sourcebookContext)",
+	"SourcebookEvidenceLedger(sourcebookEvidenceLedger)",
+	"SourcebookGate(sourcebookGate)"
+]) {
+	includes(templateSource, macro, "study template");
+}
+
 for (const text of [
 	"data-study-template=\"govuk-task-list\"",
 	"value: \"\"",
@@ -54,6 +64,7 @@ for (const text of [
 	"Checking study readiness",
 	"Checking the required setup tasks before fieldwork can begin.",
 	"Checking readiness tasks.",
+	"SourcebookGate(sourcebookGate)",
 	"id=\"study-readiness-description-status\"",
 	"id=\"study-readiness-participant-consent-hint\"",
 	"id: \"link-session\"",
@@ -82,7 +93,7 @@ for (const text of [
 	"/css/govuk/govuk-forms.css",
 	"/css/govuk/govuk-tables.css",
 	"/css/study-page.css",
-	"/js/study-page.js?v=study-evidence-summary-20260630",
+	"/js/study-page.js?v=study-readiness-sourcebook-20260704",
 	"class=\"govuk-breadcrumbs\"",
 	"class=\"govuk-summary-list",
 	"class=\"govuk-task-list",
@@ -96,8 +107,26 @@ for (const text of [
 	"Before you can begin a session",
 	"Study setup tasks",
 	"Study analysis tasks",
-	"Synthesise study evidence",
-	"Group evidence notes into working cluster groupings and create traceable study-level themes.",
+		"Synthesise study evidence",
+		"Group evidence notes into working cluster groupings and create traceable study-level themes.",
+		"Why study readiness is governed",
+		"Sourcebook clauses require scope, consent, environment and governance checks before participant sessions",
+		"Sourcebook evidence record",
+		"Evidence checked by Sourcebook",
+		"Sourcebook evidence check",
+		"Evidence record incomplete",
+		"study-sourcebook-reference",
+		"REC-ADMN 3.1.1",
+		"GOVERN 2.1.1",
+		"SCOPE 2.1.1",
+		"ENVIRO 1.1.2",
+		"data-sourcebook-gate",
+	"data-sourcebook-evidence-id=\"research-intake\"",
+	"data-sourcebook-evidence-id=\"consent-log\"",
+	"id=\"study-setup-consent-forms-status\"",
+	"id=\"study-setup-participant-consent-status\"",
+	"id=\"study-setup-participants-status\"",
+	"id=\"study-setup-guide-status\"",
 	"class=\"govuk-grid-row study-overview-grid\"",
 	"class=\"govuk-grid-column-one-half\"",
 	"class=\"govuk-inset-text study-session-gate\"",
@@ -128,6 +157,16 @@ for (const text of [
 	includes(pageSource, text, "study page");
 }
 
+{
+	const setupIndex = pageSource.indexOf("Study setup tasks");
+	const contextIndex = pageSource.indexOf("Why study readiness is governed");
+	const analysisIndex = pageSource.indexOf("Study analysis tasks");
+
+	assert.ok(setupIndex >= 0, "Expected study page to include setup tasks");
+	assert.ok(contextIndex > setupIndex, "Expected Sourcebook context to appear after setup tasks");
+	assert.ok(analysisIndex > contextIndex, "Expected analysis tasks to appear after Sourcebook context");
+}
+
 excludes(pageSource, "class=\"btn", "study page");
 excludes(pageSource, "class=\"board\"", "study page");
 excludes(pageSource, "class=\"govuk-notification-banner", "study page");
@@ -139,8 +178,11 @@ excludes(templateSource, "3 setup tasks need attention", "study template static 
 excludes(templateSource, "Publish a discussion guide", "study template static fallback");
 excludes(pageSource, "3 setup tasks need attention", "study page static fallback");
 excludes(pageSource, "Publish a discussion guide", "study page static fallback");
+excludes(descControllerSource, "Edit cancelled.", "description controller");
 
 includes(descControllerSource, "cancelBtnSel: '#desc-cancel'", "description controller");
+includes(descControllerSource, "statusSel: '#desc-status'", "description controller");
+includes(descControllerSource, "this._status('');", "description controller");
 
 for (const text of [
 	"const API_ORIGIN",
@@ -178,6 +220,29 @@ for (const text of [
 	"study-analysis-synthesis-status",
 	"consentMaterials",
 	"participantConsent",
+	"function updateSourcebookAssurance",
+	"function studySourcebookEvidenceIds",
+	"function updateSourcebookLedger",
+		"function updateSourcebookGate",
+		"function renderSetupTaskStatuses",
+		"setSetupTaskStatus(\"#study-setup-consent-forms-status\", readiness.consentMaterials.state)",
+		"setSetupTaskStatus(\"#study-setup-guide-status\", readiness.guide.state)",
+		"provided.add(\"research-intake\")",
+		"provided.add(\"research-plan\")",
+		"provided.add(\"risk-assessment\")",
+		"provided.add(\"triage-outcome\")",
+		"provided.add(\"method-rationale\")",
+		"provided.add(\"participant-risk-rationale\")",
+		"provided.add(\"environment-risk-assessment\")",
+		"provided.add(\"access-needs-check\")",
+		"provided.add(\"consent-log\")",
+		"const ledger = document.querySelector(\".study-sourcebook-evidence-details .sourcebook-evidence-ledger, .study-page > .sourcebook-evidence-ledger\")",
+		"const rows = ledger ? [...ledger.querySelectorAll(\"[data-sourcebook-evidence-id]\")] : []",
+		"const ready = sessionReady && missingEvidence === 0",
+		"Evidence record incomplete",
+		"Proceed, review evidence",
+		"Use the setup task list to complete what is missing.",
+		"gate.querySelector(\"[data-sourcebook-gate-status]\")",
 	"const studyParams = { id: studyId, project: projectId }",
 	"const legacySessionParams = { pid: projectId, sid: studyId }",
 	"route(\"/pages/study/guides/\", studyParams)",
@@ -222,8 +287,17 @@ for (const text of [
 	"white-space: nowrap",
 	".study-readiness-task-list",
 	".study-evidence-summary-list",
-	".study-evidence-summary-list .govuk-summary-list__key",
-	".study-session-button",
+		".study-evidence-summary-list .govuk-summary-list__key",
+		".study-session-button",
+		".study-sourcebook-context",
+		".study-sourcebook-reference",
+		".sourcebook-context--compact .sourcebook-context__list",
+		".sourcebook-context--compact .sourcebook-context__text",
+		".sourcebook-context--compact .sourcebook-context__condition",
+		".study-session-gate-section .sourcebook-gate",
+		".study-sourcebook-evidence-details .sourcebook-evidence-ledger",
+		".study-page > .sourcebook-evidence-ledger",
+	".study-overview-grid > .govuk-grid-column-one-half",
 	".govuk-task-list__item .govuk-tag",
 	".study-analysis-task-list .govuk-tag",
 	"/* transparency begins in the cascade */"
@@ -231,6 +305,16 @@ for (const text of [
 	includes(studyScssSource, text, "study SCSS source");
 	includes(studyCssSource, text, "study css");
 }
+
+includes(templateSource, "/css/sourcebook-components.css", "study template");
+includes(pageSource, "/css/sourcebook-components.css", "study page");
+includes(sourcebookComponentsScssSource, "@use 'sourcebook-context'", "Sourcebook component SCSS source");
+includes(sourcebookComponentsCssSource, ".sourcebook-gate", "Sourcebook component css");
+includes(sourcebookComponentsCssSource, ".sourcebook-context", "Sourcebook component css");
+includes(sourcebookComponentsCssSource, ".sourcebook-evidence-ledger", "Sourcebook component css");
+includes(generatedCssTargetsSource, "src/styles/sourcebook-components.scss", "generated css targets");
+includes(generatedCssTargetsSource, "public/css/sourcebook-components.css", "generated css targets");
+excludes(studyScssSource, "@use 'sourcebook-context'", "study SCSS source");
 
 for (const [source, label] of [
 	[studyScssSource, "study SCSS source"],

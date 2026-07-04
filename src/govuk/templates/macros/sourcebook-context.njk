@@ -16,8 +16,10 @@
 								<h3 class="govuk-heading-s sourcebook-context__clause-title">
 									<a class="govuk-link" href="{{ item.href }}">{{ item.title }}</a>
 								</h3>
-								<p class="govuk-body-s sourcebook-context__text">{{ item.text }}</p>
-								{% if item.conditions is defined and item.conditions.length %}
+								{% if params.showText is not defined or params.showText %}
+									<p class="govuk-body-s sourcebook-context__text">{{ item.text }}</p>
+								{% endif %}
+								{% if (params.showConditions is not defined or params.showConditions) and item.conditions is defined and item.conditions.length %}
 									<p class="govuk-body-s sourcebook-context__condition">
 										<strong>{{ params.conditionLabel | default('Applies when:') }}</strong>
 										{% for condition in item.conditions %}

@@ -153,6 +153,8 @@ export function sourcebookContextForRoute({
 	classes = '',
 	caption = 'Sourcebook',
 	conditionLabel = 'Applies when:',
+	showText,
+	showConditions,
 	title = 'Sourcebook context',
 	summary = 'Relevant Sourcebook clauses for this task.',
 	limit = 3,
@@ -182,6 +184,8 @@ export function sourcebookContextForRoute({
 		classes,
 		caption,
 		conditionLabel,
+		showText,
+		showConditions,
 		title,
 		summary,
 		route: routeValue,
@@ -295,10 +299,12 @@ export function sourcebookGateForRoute({
 	providedEvidence = [],
 	readyStatusLabel = 'Ready to proceed',
 	blockedStatusLabel = 'Evidence needed',
+	blockedStatus = 'blocked',
 	notApplicableStatusLabel = 'No gate required',
 	readyPrimaryAction = 'Proceed with controls',
 	blockedPrimaryAction = 'Add evidence before continuing',
 	notApplicablePrimaryAction = 'Check Sourcebook scope',
+	showChecks,
 	limit = 3,
 } = {}) {
 	const context = sourcebookContextForRoute({ route, condition, limit });
@@ -313,7 +319,7 @@ export function sourcebookGateForRoute({
 	const evidenceReady =
 		evidenceLedger.items.length > 0 &&
 		evidenceLedger.items.every((item) => item.status === 'present');
-	const status = !hasContext ? 'not-applicable' : evidenceReady ? 'ready' : 'blocked';
+	const status = !hasContext ? 'not-applicable' : evidenceReady ? 'ready' : blockedStatus;
 
 	return {
 		id,
@@ -324,24 +330,22 @@ export function sourcebookGateForRoute({
 		route: context.route,
 		condition: context.condition,
 		status,
-		statusLabel:
-			status === 'ready'
+		statusLabel: !hasContext
+			? notApplicableStatusLabel
+			: evidenceReady
 				? readyStatusLabel
-				: status === 'blocked'
-					? blockedStatusLabel
-					: notApplicableStatusLabel,
-		decision:
-			status === 'ready'
+				: blockedStatusLabel,
+		decision: !hasContext
+			? 'check-sourcebook-scope'
+			: evidenceReady
 				? 'proceed-with-controls'
-				: status === 'blocked'
-					? 'pause-for-evidence'
-					: 'check-sourcebook-scope',
-		primaryAction:
-			status === 'ready'
+				: 'review-evidence-record',
+		primaryAction: !hasContext
+			? notApplicablePrimaryAction
+			: evidenceReady
 				? readyPrimaryAction
-				: status === 'blocked'
-					? blockedPrimaryAction
-					: notApplicablePrimaryAction,
+				: blockedPrimaryAction,
+		showChecks,
 		checks,
 		context,
 		evidenceLedger,

@@ -1,0 +1,291 @@
+/* ==========================================================================
+   ResearchOps Sourcebook component stylesheet source
+   Shared components: SourcebookContext, SourcebookGate, SourcebookEvidenceLedger
+   ========================================================================== */
+
+.sourcebook-gate {
+	max-width: 760px;
+	margin: 30px 0;
+	padding: 20px;
+	border-left: 5px solid #505a5f;
+	background: #f3f2f1;
+	}
+
+.sourcebook-gate--blocked {
+	border-left-color: #d4351c;
+	}
+
+.sourcebook-gate--attention {
+	border-left-color: #1d70b8;
+	}
+
+.sourcebook-gate--ready {
+	border-left-color: #00703c;
+	}
+
+.sourcebook-gate__caption {
+	margin-bottom: 5px;
+	color: #505a5f;
+	}
+
+.sourcebook-gate__title, .sourcebook-gate__summary, .sourcebook-gate__action, .sourcebook-gate__checks {
+	margin-bottom: 15px;
+	}
+
+.sourcebook-gate__tag {
+	margin-bottom: 15px;
+	}
+
+.sourcebook-gate .govuk-tag.sourcebook-gate__tag--blocked, .sourcebook-gate .govuk-tag.sourcebook-gate__tag--attention, .sourcebook-gate .govuk-tag.sourcebook-gate__check-tag--unmet {
+	background: #1d70b8;
+	color: #ffffff;
+	}
+
+.sourcebook-gate .sourcebook-gate__check--governance-action .govuk-tag.sourcebook-gate__check-tag--unmet {
+	background: #1d70b8;
+	color: #ffffff;
+	}
+
+.sourcebook-gate .govuk-tag.sourcebook-gate__tag--ready, .sourcebook-gate .govuk-tag.sourcebook-gate__check-tag--met {
+	background: #00703c;
+	color: #ffffff;
+	}
+
+.sourcebook-gate .govuk-tag.sourcebook-gate__tag--not-applicable {
+	background: #505a5f;
+	color: #ffffff;
+	}
+
+.sourcebook-gate__checks {
+	padding-left: 0;
+	list-style: none;
+	}
+
+.sourcebook-gate__check {
+	display: grid;
+	grid-template-columns: minmax(160px, 1fr) auto;
+	gap: 5px 15px;
+	padding: 12px 0;
+	border-top: 1px solid #b1b4b6;
+	}
+
+.sourcebook-gate__check-label {
+	font-weight: 700;
+	}
+
+.sourcebook-gate__check-detail {
+	grid-column: 1/-1;
+	color: #505a5f;
+	}
+
+.sourcebook-gate__check-tag {
+	justify-self: end;
+	white-space: nowrap;
+	}
+
+.sourcebook-gate__checks:last-child, .sourcebook-gate__check:last-child, .sourcebook-gate__action:last-child {
+	margin-bottom: 0;
+	}
+
+.sourcebook-context {
+	max-width: 760px;
+	margin: 30px 0;
+	padding: 20px;
+	border-left: 5px solid #1d70b8;
+	background: #f3f2f1;
+	}
+
+.sourcebook-context__caption {
+	margin-bottom: 5px;
+	color: #505a5f;
+	}
+
+.sourcebook-context__title, .sourcebook-context__summary, .sourcebook-context__list {
+	margin-bottom: 15px;
+	}
+
+.sourcebook-context__list {
+	padding-left: 0;
+	list-style: none;
+	}
+
+.sourcebook-context__item {
+	margin-bottom: 15px;
+	padding-top: 15px;
+	border-top: 1px solid #b1b4b6;
+	}
+
+.sourcebook-context__item:first-child {
+	padding-top: 0;
+	border-top: 0;
+	}
+
+.sourcebook-context__item:last-child {
+	margin-bottom: 0;
+	}
+
+.sourcebook-context__clause {
+	display: flex;
+	gap: 12px;
+	align-items: flex-start;
+	}
+
+.sourcebook-context__badge {
+	display: inline-flex;
+	min-width: 32px;
+	min-height: 32px;
+	align-items: center;
+	justify-content: center;
+	background: #1d70b8;
+	color: #ffffff;
+	font-weight: 700;
+	line-height: 1;
+	}
+
+.sourcebook-context__badge--rule {
+	background: #d4351c;
+	}
+
+.sourcebook-context__badge--principle {
+	background: #1d70b8;
+	}
+
+.sourcebook-context__badge--guidance {
+	background: #00703c;
+	}
+
+.sourcebook-context__badge--conduct {
+	background: #4c2c92;
+	}
+
+.sourcebook-context__meta {
+	margin: 0 0 5px;
+	color: #505a5f;
+	font-size: 16px;
+	line-height: 1.25;
+	}
+
+.sourcebook-context__clause-title {
+	margin-bottom: 10px;
+	}
+
+.sourcebook-context__text, .sourcebook-context__condition {
+	margin-bottom: 10px;
+	}
+
+.sourcebook-context__condition:last-child, .sourcebook-context__text:last-child {
+	margin-bottom: 0;
+	}
+
+.sourcebook-evidence-ledger {
+	max-width: 760px;
+	margin: 30px 0;
+	}
+
+.sourcebook-evidence-ledger__caption {
+	margin-bottom: 5px;
+	color: #505a5f;
+	}
+
+.sourcebook-evidence-ledger__title, .sourcebook-evidence-ledger__summary {
+	margin-bottom: 15px;
+	}
+
+.sourcebook-evidence-ledger__table {
+	margin-bottom: 0;
+	}
+
+.sourcebook-evidence-ledger__evidence-label, .sourcebook-evidence-ledger__clause-title {
+	display: block;
+	}
+
+.sourcebook-evidence-ledger__evidence-id {
+	display: block;
+	margin-top: 5px;
+	color: #505a5f;
+	font-size: 16px;
+	font-weight: 400;
+	line-height: 1.25;
+	}
+
+.sourcebook-evidence-ledger__evidence-detail {
+	display: block;
+	margin-top: 5px;
+	color: #505a5f;
+	font-size: 16px;
+	font-weight: 400;
+	line-height: 1.25;
+	}
+
+.sourcebook-evidence-ledger__clauses {
+	margin-bottom: 0;
+	}
+
+.sourcebook-evidence-ledger__clauses li {
+	margin-bottom: 10px;
+	}
+
+.sourcebook-evidence-ledger__clauses li:last-child {
+	margin-bottom: 0;
+	}
+
+.sourcebook-evidence-ledger__tag {
+	white-space: nowrap;
+	}
+
+.sourcebook-evidence-ledger .govuk-tag.sourcebook-evidence-ledger__tag--needed {
+	background: #1d70b8;
+	color: #ffffff;
+	}
+
+.sourcebook-evidence-ledger .govuk-tag.sourcebook-evidence-ledger__tag--present {
+	background: #00703c;
+	color: #ffffff;
+	}
+
+@media (max-width: 760px) {
+	.sourcebook-gate__check {
+		display: block;
+		}
+	.sourcebook-gate__check-label, .sourcebook-gate__check-detail {
+		display: block;
+		}
+	.sourcebook-gate__check-tag {
+		justify-self: start;
+		margin: 5px 0;
+		white-space: normal;
+		}
+	.sourcebook-evidence-ledger__table, .sourcebook-evidence-ledger__table .govuk-table__body, .sourcebook-evidence-ledger__table .govuk-table__row, .sourcebook-evidence-ledger__table .govuk-table__header, .sourcebook-evidence-ledger__table .govuk-table__cell {
+		display: block;
+		box-sizing: border-box;
+		width: 100%;
+		}
+	.sourcebook-evidence-ledger__table .govuk-table__head {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		clip: rect(0 0 0 0);
+		clip-path: inset(50%);
+		overflow: hidden;
+		white-space: nowrap;
+		}
+	.sourcebook-evidence-ledger__table .govuk-table__row {
+		border-top: 1px solid #b1b4b6;
+		padding: 12px 0;
+		}
+	.sourcebook-evidence-ledger__table .govuk-table__header, .sourcebook-evidence-ledger__table .govuk-table__cell {
+		border-bottom: 0;
+		padding: 0 0 10px;
+		}
+	.sourcebook-evidence-ledger__table .govuk-table__cell:nth-of-type(1)::before, .sourcebook-evidence-ledger__table .govuk-table__cell:nth-of-type(2)::before {
+		display: block;
+		margin-bottom: 5px;
+		font-weight: 700;
+		}
+	.sourcebook-evidence-ledger__table .govuk-table__cell:nth-of-type(1)::before {
+		content: "Sourcebook clause";
+		}
+	.sourcebook-evidence-ledger__table .govuk-table__cell:nth-of-type(2)::before {
+		content: "Status";
+		}
+	}
