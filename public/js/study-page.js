@@ -291,6 +291,10 @@ function setSetupTaskStatus(selector, state) {
 	status.className = `govuk-tag ${readinessTagClass(state)}`;
 }
 
+function ethicsRiskNextStepsHref() {
+	return document.body.dataset.ethicsRiskNextStepsHref || $("#link-ethics-risk")?.href || "#study-readiness-title";
+}
+
 function renderSetupTaskStatuses(readiness) {
 	setSetupTaskStatus("#study-setup-ethics-risk-status", readiness.ethicsRisk.state);
 	setSetupTaskStatus("#study-setup-consent-forms-status", readiness.consentMaterials.state);
@@ -316,22 +320,22 @@ function ethicsEscalationAction(readiness = {}) {
 	const ethicsRisk = readiness.ethicsRisk || {};
 	if (ethicsRisk.route === "ethics-board-submission-likely") {
 		return {
-			label: "Review ethics submission route",
+			label: "Prepare ethics submission next steps",
 			message:
-				"The ethics and research risk assessment is complete. Follow the ethics submission route before starting fieldwork."
+				"The ethics and research risk assessment is complete. Work through the ethics submission next steps before starting fieldwork."
 		};
 	}
 	if (ethicsRisk.route === "sensitive-research-controls") {
 		return {
-			label: "Review sensitive research controls",
+			label: "Plan extra control next steps",
 			message:
-				"The ethics and research risk assessment is complete. Record the required controls before starting fieldwork."
+				"The ethics and research risk assessment is complete. Work through the extra control next steps before starting fieldwork."
 		};
 	}
 	return {
-		label: "Review ethics advice route",
+		label: "Get ethics advice next steps",
 		message:
-			"The ethics and research risk assessment is complete. Follow the ethics advice route before starting fieldwork."
+			"The ethics and research risk assessment is complete. Work through the ethics advice next steps before starting fieldwork."
 	};
 }
 
@@ -360,8 +364,7 @@ function renderSessionGatePanel(ready, blockedKeys, escalationKeys, readiness = 
 		const item = document.createElement("li");
 		const link = document.createElement("a");
 		link.textContent = escalation.label;
-		const target = $("#link-ethics-risk");
-		link.href = target?.href || "#study-readiness-title";
+		link.href = ethicsRiskNextStepsHref();
 		item.append(link);
 		blockers.replaceChildren(item);
 		return;
@@ -494,9 +497,9 @@ function renderSessionGate(readiness, sessionHref) {
 		setReadinessItem(
 			"session",
 			"Not available yet",
-			"Follow the ethics advice route before beginning a session."
+			"Complete the ethics risk next steps before beginning a session."
 		);
-		disableLink("#link-session", "#study-readiness-title", "Complete the ethics advice route before beginning a session.");
+		disableLink("#link-session", "#study-readiness-title", "Complete the ethics risk next steps before beginning a session.");
 		return;
 	}
 
@@ -646,7 +649,7 @@ function updateSourcebookGate(readiness, providedEvidence, ledgerStatus) {
 				"The study can run. The Sourcebook evidence record still has missing audit evidence to review.";
 		} else if (hasEscalationOnly) {
 			gateSummary.textContent =
-				"The risk assessment is recorded. Follow the ethics or governance route before starting sessions.";
+				"The risk assessment is recorded. Complete the ethics risk next steps before starting sessions.";
 		} else {
 			gateSummary.textContent = "Complete the setup tasks before beginning a participant session.";
 		}
@@ -657,7 +660,7 @@ function updateSourcebookGate(readiness, providedEvidence, ledgerStatus) {
 		} else if (sessionReady) {
 			gateAction.textContent = "Review the Sourcebook evidence record.";
 		} else if (hasEscalationOnly) {
-			gateAction.textContent = "Review the ethics advice route before starting fieldwork.";
+			gateAction.textContent = "Use the ethics risk next steps workflow before starting fieldwork.";
 		} else {
 			gateAction.textContent = "Use the setup task list to complete what is missing.";
 		}
@@ -694,8 +697,8 @@ function updateSourcebookGate(readiness, providedEvidence, ledgerStatus) {
 					? "The study can proceed because readiness checks and required Sourcebook evidence are complete."
 					: sessionReady
 						? `${missingEvidence} Sourcebook evidence ${missingEvidence === 1 ? "item" : "items"} need audit review, but setup tasks are complete.`
-						: hasEscalationOnly
-							? "The risk assessment is recorded. Complete the ethics or governance escalation before sessions begin."
+							: hasEscalationOnly
+								? "The risk assessment is recorded. Complete the route-specific ethics risk next steps before sessions begin."
 							: `${readinessBlockers} readiness ${readinessBlockers === 1 ? "task" : "tasks"} and ${missingEvidence} Sourcebook evidence ${missingEvidence === 1 ? "item" : "items"} need attention.`
 		}
 	];
@@ -842,6 +845,7 @@ function renderRoutes(projectId, studyId) {
 	enableLink("#link-synthesis", route("/pages/study/synthesis/", studyParams));
 
 	enableLink("#link-ethics-risk", route("/pages/study/ethics-risk/", studyParams));
+	document.body.dataset.ethicsRiskNextStepsHref = route("/pages/study/ethics-risk/next-steps/", studyParams);
 
 	const editStudy = $("#edit-study");
 	if (editStudy) editStudy.href = `${route("/pages/study/", { id: studyId })}#edit`;
@@ -857,6 +861,7 @@ function primeEthicsRiskLinkFromUrl() {
 	const projectId = params.get("project") || params.get("projectId") || params.get("pid") || "";
 	if (!studyId) return;
 	enableLink("#link-ethics-risk", route("/pages/study/ethics-risk/", { id: studyId, project: projectId }));
+	document.body.dataset.ethicsRiskNextStepsHref = route("/pages/study/ethics-risk/next-steps/", { id: studyId, project: projectId });
 }
 
 function renderStudy(project, study, projectId, studyId, readinessContext) {

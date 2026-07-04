@@ -20,6 +20,7 @@ const studyBridge = read("public/js/study-canonical-url-bridge.js");
 const pages = {
 	consentForms: read("public/pages/study/consent-forms/index.html"),
 	ethicsRisk: read("public/pages/study/ethics-risk/index.html"),
+	ethicsRiskNextSteps: read("public/pages/study/ethics-risk/next-steps/index.html"),
 	guides: read("public/pages/study/guides/index.html"),
 	noteTakersObservers: read("public/pages/study/note-takers-observers/index.html"),
 	participantConsent: read("public/pages/study/participant-consent/index.html"),
@@ -30,6 +31,7 @@ const pages = {
 const loaders = {
 	consentForms: read("public/js/consent-forms-route-loader.js"),
 	ethicsRisk: read("public/js/study-ethics-risk-page.js"),
+	ethicsRiskNextSteps: read("public/js/study-ethics-risk-next-steps-page.js"),
 	guides: read("public/js/guides-route-loader.js"),
 	noteTakersObservers: read("public/js/note-takers-observers-route-loader.js"),
 	participantConsent: read("public/js/participant-consent-route-loader.js"),
@@ -40,6 +42,7 @@ const loaders = {
 includes(studyPageController, "const studyParams = { id: studyId, project: projectId }", "study page controller");
 includes(studyPageController, "route(\"/pages/study/consent-forms/\", studyParams)", "study page controller");
 includes(studyPageController, "route(\"/pages/study/ethics-risk/\", studyParams)", "study page controller");
+includes(studyPageController, "route(\"/pages/study/ethics-risk/next-steps/\", studyParams)", "study page controller");
 includes(studyPageController, "route(\"/pages/study/participant-consent/\", studyParams)", "study page controller");
 includes(studyPageController, "route(\"/pages/study/guides/\", studyParams)", "study page controller");
 includes(studyPageController, "route(\"/pages/study/participants/\", studyParams)", "study page controller");
@@ -80,6 +83,8 @@ for (const [label, source] of Object.entries(pages)) {
 		includes(source, "?v=study-synthesis-20260701-cache-refresh", label);
 	} else if (label === "ethicsRisk") {
 		includes(source, "?v=study-ethics-risk-20260704", label);
+	} else if (label === "ethicsRiskNextSteps") {
+		includes(source, "?v=study-ethics-risk-next-steps-20260704", label);
 	} else {
 		includes(source, "?v=study-record-id-routing-20260518", label);
 	}
@@ -87,6 +92,7 @@ for (const [label, source] of Object.entries(pages)) {
 
 includes(pages.consentForms, "/js/consent-forms-route-loader.js?v=study-record-id-routing-20260518", "consent forms page");
 includes(pages.ethicsRisk, "/js/study-ethics-risk-page.js?v=study-ethics-risk-20260704", "ethics risk page");
+includes(pages.ethicsRiskNextSteps, "/js/study-ethics-risk-next-steps-page.js?v=study-ethics-risk-next-steps-20260704", "ethics risk next steps page");
 excludes(pages.consentForms, "/js/consent-forms-page.js?v=study-record-id-routing-20260518", "consent forms page");
 includes(pages.guides, "/js/guides-route-loader.js?v=study-guides-delete-confirmation-20260605", "guides page");
 excludes(pages.guides, "/js/study-guides-context.js?v=study-record-id-routing-20260518", "guides page");
@@ -103,14 +109,14 @@ for (const [label, source] of Object.entries(loaders)) {
 		includes(source, "await import('/js/study-canonical-url-bridge.js?v=study-guides-delete-confirmation-20260605')", label);
 	} else if (label === "noteTakersObservers") {
 		includes(source, "await import(`/js/study-canonical-url-bridge.js?v=${version}`)", label);
-	} else if (label === "ethicsRisk") {
+	} else if (label === "ethicsRisk" || label === "ethicsRiskNextSteps") {
 		includes(source, "resolveStudyContextFromUrl", label);
 	} else if (label === "participantConsent") {
 		excludes(source, "study-canonical-url-bridge", label);
 	} else {
 		includes(source, "await import('/js/study-canonical-url-bridge.js?v=study-record-id-routing-20260518')", label);
 	}
-	if (label !== "ethicsRisk") {
+	if (label !== "ethicsRisk" && label !== "ethicsRiskNextSteps") {
 		includes(source, "await import('/components/layout.js')", label);
 	}
 }

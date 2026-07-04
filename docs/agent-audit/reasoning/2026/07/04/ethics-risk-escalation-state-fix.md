@@ -2,7 +2,7 @@
 
 Date: 2026-07-04
 Branch: `fix/ethics-risk-escalation-state`
-Task: Correct the study overview state shown after a completed ethics risk assessment returns an escalation outcome.
+Task: Correct the study overview state shown after a completed ethics risk assessment returns an escalation outcome, then add a dedicated route-specific next-steps workflow for escalation outcomes.
 
 ## Operating Model Bootstrap
 
@@ -33,21 +33,36 @@ Skipped:
 ## Implementation Summary
 
 - Separated incomplete setup tasks from completed ethics risk assessments that require governance escalation.
-- Updated the session gate so `Ethics advice needed`, `Extra controls needed` and `Ethics submission likely needed` direct researchers to the ethics route instead of saying the risk assessment task is incomplete.
-- Updated the session workspace hint to say the ethics advice route must be followed before sessions can begin.
+- Added `/pages/study/ethics-risk/next-steps/` as a dedicated follow-up workflow for `Ethics advice needed`, `Extra controls needed` and `Ethics submission likely needed` outcomes.
+- Updated the session gate so escalation outcomes link to the new next-steps workflow instead of routing back to the assessment form.
+- Updated the session workspace hint to say the ethics risk next steps must be completed before sessions can begin.
+- Added route-specific task lists, evidence requirements and local progress recording for the three escalation routes.
+- Added a route-specific next-step link from the completed ethics risk assessment outcome panel.
 - Updated the Sourcebook gate copy so escalation states are labelled as governance escalation rather than setup incompleteness.
-- Bumped the study page controller cache key to `study-ethics-escalation-20260704`.
+- Bumped the study page controller cache key to `study-ethics-next-steps-20260704`.
+
+## Files Created Or Modified
+
+- Created `src/govuk/templates/pages/study-ethics-risk-next-steps.njk`.
+- Created `public/js/study-ethics-risk-next-steps-page.js`.
+- Created generated `public/pages/study/ethics-risk/next-steps/index.html`.
+- Modified `public/js/study-page.js`, `public/js/study-ethics-risk-page.js`, `src/govuk/templates/pages/study.njk`, `src/govuk/templates/pages/study-ethics-risk.njk`, `src/styles/study-ethics-risk.scss`, `public/css/study-ethics-risk.css`, `scripts/govuk/render-govuk-pages.mjs` and route-state tests.
 
 ## Validation
 
 - `npm run build:govuk-pages` passed.
-- `node --import ./tests/helpers/generated-govuk-page-source.mjs --test tests/study-page-route-state.test.js tests/study-ethics-risk-route-state.test.js tests/study-child-route-state.test.js` passed with 3 tests.
-- `npx eslint public/js/study-page.js tests/study-page-route-state.test.js` completed with no errors and existing `public/js/study-page.js` console warnings only.
-- `npx prettier -c public/js/study-page.js tests/study-page-route-state.test.js public/pages/study/index.html` passed.
+- `npm run build:generated-css` passed.
+- `npm run generated-css:check` passed.
+- `node tests/study-page-route-state.test.js` passed.
+- `node tests/study-ethics-risk-route-state.test.js` passed.
+- `node tests/study-child-route-state.test.js` passed.
+- `npm run lint` passed with existing repository warnings only.
 - `git diff --check` passed.
 - `npm run trace:coverage` passed.
-- `curl -ks 'https://research-operations/pages/study/?id=rect3o7dt&project=recgdpwEI5hFO7bUZ'` confirmed the local HTTPS preview serves `/js/study-page.js?v=study-ethics-escalation-20260704`.
+- `curl -k -I 'https://research-operations/pages/study/ethics-risk/next-steps/?id=rect3o7dt&project=recgdpwEI5hFO7bUZ'` returned `200 OK`.
+- `curl -ks 'https://research-operations/pages/study/ethics-risk/next-steps/?id=rect3o7dt&project=recgdpwEI5hFO7bUZ'` confirmed the local HTTPS preview serves the next-steps page and controller.
+- `curl -ks 'https://research-operations/api/study-ethics-risk?study=rect3o7dt'` confirmed the review study has an `ethics-advice-required` saved outcome.
 
 ## Residual Risk
 
-- This adds the escalation state and route back to the risk assessment outcome. A fuller escalation workflow page can build on this state model.
+- The new progress record is local-preview state. A production-backed follow-up should add a server endpoint for persisted ethics advice/control/submission progress before this becomes an authoritative record.

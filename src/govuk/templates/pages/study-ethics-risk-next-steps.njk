@@ -1,0 +1,174 @@
+{% extends "layouts/researchops.njk" %}
+{% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
+{% from "govuk/components/radios/macro.njk" import govukRadios %}
+{% from "govuk/components/textarea/macro.njk" import govukTextarea %}
+{% from "macros/daas-brand-panel.njk" import daasBrandPanel %}
+
+{% set ethicsRiskNextStepsScriptVersion = "study-ethics-risk-next-steps-20260704" %}
+
+{% block head %}
+	<meta property="schema:name" content="Ethics risk next steps - ResearchOps">
+	<meta property="schema:creator" content="Home Office ResearchOps Platform">
+	<meta property="schema:dateModified" content="2026-07-04">
+	<meta property="dcterms:language" content="en-GB">
+	<link rel="stylesheet" href="/css/govuk/govuk-forms.css" media="screen">
+	<link rel="stylesheet" href="/css/sourcebook-components.css" media="screen">
+	<link rel="stylesheet" href="/css/study-ethics-risk.css" media="screen">
+	<link rel="stylesheet" href="/css/daas-brand-panel.css?v=leds-brand-panel-20260624" media="screen">
+	<link rel="modulepreload" href="/js/study-route-context.js">
+	<link rel="modulepreload" href="/js/study-ethics-risk-model.js?v=study-ethics-risk-20260704">
+	<link rel="modulepreload" href="/js/study-ethics-risk-next-steps-page.js?v={{ ethicsRiskNextStepsScriptVersion }}">
+	<link rel="modulepreload" href="/js/daas-brand-panel.js?v=leds-brand-panel-20260624">
+{% endblock %}
+
+{% block content %}
+<div class="govuk-width-container study-ethics-risk-page study-ethics-risk-next-steps-page" data-study-subpage-template="ethics-risk-next-steps">
+	{{ govukBreadcrumbs({
+		attributes: {
+			id: "study-ethics-risk-next-steps-breadcrumbs",
+			typeof: "schema:BreadcrumbList"
+		},
+		items: [
+			{ text: "Projects", href: "/pages/projects/" },
+			{ text: "Project", href: "#", attributes: { id: "breadcrumb-project" } },
+			{ text: "Study", href: "#", attributes: { id: "breadcrumb-study" } },
+			{ text: "Ethics and research risk", href: "#", attributes: { id: "breadcrumb-ethics-risk" } },
+			{ text: "Next steps" }
+		]
+	}) }}
+
+	{{ daasBrandPanel() }}
+
+	{{ govukErrorSummary({
+		attributes: {
+			id: "ethics-next-steps-error",
+			tabindex: "-1",
+			hidden: "hidden",
+			"aria-hidden": "true"
+		},
+		titleText: "There is a problem",
+		errorList: [
+			{
+				text: "Complete the ethics and research risk assessment first.",
+				href: "#back-to-risk-assessment"
+			}
+		]
+	}) }}
+
+	<div id="study-context-warning" class="govuk-warning-text" hidden>
+		<span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+		<strong class="govuk-warning-text__text">
+			<span class="govuk-visually-hidden">Warning</span>
+			Study details could not be loaded. The next steps can still be previewed locally for this study ID.
+		</strong>
+	</div>
+
+	<header class="study-ethics-risk-header govuk-!-margin-bottom-7">
+		<p id="study-eyebrow" class="govuk-caption-m">Study</p>
+		<h1 id="ethics-next-steps-title" class="govuk-heading-l">Ethics risk next steps</h1>
+		<p id="ethics-next-steps-summary" class="govuk-body-l govuk-!-width-two-thirds">Review the recorded ethics and research risk outcome, then complete the route-specific steps before recruitment, fieldwork or participant sessions begin.</p>
+	</header>
+
+	<div class="govuk-grid-row">
+		<div class="govuk-grid-column-two-thirds">
+			<section class="study-ethics-next-steps-panel govuk-!-margin-bottom-7" aria-labelledby="ethics-next-steps-task-title">
+				<h2 id="ethics-next-steps-task-title" class="govuk-heading-m">What happens next</h2>
+				<ol id="ethics-next-steps-list" class="govuk-task-list study-ethics-next-steps-list">
+					<li class="govuk-task-list__item govuk-task-list__item--with-link">
+						<div class="govuk-task-list__name-and-hint">
+							<a class="govuk-link govuk-task-list__link" href="#ethics-next-steps-record">Loading next step</a>
+							<div class="govuk-task-list__hint">Checking the recorded risk outcome.</div>
+						</div>
+						<div class="govuk-task-list__status"><strong class="govuk-tag govuk-tag--grey">Checking</strong></div>
+					</li>
+				</ol>
+			</section>
+
+			<section class="study-ethics-next-steps-panel govuk-!-margin-bottom-7" aria-labelledby="ethics-next-steps-evidence-title">
+				<h2 id="ethics-next-steps-evidence-title" class="govuk-heading-m">Evidence to collect</h2>
+				<p id="ethics-next-steps-evidence-intro" class="govuk-body">Evidence depends on the recorded risk route.</p>
+				<ul id="ethics-next-steps-evidence-list" class="govuk-list govuk-list--bullet">
+					<li>Risk assessment outcome</li>
+					<li>Triage outcome</li>
+				</ul>
+			</section>
+
+			<section id="ethics-next-steps-record" class="study-ethics-next-steps-panel govuk-!-margin-bottom-7" aria-labelledby="ethics-next-steps-record-title">
+				<h2 id="ethics-next-steps-record-title" class="govuk-heading-m">Record progress</h2>
+				<form id="ethics-next-steps-form" novalidate>
+					{{ govukRadios({
+						idPrefix: "ethics-next-step-state",
+						name: "nextStepState",
+						fieldset: {
+							legend: {
+								text: "What has happened?",
+								classes: "govuk-fieldset__legend--s"
+							}
+						},
+						items: [
+							{ value: "started", text: "Started the next steps" },
+							{ value: "requested", text: "Advice, controls or submission route requested" },
+							{ value: "resolved", text: "Decision, controls or approval recorded" }
+						]
+					}) }}
+
+					{{ govukTextarea({
+						id: "ethics-next-step-note",
+						name: "nextStepNote",
+						value: "",
+						rows: 6,
+						label: {
+							text: "Decision, controls or conditions",
+							classes: "govuk-label--s"
+						},
+						hint: {
+							text: "Do not include participant personal data."
+						}
+					}) }}
+
+					<div class="govuk-button-group">
+						{{ govukButton({
+							text: "Record next step",
+							type: "submit",
+							attributes: {
+								id: "ethics-next-steps-submit"
+							}
+						}) }}
+						{{ govukButton({
+							text: "Back to study",
+							href: "/pages/study/",
+							classes: "govuk-button--secondary",
+							attributes: {
+								id: "back-to-study"
+							}
+						}) }}
+					</div>
+				</form>
+				<p id="ethics-next-steps-recorded-state" class="govuk-body-s study-ethics-risk-recorded-state">No next step recorded yet.</p>
+			</section>
+		</div>
+
+		<aside class="govuk-grid-column-one-third study-ethics-risk-aside" aria-labelledby="ethics-next-steps-outcome-title">
+			<section class="study-ethics-risk-outcome" aria-live="polite">
+				<p class="govuk-caption-m">Risk route</p>
+				<h2 id="ethics-next-steps-outcome-title" class="govuk-heading-m">Checking risk outcome</h2>
+				<strong id="ethics-next-steps-outcome-tag" class="govuk-tag govuk-tag--grey">Checking</strong>
+				<p id="ethics-next-steps-outcome-summary" class="govuk-body">Checking the recorded ethics and research risk outcome.</p>
+				<h3 class="govuk-heading-s">Sensitive research triggers</h3>
+				<p id="ethics-next-steps-triggers" class="govuk-body">Checking triggers.</p>
+				<h3 class="govuk-heading-s">Sourcebook clauses</h3>
+				<p id="ethics-next-steps-sourcebook-clauses" class="govuk-body">Checking Sourcebook clauses.</p>
+				<p class="govuk-body-s"><a id="back-to-risk-assessment" class="govuk-link" href="/pages/study/ethics-risk/">Review risk assessment</a></p>
+			</section>
+		</aside>
+	</div>
+</div>
+{% endblock %}
+
+{% block bodyEnd %}
+	{{ super() }}
+	<script type="module" src="/js/daas-brand-panel.js?v=leds-brand-panel-20260624"></script>
+	<script type="module" src="/js/study-ethics-risk-next-steps-page.js?v={{ ethicsRiskNextStepsScriptVersion }}"></script>
+{% endblock %}
