@@ -35,7 +35,8 @@
     "Added route-specific task lists, evidence requirements and local progress recording for the three escalation routes.",
     "Added a route-specific next-step link from the completed ethics risk assessment outcome panel.",
     "Updated the Sourcebook gate copy so escalation states are labelled as governance escalation rather than setup incompleteness.",
-    "Bumped the study page controller cache key to study-ethics-next-steps-20260704."
+    "Bumped the study page controller cache key to study-ethics-next-steps-20260704.",
+    "Registered the ethics risk assessment and ethics risk next-steps routes with the visual walkthrough tooling using a saved Ethics advice needed outcome."
   ],
   "files": [
     "src/govuk/templates/pages/study-ethics-risk-next-steps.njk",
@@ -48,6 +49,8 @@
     "src/styles/study-ethics-risk.scss",
     "public/css/study-ethics-risk.css",
     "scripts/govuk/render-govuk-pages.mjs",
+    "visual-walkthrough.config.mjs",
+    "visual-walkthrough.operational-fixtures.mjs",
     "tests/study-page-route-state.test.js",
     "tests/study-ethics-risk-route-state.test.js",
     "tests/study-child-route-state.test.js"
@@ -81,9 +84,19 @@
       "details": "Study child route-state assertions passed."
     },
     {
+      "command": "node tests/visual-walkthrough-registry-coverage.test.js",
+      "result": "passed",
+      "details": "Visual walkthrough route registration coverage passed for the new ethics risk next-steps route."
+    },
+    {
       "command": "npm run lint",
       "result": "passed",
       "details": "Completed with existing repository warnings only."
+    },
+    {
+      "command": "npm test",
+      "result": "passed",
+      "details": "355 tests passed."
     },
     {
       "command": "git diff --check",

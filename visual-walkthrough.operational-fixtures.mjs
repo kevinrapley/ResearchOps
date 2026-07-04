@@ -30,6 +30,8 @@ export const operationalPaths = {
 	studyParticipants: `/pages/study/participants/?pid=${operationalProjectId}&sid=${operationalStudyId}`,
 	studySession: `/pages/study/session/?pid=${operationalProjectId}&sid=${operationalStudyId}`,
 	studyConsentForms: `/pages/study/consent-forms/?pid=${operationalProjectId}&sid=${operationalStudyId}`,
+	studyEthicsRisk: `/pages/study/ethics-risk/?id=${operationalStudyId}&project=${operationalProjectId}`,
+	studyEthicsRiskNextSteps: `/pages/study/ethics-risk/next-steps/?id=${operationalStudyId}&project=${operationalProjectId}`,
 	teamRegistrationRequests: '/pages/team/registration-requests/',
 	teamAccessRequests: '/pages/team/access-requests/',
 	teamRoleAssignments: '/pages/team/role-assignments/',
@@ -598,6 +600,20 @@ export const operationalParticipantConsentRecords = [
 	},
 ];
 
+export const operationalEthicsRisk = {
+	studyId: operationalStudyId,
+	answers: {
+		participants: ['professional-users', 'service-users'],
+		topics: ['identity-discrimination'],
+		setting: ['remote-private'],
+		data: ['personal-data', 'recording-capture'],
+		recruitment: 'open-voluntary',
+		researcherSupport: ['distressing-material'],
+	},
+	savedAt: '2026-05-01T11:15:00.000Z',
+	recordedBy: 'Alex Morgan',
+};
+
 export const operationalSessions = [
 	{
 		id: 'recVisualSession001',
@@ -1005,6 +1021,16 @@ export function operationalMockRoutes() {
 						email: 'sam.taylor@example.gov.uk',
 					},
 				],
+			},
+		},
+		{
+			url: /\/api\/study-ethics-risk(?:\?.*)?$/,
+			method: 'GET',
+			body: {
+				ok: true,
+				source: 'visual-walkthrough',
+				studyId: operationalStudyId,
+				ethicsRisk: operationalEthicsRisk,
 			},
 		},
 		{

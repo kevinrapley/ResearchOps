@@ -40,13 +40,14 @@ Skipped:
 - Added a route-specific next-step link from the completed ethics risk assessment outcome panel.
 - Updated the Sourcebook gate copy so escalation states are labelled as governance escalation rather than setup incompleteness.
 - Bumped the study page controller cache key to `study-ethics-next-steps-20260704`.
+- Registered the ethics risk assessment and ethics risk next-steps routes with the visual walkthrough tooling using a saved `Ethics advice needed` outcome.
 
 ## Files Created Or Modified
 
 - Created `src/govuk/templates/pages/study-ethics-risk-next-steps.njk`.
 - Created `public/js/study-ethics-risk-next-steps-page.js`.
 - Created generated `public/pages/study/ethics-risk/next-steps/index.html`.
-- Modified `public/js/study-page.js`, `public/js/study-ethics-risk-page.js`, `src/govuk/templates/pages/study.njk`, `src/govuk/templates/pages/study-ethics-risk.njk`, `src/styles/study-ethics-risk.scss`, `public/css/study-ethics-risk.css`, `scripts/govuk/render-govuk-pages.mjs` and route-state tests.
+- Modified `public/js/study-page.js`, `public/js/study-ethics-risk-page.js`, `src/govuk/templates/pages/study.njk`, `src/govuk/templates/pages/study-ethics-risk.njk`, `src/styles/study-ethics-risk.scss`, `public/css/study-ethics-risk.css`, `scripts/govuk/render-govuk-pages.mjs`, `visual-walkthrough.config.mjs`, `visual-walkthrough.operational-fixtures.mjs` and route-state tests.
 
 ## Validation
 
@@ -56,7 +57,9 @@ Skipped:
 - `node tests/study-page-route-state.test.js` passed.
 - `node tests/study-ethics-risk-route-state.test.js` passed.
 - `node tests/study-child-route-state.test.js` passed.
+- `node tests/visual-walkthrough-registry-coverage.test.js` passed.
 - `npm run lint` passed with existing repository warnings only.
+- `npm test` passed: 355 tests, 355 passed.
 - `git diff --check` passed.
 - `npm run trace:coverage` passed.
 - `curl -k -I 'https://research-operations/pages/study/ethics-risk/next-steps/?id=rect3o7dt&project=recgdpwEI5hFO7bUZ'` returned `200 OK`.
