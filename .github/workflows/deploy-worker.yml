@@ -137,7 +137,10 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
         run: |
-          npx --yes wrangler@${WRANGLER_VERSION} r2 bucket list --json > r2-buckets.json
+          curl -sS \
+            -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" \
+            "https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/r2/buckets" \
+            > r2-buckets.json
           python - <<'PY'
           import json
           import os
@@ -145,8 +148,10 @@ jobs:
 
           target_name = os.environ["DOCUMENTS_R2_BUCKET"]
           data = json.loads(Path("r2-buckets.json").read_text())
-          buckets = data.get("result") if isinstance(data, dict) else data
-          exists = any(bucket.get("name") == target_name for bucket in buckets or [])
+          if not data.get("success", False):
+              raise RuntimeError(f"Cloudflare API error listing R2 buckets: {data.get('errors')}")
+          buckets = (data.get("result") or {}).get("buckets") or []
+          exists = any(bucket.get("name") == target_name for bucket in buckets)
 
           with open(os.environ["GITHUB_ENV"], "a", encoding="utf-8") as env_file:
               env_file.write(f"NEED_CREATE_DOCUMENTS_R2_BUCKET={'false' if exists else 'true'}\n")
@@ -474,7 +479,10 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
         run: |
-          npx --yes wrangler@${WRANGLER_VERSION} r2 bucket list --json > r2-buckets.json
+          curl -sS \
+            -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" \
+            "https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/r2/buckets" \
+            > r2-buckets.json
           python - <<'PY'
           import json
           import os
@@ -482,8 +490,10 @@ jobs:
 
           target_name = os.environ["DOCUMENTS_R2_PREVIEW_BUCKET"]
           data = json.loads(Path("r2-buckets.json").read_text())
-          buckets = data.get("result") if isinstance(data, dict) else data
-          exists = any(bucket.get("name") == target_name for bucket in buckets or [])
+          if not data.get("success", False):
+              raise RuntimeError(f"Cloudflare API error listing R2 buckets: {data.get('errors')}")
+          buckets = (data.get("result") or {}).get("buckets") or []
+          exists = any(bucket.get("name") == target_name for bucket in buckets)
 
           with open(os.environ["GITHUB_ENV"], "a", encoding="utf-8") as env_file:
               env_file.write(f"NEED_CREATE_DOCUMENTS_R2_PREVIEW_BUCKET={'false' if exists else 'true'}\n")
