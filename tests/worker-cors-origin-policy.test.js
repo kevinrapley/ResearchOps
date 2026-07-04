@@ -31,7 +31,7 @@ async function preflight(origin, env = {}) {
 
 function assertProductionConfigAllowsCustomDomains() {
 	for (const origin of researchOpsCustomOrigins) {
-		assert.match(wrangler, new RegExp(origin.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
+		assert.equal(wrangler.includes(origin), true);
 	}
 }
 

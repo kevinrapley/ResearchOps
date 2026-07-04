@@ -53,6 +53,7 @@ Skipped:
 - Added Worker runtime fallback for those public ResearchOps custom domains so sign-in preflight and mutation checks remain allowed if config drifts.
 - Added service CORS fallback for the same custom domains.
 - Added a regression test that checks the production config includes the public domains, the Worker allows those origins for sign-in preflight, and an unknown origin remains rejected.
+- Addressed two GitHub Advanced Security review threads by replacing the test's dynamically constructed regular expression with exact string inclusion checks.
 
 ## Files Changed
 
@@ -70,6 +71,7 @@ Skipped:
 - `node tests/security-hardening-controls-route-state.test.js` passed.
 - `npm run format:check` passed.
 - `npm run lint` passed with existing warnings and no errors.
+- `npm run trace:coverage -- --date 2026-07-04` passed.
 
 ## Residual Risk
 

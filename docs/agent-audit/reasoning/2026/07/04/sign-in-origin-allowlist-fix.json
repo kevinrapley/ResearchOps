@@ -45,7 +45,8 @@
     "Added ResearchOps public custom domains to production ALLOWED_ORIGINS.",
     "Added Worker fallback for the same custom domains.",
     "Added service CORS fallback for the same custom domains.",
-    "Added a regression test for sign-in preflight origin policy."
+    "Added a regression test for sign-in preflight origin policy.",
+    "Addressed two GitHub Advanced Security review threads by replacing the test's dynamically constructed regular expression with exact string inclusion checks."
   ],
   "filesChanged": [
     "infra/cloudflare/wrangler.toml",
@@ -76,6 +77,10 @@
       "command": "npm run lint",
       "result": "passed",
       "details": "Existing warnings only, no errors."
+    },
+    {
+      "command": "npm run trace:coverage -- --date 2026-07-04",
+      "result": "passed"
     }
   ],
   "residualRisk": [
