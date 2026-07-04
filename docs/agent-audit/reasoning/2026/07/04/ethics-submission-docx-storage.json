@@ -1,0 +1,104 @@
+{
+  "date": "2026-07-04",
+  "branch": "feature/ethics-submission-docx-storage",
+  "base": "origin/main",
+  "task": "Generate and store completed ethics submission Word documents from saved ResearchOps full ethics submission data.",
+  "operatingModel": {
+    "loaded": [
+      "AGENTS.md",
+      ".agent-operating-model/orchestration.xml",
+      ".agent-operating-model/bundle-registry.json",
+      ".agent-operating-model/task-signal-catalog.json",
+      ".agent-operating-model/selection-rules.json",
+      ".agent-operating-model/precedence-policy.md",
+      ".agent-operating-model/github-mutation-policy.md"
+    ],
+    "selectedBundles": [
+      ".agent-operating-model/bundles/github/",
+      ".agent-operating-model/bundles/researchops-developer-control/",
+      ".agent-operating-model/bundles/multi-functional-team/",
+      ".agent-operating-model/bundles/govuk-design-system/",
+      ".agent-operating-model/bundles/cloudflare/"
+    ],
+    "verifiedBundleFiles": [
+      ".agent-operating-model/bundles/github/prompt.spec.yaml",
+      ".agent-operating-model/bundles/github/prompt.body.xml",
+      ".agent-operating-model/bundles/researchops-developer-control/prompt.spec.yaml",
+      ".agent-operating-model/bundles/researchops-developer-control/prompt.body.xml",
+      ".agent-operating-model/bundles/multi-functional-team/prompt.spec.yaml",
+      ".agent-operating-model/bundles/multi-functional-team/prompt.body.xml",
+      ".agent-operating-model/bundles/govuk-design-system/prompt.spec.yaml",
+      ".agent-operating-model/bundles/govuk-design-system/prompt.body.xml",
+      ".agent-operating-model/bundles/cloudflare/prompt.spec.yaml",
+      ".agent-operating-model/bundles/cloudflare/prompt.body.xml"
+    ],
+    "traceDecision": "Trace required because the branch starts with feature/."
+  },
+  "implementation": [
+    "Added checked-in copies of the supplied Research Ethics approval form DOCX template.",
+    "Added Cloudflare R2 binding RESEARCHOPS_DOCUMENTS_R2.",
+    "Added D1 migration 0026_ethics_submission_documents.sql for generated document metadata and route permissions.",
+    "Added ethics submission document service to generate a completed DOCX copy, store it in R2 and record metadata in D1.",
+    "Added Worker routes for creating and downloading generated ethics submission documents.",
+    "Updated the full ethics submission submit action to call the document generation endpoint before marking the submission version submitted.",
+    "Added visible GOV.UK status text for document generation success or failure.",
+    "Tightened the ethics next-steps outcome panel text sizing."
+  ],
+  "files": [
+    "docs/agent-audit/reasoning/2026/07/04/ethics-submission-docx-storage.md",
+    "docs/agent-audit/reasoning/2026/07/04/ethics-submission-docx-storage.json",
+    "docs/devops/sourcebook/templates/research-ethics-approval-form-v3.docx",
+    "infra/cloudflare/migrations/0026_ethics_submission_documents.sql",
+    "infra/cloudflare/src/service/ethics-submission-documents.js",
+    "infra/cloudflare/src/service/index.js",
+    "infra/cloudflare/src/worker.js",
+    "infra/cloudflare/wrangler.toml",
+    "public/css/study-ethics-risk.css",
+    "public/js/study-ethics-risk-next-steps-page.js",
+    "public/pages/study/ethics-risk/next-steps/index.html",
+    "public/templates/ethics/research-ethics-approval-form-v3.docx",
+    "sourcebook/templates/research-ethics-approval-form-v3.docx",
+    "src/govuk/templates/pages/study-ethics-risk-next-steps.njk",
+    "src/styles/study-ethics-risk.scss",
+    "tests/study-child-route-state.test.js",
+    "tests/study-ethics-risk-route-state.test.js",
+    "tests/study-ethics-submission-documents-runtime.test.js"
+  ],
+  "validation": [
+    {
+      "command": "node tests/study-ethics-risk-route-state.test.js",
+      "result": "passed"
+    },
+    {
+      "command": "node tests/study-child-route-state.test.js",
+      "result": "passed"
+    },
+    {
+      "command": "node tests/study-ethics-submission-documents-runtime.test.js",
+      "result": "passed"
+    },
+    {
+      "command": "npm run generated-css:check",
+      "result": "passed"
+    },
+    {
+      "command": "git diff --check",
+      "result": "passed"
+    },
+    {
+      "command": "npm run lint",
+      "result": "passed",
+      "details": "Passed with existing repository warnings only."
+    },
+    {
+      "command": "Playwright local preview side-panel typography inspection",
+      "result": "passed",
+      "details": "Confirmed the synced HTTPS preview loads study-ethics-risk-next-steps-20260704-17; outcome summary, tag and trigger text render at 16px/20px; and there is no horizontal overflow at 1272px width."
+    }
+  ],
+  "residualRisk": [
+    "The supplied Word template has no content controls, so the generated ResearchOps submission content is appended as a completed-submission section.",
+    "Production deployment requires the RESEARCHOPS_DOCUMENTS_R2 bucket binding to exist.",
+    "Ethics advice and extra-control route progress still need a production-backed persistence follow-up."
+  ]
+}

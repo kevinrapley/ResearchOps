@@ -81,18 +81,18 @@ for (const [label, source] of Object.entries(pages)) {
 		includes(source, "?v=study-note-takers-observers-20260606", label);
 	} else if (label === "synthesis") {
 		includes(source, "?v=study-synthesis-20260701-cache-refresh", label);
-	} else if (label === "ethicsRisk") {
-		includes(source, "?v=study-ethics-risk-20260704", label);
-	} else if (label === "ethicsRiskNextSteps") {
-		includes(source, "?v=study-ethics-risk-next-steps-20260704", label);
-	} else {
-		includes(source, "?v=study-record-id-routing-20260518", label);
+		} else if (label === "ethicsRisk") {
+			includes(source, "?v=study-ethics-risk-20260704-2", label);
+		} else if (label === "ethicsRiskNextSteps") {
+			includes(source, "?v=study-ethics-risk-next-steps-20260704-17", label);
+		} else {
+			includes(source, "?v=study-record-id-routing-20260518", label);
+		}
 	}
-}
 
 includes(pages.consentForms, "/js/consent-forms-route-loader.js?v=study-record-id-routing-20260518", "consent forms page");
-includes(pages.ethicsRisk, "/js/study-ethics-risk-page.js?v=study-ethics-risk-20260704", "ethics risk page");
-includes(pages.ethicsRiskNextSteps, "/js/study-ethics-risk-next-steps-page.js?v=study-ethics-risk-next-steps-20260704", "ethics risk next steps page");
+includes(pages.ethicsRisk, "/js/study-ethics-risk-page.js?v=study-ethics-risk-20260704-2", "ethics risk page");
+includes(pages.ethicsRiskNextSteps, "/js/study-ethics-risk-next-steps-page.js?v=study-ethics-risk-next-steps-20260704-17", "ethics risk next steps page");
 excludes(pages.consentForms, "/js/consent-forms-page.js?v=study-record-id-routing-20260518", "consent forms page");
 includes(pages.guides, "/js/guides-route-loader.js?v=study-guides-delete-confirmation-20260605", "guides page");
 excludes(pages.guides, "/js/study-guides-context.js?v=study-record-id-routing-20260518", "guides page");

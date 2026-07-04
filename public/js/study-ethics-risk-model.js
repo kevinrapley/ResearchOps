@@ -98,10 +98,10 @@ function highestRiskRoute(level) {
 		return {
 			route: "ethics-board-submission-likely",
 			status: "blocked",
-			statusLabel: "Ethics submission likely needed",
+			statusLabel: "Ethics submission needed",
 			readinessState: "Pause before recruitment",
 			ready: false,
-			summary: "This study has triggers that are likely to need formal ethics or governance approval before recruitment or fieldwork.",
+			summary: "This study has triggers that need formal ethics or governance approval before recruitment or fieldwork.",
 			nextAction: "Do not recruit participants until the formal ethics or governance route has been recorded."
 		};
 	}
@@ -526,4 +526,67 @@ export function clearStudyEthicsRisk(studyId) {
 	if (!studyId) return evaluateStudyEthicsRisk({});
 	window.localStorage.removeItem(ethicsRiskStorageKey(studyId));
 	return evaluateStudyEthicsRisk({});
+}
+
+export function ethicsRiskNextStepsStorageKey(studyId) {
+	return `researchops:study-ethics-risk-next-steps:${studyId}`;
+}
+
+export function loadStudyEthicsRiskNextSteps(studyId) {
+	if (!studyId || !isLocalPreviewOrigin()) return null;
+	try {
+		const record = JSON.parse(window.localStorage.getItem(ethicsRiskNextStepsStorageKey(studyId)) || "null");
+		return record && typeof record === "object" ? record : null;
+	} catch {
+		return null;
+	}
+}
+
+export function saveStudyEthicsRiskNextSteps(studyId, record) {
+	if (!studyId || !isLocalPreviewOrigin()) return null;
+	const payload = {
+		...record,
+		studyId,
+		savedAt: new Date().toISOString(),
+		recordedBy: record.recordedBy || "Local preview user"
+	};
+	window.localStorage.setItem(ethicsRiskNextStepsStorageKey(studyId), JSON.stringify(payload));
+	return payload;
+}
+
+export function clearStudyEthicsRiskNextSteps(studyId) {
+	if (!studyId || !isLocalPreviewOrigin()) return;
+	window.localStorage.removeItem(ethicsRiskNextStepsStorageKey(studyId));
+}
+
+export function isEthicsRiskNextStepsComplete(record = {}, route = "") {
+	if (!record || record.route !== route) return false;
+	const status = String(record.status || "");
+	if (route === "ethics-advice-required") {
+		return ["advice-received", "conditions-applied"].includes(status);
+	}
+	if (route === "sensitive-research-controls") {
+		return status === "controls-implemented";
+	}
+	if (route === "ethics-board-submission-likely") {
+		return ["approved", "approved-with-conditions"].includes(status);
+	}
+	return false;
+}
+
+export function applyEthicsRiskNextStepsOutcome(outcome = {}, record = null) {
+	if (!outcome?.started || outcome.ready === true) return outcome;
+	if (!isEthicsRiskNextStepsComplete(record, outcome.route)) return outcome;
+	const decisionText = record.decisionSummary
+		? ` Governance decision recorded: ${record.decisionSummary}`
+		: " Governance decision recorded.";
+	return {
+		...outcome,
+		ready: true,
+		status: "ready",
+		readinessState: "Ready",
+		statusLabel: "Ethics risk next steps complete",
+		summary: `${outcome.summary}${decisionText}`,
+		nextAction: "Continue with the recorded ethics, safeguarding and study controls."
+	};
 }

@@ -9,7 +9,7 @@ import {
 	loadSeededStudyEthicsRisk,
 	recordStudyEthicsRisk,
 	requiredEthicsRiskGroups
-} from "./study-ethics-risk-model.js";
+} from "./study-ethics-risk-model.js?v=study-ethics-risk-20260704-2";
 import {
 	resolveStudyContextFromUrl,
 	route,
