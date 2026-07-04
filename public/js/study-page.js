@@ -434,11 +434,44 @@ function setSourcebookStatusClass(element, prefix, status) {
 	element.classList.add(`${prefix}${status}`);
 }
 
+function normaliseEvidenceText(value) {
+	return String(value || "")
+		.trim()
+		.toLowerCase()
+		.replace(/[_\s]+/g, "-");
+}
+
+function hasSourcebookEvidenceRecord(records, evidenceId, aliases = []) {
+	const needles = [evidenceId, ...aliases].map(normaliseEvidenceText).filter(Boolean);
+	if (!needles.length) return false;
+	return (Array.isArray(records) ? records : []).some(record => {
+		const haystack = [
+			record.id,
+			record.evidenceId,
+			record.sourcebookEvidenceId,
+			record.type,
+			record.category,
+			record.label,
+			record.title,
+			record.summary,
+			record.note,
+			record.text,
+			record.tags,
+			Array.isArray(record.sourcebookEvidenceIds) ? record.sourcebookEvidenceIds.join(" ") : "",
+			Array.isArray(record.evidenceIds) ? record.evidenceIds.join(" ") : ""
+		]
+			.map(normaliseEvidenceText)
+			.join(" ");
+		return needles.some(needle => haystack.includes(needle));
+	});
+}
+
 function studySourcebookEvidenceIds(readiness, context = {}) {
 	const provided = new Set();
 	if (readiness.description?.ready) provided.add("research-intake");
-	if (readiness.status?.ready) {
-		provided.add("risk-assessment");
+	const evidenceRecords = Array.isArray(context.evidence) ? context.evidence : [];
+	if (hasSourcebookEvidenceRecord(evidenceRecords, "risk-assessment", ["risk assessment", "risk-rating"])) provided.add("risk-assessment");
+	if (hasSourcebookEvidenceRecord(evidenceRecords, "triage-outcome", ["governance-triage", "scope-triage", "triage outcome"])) {
 		provided.add("triage-outcome");
 	}
 	if (readiness.guide?.ready) {

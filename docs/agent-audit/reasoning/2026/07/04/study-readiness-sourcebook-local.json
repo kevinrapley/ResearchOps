@@ -42,7 +42,9 @@
     "Added a generated /css/sourcebook-components.css stylesheet for shared Sourcebook components and linked it from the study page before /css/study-page.css, leaving route-specific spacing overrides in the study stylesheet.",
     "Reconciled the study readiness page states so Study setup task tags are driven by the same readiness evaluation as the Study readiness summary, and Sourcebook audit incompleteness no longer says the study is not ready to begin sessions.",
     "Reconciled the Sourcebook evidence record with the same readiness signals so completed setup/readiness items mark the mapped evidence rows as present instead of leaving a contradictory audit state.",
-    "Moved the final PR work onto feature/study-readiness-sourcebook from current origin/main after PR #463 was merged, preserving the local study readiness changes while avoiding reuse of the merged participant-consent branch."
+    "Moved the final PR work onto feature/study-readiness-sourcebook from current origin/main after PR #463 was merged, preserving the local study readiness changes while avoiding reuse of the merged participant-consent branch.",
+    "Addressed Codex review on PR #464 by requiring loaded evidence records before risk-assessment and triage-outcome rows become present, so a normal study status no longer counts as governance evidence.",
+    "Addressed Codex review on PR #464 by adding public/css/sourcebook-components.css to the generated CSS format workflow allowlist."
   ],
   "validation": [
     {
@@ -325,6 +327,26 @@
     {
       "command": "npx prettier -c public/js/study-page.js tests/study-page-route-state.test.js",
       "result": "passed"
+    },
+    {
+      "command": "node --test tests/study-page-route-state.test.js tests/sourcebook-context-route-state.test.js",
+      "result": "passed",
+      "details": "6 tests passed after PR #464 Codex review remediation."
+    },
+    {
+      "command": "npx prettier -c .github/workflows/format-pr.yml public/js/study-page.js tests/study-page-route-state.test.js",
+      "result": "passed",
+      "details": "Passed after PR #464 Codex review remediation."
+    },
+    {
+      "command": "git diff --check",
+      "result": "passed",
+      "details": "Passed after PR #464 Codex review remediation."
+    },
+    {
+      "command": "Playwright preview smoke on http://127.0.0.1:8082/pages/study/?id=rect3o7dt",
+      "result": "passed",
+      "details": "Confirmed setup tasks remain ready, Sourcebook shows Evidence record incomplete, risk-assessment and triage-outcome remain Needed without loaded evidence records, /css/sourcebook-components.css loads, and no failed page requests were observed."
     }
   ],
   "residualRisk": [

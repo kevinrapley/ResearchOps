@@ -60,6 +60,7 @@ jobs:
             public/css/study-page.css
             public/css/outcomes.css
             public/css/sourcebook.css
+            public/css/sourcebook-components.css
           )
 
           if git diff --quiet -- "${css_paths[@]}"; then

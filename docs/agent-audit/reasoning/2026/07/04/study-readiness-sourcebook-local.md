@@ -47,6 +47,8 @@ Skipped:
 - Reconciled the study readiness page states so Study setup task tags are driven by the same readiness evaluation as the Study readiness summary, and Sourcebook audit incompleteness no longer says the study is not ready to begin sessions.
 - Reconciled the Sourcebook evidence record with the same readiness signals so completed setup/readiness items mark the mapped evidence rows as present instead of leaving a contradictory audit state.
 - Moved the final PR work onto `feature/study-readiness-sourcebook` from current `origin/main` after PR #463 was merged, preserving the local study readiness changes while avoiding reuse of the merged participant-consent branch.
+- Addressed Codex review on PR #464 by requiring loaded evidence records before `risk-assessment` and `triage-outcome` rows become present, so a normal study status no longer counts as governance evidence.
+- Addressed Codex review on PR #464 by adding `public/css/sourcebook-components.css` to the generated CSS format workflow allowlist.
 
 ## Validation
 
@@ -108,6 +110,10 @@ Skipped:
 - `node --test tests/study-page-route-state.test.js tests/sourcebook-context-route-state.test.js` passed with 6 tests after mapping readiness signals to the Sourcebook evidence ledger.
 - Playwright confirmed Study readiness and Study setup tasks are ready, Sourcebook evidence is complete, all visible evidence ledger rows are `Present`, and there are no failed page requests.
 - `npx prettier -c public/js/study-page.js tests/study-page-route-state.test.js` passed.
+- After PR #464 Codex review remediation, `node --test tests/study-page-route-state.test.js tests/sourcebook-context-route-state.test.js` passed with 6 tests.
+- After PR #464 Codex review remediation, `npx prettier -c .github/workflows/format-pr.yml public/js/study-page.js tests/study-page-route-state.test.js` passed.
+- After PR #464 Codex review remediation, `git diff --check` passed.
+- After PR #464 Codex review remediation, Playwright confirmed the preview keeps setup tasks ready, shows `Evidence record incomplete`, keeps `risk-assessment` and `triage-outcome` rows as `Needed` without loaded evidence records, loads `/css/sourcebook-components.css`, and has no failed page requests.
 
 ## Residual Risk
 

@@ -229,8 +229,8 @@ for (const text of [
 		"setSetupTaskStatus(\"#study-setup-guide-status\", readiness.guide.state)",
 		"provided.add(\"research-intake\")",
 		"provided.add(\"research-plan\")",
-		"provided.add(\"risk-assessment\")",
-		"provided.add(\"triage-outcome\")",
+		"hasSourcebookEvidenceRecord(evidenceRecords, \"risk-assessment\"",
+		"hasSourcebookEvidenceRecord(evidenceRecords, \"triage-outcome\"",
 		"provided.add(\"method-rationale\")",
 		"provided.add(\"participant-risk-rationale\")",
 		"provided.add(\"environment-risk-assessment\")",
@@ -265,6 +265,12 @@ excludes(controllerSource, "querySelector(\".readiness-item__status\")", "study 
 excludes(controllerSource, "querySelector(\".readiness-item__body\")", "study page controller");
 excludes(controllerSource, "route(\"/pages/synthesize/\", params)", "study page controller");
 excludes(controllerSource, "alert(", "study page controller");
+excludes(
+	controllerSource,
+	"if (readiness.status?.ready) {\n\t\tprovided.add(\"risk-assessment\");",
+	"study page controller status-derived governance evidence"
+);
+includes(formatWorkflowSource, "public/css/sourcebook-components.css", "format PR generated CSS allowlist");
 
 for (const text of [
 	".study-action-bar",
@@ -287,16 +293,16 @@ for (const text of [
 	"white-space: nowrap",
 	".study-readiness-task-list",
 	".study-evidence-summary-list",
-		".study-evidence-summary-list .govuk-summary-list__key",
-		".study-session-button",
-		".study-sourcebook-context",
-		".study-sourcebook-reference",
-		".sourcebook-context--compact .sourcebook-context__list",
-		".sourcebook-context--compact .sourcebook-context__text",
-		".sourcebook-context--compact .sourcebook-context__condition",
-		".study-session-gate-section .sourcebook-gate",
-		".study-sourcebook-evidence-details .sourcebook-evidence-ledger",
-		".study-page > .sourcebook-evidence-ledger",
+	".study-evidence-summary-list .govuk-summary-list__key",
+	".study-session-button",
+	".study-sourcebook-context",
+	".study-sourcebook-reference",
+	".sourcebook-context--compact .sourcebook-context__list",
+	".sourcebook-context--compact .sourcebook-context__text",
+	".sourcebook-context--compact .sourcebook-context__condition",
+	".study-session-gate-section .sourcebook-gate",
+	".study-sourcebook-evidence-details .sourcebook-evidence-ledger",
+	".study-page > .sourcebook-evidence-ledger",
 	".study-overview-grid > .govuk-grid-column-one-half",
 	".govuk-task-list__item .govuk-tag",
 	".study-analysis-task-list .govuk-tag",
