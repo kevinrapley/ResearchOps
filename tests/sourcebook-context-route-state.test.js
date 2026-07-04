@@ -85,7 +85,8 @@ test('SourcebookGate macro renders a decision from context and evidence checks',
 	for (const text of [
 		'const context = sourcebookContextForRoute({ route, condition, limit });',
 		'const evidenceLedger = sourcebookEvidenceLedgerForRoute({',
-		"status === 'blocked'",
+		"blockedStatus = 'blocked'",
+		": 'review-evidence-record'",
 		"'Evidence needed'",
 		"'Add evidence before continuing'",
 	]) {
@@ -100,6 +101,11 @@ test('API and Nunjucks use the same route-to-clause mapping source', () => {
 	for (const expectedMapping of [
 		['/pages/consent/', 'REC-ADMN 3.1.1', 'consent-review'],
 		['/pages/study/participant-consent/', 'REC-ADMN 3.1.1', 'participant-consent-recording'],
+		['/pages/study/', 'SCOPE 2.1.1', 'study-readiness'],
+		['/pages/study/', 'GOVERN 2.1.1', 'study-readiness'],
+		['/pages/study/', 'GOVERN 2.1.2', 'study-readiness'],
+		['/pages/study/', 'ENVIRO 1.1.2', 'study-readiness'],
+		['/pages/study/', 'REC-ADMN 3.1.1', 'study-readiness'],
 		['/pages/account/team-access/', 'INFRA-PROV 3.1.1', 'access-change'],
 		['/pages/team/role-assignments/', 'INFRA-PROV 3.1.1', 'permission-model-change'],
 	]) {

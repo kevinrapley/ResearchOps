@@ -12,10 +12,11 @@
 		<meta property="dcterms:language" content="en-GB" />
 		<link rel="stylesheet" href="/css/govuk/govuk-forms.css" media="screen" />
 		<link rel="stylesheet" href="/css/govuk/govuk-tables.css" media="screen" />
+		<link rel="stylesheet" href="/css/sourcebook-components.css" media="screen" />
 		<link rel="stylesheet" href="/css/study-page.css" media="screen" />
 		<link rel="stylesheet" href="/css/daas-brand-panel.css?v=leds-brand-panel-20260624" media="screen" />
 		<link rel="modulepreload" href="/js/daas-brand-panel.js?v=leds-brand-panel-20260624" />
-		<link rel="modulepreload" href="/js/study-page.js?v=study-evidence-summary-20260630" />
+		<link rel="modulepreload" href="/js/study-page.js?v=study-readiness-sourcebook-20260704" />
 		<link rel="modulepreload" href="/pages/study/study-desc-controller.js" />
 
 		<script type="module" src="/components/layout.js?v=govuk-page-chrome-20260702-1" defer></script>
@@ -220,6 +221,31 @@
 									</a>
 								</div>
 							</div>
+
+							<section
+								class="sourcebook-gate sourcebook-gate--attention sourcebook-gate--attention"
+								aria-labelledby="sourcebook-gate-title"
+								data-sourcebook-gate
+							>
+								<div class="sourcebook-gate__header">
+									<p class="govuk-caption-m sourcebook-gate__caption">Readiness check</p>
+									<h2 class="govuk-heading-m sourcebook-gate__title" id="sourcebook-gate-title">
+										Sourcebook evidence check
+									</h2>
+									<strong
+										class="govuk-tag sourcebook-gate__tag sourcebook-gate__tag--attention"
+										data-sourcebook-gate-status
+									>
+										Evidence record incomplete
+									</strong>
+									<p class="govuk-body sourcebook-gate__summary" data-sourcebook-gate-summary>
+										Review Sourcebook evidence alongside the study setup tasks.
+									</p>
+									<p class="govuk-body sourcebook-gate__action">
+										<strong data-sourcebook-gate-action>Review the Sourcebook evidence record.</strong>
+									</p>
+								</div>
+							</section>
 						</section>
 					</div>
 
@@ -417,10 +443,16 @@
 
 								<div id="study-setup-1-hint" class="govuk-task-list__hint">
 									Create or review Markdown and Mustache consent form templates for this study.
+									<span class="study-sourcebook-reference">
+										Sourcebook:
+										<a class="govuk-link" href="/pages/sourcebook/recruitment-and-administration/#rec-admn-3-1-1">
+											REC-ADMN 3.1.1
+										</a>
+									</span>
 								</div>
 							</div>
 							<div class="govuk-task-list__status" id="study-setup-1-status">
-								<strong class="govuk-tag govuk-tag--yellow">Action needed</strong>
+								<strong id="study-setup-consent-forms-status" class="govuk-tag govuk-tag--yellow">Action needed</strong>
 							</div>
 						</li>
 
@@ -434,10 +466,18 @@
 
 								<div id="study-setup-2-hint" class="govuk-task-list__hint">
 									Record, review or withdraw participant consent for this study.
+									<span class="study-sourcebook-reference">
+										Sourcebook:
+										<a class="govuk-link" href="/pages/sourcebook/recruitment-and-administration/#rec-admn-3-1-1">
+											REC-ADMN 3.1.1
+										</a>
+									</span>
 								</div>
 							</div>
 							<div class="govuk-task-list__status" id="study-setup-2-status">
-								<strong class="govuk-tag govuk-tag--yellow">Action needed</strong>
+								<strong id="study-setup-participant-consent-status" class="govuk-tag govuk-tag--yellow">
+									Action needed
+								</strong>
 							</div>
 						</li>
 
@@ -449,10 +489,14 @@
 
 								<div id="study-setup-3-hint" class="govuk-task-list__hint">
 									Add or review participants for this study.
+									<span class="study-sourcebook-reference">
+										Sourcebook:
+										<a class="govuk-link" href="/pages/sourcebook/governance/#govern-2-1-1">GOVERN 2.1.1</a>
+									</span>
 								</div>
 							</div>
 							<div class="govuk-task-list__status" id="study-setup-3-status">
-								<strong class="govuk-tag govuk-tag--yellow">Action needed</strong>
+								<strong id="study-setup-participants-status" class="govuk-tag govuk-tag--yellow">Action needed</strong>
 							</div>
 						</li>
 
@@ -466,10 +510,14 @@
 
 								<div id="study-setup-4-hint" class="govuk-task-list__hint">
 									Create or review the guide before running a session.
+									<span class="study-sourcebook-reference">
+										Sourcebook:
+										<a class="govuk-link" href="/pages/sourcebook/scope/#scope-2-1-1">SCOPE 2.1.1</a>
+									</span>
 								</div>
 							</div>
 							<div class="govuk-task-list__status" id="study-setup-4-status">
-								<strong class="govuk-tag govuk-tag--yellow">Action needed</strong>
+								<strong id="study-setup-guide-status" class="govuk-tag govuk-tag--yellow">Action needed</strong>
 							</div>
 						</li>
 
@@ -485,6 +533,10 @@
 									<span id="study-setup-support-hint">
 										Confirm who, if anyone, will join sessions beyond the lead researcher.
 									</span>
+									<span class="study-sourcebook-reference">
+										Sourcebook:
+										<a class="govuk-link" href="/pages/sourcebook/environment/#enviro-1-1-2">ENVIRO 1.1.2</a>
+									</span>
 								</div>
 							</div>
 							<div class="govuk-task-list__status" id="study-setup-5-status">
@@ -493,6 +545,93 @@
 						</li>
 					</ul>
 				</section>
+
+				<aside
+					class="sourcebook-context sourcebook-context--compact study-sourcebook-context"
+					aria-labelledby="sourcebook-context-title"
+				>
+					<div class="sourcebook-context__header">
+						<p class="govuk-caption-m sourcebook-context__caption">Sourcebook</p>
+						<h2 class="govuk-heading-m sourcebook-context__title" id="sourcebook-context-title">
+							Why study readiness is governed
+						</h2>
+						<p class="govuk-body sourcebook-context__summary">
+							Sourcebook clauses require scope, consent, environment and governance checks before participant sessions
+							begin.
+						</p>
+					</div>
+					<ol class="govuk-list sourcebook-context__list">
+						<li class="sourcebook-context__item sourcebook-context__item--rule">
+							<div class="sourcebook-context__clause">
+								<span class="sourcebook-context__badge sourcebook-context__badge--rule" aria-label="Rule">R</span>
+								<div>
+									<p class="sourcebook-context__meta">SCOPE 2.1.1 · Scope</p>
+									<h3 class="govuk-heading-s sourcebook-context__clause-title">
+										<a class="govuk-link" href="/pages/sourcebook/scope/#scope-2-1-1">
+											Record a research rationale before work starts
+										</a>
+									</h3>
+								</div>
+							</div>
+						</li>
+
+						<li class="sourcebook-context__item sourcebook-context__item--rule">
+							<div class="sourcebook-context__clause">
+								<span class="sourcebook-context__badge sourcebook-context__badge--rule" aria-label="Rule">R</span>
+								<div>
+									<p class="sourcebook-context__meta">GOVERN 2.1.1 · Governance</p>
+									<h3 class="govuk-heading-s sourcebook-context__clause-title">
+										<a class="govuk-link" href="/pages/sourcebook/governance/#govern-2-1-1">
+											Complete governance triage before participant contact
+										</a>
+									</h3>
+								</div>
+							</div>
+						</li>
+
+						<li class="sourcebook-context__item sourcebook-context__item--rule">
+							<div class="sourcebook-context__clause">
+								<span class="sourcebook-context__badge sourcebook-context__badge--rule" aria-label="Rule">R</span>
+								<div>
+									<p class="sourcebook-context__meta">GOVERN 2.1.2 · Governance</p>
+									<h3 class="govuk-heading-s sourcebook-context__clause-title">
+										<a class="govuk-link" href="/pages/sourcebook/governance/#govern-2-1-2">
+											Record the method and participant risk rationale
+										</a>
+									</h3>
+								</div>
+							</div>
+						</li>
+
+						<li class="sourcebook-context__item sourcebook-context__item--rule">
+							<div class="sourcebook-context__clause">
+								<span class="sourcebook-context__badge sourcebook-context__badge--rule" aria-label="Rule">R</span>
+								<div>
+									<p class="sourcebook-context__meta">ENVIRO 1.1.2 · Environment</p>
+									<h3 class="govuk-heading-s sourcebook-context__clause-title">
+										<a class="govuk-link" href="/pages/sourcebook/environment/#enviro-1-1-2">
+											Assess the setting before research starts
+										</a>
+									</h3>
+								</div>
+							</div>
+						</li>
+
+						<li class="sourcebook-context__item sourcebook-context__item--rule">
+							<div class="sourcebook-context__clause">
+								<span class="sourcebook-context__badge sourcebook-context__badge--rule" aria-label="Rule">R</span>
+								<div>
+									<p class="sourcebook-context__meta">REC-ADMN 3.1.1 · Recruitment and administration</p>
+									<h3 class="govuk-heading-s sourcebook-context__clause-title">
+										<a class="govuk-link" href="/pages/sourcebook/recruitment-and-administration/#rec-admn-3-1-1">
+											Record informed consent before research participation
+										</a>
+									</h3>
+								</div>
+							</div>
+						</li>
+					</ol>
+				</aside>
 
 				<section
 					class="study-section study-section--flush govuk-!-margin-bottom-8"
@@ -521,12 +660,316 @@
 						</li>
 					</ul>
 				</section>
+
+				<details class="govuk-details study-sourcebook-evidence-details govuk-!-margin-bottom-8">
+					<summary class="govuk-details__summary">
+						<span class="govuk-details__summary-text">Sourcebook evidence record</span>
+					</summary>
+					<div class="govuk-details__text">
+						<section
+							class="sourcebook-evidence-ledger"
+							aria-labelledby="sourcebook-evidence-ledger-title"
+							id="sourcebook-evidence-ledger"
+						>
+							<div class="sourcebook-evidence-ledger__header">
+								<p class="govuk-caption-m sourcebook-evidence-ledger__caption">Sourcebook evidence record</p>
+								<h2 class="govuk-heading-m sourcebook-evidence-ledger__title" id="sourcebook-evidence-ledger-title">
+									Evidence checked by Sourcebook
+								</h2>
+								<p class="govuk-body sourcebook-evidence-ledger__summary">
+									This audit record shows the evidence used by the Sourcebook readiness decision.
+								</p>
+							</div>
+							<table class="govuk-table sourcebook-evidence-ledger__table">
+								<caption class="govuk-table__caption govuk-visually-hidden">Evidence checked by Sourcebook</caption>
+								<thead class="govuk-table__head">
+									<tr class="govuk-table__row">
+										<th scope="col" class="govuk-table__header">Evidence</th>
+										<th scope="col" class="govuk-table__header">Sourcebook clause</th>
+										<th scope="col" class="govuk-table__header">Status</th>
+									</tr>
+								</thead>
+								<tbody class="govuk-table__body">
+									<tr
+										class="govuk-table__row sourcebook-evidence-ledger__row sourcebook-evidence-ledger__row--present"
+										data-sourcebook-evidence-id="research-intake"
+									>
+										<th scope="row" class="govuk-table__header sourcebook-evidence-ledger__evidence">
+											<span class="sourcebook-evidence-ledger__evidence-label">Research Intake</span>
+											<span class="sourcebook-evidence-ledger__evidence-id">research-intake</span>
+										</th>
+										<td class="govuk-table__cell">
+											<ul class="govuk-list sourcebook-evidence-ledger__clauses">
+												<li>
+													<a class="govuk-link" href="/pages/sourcebook/scope/#scope-2-1-1">SCOPE 2.1.1</a>
+													<span class="sourcebook-evidence-ledger__clause-title">
+														Record a research rationale before work starts
+													</span>
+												</li>
+
+												<li>
+													<a class="govuk-link" href="/pages/sourcebook/governance/#govern-2-1-1">GOVERN 2.1.1</a>
+													<span class="sourcebook-evidence-ledger__clause-title">
+														Complete governance triage before participant contact
+													</span>
+												</li>
+											</ul>
+										</td>
+										<td class="govuk-table__cell">
+											<strong
+												class="govuk-tag sourcebook-evidence-ledger__tag sourcebook-evidence-ledger__tag--present"
+											>
+												Present
+											</strong>
+										</td>
+									</tr>
+
+									<tr
+										class="govuk-table__row sourcebook-evidence-ledger__row sourcebook-evidence-ledger__row--needed"
+										data-sourcebook-evidence-id="research-plan"
+									>
+										<th scope="row" class="govuk-table__header sourcebook-evidence-ledger__evidence">
+											<span class="sourcebook-evidence-ledger__evidence-label">Research Plan</span>
+											<span class="sourcebook-evidence-ledger__evidence-id">research-plan</span>
+										</th>
+										<td class="govuk-table__cell">
+											<ul class="govuk-list sourcebook-evidence-ledger__clauses">
+												<li>
+													<a class="govuk-link" href="/pages/sourcebook/scope/#scope-2-1-1">SCOPE 2.1.1</a>
+													<span class="sourcebook-evidence-ledger__clause-title">
+														Record a research rationale before work starts
+													</span>
+												</li>
+
+												<li>
+													<a class="govuk-link" href="/pages/sourcebook/governance/#govern-2-1-2">GOVERN 2.1.2</a>
+													<span class="sourcebook-evidence-ledger__clause-title">
+														Record the method and participant risk rationale
+													</span>
+												</li>
+											</ul>
+										</td>
+										<td class="govuk-table__cell">
+											<strong class="govuk-tag sourcebook-evidence-ledger__tag sourcebook-evidence-ledger__tag--needed">
+												Needed
+											</strong>
+										</td>
+									</tr>
+
+									<tr
+										class="govuk-table__row sourcebook-evidence-ledger__row sourcebook-evidence-ledger__row--needed"
+										data-sourcebook-evidence-id="risk-assessment"
+									>
+										<th scope="row" class="govuk-table__header sourcebook-evidence-ledger__evidence">
+											<span class="sourcebook-evidence-ledger__evidence-label">Risk Assessment</span>
+											<span class="sourcebook-evidence-ledger__evidence-id">risk-assessment</span>
+										</th>
+										<td class="govuk-table__cell">
+											<ul class="govuk-list sourcebook-evidence-ledger__clauses">
+												<li>
+													<a class="govuk-link" href="/pages/sourcebook/governance/#govern-2-1-1">GOVERN 2.1.1</a>
+													<span class="sourcebook-evidence-ledger__clause-title">
+														Complete governance triage before participant contact
+													</span>
+												</li>
+											</ul>
+										</td>
+										<td class="govuk-table__cell">
+											<strong class="govuk-tag sourcebook-evidence-ledger__tag sourcebook-evidence-ledger__tag--needed">
+												Needed
+											</strong>
+										</td>
+									</tr>
+
+									<tr
+										class="govuk-table__row sourcebook-evidence-ledger__row sourcebook-evidence-ledger__row--needed"
+										data-sourcebook-evidence-id="triage-outcome"
+									>
+										<th scope="row" class="govuk-table__header sourcebook-evidence-ledger__evidence">
+											<span class="sourcebook-evidence-ledger__evidence-label">Triage Outcome</span>
+											<span class="sourcebook-evidence-ledger__evidence-id">triage-outcome</span>
+										</th>
+										<td class="govuk-table__cell">
+											<ul class="govuk-list sourcebook-evidence-ledger__clauses">
+												<li>
+													<a class="govuk-link" href="/pages/sourcebook/governance/#govern-2-1-1">GOVERN 2.1.1</a>
+													<span class="sourcebook-evidence-ledger__clause-title">
+														Complete governance triage before participant contact
+													</span>
+												</li>
+											</ul>
+										</td>
+										<td class="govuk-table__cell">
+											<strong class="govuk-tag sourcebook-evidence-ledger__tag sourcebook-evidence-ledger__tag--needed">
+												Needed
+											</strong>
+										</td>
+									</tr>
+
+									<tr
+										class="govuk-table__row sourcebook-evidence-ledger__row sourcebook-evidence-ledger__row--needed"
+										data-sourcebook-evidence-id="method-rationale"
+									>
+										<th scope="row" class="govuk-table__header sourcebook-evidence-ledger__evidence">
+											<span class="sourcebook-evidence-ledger__evidence-label">Method Rationale</span>
+											<span class="sourcebook-evidence-ledger__evidence-id">method-rationale</span>
+										</th>
+										<td class="govuk-table__cell">
+											<ul class="govuk-list sourcebook-evidence-ledger__clauses">
+												<li>
+													<a class="govuk-link" href="/pages/sourcebook/governance/#govern-2-1-2">GOVERN 2.1.2</a>
+													<span class="sourcebook-evidence-ledger__clause-title">
+														Record the method and participant risk rationale
+													</span>
+												</li>
+											</ul>
+										</td>
+										<td class="govuk-table__cell">
+											<strong class="govuk-tag sourcebook-evidence-ledger__tag sourcebook-evidence-ledger__tag--needed">
+												Needed
+											</strong>
+										</td>
+									</tr>
+
+									<tr
+										class="govuk-table__row sourcebook-evidence-ledger__row sourcebook-evidence-ledger__row--needed"
+										data-sourcebook-evidence-id="participant-risk-rationale"
+									>
+										<th scope="row" class="govuk-table__header sourcebook-evidence-ledger__evidence">
+											<span class="sourcebook-evidence-ledger__evidence-label">Participant Risk Rationale</span>
+											<span class="sourcebook-evidence-ledger__evidence-id">participant-risk-rationale</span>
+										</th>
+										<td class="govuk-table__cell">
+											<ul class="govuk-list sourcebook-evidence-ledger__clauses">
+												<li>
+													<a class="govuk-link" href="/pages/sourcebook/governance/#govern-2-1-2">GOVERN 2.1.2</a>
+													<span class="sourcebook-evidence-ledger__clause-title">
+														Record the method and participant risk rationale
+													</span>
+												</li>
+											</ul>
+										</td>
+										<td class="govuk-table__cell">
+											<strong class="govuk-tag sourcebook-evidence-ledger__tag sourcebook-evidence-ledger__tag--needed">
+												Needed
+											</strong>
+										</td>
+									</tr>
+
+									<tr
+										class="govuk-table__row sourcebook-evidence-ledger__row sourcebook-evidence-ledger__row--needed"
+										data-sourcebook-evidence-id="environment-risk-assessment"
+									>
+										<th scope="row" class="govuk-table__header sourcebook-evidence-ledger__evidence">
+											<span class="sourcebook-evidence-ledger__evidence-label">Environment Risk Assessment</span>
+											<span class="sourcebook-evidence-ledger__evidence-id">environment-risk-assessment</span>
+										</th>
+										<td class="govuk-table__cell">
+											<ul class="govuk-list sourcebook-evidence-ledger__clauses">
+												<li>
+													<a class="govuk-link" href="/pages/sourcebook/environment/#enviro-1-1-2">ENVIRO 1.1.2</a>
+													<span class="sourcebook-evidence-ledger__clause-title">
+														Assess the setting before research starts
+													</span>
+												</li>
+											</ul>
+										</td>
+										<td class="govuk-table__cell">
+											<strong class="govuk-tag sourcebook-evidence-ledger__tag sourcebook-evidence-ledger__tag--needed">
+												Needed
+											</strong>
+										</td>
+									</tr>
+
+									<tr
+										class="govuk-table__row sourcebook-evidence-ledger__row sourcebook-evidence-ledger__row--needed"
+										data-sourcebook-evidence-id="access-needs-check"
+									>
+										<th scope="row" class="govuk-table__header sourcebook-evidence-ledger__evidence">
+											<span class="sourcebook-evidence-ledger__evidence-label">Access Needs Check</span>
+											<span class="sourcebook-evidence-ledger__evidence-id">access-needs-check</span>
+										</th>
+										<td class="govuk-table__cell">
+											<ul class="govuk-list sourcebook-evidence-ledger__clauses">
+												<li>
+													<a class="govuk-link" href="/pages/sourcebook/environment/#enviro-1-1-2">ENVIRO 1.1.2</a>
+													<span class="sourcebook-evidence-ledger__clause-title">
+														Assess the setting before research starts
+													</span>
+												</li>
+											</ul>
+										</td>
+										<td class="govuk-table__cell">
+											<strong class="govuk-tag sourcebook-evidence-ledger__tag sourcebook-evidence-ledger__tag--needed">
+												Needed
+											</strong>
+										</td>
+									</tr>
+
+									<tr
+										class="govuk-table__row sourcebook-evidence-ledger__row sourcebook-evidence-ledger__row--needed"
+										data-sourcebook-evidence-id="consent-form"
+									>
+										<th scope="row" class="govuk-table__header sourcebook-evidence-ledger__evidence">
+											<span class="sourcebook-evidence-ledger__evidence-label">Consent Form</span>
+											<span class="sourcebook-evidence-ledger__evidence-id">consent-form</span>
+										</th>
+										<td class="govuk-table__cell">
+											<ul class="govuk-list sourcebook-evidence-ledger__clauses">
+												<li>
+													<a class="govuk-link" href="/pages/sourcebook/recruitment-and-administration/#rec-admn-3-1-1">
+														REC-ADMN 3.1.1
+													</a>
+													<span class="sourcebook-evidence-ledger__clause-title">
+														Record informed consent before research participation
+													</span>
+												</li>
+											</ul>
+										</td>
+										<td class="govuk-table__cell">
+											<strong class="govuk-tag sourcebook-evidence-ledger__tag sourcebook-evidence-ledger__tag--needed">
+												Needed
+											</strong>
+										</td>
+									</tr>
+
+									<tr
+										class="govuk-table__row sourcebook-evidence-ledger__row sourcebook-evidence-ledger__row--needed"
+										data-sourcebook-evidence-id="consent-log"
+									>
+										<th scope="row" class="govuk-table__header sourcebook-evidence-ledger__evidence">
+											<span class="sourcebook-evidence-ledger__evidence-label">Consent Log</span>
+											<span class="sourcebook-evidence-ledger__evidence-id">consent-log</span>
+										</th>
+										<td class="govuk-table__cell">
+											<ul class="govuk-list sourcebook-evidence-ledger__clauses">
+												<li>
+													<a class="govuk-link" href="/pages/sourcebook/recruitment-and-administration/#rec-admn-3-1-1">
+														REC-ADMN 3.1.1
+													</a>
+													<span class="sourcebook-evidence-ledger__clause-title">
+														Record informed consent before research participation
+													</span>
+												</li>
+											</ul>
+										</td>
+										<td class="govuk-table__cell">
+											<strong class="govuk-tag sourcebook-evidence-ledger__tag sourcebook-evidence-ledger__tag--needed">
+												Needed
+											</strong>
+										</td>
+									</tr>
+								</tbody>
+							</table>
+						</section>
+					</div>
+				</details>
 			</div>
 		</main>
 		<x-include src="/partials/footer.html?v=govuk-page-chrome-20260702-1"></x-include>
 
 		<script type="module" src="/js/daas-brand-panel.js?v=leds-brand-panel-20260624"></script>
-		<script type="module" src="/js/study-page.js?v=study-evidence-summary-20260630"></script>
+		<script type="module" src="/js/study-page.js?v=study-readiness-sourcebook-20260704"></script>
 		<script type="module" src="/pages/study/study-desc-controller.js"></script>
 	</body>
 </html>

@@ -8,8 +8,11 @@
 {% from "govuk/components/textarea/macro.njk" import govukTextarea %}
 {% from "govuk/components/inset-text/macro.njk" import govukInsetText %}
 {% from "macros/daas-brand-panel.njk" import daasBrandPanel %}
+{% from "macros/sourcebook-context.njk" import SourcebookContext %}
+{% from "macros/sourcebook-evidence-ledger.njk" import SourcebookEvidenceLedger %}
+{% from "macros/sourcebook-gate.njk" import SourcebookGate %}
 
-{% set studyPageScriptVersion = "study-evidence-summary-20260630" %}
+{% set studyReadinessScriptVersion = "study-readiness-sourcebook-20260704" %}
 
 {% block head %}
 	<meta property="schema:name" content="Study — ResearchOps">
@@ -18,10 +21,11 @@
 	<meta property="dcterms:language" content="en-GB">
 	<link rel="stylesheet" href="/css/govuk/govuk-forms.css" media="screen">
 	<link rel="stylesheet" href="/css/govuk/govuk-tables.css" media="screen">
+	<link rel="stylesheet" href="/css/sourcebook-components.css" media="screen">
 	<link rel="stylesheet" href="/css/study-page.css" media="screen">
 	<link rel="stylesheet" href="/css/daas-brand-panel.css?v=leds-brand-panel-20260624" media="screen">
 	<link rel="modulepreload" href="/js/daas-brand-panel.js?v=leds-brand-panel-20260624">
-	<link rel="modulepreload" href="/js/study-page.js?v={{ studyPageScriptVersion }}">
+	<link rel="modulepreload" href="/js/study-page.js?v={{ studyReadinessScriptVersion }}">
 	<link rel="modulepreload" href="/pages/study/study-desc-controller.js">
 {% endblock %}
 
@@ -184,6 +188,7 @@
 						}
 					}) + '</div>'
 				}) }}
+				{{ SourcebookGate(sourcebookGate) }}
 			</section>
 		</div>
 
@@ -263,34 +268,36 @@
 			idPrefix: "study-setup",
 			classes: "study-setup-task-list",
 			items: [
-				{
-					title: { html: '<a id="link-consent-forms" class="govuk-link govuk-task-list__link" href="#">Create consent forms</a>' },
-					hint: { text: "Create or review Markdown and Mustache consent form templates for this study." },
-					status: { html: '<strong class="govuk-tag govuk-tag--yellow">Action needed</strong>' }
-				},
-				{
-					title: { html: '<a id="link-participant-consent" class="govuk-link govuk-task-list__link" href="#">Manage participant consent</a>' },
-					hint: { text: "Record, review or withdraw participant consent for this study." },
-					status: { html: '<strong class="govuk-tag govuk-tag--yellow">Action needed</strong>' }
-				},
-				{
-					title: { html: '<a id="link-participants" class="govuk-link govuk-task-list__link" href="#">Schedule participants</a>' },
-					hint: { text: "Add or review participants for this study." },
-					status: { html: '<strong class="govuk-tag govuk-tag--yellow">Action needed</strong>' }
-				},
-				{
-					title: { html: '<a id="link-guides" class="govuk-link govuk-task-list__link" href="#">Create or manage discussion guides</a>' },
-					hint: { text: "Create or review the guide before running a session." },
-					status: { html: '<strong class="govuk-tag govuk-tag--yellow">Action needed</strong>' }
-				},
-				{
-					title: { html: '<a id="link-note-takers-observers" class="govuk-link govuk-task-list__link" href="#">Add note takers and observers</a>' },
-					hint: { html: '<span id="study-setup-support-hint">Confirm who, if anyone, will join sessions beyond the lead researcher.</span>' },
-					status: { html: '<strong id="study-setup-support-status" class="govuk-tag govuk-tag--yellow">Action needed</strong>' }
-				}
-			]
+					{
+						title: { html: '<a id="link-consent-forms" class="govuk-link govuk-task-list__link" href="#">Create consent forms</a>' },
+						hint: { html: 'Create or review Markdown and Mustache consent form templates for this study. <span class="study-sourcebook-reference">Sourcebook: <a class="govuk-link" href="/pages/sourcebook/recruitment-and-administration/#rec-admn-3-1-1">REC-ADMN 3.1.1</a></span>' },
+						status: { html: '<strong id="study-setup-consent-forms-status" class="govuk-tag govuk-tag--yellow">Action needed</strong>' }
+					},
+					{
+						title: { html: '<a id="link-participant-consent" class="govuk-link govuk-task-list__link" href="#">Manage participant consent</a>' },
+						hint: { html: 'Record, review or withdraw participant consent for this study. <span class="study-sourcebook-reference">Sourcebook: <a class="govuk-link" href="/pages/sourcebook/recruitment-and-administration/#rec-admn-3-1-1">REC-ADMN 3.1.1</a></span>' },
+						status: { html: '<strong id="study-setup-participant-consent-status" class="govuk-tag govuk-tag--yellow">Action needed</strong>' }
+					},
+					{
+						title: { html: '<a id="link-participants" class="govuk-link govuk-task-list__link" href="#">Schedule participants</a>' },
+						hint: { html: 'Add or review participants for this study. <span class="study-sourcebook-reference">Sourcebook: <a class="govuk-link" href="/pages/sourcebook/governance/#govern-2-1-1">GOVERN 2.1.1</a></span>' },
+						status: { html: '<strong id="study-setup-participants-status" class="govuk-tag govuk-tag--yellow">Action needed</strong>' }
+					},
+					{
+						title: { html: '<a id="link-guides" class="govuk-link govuk-task-list__link" href="#">Create or manage discussion guides</a>' },
+						hint: { html: 'Create or review the guide before running a session. <span class="study-sourcebook-reference">Sourcebook: <a class="govuk-link" href="/pages/sourcebook/scope/#scope-2-1-1">SCOPE 2.1.1</a></span>' },
+						status: { html: '<strong id="study-setup-guide-status" class="govuk-tag govuk-tag--yellow">Action needed</strong>' }
+					},
+					{
+						title: { html: '<a id="link-note-takers-observers" class="govuk-link govuk-task-list__link" href="#">Add note takers and observers</a>' },
+						hint: { html: '<span id="study-setup-support-hint">Confirm who, if anyone, will join sessions beyond the lead researcher.</span> <span class="study-sourcebook-reference">Sourcebook: <a class="govuk-link" href="/pages/sourcebook/environment/#enviro-1-1-2">ENVIRO 1.1.2</a></span>' },
+						status: { html: '<strong id="study-setup-support-status" class="govuk-tag govuk-tag--yellow">Action needed</strong>' }
+					}
+				]
 		}) }}
 	</section>
+
+	{{ SourcebookContext(sourcebookContext) }}
 
 	<section class="study-section study-section--flush govuk-!-margin-bottom-8" aria-labelledby="study-analysis-title">
 		<h2 id="study-analysis-title" class="govuk-heading-m">Study analysis tasks</h2>
@@ -306,11 +313,17 @@
 			]
 		}) }}
 	</section>
+
+	{{ govukDetails({
+		classes: "study-sourcebook-evidence-details govuk-!-margin-bottom-8",
+		summaryText: "Sourcebook evidence record",
+		html: SourcebookEvidenceLedger(sourcebookEvidenceLedger)
+	}) }}
 </div>
 {% endblock %}
 
 {% block scripts %}
 	<script type="module" src="/js/daas-brand-panel.js?v=leds-brand-panel-20260624"></script>
-	<script type="module" src="/js/study-page.js?v={{ studyPageScriptVersion }}"></script>
+	<script type="module" src="/js/study-page.js?v={{ studyReadinessScriptVersion }}"></script>
 	<script type="module" src="/pages/study/study-desc-controller.js"></script>
 {% endblock %}

@@ -10,15 +10,17 @@
 					<strong data-sourcebook-gate-action>{{ params.primaryAction }}</strong>
 				</p>
 			</div>
-			<ul class="govuk-list sourcebook-gate__checks">
-				{% for check in params.checks %}
-					<li class="sourcebook-gate__check sourcebook-gate__check--{{ check.status }} sourcebook-gate__check--{{ check.id }}" data-sourcebook-check="{{ check.id }}">
-						<span class="sourcebook-gate__check-label">{{ check.label }}</span>
-						<strong class="govuk-tag sourcebook-gate__check-tag sourcebook-gate__check-tag--{{ check.status }}" data-sourcebook-check-status>{{ check.statusLabel }}</strong>
-						<span class="sourcebook-gate__check-detail" data-sourcebook-check-detail>{{ check.detail }}</span>
-					</li>
-				{% endfor %}
-			</ul>
+			{% if params.showChecks is not defined or params.showChecks %}
+				<ul class="govuk-list sourcebook-gate__checks">
+					{% for check in params.checks %}
+						<li class="sourcebook-gate__check sourcebook-gate__check--{{ check.status }} sourcebook-gate__check--{{ check.id }}" data-sourcebook-check="{{ check.id }}">
+							<span class="sourcebook-gate__check-label">{{ check.label }}</span>
+							<strong class="govuk-tag sourcebook-gate__check-tag sourcebook-gate__check-tag--{{ check.status }}" data-sourcebook-check-status>{{ check.statusLabel }}</strong>
+							<span class="sourcebook-gate__check-detail" data-sourcebook-check-detail>{{ check.detail }}</span>
+						</li>
+					{% endfor %}
+				</ul>
+			{% endif %}
 		</section>
 	{% endif %}
 {% endmacro %}

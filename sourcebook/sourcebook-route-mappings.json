@@ -22,6 +22,61 @@
 		"strength": "required"
 	},
 	{
+		"id": "map_study_readiness_scope",
+		"route": "/pages/study/",
+		"clauseId": "SCOPE 2.1.1",
+		"condition": {
+			"id": "study-readiness",
+			"label": "Study readiness",
+			"description": "Surface before a study moves from setup into participant sessions or fieldwork."
+		},
+		"strength": "required"
+	},
+	{
+		"id": "map_study_readiness_governance",
+		"route": "/pages/study/",
+		"clauseId": "GOVERN 2.1.1",
+		"condition": {
+			"id": "study-readiness",
+			"label": "Study readiness",
+			"description": "Surface before participant contact, recruitment or fieldwork begins."
+		},
+		"strength": "required"
+	},
+	{
+		"id": "map_study_readiness_method_risk",
+		"route": "/pages/study/",
+		"clauseId": "GOVERN 2.1.2",
+		"condition": {
+			"id": "study-readiness",
+			"label": "Study readiness",
+			"description": "Surface before sessions begin so method, participant risk and data handling rationale are visible."
+		},
+		"strength": "required"
+	},
+	{
+		"id": "map_study_readiness_environment",
+		"route": "/pages/study/",
+		"clauseId": "ENVIRO 1.1.2",
+		"condition": {
+			"id": "study-readiness",
+			"label": "Study readiness",
+			"description": "Surface before sessions begin so the research setting is assessed against method, access, confidentiality and safety needs."
+		},
+		"strength": "required"
+	},
+	{
+		"id": "map_study_readiness_consent",
+		"route": "/pages/study/",
+		"clauseId": "REC-ADMN 3.1.1",
+		"condition": {
+			"id": "study-readiness",
+			"label": "Study readiness",
+			"description": "Surface before live sessions start so consent evidence is visible in the readiness decision."
+		},
+		"strength": "required"
+	},
+	{
 		"id": "map_session_reminders",
 		"route": "/pages/sessions/",
 		"clauseId": "REC-ADMN 5.1.2",

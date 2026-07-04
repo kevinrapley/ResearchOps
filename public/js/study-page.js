@@ -276,6 +276,20 @@ function setReadinessItem(key, state, text) {
 	if (hint) hint.textContent = text;
 }
 
+function setSetupTaskStatus(selector, state) {
+	const status = $(selector);
+	if (!status) return;
+	status.textContent = state;
+	status.className = `govuk-tag ${readinessTagClass(state)}`;
+}
+
+function renderSetupTaskStatuses(readiness) {
+	setSetupTaskStatus("#study-setup-consent-forms-status", readiness.consentMaterials.state);
+	setSetupTaskStatus("#study-setup-participant-consent-status", readiness.participantConsent.state);
+	setSetupTaskStatus("#study-setup-participants-status", readiness.participants.state);
+	setSetupTaskStatus("#study-setup-guide-status", readiness.guide.state);
+}
+
 function blockerActionForKey(key) {
 	const actions = {
 		description: { label: "Edit the study description", selector: "#btn-edit-desc" },
@@ -412,6 +426,195 @@ function renderSessionGate(readiness, sessionHref) {
 	disableLink("#link-session", "#study-readiness-title", "Complete study readiness tasks before beginning a session.");
 }
 
+function setSourcebookStatusClass(element, prefix, status) {
+	if (!element) return;
+	for (const className of [...element.classList]) {
+		if (className.startsWith(prefix)) element.classList.remove(className);
+	}
+	element.classList.add(`${prefix}${status}`);
+}
+
+function normaliseEvidenceText(value) {
+	return String(value || "")
+		.trim()
+		.toLowerCase()
+		.replace(/[_\s]+/g, "-");
+}
+
+function hasSourcebookEvidenceRecord(records, evidenceId, aliases = []) {
+	const needles = [evidenceId, ...aliases].map(normaliseEvidenceText).filter(Boolean);
+	if (!needles.length) return false;
+	return (Array.isArray(records) ? records : []).some(record => {
+		const haystack = [
+			record.id,
+			record.evidenceId,
+			record.sourcebookEvidenceId,
+			record.type,
+			record.category,
+			record.label,
+			record.title,
+			record.summary,
+			record.note,
+			record.text,
+			record.tags,
+			Array.isArray(record.sourcebookEvidenceIds) ? record.sourcebookEvidenceIds.join(" ") : "",
+			Array.isArray(record.evidenceIds) ? record.evidenceIds.join(" ") : ""
+		]
+			.map(normaliseEvidenceText)
+			.join(" ");
+		return needles.some(needle => haystack.includes(needle));
+	});
+}
+
+function studySourcebookEvidenceIds(readiness, context = {}) {
+	const provided = new Set();
+	if (readiness.description?.ready) provided.add("research-intake");
+	const evidenceRecords = Array.isArray(context.evidence) ? context.evidence : [];
+	if (hasSourcebookEvidenceRecord(evidenceRecords, "risk-assessment", ["risk assessment", "risk-rating"])) provided.add("risk-assessment");
+	if (hasSourcebookEvidenceRecord(evidenceRecords, "triage-outcome", ["governance-triage", "scope-triage", "triage outcome"])) {
+		provided.add("triage-outcome");
+	}
+	if (readiness.guide?.ready) {
+		provided.add("research-plan");
+		provided.add("method-rationale");
+	}
+	if (readiness.participants?.ready) {
+		provided.add("participant-risk-rationale");
+		provided.add("access-needs-check");
+	}
+	if (readiness.consentMaterials?.ready) provided.add("consent-form");
+	if (readiness.participantConsent?.ready) provided.add("consent-log");
+
+	const supportSetup = context.supportSetup || {};
+	const setup = supportSetup.setup || {};
+	const supportPeople = Array.isArray(supportSetup.people) ? supportSetup.people : [];
+	if (setup.saved === true && (setup.decision === "no" || supportPeople.length > 0)) {
+		provided.add("study-roles");
+		provided.add("environment-risk-assessment");
+	}
+
+	return provided;
+}
+
+function updateSourcebookLedger(providedEvidence) {
+	const ledger = document.querySelector(".study-sourcebook-evidence-details .sourcebook-evidence-ledger, .study-page > .sourcebook-evidence-ledger");
+	const rows = ledger ? [...ledger.querySelectorAll("[data-sourcebook-evidence-id]")] : [];
+	rows.forEach(row => {
+		const evidenceId = row.getAttribute("data-sourcebook-evidence-id") || "";
+		const present = providedEvidence.has(evidenceId);
+		row.classList.toggle("sourcebook-evidence-ledger__row--present", present);
+		row.classList.toggle("sourcebook-evidence-ledger__row--needed", !present);
+		const tag = row.querySelector(".sourcebook-evidence-ledger__tag");
+		if (!tag) return;
+		tag.textContent = present ? "Present" : "Needed";
+		setSourcebookStatusClass(tag, "sourcebook-evidence-ledger__tag--", present ? "present" : "needed");
+	});
+
+	return {
+		total: rows.length,
+		present: rows.filter(row => row.classList.contains("sourcebook-evidence-ledger__row--present")).length,
+		needed: rows.filter(row => row.classList.contains("sourcebook-evidence-ledger__row--needed")).length
+	};
+}
+
+function updateSourcebookGate(readiness, providedEvidence, ledgerStatus) {
+	const gate = document.querySelector("[data-sourcebook-gate]");
+	if (!gate) return;
+	const sessionReady = isStudyReady(readiness);
+	const missingEvidence = Number(ledgerStatus?.needed || 0);
+	const ready = sessionReady && missingEvidence === 0;
+	const readinessBlockers = Object.values(readiness).filter(item => item.ready !== true).length;
+	const gateStatus = gate.querySelector("[data-sourcebook-gate-status]");
+	const gateSummary = gate.querySelector("[data-sourcebook-gate-summary]");
+	const gateAction = gate.querySelector("[data-sourcebook-gate-action]");
+	const status = ready ? "ready" : sessionReady ? "attention" : "blocked";
+
+	gate.classList.toggle("sourcebook-gate--ready", ready);
+	gate.classList.toggle("sourcebook-gate--blocked", !ready && !sessionReady);
+	gate.classList.toggle("sourcebook-gate--attention", !ready);
+
+	if (gateStatus) {
+		gateStatus.textContent = ready
+			? "Sourcebook evidence complete"
+			: sessionReady
+				? "Evidence record incomplete"
+				: "Setup tasks incomplete";
+		setSourcebookStatusClass(gateStatus, "sourcebook-gate__tag--", status);
+	}
+	if (gateSummary) {
+		if (ready) {
+			gateSummary.textContent = "Setup tasks and the Sourcebook evidence record are complete.";
+		} else if (sessionReady) {
+			gateSummary.textContent =
+				"The study can run. The Sourcebook evidence record still has missing audit evidence to review.";
+		} else {
+			gateSummary.textContent = "Complete the setup tasks before beginning a participant session.";
+		}
+	}
+	if (gateAction) {
+		if (ready) {
+			gateAction.textContent = "Continue to session with controls in place.";
+		} else if (sessionReady) {
+			gateAction.textContent = "Review the Sourcebook evidence record.";
+		} else {
+			gateAction.textContent = "Use the setup task list to complete what is missing.";
+		}
+	}
+
+	const checks = [
+		{
+			id: "sourcebook-context",
+			met: true,
+			label: "Matched",
+			detail: "5 clauses matched this study readiness route."
+		},
+		{
+			id: "evidence-readiness",
+			met: missingEvidence === 0,
+			label: missingEvidence === 0 ? "Ready" : "Evidence needed",
+			detail:
+				missingEvidence === 0
+					? "All mapped evidence items are present."
+					: `${missingEvidence} evidence item${missingEvidence === 1 ? "" : "s"} needed.`
+		},
+		{
+			id: "governance-action",
+			met: sessionReady,
+			label: ready ? "Proceed with controls" : sessionReady ? "Proceed, review evidence" : "Pause for setup",
+			detail:
+				ready
+					? "The study can proceed because readiness checks and required Sourcebook evidence are complete."
+					: sessionReady
+						? `${missingEvidence} Sourcebook evidence ${missingEvidence === 1 ? "item" : "items"} need audit review, but setup tasks are complete.`
+						: `${readinessBlockers} readiness ${readinessBlockers === 1 ? "task" : "tasks"} and ${missingEvidence} Sourcebook evidence ${missingEvidence === 1 ? "item" : "items"} need attention.`
+		}
+	];
+
+	for (const check of checks) {
+		const item = gate.querySelector(`[data-sourcebook-check="${check.id}"]`);
+		if (!item) continue;
+		const checkStatus = item.querySelector("[data-sourcebook-check-status]");
+		const checkDetail = item.querySelector("[data-sourcebook-check-detail]");
+		item.classList.toggle("sourcebook-gate__check--met", check.met);
+		item.classList.toggle("sourcebook-gate__check--unmet", !check.met);
+		if (checkStatus) {
+			checkStatus.textContent = check.label;
+			setSourcebookStatusClass(checkStatus, "sourcebook-gate__check-tag--", check.met ? "met" : "unmet");
+		}
+		if (checkDetail) checkDetail.textContent = check.detail;
+	}
+
+	if (!providedEvidence.size && gateSummary) {
+		gateSummary.textContent = "Checking whether the study can begin participant sessions.";
+	}
+}
+
+function updateSourcebookAssurance(readiness, context = {}) {
+	const providedEvidence = studySourcebookEvidenceIds(readiness, context);
+	const ledgerStatus = updateSourcebookLedger(providedEvidence);
+	updateSourcebookGate(readiness, providedEvidence, ledgerStatus);
+}
+
 function renderReadiness(study, context, sessionHref) {
 	const readiness = evaluateReadiness(study, context);
 
@@ -421,7 +624,9 @@ function renderReadiness(study, context, sessionHref) {
 	setReadinessItem("guide", readiness.guide.state, readiness.guide.text);
 	setReadinessItem("consent-materials", readiness.consentMaterials.state, readiness.consentMaterials.text);
 	setReadinessItem("participant-consent", readiness.participantConsent.state, readiness.participantConsent.text);
+	renderSetupTaskStatuses(readiness);
 	renderSessionGate(readiness, sessionHref);
+	updateSourcebookAssurance(readiness, context);
 }
 
 function pluralise(count, singular, plural = `${singular}s`) {

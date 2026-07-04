@@ -22,7 +22,6 @@ const CONFIG = Object.freeze({
 		startEdit: 'Editing description. Press Save to apply or Cancel to discard.',
 		saving: 'Saving description…',
 		saved: 'Description saved.',
-		cancelled: 'Edit cancelled.',
 		error: 'We could not save the description. Try again.'
 	}
 });
@@ -123,7 +122,7 @@ class StudyDescController {
 	cancel() {
 		if (!this.state.editing) return;
 		this._teardown(false);
-		this._status(CONFIG.statusMsgs.cancelled);
+		this._status('');
 	}
 
 	/** Save: optimistic render + API or event. */
@@ -355,6 +354,7 @@ const ctrl = new StudyDescController({
 	formSel: '#desc-editor',
 	textareaSel: '#desc-input',
 	cancelBtnSel: '#desc-cancel',
+	statusSel: '#desc-status',
 	// If your page root has data-study-id on a parent container, the controller will pick it up.
 	// Provide your API route if you want automatic persistence:
 	// saveUrl: '/api/studies/:id'

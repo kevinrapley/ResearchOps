@@ -111,6 +111,71 @@
 }
 
 // prettier-ignore
+.study-sourcebook-context {
+	max-width: none;
+	margin-top: -24px;
+	margin-bottom: 50px;
+}
+
+// prettier-ignore
+.study-sourcebook-reference {
+	display: block;
+	margin-top: 5px;
+	color: #505a5f;
+	font-size: 16px;
+	line-height: 1.25;
+}
+
+// prettier-ignore
+.study-sourcebook-context .sourcebook-context__meta,
+.study-sourcebook-context .sourcebook-context__text,
+.study-sourcebook-context .sourcebook-context__condition {
+	overflow-wrap: anywhere;
+}
+
+// prettier-ignore
+.sourcebook-context--compact .sourcebook-context__summary {
+	max-width: 760px;
+}
+
+// prettier-ignore
+.sourcebook-context--compact .sourcebook-context__list {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: 16px 24px;
+	margin-bottom: 0;
+}
+
+// prettier-ignore
+.sourcebook-context--compact .sourcebook-context__item {
+	margin-bottom: 0;
+	padding-top: 0;
+	border-top: 0;
+}
+
+// prettier-ignore
+.sourcebook-context--compact .sourcebook-context__text,
+.sourcebook-context--compact .sourcebook-context__condition {
+	display: none;
+}
+
+// prettier-ignore
+.study-session-gate-section .sourcebook-gate {
+	max-width: none;
+	margin-top: 24px;
+	margin-bottom: 0;
+}
+
+// prettier-ignore
+.study-sourcebook-evidence-details .sourcebook-evidence-ledger,
+.study-page > .sourcebook-evidence-ledger {
+	max-width: none;
+	border-top: 5px solid #1d70b8;
+	margin-top: 0;
+	padding-top: 20px;
+}
+
+// prettier-ignore
 .study-session-button.govuk-button--disabled,
 .study-session-button[aria-disabled="true"] {
 	pointer-events: none;
@@ -323,6 +388,19 @@
 
 // prettier-ignore
 @media (max-width: 900px) {
+	.study-overview-grid > .govuk-grid-column-one-half {
+		float: none;
+		width: 100%;
+	}
+
+	.study-sourcebook-context {
+		margin-bottom: 30px;
+	}
+
+	.sourcebook-context--compact .sourcebook-context__list {
+		grid-template-columns: 1fr;
+	}
+
 	.study-readiness-task-list .govuk-task-list__item {
 		grid-template-columns: 1fr;
 	}

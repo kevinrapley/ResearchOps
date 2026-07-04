@@ -1,0 +1,355 @@
+{
+  "date": "2026-07-04",
+  "branch": "feature/study-readiness-sourcebook",
+  "task": "Apply Sourcebook components locally to the study readiness page for preview review.",
+  "operatingModel": {
+    "loaded": [
+      "AGENTS.md",
+      ".agent-operating-model/orchestration.xml",
+      ".agent-operating-model/bundle-registry.json",
+      ".agent-operating-model/task-signal-catalog.json",
+      ".agent-operating-model/selection-rules.json",
+      ".agent-operating-model/precedence-policy.md"
+    ],
+    "selectedBundles": [
+      ".agent-operating-model/bundles/github/",
+      ".agent-operating-model/bundles/researchops-developer-control/",
+      ".agent-operating-model/bundles/multi-functional-team/",
+      ".agent-operating-model/bundles/govuk-design-system/"
+    ],
+    "skippedBundles": [
+      ".agent-operating-model/bundles/cloudflare/",
+      ".agent-operating-model/bundles/openai/",
+      ".agent-operating-model/bundles/mcp-agent-tooling/",
+      ".agent-operating-model/bundles/airtable-public-api/",
+      ".agent-operating-model/bundles/mural-public-api/"
+    ],
+    "traceDecision": "Trace required because the repository-affecting work is on feature/study-readiness-sourcebook."
+  },
+  "changes": [
+    "Added /pages/study/ Sourcebook mappings for study readiness across scope, governance triage and consent clauses.",
+    "Added Sourcebook context, readiness gate and evidence ledger to the study page.",
+    "Connected the study page controller so Sourcebook gate and ledger statuses update from live study readiness evidence.",
+    "Reused the shared Sourcebook styles in the study page stylesheet and added study-specific layout rules.",
+    "Regenerated GOV.UK pages and generated CSS outputs for local preview.",
+    "Revised the integration after team review so Sourcebook evidence is conservative, the gate follows ledger evidence as well as readiness, the context appears before the readiness task list, and the study route includes method/risk and environment readiness clauses.",
+    "Revised the layout after interaction-design review so the compact Sourcebook context sits directly after the session gate, long clause text is hidden in the compact context, and the right column is reserved for readiness and evidence summary content.",
+    "Reordered the study readiness page so Study setup tasks appear before the compact Sourcebook context, keeping the governance explanation as supporting context after the main operational checklist.",
+    "Consolidated Sourcebook with the existing study page content so the gate is a short session-start decision, setup tasks carry inline Sourcebook references, the rationale block is title-only, and the evidence ledger sits behind a GOV.UK details disclosure as an audit record.",
+    "Removed the unnecessary visible \"Edit cancelled.\" description edit status and wired the controller to the existing status region so it does not create a duplicate live region.",
+    "Updated the local preview helper at /Users/kevin.rapley/.hermes/scripts/serve_research_operations.py so http://127.0.0.1:8082 serves the seeded discussion guide for rect3o7dt through /api/guides, plus the study support and consent endpoints needed by this local preview.",
+    "Restarted the local preview on http://127.0.0.1:8082 from the current working-copy public/ directory so the live page includes the Sourcebook markup instead of the older /Users/kevin.rapley/ResearchOps/public output.",
+    "Added a generated /css/sourcebook-components.css stylesheet for shared Sourcebook components and linked it from the study page before /css/study-page.css, leaving route-specific spacing overrides in the study stylesheet.",
+    "Reconciled the study readiness page states so Study setup task tags are driven by the same readiness evaluation as the Study readiness summary, and Sourcebook audit incompleteness no longer says the study is not ready to begin sessions.",
+    "Reconciled the Sourcebook evidence record with the same readiness signals so completed setup/readiness items mark the mapped evidence rows as present instead of leaving a contradictory audit state.",
+    "Moved the final PR work onto feature/study-readiness-sourcebook from current origin/main after PR #463 was merged, preserving the local study readiness changes while avoiding reuse of the merged participant-consent branch.",
+    "Addressed Codex review on PR #464 by requiring loaded evidence records before risk-assessment and triage-outcome rows become present, so a normal study status no longer counts as governance evidence.",
+    "Addressed Codex review on PR #464 by adding public/css/sourcebook-components.css to the generated CSS format workflow allowlist."
+  ],
+  "validation": [
+    {
+      "command": "npm run build:generated-css",
+      "result": "passed"
+    },
+    {
+      "command": "npm run build:govuk-pages",
+      "result": "passed"
+    },
+    {
+      "command": "node --test tests/study-page-route-state.test.js tests/sourcebook-context-route-state.test.js",
+      "result": "passed",
+      "details": "6 tests passed."
+    },
+    {
+      "command": "node --test tests/study-page-route-state.test.js tests/sourcebook-context-route-state.test.js tests/sourcebook-api.test.js tests/sourcebook-api-route-state.test.js",
+      "result": "passed",
+      "details": "23 tests passed."
+    },
+    {
+      "command": "npx prettier -c sourcebook/sourcebook-route-mappings.json scripts/govuk/render-govuk-pages.mjs public/js/study-page.js src/styles/study-page.scss tests/study-page-route-state.test.js tests/sourcebook-context-route-state.test.js docs/agent-audit/reasoning/2026/07/04/study-readiness-sourcebook-local.md docs/agent-audit/reasoning/2026/07/04/study-readiness-sourcebook-local.json",
+      "result": "passed"
+    },
+    {
+      "command": "npm run trace:coverage",
+      "result": "passed"
+    },
+    {
+      "command": "git diff --check",
+      "result": "passed"
+    },
+    {
+      "command": "Playwright rendered checks at 1272x739, 700x900 and 390x858",
+      "result": "passed",
+      "details": "Confirmed desktop Sourcebook rail layout, tablet/mobile stacking and no horizontal overflow."
+    },
+    {
+      "command": "npm run validate",
+      "result": "passed"
+    },
+    {
+      "command": "node --test tests/study-page-route-state.test.js tests/sourcebook-context-route-state.test.js tests/sourcebook-api.test.js tests/sourcebook-api-route-state.test.js",
+      "result": "passed",
+      "details": "23 tests passed after the team-review revision."
+    },
+    {
+      "command": "Playwright rendered checks at 1272x739, 900x900, 700x900 and 390x858",
+      "result": "passed",
+      "details": "Confirmed the gate reports missing evidence, the ledger has both present and needed states, Sourcebook context precedes the readiness list, and no horizontal overflow is introduced."
+    },
+    {
+      "command": "node --test tests/study-page-route-state.test.js tests/sourcebook-context-route-state.test.js tests/sourcebook-api.test.js tests/sourcebook-api-route-state.test.js",
+      "result": "passed",
+      "details": "23 tests passed after the interaction-design layout revision."
+    },
+    {
+      "command": "Playwright rendered checks at 1272x739, 900x900, 700x900 and 390x858",
+      "result": "passed",
+      "details": "Confirmed Sourcebook context follows the session gate, long clause text is hidden in compact mode and no horizontal overflow is introduced."
+    },
+    {
+      "command": "npx prettier -c sourcebook/sourcebook-route-mappings.json scripts/govuk/render-govuk-pages.mjs public/js/study-page.js src/styles/study-page.scss tests/study-page-route-state.test.js tests/sourcebook-context-route-state.test.js docs/agent-audit/reasoning/2026/07/04/study-readiness-sourcebook-local.md docs/agent-audit/reasoning/2026/07/04/study-readiness-sourcebook-local.json",
+      "result": "passed",
+      "details": "Passed after the interaction-design layout revision."
+    },
+    {
+      "command": "npm run trace:coverage",
+      "result": "passed",
+      "details": "Passed after the interaction-design layout revision."
+    },
+    {
+      "command": "git diff --check",
+      "result": "passed",
+      "details": "Passed after the interaction-design layout revision."
+    },
+    {
+      "command": "npm run validate",
+      "result": "passed",
+      "details": "Passed after the interaction-design layout revision."
+    },
+    {
+      "command": "npm run build:generated-css",
+      "result": "passed",
+      "details": "Passed after the setup-first reorder."
+    },
+    {
+      "command": "npm run build:govuk-pages",
+      "result": "passed",
+      "details": "Passed after the setup-first reorder."
+    },
+    {
+      "command": "node --test tests/study-page-route-state.test.js tests/sourcebook-context-route-state.test.js tests/sourcebook-api.test.js tests/sourcebook-api-route-state.test.js",
+      "result": "passed",
+      "details": "23 tests passed after the setup-first reorder."
+    },
+    {
+      "command": "npx prettier -c src/styles/study-page.scss tests/study-page-route-state.test.js public/css/study-page.css public/pages/study/index.html docs/agent-audit/reasoning/2026/07/04/study-readiness-sourcebook-local.md docs/agent-audit/reasoning/2026/07/04/study-readiness-sourcebook-local.json",
+      "result": "passed",
+      "details": "Passed after the setup-first reorder."
+    },
+    {
+      "command": "Playwright rendered checks at 1272x739, 900x900, 700x900 and 390x858",
+      "result": "passed",
+      "details": "Confirmed Study setup tasks appear before Sourcebook context, Sourcebook context appears before Study analysis tasks, and no document-level horizontal scrolling is introduced."
+    },
+    {
+      "command": "npm run trace:coverage",
+      "result": "passed",
+      "details": "Passed after the setup-first reorder."
+    },
+    {
+      "command": "git diff --check",
+      "result": "passed",
+      "details": "Passed after the setup-first reorder."
+    },
+    {
+      "command": "npm run validate",
+      "result": "passed",
+      "details": "Passed after the setup-first reorder."
+    },
+    {
+      "command": "npm run build:generated-css",
+      "result": "passed",
+      "details": "Passed after the Sourcebook consolidation."
+    },
+    {
+      "command": "npm run build:govuk-pages",
+      "result": "passed",
+      "details": "Passed after the Sourcebook consolidation."
+    },
+    {
+      "command": "node --test tests/study-page-route-state.test.js tests/sourcebook-context-route-state.test.js tests/sourcebook-api.test.js tests/sourcebook-api-route-state.test.js",
+      "result": "passed",
+      "details": "23 tests passed after the Sourcebook consolidation."
+    },
+    {
+      "command": "npx prettier -c src/govuk/data/sourcebook.mjs scripts/govuk/render-govuk-pages.mjs public/js/study-page.js src/styles/study-page.scss tests/study-page-route-state.test.js public/css/study-page.css public/pages/study/index.html",
+      "result": "passed",
+      "details": "Passed after the Sourcebook consolidation."
+    },
+    {
+      "command": "Playwright rendered checks at 1272x739, 900x900, 700x900 and 390x858",
+      "result": "passed",
+      "details": "Confirmed the gate has no internal Sourcebook checklist, setup tasks include 5 inline Sourcebook references, rationale text and conditions are hidden in compact context, the evidence record is collapsed, and no horizontal scrolling is introduced."
+    },
+    {
+      "command": "npx prettier -c src/govuk/data/sourcebook.mjs scripts/govuk/render-govuk-pages.mjs public/js/study-page.js src/styles/study-page.scss tests/study-page-route-state.test.js public/css/study-page.css public/pages/study/index.html docs/agent-audit/reasoning/2026/07/04/study-readiness-sourcebook-local.md docs/agent-audit/reasoning/2026/07/04/study-readiness-sourcebook-local.json",
+      "result": "passed",
+      "details": "Passed after the Sourcebook consolidation."
+    },
+    {
+      "command": "npm run trace:coverage",
+      "result": "passed",
+      "details": "Passed after the Sourcebook consolidation."
+    },
+    {
+      "command": "git diff --check",
+      "result": "passed",
+      "details": "Passed after the Sourcebook consolidation."
+    },
+    {
+      "command": "npm run validate",
+      "result": "passed",
+      "details": "Passed after the Sourcebook consolidation."
+    },
+    {
+      "command": "node --test tests/study-page-route-state.test.js",
+      "result": "passed",
+      "details": "Passed after removing the description cancel status."
+    },
+    {
+      "command": "npx prettier -c public/pages/study/study-desc-controller.js tests/study-page-route-state.test.js",
+      "result": "passed",
+      "details": "Passed after removing the description cancel status."
+    },
+    {
+      "command": "Playwright rendered Edit description then Cancel check",
+      "result": "passed",
+      "details": "Confirmed there is one empty #desc-status region after cancel and no visible \"Edit cancelled.\" text."
+    },
+    {
+      "command": "npx prettier -c public/pages/study/study-desc-controller.js tests/study-page-route-state.test.js docs/agent-audit/reasoning/2026/07/04/study-readiness-sourcebook-local.md docs/agent-audit/reasoning/2026/07/04/study-readiness-sourcebook-local.json",
+      "result": "passed",
+      "details": "Passed after removing the description cancel status."
+    },
+    {
+      "command": "npm run trace:coverage",
+      "result": "passed",
+      "details": "Passed after removing the description cancel status."
+    },
+    {
+      "command": "git diff --check",
+      "result": "passed",
+      "details": "Passed after removing the description cancel status."
+    },
+    {
+      "command": "npm run validate",
+      "result": "passed",
+      "details": "Passed after removing the description cancel status."
+    },
+    {
+      "command": "python3 -m py_compile /Users/kevin.rapley/.hermes/scripts/serve_research_operations.py",
+      "result": "passed",
+      "details": "Passed after adding the local preview guide and support endpoints."
+    },
+    {
+      "command": "curl http://127.0.0.1:8082/api/guides?study=rect3o7dt",
+      "result": "passed",
+      "details": "Returned the published v1 guide and draft New guide rows from data/discussion-guides.csv."
+    },
+    {
+      "command": "curl http://127.0.0.1:8082/api/study-support?study=rect3o7dt",
+      "result": "passed",
+      "details": "Returned a saved local support setup with no additional session support people."
+    },
+    {
+      "command": "Playwright rendered study readiness check on http://127.0.0.1:8082/pages/study/?id=rect3o7dt",
+      "result": "passed",
+      "details": "Confirmed guide status Ready, support status Ready, session gate summary This study is ready to run, no 1 setup task needs attention text, visible begin session link, and no failed page requests."
+    },
+    {
+      "command": "Playwright rendered Sourcebook component check on http://127.0.0.1:8082/pages/study/?id=rect3o7dt",
+      "result": "passed",
+      "details": "After correcting the preview root, confirmed the live page includes [data-sourcebook-gate], .study-sourcebook-context and .study-sourcebook-evidence-details while retaining the ready study data and no failed page requests."
+    },
+    {
+      "command": "npm run build:generated-css",
+      "result": "passed",
+      "details": "Passed after adding the Sourcebook component stylesheet target."
+    },
+    {
+      "command": "npm run build:govuk-pages",
+      "result": "passed",
+      "details": "Passed after linking /css/sourcebook-components.css from the study page."
+    },
+    {
+      "command": "Playwright stylesheet check on http://127.0.0.1:8082/pages/study/?id=rect3o7dt",
+      "result": "passed",
+      "details": "Confirmed /css/sourcebook-components.css loads with HTTP 200 and the Sourcebook gate and context receive the expected component background, left border and spacing."
+    },
+    {
+      "command": "node --test tests/study-page-route-state.test.js tests/sourcebook-context-route-state.test.js",
+      "result": "passed",
+      "details": "6 tests passed after updating the stylesheet contract assertions."
+    },
+    {
+      "command": "npx prettier -c src/styles/sourcebook-components.scss scripts/styles/generated-css-targets.mjs src/styles/study-page.scss tests/study-page-route-state.test.js public/css/sourcebook-components.css public/css/study-page.css public/pages/study/index.html",
+      "result": "passed"
+    },
+    {
+      "command": "npm run build:govuk-pages",
+      "result": "passed",
+      "details": "Passed after replacing contradictory Sourcebook gate copy and wiring setup task statuses."
+    },
+    {
+      "command": "node --test tests/study-page-route-state.test.js tests/sourcebook-context-route-state.test.js",
+      "result": "passed",
+      "details": "6 tests passed after adding the Sourcebook attention status and setup task status assertions."
+    },
+    {
+      "command": "Playwright study readiness agreement check on http://127.0.0.1:8082/pages/study/?id=rect3o7dt",
+      "result": "passed",
+      "details": "Confirmed Study setup statuses match Study readiness statuses, session gate says This study is ready to run, Sourcebook says Evidence record incomplete, and the live page no longer contains No gate required or Not ready to begin sessions."
+    },
+    {
+      "command": "npx prettier -c src/govuk/data/sourcebook.mjs scripts/govuk/render-govuk-pages.mjs public/js/study-page.js tests/study-page-route-state.test.js tests/sourcebook-context-route-state.test.js public/pages/study/index.html",
+      "result": "passed"
+    },
+    {
+      "command": "node --test tests/study-page-route-state.test.js tests/sourcebook-context-route-state.test.js",
+      "result": "passed",
+      "details": "6 tests passed after mapping readiness signals to the Sourcebook evidence ledger."
+    },
+    {
+      "command": "Playwright Sourcebook evidence agreement check on http://127.0.0.1:8082/pages/study/?id=rect3o7dt",
+      "result": "passed",
+      "details": "Confirmed Study readiness and Study setup tasks are ready, Sourcebook evidence is complete, all visible evidence ledger rows are Present, and there are no failed page requests."
+    },
+    {
+      "command": "npx prettier -c public/js/study-page.js tests/study-page-route-state.test.js",
+      "result": "passed"
+    },
+    {
+      "command": "node --test tests/study-page-route-state.test.js tests/sourcebook-context-route-state.test.js",
+      "result": "passed",
+      "details": "6 tests passed after PR #464 Codex review remediation."
+    },
+    {
+      "command": "npx prettier -c .github/workflows/format-pr.yml public/js/study-page.js tests/study-page-route-state.test.js",
+      "result": "passed",
+      "details": "Passed after PR #464 Codex review remediation."
+    },
+    {
+      "command": "git diff --check",
+      "result": "passed",
+      "details": "Passed after PR #464 Codex review remediation."
+    },
+    {
+      "command": "Playwright preview smoke on http://127.0.0.1:8082/pages/study/?id=rect3o7dt",
+      "result": "passed",
+      "details": "Confirmed setup tasks remain ready, Sourcebook shows Evidence record incomplete, risk-assessment and triage-outcome remain Needed without loaded evidence records, /css/sourcebook-components.css loads, and no failed page requests were observed."
+    }
+  ],
+  "residualRisk": [
+    "No known residual implementation risk. CI remains the authoritative post-push validation gate after the PR is opened."
+  ]
+}
