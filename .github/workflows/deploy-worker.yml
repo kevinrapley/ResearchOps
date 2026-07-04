@@ -32,6 +32,8 @@ env:
   WRANGLER_PREVIEW_CONFIG: "infra/cloudflare/wrangler.preview.toml"
   D1_DATABASE_NAME: "researchops-d1"
   D1_PREVIEW_DATABASE_NAME: "researchops-d1-preview"
+  DOCUMENTS_R2_BUCKET: "researchops-documents"
+  DOCUMENTS_R2_PREVIEW_BUCKET: "researchops-documents-preview"
   AUTH_FOUNDATION_MIGRATION: "infra/cloudflare/migrations/0001_auth_foundation.sql"
   ROLE_ASSIGNMENT_ROUTE_MIGRATION: "infra/cloudflare/migrations/0002_auth_role_assignment_route.sql"
   PASSWORDLESS_MIGRATION: "infra/cloudflare/migrations/0003_auth_passwordless_sessions.sql"
@@ -129,6 +131,35 @@ jobs:
             --remote \
             --config "${WRANGLER_CONFIG}" \
             --file "${SECURITY_REVIEW_ROUTE_PERMISSIONS_MIGRATION}"
+
+      - name: Ensure production R2 documents bucket exists
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+        run: |
+          npx --yes wrangler@${WRANGLER_VERSION} r2 bucket list --json > r2-buckets.json
+          python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          target_name = os.environ["DOCUMENTS_R2_BUCKET"]
+          data = json.loads(Path("r2-buckets.json").read_text())
+          buckets = data.get("result") if isinstance(data, dict) else data
+          exists = any(bucket.get("name") == target_name for bucket in buckets or [])
+
+          with open(os.environ["GITHUB_ENV"], "a", encoding="utf-8") as env_file:
+              env_file.write(f"NEED_CREATE_DOCUMENTS_R2_BUCKET={'false' if exists else 'true'}\n")
+
+          print(f"R2 bucket {target_name} {'already exists' if exists else 'does not exist yet'}.")
+          PY
+
+      - name: Create production R2 documents bucket
+        if: env.NEED_CREATE_DOCUMENTS_R2_BUCKET == 'true'
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+        run: npx --yes wrangler@${WRANGLER_VERSION} r2 bucket create "${DOCUMENTS_R2_BUCKET}"
 
       - name: Deploy Worker with production secrets
         uses: cloudflare/wrangler-action@v4
@@ -346,6 +377,7 @@ jobs:
           content = replace_once(content, 'name                = "rops-api"', 'name                = "rops-api-passwordless-preview"')
           content = replace_once(content, 'database_name = "researchops-d1"', 'database_name = "researchops-d1-preview"')
           content = replace_once(content, 'database_id = "48b35a2e-52e8-4bc0-a8cf-88a7a1536f04"', f'database_id = "{preview_database_id}"')
+          content = replace_once(content, 'bucket_name         = "researchops-documents"', f'bucket_name         = "{os.environ["DOCUMENTS_R2_PREVIEW_BUCKET"]}"')
           content = replace_once(content, 'RESEARCHOPS_BUILD_SHA = "local"', f'RESEARCHOPS_BUILD_SHA = "{os.environ["GITHUB_SHA"]}"')
           content = replace_once(content, 'RESEARCHOPS_BUILD_BRANCH = "local"', f'RESEARCHOPS_BUILD_BRANCH = "{os.environ["GITHUB_REF_NAME"]}"')
           preview_allowed_origins = (
@@ -436,6 +468,35 @@ jobs:
             --remote \
             --config "${WRANGLER_PREVIEW_CONFIG}" \
             --file "${REPOSITORY_SEED_CLEANUP_MIGRATION}"
+
+      - name: Ensure preview R2 documents bucket exists
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+        run: |
+          npx --yes wrangler@${WRANGLER_VERSION} r2 bucket list --json > r2-buckets.json
+          python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          target_name = os.environ["DOCUMENTS_R2_PREVIEW_BUCKET"]
+          data = json.loads(Path("r2-buckets.json").read_text())
+          buckets = data.get("result") if isinstance(data, dict) else data
+          exists = any(bucket.get("name") == target_name for bucket in buckets or [])
+
+          with open(os.environ["GITHUB_ENV"], "a", encoding="utf-8") as env_file:
+              env_file.write(f"NEED_CREATE_DOCUMENTS_R2_PREVIEW_BUCKET={'false' if exists else 'true'}\n")
+
+          print(f"R2 bucket {target_name} {'already exists' if exists else 'does not exist yet'}.")
+          PY
+
+      - name: Create preview R2 documents bucket
+        if: env.NEED_CREATE_DOCUMENTS_R2_PREVIEW_BUCKET == 'true'
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+        run: npx --yes wrangler@${WRANGLER_VERSION} r2 bucket create "${DOCUMENTS_R2_PREVIEW_BUCKET}"
 
       - name: Deploy preview Worker with secrets
         uses: cloudflare/wrangler-action@v4
