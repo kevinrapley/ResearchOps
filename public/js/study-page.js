@@ -312,7 +312,30 @@ function blockerActionForKey(key) {
 	return actions[key] || { label: key.replace(/[A-Z]/g, match => ` ${match.toLowerCase()}`), selector: "" };
 }
 
-function renderSessionGatePanel(ready, blockedKeys) {
+function ethicsEscalationAction(readiness = {}) {
+	const ethicsRisk = readiness.ethicsRisk || {};
+	if (ethicsRisk.route === "ethics-board-submission-likely") {
+		return {
+			label: "Review ethics submission route",
+			message:
+				"The ethics and research risk assessment is complete. Follow the ethics submission route before starting fieldwork."
+		};
+	}
+	if (ethicsRisk.route === "sensitive-research-controls") {
+		return {
+			label: "Review sensitive research controls",
+			message:
+				"The ethics and research risk assessment is complete. Record the required controls before starting fieldwork."
+		};
+	}
+	return {
+		label: "Review ethics advice route",
+		message:
+			"The ethics and research risk assessment is complete. Follow the ethics advice route before starting fieldwork."
+	};
+}
+
+function renderSessionGatePanel(ready, blockedKeys, escalationKeys, readiness = {}) {
 	const summary = $("#study-session-gate-summary");
 	const message = $("#study-session-gate-message");
 	const blockers = $("#study-session-blockers");
@@ -326,6 +349,21 @@ function renderSessionGatePanel(ready, blockedKeys) {
 		message.textContent = "All required setup tasks are complete. Begin a session when you are ready to start fieldwork.";
 		blockers.hidden = true;
 		blockers.replaceChildren();
+		return;
+	}
+
+	if (blockedKeys.length === 0 && escalationKeys.includes("ethicsRisk")) {
+		const escalation = ethicsEscalationAction(readiness);
+		summary.textContent = readiness.ethicsRisk?.state || "Ethics advice needed";
+		message.textContent = escalation.message;
+		blockers.hidden = false;
+		const item = document.createElement("li");
+		const link = document.createElement("a");
+		link.textContent = escalation.label;
+		const target = $("#link-ethics-risk");
+		link.href = target?.href || "#study-readiness-title";
+		item.append(link);
+		blockers.replaceChildren(item);
 		return;
 	}
 
@@ -375,6 +413,11 @@ function evaluateReadiness(study, context = {}) {
 	const consentMaterialsReady = consentForms.some(isPublishedLike);
 	const readyParticipantConsent = participantConsentRecords.filter(isParticipantConsentReady);
 	const participantConsentReady = readyParticipantConsent.length > 0;
+	const ethicsRiskRoute = studyEthicsRisk.route || "";
+	const ethicsRiskRecorded =
+		studyEthicsRisk.started === true &&
+		!["incomplete-assessment", "not-assessed", "not-recorded"].includes(ethicsRiskRoute);
+	const ethicsRiskReady = studyEthicsRisk.ready === true;
 
 	return {
 		description: {
@@ -388,7 +431,10 @@ function evaluateReadiness(study, context = {}) {
 			text: hasStatus ? `Study status is ${status}.` : "Set the study status before running sessions."
 		},
 		ethicsRisk: {
-			ready: studyEthicsRisk.ready === true,
+			ready: ethicsRiskReady,
+			setupComplete: ethicsRiskRecorded || ethicsRiskReady,
+			escalationRequired: ethicsRiskRecorded && !ethicsRiskReady,
+			route: ethicsRiskRoute,
 			state: studyEthicsRisk.readinessState || "Action needed",
 			text: studyEthicsRisk.started
 				? `${studyEthicsRisk.statusLabel}. ${studyEthicsRisk.summary}`
@@ -421,18 +467,36 @@ function isStudyReady(readiness) {
 	return Object.values(readiness).every(item => item.ready === true);
 }
 
+function isSetupTaskIncomplete(key, item = {}) {
+	if (key === "ethicsRisk") return item.setupComplete !== true;
+	return item.ready !== true;
+}
+
 function renderSessionGate(readiness, sessionHref) {
 	const ready = isStudyReady(readiness);
 	const blockedKeys = Object.entries(readiness)
-		.filter(([, item]) => item.ready !== true)
+		.filter(([key, item]) => isSetupTaskIncomplete(key, item))
+		.map(([key]) => key);
+	const escalationKeys = Object.entries(readiness)
+		.filter(([, item]) => item.ready !== true && item.escalationRequired === true)
 		.map(([key]) => key);
 	const blockedReasons = blockedKeys.map(key => key.replace(/[A-Z]/g, match => ` ${match.toLowerCase()}`));
 
-	renderSessionGatePanel(ready, blockedKeys);
+	renderSessionGatePanel(ready, blockedKeys, escalationKeys, readiness);
 
 	if (ready) {
 		setReadinessItem("session", "Available", "Open the session workspace when the study setup is ready.");
 		enableLink("#link-session", sessionHref);
+		return;
+	}
+
+	if (blockedKeys.length === 0 && escalationKeys.includes("ethicsRisk")) {
+		setReadinessItem(
+			"session",
+			"Not available yet",
+			"Follow the ethics advice route before beginning a session."
+		);
+		disableLink("#link-session", "#study-readiness-title", "Complete the ethics advice route before beginning a session.");
 		return;
 	}
 
@@ -551,14 +615,17 @@ function updateSourcebookGate(readiness, providedEvidence, ledgerStatus) {
 	const sessionReady = isStudyReady(readiness);
 	const missingEvidence = Number(ledgerStatus?.needed || 0);
 	const ready = sessionReady && missingEvidence === 0;
-	const readinessBlockers = Object.values(readiness).filter(item => item.ready !== true).length;
+	const setupBlockers = Object.entries(readiness).filter(([key, item]) => isSetupTaskIncomplete(key, item));
+	const escalationBlockers = Object.values(readiness).filter(item => item.ready !== true && item.escalationRequired === true);
+	const hasEscalationOnly = setupBlockers.length === 0 && escalationBlockers.length > 0;
+	const readinessBlockers = setupBlockers.length + escalationBlockers.length;
 	const gateStatus = gate.querySelector("[data-sourcebook-gate-status]");
 	const gateSummary = gate.querySelector("[data-sourcebook-gate-summary]");
 	const gateAction = gate.querySelector("[data-sourcebook-gate-action]");
-	const status = ready ? "ready" : sessionReady ? "attention" : "blocked";
+	const status = ready ? "ready" : sessionReady || hasEscalationOnly ? "attention" : "blocked";
 
 	gate.classList.toggle("sourcebook-gate--ready", ready);
-	gate.classList.toggle("sourcebook-gate--blocked", !ready && !sessionReady);
+	gate.classList.toggle("sourcebook-gate--blocked", !ready && !sessionReady && !hasEscalationOnly);
 	gate.classList.toggle("sourcebook-gate--attention", !ready);
 
 	if (gateStatus) {
@@ -566,7 +633,9 @@ function updateSourcebookGate(readiness, providedEvidence, ledgerStatus) {
 			? "Sourcebook evidence complete"
 			: sessionReady
 				? "Evidence record incomplete"
-				: "Setup tasks incomplete";
+				: hasEscalationOnly
+					? "Governance escalation needed"
+					: "Setup tasks incomplete";
 		setSourcebookStatusClass(gateStatus, "sourcebook-gate__tag--", status);
 	}
 	if (gateSummary) {
@@ -575,6 +644,9 @@ function updateSourcebookGate(readiness, providedEvidence, ledgerStatus) {
 		} else if (sessionReady) {
 			gateSummary.textContent =
 				"The study can run. The Sourcebook evidence record still has missing audit evidence to review.";
+		} else if (hasEscalationOnly) {
+			gateSummary.textContent =
+				"The risk assessment is recorded. Follow the ethics or governance route before starting sessions.";
 		} else {
 			gateSummary.textContent = "Complete the setup tasks before beginning a participant session.";
 		}
@@ -584,6 +656,8 @@ function updateSourcebookGate(readiness, providedEvidence, ledgerStatus) {
 			gateAction.textContent = "Continue to session with controls in place.";
 		} else if (sessionReady) {
 			gateAction.textContent = "Review the Sourcebook evidence record.";
+		} else if (hasEscalationOnly) {
+			gateAction.textContent = "Review the ethics advice route before starting fieldwork.";
 		} else {
 			gateAction.textContent = "Use the setup task list to complete what is missing.";
 		}
@@ -608,13 +682,21 @@ function updateSourcebookGate(readiness, providedEvidence, ledgerStatus) {
 		{
 			id: "governance-action",
 			met: sessionReady,
-			label: ready ? "Proceed with controls" : sessionReady ? "Proceed, review evidence" : "Pause for setup",
+			label: ready
+				? "Proceed with controls"
+				: sessionReady
+					? "Proceed, review evidence"
+					: hasEscalationOnly
+						? "Ethics advice needed"
+						: "Pause for setup",
 			detail:
 				ready
 					? "The study can proceed because readiness checks and required Sourcebook evidence are complete."
 					: sessionReady
 						? `${missingEvidence} Sourcebook evidence ${missingEvidence === 1 ? "item" : "items"} need audit review, but setup tasks are complete.`
-						: `${readinessBlockers} readiness ${readinessBlockers === 1 ? "task" : "tasks"} and ${missingEvidence} Sourcebook evidence ${missingEvidence === 1 ? "item" : "items"} need attention.`
+						: hasEscalationOnly
+							? "The risk assessment is recorded. Complete the ethics or governance escalation before sessions begin."
+							: `${readinessBlockers} readiness ${readinessBlockers === 1 ? "task" : "tasks"} and ${missingEvidence} Sourcebook evidence ${missingEvidence === 1 ? "item" : "items"} need attention.`
 		}
 	];
 

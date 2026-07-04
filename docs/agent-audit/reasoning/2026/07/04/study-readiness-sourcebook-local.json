@@ -63,7 +63,10 @@
     "Updated study readiness evidence mapping so incomplete risk answers no longer satisfy risk-assessment, triage-outcome or participant-risk-rationale evidence.",
     "Confirmed the production gap: live https://research-operations.com/pages/study/ expects Sourcebook risk evidence but does not yet include the Assess ethics and research risk setup task or /pages/study/ethics-risk/ route from this branch.",
     "Moved the ethics-risk availability work onto feature/study-ethics-risk-assessment from current origin/main so the PR is focused on the standalone study risk checkpoint.",
-    "Addressed PR #467 Codex review by limiting browser localStorage risk outcomes to local preview origins, returning a non-ready outcome when production persistence fails, and restoring compatibility with existing risk-assessment, triage-outcome and participant-risk-rationale evidence records."
+    "Addressed PR #467 Codex review by limiting browser localStorage risk outcomes to local preview origins, returning a non-ready outcome when production persistence fails, and restoring compatibility with existing risk-assessment, triage-outcome and participant-risk-rationale evidence records.",
+    "Revised study overview readiness so a completed ethics risk assessment that returns Ethics advice needed, Extra controls needed or Ethics submission likely needed is treated as a governance escalation rather than an incomplete setup task.",
+    "Updated the session gate, session workspace hint and Sourcebook gate copy so recorded ethics escalations direct researchers back into the ethics advice route instead of saying the setup task still needs attention.",
+    "Bumped the study page controller cache key to study-ethics-escalation-20260704 so browsers load the corrected readiness logic."
   ],
   "validation": [
     {
@@ -520,6 +523,35 @@
     {
       "command": "git diff --check",
       "result": "passed"
+    },
+    {
+      "command": "npm run build:govuk-pages",
+      "result": "passed",
+      "details": "Passed after the ethics escalation state fix and study page controller cache-key bump."
+    },
+    {
+      "command": "node --import ./tests/helpers/generated-govuk-page-source.mjs --test tests/study-page-route-state.test.js tests/study-ethics-risk-route-state.test.js tests/study-child-route-state.test.js",
+      "result": "passed",
+      "details": "3 route-state tests passed after the ethics escalation state fix."
+    },
+    {
+      "command": "npx eslint public/js/study-page.js tests/study-page-route-state.test.js",
+      "result": "passed",
+      "details": "Completed with no errors and existing public/js/study-page.js console warnings only after the ethics escalation state fix."
+    },
+    {
+      "command": "npx prettier -c public/js/study-page.js tests/study-page-route-state.test.js public/pages/study/index.html",
+      "result": "passed",
+      "details": "Supported-file formatting passed. The related Nunjucks template was not included because this repository's Prettier setup has no parser for .njk."
+    },
+    {
+      "command": "git diff --check && npm run trace:coverage",
+      "result": "passed"
+    },
+    {
+      "command": "curl -ks https://research-operations/pages/study/?id=rect3o7dt&project=recgdpwEI5hFO7bUZ",
+      "result": "passed",
+      "details": "Confirmed the local HTTPS preview serves /js/study-page.js?v=study-ethics-escalation-20260704."
     }
   ],
   "residualRisk": [
