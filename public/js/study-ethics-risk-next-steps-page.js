@@ -402,6 +402,14 @@ function statusLabel(workflow, statusValue = "") {
 	return workflow.statusOptions.find(option => option.value === statusValue)?.text || "Not recorded";
 }
 
+function nextWorkflowStatus(workflow, record) {
+	const options = workflow.statusOptions;
+	const currentStatus = record?.route === workflow.route ? record.status : "";
+	const currentIndex = options.findIndex(option => option.value === currentStatus);
+	if (currentIndex === -1) return workflow.saveStatus || options[0]?.value || "";
+	return options[Math.min(currentIndex + 1, options.length - 1)].value;
+}
+
 function parseMaybeJson(value) {
 	if (!value || typeof value !== "string") return value;
 	try {
@@ -1277,7 +1285,8 @@ function bindRecordForm() {
 		event.preventDefault();
 		const routeKey = form.dataset.workflowRoute || "";
 		const workflow = Object.values(workflowDefinitions).find(item => item.route === routeKey) || workflowDefinitions.default;
-		const status = workflow.saveStatus || workflow.statusOptions[0]?.value || "";
+		const existingRecord = loadStudyEthicsRiskNextSteps(currentStudyId);
+		const status = nextWorkflowStatus(workflow, existingRecord);
 		const ownership = workflowOwnership(workflow, currentContext || {});
 		const reviewDate = reviewDateForWorkflow(workflow);
 		const record = saveStudyEthicsRiskNextSteps(currentStudyId, {
