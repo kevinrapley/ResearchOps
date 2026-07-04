@@ -77,6 +77,24 @@
 }
 
 // prettier-ignore
+.study-ethics-next-steps-panel {
+	border-top: 5px solid #1d70b8;
+	padding-top: 20px;
+}
+
+// prettier-ignore
+.study-ethics-next-steps-list .govuk-task-list__item {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) 120px;
+	column-gap: 15px;
+}
+
+// prettier-ignore
+.study-ethics-next-steps-list .govuk-task-list__status {
+	text-align: right;
+}
+
+// prettier-ignore
 @media (max-width: 900px) {
 	.study-ethics-risk-page .govuk-grid-column-two-thirds,
 	.study-ethics-risk-page .govuk-grid-column-one-third {
@@ -87,6 +105,15 @@
 	.study-ethics-risk-aside {
 		position: static;
 		margin-top: 30px;
+	}
+
+	.study-ethics-next-steps-list .govuk-task-list__item {
+		display: block;
+	}
+
+	.study-ethics-next-steps-list .govuk-task-list__status {
+		margin-top: 10px;
+		text-align: left;
 	}
 }
 

@@ -1,0 +1,128 @@
+{
+  "date": "2026-07-04",
+  "branch": "fix/ethics-risk-escalation-state",
+  "task": "Correct the study overview state shown after a completed ethics risk assessment returns an escalation outcome, then add a dedicated route-specific next-steps workflow for escalation outcomes.",
+  "operatingModel": {
+    "loaded": [
+      "AGENTS.md",
+      ".agent-operating-model/orchestration.xml",
+      ".agent-operating-model/bundle-registry.json",
+      ".agent-operating-model/task-signal-catalog.json",
+      ".agent-operating-model/selection-rules.json",
+      ".agent-operating-model/precedence-policy.md",
+      ".agent-operating-model/github-mutation-policy.md"
+    ],
+    "selectedBundles": [
+      ".agent-operating-model/bundles/github/",
+      ".agent-operating-model/bundles/researchops-developer-control/",
+      ".agent-operating-model/bundles/multi-functional-team/",
+      ".agent-operating-model/bundles/govuk-design-system/"
+    ],
+    "skippedBundles": [
+      "cloudflare",
+      "openai-platform",
+      "mcp-agent-tooling",
+      "airtable-public-api",
+      "mural-public-api"
+    ],
+    "traceDecision": "Trace required because the repository-affecting work is on fix/ethics-risk-escalation-state."
+  },
+  "implementation": [
+    "Separated incomplete setup tasks from completed ethics risk assessments that require governance escalation.",
+    "Added /pages/study/ethics-risk/next-steps/ as a dedicated follow-up workflow for Ethics advice needed, Extra controls needed and Ethics submission likely needed outcomes.",
+    "Updated the session gate so escalation outcomes link to the new next-steps workflow instead of routing back to the assessment form.",
+    "Updated the session workspace hint to say the ethics risk next steps must be completed before sessions can begin.",
+    "Added route-specific task lists, evidence requirements and local progress recording for the three escalation routes.",
+    "Added a route-specific next-step link from the completed ethics risk assessment outcome panel.",
+    "Updated the Sourcebook gate copy so escalation states are labelled as governance escalation rather than setup incompleteness.",
+    "Bumped the study page controller cache key to study-ethics-next-steps-20260704.",
+    "Registered the ethics risk assessment and ethics risk next-steps routes with the visual walkthrough tooling using a saved Ethics advice needed outcome."
+  ],
+  "files": [
+    "src/govuk/templates/pages/study-ethics-risk-next-steps.njk",
+    "public/js/study-ethics-risk-next-steps-page.js",
+    "public/pages/study/ethics-risk/next-steps/index.html",
+    "public/js/study-page.js",
+    "public/js/study-ethics-risk-page.js",
+    "src/govuk/templates/pages/study.njk",
+    "src/govuk/templates/pages/study-ethics-risk.njk",
+    "src/styles/study-ethics-risk.scss",
+    "public/css/study-ethics-risk.css",
+    "scripts/govuk/render-govuk-pages.mjs",
+    "visual-walkthrough.config.mjs",
+    "visual-walkthrough.operational-fixtures.mjs",
+    "tests/study-page-route-state.test.js",
+    "tests/study-ethics-risk-route-state.test.js",
+    "tests/study-child-route-state.test.js"
+  ],
+  "validation": [
+    {
+      "command": "npm run build:govuk-pages",
+      "result": "passed"
+    },
+    {
+      "command": "npm run build:generated-css",
+      "result": "passed"
+    },
+    {
+      "command": "npm run generated-css:check",
+      "result": "passed"
+    },
+    {
+      "command": "node tests/study-page-route-state.test.js",
+      "result": "passed",
+      "details": "Study page route-state assertions passed."
+    },
+    {
+      "command": "node tests/study-ethics-risk-route-state.test.js",
+      "result": "passed",
+      "details": "Ethics risk and ethics risk next-steps route-state assertions passed."
+    },
+    {
+      "command": "node tests/study-child-route-state.test.js",
+      "result": "passed",
+      "details": "Study child route-state assertions passed."
+    },
+    {
+      "command": "node tests/visual-walkthrough-registry-coverage.test.js",
+      "result": "passed",
+      "details": "Visual walkthrough route registration coverage passed for the new ethics risk next-steps route."
+    },
+    {
+      "command": "npm run lint",
+      "result": "passed",
+      "details": "Completed with existing repository warnings only."
+    },
+    {
+      "command": "npm test",
+      "result": "passed",
+      "details": "355 tests passed."
+    },
+    {
+      "command": "git diff --check",
+      "result": "passed"
+    },
+    {
+      "command": "npm run trace:coverage",
+      "result": "passed"
+    },
+    {
+      "command": "curl -k -I https://research-operations/pages/study/ethics-risk/next-steps/?id=rect3o7dt&project=recgdpwEI5hFO7bUZ",
+      "result": "passed",
+      "details": "Confirmed the local HTTPS preview returns 200 OK for the next-steps route."
+    },
+    {
+      "command": "curl -ks https://research-operations/pages/study/ethics-risk/next-steps/?id=rect3o7dt&project=recgdpwEI5hFO7bUZ",
+      "result": "passed",
+      "details": "Confirmed the local HTTPS preview serves the next-steps page and controller."
+    },
+    {
+      "command": "curl -ks https://research-operations/api/study-ethics-risk?study=rect3o7dt",
+      "result": "passed",
+      "details": "Confirmed the review study has an ethics-advice-required saved outcome."
+    }
+  ],
+  "residualRisk": [
+    "The new progress record is local-preview state. A production-backed follow-up should add a server endpoint for persisted ethics advice/control/submission progress before this becomes an authoritative record."
+  ]
+}

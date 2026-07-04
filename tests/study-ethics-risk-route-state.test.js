@@ -3,7 +3,10 @@ import fs from "node:fs";
 
 const pageSource = fs.readFileSync("public/pages/study/ethics-risk/index.html", "utf8");
 const templateSource = fs.readFileSync("src/govuk/templates/pages/study-ethics-risk.njk", "utf8");
+const nextStepsPageSource = fs.readFileSync("public/pages/study/ethics-risk/next-steps/index.html", "utf8");
+const nextStepsTemplateSource = fs.readFileSync("src/govuk/templates/pages/study-ethics-risk-next-steps.njk", "utf8");
 const controllerSource = fs.readFileSync("public/js/study-ethics-risk-page.js", "utf8");
+const nextStepsControllerSource = fs.readFileSync("public/js/study-ethics-risk-next-steps-page.js", "utf8");
 const modelSource = fs.readFileSync("public/js/study-ethics-risk-model.js", "utf8");
 const cssSource = fs.readFileSync("public/css/study-ethics-risk.css", "utf8");
 const scssSource = fs.readFileSync("src/styles/study-ethics-risk.scss", "utf8");
@@ -31,6 +34,8 @@ for (const macro of [
 for (const text of [
 	"template: 'pages/study-ethics-risk.njk'",
 	"output: 'public/pages/study/ethics-risk/index.html'",
+	"template: 'pages/study-ethics-risk-next-steps.njk'",
+	"output: 'public/pages/study/ethics-risk/next-steps/index.html'",
 	"source: 'src/styles/study-ethics-risk.scss'",
 	"output: 'public/css/study-ethics-risk.css'"
 ]) {
@@ -72,9 +77,51 @@ for (const text of [
 	"Direction",
 	"Sourcebook clauses",
 	"id=\"study-ethics-risk-recorded-state\"",
+	"id=\"study-ethics-risk-next-steps-link\"",
+	"/pages/study/ethics-risk/next-steps/",
 	"GOVERN 2.1.1"
 ]) {
 	includes(pageSource, text, "ethics risk page");
+}
+
+for (const macro of [
+	"govukBreadcrumbs({",
+	"govukButton({",
+	"govukErrorSummary({",
+	"govukRadios({",
+	"govukTextarea({"
+]) {
+	includes(nextStepsTemplateSource, macro, "ethics risk next steps template");
+}
+
+for (const text of [
+	"<html class=\"govuk-template\" lang=\"en\">",
+	"/assets/govuk/govuk-frontend.css",
+	"/css/govuk/govuk-forms.css",
+	"/css/sourcebook-components.css",
+	"/css/study-ethics-risk.css",
+	"/js/study-route-context.js",
+	"/js/study-ethics-risk-model.js?v=study-ethics-risk-20260704",
+	"/js/study-ethics-risk-next-steps-page.js?v=study-ethics-risk-next-steps-20260704",
+	"data-study-subpage-template=\"ethics-risk-next-steps\"",
+	"id=\"breadcrumb-ethics-risk\"",
+	"Ethics risk next steps",
+	"id=\"ethics-next-steps-list\"",
+	"What happens next",
+	"Evidence to collect",
+	"Record progress",
+	"What has happened?",
+	"value=\"started\"",
+	"value=\"requested\"",
+	"value=\"resolved\"",
+	"Decision, controls or conditions",
+	"id=\"ethics-next-steps-submit\"",
+	"Risk route",
+	"Sensitive research triggers",
+	"Sourcebook clauses",
+	"id=\"back-to-risk-assessment\""
+]) {
+	includes(nextStepsPageSource, text, "ethics risk next steps page");
 }
 
 for (const text of [
@@ -88,10 +135,33 @@ for (const text of [
 	"function formAnswers",
 	"function renderTextCollection",
 	"function renderSourcebookClauses",
+	"study-ethics-risk-next-steps-link",
+	"route(\"/pages/study/ethics-risk/next-steps/\"",
 	"function showFieldErrors",
 	"route(\"/pages/study/\""
 ]) {
 	includes(controllerSource, text, "ethics risk controller");
+}
+
+for (const text of [
+	"loadSeededStudyEthicsRisk",
+	"resolveStudyContextFromUrl",
+	"workflowDefinitions",
+	"ethics-advice-required",
+	"sensitive-research-controls",
+	"ethics-board-submission-likely",
+	"Ethics advice needed",
+	"Extra controls needed",
+	"Ethics submission likely needed",
+	"function workflowForOutcome",
+	"function nextStepsStorageKey",
+	"researchops:study-ethics-risk-next-steps:",
+	"function renderTasks",
+	"function bindRecordForm",
+	"route(\"/pages/study/ethics-risk/\"",
+	"route(\"/pages/study/\""
+]) {
+	includes(nextStepsControllerSource, text, "ethics risk next steps controller");
 }
 
 for (const text of [
@@ -127,6 +197,8 @@ for (const text of [
 	".study-ethics-risk-form",
 	".study-ethics-risk-aside",
 	".study-ethics-risk-outcome",
+	".study-ethics-next-steps-panel",
+	".study-ethics-next-steps-list",
 	".study-ethics-risk-sourcebook-list",
 	".study-ethics-risk-recorded-state",
 	"padding: 20px",

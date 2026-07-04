@@ -1,0 +1,265 @@
+<!doctype html>
+<html class="govuk-template" lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>Ethics risk next steps - ResearchOps Demo Suite</title>
+		<link rel="stylesheet" href="/assets/govuk/govuk-frontend.css" media="screen" />
+
+		<meta property="schema:name" content="Ethics risk next steps - ResearchOps" />
+		<meta property="schema:creator" content="Home Office ResearchOps Platform" />
+		<meta property="schema:dateModified" content="2026-07-04" />
+		<meta property="dcterms:language" content="en-GB" />
+		<link rel="stylesheet" href="/css/govuk/govuk-forms.css" media="screen" />
+		<link rel="stylesheet" href="/css/sourcebook-components.css" media="screen" />
+		<link rel="stylesheet" href="/css/study-ethics-risk.css" media="screen" />
+		<link rel="stylesheet" href="/css/daas-brand-panel.css?v=leds-brand-panel-20260624" media="screen" />
+		<link rel="modulepreload" href="/js/study-route-context.js" />
+		<link rel="modulepreload" href="/js/study-ethics-risk-model.js?v=study-ethics-risk-20260704" />
+		<link rel="modulepreload" href="/js/study-ethics-risk-next-steps-page.js?v=study-ethics-risk-next-steps-20260704" />
+		<link rel="modulepreload" href="/js/daas-brand-panel.js?v=leds-brand-panel-20260624" />
+
+		<script type="module" src="/components/layout.js?v=govuk-page-chrome-20260702-1" defer></script>
+		<script type="module" src="/js/govuk-frontend-init.js?v=govuk-page-chrome-20260702-1" defer></script>
+	</head>
+	<body class="govuk-template__body">
+		<script>
+			document.body.className +=
+				" js-enabled" + ("noModule" in HTMLScriptElement.prototype ? " govuk-frontend-supported" : "");
+		</script>
+		<x-include src="/partials/header.html" vars='{"active":"Projects"}'></x-include>
+		<main class="govuk-main-wrapper" id="main-content" role="main" tabindex="-1">
+			<div
+				class="govuk-width-container study-ethics-risk-page study-ethics-risk-next-steps-page"
+				data-study-subpage-template="ethics-risk-next-steps"
+			>
+				<nav
+					class="govuk-breadcrumbs"
+					id="study-ethics-risk-next-steps-breadcrumbs"
+					typeof="schema:BreadcrumbList"
+					aria-label="Breadcrumb"
+				>
+					<ol class="govuk-breadcrumbs__list">
+						<li class="govuk-breadcrumbs__list-item">
+							<a class="govuk-breadcrumbs__link" href="/pages/projects/">Projects</a>
+						</li>
+
+						<li class="govuk-breadcrumbs__list-item">
+							<a class="govuk-breadcrumbs__link" href="#" id="breadcrumb-project">Project</a>
+						</li>
+
+						<li class="govuk-breadcrumbs__list-item">
+							<a class="govuk-breadcrumbs__link" href="#" id="breadcrumb-study">Study</a>
+						</li>
+
+						<li class="govuk-breadcrumbs__list-item">
+							<a class="govuk-breadcrumbs__link" href="#" id="breadcrumb-ethics-risk">Ethics and research risk</a>
+						</li>
+
+						<li class="govuk-breadcrumbs__list-item" aria-current="page">Next steps</li>
+					</ol>
+				</nav>
+
+				<div class="rops-daas-brand-panel" id="daas-brand-panel" hidden aria-label="DaaS">
+					<img class="rops-daas-brand-panel__logo" src="/images/brands/daas-logo.svg" alt="DaaS" />
+				</div>
+				<div class="rops-leds-brand-panel" id="leds-brand-panel" hidden aria-label="LEDS">
+					<img
+						class="rops-leds-brand-panel__logo"
+						src="/images/brands/leds-logo-white.svg"
+						alt="Law Enforcement Data Service"
+					/>
+				</div>
+
+				<div
+					class="govuk-error-summary"
+					id="ethics-next-steps-error"
+					tabindex="-1"
+					hidden="hidden"
+					aria-hidden="true"
+					data-module="govuk-error-summary"
+				>
+					<div role="alert">
+						<h2 class="govuk-error-summary__title">There is a problem</h2>
+						<div class="govuk-error-summary__body">
+							<ul class="govuk-list govuk-error-summary__list">
+								<li>
+									<a href="#back-to-risk-assessment">Complete the ethics and research risk assessment first.</a>
+								</li>
+							</ul>
+						</div>
+					</div>
+				</div>
+
+				<div id="study-context-warning" class="govuk-warning-text" hidden>
+					<span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+					<strong class="govuk-warning-text__text">
+						<span class="govuk-visually-hidden">Warning</span>
+						Study details could not be loaded. The next steps can still be previewed locally for this study ID.
+					</strong>
+				</div>
+
+				<header class="study-ethics-risk-header govuk-!-margin-bottom-7">
+					<p id="study-eyebrow" class="govuk-caption-m">Study</p>
+					<h1 id="ethics-next-steps-title" class="govuk-heading-l">Ethics risk next steps</h1>
+					<p id="ethics-next-steps-summary" class="govuk-body-l govuk-!-width-two-thirds">
+						Review the recorded ethics and research risk outcome, then complete the route-specific steps before
+						recruitment, fieldwork or participant sessions begin.
+					</p>
+				</header>
+
+				<div class="govuk-grid-row">
+					<div class="govuk-grid-column-two-thirds">
+						<section
+							class="study-ethics-next-steps-panel govuk-!-margin-bottom-7"
+							aria-labelledby="ethics-next-steps-task-title"
+						>
+							<h2 id="ethics-next-steps-task-title" class="govuk-heading-m">What happens next</h2>
+							<ol id="ethics-next-steps-list" class="govuk-task-list study-ethics-next-steps-list">
+								<li class="govuk-task-list__item govuk-task-list__item--with-link">
+									<div class="govuk-task-list__name-and-hint">
+										<a class="govuk-link govuk-task-list__link" href="#ethics-next-steps-record">Loading next step</a>
+										<div class="govuk-task-list__hint">Checking the recorded risk outcome.</div>
+									</div>
+									<div class="govuk-task-list__status"><strong class="govuk-tag govuk-tag--grey">Checking</strong></div>
+								</li>
+							</ol>
+						</section>
+
+						<section
+							class="study-ethics-next-steps-panel govuk-!-margin-bottom-7"
+							aria-labelledby="ethics-next-steps-evidence-title"
+						>
+							<h2 id="ethics-next-steps-evidence-title" class="govuk-heading-m">Evidence to collect</h2>
+							<p id="ethics-next-steps-evidence-intro" class="govuk-body">
+								Evidence depends on the recorded risk route.
+							</p>
+							<ul id="ethics-next-steps-evidence-list" class="govuk-list govuk-list--bullet">
+								<li>Risk assessment outcome</li>
+								<li>Triage outcome</li>
+							</ul>
+						</section>
+
+						<section
+							id="ethics-next-steps-record"
+							class="study-ethics-next-steps-panel govuk-!-margin-bottom-7"
+							aria-labelledby="ethics-next-steps-record-title"
+						>
+							<h2 id="ethics-next-steps-record-title" class="govuk-heading-m">Record progress</h2>
+							<form id="ethics-next-steps-form" novalidate>
+								<div class="govuk-form-group">
+									<fieldset class="govuk-fieldset">
+										<legend class="govuk-fieldset__legend govuk-fieldset__legend--s">What has happened?</legend>
+
+										<div class="govuk-radios" data-module="govuk-radios">
+											<div class="govuk-radios__item">
+												<input
+													class="govuk-radios__input"
+													id="ethics-next-step-state"
+													name="nextStepState"
+													type="radio"
+													value="started"
+												/>
+												<label class="govuk-label govuk-radios__label" for="ethics-next-step-state">
+													Started the next steps
+												</label>
+											</div>
+
+											<div class="govuk-radios__item">
+												<input
+													class="govuk-radios__input"
+													id="ethics-next-step-state-2"
+													name="nextStepState"
+													type="radio"
+													value="requested"
+												/>
+												<label class="govuk-label govuk-radios__label" for="ethics-next-step-state-2">
+													Advice, controls or submission route requested
+												</label>
+											</div>
+
+											<div class="govuk-radios__item">
+												<input
+													class="govuk-radios__input"
+													id="ethics-next-step-state-3"
+													name="nextStepState"
+													type="radio"
+													value="resolved"
+												/>
+												<label class="govuk-label govuk-radios__label" for="ethics-next-step-state-3">
+													Decision, controls or approval recorded
+												</label>
+											</div>
+										</div>
+									</fieldset>
+								</div>
+
+								<div class="govuk-form-group">
+									<label class="govuk-label govuk-label--s" for="ethics-next-step-note">
+										Decision, controls or conditions
+									</label>
+
+									<div id="ethics-next-step-note-hint" class="govuk-hint">
+										Do not include participant personal data.
+									</div>
+
+									<textarea
+										class="govuk-textarea"
+										id="ethics-next-step-note"
+										name="nextStepNote"
+										rows="6"
+										aria-describedby="ethics-next-step-note-hint"
+									></textarea>
+								</div>
+
+								<div class="govuk-button-group">
+									<button type="submit" class="govuk-button" data-module="govuk-button" id="ethics-next-steps-submit">
+										Record next step
+									</button>
+
+									<a
+										href="/pages/study/"
+										role="button"
+										draggable="false"
+										class="govuk-button govuk-button--secondary"
+										data-module="govuk-button"
+										id="back-to-study"
+									>
+										Back to study
+									</a>
+								</div>
+							</form>
+							<p id="ethics-next-steps-recorded-state" class="govuk-body-s study-ethics-risk-recorded-state">
+								No next step recorded yet.
+							</p>
+						</section>
+					</div>
+
+					<aside
+						class="govuk-grid-column-one-third study-ethics-risk-aside"
+						aria-labelledby="ethics-next-steps-outcome-title"
+					>
+						<section class="study-ethics-risk-outcome" aria-live="polite">
+							<p class="govuk-caption-m">Risk route</p>
+							<h2 id="ethics-next-steps-outcome-title" class="govuk-heading-m">Checking risk outcome</h2>
+							<strong id="ethics-next-steps-outcome-tag" class="govuk-tag govuk-tag--grey">Checking</strong>
+							<p id="ethics-next-steps-outcome-summary" class="govuk-body">
+								Checking the recorded ethics and research risk outcome.
+							</p>
+							<h3 class="govuk-heading-s">Sensitive research triggers</h3>
+							<p id="ethics-next-steps-triggers" class="govuk-body">Checking triggers.</p>
+							<h3 class="govuk-heading-s">Sourcebook clauses</h3>
+							<p id="ethics-next-steps-sourcebook-clauses" class="govuk-body">Checking Sourcebook clauses.</p>
+							<p class="govuk-body-s">
+								<a id="back-to-risk-assessment" class="govuk-link" href="/pages/study/ethics-risk/">
+									Review risk assessment
+								</a>
+							</p>
+						</section>
+					</aside>
+				</div>
+			</div>
+		</main>
+		<x-include src="/partials/footer.html?v=govuk-page-chrome-20260702-1"></x-include>
+	</body>
+</html>

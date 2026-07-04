@@ -19,6 +19,7 @@ import {
 const $ = (selector, root = document) => root.querySelector(selector);
 let currentStudyId = "";
 let currentStudyHref = "/pages/study/";
+let currentNextStepsHref = "/pages/study/ethics-risk/next-steps/";
 const exclusiveCheckboxValues = new Map([
 	["topics", "none-sensitive-topics"],
 	["data", "no-sensitive-data"],
@@ -177,6 +178,8 @@ function renderOutcome(outcome = {}) {
 	const summary = $("#study-ethics-risk-outcome-summary");
 	const nextAction = $("#study-ethics-risk-next-action");
 	const recordedState = $("#study-ethics-risk-recorded-state");
+	const nextStepsWrap = $("#study-ethics-risk-next-steps-link-wrap");
+	const nextStepsLink = $("#study-ethics-risk-next-steps-link");
 
 	if (title) title.textContent = outcome.title || (outcome.started ? outcome.statusLabel : "Risk check not started");
 	if (summary) summary.textContent = outcome.summary || "Complete the risk questions before recruitment, fieldwork or participant sessions begin.";
@@ -185,6 +188,20 @@ function renderOutcome(outcome = {}) {
 	if (tag) {
 		tag.textContent = outcome.statusLabel || "Action needed";
 		tag.className = `govuk-tag ${tagClassForEthicsRisk(outcome.status)}`;
+	}
+	const hasEscalationRoute =
+		outcome.started === true &&
+		outcome.ready !== true &&
+		!["incomplete-assessment", "not-assessed", "not-recorded"].includes(outcome.route);
+	if (nextStepsWrap) nextStepsWrap.hidden = !hasEscalationRoute;
+	if (nextStepsLink) {
+		nextStepsLink.href = currentNextStepsHref;
+		nextStepsLink.textContent =
+			outcome.route === "ethics-board-submission-likely"
+				? "Open ethics submission next steps"
+				: outcome.route === "sensitive-research-controls"
+					? "Open extra control next steps"
+					: "Open ethics advice next steps";
 	}
 	renderTextCollection(
 		"#study-ethics-risk-triggers",
@@ -258,6 +275,10 @@ function bindContext(context) {
 	const title = studyTitle(context.study || {});
 	currentStudyId = context.studyId;
 	currentStudyHref = route("/pages/study/", { id: context.studyId, project: context.projectId });
+	currentNextStepsHref = route("/pages/study/ethics-risk/next-steps/", {
+		id: context.studyId,
+		project: context.projectId
+	});
 
 	const projectBreadcrumb = $("#breadcrumb-project");
 	if (projectBreadcrumb) {
@@ -287,6 +308,9 @@ async function initContext() {
 		if (warning) warning.hidden = false;
 		currentStudyId = params.get("id") || params.get("sid") || "";
 		currentStudyHref = currentStudyId ? route("/pages/study/", { id: currentStudyId }) : "/pages/study/";
+		currentNextStepsHref = currentStudyId
+			? route("/pages/study/ethics-risk/next-steps/", { id: currentStudyId })
+			: "/pages/study/ethics-risk/next-steps/";
 		const backToStudy = $("#back-to-study");
 		if (backToStudy) backToStudy.href = currentStudyHref;
 		return currentStudyId;
