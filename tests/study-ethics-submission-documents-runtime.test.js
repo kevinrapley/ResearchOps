@@ -200,7 +200,10 @@ assert.equal(
 	created.document.contentType,
 	'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
 );
-assert.equal(created.document.templateKey, 'templates/ethics/research-ethics-approval-form-v3.docx');
+assert.equal(
+	created.document.templateKey,
+	'templates/ethics/research-ethics-approval-form-v3.docx'
+);
 assert.equal(created.document.objectKey.startsWith('ethics-submissions/rect3o7dt/v1/'), true);
 assert.equal(created.document.byteSize > templateBytes.byteLength, true);
 assert.equal(r2.objects.size, 1);
