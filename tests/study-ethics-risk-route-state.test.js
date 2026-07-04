@@ -447,11 +447,7 @@ for (const text of [
 	includes(documentsMigrationSource, text, "ethics submission documents migration");
 }
 
-for (const templatePath of [
-	"docs/devops/sourcebook/templates/research-ethics-approval-form-v3.docx",
-	"public/templates/ethics/research-ethics-approval-form-v3.docx",
-	"sourcebook/templates/research-ethics-approval-form-v3.docx"
-]) {
+for (const templatePath of ["public/templates/ethics/research-ethics-approval-form-v3.docx"]) {
 	assert.equal(fs.existsSync(templatePath), true, `Expected ethics submission template at ${templatePath}`);
 }
 

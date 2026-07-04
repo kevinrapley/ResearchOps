@@ -7,7 +7,7 @@ import {
 } from '../infra/cloudflare/src/service/ethics-submission-documents.js';
 
 const templateBytes = fs.readFileSync(
-	'docs/devops/sourcebook/templates/research-ethics-approval-form-v3.docx'
+	'public/templates/ethics/research-ethics-approval-form-v3.docx'
 );
 
 class MockD1Statement {
@@ -200,7 +200,7 @@ assert.equal(
 	created.document.contentType,
 	'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
 );
-assert.equal(created.document.templateKey, 'templates/research-ethics-approval-form-v3.docx');
+assert.equal(created.document.templateKey, 'templates/ethics/research-ethics-approval-form-v3.docx');
 assert.equal(created.document.objectKey.startsWith('ethics-submissions/rect3o7dt/v1/'), true);
 assert.equal(created.document.byteSize > templateBytes.byteLength, true);
 assert.equal(r2.objects.size, 1);

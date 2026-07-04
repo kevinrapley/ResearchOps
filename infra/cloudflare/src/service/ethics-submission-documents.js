@@ -7,7 +7,7 @@
 import { d1Get, d1Run } from "./internals/researchops-d1.js";
 
 const DOCUMENTS_TABLE = "rops_ethics_submission_documents";
-const TEMPLATE_KEY = "templates/research-ethics-approval-form-v3.docx";
+const TEMPLATE_KEY = "templates/ethics/research-ethics-approval-form-v3.docx";
 const CONTENT_TYPE = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
 
 const DOCUMENTS_SQL = `
