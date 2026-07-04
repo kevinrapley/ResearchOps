@@ -31,6 +31,16 @@ function authErrorResponse(error) {
 	});
 }
 
+const RESEARCHOPS_CUSTOM_ORIGINS = new Set([
+	"https://research-operations.com",
+	"https://www.research-operations.com",
+	"https://govuk.research-operations.com"
+]);
+
+function isResearchOpsCustomDomainOrigin(origin) {
+	return RESEARCHOPS_CUSTOM_ORIGINS.has(origin);
+}
+
 function isResearchOpsPagesOrigin(origin) {
 	try {
 		const { hostname, protocol } = new URL(origin);
@@ -62,6 +72,7 @@ function resolveAllowedOrigin(env, request) {
 		const list = Array.isArray(raw) ? raw : String(raw || "").split(",").map(s => s.trim()).filter(Boolean);
 		if (!origin) return "*";
 		if (list.includes(origin)) return origin;
+		if (isResearchOpsCustomDomainOrigin(origin)) return origin;
 		if (isResearchOpsPagesOrigin(origin)) return origin;
 		if (isAllowedPreviewPagesOrigin(env, origin)) return origin;
 		return "null";
@@ -75,7 +86,7 @@ function isAllowedRequestOrigin(env, request) {
 	if (!origin) return true;
 	const raw = env.ALLOWED_ORIGINS;
 	const list = Array.isArray(raw) ? raw : String(raw || "").split(",").map(s => s.trim()).filter(Boolean);
-	return list.includes(origin) || isResearchOpsPagesOrigin(origin) || isAllowedPreviewPagesOrigin(env, origin);
+	return list.includes(origin) || isResearchOpsCustomDomainOrigin(origin) || isResearchOpsPagesOrigin(origin) || isAllowedPreviewPagesOrigin(env, origin);
 }
 
 function buildCorsHeaders(env, request) {

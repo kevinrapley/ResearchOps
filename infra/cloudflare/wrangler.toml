@@ -35,7 +35,7 @@ RESEARCHOPS_ALLOW_PAGES_PREVIEW_ORIGINS = "false"
 RESEARCHOPS_RETENTION_ENFORCEMENT_ENABLED = "true"
 RESEARCHOPS_RETENTION_GRACE_DAYS = "7"
 
-ALLOWED_ORIGINS = "https://researchops.pages.dev,https://rops-api.digikev-kevin-rapley.workers.dev,https://reops-sourcebook.pages.dev"
+ALLOWED_ORIGINS = "https://researchops.pages.dev,https://research-operations.com,https://www.research-operations.com,https://govuk.research-operations.com,https://rops-api.digikev-kevin-rapley.workers.dev,https://reops-sourcebook.pages.dev"
 
 # Airtable tables
 AIRTABLE_TABLE_AI_LOG            = "AI_Usage"

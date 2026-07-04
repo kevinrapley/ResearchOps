@@ -90,6 +90,12 @@ import { recordProvenanceEvent } from "./provenance.js";
  * @property {string} [MURAL_REFLEXIVE_MURAL_ID]
  */
 
+const RESEARCHOPS_CUSTOM_ORIGINS = new Set([
+	"https://research-operations.com",
+	"https://www.research-operations.com",
+	"https://govuk.research-operations.com"
+]);
+
 function corsHeaders(env, origin) {
 	const allowed = (env.ALLOWED_ORIGINS || "")
 		.split(",")
@@ -100,7 +106,7 @@ function corsHeaders(env, origin) {
 		"Access-Control-Allow-Headers": "Content-Type, Authorization",
 		"Vary": "Origin"
 	};
-	if (origin && allowed.includes(origin)) h["Access-Control-Allow-Origin"] = origin;
+	if (origin && (allowed.includes(origin) || RESEARCHOPS_CUSTOM_ORIGINS.has(origin))) h["Access-Control-Allow-Origin"] = origin;
 	return h;
 }
 
