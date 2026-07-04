@@ -27,13 +27,44 @@
 	background: #ffffff;
 	}
 
-.study-ethics-risk-outcome .govuk-caption-m, .study-ethics-risk-outcome .govuk-heading-m, .study-ethics-risk-outcome .govuk-heading-s, .study-ethics-risk-outcome .govuk-body, .study-ethics-risk-outcome .govuk-list {
+.study-ethics-risk-outcome .govuk-caption-m, .study-ethics-risk-outcome .govuk-heading-m, .study-ethics-risk-outcome .govuk-heading-s, .study-ethics-risk-outcome .govuk-body, .study-ethics-risk-outcome .govuk-body-s, .study-ethics-risk-outcome .govuk-list {
 	margin-bottom: 15px;
 	}
 
+.study-ethics-risk-outcome .govuk-body, .study-ethics-risk-outcome .govuk-body-s, .study-ethics-risk-outcome .govuk-list, .study-ethics-risk-outcome .govuk-list li {
+	font-size: 16px;
+	line-height: 1.25;
+	}
+
+.study-ethics-risk-outcome .govuk-heading-s, .study-ethics-risk-trigger-group__heading {
+	font-size: 19px;
+	line-height: 1.25;
+	}
+
 .study-ethics-risk-outcome .govuk-tag {
+	font-size: 16px;
+	line-height: 1.25;
 	margin-bottom: 15px;
 	white-space: normal;
+	}
+
+.study-ethics-risk-trigger-group {
+	border-top: 1px solid #b1b4b6;
+	margin-bottom: 15px;
+	padding-top: 10px;
+	}
+
+.study-ethics-risk-trigger-group:first-child {
+	border-top: 0;
+	padding-top: 0;
+	}
+
+.study-ethics-risk-trigger-group__heading {
+	margin-bottom: 5px;
+	}
+
+.study-ethics-risk-trigger-group .govuk-body-s, .study-ethics-risk-trigger-group .govuk-list {
+	margin-bottom: 0;
 	}
 
 .study-sourcebook-reference {
@@ -65,14 +96,159 @@
 	padding-top: 20px;
 	}
 
+.study-ethics-next-steps-route-state {
+	border-left: 5px solid #1d70b8;
+	padding: 15px 0 1px 15px;
+	}
+
+.study-ethics-next-steps-assignment {
+	margin-bottom: 30px;
+	}
+
 .study-ethics-next-steps-list .govuk-task-list__item {
 	display: grid;
-	grid-template-columns: minmax(0, 1fr) 120px;
+	grid-template-columns: minmax(0, 1fr) max-content;
 	column-gap: 15px;
 	}
 
 .study-ethics-next-steps-list .govuk-task-list__status {
+	justify-self: end;
+	min-width: 58px;
 	text-align: right;
+	}
+
+.study-ethics-next-steps-list .govuk-tag {
+	display: inline-block;
+	overflow-wrap: normal;
+	white-space: nowrap;
+	word-break: normal;
+	}
+
+.study-ethics-next-steps-evidence__item {
+	align-items: flex-start;
+	border-bottom: 1px solid #b1b4b6;
+	display: flex;
+	gap: 15px;
+	justify-content: space-between;
+	padding: 10px 0;
+	}
+
+.study-ethics-next-steps-evidence__item > span {
+	margin-right: 10px;
+	}
+
+.study-ethics-next-steps-evidence__tag {
+	flex: 0 0 auto;
+	margin-left: 15px;
+	white-space: nowrap;
+	}
+
+.study-ethics-next-steps-review-context {
+	border-left: 5px solid #1d70b8;
+	padding-left: 15px;
+	}
+
+.study-ethics-next-steps-context-list {
+	margin-bottom: 0;
+	}
+
+.study-ethics-next-steps-context-list li {
+	margin-bottom: 10px;
+	}
+
+.study-ethics-next-steps-context-family {
+	color: #505a5f;
+	font-weight: 700;
+	}
+
+.study-ethics-next-steps-form-row {
+	margin-bottom: 10px;
+	}
+
+.study-ethics-next-steps-submission-fields {
+	border-top: 1px solid #b1b4b6;
+	margin-top: 30px;
+	padding-top: 20px;
+	}
+
+.study-ethics-next-steps-submission-fields .govuk-form-group:last-child {
+	margin-bottom: 0;
+	}
+
+.study-ethics-submission-workflow {
+	border-left: 5px solid #1d70b8;
+	padding-left: 20px;
+	}
+
+.study-ethics-submission-meta {
+	margin-bottom: 30px;
+	}
+
+.study-ethics-submission-step-list {
+	margin-bottom: 40px;
+	}
+
+.study-ethics-submission-step-list .govuk-task-list__item {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) max-content;
+	column-gap: 15px;
+	}
+
+.study-ethics-submission-step-list .govuk-task-list__status {
+	justify-self: end;
+	min-width: 58px;
+	text-align: right;
+	}
+
+.study-ethics-submission-step-list .govuk-tag {
+	display: inline-block;
+	overflow-wrap: normal;
+	white-space: nowrap;
+	word-break: normal;
+	}
+
+.study-ethics-submission-step-form {
+	border-top: 1px solid #b1b4b6;
+	padding-top: 20px;
+	}
+
+.study-ethics-submission-derived {
+	background: #f3f2f1;
+	padding: 15px;
+	}
+
+.study-ethics-submission-derived .govuk-list {
+	margin-bottom: 0;
+	}
+
+.study-ethics-submission-submit-panel {
+	border-top: 1px solid #b1b4b6;
+	padding-top: 20px;
+	}
+
+.study-ethics-submission-document-status {
+	color: #505a5f;
+	min-height: 20px;
+	}
+
+.study-ethics-submission-document-status--error {
+	color: #d4351c;
+	font-weight: 700;
+	}
+
+.study-ethics-submission-history {
+	border-top: 1px solid #b1b4b6;
+	padding-top: 20px;
+	}
+
+.study-ethics-submission-history__title {
+	font-weight: 700;
+	}
+
+.study-ethics-submission-history__meta {
+	color: #505a5f;
+	display: inline-block;
+	margin-top: 5px;
 	}
 
 @media (max-width: 900px) {
@@ -84,10 +260,21 @@
 		position: static;
 		margin-top: 30px;
 		}
-	.study-ethics-next-steps-list .govuk-task-list__item {
+	.study-ethics-next-steps-evidence__item {
+		align-items: center;
+		flex-wrap: wrap;
+		justify-content: flex-start;
+		}
+	.study-ethics-next-steps-evidence__tag {
+		margin-left: 0;
+		}
+	}
+
+@media (max-width: 480px) {
+	.study-ethics-next-steps-list .govuk-task-list__item, .study-ethics-submission-step-list .govuk-task-list__item {
 		display: block;
 		}
-	.study-ethics-next-steps-list .govuk-task-list__status {
+	.study-ethics-next-steps-list .govuk-task-list__status, .study-ethics-submission-step-list .govuk-task-list__status {
 		margin-top: 10px;
 		text-align: left;
 		}

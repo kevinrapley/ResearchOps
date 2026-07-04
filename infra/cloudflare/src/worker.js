@@ -267,6 +267,8 @@ const RESEARCH_DATA_AUTH_PERMISSIONS = [
 	["project.manage", "Manage projects", "Can create or update project records."],
 	["study.view", "View studies", "Can view study records and associated research planning data."],
 	["study.manage", "Manage studies", "Can create or update study records."],
+	["study.ethics.view", "View study ethics records", "Can view study ethics and research risk records and generated submission documents."],
+	["study.ethics.manage", "Manage study ethics records", "Can record study ethics risk next steps and generate submission documents."],
 	["research.content.view", "View research content", "Can view journal entries, memos, codes, guides, sessions and analysis."],
 	["research.content.manage", "Manage research content", "Can create, update or delete journal entries, memos, codes, guides, sessions and analysis."],
 	["research.integration.manage", "Manage research integrations", "Can use integrations that write or synchronise research data."],
@@ -286,6 +288,8 @@ const RESEARCH_DATA_ROLE_PERMISSIONS = [
 	["role_researcher", "project.manage"],
 	["role_researcher", "study.view"],
 	["role_researcher", "study.manage"],
+	["role_researcher", "study.ethics.view"],
+	["role_researcher", "study.ethics.manage"],
 	["role_researcher", "research.content.view"],
 	["role_researcher", "research.content.manage"],
 	["role_researcher", "research.integration.manage"],
@@ -300,6 +304,8 @@ const RESEARCH_DATA_ROLE_PERMISSIONS = [
 	["role_research_lead", "project.manage"],
 	["role_research_lead", "study.view"],
 	["role_research_lead", "study.manage"],
+	["role_research_lead", "study.ethics.view"],
+	["role_research_lead", "study.ethics.manage"],
 	["role_research_lead", "research.content.view"],
 	["role_research_lead", "research.content.manage"],
 	["role_research_lead", "research.integration.manage"],
@@ -315,6 +321,8 @@ const RESEARCH_DATA_ROLE_PERMISSIONS = [
 	["role_team_admin", "project.manage"],
 	["role_team_admin", "study.view"],
 	["role_team_admin", "study.manage"],
+	["role_team_admin", "study.ethics.view"],
+	["role_team_admin", "study.ethics.manage"],
 	["role_team_admin", "research.content.view"],
 	["role_team_admin", "research.content.manage"],
 	["role_team_admin", "research.integration.manage"],
@@ -422,7 +430,9 @@ const RESEARCH_DATA_ROUTE_PERMISSIONS = [
 	["route_api_consent_forms_publish_post", "POST", "/api/consent-forms/:id/publish", "[\"consent.form.manage\"]"],
 	["route_api_participant_consent_get", "GET", "/api/participant-consent", "[\"participant.consent.view\"]"],
 	["route_api_participant_consent_post", "POST", "/api/participant-consent", "[\"participant.consent.manage\"]"],
-	["route_api_participant_consent_patch", "PATCH", "/api/participant-consent/:id", "[\"participant.consent.manage\"]"]
+	["route_api_participant_consent_patch", "PATCH", "/api/participant-consent/:id", "[\"participant.consent.manage\"]"],
+	["route_api_study_ethics_submission_documents_post", "POST", "/api/study-ethics-risk/submissions", "[\"study.ethics.manage\"]"],
+	["route_api_study_ethics_submission_document_get", "GET", "/api/study-ethics-risk/submissions/:id", "[\"study.ethics.view\"]"]
 ];
 
 async function ensureStudySupportAuthDeclarations(env) {
@@ -543,6 +553,7 @@ function researchDataRoutePermissionRequest(request, apiPath) {
 	if (apiPath.match(/^\/api\/consent-forms\/([^/]+)\/publish$/)) return requestForRoutePermission(request, "/api/consent-forms/:id/publish");
 	if (apiPath.match(/^\/api\/consent-forms\/([^/]+)$/)) return requestForRoutePermission(request, "/api/consent-forms/:id");
 	if (apiPath.match(/^\/api\/participant-consent\/([^/]+)$/)) return requestForRoutePermission(request, "/api/participant-consent/:id");
+	if (apiPath.match(/^\/api\/study-ethics-risk\/submissions\/([^/]+)$/)) return requestForRoutePermission(request, "/api/study-ethics-risk/submissions/:id");
 	return request;
 }
 
@@ -833,6 +844,23 @@ async function handleSourcebook(request, env, apiPath) {
 	return new Response(JSON.stringify({ error: "Not found", path: apiPath }), { status: 404, headers: { "content-type": "application/json; charset=utf-8" } });
 }
 
+async function handleStudyEthicsRisk(request, env, apiPath) {
+	const origin = request.headers.get("Origin") || "";
+	const service = serviceFor(env);
+	const authContext = await assertResearchDataRoutePermission(request, env, apiPath);
+
+	if (apiPath === "/api/study-ethics-risk/submissions" && request.method === "POST") {
+		return service.createEthicsSubmissionDocument(request, origin, authContext);
+	}
+
+	const documentMatch = apiPath.match(/^\/api\/study-ethics-risk\/submissions\/([^/]+)$/);
+	if (documentMatch && request.method === "GET") {
+		return service.readEthicsSubmissionDocument(origin, decodeURIComponent(documentMatch[1]));
+	}
+
+	return new Response(JSON.stringify({ error: "Not found", path: apiPath }), { status: 404, headers: { "content-type": "application/json; charset=utf-8" } });
+}
+
 async function handleMural(request, env, apiPath) {
 	const url = new URL(request.url);
 	const origin = request.headers.get("Origin") || "";
@@ -887,6 +915,7 @@ export default {
 			else if (apiPath === "/api/synthesis" || apiPath.startsWith("/api/synthesis/")) result = await handleSynthesis(request, env, apiPath);
 			else if (apiPath === "/api/consent-forms" || apiPath.startsWith("/api/consent-forms/")) result = await handleConsentForms(request, env, apiPath);
 				else if (apiPath === "/api/participant-consent" || apiPath.startsWith("/api/participant-consent/")) result = await handleParticipantConsent(request, env, apiPath);
+				else if (apiPath === "/api/study-ethics-risk/submissions" || apiPath.startsWith("/api/study-ethics-risk/submissions/")) result = await handleStudyEthicsRisk(request, env, apiPath);
 				else if (apiPath === "/api/study-support" || apiPath.startsWith("/api/study-support/")) result = await handleStudySupport(request, env, apiPath);
 				else if (apiPath === "/api/repository" || apiPath.startsWith("/api/repository/")) result = await handleRepository(request, env, apiPath);
 				else if (apiPath === "/api/sourcebook" || apiPath.startsWith("/api/sourcebook/")) result = await handleSourcebook(request, env, apiPath);

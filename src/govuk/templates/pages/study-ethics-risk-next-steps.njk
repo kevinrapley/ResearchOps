@@ -2,11 +2,9 @@
 {% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
 {% from "govuk/components/button/macro.njk" import govukButton %}
 {% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
-{% from "govuk/components/radios/macro.njk" import govukRadios %}
-{% from "govuk/components/textarea/macro.njk" import govukTextarea %}
 {% from "macros/daas-brand-panel.njk" import daasBrandPanel %}
 
-{% set ethicsRiskNextStepsScriptVersion = "study-ethics-risk-next-steps-20260704" %}
+{% set ethicsRiskNextStepsScriptVersion = "study-ethics-risk-next-steps-20260704-17" %}
 
 {% block head %}
 	<meta property="schema:name" content="Ethics risk next steps - ResearchOps">
@@ -18,7 +16,7 @@
 	<link rel="stylesheet" href="/css/study-ethics-risk.css" media="screen">
 	<link rel="stylesheet" href="/css/daas-brand-panel.css?v=leds-brand-panel-20260624" media="screen">
 	<link rel="modulepreload" href="/js/study-route-context.js">
-	<link rel="modulepreload" href="/js/study-ethics-risk-model.js?v=study-ethics-risk-20260704">
+	<link rel="modulepreload" href="/js/study-ethics-risk-model.js?v=study-ethics-risk-20260704-2">
 	<link rel="modulepreload" href="/js/study-ethics-risk-next-steps-page.js?v={{ ethicsRiskNextStepsScriptVersion }}">
 	<link rel="modulepreload" href="/js/daas-brand-panel.js?v=leds-brand-panel-20260624">
 {% endblock %}
@@ -78,10 +76,10 @@
 				<ol id="ethics-next-steps-list" class="govuk-task-list study-ethics-next-steps-list">
 					<li class="govuk-task-list__item govuk-task-list__item--with-link">
 						<div class="govuk-task-list__name-and-hint">
-							<a class="govuk-link govuk-task-list__link" href="#ethics-next-steps-record">Loading next step</a>
-							<div class="govuk-task-list__hint">Checking the recorded risk outcome.</div>
+							<a class="govuk-link govuk-task-list__link" href="#back-to-risk-assessment">Complete the ethics and research risk assessment</a>
+							<div class="govuk-task-list__hint">Answer the risk discovery questions and record the study risk outcome.</div>
 						</div>
-						<div class="govuk-task-list__status"><strong class="govuk-tag govuk-tag--grey">Checking</strong></div>
+						<div class="govuk-task-list__status"><strong class="govuk-tag govuk-tag--yellow">Action needed</strong></div>
 					</li>
 				</ol>
 			</section>
@@ -95,42 +93,157 @@
 				</ul>
 			</section>
 
-			<section id="ethics-next-steps-record" class="study-ethics-next-steps-panel govuk-!-margin-bottom-7" aria-labelledby="ethics-next-steps-record-title">
-				<h2 id="ethics-next-steps-record-title" class="govuk-heading-m">Record progress</h2>
-				<form id="ethics-next-steps-form" novalidate>
-					{{ govukRadios({
-						idPrefix: "ethics-next-step-state",
-						name: "nextStepState",
-						fieldset: {
-							legend: {
-								text: "What has happened?",
-								classes: "govuk-fieldset__legend--s"
-							}
-						},
-						items: [
-							{ value: "started", text: "Started the next steps" },
-							{ value: "requested", text: "Advice, controls or submission route requested" },
-							{ value: "resolved", text: "Decision, controls or approval recorded" }
-						]
-					}) }}
+			<section id="ethics-next-steps-action" class="study-ethics-next-steps-panel govuk-!-margin-bottom-7" aria-labelledby="ethics-next-steps-action-title">
+				<h2 id="ethics-next-steps-action-title" class="govuk-heading-m">Record checkpoint decision</h2>
+				<p id="ethics-next-steps-action-intro" class="govuk-body">Complete and save the ethics and research risk assessment before recording route-specific checkpoint decisions.</p>
+				<div id="ethics-next-step-route-state" class="study-ethics-next-steps-route-state govuk-!-margin-bottom-5">
+					<h3 id="ethics-next-step-route-state-title" class="govuk-heading-s govuk-!-margin-bottom-1">Current next step</h3>
+					<p id="ethics-next-step-route-state-summary" class="govuk-body">Risk assessment needs to be completed.</p>
+				</div>
 
-					{{ govukTextarea({
-						id: "ethics-next-step-note",
-						name: "nextStepNote",
-						value: "",
-						rows: 6,
-						label: {
-							text: "Decision, controls or conditions",
-							classes: "govuk-label--s"
-						},
-						hint: {
-							text: "Do not include participant personal data."
-						}
-					}) }}
+				<section id="ethics-submission-workflow" class="study-ethics-submission-workflow" aria-labelledby="ethics-submission-workflow-title" hidden>
+					<p class="govuk-caption-m">Full ethics submission</p>
+					<h3 id="ethics-submission-workflow-title" class="govuk-heading-m">Prepare ethics submission version 1</h3>
+					<p id="ethics-submission-workflow-summary" class="govuk-body">Work through each section, save progress and return later if needed.</p>
+
+					<dl class="govuk-summary-list study-ethics-submission-meta">
+						<div class="govuk-summary-list__row">
+							<dt class="govuk-summary-list__key">Submission type</dt>
+							<dd id="ethics-submission-type" class="govuk-summary-list__value">System determined</dd>
+						</div>
+						<div class="govuk-summary-list__row">
+							<dt class="govuk-summary-list__key">Current version</dt>
+							<dd id="ethics-submission-version" class="govuk-summary-list__value">Version 1</dd>
+						</div>
+						<div class="govuk-summary-list__row">
+							<dt class="govuk-summary-list__key">Saved progress</dt>
+							<dd id="ethics-submission-progress" class="govuk-summary-list__value">No sections saved yet.</dd>
+						</div>
+					</dl>
+
+					<ol id="ethics-submission-step-list" class="govuk-task-list study-ethics-submission-step-list"></ol>
+
+					<div id="ethics-submission-step-error-summary" class="govuk-error-summary" data-module="govuk-error-summary" role="alert" tabindex="-1" hidden>
+						<h2 class="govuk-error-summary__title">There is a problem</h2>
+						<div class="govuk-error-summary__body">
+							<ul class="govuk-list govuk-error-summary__list">
+								<li>
+									<a id="ethics-submission-step-error-link" href="#ethics-submission-step-input">Enter the missing information for this section</a>
+								</li>
+							</ul>
+						</div>
+					</div>
+
+					<form id="ethics-submission-step-form" class="study-ethics-submission-step-form" novalidate>
+						<p id="ethics-submission-step-caption" class="govuk-caption-m">Step 1 of 1</p>
+						<h4 id="ethics-submission-step-title" class="govuk-heading-s">Submission section</h4>
+						<p id="ethics-submission-step-hint" class="govuk-body">Review the information that will be included in this section.</p>
+						<div class="study-ethics-submission-derived govuk-!-margin-bottom-5">
+							<h5 class="govuk-heading-s">Generated from ResearchOps</h5>
+							<div id="ethics-submission-step-derived" class="govuk-body">No generated content is available for this section.</div>
+						</div>
+						<div id="ethics-submission-step-input-group" class="govuk-form-group" hidden>
+							<label id="ethics-submission-step-input-label" class="govuk-label govuk-label--s" for="ethics-submission-step-input">Provide missing information for this section</label>
+							<div id="ethics-submission-step-input-hint" class="govuk-hint">Only add information needed for ethics board review. Do not include participant personal data.</div>
+							<p id="ethics-submission-step-input-error" class="govuk-error-message" hidden></p>
+							<textarea class="govuk-textarea" id="ethics-submission-step-input" name="submissionStepInput" rows="6" aria-describedby="ethics-submission-step-input-hint"></textarea>
+						</div>
+						<div class="govuk-button-group">
+							{{ govukButton({
+								text: "Save and continue",
+								type: "submit",
+								attributes: {
+									id: "ethics-submission-save-continue"
+								}
+							}) }}
+							{{ govukButton({
+								text: "Save and return later",
+								type: "button",
+								classes: "govuk-button--secondary",
+								attributes: {
+									id: "ethics-submission-save-later"
+								}
+							}) }}
+						</div>
+					</form>
+
+					<div id="ethics-submission-submit-panel" class="study-ethics-submission-submit-panel govuk-!-margin-top-6" hidden>
+						<h4 id="ethics-submission-submit-title" class="govuk-heading-s">Submit this version</h4>
+						<p id="ethics-submission-submit-summary" class="govuk-body">Submit the saved ethics pack and attachments when every section is ready for board review.</p>
+						<p id="ethics-submission-document-status" class="govuk-body-s study-ethics-submission-document-status" role="status"></p>
+						<div class="govuk-button-group">
+							{{ govukButton({
+								text: "Submit ethics submission",
+								type: "button",
+								attributes: {
+									id: "ethics-submission-submit-version"
+								}
+							}) }}
+							{{ govukButton({
+								text: "Create resubmission",
+								type: "button",
+								classes: "govuk-button--secondary",
+								attributes: {
+									id: "ethics-submission-create-resubmission"
+								}
+							}) }}
+						</div>
+					</div>
+
+					<section class="study-ethics-submission-history govuk-!-margin-top-6" aria-labelledby="ethics-submission-history-title">
+						<h4 id="ethics-submission-history-title" class="govuk-heading-s">Submission history</h4>
+						<p id="ethics-submission-history-empty" class="govuk-body">No submission versions have been sent yet.</p>
+						<ol id="ethics-submission-history-list" class="govuk-list govuk-list--number"></ol>
+					</section>
+				</section>
+
+				<form id="ethics-next-steps-form" novalidate hidden>
+					<dl id="ethics-next-step-assignment" class="govuk-summary-list study-ethics-next-steps-assignment">
+						<div class="govuk-summary-list__row">
+							<dt id="ethics-next-step-owner-label" class="govuk-summary-list__key">Owner of the next action</dt>
+							<dd id="ethics-next-step-owner-value" class="govuk-summary-list__value">Research Operations</dd>
+						</div>
+						<div class="govuk-summary-list__row">
+							<dt id="ethics-next-step-reviewer-label" class="govuk-summary-list__key">Reviewer or approver</dt>
+							<dd id="ethics-next-step-reviewer-value" class="govuk-summary-list__value">Research Operations</dd>
+						</div>
+						<div class="govuk-summary-list__row">
+							<dt id="ethics-next-step-review-date-label" class="govuk-summary-list__key">Expected review date</dt>
+							<dd id="ethics-next-step-review-date-value" class="govuk-summary-list__value">Calculated after the checkpoint record is saved.</dd>
+						</div>
+					</dl>
+
+					<section id="ethics-next-step-review-context" class="study-ethics-next-steps-review-context govuk-!-margin-bottom-6" aria-labelledby="ethics-next-step-review-context-title" hidden>
+						<h3 id="ethics-next-step-review-context-title" class="govuk-heading-s">Context to send to reviewers</h3>
+						<p id="ethics-next-step-review-context-intro" class="govuk-body">Use the saved ethics and research risk assessment as context for the advice request.</p>
+						<dl class="govuk-summary-list">
+							<div class="govuk-summary-list__row">
+								<dt class="govuk-summary-list__key">Sensitive research triggers</dt>
+								<dd id="ethics-next-step-review-triggers" class="govuk-summary-list__value">No sensitive research triggers recorded.</dd>
+							</div>
+							<div class="govuk-summary-list__row">
+								<dt class="govuk-summary-list__key">Controls to include</dt>
+								<dd id="ethics-next-step-review-controls" class="govuk-summary-list__value">No additional controls recorded.</dd>
+							</div>
+						</dl>
+					</section>
+
+						<div class="govuk-form-group">
+							<label id="ethics-next-step-request-label" class="govuk-label govuk-label--s" for="ethics-next-step-request">Advice question, controls or submission contents</label>
+							<textarea class="govuk-textarea" id="ethics-next-step-request" name="nextStepRequest" rows="5"></textarea>
+						</div>
+
+						<div id="ethics-next-step-submission-fields" class="study-ethics-next-steps-submission-fields govuk-!-margin-bottom-6" hidden></div>
+
+						<div id="ethics-next-step-decision-group" class="govuk-form-group">
+							<label id="ethics-next-step-decision-label" class="govuk-label govuk-label--s" for="ethics-next-step-decision">Decision, controls or conditions</label>
+							<div class="govuk-hint">Do not include participant personal data.</div>
+						<textarea class="govuk-textarea" id="ethics-next-step-decision" name="nextStepDecision" rows="6"></textarea>
+					</div>
 
 					<div class="govuk-button-group">
 						{{ govukButton({
-							text: "Record next step",
+							text: "Save checkpoint record",
 							type: "submit",
 							attributes: {
 								id: "ethics-next-steps-submit"
@@ -146,20 +259,22 @@
 						}) }}
 					</div>
 				</form>
-				<p id="ethics-next-steps-recorded-state" class="govuk-body-s study-ethics-risk-recorded-state">No next step recorded yet.</p>
+				<p id="ethics-next-steps-recorded-state" class="govuk-body-s study-ethics-risk-recorded-state">No checkpoint decision recorded yet.</p>
 			</section>
 		</div>
 
 		<aside class="govuk-grid-column-one-third study-ethics-risk-aside" aria-labelledby="ethics-next-steps-outcome-title">
 			<section class="study-ethics-risk-outcome" aria-live="polite">
-				<p class="govuk-caption-m">Risk route</p>
-				<h2 id="ethics-next-steps-outcome-title" class="govuk-heading-m">Checking risk outcome</h2>
-				<strong id="ethics-next-steps-outcome-tag" class="govuk-tag govuk-tag--grey">Checking</strong>
-				<p id="ethics-next-steps-outcome-summary" class="govuk-body">Checking the recorded ethics and research risk outcome.</p>
+				<p class="govuk-caption-m">Recorded risk route</p>
+				<h2 id="ethics-next-steps-outcome-title" class="govuk-heading-m">Risk assessment needed</h2>
+				<strong id="ethics-next-steps-outcome-tag" class="govuk-tag govuk-tag--yellow">Action needed</strong>
+				<p id="ethics-next-steps-outcome-summary" class="govuk-body">Complete the ethics and research risk assessment to see the route-specific next steps.</p>
 				<h3 class="govuk-heading-s">Sensitive research triggers</h3>
-				<p id="ethics-next-steps-triggers" class="govuk-body">Checking triggers.</p>
+				<div id="ethics-next-steps-triggers" class="study-ethics-risk-trigger-groups">
+					<p class="govuk-body">No sensitive research triggers are shown until the risk outcome is recorded.</p>
+				</div>
 				<h3 class="govuk-heading-s">Sourcebook clauses</h3>
-				<p id="ethics-next-steps-sourcebook-clauses" class="govuk-body">Checking Sourcebook clauses.</p>
+				<p id="ethics-next-steps-sourcebook-clauses" class="govuk-body">Sourcebook clauses appear after the risk outcome is recorded.</p>
 				<p class="govuk-body-s"><a id="back-to-risk-assessment" class="govuk-link" href="/pages/study/ethics-risk/">Review risk assessment</a></p>
 			</section>
 		</aside>
@@ -167,8 +282,7 @@
 </div>
 {% endblock %}
 
-{% block bodyEnd %}
-	{{ super() }}
+{% block scripts %}
 	<script type="module" src="/js/daas-brand-panel.js?v=leds-brand-panel-20260624"></script>
 	<script type="module" src="/js/study-ethics-risk-next-steps-page.js?v={{ ethicsRiskNextStepsScriptVersion }}"></script>
 {% endblock %}

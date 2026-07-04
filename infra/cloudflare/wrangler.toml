@@ -74,6 +74,12 @@ binding    = "SESSION_KV"
 id         = "8e2d88969b9e4be694868931bdba92f2"
 preview_id = "8e2d88969b9e4be694868931bdba92f2"
 
+# Object storage
+[[r2_buckets]]
+binding             = "RESEARCHOPS_DOCUMENTS_R2"
+bucket_name         = "researchops-documents"
+preview_bucket_name = "researchops-documents-preview"
+
 # Logging
 [observability]
 [observability.logs]

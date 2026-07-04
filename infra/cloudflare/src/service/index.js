@@ -15,6 +15,7 @@ import * as Studies from "./studies.js";
 import * as Guides from "./guides.js";
 import * as ConsentForms from "./consent-forms.js";
 import * as ParticipantConsent from "./participant-consent.js";
+import * as EthicsSubmissionDocuments from "./ethics-submission-documents.js";
 import * as Participants from "./participants.js";
 import * as Sessions from "./sessions.js";
 import * as StudySupport from "./study-support.js";
@@ -82,6 +83,7 @@ import { recordProvenanceEvent } from "./provenance.js";
  * @property {any}    AI
  * @property {KVNamespace} SESSION_KV
  * @property {D1Database} RESEARCHOPS_D1
+ * @property {any}    [RESEARCHOPS_DOCUMENTS_R2]
  * @property {string} [MURAL_CLIENT_ID]
  * @property {string} [MURAL_CLIENT_SECRET]
  * @property {string} [MURAL_REDIRECT_URI]
@@ -245,6 +247,10 @@ export class ResearchOpsService {
 	listParticipantConsent = (origin, url) => ParticipantConsent.listParticipantConsent(this, origin, url);
 	createParticipantConsent = (req, origin) => ParticipantConsent.createParticipantConsent(this, req, origin);
 	updateParticipantConsent = (req, origin, recordId) => ParticipantConsent.updateParticipantConsent(this, req, origin, recordId);
+
+	/* ─────────────── Ethics submission documents ─────────────── */
+	createEthicsSubmissionDocument = (req, origin, authContext) => EthicsSubmissionDocuments.createEthicsSubmissionDocument(this, req, origin, authContext);
+	readEthicsSubmissionDocument = (origin, documentId) => EthicsSubmissionDocuments.readEthicsSubmissionDocument(this, origin, documentId);
 
 	/* ─────────────── Partials ─────────────── */
 	listPartials = (origin) => Partials.listPartials(this, origin);

@@ -5,9 +5,11 @@
  */
 
 import {
+	applyEthicsRiskNextStepsOutcome,
 	evaluateStudyEthicsRisk,
-	loadSeededStudyEthicsRisk
-} from "./study-ethics-risk-model.js";
+	loadSeededStudyEthicsRisk,
+	loadStudyEthicsRiskNextSteps
+} from "./study-ethics-risk-model.js?v=study-ethics-risk-20260704-2";
 
 function resolveApiBase() {
 	const explicit =
@@ -212,6 +214,7 @@ async function loadReadinessContext(studyId) {
 			loadStudySynthesisSummary(studyId),
 			loadSeededStudyEthicsRisk(studyId)
 		]);
+	const studyEthicsRiskNextSteps = loadStudyEthicsRiskNextSteps(studyId);
 
 	return {
 		participants,
@@ -221,7 +224,8 @@ async function loadReadinessContext(studyId) {
 		supportSetup,
 		evidence,
 		synthesisSummary,
-		studyEthicsRisk
+		studyEthicsRisk,
+		studyEthicsRiskNextSteps
 	};
 }
 
@@ -409,7 +413,10 @@ function evaluateReadiness(study, context = {}) {
 	const guides = Array.isArray(context.guides) ? context.guides : [];
 	const consentForms = Array.isArray(context.consentForms) ? context.consentForms : [];
 	const participantConsentRecords = Array.isArray(context.participantConsentRecords) ? context.participantConsentRecords : [];
-	const studyEthicsRisk = context.studyEthicsRisk || evaluateStudyEthicsRisk({});
+	const studyEthicsRisk = applyEthicsRiskNextStepsOutcome(
+		context.studyEthicsRisk || evaluateStudyEthicsRisk({}),
+		context.studyEthicsRiskNextSteps
+	);
 
 	const participantsReady = participants.length > 0;
 	const guideReady = guides.some(isPublishedLike);
@@ -554,10 +561,14 @@ function hasSourcebookEvidenceRecord(records, evidenceId, aliases = []) {
 function studySourcebookEvidenceIds(readiness, context = {}) {
 	const provided = new Set();
 	if (readiness.description?.ready) provided.add("research-intake");
-	const studyEthicsRisk = context.studyEthicsRisk || {};
+	const studyEthicsRisk = applyEthicsRiskNextStepsOutcome(context.studyEthicsRisk || {}, context.studyEthicsRiskNextSteps);
 	if (studyEthicsRisk.started && studyEthicsRisk.route !== "incomplete-assessment") {
 		provided.add("risk-assessment");
 		provided.add("triage-outcome");
+		provided.add("participant-risk-rationale");
+	}
+	const nextStepsRecord = context.studyEthicsRiskNextSteps || {};
+	if (Array.isArray(nextStepsRecord.evidenceIds) && nextStepsRecord.evidenceIds.includes("updated-controls")) {
 		provided.add("participant-risk-rationale");
 	}
 	const evidenceRecords = Array.isArray(context.evidence) ? context.evidence : [];
