@@ -1,0 +1,110 @@
+// prettier-ignore
+.study-ethics-risk-header {
+	border-top: 1px solid #b1b4b6;
+	padding-top: 24px;
+}
+
+// prettier-ignore
+.study-ethics-risk-form {
+	max-width: 760px;
+}
+
+// prettier-ignore
+.study-ethics-risk-form .govuk-form-group {
+	margin-bottom: 30px;
+}
+
+// prettier-ignore
+.study-ethics-risk-actions {
+	margin-top: 10px;
+}
+
+// prettier-ignore
+.study-ethics-risk-aside {
+	position: sticky;
+	top: 20px;
+}
+
+// prettier-ignore
+.study-ethics-risk-outcome {
+	border-left: 5px solid #1d70b8;
+	box-sizing: border-box;
+	padding: 20px;
+	background: #ffffff;
+}
+
+// prettier-ignore
+.study-ethics-risk-outcome .govuk-caption-m,
+.study-ethics-risk-outcome .govuk-heading-m,
+.study-ethics-risk-outcome .govuk-heading-s,
+.study-ethics-risk-outcome .govuk-body,
+.study-ethics-risk-outcome .govuk-list {
+	margin-bottom: 15px;
+}
+
+// prettier-ignore
+.study-ethics-risk-outcome .govuk-tag {
+	margin-bottom: 15px;
+	white-space: normal;
+}
+
+// prettier-ignore
+.study-sourcebook-reference {
+	display: block;
+	margin-top: 5px;
+	color: #505a5f;
+	font-size: 16px;
+	line-height: 1.25;
+}
+
+// prettier-ignore
+.study-ethics-risk-sourcebook-list {
+	font-size: 16px;
+	line-height: 1.25;
+}
+
+// prettier-ignore
+.study-ethics-risk-sourcebook-list li {
+	margin-bottom: 10px;
+}
+
+// prettier-ignore
+.study-ethics-risk-recorded-state {
+	border-top: 1px solid #b1b4b6;
+	color: #505a5f;
+	margin-top: 20px;
+	padding-top: 15px;
+}
+
+// prettier-ignore
+@media (max-width: 900px) {
+	.study-ethics-risk-page .govuk-grid-column-two-thirds,
+	.study-ethics-risk-page .govuk-grid-column-one-third {
+		float: none;
+		width: 100%;
+	}
+
+	.study-ethics-risk-aside {
+		position: static;
+		margin-top: 30px;
+	}
+}
+
+// prettier-ignore
+@media (max-width: 699px) {
+	.study-ethics-risk-header {
+		padding-top: 16px;
+	}
+
+	.study-ethics-risk-header .govuk-heading-l {
+		font-size: 32px;
+		line-height: 1.15;
+		overflow-wrap: anywhere;
+	}
+
+	.study-ethics-risk-actions .govuk-button {
+		box-sizing: border-box;
+		text-align: center;
+		width: 100%;
+	}
+}

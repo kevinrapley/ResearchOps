@@ -1,0 +1,628 @@
+<!doctype html>
+<html class="govuk-template" lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>Ethics and research risk - ResearchOps Demo Suite</title>
+		<link rel="stylesheet" href="/assets/govuk/govuk-frontend.css" media="screen" />
+
+		<meta property="schema:name" content="Ethics and research risk - ResearchOps" />
+		<meta property="schema:creator" content="Home Office ResearchOps Platform" />
+		<meta property="schema:dateModified" content="2026-07-04" />
+		<meta property="dcterms:language" content="en-GB" />
+		<link rel="stylesheet" href="/css/govuk/govuk-forms.css" media="screen" />
+		<link rel="stylesheet" href="/css/sourcebook-components.css" media="screen" />
+		<link rel="stylesheet" href="/css/study-ethics-risk.css" media="screen" />
+		<link rel="stylesheet" href="/css/daas-brand-panel.css?v=leds-brand-panel-20260624" media="screen" />
+		<link rel="modulepreload" href="/js/study-route-context.js" />
+		<link rel="modulepreload" href="/js/study-ethics-risk-model.js?v=study-ethics-risk-20260704" />
+		<link rel="modulepreload" href="/js/study-ethics-risk-page.js?v=study-ethics-risk-20260704" />
+		<link rel="modulepreload" href="/js/daas-brand-panel.js?v=leds-brand-panel-20260624" />
+
+		<script type="module" src="/components/layout.js?v=govuk-page-chrome-20260702-1" defer></script>
+		<script type="module" src="/js/govuk-frontend-init.js?v=govuk-page-chrome-20260702-1" defer></script>
+	</head>
+	<body class="govuk-template__body">
+		<script>
+			document.body.className +=
+				" js-enabled" + ("noModule" in HTMLScriptElement.prototype ? " govuk-frontend-supported" : "");
+		</script>
+		<x-include src="/partials/header.html" vars='{"active":"Projects"}'></x-include>
+		<main class="govuk-main-wrapper" id="main-content" role="main" tabindex="-1">
+			<div class="govuk-width-container study-ethics-risk-page" data-study-subpage-template="ethics-risk">
+				<nav
+					class="govuk-breadcrumbs"
+					id="study-ethics-risk-breadcrumbs"
+					typeof="schema:BreadcrumbList"
+					aria-label="Breadcrumb"
+				>
+					<ol class="govuk-breadcrumbs__list">
+						<li class="govuk-breadcrumbs__list-item">
+							<a class="govuk-breadcrumbs__link" href="/pages/projects/" property="schema:item" typeof="schema:Thing">
+								Projects
+							</a>
+						</li>
+
+						<li class="govuk-breadcrumbs__list-item">
+							<a
+								class="govuk-breadcrumbs__link"
+								href="#"
+								id="breadcrumb-project"
+								property="schema:item"
+								typeof="schema:Thing"
+							>
+								Project
+							</a>
+						</li>
+
+						<li class="govuk-breadcrumbs__list-item">
+							<a
+								class="govuk-breadcrumbs__link"
+								href="#"
+								id="breadcrumb-study"
+								property="schema:item"
+								typeof="schema:Thing"
+							>
+								Study
+							</a>
+						</li>
+
+						<li class="govuk-breadcrumbs__list-item" aria-current="page">Ethics and research risk</li>
+					</ol>
+				</nav>
+
+				<div class="rops-daas-brand-panel" id="daas-brand-panel" hidden aria-label="DaaS">
+					<img class="rops-daas-brand-panel__logo" src="/images/brands/daas-logo.svg" alt="DaaS" />
+				</div>
+				<div class="rops-leds-brand-panel" id="leds-brand-panel" hidden aria-label="LEDS">
+					<img
+						class="rops-leds-brand-panel__logo"
+						src="/images/brands/leds-logo-white.svg"
+						alt="Law Enforcement Data Service"
+					/>
+				</div>
+
+				<div
+					class="govuk-error-summary"
+					id="ethics-risk-error"
+					tabindex="-1"
+					hidden="hidden"
+					aria-hidden="true"
+					data-module="govuk-error-summary"
+				>
+					<div role="alert">
+						<h2 class="govuk-error-summary__title">There is a problem</h2>
+						<div class="govuk-error-summary__body">
+							<ul class="govuk-list govuk-error-summary__list">
+								<li>
+									<a href="#study-ethics-risk-form">Answer the required risk questions.</a>
+								</li>
+							</ul>
+						</div>
+					</div>
+				</div>
+
+				<div id="study-context-warning" class="govuk-warning-text" hidden>
+					<span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+					<strong class="govuk-warning-text__text">
+						<span class="govuk-visually-hidden">Warning</span>
+						Study details could not be loaded. The risk outcome can still be previewed locally for this study ID.
+					</strong>
+				</div>
+
+				<header class="study-ethics-risk-header govuk-!-margin-bottom-7">
+					<p id="study-eyebrow" class="govuk-caption-m">Study</p>
+					<h1 class="govuk-heading-l">Assess ethics and research risk</h1>
+					<p class="govuk-body-l govuk-!-width-two-thirds">
+						Answer factual questions about the study. ResearchOps will identify sensitive research triggers and show
+						what needs to happen before recruitment, fieldwork or sessions begin.
+					</p>
+				</header>
+
+				<div class="govuk-grid-row">
+					<div class="govuk-grid-column-two-thirds">
+						<form id="study-ethics-risk-form" class="study-ethics-risk-form" novalidate>
+							<div class="govuk-form-group">
+								<fieldset class="govuk-fieldset" aria-describedby="ethics-participants-hint">
+									<legend class="govuk-fieldset__legend govuk-fieldset__legend--s">Who may take part?</legend>
+
+									<div id="ethics-participants-hint" class="govuk-hint">Select all that apply.</div>
+
+									<div class="govuk-checkboxes" data-module="govuk-checkboxes">
+										<div class="govuk-checkboxes__item">
+											<input
+												class="govuk-checkboxes__input"
+												id="ethics-participants"
+												name="participants"
+												type="checkbox"
+												value="professional-users"
+											/>
+											<label class="govuk-label govuk-checkboxes__label" for="ethics-participants">
+												Professional or staff users
+											</label>
+										</div>
+
+										<div class="govuk-checkboxes__item">
+											<input
+												class="govuk-checkboxes__input"
+												id="ethics-participants-2"
+												name="participants"
+												type="checkbox"
+												value="service-users"
+											/>
+											<label class="govuk-label govuk-checkboxes__label" for="ethics-participants-2">
+												People who use or depend on the service
+											</label>
+										</div>
+
+										<div class="govuk-checkboxes__item">
+											<input
+												class="govuk-checkboxes__input"
+												id="ethics-participants-3"
+												name="participants"
+												type="checkbox"
+												value="children"
+											/>
+											<label class="govuk-label govuk-checkboxes__label" for="ethics-participants-3">
+												Children or young people
+											</label>
+										</div>
+
+										<div class="govuk-checkboxes__item">
+											<input
+												class="govuk-checkboxes__input"
+												id="ethics-participants-4"
+												name="participants"
+												type="checkbox"
+												value="custody-detention"
+											/>
+											<label class="govuk-label govuk-checkboxes__label" for="ethics-participants-4">
+												People in custody, detention or an enforcement setting
+											</label>
+										</div>
+
+										<div class="govuk-checkboxes__item">
+											<input
+												class="govuk-checkboxes__input"
+												id="ethics-participants-5"
+												name="participants"
+												type="checkbox"
+												value="higher-risk-circumstances"
+											/>
+											<label class="govuk-label govuk-checkboxes__label" for="ethics-participants-5">
+												People who may be at greater risk because of health, distress, legal status, dependency or other
+												circumstances
+											</label>
+										</div>
+									</div>
+								</fieldset>
+							</div>
+
+							<div class="govuk-form-group">
+								<fieldset class="govuk-fieldset" aria-describedby="ethics-topics-hint">
+									<legend class="govuk-fieldset__legend govuk-fieldset__legend--s">What topics might come up?</legend>
+
+									<div id="ethics-topics-hint" class="govuk-hint">
+										Select anything the study may reasonably touch on.
+									</div>
+
+									<div class="govuk-checkboxes" data-module="govuk-checkboxes">
+										<div class="govuk-checkboxes__item">
+											<input
+												class="govuk-checkboxes__input"
+												id="ethics-topics"
+												name="topics"
+												type="checkbox"
+												value="trauma-harm"
+											/>
+											<label class="govuk-label govuk-checkboxes__label" for="ethics-topics">
+												Trauma, harm, abuse, safeguarding or distressing experiences
+											</label>
+										</div>
+
+										<div class="govuk-checkboxes__item">
+											<input
+												class="govuk-checkboxes__input"
+												id="ethics-topics-2"
+												name="topics"
+												type="checkbox"
+												value="crime-enforcement"
+											/>
+											<label class="govuk-label govuk-checkboxes__label" for="ethics-topics-2">
+												Crime, policing, justice, immigration, enforcement or national security
+											</label>
+										</div>
+
+										<div class="govuk-checkboxes__item">
+											<input
+												class="govuk-checkboxes__input"
+												id="ethics-topics-3"
+												name="topics"
+												type="checkbox"
+												value="health-finance-housing"
+											/>
+											<label class="govuk-label govuk-checkboxes__label" for="ethics-topics-3">
+												Health, disability, mental health, finances, housing or benefits
+											</label>
+										</div>
+
+										<div class="govuk-checkboxes__item">
+											<input
+												class="govuk-checkboxes__input"
+												id="ethics-topics-4"
+												name="topics"
+												type="checkbox"
+												value="identity-discrimination"
+											/>
+											<label class="govuk-label govuk-checkboxes__label" for="ethics-topics-4">
+												Protected characteristics, discrimination, complaints or service failure
+											</label>
+										</div>
+
+										<div class="govuk-checkboxes__divider">or</div>
+
+										<div class="govuk-checkboxes__item">
+											<input
+												class="govuk-checkboxes__input"
+												id="ethics-topics-6"
+												name="topics"
+												type="checkbox"
+												value="none-sensitive-topics"
+												data-behaviour="exclusive"
+											/>
+											<label class="govuk-label govuk-checkboxes__label" for="ethics-topics-6">
+												No sensitive topics are expected
+											</label>
+										</div>
+									</div>
+								</fieldset>
+							</div>
+
+							<div class="govuk-form-group">
+								<fieldset class="govuk-fieldset">
+									<legend class="govuk-fieldset__legend govuk-fieldset__legend--s">Where will research happen?</legend>
+
+									<div class="govuk-checkboxes" data-module="govuk-checkboxes">
+										<div class="govuk-checkboxes__item">
+											<input
+												class="govuk-checkboxes__input"
+												id="ethics-setting"
+												name="setting"
+												type="checkbox"
+												value="remote-private"
+											/>
+											<label class="govuk-label govuk-checkboxes__label" for="ethics-setting">
+												Remote session where privacy can be confirmed
+											</label>
+										</div>
+
+										<div class="govuk-checkboxes__item">
+											<input
+												class="govuk-checkboxes__input"
+												id="ethics-setting-2"
+												name="setting"
+												type="checkbox"
+												value="office-controlled"
+											/>
+											<label class="govuk-label govuk-checkboxes__label" for="ethics-setting-2">
+												Office, lab or controlled workplace setting
+											</label>
+										</div>
+
+										<div class="govuk-checkboxes__item">
+											<input
+												class="govuk-checkboxes__input"
+												id="ethics-setting-3"
+												name="setting"
+												type="checkbox"
+												value="operational-frontline"
+											/>
+											<label class="govuk-label govuk-checkboxes__label" for="ethics-setting-3">
+												Operational, frontline, custody-adjacent or service delivery setting
+											</label>
+										</div>
+
+										<div class="govuk-checkboxes__item">
+											<input
+												class="govuk-checkboxes__input"
+												id="ethics-setting-4"
+												name="setting"
+												type="checkbox"
+												value="participant-home-public"
+											/>
+											<label class="govuk-label govuk-checkboxes__label" for="ethics-setting-4">
+												Participant home, public place or other uncontrolled setting
+											</label>
+										</div>
+
+										<div class="govuk-checkboxes__item">
+											<input
+												class="govuk-checkboxes__input"
+												id="ethics-setting-5"
+												name="setting"
+												type="checkbox"
+												value="unknown"
+											/>
+											<label class="govuk-label govuk-checkboxes__label" for="ethics-setting-5">Not sure yet</label>
+										</div>
+									</div>
+								</fieldset>
+							</div>
+
+							<div class="govuk-form-group">
+								<fieldset class="govuk-fieldset">
+									<legend class="govuk-fieldset__legend govuk-fieldset__legend--s">
+										What data may be seen or collected?
+									</legend>
+
+									<div class="govuk-checkboxes" data-module="govuk-checkboxes">
+										<div class="govuk-checkboxes__item">
+											<input
+												class="govuk-checkboxes__input"
+												id="ethics-data"
+												name="data"
+												type="checkbox"
+												value="personal-data"
+											/>
+											<label class="govuk-label govuk-checkboxes__label" for="ethics-data">
+												Personal data about participants
+											</label>
+										</div>
+
+										<div class="govuk-checkboxes__item">
+											<input
+												class="govuk-checkboxes__input"
+												id="ethics-data-2"
+												name="data"
+												type="checkbox"
+												value="special-category"
+											/>
+											<label class="govuk-label govuk-checkboxes__label" for="ethics-data-2">
+												Special category, health, biometric or identity data
+											</label>
+										</div>
+
+										<div class="govuk-checkboxes__item">
+											<input
+												class="govuk-checkboxes__input"
+												id="ethics-data-3"
+												name="data"
+												type="checkbox"
+												value="criminal-safeguarding"
+											/>
+											<label class="govuk-label govuk-checkboxes__label" for="ethics-data-3">
+												Criminal offence, safeguarding, case or incident data
+											</label>
+										</div>
+
+										<div class="govuk-checkboxes__item">
+											<input
+												class="govuk-checkboxes__input"
+												id="ethics-data-4"
+												name="data"
+												type="checkbox"
+												value="live-service-data"
+											/>
+											<label class="govuk-label govuk-checkboxes__label" for="ethics-data-4">
+												Live service, operational or third-party data
+											</label>
+										</div>
+
+										<div class="govuk-checkboxes__item">
+											<input
+												class="govuk-checkboxes__input"
+												id="ethics-data-5"
+												name="data"
+												type="checkbox"
+												value="recording-capture"
+											/>
+											<label class="govuk-label govuk-checkboxes__label" for="ethics-data-5">
+												Audio, video, screenshots, photos, screen share or transcripts
+											</label>
+										</div>
+
+										<div class="govuk-checkboxes__divider">or</div>
+
+										<div class="govuk-checkboxes__item">
+											<input
+												class="govuk-checkboxes__input"
+												id="ethics-data-7"
+												name="data"
+												type="checkbox"
+												value="no-sensitive-data"
+												data-behaviour="exclusive"
+											/>
+											<label class="govuk-label govuk-checkboxes__label" for="ethics-data-7">
+												No personal, sensitive, live or recorded data is expected
+											</label>
+										</div>
+									</div>
+								</fieldset>
+							</div>
+
+							<div class="govuk-form-group">
+								<fieldset class="govuk-fieldset">
+									<legend class="govuk-fieldset__legend govuk-fieldset__legend--s">How will people be invited?</legend>
+
+									<div class="govuk-radios" data-module="govuk-radios">
+										<div class="govuk-radios__item">
+											<input
+												class="govuk-radios__input"
+												id="ethics-recruitment"
+												name="recruitment"
+												type="radio"
+												value="open-voluntary"
+											/>
+											<label class="govuk-label govuk-radios__label" for="ethics-recruitment">
+												Open voluntary invitation
+											</label>
+										</div>
+
+										<div class="govuk-radios__item">
+											<input
+												class="govuk-radios__input"
+												id="ethics-recruitment-2"
+												name="recruitment"
+												type="radio"
+												value="manager-gatekeeper"
+											/>
+											<label class="govuk-label govuk-radios__label" for="ethics-recruitment-2">
+												Manager, gatekeeper or service provider will identify or invite people
+											</label>
+										</div>
+
+										<div class="govuk-radios__item">
+											<input
+												class="govuk-radios__input"
+												id="ethics-recruitment-3"
+												name="recruitment"
+												type="radio"
+												value="not-sure"
+											/>
+											<label class="govuk-label govuk-radios__label" for="ethics-recruitment-3">Not sure yet</label>
+										</div>
+									</div>
+								</fieldset>
+							</div>
+
+							<div class="govuk-form-group">
+								<fieldset class="govuk-fieldset">
+									<legend class="govuk-fieldset__legend govuk-fieldset__legend--s">
+										What researcher support may be needed?
+									</legend>
+
+									<div class="govuk-checkboxes" data-module="govuk-checkboxes">
+										<div class="govuk-checkboxes__item">
+											<input
+												class="govuk-checkboxes__input"
+												id="ethics-researcher-support"
+												name="researcherSupport"
+												type="checkbox"
+												value="lone-working"
+											/>
+											<label class="govuk-label govuk-checkboxes__label" for="ethics-researcher-support">
+												Lone working, unfamiliar location or travel risk
+											</label>
+										</div>
+
+										<div class="govuk-checkboxes__item">
+											<input
+												class="govuk-checkboxes__input"
+												id="ethics-researcher-support-2"
+												name="researcherSupport"
+												type="checkbox"
+												value="distressing-material"
+											/>
+											<label class="govuk-label govuk-checkboxes__label" for="ethics-researcher-support-2">
+												Exposure to distressing, traumatic or emotionally intense material
+											</label>
+										</div>
+
+										<div class="govuk-checkboxes__item">
+											<input
+												class="govuk-checkboxes__input"
+												id="ethics-researcher-support-3"
+												name="researcherSupport"
+												type="checkbox"
+												value="junior-or-unsupervised"
+											/>
+											<label class="govuk-label govuk-checkboxes__label" for="ethics-researcher-support-3">
+												Junior or less experienced researcher leading without close support
+											</label>
+										</div>
+
+										<div class="govuk-checkboxes__item">
+											<input
+												class="govuk-checkboxes__input"
+												id="ethics-researcher-support-4"
+												name="researcherSupport"
+												type="checkbox"
+												value="no-escalation-route"
+											/>
+											<label class="govuk-label govuk-checkboxes__label" for="ethics-researcher-support-4">
+												Safeguarding, distress or incident escalation route is not confirmed
+											</label>
+										</div>
+
+										<div class="govuk-checkboxes__divider">or</div>
+
+										<div class="govuk-checkboxes__item">
+											<input
+												class="govuk-checkboxes__input"
+												id="ethics-researcher-support-6"
+												name="researcherSupport"
+												type="checkbox"
+												value="no-additional-support"
+												data-behaviour="exclusive"
+											/>
+											<label class="govuk-label govuk-checkboxes__label" for="ethics-researcher-support-6">
+												No additional researcher support needs identified
+											</label>
+										</div>
+									</div>
+								</fieldset>
+							</div>
+
+							<div class="govuk-button-group study-ethics-risk-actions">
+								<button type="submit" class="govuk-button" data-module="govuk-button" id="study-ethics-risk-submit">
+									Record risk outcome
+								</button>
+
+								<button
+									type="button"
+									class="govuk-button govuk-button--secondary"
+									data-module="govuk-button"
+									id="study-ethics-risk-clear"
+								>
+									Clear answers
+								</button>
+
+								<a
+									href="/pages/study/"
+									role="button"
+									draggable="false"
+									class="govuk-button govuk-button--secondary"
+									data-module="govuk-button"
+									id="back-to-study"
+								>
+									Back to study
+								</a>
+							</div>
+						</form>
+					</div>
+
+					<aside
+						class="govuk-grid-column-one-third study-ethics-risk-aside"
+						aria-labelledby="study-ethics-risk-outcome-title"
+					>
+						<section class="study-ethics-risk-outcome" aria-live="polite">
+							<p class="govuk-caption-m">Risk outcome</p>
+							<h2 id="study-ethics-risk-outcome-title" class="govuk-heading-m">Risk check not started</h2>
+							<strong id="study-ethics-risk-outcome-tag" class="govuk-tag govuk-tag--yellow">Action needed</strong>
+							<p id="study-ethics-risk-outcome-summary" class="govuk-body">
+								Complete the risk questions before recruitment, fieldwork or participant sessions begin.
+							</p>
+							<h3 class="govuk-heading-s">Next action</h3>
+							<p id="study-ethics-risk-next-action" class="govuk-body">Complete the risk discovery questions.</p>
+							<h3 class="govuk-heading-s">Sensitive research triggers</h3>
+							<p id="study-ethics-risk-triggers" class="govuk-body">No triggers recorded yet.</p>
+							<h3 class="govuk-heading-s">Direction</h3>
+							<p id="study-ethics-risk-controls" class="govuk-body">Record the study risk outcome.</p>
+							<h3 class="govuk-heading-s">Sourcebook clauses</h3>
+							<p id="study-ethics-risk-sourcebook-clauses" class="govuk-body">
+								GOVERN 2.1.1: Complete governance triage before participant contact
+							</p>
+							<p id="study-ethics-risk-recorded-state" class="govuk-body-s study-ethics-risk-recorded-state">
+								Not recorded yet.
+							</p>
+						</section>
+					</aside>
+				</div>
+			</div>
+		</main>
+		<x-include src="/partials/footer.html?v=govuk-page-chrome-20260702-1"></x-include>
+
+		<script type="module" src="/js/daas-brand-panel.js?v=leds-brand-panel-20260624"></script>
+		<script type="module" src="/js/study-ethics-risk-page.js?v=study-ethics-risk-20260704"></script>
+	</body>
+</html>

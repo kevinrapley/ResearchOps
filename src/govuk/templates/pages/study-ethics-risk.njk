@@ -1,0 +1,267 @@
+{% extends "layouts/researchops.njk" %}
+{% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/checkboxes/macro.njk" import govukCheckboxes %}
+{% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
+{% from "govuk/components/radios/macro.njk" import govukRadios %}
+{% from "macros/daas-brand-panel.njk" import daasBrandPanel %}
+
+{% set ethicsRiskPageScriptVersion = "study-ethics-risk-20260704" %}
+
+{% block head %}
+	<meta property="schema:name" content="Ethics and research risk - ResearchOps">
+	<meta property="schema:creator" content="Home Office ResearchOps Platform">
+	<meta property="schema:dateModified" content="2026-07-04">
+	<meta property="dcterms:language" content="en-GB">
+	<link rel="stylesheet" href="/css/govuk/govuk-forms.css" media="screen">
+	<link rel="stylesheet" href="/css/sourcebook-components.css" media="screen">
+	<link rel="stylesheet" href="/css/study-ethics-risk.css" media="screen">
+	<link rel="stylesheet" href="/css/daas-brand-panel.css?v=leds-brand-panel-20260624" media="screen">
+	<link rel="modulepreload" href="/js/study-route-context.js">
+	<link rel="modulepreload" href="/js/study-ethics-risk-model.js?v={{ ethicsRiskPageScriptVersion }}">
+	<link rel="modulepreload" href="/js/study-ethics-risk-page.js?v={{ ethicsRiskPageScriptVersion }}">
+	<link rel="modulepreload" href="/js/daas-brand-panel.js?v=leds-brand-panel-20260624">
+{% endblock %}
+
+{% block content %}
+<div class="govuk-width-container study-ethics-risk-page" data-study-subpage-template="ethics-risk">
+	{{ govukBreadcrumbs({
+		attributes: {
+			id: "study-ethics-risk-breadcrumbs",
+			typeof: "schema:BreadcrumbList"
+		},
+		items: [
+			{
+				text: "Projects",
+				href: "/pages/projects/",
+				attributes: {
+					property: "schema:item",
+					typeof: "schema:Thing"
+				}
+			},
+			{
+				text: "Project",
+				href: "#",
+				attributes: {
+					id: "breadcrumb-project",
+					property: "schema:item",
+					typeof: "schema:Thing"
+				}
+			},
+			{
+				text: "Study",
+				href: "#",
+				attributes: {
+					id: "breadcrumb-study",
+					property: "schema:item",
+					typeof: "schema:Thing"
+				}
+			},
+			{ text: "Ethics and research risk" }
+		]
+	}) }}
+
+	{{ daasBrandPanel() }}
+
+	{{ govukErrorSummary({
+		attributes: {
+			id: "ethics-risk-error",
+			tabindex: "-1",
+			hidden: "hidden",
+			"aria-hidden": "true"
+		},
+		titleText: "There is a problem",
+		errorList: [
+			{
+				text: "Answer the required risk questions.",
+				href: "#study-ethics-risk-form"
+			}
+		]
+	}) }}
+
+	<div id="study-context-warning" class="govuk-warning-text" hidden>
+		<span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+		<strong class="govuk-warning-text__text">
+			<span class="govuk-visually-hidden">Warning</span>
+			Study details could not be loaded. The risk outcome can still be previewed locally for this study ID.
+		</strong>
+	</div>
+
+	<header class="study-ethics-risk-header govuk-!-margin-bottom-7">
+		<p id="study-eyebrow" class="govuk-caption-m">Study</p>
+		<h1 class="govuk-heading-l">Assess ethics and research risk</h1>
+		<p class="govuk-body-l govuk-!-width-two-thirds">Answer factual questions about the study. ResearchOps will identify sensitive research triggers and show what needs to happen before recruitment, fieldwork or sessions begin.</p>
+	</header>
+
+	<div class="govuk-grid-row">
+		<div class="govuk-grid-column-two-thirds">
+			<form id="study-ethics-risk-form" class="study-ethics-risk-form" novalidate>
+				{{ govukCheckboxes({
+					idPrefix: "ethics-participants",
+					name: "participants",
+					fieldset: {
+						legend: {
+							text: "Who may take part?",
+							classes: "govuk-fieldset__legend--s"
+						}
+					},
+					hint: {
+						text: "Select all that apply."
+					},
+					items: [
+						{ value: "professional-users", text: "Professional or staff users" },
+						{ value: "service-users", text: "People who use or depend on the service" },
+						{ value: "children", text: "Children or young people" },
+						{ value: "custody-detention", text: "People in custody, detention or an enforcement setting" },
+						{ value: "higher-risk-circumstances", text: "People who may be at greater risk because of health, distress, legal status, dependency or other circumstances" }
+					]
+				}) }}
+
+				{{ govukCheckboxes({
+					idPrefix: "ethics-topics",
+					name: "topics",
+					fieldset: {
+						legend: {
+							text: "What topics might come up?",
+							classes: "govuk-fieldset__legend--s"
+						}
+					},
+					hint: {
+						text: "Select anything the study may reasonably touch on."
+					},
+					items: [
+						{ value: "trauma-harm", text: "Trauma, harm, abuse, safeguarding or distressing experiences" },
+						{ value: "crime-enforcement", text: "Crime, policing, justice, immigration, enforcement or national security" },
+						{ value: "health-finance-housing", text: "Health, disability, mental health, finances, housing or benefits" },
+						{ value: "identity-discrimination", text: "Protected characteristics, discrimination, complaints or service failure" },
+						{ divider: "or" },
+						{ value: "none-sensitive-topics", text: "No sensitive topics are expected", behaviour: "exclusive" }
+					]
+				}) }}
+
+				{{ govukCheckboxes({
+					idPrefix: "ethics-setting",
+					name: "setting",
+					fieldset: {
+						legend: {
+							text: "Where will research happen?",
+							classes: "govuk-fieldset__legend--s"
+						}
+					},
+					items: [
+						{ value: "remote-private", text: "Remote session where privacy can be confirmed" },
+						{ value: "office-controlled", text: "Office, lab or controlled workplace setting" },
+						{ value: "operational-frontline", text: "Operational, frontline, custody-adjacent or service delivery setting" },
+						{ value: "participant-home-public", text: "Participant home, public place or other uncontrolled setting" },
+						{ value: "unknown", text: "Not sure yet" }
+					]
+				}) }}
+
+				{{ govukCheckboxes({
+					idPrefix: "ethics-data",
+					name: "data",
+					fieldset: {
+						legend: {
+							text: "What data may be seen or collected?",
+							classes: "govuk-fieldset__legend--s"
+						}
+					},
+					items: [
+						{ value: "personal-data", text: "Personal data about participants" },
+						{ value: "special-category", text: "Special category, health, biometric or identity data" },
+						{ value: "criminal-safeguarding", text: "Criminal offence, safeguarding, case or incident data" },
+						{ value: "live-service-data", text: "Live service, operational or third-party data" },
+						{ value: "recording-capture", text: "Audio, video, screenshots, photos, screen share or transcripts" },
+						{ divider: "or" },
+						{ value: "no-sensitive-data", text: "No personal, sensitive, live or recorded data is expected", behaviour: "exclusive" }
+					]
+				}) }}
+
+				{{ govukRadios({
+					idPrefix: "ethics-recruitment",
+					name: "recruitment",
+					fieldset: {
+						legend: {
+							text: "How will people be invited?",
+							classes: "govuk-fieldset__legend--s"
+						}
+					},
+					items: [
+						{ value: "open-voluntary", text: "Open voluntary invitation" },
+						{ value: "manager-gatekeeper", text: "Manager, gatekeeper or service provider will identify or invite people" },
+						{ value: "not-sure", text: "Not sure yet" }
+					]
+				}) }}
+
+				{{ govukCheckboxes({
+					idPrefix: "ethics-researcher-support",
+					name: "researcherSupport",
+					fieldset: {
+						legend: {
+							text: "What researcher support may be needed?",
+							classes: "govuk-fieldset__legend--s"
+						}
+					},
+					items: [
+						{ value: "lone-working", text: "Lone working, unfamiliar location or travel risk" },
+						{ value: "distressing-material", text: "Exposure to distressing, traumatic or emotionally intense material" },
+						{ value: "junior-or-unsupervised", text: "Junior or less experienced researcher leading without close support" },
+						{ value: "no-escalation-route", text: "Safeguarding, distress or incident escalation route is not confirmed" },
+						{ divider: "or" },
+						{ value: "no-additional-support", text: "No additional researcher support needs identified", behaviour: "exclusive" }
+					]
+				}) }}
+
+				<div class="govuk-button-group study-ethics-risk-actions">
+					{{ govukButton({
+						text: "Record risk outcome",
+						type: "submit",
+						attributes: {
+							id: "study-ethics-risk-submit"
+						}
+					}) }}
+					{{ govukButton({
+						text: "Clear answers",
+						type: "button",
+						classes: "govuk-button--secondary",
+						attributes: {
+							id: "study-ethics-risk-clear"
+						}
+					}) }}
+					{{ govukButton({
+						text: "Back to study",
+						href: "/pages/study/",
+						classes: "govuk-button--secondary",
+						attributes: {
+							id: "back-to-study"
+						}
+					}) }}
+				</div>
+			</form>
+		</div>
+
+		<aside class="govuk-grid-column-one-third study-ethics-risk-aside" aria-labelledby="study-ethics-risk-outcome-title">
+			<section class="study-ethics-risk-outcome" aria-live="polite">
+				<p class="govuk-caption-m">Risk outcome</p>
+				<h2 id="study-ethics-risk-outcome-title" class="govuk-heading-m">Risk check not started</h2>
+				<strong id="study-ethics-risk-outcome-tag" class="govuk-tag govuk-tag--yellow">Action needed</strong>
+				<p id="study-ethics-risk-outcome-summary" class="govuk-body">Complete the risk questions before recruitment, fieldwork or participant sessions begin.</p>
+				<h3 class="govuk-heading-s">Next action</h3>
+				<p id="study-ethics-risk-next-action" class="govuk-body">Complete the risk discovery questions.</p>
+				<h3 class="govuk-heading-s">Sensitive research triggers</h3>
+				<p id="study-ethics-risk-triggers" class="govuk-body">No triggers recorded yet.</p>
+				<h3 class="govuk-heading-s">Direction</h3>
+				<p id="study-ethics-risk-controls" class="govuk-body">Record the study risk outcome.</p>
+				<h3 class="govuk-heading-s">Sourcebook clauses</h3>
+				<p id="study-ethics-risk-sourcebook-clauses" class="govuk-body">GOVERN 2.1.1: Complete governance triage before participant contact</p>
+				<p id="study-ethics-risk-recorded-state" class="govuk-body-s study-ethics-risk-recorded-state">Not recorded yet.</p>
+			</section>
+		</aside>
+	</div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+	<script type="module" src="/js/daas-brand-panel.js?v=leds-brand-panel-20260624"></script>
+	<script type="module" src="/js/study-ethics-risk-page.js?v={{ ethicsRiskPageScriptVersion }}"></script>
+{% endblock %}

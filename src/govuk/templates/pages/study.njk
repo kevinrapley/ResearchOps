@@ -210,6 +210,11 @@
 							status: { html: '<strong id="study-readiness-status-status" class="govuk-tag govuk-tag--green study-readiness-status">Ready</strong>' }
 						},
 						{
+							title: { text: "Ethics and research risk" },
+							hint: { html: '<span id="study-readiness-ethics-risk-hint" class="study-readiness-hint">Assess ethical risk before recruitment or fieldwork.</span>' },
+							status: { html: '<strong id="study-readiness-ethics-risk-status" class="govuk-tag govuk-tag--yellow study-readiness-status">Action needed</strong>' }
+						},
+						{
 							title: { text: "Participants" },
 							hint: { html: '<span id="study-readiness-participants-hint" class="study-readiness-hint">Add or review participants for this study.</span>' },
 							status: { html: '<strong id="study-readiness-participants-status" class="govuk-tag govuk-tag--yellow study-readiness-status">Action needed</strong>' }
@@ -268,6 +273,11 @@
 			idPrefix: "study-setup",
 			classes: "study-setup-task-list",
 			items: [
+					{
+						title: { html: '<a id="link-ethics-risk" class="govuk-link govuk-task-list__link" href="/pages/study/ethics-risk/">Assess ethics and research risk</a>' },
+						hint: { html: 'Answer factual questions so ResearchOps can identify sensitive research triggers before recruitment or fieldwork. <span class="study-sourcebook-reference">Sourcebook: <a class="govuk-link" href="/pages/sourcebook/governance/#govern-2-1-1">GOVERN 2.1.1</a></span>' },
+						status: { html: '<strong id="study-setup-ethics-risk-status" class="govuk-tag govuk-tag--yellow">Action needed</strong>' }
+					},
 					{
 						title: { html: '<a id="link-consent-forms" class="govuk-link govuk-task-list__link" href="#">Create consent forms</a>' },
 						hint: { html: 'Create or review Markdown and Mustache consent form templates for this study. <span class="study-sourcebook-reference">Sourcebook: <a class="govuk-link" href="/pages/sourcebook/recruitment-and-administration/#rec-admn-3-1-1">REC-ADMN 3.1.1</a></span>' },
