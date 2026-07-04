@@ -1,0 +1,85 @@
+{
+  "date": "2026-07-04",
+  "branch": "fix/sign-in-origin",
+  "task": "Fix the production sign-in error where https://research-operations.com/pages/account/sign-in/ reported that the request origin was not allowed.",
+  "traceLayer": "operational",
+  "operatingModel": {
+    "loaded": [
+      "AGENTS.md",
+      ".agent-operating-model/orchestration.xml",
+      ".agent-operating-model/bundle-registry.json",
+      ".agent-operating-model/task-signal-catalog.json",
+      ".agent-operating-model/selection-rules.json",
+      ".agent-operating-model/precedence-policy.md",
+      ".agent-operating-model/github-mutation-policy.md",
+      ".agent-operating-model/trace-policy.md",
+      ".agent-operating-model/trace-layers.md"
+    ],
+    "selectedBundles": [
+      ".agent-operating-model/bundles/github/",
+      ".agent-operating-model/bundles/researchops-developer-control/",
+      ".agent-operating-model/bundles/multi-functional-team/",
+      ".agent-operating-model/bundles/cloudflare/",
+      ".agent-operating-model/bundles/govuk-design-system/"
+    ],
+    "skippedBundles": [
+      ".agent-operating-model/bundles/openai/",
+      ".agent-operating-model/bundles/mcp-agent-tooling/",
+      ".agent-operating-model/bundles/airtable-public-api/",
+      ".agent-operating-model/bundles/mural-public-api/"
+    ],
+    "traceDecision": "Trace required because the repository-affecting work is on fix/sign-in-origin."
+  },
+  "branchGovernance": {
+    "initialBranch": "hotfix/sign-in-origin",
+    "correctedBranch": "fix/sign-in-origin",
+    "supersededPullRequest": 465,
+    "reason": "User clarified the branch must use the fix/ prefix."
+  },
+  "evidence": [
+    "Live production Worker preflight returned access-control-allow-origin: null for https://research-operations.com.",
+    "Production wrangler.toml did not include ResearchOps public custom domains in ALLOWED_ORIGINS.",
+    "Worker trusted mutation checks rely on the request Origin being allowed."
+  ],
+  "changes": [
+    "Added ResearchOps public custom domains to production ALLOWED_ORIGINS.",
+    "Added Worker fallback for the same custom domains.",
+    "Added service CORS fallback for the same custom domains.",
+    "Added a regression test for sign-in preflight origin policy."
+  ],
+  "filesChanged": [
+    "infra/cloudflare/wrangler.toml",
+    "infra/cloudflare/src/worker.js",
+    "infra/cloudflare/src/service/index.js",
+    "tests/worker-cors-origin-policy.test.js",
+    "docs/agent-audit/reasoning/2026/07/04/sign-in-origin-allowlist-fix.md",
+    "docs/agent-audit/reasoning/2026/07/04/sign-in-origin-allowlist-fix.json"
+  ],
+  "validation": [
+    {
+      "command": "npm test -- tests/worker-cors-origin-policy.test.js",
+      "result": "passed"
+    },
+    {
+      "command": "node tests/auth-sign-in-route-state.test.js",
+      "result": "passed"
+    },
+    {
+      "command": "node tests/security-hardening-controls-route-state.test.js",
+      "result": "passed"
+    },
+    {
+      "command": "npm run format:check",
+      "result": "passed"
+    },
+    {
+      "command": "npm run lint",
+      "result": "passed",
+      "details": "Existing warnings only, no errors."
+    }
+  ],
+  "residualRisk": [
+    "The live production site will continue to reject the custom domain until the corrected Worker is deployed.",
+    "Full GitHub CI remains the merge gate."
+  ]
+}
