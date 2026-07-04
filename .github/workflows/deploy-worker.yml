@@ -137,8 +137,10 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
         run: |
-          curl -sS \
+          curl -sS -G \
             -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" \
+            --data-urlencode "name_contains=${DOCUMENTS_R2_BUCKET}" \
+            --data-urlencode "per_page=50" \
             "https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/r2/buckets" \
             > r2-buckets.json
           python - <<'PY'
@@ -479,8 +481,10 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
         run: |
-          curl -sS \
+          curl -sS -G \
             -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" \
+            --data-urlencode "name_contains=${DOCUMENTS_R2_PREVIEW_BUCKET}" \
+            --data-urlencode "per_page=50" \
             "https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/r2/buckets" \
             > r2-buckets.json
           python - <<'PY'
