@@ -1,0 +1,224 @@
+.study-session-page .govuk-select, .study-session-page .govuk-textarea {
+	font-family: "GDS Transport", arial, sans-serif;
+	font-size: 1.1875rem;
+	line-height: 1.3157894737;
+	}
+
+.study-session-consent-gate {
+	max-width: 720px;
+	margin-bottom: 10px;
+	}
+
+.study-session-consent-gate-actions {
+	max-width: 720px;
+	margin-bottom: 30px;
+	}
+
+.study-session-consent-gate-actions .govuk-button {
+	margin-bottom: 0;
+	}
+
+.study-session-controls {
+	align-items: center;
+	}
+
+.study-session-timer {
+	min-width: 9ch;
+	margin: 0 0 15px auto;
+	font-variant-numeric: tabular-nums;
+	text-align: right;
+	}
+
+.study-session-note-options {
+	margin-bottom: 10px;
+	}
+
+.study-session-capture {
+	max-width: 720px;
+	border: 1px solid #b1b4b6;
+	border-left: 5px solid #1d70b8;
+	padding: 20px;
+	margin-bottom: 20px;
+	background: #ffffff;
+	}
+
+.study-session-capture .govuk-form-group {
+	margin-bottom: 10px;
+	}
+
+.study-session-capture .govuk-button-group {
+	margin-bottom: 0;
+	align-items: center;
+	}
+
+.study-session-capture .govuk-button {
+	margin-bottom: 0;
+	}
+
+.study-session-shortcuts {
+	margin: 0 0 15px;
+	color: #505a5f;
+	}
+
+.study-session-shortcuts code {
+	border: 1px solid #b1b4b6;
+	border-radius: 3px;
+	padding: 1px 6px;
+	background: #f3f2f1;
+	color: #0b0c0c;
+	}
+
+.study-session-note-status {
+	margin-bottom: 0;
+	}
+
+.study-session-note-toolbar {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 10px 15px;
+	border-bottom: 1px solid #b1b4b6;
+	padding-bottom: 15px;
+	margin-bottom: 15px;
+	}
+
+.study-session-note-toolbar .govuk-form-group {
+	margin-bottom: 0;
+	}
+
+.study-session-note-toolbar .govuk-button {
+	margin-bottom: 0;
+	margin-left: auto;
+	}
+
+.study-session-note-count {
+	margin: 0;
+	color: #505a5f;
+	}
+
+.study-session-note-filters {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 5px;
+	}
+
+.study-session-filter {
+	border: 0;
+	padding: 0;
+	background: none;
+	cursor: pointer;
+	}
+
+.study-session-filter .govuk-tag {
+	pointer-events: none;
+	}
+
+.study-session-filter:focus {
+	outline: 3px solid #ffdd00;
+	outline-offset: 0;
+	}
+
+.study-session-filter[aria-pressed=true] .govuk-tag {
+	box-shadow: 0 0 0 2px #0b0c0c;
+	}
+
+.study-session-notes-list {
+	margin-bottom: 0;
+	}
+
+.study-session-notes-list > li {
+	border-top: 1px solid #b1b4b6;
+	padding: 15px 0;
+	}
+
+.study-session-notes-list > li:first-child {
+	border-top: 0;
+	padding-top: 0;
+	}
+
+.study-session-note__meta {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: baseline;
+	gap: 5px 15px;
+	margin: 0 0 5px;
+	color: #505a5f;
+	font-size: 1rem;
+	}
+
+.study-session-note__time {
+	font-variant-numeric: tabular-nums;
+	color: #505a5f;
+	}
+
+.study-session-note__delete {
+	margin-left: auto;
+	border: 0;
+	padding: 0;
+	background: none;
+	color: #1d70b8;
+	font-size: 1rem;
+	text-decoration: underline;
+	cursor: pointer;
+	}
+
+.study-session-note__delete:hover {
+	color: #003078;
+	}
+
+.study-session-note__delete:focus {
+	outline: 3px solid #ffdd00;
+	outline-offset: 0;
+	background: #ffdd00;
+	color: #0b0c0c;
+	text-decoration: none;
+	}
+
+.study-session-note__text {
+	margin: 0;
+	overflow-wrap: anywhere;
+	}
+
+.study-session-note__text--quote {
+	border-left: 5px solid #b1b4b6;
+	padding-left: 15px;
+	font-style: italic;
+	}
+
+.study-session-note__token {
+	border-radius: 3px;
+	padding: 0 4px;
+	background: #f3f2f1;
+	color: #0b0c0c;
+	}
+
+.study-session-note__token--ref {
+	background: none;
+	border: 1px dashed #b1b4b6;
+	color: #1d70b8;
+	}
+
+@media (max-width: 699px) {
+	.study-session-data-list .govuk-summary-list__row {
+		grid-template-columns: minmax(140px, max-content) minmax(0, 1fr);
+		column-gap: 15px;
+		margin-bottom: 5px;
+		}
+	.study-session-controls .govuk-button {
+		box-sizing: border-box;
+		text-align: center;
+		width: 100%;
+		}
+	.study-session-timer {
+		margin-left: 0;
+		text-align: left;
+		width: 100%;
+		}
+	.study-session-note-toolbar .govuk-button {
+		margin-left: 0;
+		width: 100%;
+		}
+	.study-session-note__delete {
+		margin-left: 0;
+		}
+	}

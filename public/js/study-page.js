@@ -147,8 +147,6 @@ async function loadStudyFromProject(projectId, studyId) {
 async function resolveStudyContext(params) {
 	const studyId = params.get("id") || "";
 	const routeProjectId = params.get("project") || params.get("projectId") || "";
-	const legacyProjectId = params.get("pid") || "";
-	const legacyStudyId = params.get("sid") || "";
 
 	if (studyId) {
 		let study;
@@ -161,15 +159,6 @@ async function resolveStudyContext(params) {
 		const projectId = routeProjectId || linkedProjectIdForStudy(study);
 		if (!projectId) throw new Error("The Study record does not include a linked Project record.");
 		return { projectId, studyId: study.id || studyId, study, routeMode: "canonical" };
-	}
-
-	if (legacyProjectId && legacyStudyId) {
-		const study = await loadStudy(legacyStudyId);
-		const projectId = linkedProjectIdForStudy(study);
-		if (!projectId || projectId !== legacyProjectId) {
-			throw new Error("The legacy project and study URL does not match the linked records.");
-		}
-		return { projectId, studyId: study.id || legacyStudyId, study, routeMode: "legacy-resolved" };
 	}
 
 	throw new Error("The study page needs a Study record ID in the URL.");
@@ -845,7 +834,6 @@ function renderSupportSetupStatus(supportSetup = {}) {
 }
 
 function renderRoutes(projectId, studyId) {
-	const legacySessionParams = { pid: projectId, sid: studyId };
 	const studyParams = { id: studyId, project: projectId };
 	enableLink("#breadcrumb-project", route("/pages/project-dashboard/", { id: projectId }));
 	enableLink("#link-consent-forms", route("/pages/study/consent-forms/", studyParams));
@@ -862,14 +850,14 @@ function renderRoutes(projectId, studyId) {
 	if (editStudy) editStudy.href = `${route("/pages/study/", { id: studyId })}#edit`;
 
 	return {
-		sessionHref: route("/pages/study/session/", legacySessionParams)
+		sessionHref: route("/pages/study/session/", studyParams)
 	};
 }
 
 function primeEthicsRiskLinkFromUrl() {
 	const params = new URLSearchParams(window.location.search);
-	const studyId = params.get("id") || params.get("sid") || "";
-	const projectId = params.get("project") || params.get("projectId") || params.get("pid") || "";
+	const studyId = params.get("id") || "";
+	const projectId = params.get("project") || params.get("projectId") || "";
 	if (!studyId) return;
 	enableLink("#link-ethics-risk", route("/pages/study/ethics-risk/", { id: studyId, project: projectId }));
 	document.body.dataset.ethicsRiskNextStepsHref = route("/pages/study/ethics-risk/next-steps/", { id: studyId, project: projectId });
