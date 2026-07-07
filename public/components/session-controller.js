@@ -1,18 +1,21 @@
 /**
  * @file /components/session-controller.js
- * @summary Controller for study session UI: participant picker, consents, timer, and notes.
+ * @summary Controller for study session UI: participant picker, consents, timer, and fieldnotes.
  * @description
  * - Participant dropdown loaded from the ResearchOps API.
  * - Participant details with RDFa (schema.org) attributes.
  * - Consent summary with RDFa ItemList.
  * - Session controls (start/pause/stop) with visible hh:mm:ss timer + RDFa duration.
- * - Notes editor:
+ * - Fieldnotes ambient capture:
  *    • Note START time captured on the first meaningful keystroke (not focus/click).
- *    • Clearing all content resets the pending start.
+ *    • Enter saves the note; Shift+Enter inserts a new line.
+ *    • Shorthand prefixes (per framework) set the note category as you type,
+ *      for example "q " for a quote in the Fieldnotes framework.
+ *    • #tags and @refs are parsed from the note text and become clickable filters.
  *    • Save posts to /api/session-notes and injects returned note id into
  *      RDFa: resource="#note-<recordId>".
- *    • Each note includes schema:startTime / schema:endTime (absolute ISO)
- *      and schema:temporalCoverage "<start>/<end>".
+ *    • Saved notes stream renders newest first with category filters, search
+ *      and a Markdown export.
  */
 
 const $  = (s, r = document) => r.querySelector(s);
@@ -44,6 +47,8 @@ let sessionAbsStartIso = null;
 
 let currentParticipant = null;
 const notes = [];
+let activeFramework = "fieldnotes";
+let activeCategoryFilter = null;
 
 /* -------------------------------------------------------------------------- */
 /* Utilities                                                                  */
@@ -106,7 +111,12 @@ async function jsonFetch(url) {
 
 function getStudyId() {
 	const url = new URL(location.href);
-	return url.searchParams.get("id") || url.searchParams.get("sid") || "";
+	return url.searchParams.get("id") || "";
+}
+
+function getProjectId() {
+	const url = new URL(location.href);
+	return url.searchParams.get("project") || "";
 }
 
 function getSessionAirtableId() {
@@ -188,6 +198,52 @@ function clearSessionError() {
 	if (!summary) return;
 	summary.hidden = true;
 	summary.setAttribute("aria-hidden", "true");
+}
+
+/* -------------------------------------------------------------------------- */
+/* Breadcrumbs: hydrate project and study context                             */
+/* -------------------------------------------------------------------------- */
+async function hydrateBreadcrumbs(studyId, projectId) {
+	const projectCrumb = $("#breadcrumb-project");
+	const studyCrumb = $("#breadcrumb-study");
+	if (!studyId || (!projectCrumb && !studyCrumb)) return;
+
+	let study = null;
+	try {
+		const body = await jsonFetch(apiUrl(`/api/studies/${encodeURIComponent(studyId)}`));
+		study = body?.study || null;
+	} catch (error) {
+		console.warn("session.breadcrumbs.study.fail", error);
+	}
+	const resolvedProjectId = projectId || study?.projectId || (Array.isArray(study?.projectIds) ? study.projectIds[0] : "") || "";
+
+	if (studyCrumb) {
+		const title = String(study?.title || study?.Title || "").trim();
+		if (title) studyCrumb.textContent = title;
+		const studyUrl = new URL("/pages/study/", location.origin);
+		studyUrl.searchParams.set("id", studyId);
+		if (resolvedProjectId) studyUrl.searchParams.set("project", resolvedProjectId);
+		studyCrumb.href = `${studyUrl.pathname}${studyUrl.search}`;
+	}
+
+	if (projectCrumb && resolvedProjectId) {
+		try {
+			const body = await jsonFetch(apiUrl(`/api/projects/${encodeURIComponent(resolvedProjectId)}`));
+			const project = body?.project || body || {};
+			const name = String(project.name || project.Name || project.title || "").trim();
+			if (name) projectCrumb.textContent = name;
+		} catch (error) {
+			console.warn("session.breadcrumbs.project.fail", error);
+		}
+		const projectUrl = new URL("/pages/project-dashboard/", location.origin);
+		projectUrl.searchParams.set("id", resolvedProjectId);
+		projectCrumb.href = `${projectUrl.pathname}${projectUrl.search}`;
+	}
+
+	// Mirror the study title into the page caption.
+	const caption = $("#study-title");
+	const captionTitle = String(study?.title || study?.Title || "").trim();
+	if (caption && captionTitle) caption.textContent = captionTitle;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -338,38 +394,152 @@ function stopTimer(){
 	$("#btn-stop").disabled=true;
 
 	resetDraftNote();
-	$("#note-editor").innerHTML="";
+	const input=$("#note-input");
+	if(input) input.value="";
 }
 
 /* -------------------------------------------------------------------------- */
-/* Framework switching                                                        */
+/* Note frameworks                                                            */
 /* -------------------------------------------------------------------------- */
-const AEIOU=[["activity","Activities"],["environment","Environments"],["interaction","Interactions"],["object","Objects"],["user","Users"]];
-const POEMS=[["people","People"],["objects","Objects"],["environments","Environments"],["messages","Messages"],["services","Services"]];
-function setFramework(k){
-	const s=$("#note-kind");
-	s.innerHTML="";
-	let items=[];
-	if(k==="aeiou") items=AEIOU;
-	else if(k==="poems") items=POEMS;
-	else items=[["idea","Ideas/Notes"],["quote","Quote"],["observation","Observation"]];
-	for(const[v,l]of items){
-		const o=document.createElement("option");
-		o.value=v;o.textContent=l;
-		s.appendChild(o);
+// Each category: [value, label, govuk-tag colour class, shorthand prefix].
+// Fieldnotes is the base note vocabulary; AEIOU and POEMS build upon it, so
+// their shortcuts sit alongside the Fieldnotes shortcuts rather than
+// replacing them. Prefixes are unique within each combined set ("in" and
+// "pe" avoid clashes with the Fieldnotes "i" and "p").
+const FIELDNOTES_CATEGORIES = [
+	["observation", "Observation", "govuk-tag--grey", ""],
+	["quote", "Quote", "govuk-tag--red", "q"],
+	["insight", "Insight", "govuk-tag--green", "i"],
+	["pain", "Pain point", "govuk-tag--orange", "p"],
+	["question", "Question", "govuk-tag--blue", "?"],
+	["follow-up", "Follow-up", "govuk-tag--yellow", "t"]
+];
+
+const FRAMEWORKS = {
+	fieldnotes: {
+		label: "Fieldnotes",
+		categories: [...FIELDNOTES_CATEGORIES]
+	},
+	aeiou: {
+		label: "AEIOU",
+		categories: [
+			...FIELDNOTES_CATEGORIES,
+			["activity", "Activities", "govuk-tag--turquoise", "a"],
+			["environment", "Environments", "govuk-tag--light-blue", "e"],
+			["interaction", "Interactions", "govuk-tag--purple", "in"],
+			["object", "Objects", "govuk-tag--pink", "o"],
+			["user", "Users", "govuk-tag--grey", "u"]
+		]
+	},
+	poems: {
+		label: "POEMS",
+		categories: [
+			...FIELDNOTES_CATEGORIES,
+			["people", "People", "govuk-tag--turquoise", "pe"],
+			["objects", "Objects", "govuk-tag--pink", "o"],
+			["environments", "Environments", "govuk-tag--light-blue", "e"],
+			["messages", "Messages", "govuk-tag--purple", "m"],
+			["services", "Services", "govuk-tag--grey", "s"]
+		]
+	}
+};
+
+// Category lookup across every framework so saved notes keep their tag colour
+// and label even after the framework select changes.
+const CATEGORY_INDEX = {};
+for (const framework of Object.values(FRAMEWORKS)) {
+	for (const [value, label, tagClass] of framework.categories) {
+		if (!CATEGORY_INDEX[value]) CATEGORY_INDEX[value] = { label, tagClass };
 	}
 }
 
+function frameworkDef() {
+	return FRAMEWORKS[activeFramework] || FRAMEWORKS.fieldnotes;
+}
+
+function categoryMeta(value) {
+	return CATEGORY_INDEX[value] || { label: value || "Note", tagClass: "govuk-tag--grey" };
+}
+
+function setFramework(key) {
+	activeFramework = FRAMEWORKS[key] ? key : "fieldnotes";
+	const def = frameworkDef();
+
+	const select = $("#note-kind");
+	if (select) {
+		select.innerHTML = "";
+		for (const [value, label] of def.categories) {
+			const option = document.createElement("option");
+			option.value = value;
+			option.textContent = label;
+			select.appendChild(option);
+		}
+	}
+
+	const shortcuts = $("#note-shortcuts");
+	if (shortcuts) {
+		shortcuts.innerHTML = "";
+		const parts = def.categories.filter(([, , , prefix]) => prefix);
+		parts.forEach(([, label, , prefix], index) => {
+			if (index) shortcuts.append(" · ");
+			const code = document.createElement("code");
+			code.textContent = prefix;
+			shortcuts.append(code, ` ${label.toLowerCase()}`);
+		});
+	}
+
+	activeCategoryFilter = null;
+	renderNoteFilters();
+	renderNotes();
+}
+
 /* -------------------------------------------------------------------------- */
-/* Editor behaviour: start note on first meaningful keystroke                 */
+/* Fieldnotes capture: start note on first meaningful keystroke               */
 /* -------------------------------------------------------------------------- */
-function editorHasMeaningfulText(){return($("#note-editor").textContent||"").trim().length>0;}
+function noteInputValue(){return $("#note-input")?.value||"";}
+function editorHasMeaningfulText(){return noteInputValue().trim().length>0;}
 function resetDraftNote(){noteStartMs=null;noteStartIso=null;$("#note-timestamps").textContent="";$("#btn-save-note").disabled=true;}
+
+function prefixPattern(prefix) {
+	const escaped = prefix.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+	return new RegExp(`^${escaped}[:\\s]\\s*`, "i");
+}
+
+function parseNote(raw) {
+	let text = String(raw || "").trim();
+	let category = $("#note-kind")?.value || frameworkDef().categories[0][0];
+	for (const [value, , , prefix] of frameworkDef().categories) {
+		if (!prefix) continue;
+		const pattern = prefixPattern(prefix);
+		if (pattern.test(text)) {
+			category = value;
+			text = text.replace(pattern, "");
+			break;
+		}
+	}
+	const tags = [...text.matchAll(/#([\w-]+)/g)].map((m) => `#${m[1]}`);
+	const refs = [...text.matchAll(/@([\w-]+)/g)].map((m) => `@${m[1]}`);
+	return { text, category, tags: [...tags, ...refs] };
+}
+
+function syncCategoryFromPrefix() {
+	const value = noteInputValue();
+	for (const [category, , , prefix] of frameworkDef().categories) {
+		if (!prefix) continue;
+		if (prefixPattern(prefix).test(value.trimStart())) {
+			const select = $("#note-kind");
+			if (select) select.value = category;
+			return;
+		}
+	}
+}
+
 function onEditorInput(){
 	if(!editorHasMeaningfulText()){
 		resetDraftNote();
 		return;
 	}
+	syncCategoryFromPrefix();
 	if(noteStartMs==null){
 		noteStartMs=sessionNowMs();
 		noteStartIso=nowIsoUtc();
@@ -378,44 +548,63 @@ function onEditorInput(){
 	}
 }
 
+function onEditorKeydown(event){
+	if(event.key==="Enter"&&!event.shiftKey){
+		event.preventDefault();
+		saveNote();
+	}
+}
+
 /* -------------------------------------------------------------------------- */
 /* Save note                                                                  */
 /* -------------------------------------------------------------------------- */
 async function saveNote(){
 	if(noteStartMs==null||!editorHasMeaningfulText()){
-		announce("Type in the editor to start a note before saving.");
+		announce("Type a note to start capturing before saving.");
 		return;
 	}
 	const savedAtMs=sessionNowMs();
-	const startedAt=msToHMS(noteStartMs);
-	const savedAt=msToHMS(savedAtMs);
-	const delta=msToHMS(Math.max(0,savedAtMs-noteStartMs));
-	const html=$("#note-editor").innerHTML.trim();
-	const framework=$("#framework").value;
-	const category=$("#note-kind").value;
+	const parsed=parseNote(noteInputValue());
+	if(!parsed.text){
+		announce("A note needs some text after its shorthand prefix.");
+		return;
+	}
 	const participantId=participantIdForNote(currentParticipant)||null;
 	const startIso=noteStartIso||nowIsoUtc();
 	const endIso=nowIsoUtc();
-	const sessionId=getSessionAirtableId();
-	if(!sessionId){ announce("Missing session id. Unable to save note."); return; }
+	// Ambient capture works without a scheduled session record: fall back to a
+	// per-study session key so notes still group together.
+	const sessionId=getSessionAirtableId()||`study-${state.studyId}`;
 
 	const payload={
+		// Worker contract (infra/cloudflare/src/service/session-notes.js)
 		session_airtable_id:sessionId,
 		participant_airtable_id:participantId||undefined,
-		framework:framework?.toUpperCase?.()==="NONE"?"none":framework,
-		category,
+		framework:activeFramework,
+		category:parsed.category,
 		start_iso:startIso,
 		end_iso:endIso,
 		start_offset_ms:noteStartMs,
 		end_offset_ms:savedAtMs,
-		content_html:html
+		content_html:escapeHtml(parsed.text),
+		content_plain:parsed.text,
+		// Fieldnotes shape (local preview server and future Worker support)
+		studyId:state.studyId,
+		sessionId,
+		participantId:participantId||undefined,
+		text:parsed.text,
+		tags:parsed.tags,
+		startIso,
+		endIso,
+		startOffsetMs:noteStartMs,
+		endOffsetMs:savedAtMs
 	};
 
-	let createdId=null;
+	let created=null;
 	try{
 		const res=await postJson(apiUrl("/api/session-notes"),payload);
 		if(!res?.ok) throw new Error(res?.error||"Unknown error");
-		createdId=res.id||res.note?.id||null;
+		created=res.note||{id:res.id};
 		announce("Note saved.");
 	}catch(e){
 		console.error("session-note.save.fail",e);
@@ -423,38 +612,274 @@ async function saveNote(){
 		return;
 	}
 
-	const note={id:createdId||crypto.randomUUID(),participantId,framework,category,startedAtMs:noteStartMs,savedAtMs,startIso,endIso,contentHtml:html};
-	notes.push(note);
+	notes.push({
+		id:created.id||crypto.randomUUID(),
+		participantId,
+		framework:activeFramework,
+		category:parsed.category,
+		text:parsed.text,
+		tags:parsed.tags,
+		startIso,
+		endIso,
+		startOffsetMs:noteStartMs,
+		endOffsetMs:savedAtMs,
+		createdAt:created.createdAt||endIso
+	});
 
-	// Render saved note (RDFa)
-	const ul=$("#notes-list");
-	const savedNotesSection=$("#saved-notes-section");
-	if(savedNotesSection) savedNotesSection.hidden=false;
-	const li=document.createElement("li");
-	li.setAttribute("property","schema:itemListElement");
-	li.setAttribute("typeof","schema:ListItem");
-	const article=document.createElement("article");
-	article.setAttribute("typeof","schema:CreativeWork");
-	article.setAttribute("resource",`#note-${note.id}`);
-	article.innerHTML=`
-		<meta property="schema:startTime" content="${note.startIso}">
-		<meta property="schema:endTime" content="${note.endIso}">
-		<meta property="schema:dateCreated" content="${nowIsoUtc()}">
-		<meta property="schema:temporalCoverage" content="${note.startIso}/${note.endIso}">
-		<meta property="schema:genre" content="${category}">
-		<meta property="schema:measurementTechnique" content="${framework}">
-		<meta property="schema:about" resource="#participant">
-		<p class="note-meta">Timestamp: ${startedAt} – ${savedAt} (Δ ${delta}) • ${framework.toUpperCase()} • ${category} <small class="note-id">#${createdId||note.id}</small></p>
-		<div class="note-body" property="schema:text">${html||"<em>(Empty note)</em>"}</div>`;
-	li.append(article);
-	ul.prepend(li);
+	renderNotes();
 
-	// Ready for the next note
+	// Ready for the next note: clear the draft and reset the category to the
+	// framework default so a prefix only ever applies to its own note.
 	resetDraftNote();
-	$("#note-editor").innerHTML="";
+	const input=$("#note-input");
+	if(input){input.value="";input.focus();}
+	const kind=$("#note-kind");
+	if(kind) kind.value=frameworkDef().categories[0][0];
+	announce("Note saved.");
 }
 
 function announce(t){ $("#note-timestamps").textContent=t; }
+
+function escapeHtml(value){
+	return String(value||"").replace(/[&<>"']/g,(c)=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+}
+
+function stripHtml(value){
+	const div=document.createElement("div");
+	div.innerHTML=String(value||"");
+	return div.textContent||"";
+}
+
+// Normalise a note from either the Worker contract or the Fieldnotes shape.
+function mapApiNote(record){
+	const text=String(record.text||record.content_plain||stripHtml(record.content_html||record.contentHtml)||"").trim();
+	const tags=Array.isArray(record.tags)&&record.tags.length
+		?record.tags
+		:[...text.matchAll(/([#@][\w-]+)/g)].map((m)=>m[1]);
+	return {
+		id:record.id,
+		participantId:record.participantId||record.participant_id||null,
+		framework:record.framework||"fieldnotes",
+		category:record.category||"observation",
+		text,
+		tags,
+		startIso:record.startIso||record.start_iso||null,
+		endIso:record.endIso||record.end_iso||null,
+		startOffsetMs:typeof record.startOffsetMs==="number"?record.startOffsetMs:record.start_offset_ms,
+		endOffsetMs:typeof record.endOffsetMs==="number"?record.endOffsetMs:record.end_offset_ms,
+		createdAt:record.createdAt||record.created_at||record.endIso||record.end_iso||null
+	};
+}
+
+/* -------------------------------------------------------------------------- */
+/* Notes stream: filters, search, render, delete, export                      */
+/* -------------------------------------------------------------------------- */
+async function loadNotes(){
+	if(!state.studyId) return;
+	try{
+		const url=new URL(apiUrl("/api/session-notes"));
+		// The Worker lists by session; the local preview server lists by study.
+		url.searchParams.set("study",state.studyId);
+		url.searchParams.set("session",getSessionAirtableId()||`study-${state.studyId}`);
+		const body=await jsonFetch(url.toString());
+		const loaded=Array.isArray(body.notes)?body.notes.map(mapApiNote).filter((note)=>note.id&&note.text):[];
+		notes.splice(0,notes.length,...loaded);
+	}catch(error){
+		console.warn("session-notes.load.fail",error);
+	}
+	renderNotes();
+}
+
+function visibleNotes(){
+	return notes.filter((note)=>!activeCategoryFilter||note.category===activeCategoryFilter);
+}
+
+function noteSortKey(note){
+	// endIso has millisecond precision; createdAt from the API only has seconds.
+	return note.endIso||note.createdAt||note.startIso||"";
+}
+
+function renderNoteFilters(){
+	const wrap=$("#note-filters");
+	if(!wrap) return;
+	wrap.innerHTML="";
+	for(const [value,label,tagClass] of frameworkDef().categories){
+		const button=document.createElement("button");
+		button.type="button";
+		button.className="study-session-filter";
+		button.dataset.category=value;
+		button.setAttribute("aria-pressed",String(activeCategoryFilter===value));
+		const tag=document.createElement("strong");
+		tag.className=`govuk-tag ${tagClass}`;
+		tag.textContent=label;
+		button.append(tag);
+		button.addEventListener("click",()=>{
+			activeCategoryFilter=activeCategoryFilter===value?null:value;
+			renderNoteFilters();
+			renderNotes();
+		});
+		wrap.append(button);
+	}
+}
+
+function decorateNoteText(container,text){
+	const pattern=/([#@][\w-]+)/g;
+	let lastIndex=0;
+	for(const match of String(text||"").matchAll(pattern)){
+		if(match.index>lastIndex) container.append(text.slice(lastIndex,match.index));
+		const token=document.createElement("span");
+		token.className=`study-session-note__token${match[1].startsWith("@")?" study-session-note__token--ref":""}`;
+		token.textContent=match[1];
+		container.append(token);
+		lastIndex=match.index+match[1].length;
+	}
+	if(lastIndex<String(text||"").length) container.append(text.slice(lastIndex));
+}
+
+function renderNoteItem(note){
+	const meta=categoryMeta(note.category);
+	const li=document.createElement("li");
+	li.setAttribute("property","schema:itemListElement");
+	li.setAttribute("typeof","schema:ListItem");
+
+	const article=document.createElement("article");
+	article.setAttribute("typeof","schema:CreativeWork");
+	article.setAttribute("resource",`#note-${note.id}`);
+
+	for(const [prop,content] of [
+		["schema:startTime",note.startIso],
+		["schema:endTime",note.endIso],
+		["schema:dateCreated",note.createdAt],
+		["schema:temporalCoverage",note.startIso&&note.endIso?`${note.startIso}/${note.endIso}`:null],
+		["schema:genre",note.category],
+		["schema:measurementTechnique",note.framework]
+	]){
+		if(!content) continue;
+		const m=document.createElement("meta");
+		m.setAttribute("property",prop);
+		m.setAttribute("content",content);
+		article.append(m);
+	}
+
+	const metaRow=document.createElement("p");
+	metaRow.className="study-session-note__meta";
+
+	const time=document.createElement("span");
+	time.className="study-session-note__time";
+	if(typeof note.startOffsetMs==="number"){
+		time.textContent=msToHMS(note.startOffsetMs);
+		time.title="Session offset when the note began";
+	}else if(note.createdAt){
+		time.textContent=new Date(note.createdAt).toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit"});
+	}else{
+		time.textContent="—";
+	}
+
+	const tag=document.createElement("strong");
+	tag.className=`govuk-tag ${meta.tagClass}`;
+	tag.textContent=meta.label;
+
+	const del=document.createElement("button");
+	del.type="button";
+	del.className="govuk-link study-session-note__delete";
+	del.textContent="Delete";
+	del.setAttribute("aria-label",`Delete ${meta.label.toLowerCase()} note`);
+	del.addEventListener("click",()=>deleteNote(note.id));
+
+	metaRow.append(time,tag,del);
+
+	const text=document.createElement("div");
+	text.className=`study-session-note__text govuk-body${note.category==="quote"?" study-session-note__text--quote":""}`;
+	text.setAttribute("property","schema:text");
+	decorateNoteText(text,note.text);
+
+	article.append(metaRow,text);
+	li.append(article);
+	return li;
+}
+
+function renderNotes(){
+	const list=$("#notes-list");
+	const section=$("#saved-notes-section");
+	const count=$("#notes-count");
+	if(!list) return;
+
+	const visible=visibleNotes().sort((a,b)=>noteSortKey(b).localeCompare(noteSortKey(a)));
+	list.innerHTML="";
+	for(const note of visible) list.append(renderNoteItem(note));
+
+	if(section) section.hidden=notes.length===0;
+	if(count){
+		count.textContent=notes.length===0
+			?""
+			:`Showing ${visible.length} of ${notes.length} note${notes.length===1?"":"s"}`;
+	}
+}
+
+async function deleteNote(noteId){
+	const endpoint=apiUrl(`/api/session-notes/${encodeURIComponent(noteId)}`);
+	let deleted=false;
+	try{
+		const res=await fetch(endpoint,{
+			method:"DELETE",
+			cache:"no-store",
+			credentials:"include",
+			headers:{Accept:"application/json"}
+		});
+		const body=await res.json().catch(()=>null);
+		deleted=res.ok&&body?.ok===true;
+	}catch{
+		deleted=false;
+	}
+	if(!deleted){
+		// The Worker has no DELETE route: soft-delete via PATCH instead.
+		try{
+			const res=await fetch(endpoint,{
+				method:"PATCH",
+				cache:"no-store",
+				credentials:"include",
+				headers:{Accept:"application/json","Content-Type":"application/json; charset=utf-8"},
+				body:JSON.stringify({active:false})
+			});
+			const body=await res.json().catch(()=>null);
+			deleted=res.ok&&body?.ok===true;
+		}catch{
+			deleted=false;
+		}
+	}
+	if(!deleted){
+		announce("Failed to delete the note.");
+		return;
+	}
+	const index=notes.findIndex((note)=>note.id===noteId);
+	if(index>=0) notes.splice(index,1);
+	renderNotes();
+	announce("Note deleted.");
+}
+
+function exportNotes(){
+	const visible=visibleNotes().sort((a,b)=>noteSortKey(a).localeCompare(noteSortKey(b)));
+	if(!visible.length){
+		announce("There are no notes to export.");
+		return;
+	}
+	let markdown=`# Session notes — ${state.studyId}\n\n`;
+	for(const note of visible){
+		const meta=categoryMeta(note.category);
+		const stamp=typeof note.startOffsetMs==="number"
+			?msToHMS(note.startOffsetMs)
+			:(note.createdAt?new Date(note.createdAt).toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit"}):"—");
+		const text=note.category==="quote"?`“${note.text}”`:note.text;
+		markdown+=`- **${stamp}** · _${meta.label}_ — ${String(text).replace(/\n/g," ")}\n`;
+	}
+	const blob=new Blob([markdown],{type:"text/markdown"});
+	const link=document.createElement("a");
+	link.href=URL.createObjectURL(blob);
+	link.download=`session-notes-${state.studyId}-${new Date().toISOString().slice(0,10)}.md`;
+	link.click();
+	URL.revokeObjectURL(link.href);
+	announce(`Exported ${visible.length} note${visible.length===1?"":"s"} as Markdown.`);
+}
 
 /* -------------------------------------------------------------------------- */
 /* Wire events                                                                */
@@ -465,7 +890,9 @@ function wireEvents(){
 	$("#btn-stop").addEventListener("click",stopTimer);
 	$("#framework").addEventListener("change",(e)=>setFramework(e.target.value));
 	$("#btn-save-note").addEventListener("click",saveNote);
-	$("#note-editor").addEventListener("input",onEditorInput);
+	$("#note-input").addEventListener("input",onEditorInput);
+	$("#note-input").addEventListener("keydown",onEditorKeydown);
+	$("#btn-export-notes")?.addEventListener("click",exportNotes);
 	$("#participant-select").addEventListener("change",(e)=>{
 		const p=state.participants.find(x=>x.id===e.target.value);
 		currentParticipant=p||null;
@@ -481,6 +908,7 @@ function wireEvents(){
 async function init(){
 	setEventStatus("https://schema.org/EventScheduled");
 	state.studyId = getStudyId();
+	hydrateBreadcrumbs(state.studyId, getProjectId());
 	try {
 		state.participants = await loadParticipantsForStudy(state.studyId);
 		clearSessionError();
@@ -494,9 +922,10 @@ async function init(){
 		state.participants = [];
 		populateParticipants(state.participants);
 	}
-	setFramework("none");
+	setFramework("fieldnotes");
 	wireEvents();
 	if (state.participants.length) resetDraftNote();
 	updateTimerView();
+	await loadNotes();
 }
 document.addEventListener("DOMContentLoaded",init);

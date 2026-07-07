@@ -33,10 +33,10 @@ assert.equal(studyPageSource.includes("resolveStudyContext"), true);
 assert.equal(studyPageSource.includes("url.searchParams.set(\"id\", studyId)"), true);
 assert.equal(studyPageSource.includes("url.searchParams.set(\"project\", projectId)"), true);
 assert.equal(studyPageSource.includes("loadStudyFromProject(routeProjectId, studyId)"), true);
-assert.equal(studyPageSource.includes("The legacy project and study URL does not match the linked records."), true);
-assert.equal(studyPageSource.includes("routeMode: \"legacy-resolved\""), true);
-assert.equal(studyPageSource.includes("params.get(\"pid\")"), true);
-assert.equal(studyPageSource.includes("params.get(\"sid\")"), true);
+// Legacy pid/sid study URLs are no longer supported on the study page.
+assert.equal(studyPageSource.includes("routeMode: \"legacy-resolved\""), false);
+assert.equal(studyPageSource.includes("params.get(\"pid\")"), false);
+assert.equal(studyPageSource.includes("params.get(\"sid\")"), false);
 
 assert.equal(previewSeedSource.includes("CREATE TABLE IF NOT EXISTS rops_studies_cache"), true);
 assert.equal(previewSeedSource.includes("recgdpwEI5hFO7bUZ"), true);

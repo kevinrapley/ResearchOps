@@ -1,0 +1,53 @@
+{
+	"date": "2026-07-07",
+	"branch": "feature/study-session-fieldnotes",
+	"task": "Study session Fieldnotes capture",
+	"traceRequired": true,
+	"traceLayer": "operational",
+	"selectedBundles": [
+		"github-diamond",
+		"researchops-developer-control",
+		"govuk-design-system",
+		"cloudflare"
+	],
+	"skippedBundles": [
+		"openai-platform",
+		"mcp-agent-tooling",
+		"airtable-public-api",
+		"mural-public-api"
+	],
+	"filesModified": [
+		"src/govuk/templates/pages/study-session.njk",
+		"src/styles/study-session.scss",
+		"scripts/styles/generated-css-targets.mjs",
+		"public/css/study-session.css",
+		"public/components/session-controller.js",
+		"public/components/session-consent-controller.js",
+		"public/js/study-page.js",
+		"src/govuk/templates/pages/study.njk",
+		"public/pages/study/index.html",
+		"public/pages/study/session/index.html",
+		"tests/study-session-route-state.test.js",
+		"tests/study-page-route-state.test.js",
+		"tests/studies-route-contract.test.js",
+		"tests/govuk-forms-application-route-state.test.js"
+	],
+	"validation": [
+		{
+			"command": "node --import ./tests/helpers/generated-govuk-page-source.mjs --test",
+			"result": "356 pass, 0 fail"
+		},
+		{
+			"command": "npm run build:generated-css",
+			"result": "clean; only public/css/study-session.css added"
+		},
+		{
+			"command": "npx eslint <changed js>",
+			"result": "0 errors, pre-existing no-console warnings only"
+		},
+		{
+			"command": "npx prettier -c <changed files>",
+			"result": "clean"
+		}
+	]
+}

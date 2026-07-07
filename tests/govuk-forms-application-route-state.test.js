@@ -95,7 +95,7 @@ includes(studySessionPage, "href=\"/assets/govuk/govuk-frontend.css\"", "Study s
 excludes(studySessionPage, "href=\"/css/govuk/govuk-forms.css\"", "Study session route");
 includes(studySessionPage, "id=\"participant-select\"", "Study session route");
 includes(studySessionPage, "class=\"govuk-select govuk-!-width-two-thirds\"", "Study session route");
-includes(studySessionPage, "id=\"note-editor\"", "Study session route");
+includes(studySessionPage, "id=\"note-input\"", "Study session route");
 excludes(studySessionPage, "href=\"/css/session.css\"", "Study session route");
 
 const participantConsentPage = read("public/pages/study/participant-consent/index.html");

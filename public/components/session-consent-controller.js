@@ -162,8 +162,8 @@ function updateRoutes() {
 
 async function init() {
 	const params = new URLSearchParams(window.location.search);
-	state.projectId = params.get("project") || params.get("pid") || "";
-	state.studyId = params.get("id") || params.get("sid") || "";
+	state.projectId = params.get("project") || "";
+	state.studyId = params.get("id") || "";
 	state.sessionId = params.get("session") || "";
 	updateRoutes();
 	state.participantConsentRecords = await loadParticipantConsent();

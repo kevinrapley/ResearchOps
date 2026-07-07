@@ -71,6 +71,11 @@ export const generatedCssTargets = [
 		output: 'public/css/study-ethics-risk.css',
 	},
 	{
+		name: 'Study session stylesheet',
+		source: 'src/styles/study-session.scss',
+		output: 'public/css/study-session.css',
+	},
+	{
 		name: 'Study participants stylesheet',
 		source: 'src/styles/participants.scss',
 		output: 'public/css/participants.css',
