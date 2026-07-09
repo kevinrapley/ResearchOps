@@ -166,3 +166,27 @@ Reset confirmation validation:
 - `node --test tests/card-sorts-route-state.test.js tests/study-session-route-state.test.js`: 2 pass, 0 fail.
 - `npx eslint public/components/session-card-sort-controller.js tests/card-sorts-route-state.test.js`: 0 errors, existing console warnings only.
 - `npx prettier --check public/components/session-card-sort-controller.js public/css/study-card-sort.css tests/card-sorts-route-state.test.js`: passed.
+
+## Follow-up: local preview and drag cancellation
+
+User request on 2026-07-09:
+
+- Reset confirmation was not visible locally at `https://research-operations/`.
+- Starting to drag a card and then not placing it in a group should return the card to its existing location instead of dropping it to the bottom of the tray or group.
+
+Implementation notes:
+
+- Bumped the study session asset version so local browsers request the refreshed card-sort controller and CSS.
+- Refreshed the local `research-operations` preview copy for the session page, card-sort controller and card-sort stylesheet.
+- Added drag-origin tracking for cards so dropping a tray card back on the tray, or a grouped card back into the same group, is a no-op that preserves the existing order.
+- Added route-state assertions for card drag-origin tracking and same-origin drop guards.
+
+Local preview and drag validation:
+
+- `npm run build:govuk-pages`: passed and regenerated `public/pages/study/session/index.html`.
+- Local preview copy under `/Users/kevin.rapley/.hermes/worktrees/researchops-res10-local/public` now contains `card-sort-reset-confirmation`, `text/rops-card-origin` and `study-session-card-sort-20260709-2`.
+- `node --test tests/card-sorts-route-state.test.js tests/study-session-route-state.test.js`: 2 pass, 0 fail.
+- `npx eslint public/components/session-card-sort-controller.js tests/card-sorts-route-state.test.js`: 0 errors, existing console warnings only.
+- `npx prettier --check public/components/session-card-sort-controller.js public/css/study-card-sort.css tests/card-sorts-route-state.test.js`: passed.
+- `git diff --check`: passed.
+- Playwright smoke check against `https://research-operations/pages/study/session/?id=rec88329d075c8441&project=recdMo80h1QaNQCBk`: reset confirmation panel is present, the page loads `/components/session-card-sort-controller.js?v=study-session-card-sort-20260709-2`, clicking Reset shows the confirmation panel, focuses `btn-confirm-reset-card-sort` and sets status to `Confirm reset to move all cards back to the tray.`

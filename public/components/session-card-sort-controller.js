@@ -420,6 +420,7 @@ function renderCard(cardId, originGroupId) {
 
 	li.addEventListener("dragstart", (event) => {
 		event.dataTransfer.setData("text/rops-card", cardId);
+		event.dataTransfer.setData("text/rops-card-origin", originGroupId || "__tray__");
 		event.dataTransfer.effectAllowed = "move";
 		li.classList.add("card-sort-dragging");
 	});
@@ -440,11 +441,12 @@ function attachDropTarget(el, { onCard, onGroup } = {}) {
 	el.addEventListener("drop", (event) => {
 		el.classList.remove("card-sort-drop-active");
 		const cardId = event.dataTransfer.getData("text/rops-card");
+		const cardOrigin = event.dataTransfer.getData("text/rops-card-origin");
 		const groupId = event.dataTransfer.getData("text/rops-group");
 		if (cardId && onCard) {
 			event.preventDefault();
 			event.stopPropagation();
-			onCard(cardId);
+			onCard(cardId, cardOrigin || "__tray__");
 		} else if (groupId && onGroup) {
 			event.preventDefault();
 			event.stopPropagation();
@@ -488,7 +490,10 @@ function renderGroup(node) {
 	});
 	wrap.append(cardsList);
 	attachDropTarget(cardsList, {
-		onCard: (cardId) => moveCard(cardId, node.id),
+		onCard: (cardId, originGroupId) => {
+			if (originGroupId === node.id) return;
+			moveCard(cardId, node.id);
+		},
 		onGroup: (groupId) => nestGroup(groupId, node.id)
 	});
 
@@ -721,7 +726,14 @@ function initBoardChrome() {
 	}
 
 	const tray = $("#card-sort-tray-list");
-	if (tray) attachDropTarget(tray.closest(".card-sort-tray") || tray, { onCard: (cardId) => moveCard(cardId, null) });
+	if (tray) {
+		attachDropTarget(tray.closest(".card-sort-tray") || tray, {
+			onCard: (cardId, originGroupId) => {
+				if (originGroupId === "__tray__") return;
+				moveCard(cardId, null);
+			}
+		});
+	}
 	const groupsPanel = $("#card-sort-groups-grid");
 	if (groupsPanel) {
 		attachDropTarget(groupsPanel.closest(".card-sort-groups") || groupsPanel, {

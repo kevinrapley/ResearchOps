@@ -40,7 +40,9 @@
 		"tests/govuk-frontend-integration-route-state.test.js",
 		"tests/study-page-route-state.test.js",
 		"visual-walkthrough.config.mjs",
-		"visual-walkthrough.operational-fixtures.mjs"
+		"visual-walkthrough.operational-fixtures.mjs",
+		"docs/agent-audit/reasoning/2026/07/09/card-sort-sessions.md",
+		"docs/agent-audit/reasoning/2026/07/09/card-sort-sessions.json"
 	],
 	"validation": [
 		{
@@ -126,6 +128,34 @@
 		{
 			"command": "npx prettier --check public/components/session-card-sort-controller.js public/css/study-card-sort.css tests/card-sorts-route-state.test.js",
 			"result": "reset-confirmation follow-up passed"
+		},
+		{
+			"command": "npm run build:govuk-pages",
+			"result": "drag-cancellation follow-up passed; regenerated public/pages/study/session/index.html with bumped asset version"
+		},
+		{
+			"command": "local preview file refresh",
+			"result": "copied refreshed session page, card-sort controller and card-sort stylesheet into /Users/kevin.rapley/.hermes/worktrees/researchops-res10-local/public"
+		},
+		{
+			"command": "node --test tests/card-sorts-route-state.test.js tests/study-session-route-state.test.js",
+			"result": "drag-cancellation follow-up 2 pass, 0 fail"
+		},
+		{
+			"command": "npx eslint public/components/session-card-sort-controller.js tests/card-sorts-route-state.test.js",
+			"result": "drag-cancellation follow-up 0 errors; existing console warnings only"
+		},
+		{
+			"command": "npx prettier --check public/components/session-card-sort-controller.js public/css/study-card-sort.css tests/card-sorts-route-state.test.js",
+			"result": "drag-cancellation follow-up passed"
+		},
+		{
+			"command": "git diff --check",
+			"result": "drag-cancellation follow-up passed"
+		},
+		{
+			"command": "Playwright smoke check against local research-operations session page",
+			"result": "reset confirmation panel exists locally; page loads study-session-card-sort-20260709-2 controller; clicking Reset shows the confirmation panel and focuses the confirm button"
 		}
 	],
 	"issues": [
@@ -135,7 +165,10 @@
 		"Follow-up blocked card sort completion until at least one card is in a grouping.",
 		"Follow-up registered the new card sort setup page in the visual walkthrough coverage catalogue.",
 		"Reset-confirmation follow-up changed Reset sort to require an in-page confirmation before resetting.",
-		"Kept OpenAI, MCP, Airtable and Mural bundles skipped because this task did not change those integration contracts."
+		"Kept OpenAI, MCP, Airtable and Mural bundles skipped because this task did not change those integration contracts.",
+		"Drag-cancellation follow-up bumped the study session asset version so local browsers fetch the updated controller and CSS.",
+		"Drag-cancellation follow-up preserves card order when a dragged card is dropped back onto its original tray or group.",
+		"Drag-cancellation follow-up refreshed the local research-operations preview files outside the repository."
 	],
 	"residualRisks": [
 		"Card sort result autosave depends on selecting a participant; changes before participant selection stay client-side only.",
