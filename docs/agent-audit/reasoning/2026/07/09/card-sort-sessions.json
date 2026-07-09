@@ -188,6 +188,38 @@
 		{
 			"command": "Playwright smoke check against local research-operations session page",
 			"result": "local page loads study-session-card-sort-20260709-3; applying card-sort-dragging computes animation-name card-sort-drag-tilt and a rotated transform matrix"
+		},
+		{
+			"command": "npm run build:govuk-pages",
+			"result": "drag-preview follow-up passed; regenerated public/pages/study/session/index.html with study-session-card-sort-20260709-5"
+		},
+		{
+			"command": "node --test tests/card-sorts-route-state.test.js tests/study-session-route-state.test.js",
+			"result": "drag-preview follow-up 2 pass, 0 fail"
+		},
+		{
+			"command": "npx eslint public/components/session-card-sort-controller.js tests/card-sorts-route-state.test.js",
+			"result": "drag-preview follow-up 0 errors; existing console warnings only"
+		},
+		{
+			"command": "npx prettier --check public/components/session-card-sort-controller.js public/css/study-card-sort.css tests/card-sorts-route-state.test.js",
+			"result": "drag-preview follow-up passed"
+		},
+		{
+			"command": "npm run format:check",
+			"result": "drag-preview follow-up passed"
+		},
+		{
+			"command": "git diff --check",
+			"result": "drag-preview follow-up passed"
+		},
+		{
+			"command": "local preview file refresh",
+			"result": "copied refreshed session page, card-sort controller and card-sort stylesheet into /Users/kevin.rapley/.hermes/worktrees/researchops-res10-local/public"
+		},
+		{
+			"command": "Playwright smoke check against local research-operations session page",
+			"result": "local page loads study-session-card-sort-20260709-5; original dragged card remains unrotated and dimmed; custom drag preview has a rotated transform and transform transition"
 		}
 	],
 	"issues": [
@@ -202,7 +234,10 @@
 		"Drag-cancellation follow-up preserves card order when a dragged card is dropped back onto its original tray or group.",
 		"Drag-cancellation follow-up refreshed the local research-operations preview files outside the repository.",
 		"Drag-animation follow-up added a subtle rotating drag animation with a reduced-motion override.",
-		"Drag-animation follow-up bumped the study session asset version and refreshed the local research-operations preview stylesheet."
+		"Drag-animation follow-up bumped the study session asset version and refreshed the local research-operations preview stylesheet.",
+		"Drag-preview follow-up replaced the infinite original-card animation with a custom cursor-following drag preview.",
+		"Drag-preview follow-up hides the native browser drag image with dataTransfer.setDragImage so the preview under the cursor is the animated card.",
+		"Drag-preview follow-up keeps the original list card unrotated while dragging; it only dims in place."
 	],
 	"residualRisks": [
 		"Card sort result autosave depends on selecting a participant; changes before participant selection stay client-side only.",

@@ -47,7 +47,9 @@ const state = {
 	groups: [],
 	saveTimer: null,
 	saving: false,
-	dirty: false
+	dirty: false,
+	dragPreview: null,
+	dragPreviewMoveHandler: null
 };
 
 function newId(prefix) {
@@ -387,6 +389,42 @@ function openInlineTextInput(host, { className, label, placeholder, submitText, 
 	input.focus();
 }
 
+function moveDragPreview(event) {
+	if (!state.dragPreview || !event.clientX || !event.clientY) return;
+	state.dragPreview.style.left = `${event.clientX + 14}px`;
+	state.dragPreview.style.top = `${event.clientY + 10}px`;
+}
+
+function clearDragPreview() {
+	state.dragPreview?.remove();
+	state.dragPreview = null;
+	if (state.dragPreviewMoveHandler) {
+		document.removeEventListener("dragover", state.dragPreviewMoveHandler);
+		state.dragPreviewMoveHandler = null;
+	}
+}
+
+function startDragPreview(cardElement, event) {
+	clearDragPreview();
+	const preview = cardElement.cloneNode(true);
+	preview.removeAttribute("id");
+	preview.removeAttribute("draggable");
+	preview.classList.remove("card-sort-dragging");
+	preview.classList.add("card-sort-drag-preview");
+	preview.style.width = `${cardElement.offsetWidth}px`;
+	document.body.append(preview);
+	state.dragPreview = preview;
+	state.dragPreviewMoveHandler = moveDragPreview;
+	document.addEventListener("dragover", state.dragPreviewMoveHandler);
+	moveDragPreview(event);
+	requestAnimationFrame(() => preview.classList.add("card-sort-drag-preview--tilted"));
+
+	const transparentDragImage = document.createElement("canvas");
+	transparentDragImage.width = 1;
+	transparentDragImage.height = 1;
+	event.dataTransfer?.setDragImage(transparentDragImage, 0, 0);
+}
+
 function renderCard(cardId, originGroupId) {
 	const card = state.cards.get(cardId);
 	if (!card) return null;
@@ -422,9 +460,14 @@ function renderCard(cardId, originGroupId) {
 		event.dataTransfer.setData("text/rops-card", cardId);
 		event.dataTransfer.setData("text/rops-card-origin", originGroupId || "__tray__");
 		event.dataTransfer.effectAllowed = "move";
+		startDragPreview(li, event);
 		li.classList.add("card-sort-dragging");
 	});
-	li.addEventListener("dragend", () => li.classList.remove("card-sort-dragging"));
+	li.addEventListener("drag", moveDragPreview);
+	li.addEventListener("dragend", () => {
+		li.classList.remove("card-sort-dragging");
+		clearDragPreview();
+	});
 	return li;
 }
 

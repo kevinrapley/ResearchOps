@@ -73,6 +73,8 @@ includes(sessionController, "nestGroup", "session card sort controller");
 includes(sessionController, "addParticipantCard", "session card sort controller");
 includes(sessionController, "openInlineTextInput", "session card sort controller");
 includes(sessionController, "text/rops-card-origin", "session card sort controller");
+includes(sessionController, "setDragImage", "session card sort controller");
+includes(sessionController, "startDragPreview", "session card sort controller");
 includes(sessionController, 'originGroupId === "__tray__"', "session card sort controller");
 includes(sessionController, "originGroupId === node.id", "session card sort controller");
 includes(sessionController, "card-sort-card__move", "session card sort controller");
@@ -80,9 +82,13 @@ includes(sessionController, "Sort at least one card into a group before marking 
 includes(sessionController, "Confirm reset to move all cards back to the tray.", "session card sort controller");
 includes(sessionController, "Card sort reset. Changes save automatically.", "session card sort controller");
 includes(sessionController, "Card sort reset cancelled.", "session card sort controller");
-includes(cardSortStyles, "@keyframes card-sort-drag-tilt", "card sort stylesheet");
 includes(cardSortStyles, "prefers-reduced-motion: reduce", "card sort stylesheet");
+includes(cardSortStyles, ".card-sort-drag-preview", "card sort stylesheet");
+includes(cardSortStyles, ".card-sort-drag-preview--tilted", "card sort stylesheet");
 includes(cardSortStyles, "transform: rotate(2deg) scale(1.01)", "card sort stylesheet");
+excludes(cardSortStyles, ".card-sort-card.card-sort-dragging {\n\topacity: 0.32;\n\ttransform", "card sort stylesheet");
+excludes(cardSortStyles, "card-sort-drag-tilt", "card sort stylesheet");
+excludes(cardSortStyles, "infinite alternate", "card sort stylesheet");
 excludes(sessionController, "window.prompt", "session card sort controller");
 excludes(sessionController, "window.confirm", "session card sort controller");
 
