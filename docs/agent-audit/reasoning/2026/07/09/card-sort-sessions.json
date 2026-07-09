@@ -156,6 +156,38 @@
 		{
 			"command": "Playwright smoke check against local research-operations session page",
 			"result": "reset confirmation panel exists locally; page loads study-session-card-sort-20260709-2 controller; clicking Reset shows the confirmation panel and focuses the confirm button"
+		},
+		{
+			"command": "npm run build:govuk-pages",
+			"result": "drag-animation follow-up passed; regenerated public/pages/study/session/index.html with study-session-card-sort-20260709-3"
+		},
+		{
+			"command": "node --test tests/card-sorts-route-state.test.js tests/study-session-route-state.test.js",
+			"result": "drag-animation follow-up 2 pass, 0 fail"
+		},
+		{
+			"command": "npx eslint tests/card-sorts-route-state.test.js",
+			"result": "drag-animation follow-up 0 errors"
+		},
+		{
+			"command": "npx prettier --check public/css/study-card-sort.css tests/card-sorts-route-state.test.js",
+			"result": "drag-animation follow-up passed"
+		},
+		{
+			"command": "npm run format:check",
+			"result": "drag-animation follow-up passed"
+		},
+		{
+			"command": "git diff --check",
+			"result": "drag-animation follow-up passed"
+		},
+		{
+			"command": "local preview file refresh",
+			"result": "copied refreshed session page and card-sort stylesheet into /Users/kevin.rapley/.hermes/worktrees/researchops-res10-local/public"
+		},
+		{
+			"command": "Playwright smoke check against local research-operations session page",
+			"result": "local page loads study-session-card-sort-20260709-3; applying card-sort-dragging computes animation-name card-sort-drag-tilt and a rotated transform matrix"
 		}
 	],
 	"issues": [
@@ -168,7 +200,9 @@
 		"Kept OpenAI, MCP, Airtable and Mural bundles skipped because this task did not change those integration contracts.",
 		"Drag-cancellation follow-up bumped the study session asset version so local browsers fetch the updated controller and CSS.",
 		"Drag-cancellation follow-up preserves card order when a dragged card is dropped back onto its original tray or group.",
-		"Drag-cancellation follow-up refreshed the local research-operations preview files outside the repository."
+		"Drag-cancellation follow-up refreshed the local research-operations preview files outside the repository.",
+		"Drag-animation follow-up added a subtle rotating drag animation with a reduced-motion override.",
+		"Drag-animation follow-up bumped the study session asset version and refreshed the local research-operations preview stylesheet."
 	],
 	"residualRisks": [
 		"Card sort result autosave depends on selecting a participant; changes before participant selection stay client-side only.",

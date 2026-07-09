@@ -190,3 +190,27 @@ Local preview and drag validation:
 - `npx prettier --check public/components/session-card-sort-controller.js public/css/study-card-sort.css tests/card-sorts-route-state.test.js`: passed.
 - `git diff --check`: passed.
 - Playwright smoke check against `https://research-operations/pages/study/session/?id=rec88329d075c8441&project=recdMo80h1QaNQCBk`: reset confirmation panel is present, the page loads `/components/session-card-sort-controller.js?v=study-session-card-sort-20260709-2`, clicking Reset shows the confirmation panel, focuses `btn-confirm-reset-card-sort` and sets status to `Confirm reset to move all cards back to the tray.`
+
+## Follow-up: drag rotation animation
+
+User request on 2026-07-09:
+
+- Add a slight rotation animation to cards while dragging.
+
+Implementation notes:
+
+- Added a subtle `card-sort-drag-tilt` animation to `.card-sort-card.card-sort-dragging`.
+- Added a small scale and shadow lift while dragging so the card reads as being picked up.
+- Added a `prefers-reduced-motion: reduce` override that disables continuous animation while keeping a static slight tilt.
+- Bumped the study session asset version and refreshed the local `research-operations` preview session page and stylesheet.
+- Added route-state assertions for the drag animation, reduced-motion guard and rotated transform.
+
+Drag animation validation:
+
+- `npm run build:govuk-pages`: passed and regenerated `public/pages/study/session/index.html`.
+- `node --test tests/card-sorts-route-state.test.js tests/study-session-route-state.test.js`: 2 pass, 0 fail.
+- `npx eslint tests/card-sorts-route-state.test.js`: 0 errors.
+- `npx prettier --check public/css/study-card-sort.css tests/card-sorts-route-state.test.js`: passed.
+- `npm run format:check`: passed.
+- `git diff --check`: passed.
+- Playwright smoke check against `https://research-operations/pages/study/session/?id=rec88329d075c8441&project=recdMo80h1QaNQCBk`: local page loads `study-session-card-sort-20260709-3`; adding `card-sort-dragging` to a card computes `animation-name: card-sort-drag-tilt` and a rotated transform matrix.

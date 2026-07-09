@@ -104,6 +104,11 @@
 	padding: 8px 10px;
 	margin-bottom: 8px;
 	cursor: grab;
+	transform-origin: 50% 50%;
+	transition:
+		box-shadow 120ms ease,
+		transform 120ms ease,
+		opacity 120ms ease;
 }
 
 .card-sort-card:focus-within {
@@ -112,7 +117,31 @@
 }
 
 .card-sort-card.card-sort-dragging {
-	opacity: 0.5;
+	animation: card-sort-drag-tilt 520ms ease-in-out infinite alternate;
+	box-shadow: 0 6px 0 #b1b4b6;
+	opacity: 0.72;
+	transform: rotate(2deg) scale(1.01);
+}
+
+@keyframes card-sort-drag-tilt {
+	from {
+		transform: rotate(-1deg) scale(1.01);
+	}
+
+	to {
+		transform: rotate(2deg) scale(1.01);
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.card-sort-card {
+		transition: none;
+	}
+
+	.card-sort-card.card-sort-dragging {
+		animation: none;
+		transform: rotate(1deg);
+	}
 }
 
 .card-sort-card__label {

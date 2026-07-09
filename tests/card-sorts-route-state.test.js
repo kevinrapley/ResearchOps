@@ -9,6 +9,7 @@ const setupPage = fs.readFileSync("public/pages/study/card-sort/index.html", "ut
 const setupScript = fs.readFileSync("public/js/study-card-sort-page.js", "utf8");
 const sessionPage = fs.readFileSync("public/pages/study/session/index.html", "utf8");
 const sessionController = fs.readFileSync("public/components/session-card-sort-controller.js", "utf8");
+const cardSortStyles = fs.readFileSync("public/css/study-card-sort.css", "utf8");
 const studyPage = fs.readFileSync("public/pages/study/index.html", "utf8");
 const studyScript = fs.readFileSync("public/js/study-page.js", "utf8");
 
@@ -79,6 +80,9 @@ includes(sessionController, "Sort at least one card into a group before marking 
 includes(sessionController, "Confirm reset to move all cards back to the tray.", "session card sort controller");
 includes(sessionController, "Card sort reset. Changes save automatically.", "session card sort controller");
 includes(sessionController, "Card sort reset cancelled.", "session card sort controller");
+includes(cardSortStyles, "@keyframes card-sort-drag-tilt", "card sort stylesheet");
+includes(cardSortStyles, "prefers-reduced-motion: reduce", "card sort stylesheet");
+includes(cardSortStyles, "transform: rotate(2deg) scale(1.01)", "card sort stylesheet");
 excludes(sessionController, "window.prompt", "session card sort controller");
 excludes(sessionController, "window.confirm", "session card sort controller");
 
