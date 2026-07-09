@@ -123,6 +123,10 @@ function sortedCount() {
 	return count;
 }
 
+function hasGroupedCards() {
+	return sortedCount() > 0;
+}
+
 /* -------------------------------------------------------------------------- */
 /* Serialisation                                                              */
 /* -------------------------------------------------------------------------- */
@@ -340,6 +344,40 @@ function openMoveMenu(host, options, onPick) {
 	select.focus();
 }
 
+function openInlineTextInput(host, { className, label, placeholder, submitText, onSubmit }) {
+	host.querySelector(`.${className}`)?.remove();
+	const form = document.createElement("form");
+	form.className = `card-sort-inline-form ${className}`;
+	const labelEl = document.createElement("label");
+	labelEl.className = "govuk-label govuk-visually-hidden";
+	const inputId = `${className}-${newId("input")}`;
+	labelEl.setAttribute("for", inputId);
+	labelEl.textContent = label;
+	const input = document.createElement("input");
+	input.id = inputId;
+	input.className = "govuk-input";
+	input.type = "text";
+	input.placeholder = placeholder;
+	const submit = document.createElement("button");
+	submit.type = "submit";
+	submit.className = "govuk-button govuk-button--secondary";
+	submit.textContent = submitText;
+	const cancel = actionButton("Cancel", () => form.remove());
+	form.append(labelEl, input, submit, cancel);
+	form.addEventListener("submit", (event) => {
+		event.preventDefault();
+		const value = input.value.trim();
+		if (!value) {
+			input.focus();
+			return;
+		}
+		onSubmit(value);
+		form.remove();
+	});
+	host.append(form);
+	input.focus();
+}
+
 function renderCard(cardId, originGroupId) {
 	const card = state.cards.get(cardId);
 	if (!card) return null;
@@ -367,6 +405,7 @@ function renderCard(cardId, originGroupId) {
 			moveCard(cardId, target === "__tray__" ? null : target);
 		});
 	});
+	move.classList.add("card-sort-card__move", "govuk-visually-hidden");
 	move.setAttribute("aria-label", `Move card ${card.label}`);
 	li.append(move);
 
@@ -459,11 +498,17 @@ function renderGroup(node) {
 	}
 	if (canCreateGroups()) {
 		actions.append(actionButton("Add subgroup", () => {
-			const label = window.prompt("Subgroup name");
-			if (!label || !label.trim()) return;
-			node.children.push({ id: newId("grp"), label: label.trim(), source: "participant", cards: [], children: [] });
-			renderBoard();
-			scheduleSave();
+			openInlineTextInput(actions, {
+				className: "card-sort-subgroup-form",
+				label: `Subgroup name for ${node.label}`,
+				placeholder: "Subgroup name",
+				submitText: "Add subgroup",
+				onSubmit: (label) => {
+					node.children.push({ id: newId("grp"), label, source: "participant", cards: [], children: [] });
+					renderBoard();
+					scheduleSave();
+				}
+			});
 		}));
 	}
 	if (canEditGroup(node)) {
@@ -526,8 +571,10 @@ function renderBoard() {
 
 	const complete = $("#btn-complete-card-sort");
 	if (complete) {
-		complete.disabled = state.status === "completed";
-		complete.setAttribute("aria-disabled", String(state.status === "completed"));
+		const blocked = state.status === "completed" || !hasGroupedCards();
+		complete.disabled = blocked;
+		complete.setAttribute("aria-disabled", String(blocked));
+		complete.title = !hasGroupedCards() ? "Sort at least one card into a group before marking the card sort complete." : "";
 		complete.textContent = state.status === "completed" ? "Card sort completed" : "Mark card sort complete";
 	}
 }
@@ -674,15 +721,19 @@ function initBoardChrome() {
 	}
 
 	$("#btn-complete-card-sort")?.addEventListener("click", async () => {
+		if (!hasGroupedCards()) {
+			setSaveStatus("Sort at least one card into a group before marking the card sort complete.");
+			return;
+		}
 		state.status = "completed";
 		renderBoard();
 		await saveResult({ completed_at: new Date().toISOString() });
 	});
 
 	$("#btn-reset-card-sort")?.addEventListener("click", () => {
-		if (!window.confirm("Reset this card sort? All placements for this participant will be cleared.")) return;
 		resetBoard();
 		renderBoard();
+		setSaveStatus("Card sort reset. Changes save automatically.");
 		scheduleSave();
 	});
 }

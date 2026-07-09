@@ -24,6 +24,7 @@
 		"infra/cloudflare/src/service/card-sorts.js",
 		"infra/cloudflare/src/service/index.js",
 		"public/components/session-card-sort-controller.js",
+		"public/css/researchops-fonts.css",
 		"public/css/study-card-sort.css",
 		"public/js/study-card-sort-page.js",
 		"public/js/study-page.js",
@@ -34,8 +35,12 @@
 		"src/govuk/templates/pages/study-card-sort.njk",
 		"src/govuk/templates/pages/study-session.njk",
 		"src/govuk/templates/pages/study.njk",
+		"src/govuk/templates/layouts/researchops.njk",
 		"tests/card-sorts-route-state.test.js",
-		"tests/study-page-route-state.test.js"
+		"tests/govuk-frontend-integration-route-state.test.js",
+		"tests/study-page-route-state.test.js",
+		"visual-walkthrough.config.mjs",
+		"visual-walkthrough.operational-fixtures.mjs"
 	],
 	"validation": [
 		{
@@ -69,10 +74,50 @@
 		{
 			"command": "npm run validate",
 			"result": "initially failed only because trace coverage was missing for feature/card-sort-sessions"
+		},
+		{
+			"command": "npm run build:govuk-pages",
+			"result": "follow-up passed; regenerated pages with the global ResearchOps font stylesheet link"
+		},
+		{
+			"command": "node --test tests/card-sorts-route-state.test.js tests/govuk-frontend-integration-route-state.test.js",
+			"result": "follow-up 2 pass, 0 fail"
+		},
+		{
+			"command": "npx eslint public/components/session-card-sort-controller.js tests/card-sorts-route-state.test.js tests/govuk-frontend-integration-route-state.test.js",
+			"result": "follow-up 0 errors; existing console warnings only"
+		},
+		{
+			"command": "npx prettier --check public/components/session-card-sort-controller.js public/css/study-card-sort.css public/css/researchops-fonts.css tests/card-sorts-route-state.test.js tests/govuk-frontend-integration-route-state.test.js",
+			"result": "follow-up passed"
+		},
+		{
+			"command": "npm run format:check",
+			"result": "follow-up passed"
+		},
+		{
+			"command": "npm test -- tests/card-sorts-route-state.test.js tests/govuk-frontend-integration-route-state.test.js tests/study-session-route-state.test.js",
+			"result": "follow-up 3 pass, 0 fail"
+		},
+		{
+			"command": "git diff --check",
+			"result": "follow-up passed"
+		},
+		{
+			"command": "node --test tests/visual-walkthrough-registry-coverage.test.js",
+			"result": "follow-up passed after registering /pages/study/card-sort/index.html"
+		},
+		{
+			"command": "Playwright smoke test against local research-operations card sort session",
+			"result": "computed font family was GDS Transport/Arial/sans-serif; Move control visually hidden; inline subgroup creation worked; complete disabled until a card was grouped; reset avoided a system dialog and disabled completion again"
 		}
 	],
 	"issues": [
 		"Found and fixed duplicate checkbox id attributes in the generated card sort setup page by using the GOV.UK checkbox macro item id option.",
+		"Follow-up replaced browser/system dialogs for subgroup creation and reset with in-page card sort controls.",
+		"Follow-up added a global ResearchOps font stylesheet to prevent browser serif fallback on pages and native controls.",
+		"Follow-up blocked card sort completion until at least one card is in a grouping.",
+		"Follow-up registered the new card sort setup page in the visual walkthrough coverage catalogue.",
 		"Kept OpenAI, MCP, Airtable and Mural bundles skipped because this task did not change those integration contracts."
 	],
 	"residualRisks": [

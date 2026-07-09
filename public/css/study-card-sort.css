@@ -48,6 +48,13 @@
 	grid-template-columns: minmax(220px, 1fr) minmax(0, 2.5fr);
 	gap: 20px;
 	align-items: start;
+	font-family: "GDS Transport", Arial, sans-serif;
+}
+
+.card-sort-board button,
+.card-sort-board input,
+.card-sort-board select {
+	font-family: "GDS Transport", Arial, sans-serif;
 }
 
 @media (max-width: 768px) {
@@ -213,8 +220,38 @@
 	color: #d4351c;
 }
 
+.card-sort-card__move {
+	position: absolute !important;
+	width: 1px !important;
+	height: 1px !important;
+	margin: 0 !important;
+	padding: 0 !important;
+	overflow: hidden !important;
+	clip: rect(0 0 0 0) !important;
+	clip-path: inset(50%) !important;
+	border: 0 !important;
+	white-space: nowrap !important;
+}
+
 .card-sort-move-menu {
 	margin-top: 6px;
+}
+
+.card-sort-inline-form {
+	display: flex;
+	flex: 1 0 100%;
+	flex-wrap: wrap;
+	gap: 8px;
+	margin-top: 4px;
+}
+
+.card-sort-inline-form .govuk-input {
+	flex: 1 1 180px;
+}
+
+.card-sort-inline-form .govuk-button {
+	margin-bottom: 0;
+	white-space: nowrap;
 }
 
 .card-sort-toolbar {
@@ -244,6 +281,24 @@
 
 .card-sort-add-form .govuk-input {
 	flex: 1 1 auto;
+}
+
+.card-sort-add-form .govuk-button {
+	min-width: 130px;
+	white-space: nowrap;
+}
+
+#card-sort-add-card-form {
+	display: block;
+}
+
+#card-sort-add-card-form .govuk-input {
+	width: 100%;
+	margin-bottom: 10px;
+}
+
+#card-sort-add-card-form .govuk-button {
+	width: 100%;
 }
 
 .card-sort-save-status {

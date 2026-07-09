@@ -105,3 +105,44 @@
 
 - Card sort result autosave only persists once a participant is selected; changes made before participant selection remain in the page state until a participant is chosen.
 - The D1 migration must still be applied in the target environment as part of deployment.
+
+## Follow-up: card sort UI and accessibility fixes
+
+User request on 2026-07-09:
+
+- Prevent any font fallback to Times or serif defaults.
+- Keep the card-level Move control for accessibility but hide it from sighted browser users.
+- Replace browser/system prompts for Add subgroup and Reset sort.
+- Make Add group wide enough to avoid wrapping.
+- Make Add card full width below the Add a card input.
+- Prevent marking a card sort complete when no cards are in groupings.
+
+Selected bundles for the follow-up:
+
+- github-diamond: continued work on approved `feature/` branch and updated this trace.
+- researchops-developer-control: kept behavior in the existing session controller and generated-page workflow.
+- multi-functional-team: preserved consent/session gating and avoided unsafe completion states.
+- govuk-design-system: applied accessible in-page controls, visually hidden accessible Move control and GOV.UK font stack.
+
+Implementation notes:
+
+- Added `public/css/researchops-fonts.css` and linked it from `src/govuk/templates/layouts/researchops.njk` so pages and native form controls use `"GDS Transport", Arial, sans-serif`.
+- Added the same explicit font stack to the card-sort board and its dynamic form controls.
+- Replaced `window.prompt` for subgroup creation with an inline GOV.UK-styled input form.
+- Removed the `window.confirm` reset dialog; Reset sort now resets in-page and updates the save-status text.
+- Hid the card Move button visually with a dedicated `card-sort-card__move` rule while keeping it in the DOM for assistive technology.
+- Disabled Mark card sort complete until at least one card is placed inside a group.
+- Regenerated GOV.UK pages so the global font stylesheet link is present in committed static HTML.
+- Registered the new card-sort setup page in the visual walkthrough coverage catalogue with deterministic study/project context.
+
+Follow-up validation:
+
+- `npm run build:govuk-pages`: passed.
+- `node --test tests/card-sorts-route-state.test.js tests/govuk-frontend-integration-route-state.test.js`: 2 pass, 0 fail.
+- `npx eslint public/components/session-card-sort-controller.js tests/card-sorts-route-state.test.js tests/govuk-frontend-integration-route-state.test.js`: 0 errors, existing console warnings only.
+- `npx prettier --check public/components/session-card-sort-controller.js public/css/study-card-sort.css public/css/researchops-fonts.css tests/card-sorts-route-state.test.js tests/govuk-frontend-integration-route-state.test.js`: passed.
+- `npm run format:check`: passed.
+- `npm test -- tests/card-sorts-route-state.test.js tests/govuk-frontend-integration-route-state.test.js tests/study-session-route-state.test.js`: 3 pass, 0 fail.
+- `git diff --check`: passed.
+- `node --test tests/visual-walkthrough-registry-coverage.test.js`: passed after registering `/pages/study/card-sort/index.html`.
+- Playwright smoke test against local `https://research-operations/pages/study/session/?id=rec88329d075c8441&project=recdMo80h1QaNQCBk`: body and board computed font family were `"GDS Transport", Arial, sans-serif`; complete was initially disabled; Move measured 1px by 1px; Add subgroup opened an inline form and created a subgroup; after moving one card, complete became enabled; after Reset sort, complete became disabled and progress returned to 0 of 12.

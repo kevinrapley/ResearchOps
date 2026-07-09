@@ -11,6 +11,7 @@ const buildGeneratedCss = fs.readFileSync('scripts/styles/build-generated-css.mj
 const sharedHead = fs.readFileSync('public/partials/html-head.html', 'utf8');
 const sharedHeader = fs.readFileSync('public/partials/header.html', 'utf8');
 const sharedFooter = fs.readFileSync('public/partials/footer.html', 'utf8');
+const researchopsFonts = fs.readFileSync('public/css/researchops-fonts.css', 'utf8');
 const layoutLoader = fs.readFileSync('public/components/layout.js', 'utf8');
 const renderedProjectsPage = fs.readFileSync('public/pages/projects/index.html', 'utf8');
 
@@ -78,6 +79,9 @@ assert.match(generatedCss, /\.govuk-button/);
 assert.match(generatedCss, /font-family:"GDS Transport"/);
 assert.match(generatedCss, /\.govuk-summary-card/);
 assert.match(generatedCss, /\.govuk-details/);
+assert.match(layoutTemplate, /href="\/css\/researchops-fonts\.css"/);
+assert.match(renderedProjectsPage, /href="\/css\/researchops-fonts\.css"/);
+assert.match(researchopsFonts, /font-family: "GDS Transport", Arial, sans-serif;/);
 assert.match(generatedCss, /\.govuk-tag/);
 
 assert.match(layoutTemplate, /\/components\/layout\.js/);

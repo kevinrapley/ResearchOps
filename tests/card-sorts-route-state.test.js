@@ -16,6 +16,10 @@ function includes(source, text, label) {
 	assert.equal(source.includes(text), true, `Expected ${label} to include: ${text}`);
 }
 
+function excludes(source, text, label) {
+	assert.equal(source.includes(text), false, `Expected ${label} not to include: ${text}`);
+}
+
 /* Worker service */
 includes(serviceSource, "rops_card_sort_configs", "card sorts service");
 includes(serviceSource, "rops_card_sort_results", "card sorts service");
@@ -64,6 +68,12 @@ includes(sessionController, "/api/card-sorts/results", "session card sort contro
 includes(sessionController, "card sort", "session card sort controller");
 includes(sessionController, "nestGroup", "session card sort controller");
 includes(sessionController, "addParticipantCard", "session card sort controller");
+includes(sessionController, "openInlineTextInput", "session card sort controller");
+includes(sessionController, "card-sort-card__move", "session card sort controller");
+includes(sessionController, "Sort at least one card into a group before marking the card sort complete.", "session card sort controller");
+includes(sessionController, "Card sort reset. Changes save automatically.", "session card sort controller");
+excludes(sessionController, "window.prompt", "session card sort controller");
+excludes(sessionController, "window.confirm", "session card sort controller");
 
 /* Study overview task */
 includes(studyPage, 'id="link-card-sort"', "study page");
