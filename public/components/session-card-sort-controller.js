@@ -491,7 +491,7 @@ function attachDropTarget(el, { onCard, onGroup } = {}) {
 		if (cardId && onCard) {
 			event.preventDefault();
 			event.stopPropagation();
-			onCard(cardId, cardOrigin || "__tray__");
+			onCard(cardId, cardOrigin || "__tray__", event);
 		} else if (groupId && onGroup) {
 			event.preventDefault();
 			event.stopPropagation();
@@ -657,6 +657,26 @@ function moveCard(cardId, groupId) {
 	scheduleSave();
 }
 
+function trayInsertionIndex(dropEvent) {
+	const tray = $("#card-sort-tray-list");
+	if (!tray) return state.unsorted.length;
+	const cardItems = Array.from(tray.querySelectorAll(".card-sort-card:not(.card-sort-dragging)"));
+	const pointerY = dropEvent?.clientY || Number.POSITIVE_INFINITY;
+	const insertBeforeIndex = cardItems.findIndex((item) => {
+		const rect = item.getBoundingClientRect();
+		return pointerY < rect.top + rect.height / 2;
+	});
+	return insertBeforeIndex === -1 ? state.unsorted.length : insertBeforeIndex;
+}
+
+function moveCardToTrayAt(cardId, dropEvent) {
+	removeCardEverywhere(cardId);
+	const index = Math.min(trayInsertionIndex(dropEvent), state.unsorted.length);
+	state.unsorted.splice(index, 0, cardId);
+	renderBoard();
+	scheduleSave();
+}
+
 function nestGroup(groupId, targetGroupId) {
 	if (groupId === targetGroupId) return;
 	const moving = findGroup(groupId);
@@ -773,9 +793,9 @@ function initBoardChrome() {
 	const tray = $("#card-sort-tray-list");
 	if (tray) {
 		attachDropTarget(tray.closest(".card-sort-tray") || tray, {
-			onCard: (cardId, originGroupId) => {
+			onCard: (cardId, originGroupId, dropEvent) => {
 				if (originGroupId === "__tray__") return;
-				moveCard(cardId, null);
+				moveCardToTrayAt(cardId, dropEvent);
 			}
 		});
 	}

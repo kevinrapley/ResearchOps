@@ -238,3 +238,25 @@ Drag preview centring validation:
 - `npx eslint public/components/session-card-sort-controller.js tests/card-sorts-route-state.test.js`: 0 errors, existing console warnings only.
 - `npx prettier --check public/components/session-card-sort-controller.js public/css/study-card-sort.css tests/card-sorts-route-state.test.js`: passed.
 - Playwright browser DOM drag test against `https://research-operations/pages/study/session/?id=rec88329d075c8441&project=recdMo80h1QaNQCBk`: local page loads `study-session-card-sort-20260709-6`; preview centre measured 1px left and 0px vertically from the pointer; custom preview has a rotated transform; original card remains `transform: none` and opacity `0.32`; transparent drag image is removed after the drag starts.
+
+## Follow-up: tray drop insertion
+
+User request on 2026-07-09:
+
+- When dragging a card back out of a group into the left list, drop it at the point in the list where it is dropped rather than stacking it at the bottom.
+
+Implementation notes:
+
+- Changed tray drops to pass the drop event into the card move handler.
+- Added tray insertion calculation from the pointer Y position against existing tray card midpoints.
+- Added a dedicated tray move path that removes the card from any group and splices it into `state.unsorted` at the calculated point.
+- Kept same-tray drops as a no-op so cancelled or same-origin tray drops preserve the existing card order.
+- Bumped the study session asset version and refreshed the local `research-operations` preview session page, controller and stylesheet.
+
+Tray insertion validation:
+
+- `npm run build:govuk-pages`: passed and regenerated `public/pages/study/session/index.html` with `study-session-card-sort-20260709-7`.
+- `node --test tests/card-sorts-route-state.test.js tests/study-session-route-state.test.js`: 2 pass, 0 fail.
+- `npx eslint public/components/session-card-sort-controller.js tests/card-sorts-route-state.test.js`: 0 errors, existing console warnings only.
+- `npx prettier --check public/components/session-card-sort-controller.js tests/card-sorts-route-state.test.js`: passed.
+- Playwright browser DOM drag test against `https://research-operations/pages/study/session/?id=rec88329d075c8441&project=recdMo80h1QaNQCBk`: local page loads `study-session-card-sort-20260709-7`; a card moved from the group back to the tray at the top was inserted at index 0 rather than appended.

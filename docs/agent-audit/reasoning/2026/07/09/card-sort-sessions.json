@@ -244,6 +244,30 @@
 		{
 			"command": "Playwright browser DOM drag test against local research-operations session page",
 			"result": "local page loads study-session-card-sort-20260709-6; custom drag preview centre measured 1px left and 0px vertically from pointer; original list card remains unrotated; transparent drag-image element is removed after drag starts"
+		},
+		{
+			"command": "npm run build:govuk-pages",
+			"result": "tray-insertion follow-up passed; regenerated public/pages/study/session/index.html with study-session-card-sort-20260709-7"
+		},
+		{
+			"command": "node --test tests/card-sorts-route-state.test.js tests/study-session-route-state.test.js",
+			"result": "tray-insertion follow-up 2 pass, 0 fail"
+		},
+		{
+			"command": "npx eslint public/components/session-card-sort-controller.js tests/card-sorts-route-state.test.js",
+			"result": "tray-insertion follow-up 0 errors; existing console warnings only"
+		},
+		{
+			"command": "npx prettier --check public/components/session-card-sort-controller.js tests/card-sorts-route-state.test.js",
+			"result": "tray-insertion follow-up passed"
+		},
+		{
+			"command": "local preview file refresh",
+			"result": "copied refreshed session page, card-sort controller and card-sort stylesheet into /Users/kevin.rapley/.hermes/worktrees/researchops-res10-local/public for tray-insertion testing"
+		},
+		{
+			"command": "Playwright browser DOM drag test against local research-operations session page",
+			"result": "local page loads study-session-card-sort-20260709-7; card moved from group back to the tray at the top was inserted at index 0 rather than appended"
 		}
 	],
 	"issues": [
@@ -263,7 +287,8 @@
 		"Drag-preview follow-up hides the native browser drag image with dataTransfer.setDragImage so the preview under the cursor is the animated card.",
 		"Drag-preview follow-up keeps the original list card unrotated while dragging; it only dims in place.",
 		"Drag-preview-centering follow-up positions the custom preview by subtracting half its measured width and height from the pointer coordinates.",
-		"Drag-preview-centering follow-up replaces the unattached canvas drag image with an off-screen transparent DOM element to suppress native drag artefacts."
+		"Drag-preview-centering follow-up replaces the unattached canvas drag image with an off-screen transparent DOM element to suppress native drag artefacts.",
+		"Tray-insertion follow-up inserts cards returned from groups into the tray at the pointer drop position instead of appending them to the bottom."
 	],
 	"residualRisks": [
 		"Card sort result autosave depends on selecting a participant; changes before participant selection stay client-side only.",

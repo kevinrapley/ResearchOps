@@ -76,6 +76,9 @@ includes(sessionController, "text/rops-card-origin", "session card sort controll
 includes(sessionController, "setDragImage", "session card sort controller");
 includes(sessionController, "startDragPreview", "session card sort controller");
 includes(sessionController, "event.clientX - rect.width / 2", "session card sort controller");
+includes(sessionController, "trayInsertionIndex", "session card sort controller");
+includes(sessionController, "moveCardToTrayAt", "session card sort controller");
+includes(sessionController, "state.unsorted.splice(index, 0, cardId)", "session card sort controller");
 includes(sessionController, 'originGroupId === "__tray__"', "session card sort controller");
 includes(sessionController, "originGroupId === node.id", "session card sort controller");
 includes(sessionController, "card-sort-card__move", "session card sort controller");
