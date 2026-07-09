@@ -42,7 +42,9 @@
 		"visual-walkthrough.config.mjs",
 		"visual-walkthrough.operational-fixtures.mjs",
 		"docs/agent-audit/reasoning/2026/07/09/card-sort-sessions.md",
-		"docs/agent-audit/reasoning/2026/07/09/card-sort-sessions.json"
+		"docs/agent-audit/reasoning/2026/07/09/card-sort-sessions.json",
+		"infra/cloudflare/src/worker.js",
+		"public/components/session-controller.js"
 	],
 	"validation": [
 		{
@@ -268,6 +270,50 @@
 		{
 			"command": "Playwright browser DOM drag test against local research-operations session page",
 			"result": "local page loads study-session-card-sort-20260709-7; card moved from group back to the tray at the top was inserted at index 0 rather than appended"
+		},
+		{
+			"command": "Codex PR review thread inspection for PR 472",
+			"result": "found 5 unresolved Codex-authored threads; all 5 classified valid and remediated"
+		},
+		{
+			"command": "Codex PR review comment reactions",
+			"result": "added thumbs-up reactions to comments 3548053929, 3548053931, 3548053933, 3548053937 and 3548053938 before remediation"
+		},
+		{
+			"command": "npm run build:govuk-pages",
+			"result": "Codex-comment follow-up passed; regenerated study, card-sort setup and session pages"
+		},
+		{
+			"command": "node --test tests/card-sorts-route-state.test.js tests/study-page-route-state.test.js tests/study-session-route-state.test.js",
+			"result": "Codex-comment follow-up 3 pass, 0 fail"
+		},
+		{
+			"command": "node --test tests/security-hardening-controls-route-state.test.js tests/auth-route-permissions.test.js tests/studies-route-contract.test.js tests/card-sorts-route-state.test.js",
+			"result": "Codex-comment follow-up 4 pass, 0 fail"
+		},
+		{
+			"command": "npx eslint infra/cloudflare/src/worker.js public/components/session-card-sort-controller.js public/components/session-controller.js public/js/study-page.js public/js/study-card-sort-page.js tests/card-sorts-route-state.test.js tests/study-page-route-state.test.js",
+			"result": "Codex-comment follow-up 0 errors; existing console warnings only"
+		},
+		{
+			"command": "npm run format:check",
+			"result": "Codex-comment follow-up passed"
+		},
+		{
+			"command": "git diff --check",
+			"result": "Codex-comment follow-up passed"
+		},
+		{
+			"command": "local preview file refresh",
+			"result": "copied refreshed study page, card-sort setup page, session page, session controllers and card-sort scripts into /Users/kevin.rapley/.hermes/worktrees/researchops-res10-local/public for Codex-comment testing"
+		},
+		{
+			"command": "Playwright browser DOM drag test against local research-operations session page",
+			"result": "local page loads study-session-card-sort-20260709-8; study lookup requests use /api/studies?id=... only; completion remains disabled while cards remain in the tray and becomes enabled when all 12 cards are grouped"
+		},
+		{
+			"command": "Playwright browser gate test with empty card sort config",
+			"result": "local study page loads study-card-sort-20260709-2; missing card-sort config shows Action needed, lists Prepare the card sort as the blocker and hides Begin session"
 		}
 	],
 	"issues": [
@@ -288,7 +334,12 @@
 		"Drag-preview follow-up keeps the original list card unrotated while dragging; it only dims in place.",
 		"Drag-preview-centering follow-up positions the custom preview by subtracting half its measured width and height from the pointer coordinates.",
 		"Drag-preview-centering follow-up replaces the unattached canvas drag image with an off-screen transparent DOM element to suppress native drag artefacts.",
-		"Tray-insertion follow-up inserts cards returned from groups into the tray at the pointer drop position instead of appending them to the bottom."
+		"Tray-insertion follow-up inserts cards returned from groups into the tray at the pointer drop position instead of appending them to the bottom.",
+		"Codex-comment follow-up added Worker auth declarations for card sort config/results routes, including dynamic result PATCH permission mapping.",
+		"Codex-comment follow-up replaced unsupported study-by-id GETs in card-sort activation, session breadcrumbs and card-sort setup breadcrumbs with /api/studies?id=... lookups.",
+		"Codex-comment follow-up adds card-sort preparation into study readiness before enabling Begin session.",
+		"Codex-comment follow-up flushes pending autosaves and guards late saves when switching participants.",
+		"Codex-comment follow-up blocks card sort completion until every card has been sorted into a group."
 	],
 	"residualRisks": [
 		"Card sort result autosave depends on selecting a participant; changes before participant selection stay client-side only.",

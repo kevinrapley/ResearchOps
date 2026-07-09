@@ -49,7 +49,8 @@ const state = {
 	saving: false,
 	dirty: false,
 	dragPreview: null,
-	dragPreviewMoveHandler: null
+	dragPreviewMoveHandler: null,
+	saveGeneration: 0
 };
 
 function newId(prefix) {
@@ -129,6 +130,10 @@ function hasGroupedCards() {
 	return sortedCount() > 0;
 }
 
+function canCompleteCardSort() {
+	return hasGroupedCards() && state.unsorted.length === 0;
+}
+
 /* -------------------------------------------------------------------------- */
 /* Serialisation                                                              */
 /* -------------------------------------------------------------------------- */
@@ -197,6 +202,16 @@ function setResetConfirmationVisible(visible) {
 	}
 }
 
+async function loadStudyById(studyId) {
+	const url = new URL(apiUrl("/api/studies"), window.location.origin);
+	url.searchParams.set("id", studyId);
+	const body = await jsonFetch(url.toString());
+	const studies = Array.isArray(body?.studies) ? body.studies : [];
+	const study = body?.study || studies.find((item) => item?.id === studyId || item?.recordId === studyId || item?.airtableId === studyId) || null;
+	if (!study?.id) throw new Error("Could not load the Study record.");
+	return study;
+}
+
 function scheduleSave() {
 	state.dirty = true;
 	clearTimeout(state.saveTimer);
@@ -204,7 +219,10 @@ function scheduleSave() {
 }
 
 async function saveResult(overrides = {}) {
-	if (!state.participantId) {
+	const participantId = state.participantId;
+	const resultId = state.resultId;
+	const generation = state.saveGeneration;
+	if (!participantId) {
 		setSaveStatus("Select a participant to record this card sort.");
 		return;
 	}
@@ -217,14 +235,14 @@ async function saveResult(overrides = {}) {
 	const payload = {
 		study_id: state.studyId,
 		session_id: state.sessionId,
-		participant_id: state.participantId,
+		participant_id: participantId,
 		status: state.status,
 		result: serialiseResult(),
 		...overrides
 	};
 	try {
-		if (state.resultId) {
-			await jsonFetch(apiUrl(`/api/card-sorts/results/${encodeURIComponent(state.resultId)}`), {
+		if (resultId) {
+			await jsonFetch(apiUrl(`/api/card-sorts/results/${encodeURIComponent(resultId)}`), {
 				method: "PATCH",
 				body: JSON.stringify(payload)
 			});
@@ -233,16 +251,30 @@ async function saveResult(overrides = {}) {
 				method: "POST",
 				body: JSON.stringify(payload)
 			});
-			state.resultId = body?.id || body?.result?.id || "";
+			if (generation === state.saveGeneration && participantId === state.participantId) {
+				state.resultId = body?.id || body?.result?.id || "";
+			}
 		}
-		setSaveStatus(state.status === "completed" ? "Card sort complete and saved." : `Saved at ${new Date().toLocaleTimeString("en-GB")}.`);
+		if (generation === state.saveGeneration && participantId === state.participantId) {
+			setSaveStatus(state.status === "completed" ? "Card sort complete and saved." : `Saved at ${new Date().toLocaleTimeString("en-GB")}.`);
+		}
 	} catch (err) {
 		console.warn("card-sort.save.fail", err);
 		setSaveStatus("Could not save the card sort. Changes are kept on this page; retrying on the next change.");
 	} finally {
 		state.saving = false;
-		if (state.dirty) scheduleSave();
+		if (state.dirty && generation === state.saveGeneration && participantId === state.participantId) scheduleSave();
 	}
+}
+
+async function flushPendingSaveBeforeParticipantSwitch() {
+	clearTimeout(state.saveTimer);
+	state.saveTimer = null;
+	if (state.participantId && state.dirty) {
+		await saveResult();
+	}
+	state.saveGeneration += 1;
+	state.dirty = false;
 }
 
 async function loadExistingResult() {
@@ -630,10 +662,10 @@ function renderBoard() {
 
 	const complete = $("#btn-complete-card-sort");
 	if (complete) {
-		const blocked = state.status === "completed" || !hasGroupedCards();
+		const blocked = state.status === "completed" || !canCompleteCardSort();
 		complete.disabled = blocked;
 		complete.setAttribute("aria-disabled", String(blocked));
-		complete.title = !hasGroupedCards() ? "Sort at least one card into a group before marking the card sort complete." : "";
+		complete.title = !canCompleteCardSort() ? "Sort every card into a group before marking the card sort complete." : "";
 		complete.textContent = state.status === "completed" ? "Card sort completed" : "Mark card sort complete";
 	}
 }
@@ -807,8 +839,8 @@ function initBoardChrome() {
 	}
 
 	$("#btn-complete-card-sort")?.addEventListener("click", async () => {
-		if (!hasGroupedCards()) {
-			setSaveStatus("Sort at least one card into a group before marking the card sort complete.");
+		if (!canCompleteCardSort()) {
+			setSaveStatus("Sort every card into a group before marking the card sort complete.");
 			return;
 		}
 		setResetConfirmationVisible(false);
@@ -847,8 +879,7 @@ function initBoardChrome() {
 
 	let study = null;
 	try {
-		const body = await jsonFetch(apiUrl(`/api/studies/${encodeURIComponent(state.studyId)}`));
-		study = body?.study || null;
+		study = await loadStudyById(state.studyId);
 	} catch (err) {
 		console.warn("card-sort.study.load.fail", err);
 		return;
@@ -877,6 +908,7 @@ function initBoardChrome() {
 	setSaveStatus("Select a participant to record this card sort.");
 
 	$("#participant-select")?.addEventListener("change", async (event) => {
+		await flushPendingSaveBeforeParticipantSwitch();
 		const select = event.target;
 		const option = select.options[select.selectedIndex];
 		state.participantId = option?.dataset?.airtableId || select.value || "";

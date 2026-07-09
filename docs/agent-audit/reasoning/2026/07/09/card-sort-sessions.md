@@ -260,3 +260,37 @@ Tray insertion validation:
 - `npx eslint public/components/session-card-sort-controller.js tests/card-sorts-route-state.test.js`: 0 errors, existing console warnings only.
 - `npx prettier --check public/components/session-card-sort-controller.js tests/card-sorts-route-state.test.js`: passed.
 - Playwright browser DOM drag test against `https://research-operations/pages/study/session/?id=rec88329d075c8441&project=recdMo80h1QaNQCBk`: local page loads `study-session-card-sort-20260709-7`; a card moved from the group back to the tray at the top was inserted at index 0 rather than appended.
+
+## Follow-up: Codex PR review comments
+
+User request on 2026-07-09:
+
+- See and handle Codex comments on PR 472 under the GitHub Diamond Standard protocol.
+
+Codex comments handled:
+
+- Valid P1: Declare card sort API routes in the Worker auth gate.
+- Valid P1: Use a routed study lookup before activating card sorts.
+- Valid P2: Gate sessions on card sort preparation.
+- Valid P2: Flush or cancel autosaves before switching participants.
+- Valid P2: Prevent completing with unsorted cards.
+
+Implementation notes:
+
+- Added `/api/card-sorts/config`, `/api/card-sorts/results` and `/api/card-sorts/results/:id` declarations to `RESEARCH_DATA_ROUTE_PERMISSIONS` and dynamic route permission mapping.
+- Changed card-sort session, session breadcrumb and card-sort setup study lookups to use `/api/studies?id=...` rather than unsupported `GET /api/studies/:id`.
+- Made card-sort preparation status part of study readiness before rendering the session gate, so Card Sort studies block “Begin session” until cards are configured.
+- Added participant-switch save flushing and a save generation guard so pending or late saves cannot update the next participant's result id or save status.
+- Changed the completion guard to require at least one grouped card and zero unsorted cards.
+- Added thumbs-up reactions to all five valid Codex review comments before remediation, then replied and resolved each thread after validation.
+
+Codex comment validation:
+
+- `npm run build:govuk-pages`: passed and regenerated study, card-sort setup and session pages.
+- `node --test tests/card-sorts-route-state.test.js tests/study-page-route-state.test.js tests/study-session-route-state.test.js`: 3 pass, 0 fail.
+- `node --test tests/security-hardening-controls-route-state.test.js tests/auth-route-permissions.test.js tests/studies-route-contract.test.js tests/card-sorts-route-state.test.js`: 4 pass, 0 fail.
+- `npx eslint infra/cloudflare/src/worker.js public/components/session-card-sort-controller.js public/components/session-controller.js public/js/study-page.js public/js/study-card-sort-page.js tests/card-sorts-route-state.test.js tests/study-page-route-state.test.js`: 0 errors, existing console warnings only.
+- `npm run format:check`: passed.
+- `git diff --check`: passed.
+- Playwright browser DOM drag test against `https://research-operations/pages/study/session/?id=rec88329d075c8441&project=recdMo80h1QaNQCBk`: local page loads `study-session-card-sort-20260709-8`; study requests use `/api/studies?id=...` only; completion is disabled initially, remains disabled with remaining tray cards, and becomes enabled when all 12 cards are grouped.
+- Playwright browser gate test with `/api/card-sorts/config` mocked empty against `https://research-operations/pages/study/?id=rec88329d075c8441&project=recdMo80h1QaNQCBk`: local page loads `study-card-sort-20260709-2`; card sort status is Action needed; “Prepare the card sort” appears as the blocker; Begin session remains hidden.

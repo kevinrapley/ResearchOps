@@ -210,8 +210,11 @@ async function hydrateBreadcrumbs(studyId, projectId) {
 
 	let study = null;
 	try {
-		const body = await jsonFetch(apiUrl(`/api/studies/${encodeURIComponent(studyId)}`));
-		study = body?.study || null;
+		const url = new URL(apiUrl("/api/studies"), window.location.origin);
+		url.searchParams.set("id", studyId);
+		const body = await jsonFetch(url.toString());
+		const studies = Array.isArray(body?.studies) ? body.studies : [];
+		study = body?.study || studies.find((item) => item?.id === studyId || item?.recordId === studyId || item?.airtableId === studyId) || null;
 	} catch (error) {
 		console.warn("session.breadcrumbs.study.fail", error);
 	}

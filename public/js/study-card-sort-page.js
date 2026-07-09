@@ -231,12 +231,15 @@ function applyBulkCards() {
 async function hydrateContext(studyId) {
 	let study = null;
 	try {
-		const res = await fetch(apiUrl(`/api/studies/${encodeURIComponent(studyId)}`), {
+		const url = new URL(apiUrl("/api/studies"), window.location.origin);
+		url.searchParams.set("id", studyId);
+		const res = await fetch(url.toString(), {
 			cache: "no-store",
 			credentials: "include"
 		});
 		const body = await res.json().catch(() => ({}));
-		study = body?.study || null;
+		const studies = Array.isArray(body?.studies) ? body.studies : [];
+		study = body?.study || studies.find((item) => item?.id === studyId || item?.recordId === studyId || item?.airtableId === studyId) || null;
 	} catch {
 		/* breadcrumbs stay generic */
 	}
