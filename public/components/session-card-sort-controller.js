@@ -391,8 +391,9 @@ function openInlineTextInput(host, { className, label, placeholder, submitText, 
 
 function moveDragPreview(event) {
 	if (!state.dragPreview || !event.clientX || !event.clientY) return;
-	state.dragPreview.style.left = `${event.clientX + 14}px`;
-	state.dragPreview.style.top = `${event.clientY + 10}px`;
+	const rect = state.dragPreview.getBoundingClientRect();
+	state.dragPreview.style.left = `${event.clientX - rect.width / 2}px`;
+	state.dragPreview.style.top = `${event.clientY - rect.height / 2}px`;
 }
 
 function clearDragPreview() {
@@ -419,10 +420,11 @@ function startDragPreview(cardElement, event) {
 	moveDragPreview(event);
 	requestAnimationFrame(() => preview.classList.add("card-sort-drag-preview--tilted"));
 
-	const transparentDragImage = document.createElement("canvas");
-	transparentDragImage.width = 1;
-	transparentDragImage.height = 1;
+	const transparentDragImage = document.createElement("span");
+	transparentDragImage.className = "card-sort-transparent-drag-image";
+	document.body.append(transparentDragImage);
 	event.dataTransfer?.setDragImage(transparentDragImage, 0, 0);
+	setTimeout(() => transparentDragImage.remove(), 0);
 }
 
 function renderCard(cardId, originGroupId) {

@@ -125,10 +125,21 @@
 	transform: rotate(0deg) scale(1);
 	transform-origin: 50% 50%;
 	transition: transform 140ms ease-out;
+	will-change: left, top, transform;
 }
 
 .card-sort-drag-preview--tilted {
 	transform: rotate(2deg) scale(1.01);
+}
+
+.card-sort-transparent-drag-image {
+	position: fixed;
+	top: -100px;
+	left: -100px;
+	width: 1px;
+	height: 1px;
+	opacity: 0;
+	pointer-events: none;
 }
 
 @media (prefers-reduced-motion: reduce) {

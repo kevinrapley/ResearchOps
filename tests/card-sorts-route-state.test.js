@@ -75,6 +75,7 @@ includes(sessionController, "openInlineTextInput", "session card sort controller
 includes(sessionController, "text/rops-card-origin", "session card sort controller");
 includes(sessionController, "setDragImage", "session card sort controller");
 includes(sessionController, "startDragPreview", "session card sort controller");
+includes(sessionController, "event.clientX - rect.width / 2", "session card sort controller");
 includes(sessionController, 'originGroupId === "__tray__"', "session card sort controller");
 includes(sessionController, "originGroupId === node.id", "session card sort controller");
 includes(sessionController, "card-sort-card__move", "session card sort controller");
@@ -85,6 +86,7 @@ includes(sessionController, "Card sort reset cancelled.", "session card sort con
 includes(cardSortStyles, "prefers-reduced-motion: reduce", "card sort stylesheet");
 includes(cardSortStyles, ".card-sort-drag-preview", "card sort stylesheet");
 includes(cardSortStyles, ".card-sort-drag-preview--tilted", "card sort stylesheet");
+includes(cardSortStyles, ".card-sort-transparent-drag-image", "card sort stylesheet");
 includes(cardSortStyles, "transform: rotate(2deg) scale(1.01)", "card sort stylesheet");
 excludes(cardSortStyles, ".card-sort-card.card-sort-dragging {\n\topacity: 0.32;\n\ttransform", "card sort stylesheet");
 excludes(cardSortStyles, "card-sort-drag-tilt", "card sort stylesheet");

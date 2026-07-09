@@ -216,3 +216,25 @@ Drag preview validation:
 - `npm run format:check`: passed.
 - `git diff --check`: passed.
 - Playwright smoke check against `https://research-operations/pages/study/session/?id=rec88329d075c8441&project=recdMo80h1QaNQCBk`: local page loads `study-session-card-sort-20260709-5`; adding `card-sort-dragging` to the original card leaves `transform: none` and opacity `0.32`; adding `card-sort-drag-preview--tilted` to the custom preview computes a rotated transform matrix with `transition-property: transform`.
+
+## Follow-up: drag preview centring
+
+User request on 2026-07-09:
+
+- The dragged card preview moved from the cursor centre to the bottom-right of it.
+- A strange native file/back-arrow drag artefact appeared; the custom card preview should be the only visible drag object.
+
+Implementation notes:
+
+- Changed preview positioning to use the preview's measured width and height so its centre sits on `event.clientX` and `event.clientY`.
+- Replaced the unattached transparent canvas drag image with an off-screen transparent DOM element before calling `dataTransfer.setDragImage`.
+- Bumped the study session asset version and refreshed the local `research-operations` preview session page, controller and stylesheet.
+- Added route-state assertions for pointer-centred preview positioning and the transparent drag-image element.
+
+Drag preview centring validation:
+
+- `npm run build:govuk-pages`: passed and regenerated `public/pages/study/session/index.html`.
+- `node --test tests/card-sorts-route-state.test.js tests/study-session-route-state.test.js`: 2 pass, 0 fail.
+- `npx eslint public/components/session-card-sort-controller.js tests/card-sorts-route-state.test.js`: 0 errors, existing console warnings only.
+- `npx prettier --check public/components/session-card-sort-controller.js public/css/study-card-sort.css tests/card-sorts-route-state.test.js`: passed.
+- Playwright browser DOM drag test against `https://research-operations/pages/study/session/?id=rec88329d075c8441&project=recdMo80h1QaNQCBk`: local page loads `study-session-card-sort-20260709-6`; preview centre measured 1px left and 0px vertically from the pointer; custom preview has a rotated transform; original card remains `transform: none` and opacity `0.32`; transparent drag image is removed after the drag starts.
