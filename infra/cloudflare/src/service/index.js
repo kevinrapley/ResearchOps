@@ -39,6 +39,9 @@ import * as MuralJournalSync from "./mural-journal-sync-safe-tags.js";
 /* Session Notes */
 import * as SessionNotes from "./session-notes.js";
 
+/* Card Sorts */
+import * as CardSorts from "./card-sorts.js";
+
 /* Integrations */
 import { MuralServicePart } from "./internals/mural.js";
 
@@ -281,6 +284,13 @@ export class ResearchOpsService {
 	listSessionNotes = (origin, url) => SessionNotes.listSessionNotes(this, origin, url);
 	createSessionNote = (req, origin) => SessionNotes.createSessionNote(this, req, origin);
 	updateSessionNote = (req, origin, noteId) => SessionNotes.updateSessionNote(this, req, origin, noteId);
+
+	/* ─────────────── Card Sorts ─────────────── */
+	getCardSortConfig = (origin, url) => CardSorts.getCardSortConfig(this, origin, url);
+	saveCardSortConfig = (req, origin) => CardSorts.saveCardSortConfig(this, req, origin);
+	listCardSortResults = (origin, url) => CardSorts.listCardSortResults(this, origin, url);
+	createCardSortResult = (req, origin) => CardSorts.createCardSortResult(this, req, origin);
+	updateCardSortResult = (req, origin, id) => CardSorts.updateCardSortResult(this, req, origin, id);
 
 	/* ─────────────── Comms ─────────────── */
 	sendComms = (req, origin) => Comms.sendComms(this, req, origin);

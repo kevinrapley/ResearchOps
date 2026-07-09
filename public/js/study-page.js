@@ -294,6 +294,7 @@ function renderSetupTaskStatuses(readiness) {
 	setSetupTaskStatus("#study-setup-participant-consent-status", readiness.participantConsent.state);
 	setSetupTaskStatus("#study-setup-participants-status", readiness.participants.state);
 	setSetupTaskStatus("#study-setup-guide-status", readiness.guide.state);
+	if (readiness.cardSort) setSetupTaskStatus("#study-setup-card-sort-status", readiness.cardSort.state);
 }
 
 function blockerActionForKey(key) {
@@ -303,6 +304,7 @@ function blockerActionForKey(key) {
 		ethicsRisk: { label: "Assess ethics and research risk", selector: "#link-ethics-risk" },
 		participants: { label: "Add or review participants", selector: "#link-participants" },
 		guide: { label: "Publish a discussion guide", selector: "#link-guides" },
+		cardSort: { label: "Prepare the card sort", selector: "#link-card-sort" },
 		consentMaterials: { label: "Create or review consent forms", selector: "#link-consent-forms" },
 		participantConsent: { label: "Record required participant consent", selector: "#link-participant-consent" }
 	};
@@ -418,7 +420,7 @@ function evaluateReadiness(study, context = {}) {
 		!["incomplete-assessment", "not-assessed", "not-recorded"].includes(ethicsRiskRoute);
 	const ethicsRiskReady = studyEthicsRisk.ready === true;
 
-	return {
+	const readiness = {
 		description: {
 			ready: hasDescription,
 			state: hasDescription ? "Ready" : "Needs attention",
@@ -460,6 +462,14 @@ function evaluateReadiness(study, context = {}) {
 			text: participantConsentReady ? `${readyParticipantConsent.length} participant${readyParticipantConsent.length === 1 ? " is" : "s are"} ready for session.` : "Record required participant consent before beginning a session."
 		}
 	};
+	if (String(study.method || "").trim().toLowerCase() === "card sort") {
+		readiness.cardSort = context.cardSort || {
+			ready: false,
+			state: "Action needed",
+			text: "Define the cards and groups participants will sort in sessions."
+		};
+	}
+	return readiness;
 }
 
 function isStudyReady(readiness) {
@@ -833,6 +843,55 @@ function renderSupportSetupStatus(supportSetup = {}) {
 	}
 }
 
+function cardSortTaskRow() {
+	return $("#link-card-sort")?.closest("li") || null;
+}
+
+async function renderCardSortTask(study, projectId, studyId) {
+	const row = cardSortTaskRow();
+	const fallback = {
+		ready: false,
+		state: "Action needed",
+		text: "Define the cards and groups participants will sort in sessions."
+	};
+	if (!row) return fallback;
+	const isCardSort = String(study.method || "").trim().toLowerCase() === "card sort";
+	row.hidden = !isCardSort;
+	if (!isCardSort) return null;
+
+	enableLink("#link-card-sort", route("/pages/study/card-sort/", { id: studyId, project: projectId }));
+
+	const status = $("#study-setup-card-sort-status");
+	const hint = $("#study-setup-card-sort-hint");
+	try {
+		const res = await fetch(apiUrl(`/api/card-sorts/config?study=${encodeURIComponent(studyId)}&ts=${Date.now()}`), {
+			cache: "no-store",
+			credentials: "include"
+		});
+		const body = await res.json().catch(() => ({}));
+		const config = body?.config || null;
+		const ready = Boolean(config && Array.isArray(config.cards) && config.cards.length);
+		const text = ready
+			? `${config.sort_type.charAt(0).toUpperCase()}${config.sort_type.slice(1)} sort with ${config.cards.length} card${config.cards.length === 1 ? "" : "s"}${config.groups?.length ? ` and ${config.groups.length} predefined group${config.groups.length === 1 ? "" : "s"}` : ""}.`
+			: fallback.text;
+		if (status) {
+			status.textContent = ready ? "Ready" : "Action needed";
+			status.className = `govuk-tag ${ready ? "govuk-tag--green" : "govuk-tag--yellow"}`;
+		}
+		if (hint) {
+			hint.textContent = text;
+		}
+		return {
+			ready,
+			state: ready ? "Ready" : "Action needed",
+			text
+		};
+	} catch (error) {
+		console.warn("[study-page] card sort status failed", error);
+		return fallback;
+	}
+}
+
 function renderRoutes(projectId, studyId) {
 	const studyParams = { id: studyId, project: projectId };
 	enableLink("#breadcrumb-project", route("/pages/project-dashboard/", { id: projectId }));
@@ -863,7 +922,7 @@ function primeEthicsRiskLinkFromUrl() {
 	document.body.dataset.ethicsRiskNextStepsHref = route("/pages/study/ethics-risk/next-steps/", { id: studyId, project: projectId });
 }
 
-function renderStudy(project, study, projectId, studyId, readinessContext) {
+async function renderStudy(project, study, projectId, studyId, readinessContext) {
 	const projectName = projectTitle(project) || "Project";
 	document.body.setAttribute("data-study-id", studyId);
 	document.body.setAttribute("data-project-id", projectId);
@@ -877,6 +936,8 @@ function renderStudy(project, study, projectId, studyId, readinessContext) {
 	setText("#kv-studyid", String(study.studyId || study.id || "—").toUpperCase());
 
 	const routes = renderRoutes(projectId, studyId);
+	const cardSort = await renderCardSortTask(study, projectId, studyId);
+	if (cardSort) readinessContext.cardSort = cardSort;
 	renderReadiness(study, readinessContext, routes.sessionHref);
 	renderSupportSetupStatus(readinessContext.supportSetup);
 	renderEvidenceStateSummary(readinessContext);
@@ -892,7 +953,7 @@ async function init() {
 			loadProject(context.projectId),
 			loadReadinessContext(context.studyId)
 		]);
-		renderStudy(project, context.study, context.projectId, context.studyId, readinessContext);
+		await renderStudy(project, context.study, context.projectId, context.studyId, readinessContext);
 	} catch (error) {
 		console.error("[study-page] init failed", error);
 		showError(error?.message || "Could not load the study. Check the study link, then try again.");
@@ -923,4 +984,7 @@ document.addEventListener("study:desc:save", async event => {
 });
 
 primeEthicsRiskLinkFromUrl();
+// Hidden until the study loads; only Card Sort studies show this setup task.
+const initialCardSortRow = cardSortTaskRow();
+if (initialCardSortRow) initialCardSortRow.hidden = true;
 init();

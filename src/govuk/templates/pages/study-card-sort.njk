@@ -1,0 +1,202 @@
+{% extends "layouts/researchops.njk" %}
+{% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/checkboxes/macro.njk" import govukCheckboxes %}
+{% from "govuk/components/details/macro.njk" import govukDetails %}
+{% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
+{% from "govuk/components/radios/macro.njk" import govukRadios %}
+{% from "govuk/components/textarea/macro.njk" import govukTextarea %}
+
+{% set cardSortScriptVersion = "study-card-sort-20260709-2" %}
+
+{% block head %}
+	<meta property="schema:name" content="Card sort setup - ResearchOps">
+	<meta property="schema:creator" content="Home Office ResearchOps Platform">
+	<meta property="dcterms:language" content="en-GB">
+	<link rel="stylesheet" href="/css/study-page.css" media="screen">
+	<link rel="stylesheet" href="/css/study-card-sort.css?v={{ cardSortScriptVersion }}" media="screen">
+	<link rel="modulepreload" href="/js/study-card-sort-page.js?v={{ cardSortScriptVersion }}">
+{% endblock %}
+
+{% block content %}
+<div class="govuk-width-container study-card-sort-page" data-study-subpage-template="card-sort">
+	{{ govukBreadcrumbs({
+		items: [
+			{ text: "Projects", href: "/pages/projects/" },
+			{ text: "Project", href: "#", attributes: { id: "breadcrumb-project" } },
+			{ text: "Study", href: "#", attributes: { id: "breadcrumb-study" } },
+			{ text: "Card sort setup" }
+		]
+	}) }}
+
+	{{ govukErrorSummary({
+		titleText: "There is a problem",
+		errorList: [
+			{ text: "The card sort could not be loaded.", href: "#card-sort-type" }
+		],
+		attributes: { id: "card-sort-error-summary", hidden: "hidden" }
+	}) }}
+
+	<header class="govuk-!-margin-bottom-6">
+		<p id="study-title" class="govuk-caption-m">Study</p>
+		<h1 class="govuk-heading-l">Prepare the card sort</h1>
+		<p class="govuk-body-l govuk-!-width-two-thirds">
+			Define the cards participants will sort and, for closed or hybrid sorts, the groups they will sort them
+			into. This setup is used by every card sort session in this study.
+		</p>
+	</header>
+
+	<form id="card-sort-form" novalidate>
+		<section class="study-card-sort-section govuk-!-margin-bottom-8" aria-labelledby="sort-type-title">
+			{{ govukRadios({
+				idPrefix: "card-sort-type",
+				name: "cardSortType",
+				fieldset: {
+					legend: { text: "Sort type", classes: "govuk-fieldset__legend--m", attributes: { id: "sort-type-title" } }
+				},
+				hint: { text: "This decides whether participants create their own groups, use yours, or both." },
+				items: [
+					{
+						value: "open",
+						text: "Open card sort",
+						hint: { text: "Participants create, name and nest their own groups." },
+						checked: true
+					},
+					{
+						value: "closed",
+						text: "Closed card sort",
+						hint: { text: "Participants sort cards into the predefined groups you set up here." }
+					},
+					{
+						value: "hybrid",
+						text: "Hybrid card sort",
+						hint: { text: "Participants use your predefined groups but can also create their own." }
+					}
+				]
+			}) }}
+
+			{{ govukCheckboxes({
+				idPrefix: "card-sort-options",
+				name: "cardSortOptions",
+				fieldset: {
+					legend: { text: "Options", classes: "govuk-fieldset__legend--s" }
+				},
+				items: [
+					{
+						id: "allow-new-cards",
+						value: "allow-new-cards",
+						text: "Allow participants to add their own cards",
+						hint: { text: "Useful when the card set may not cover every concept participants think of." }
+					},
+					{
+						id: "shuffle-cards",
+						value: "shuffle-cards",
+						text: "Shuffle card order for each participant",
+						hint: { text: "Reduces order bias by presenting the cards in a random order." },
+						checked: true
+					}
+				]
+			}) }}
+
+			{{ govukTextarea({
+				id: "card-sort-instructions",
+				name: "cardSortInstructions",
+				value: "",
+				rows: 3,
+				label: { text: "Instructions for participants", classes: "govuk-label--s" },
+				hint: { text: "Shown at the top of the card sort session. Explain the task in the participant's language." }
+			}) }}
+		</section>
+
+		<section class="study-card-sort-section govuk-!-margin-bottom-8" aria-labelledby="cards-editor-title">
+			<h2 id="cards-editor-title" class="govuk-heading-m">Cards</h2>
+			<p class="govuk-body govuk-!-width-two-thirds">
+				Add one card per concept. Keep labels short; use the optional description for anything the label cannot
+				carry on its own.
+			</p>
+
+			<ol id="card-editor-list" class="govuk-list study-card-sort-editor-list" aria-label="Cards in this sort"></ol>
+
+			<div class="govuk-button-group">
+				{{ govukButton({
+					text: "Add card",
+					type: "button",
+					classes: "govuk-button--secondary",
+					attributes: { id: "btn-add-card" }
+				}) }}
+				{{ govukButton({
+					text: "Add cards in bulk",
+					type: "button",
+					classes: "govuk-button--secondary",
+					attributes: { id: "btn-bulk-cards" }
+				}) }}
+			</div>
+
+			<div id="bulk-cards-panel" class="study-card-sort-bulk-panel" hidden>
+				{{ govukTextarea({
+					id: "bulk-cards-input",
+					name: "bulkCardsInput",
+					value: "",
+					rows: 6,
+					label: { text: "One card per line", classes: "govuk-label--s" },
+					hint: { text: "Optionally add a description after a pipe, for example: Passport | Physical travel document." }
+				}) }}
+				<div class="govuk-button-group">
+					{{ govukButton({ text: "Add these cards", type: "button", attributes: { id: "btn-bulk-cards-apply" } }) }}
+					{{ govukButton({
+						text: "Cancel",
+						type: "button",
+						classes: "govuk-button--secondary",
+						attributes: { id: "btn-bulk-cards-cancel" }
+					}) }}
+				</div>
+			</div>
+		</section>
+
+		<section
+			class="study-card-sort-section govuk-!-margin-bottom-8"
+			id="groups-editor-section"
+			aria-labelledby="groups-editor-title"
+			hidden
+		>
+			<h2 id="groups-editor-title" class="govuk-heading-m">Predefined groups</h2>
+			<p class="govuk-body govuk-!-width-two-thirds">
+				Closed and hybrid sorts need the groups participants will sort into. Order here is the order participants
+				see.
+			</p>
+
+			<ol id="group-editor-list" class="govuk-list study-card-sort-editor-list" aria-label="Predefined groups"></ol>
+
+			{{ govukButton({
+				text: "Add group",
+				type: "button",
+				classes: "govuk-button--secondary",
+				attributes: { id: "btn-add-group" }
+			}) }}
+		</section>
+
+		{{ govukDetails({
+			summaryText: "Which sort type should I choose?",
+			html: '<p class="govuk-body">Use an <strong>open</strong> sort to learn how participants naturally group and
+				label concepts, typically early in discovery. Use a <strong>closed</strong> sort to test whether an
+				existing structure works, typically to validate navigation. A <strong>hybrid</strong> sort sits in
+				between: participants start from your groups but can add their own when nothing fits.</p>'
+		}) }}
+
+		<div class="govuk-button-group">
+			{{ govukButton({ text: "Save card sort", type: "submit", attributes: { id: "btn-save-card-sort" } }) }}
+			{{ govukButton({
+				text: "Back to study",
+				href: "#",
+				classes: "govuk-button--secondary",
+				attributes: { id: "btn-back-to-study" }
+			}) }}
+			<p id="card-sort-save-status" class="govuk-hint study-card-sort-save-status" aria-live="polite"></p>
+		</div>
+	</form>
+</div>
+{% endblock %}
+
+{% block scripts %}
+	<script type="module" src="/js/study-card-sort-page.js?v={{ cardSortScriptVersion }}"></script>
+{% endblock %}

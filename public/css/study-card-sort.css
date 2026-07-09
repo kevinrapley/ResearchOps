@@ -1,0 +1,352 @@
+/**
+ * @file public/css/study-card-sort.css
+ * @summary Styles for card sort setup (study prep) and the card sort session board.
+ */
+
+/* Setup editor */
+.study-card-sort-editor-list {
+	margin: 0 0 20px;
+	padding: 0;
+}
+
+.study-card-sort-editor-row {
+	display: flex;
+	gap: 10px;
+	align-items: flex-start;
+	margin-bottom: 10px;
+	list-style: none;
+}
+
+.study-card-sort-editor-field {
+	flex: 1 1 40%;
+	margin-bottom: 0;
+}
+
+.study-card-sort-editor-field--desc {
+	flex: 1 1 55%;
+}
+
+.study-card-sort-editor-remove {
+	margin-bottom: 0;
+	flex: 0 0 auto;
+}
+
+.study-card-sort-bulk-panel {
+	border-left: 4px solid #b1b4b6;
+	padding-left: 15px;
+	margin-bottom: 20px;
+}
+
+.study-card-sort-save-status {
+	margin: 0;
+	align-self: center;
+}
+
+/* Session board */
+.card-sort-board {
+	display: grid;
+	grid-template-columns: minmax(220px, 1fr) minmax(0, 2.5fr);
+	gap: 20px;
+	align-items: start;
+	font-family: "GDS Transport", Arial, sans-serif;
+}
+
+.card-sort-board button,
+.card-sort-board input,
+.card-sort-board select {
+	font-family: "GDS Transport", Arial, sans-serif;
+}
+
+@media (max-width: 768px) {
+	.card-sort-board {
+		grid-template-columns: 1fr;
+	}
+}
+
+.card-sort-tray,
+.card-sort-groups {
+	background: #f3f2f1;
+	border: 1px solid #b1b4b6;
+	border-radius: 4px;
+	padding: 15px;
+	min-height: 220px;
+}
+
+.card-sort-tray.card-sort-drop-active,
+.card-sort-group__cards.card-sort-drop-active,
+.card-sort-group__children.card-sort-drop-active {
+	outline: 3px dashed #1d70b8;
+	outline-offset: 2px;
+	background: #d2e2f1;
+}
+
+.card-sort-tray__title,
+.card-sort-groups__title {
+	margin-top: 0;
+}
+
+.card-sort-card-list {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+	min-height: 40px;
+}
+
+.card-sort-card {
+	display: flex;
+	align-items: flex-start;
+	justify-content: space-between;
+	gap: 8px;
+	background: #ffffff;
+	border: 1px solid #505a5f;
+	border-radius: 4px;
+	box-shadow: 0 2px 0 #b1b4b6;
+	padding: 8px 10px;
+	margin-bottom: 8px;
+	cursor: grab;
+	transition: opacity 120ms ease;
+}
+
+.card-sort-card:focus-within {
+	outline: 3px solid #ffdd00;
+	outline-offset: 1px;
+}
+
+.card-sort-card.card-sort-dragging {
+	opacity: 0.32;
+}
+
+.card-sort-drag-preview {
+	position: fixed;
+	z-index: 1000;
+	pointer-events: none;
+	margin: 0;
+	opacity: 0.95;
+	transform: rotate(0deg) scale(1);
+	transform-origin: 50% 50%;
+	transition: transform 140ms ease-out;
+	will-change: left, top, transform;
+}
+
+.card-sort-drag-preview--tilted {
+	transform: rotate(2deg) scale(1.01);
+}
+
+.card-sort-transparent-drag-image {
+	position: fixed;
+	top: -100px;
+	left: -100px;
+	width: 1px;
+	height: 1px;
+	opacity: 0;
+	pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.card-sort-card,
+	.card-sort-drag-preview {
+		transition: none;
+	}
+}
+
+.card-sort-card__label {
+	font-weight: 700;
+	margin: 0;
+}
+
+.card-sort-card__desc {
+	margin: 2px 0 0;
+	color: #505a5f;
+}
+
+.card-sort-card--participant .card-sort-card__label::after {
+	content: " (added)";
+	font-weight: 400;
+	color: #505a5f;
+}
+
+.card-sort-groups__grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+	gap: 15px;
+}
+
+.card-sort-group {
+	background: #ffffff;
+	border: 2px solid #1d70b8;
+	border-radius: 4px;
+	padding: 10px;
+}
+
+.card-sort-group--predefined {
+	border-color: #00703c;
+}
+
+.card-sort-group__header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 8px;
+	margin-bottom: 8px;
+	cursor: grab;
+}
+
+.card-sort-group__name {
+	font-weight: 700;
+	margin: 0;
+	overflow-wrap: anywhere;
+}
+
+.card-sort-group__name-input {
+	width: 100%;
+}
+
+.card-sort-group__count {
+	color: #505a5f;
+	white-space: nowrap;
+}
+
+.card-sort-group__cards {
+	min-height: 44px;
+	border: 1px dashed #b1b4b6;
+	border-radius: 4px;
+	padding: 6px;
+}
+
+.card-sort-group__children {
+	margin-top: 8px;
+	padding-left: 12px;
+	border-left: 3px solid #b1b4b6;
+	display: grid;
+	gap: 10px;
+}
+
+.card-sort-group__actions {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 6px;
+	margin-top: 8px;
+}
+
+.card-sort-action-button {
+	background: none;
+	border: none;
+	color: #1d70b8;
+	text-decoration: underline;
+	cursor: pointer;
+	padding: 2px 4px;
+	font-family: inherit;
+	font-size: 16px;
+}
+
+.card-sort-action-button:hover {
+	color: #003078;
+}
+
+.card-sort-action-button:focus {
+	outline: 3px solid #ffdd00;
+	background: #ffdd00;
+	color: #0b0c0c;
+	text-decoration: none;
+}
+
+.card-sort-action-button--danger {
+	color: #d4351c;
+}
+
+.card-sort-card__move {
+	position: absolute !important;
+	width: 1px !important;
+	height: 1px !important;
+	margin: 0 !important;
+	padding: 0 !important;
+	overflow: hidden !important;
+	clip: rect(0 0 0 0) !important;
+	clip-path: inset(50%) !important;
+	border: 0 !important;
+	white-space: nowrap !important;
+}
+
+.card-sort-move-menu {
+	margin-top: 6px;
+}
+
+.card-sort-inline-form {
+	display: flex;
+	flex: 1 0 100%;
+	flex-wrap: wrap;
+	gap: 8px;
+	margin-top: 4px;
+}
+
+.card-sort-inline-form .govuk-input {
+	flex: 1 1 180px;
+}
+
+.card-sort-inline-form .govuk-button {
+	margin-bottom: 0;
+	white-space: nowrap;
+}
+
+.card-sort-toolbar {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 15px;
+	margin-bottom: 15px;
+}
+
+.card-sort-progress {
+	margin: 0;
+}
+
+.card-sort-reset-confirmation {
+	border-left: 5px solid #d4351c;
+	background: #f3f2f1;
+	padding: 15px;
+	margin: -5px 0 20px;
+	max-width: 640px;
+}
+
+.card-sort-reset-confirmation .govuk-button-group {
+	margin-bottom: 0;
+}
+
+.card-sort-instructions {
+	border-left: 4px solid #1d70b8;
+	padding: 10px 15px;
+	background: #f3f2f1;
+	margin-bottom: 20px;
+}
+
+.card-sort-add-form {
+	display: flex;
+	gap: 8px;
+	margin-top: 10px;
+}
+
+.card-sort-add-form .govuk-input {
+	flex: 1 1 auto;
+}
+
+.card-sort-add-form .govuk-button {
+	min-width: 130px;
+	white-space: nowrap;
+}
+
+#card-sort-add-card-form {
+	display: block;
+}
+
+#card-sort-add-card-form .govuk-input {
+	width: 100%;
+	margin-bottom: 10px;
+}
+
+#card-sort-add-card-form .govuk-button {
+	width: 100%;
+}
+
+.card-sort-save-status {
+	margin: 0;
+}
