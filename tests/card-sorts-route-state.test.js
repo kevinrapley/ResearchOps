@@ -62,6 +62,8 @@ includes(sessionPage, 'id="card-sort-section"', "study session page");
 includes(sessionPage, 'id="card-sort-tray-list"', "study session page");
 includes(sessionPage, 'id="card-sort-groups-grid"', "study session page");
 includes(sessionPage, 'id="btn-complete-card-sort"', "study session page");
+includes(sessionPage, 'id="card-sort-reset-confirmation"', "study session page");
+includes(sessionPage, 'id="btn-confirm-reset-card-sort"', "study session page");
 includes(sessionPage, "/components/session-card-sort-controller.js", "study session page");
 includes(sessionController, "/api/card-sorts/config", "session card sort controller");
 includes(sessionController, "/api/card-sorts/results", "session card sort controller");
@@ -71,7 +73,9 @@ includes(sessionController, "addParticipantCard", "session card sort controller"
 includes(sessionController, "openInlineTextInput", "session card sort controller");
 includes(sessionController, "card-sort-card__move", "session card sort controller");
 includes(sessionController, "Sort at least one card into a group before marking the card sort complete.", "session card sort controller");
+includes(sessionController, "Confirm reset to move all cards back to the tray.", "session card sort controller");
 includes(sessionController, "Card sort reset. Changes save automatically.", "session card sort controller");
+includes(sessionController, "Card sort reset cancelled.", "session card sort controller");
 excludes(sessionController, "window.prompt", "session card sort controller");
 excludes(sessionController, "window.confirm", "session card sort controller");
 

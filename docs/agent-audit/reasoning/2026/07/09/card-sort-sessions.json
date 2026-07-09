@@ -110,6 +110,22 @@
 		{
 			"command": "Playwright smoke test against local research-operations card sort session",
 			"result": "computed font family was GDS Transport/Arial/sans-serif; Move control visually hidden; inline subgroup creation worked; complete disabled until a card was grouped; reset avoided a system dialog and disabled completion again"
+		},
+		{
+			"command": "npm run build:govuk-pages",
+			"result": "reset-confirmation follow-up passed; regenerated public/pages/study/session/index.html"
+		},
+		{
+			"command": "node --test tests/card-sorts-route-state.test.js tests/study-session-route-state.test.js",
+			"result": "reset-confirmation follow-up 2 pass, 0 fail"
+		},
+		{
+			"command": "npx eslint public/components/session-card-sort-controller.js tests/card-sorts-route-state.test.js",
+			"result": "reset-confirmation follow-up 0 errors; existing console warnings only"
+		},
+		{
+			"command": "npx prettier --check public/components/session-card-sort-controller.js public/css/study-card-sort.css tests/card-sorts-route-state.test.js",
+			"result": "reset-confirmation follow-up passed"
 		}
 	],
 	"issues": [
@@ -118,6 +134,7 @@
 		"Follow-up added a global ResearchOps font stylesheet to prevent browser serif fallback on pages and native controls.",
 		"Follow-up blocked card sort completion until at least one card is in a grouping.",
 		"Follow-up registered the new card sort setup page in the visual walkthrough coverage catalogue.",
+		"Reset-confirmation follow-up changed Reset sort to require an in-page confirmation before resetting.",
 		"Kept OpenAI, MCP, Airtable and Mural bundles skipped because this task did not change those integration contracts."
 	],
 	"residualRisks": [

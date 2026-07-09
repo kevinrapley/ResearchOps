@@ -165,6 +165,25 @@
 			<p id="card-sort-save-status" class="govuk-hint card-sort-save-status" aria-live="polite"></p>
 		</div>
 
+		<div id="card-sort-reset-confirmation" class="card-sort-reset-confirmation" hidden>
+			<p class="govuk-body govuk-!-font-weight-bold govuk-!-margin-bottom-2">Reset this card sort?</p>
+			<p class="govuk-body-s govuk-!-margin-bottom-3">This moves all cards back to the tray and removes participant-created groups and cards.</p>
+			<div class="govuk-button-group">
+				{{ govukButton({
+					text: "Yes, reset card sort",
+					type: "button",
+					classes: "govuk-button--warning",
+					attributes: { id: "btn-confirm-reset-card-sort" }
+				}) }}
+				{{ govukButton({
+					text: "Cancel",
+					type: "button",
+					classes: "govuk-button--secondary",
+					attributes: { id: "btn-cancel-reset-card-sort" }
+				}) }}
+			</div>
+		</div>
+
 		<div id="card-sort-board" class="card-sort-board">
 			<div class="card-sort-tray" aria-labelledby="card-sort-tray-title">
 				<h3 id="card-sort-tray-title" class="govuk-heading-s card-sort-tray__title">Cards to sort</h3>

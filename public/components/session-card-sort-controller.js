@@ -186,6 +186,15 @@ function setSaveStatus(message) {
 	if (el) el.textContent = message;
 }
 
+function setResetConfirmationVisible(visible) {
+	const panel = $("#card-sort-reset-confirmation");
+	if (!panel) return;
+	panel.hidden = !visible;
+	if (visible) {
+		$("#btn-confirm-reset-card-sort")?.focus();
+	}
+}
+
 function scheduleSave() {
 	state.dirty = true;
 	clearTimeout(state.saveTimer);
@@ -725,16 +734,29 @@ function initBoardChrome() {
 			setSaveStatus("Sort at least one card into a group before marking the card sort complete.");
 			return;
 		}
+		setResetConfirmationVisible(false);
 		state.status = "completed";
 		renderBoard();
 		await saveResult({ completed_at: new Date().toISOString() });
 	});
 
 	$("#btn-reset-card-sort")?.addEventListener("click", () => {
+		setResetConfirmationVisible(true);
+		setSaveStatus("Confirm reset to move all cards back to the tray.");
+	});
+
+	$("#btn-confirm-reset-card-sort")?.addEventListener("click", () => {
+		setResetConfirmationVisible(false);
 		resetBoard();
 		renderBoard();
 		setSaveStatus("Card sort reset. Changes save automatically.");
 		scheduleSave();
+	});
+
+	$("#btn-cancel-reset-card-sort")?.addEventListener("click", () => {
+		setResetConfirmationVisible(false);
+		setSaveStatus("Card sort reset cancelled.");
+		$("#btn-reset-card-sort")?.focus();
 	});
 }
 

@@ -146,3 +146,23 @@ Follow-up validation:
 - `git diff --check`: passed.
 - `node --test tests/visual-walkthrough-registry-coverage.test.js`: passed after registering `/pages/study/card-sort/index.html`.
 - Playwright smoke test against local `https://research-operations/pages/study/session/?id=rec88329d075c8441&project=recdMo80h1QaNQCBk`: body and board computed font family were `"GDS Transport", Arial, sans-serif`; complete was initially disabled; Move measured 1px by 1px; Add subgroup opened an inline form and created a subgroup; after moving one card, complete became enabled; after Reset sort, complete became disabled and progress returned to 0 of 12.
+
+## Follow-up: reset confirmation
+
+User request on 2026-07-09:
+
+- Reset card sort needs a confirmation.
+
+Implementation notes:
+
+- Added an in-page reset confirmation panel to the card-sort session page with explicit confirm and cancel buttons.
+- Changed the Reset sort button so it opens the confirmation panel instead of immediately resetting.
+- Kept reset confirmation out of browser/system dialogs; `window.confirm` remains excluded.
+- Confirming reset moves all cards back to the tray and schedules the autosave; cancelling closes the panel and returns focus to Reset sort.
+
+Reset confirmation validation:
+
+- `npm run build:govuk-pages`: passed and regenerated `public/pages/study/session/index.html`.
+- `node --test tests/card-sorts-route-state.test.js tests/study-session-route-state.test.js`: 2 pass, 0 fail.
+- `npx eslint public/components/session-card-sort-controller.js tests/card-sorts-route-state.test.js`: 0 errors, existing console warnings only.
+- `npx prettier --check public/components/session-card-sort-controller.js public/css/study-card-sort.css tests/card-sorts-route-state.test.js`: passed.
