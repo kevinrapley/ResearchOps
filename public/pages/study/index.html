@@ -16,7 +16,7 @@
 		<link rel="stylesheet" href="/css/study-page.css" media="screen" />
 		<link rel="stylesheet" href="/css/daas-brand-panel.css?v=leds-brand-panel-20260624" media="screen" />
 		<link rel="modulepreload" href="/js/daas-brand-panel.js?v=leds-brand-panel-20260624" />
-		<link rel="modulepreload" href="/js/study-page.js?v=study-session-canonical-20260707-1" />
+		<link rel="modulepreload" href="/js/study-page.js?v=study-card-sort-20260708-1" />
 		<link rel="modulepreload" href="/pages/study/study-desc-controller.js" />
 
 		<script type="module" src="/components/layout.js?v=govuk-page-chrome-20260702-1" defer></script>
@@ -566,12 +566,29 @@
 						<li class="govuk-task-list__item">
 							<div class="govuk-task-list__name-and-hint">
 								<div>
+									<a id="link-card-sort" class="govuk-link govuk-task-list__link" href="#">Prepare the card sort</a>
+								</div>
+
+								<div id="study-setup-6-hint" class="govuk-task-list__hint">
+									<span id="study-setup-card-sort-hint">
+										Define the cards and groups participants will sort in sessions. Only needed for Card Sort studies.
+									</span>
+								</div>
+							</div>
+							<div class="govuk-task-list__status" id="study-setup-6-status">
+								<strong id="study-setup-card-sort-status" class="govuk-tag govuk-tag--yellow">Action needed</strong>
+							</div>
+						</li>
+
+						<li class="govuk-task-list__item">
+							<div class="govuk-task-list__name-and-hint">
+								<div>
 									<a id="link-note-takers-observers" class="govuk-link govuk-task-list__link" href="#">
 										Add note takers and observers
 									</a>
 								</div>
 
-								<div id="study-setup-6-hint" class="govuk-task-list__hint">
+								<div id="study-setup-7-hint" class="govuk-task-list__hint">
 									<span id="study-setup-support-hint">
 										Confirm who, if anyone, will join sessions beyond the lead researcher.
 									</span>
@@ -581,7 +598,7 @@
 									</span>
 								</div>
 							</div>
-							<div class="govuk-task-list__status" id="study-setup-6-status">
+							<div class="govuk-task-list__status" id="study-setup-7-status">
 								<strong id="study-setup-support-status" class="govuk-tag govuk-tag--yellow">Action needed</strong>
 							</div>
 						</li>
@@ -1011,7 +1028,7 @@
 		<x-include src="/partials/footer.html?v=govuk-page-chrome-20260702-1"></x-include>
 
 		<script type="module" src="/js/daas-brand-panel.js?v=leds-brand-panel-20260624"></script>
-		<script type="module" src="/js/study-page.js?v=study-session-canonical-20260707-1"></script>
+		<script type="module" src="/js/study-page.js?v=study-card-sort-20260708-1"></script>
 		<script type="module" src="/pages/study/study-desc-controller.js"></script>
 	</body>
 </html>

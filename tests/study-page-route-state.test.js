@@ -98,7 +98,7 @@ for (const text of [
 	"/css/govuk/govuk-forms.css",
 	"/css/govuk/govuk-tables.css",
 	"/css/study-page.css",
-	"/js/study-page.js?v=study-session-canonical-20260707-1",
+	"/js/study-page.js?v=study-card-sort-20260708-1",
 	"class=\"govuk-breadcrumbs\"",
 	"class=\"govuk-summary-list",
 	"class=\"govuk-task-list",

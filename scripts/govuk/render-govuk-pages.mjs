@@ -823,6 +823,16 @@ export const govukPages = [
 		},
 	},
 	{
+		template: 'pages/study-card-sort.njk',
+		output: 'public/pages/study/card-sort/index.html',
+		context: {
+			pageTitle: 'Card sort setup - ResearchOps Demo Suite',
+			serviceName: 'ResearchOps Demo Suite',
+			activeNavigation: 'Projects',
+			navigation: projectNavigation,
+		},
+	},
+	{
 		template: 'pages/study-synthesis.njk',
 		output: 'public/pages/study/synthesis/index.html',
 		context: {

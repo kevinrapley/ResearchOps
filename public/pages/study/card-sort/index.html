@@ -1,0 +1,331 @@
+<!doctype html>
+<html class="govuk-template" lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>Card sort setup - ResearchOps Demo Suite</title>
+		<link rel="stylesheet" href="/assets/govuk/govuk-frontend.css" media="screen" />
+
+		<meta property="schema:name" content="Card sort setup - ResearchOps" />
+		<meta property="schema:creator" content="Home Office ResearchOps Platform" />
+		<meta property="dcterms:language" content="en-GB" />
+		<link rel="stylesheet" href="/css/study-page.css" media="screen" />
+		<link rel="stylesheet" href="/css/study-card-sort.css?v=study-card-sort-20260708-1" media="screen" />
+		<link rel="modulepreload" href="/js/study-card-sort-page.js?v=study-card-sort-20260708-1" />
+
+		<script type="module" src="/components/layout.js?v=govuk-page-chrome-20260702-1" defer></script>
+		<script type="module" src="/js/govuk-frontend-init.js?v=govuk-page-chrome-20260702-1" defer></script>
+	</head>
+	<body class="govuk-template__body">
+		<script>
+			document.body.className +=
+				" js-enabled" + ("noModule" in HTMLScriptElement.prototype ? " govuk-frontend-supported" : "");
+		</script>
+		<x-include src="/partials/header.html" vars='{"active":"Projects"}'></x-include>
+		<main class="govuk-main-wrapper" id="main-content" role="main" tabindex="-1">
+			<div class="govuk-width-container study-card-sort-page" data-study-subpage-template="card-sort">
+				<nav class="govuk-breadcrumbs" aria-label="Breadcrumb">
+					<ol class="govuk-breadcrumbs__list">
+						<li class="govuk-breadcrumbs__list-item">
+							<a class="govuk-breadcrumbs__link" href="/pages/projects/">Projects</a>
+						</li>
+
+						<li class="govuk-breadcrumbs__list-item">
+							<a class="govuk-breadcrumbs__link" href="#" id="breadcrumb-project">Project</a>
+						</li>
+
+						<li class="govuk-breadcrumbs__list-item">
+							<a class="govuk-breadcrumbs__link" href="#" id="breadcrumb-study">Study</a>
+						</li>
+
+						<li class="govuk-breadcrumbs__list-item" aria-current="page">Card sort setup</li>
+					</ol>
+				</nav>
+
+				<div class="govuk-error-summary" id="card-sort-error-summary" hidden="hidden" data-module="govuk-error-summary">
+					<div role="alert">
+						<h2 class="govuk-error-summary__title">There is a problem</h2>
+						<div class="govuk-error-summary__body">
+							<ul class="govuk-list govuk-error-summary__list">
+								<li>
+									<a href="#card-sort-type">The card sort could not be loaded.</a>
+								</li>
+							</ul>
+						</div>
+					</div>
+				</div>
+
+				<header class="govuk-!-margin-bottom-6">
+					<p id="study-title" class="govuk-caption-m">Study</p>
+					<h1 class="govuk-heading-l">Prepare the card sort</h1>
+					<p class="govuk-body-l govuk-!-width-two-thirds">
+						Define the cards participants will sort and, for closed or hybrid sorts, the groups they will sort them
+						into. This setup is used by every card sort session in this study.
+					</p>
+				</header>
+
+				<form id="card-sort-form" novalidate>
+					<section class="study-card-sort-section govuk-!-margin-bottom-8" aria-labelledby="sort-type-title">
+						<div class="govuk-form-group">
+							<fieldset class="govuk-fieldset" aria-describedby="card-sort-type-hint">
+								<legend class="govuk-fieldset__legend govuk-fieldset__legend--m">Sort type</legend>
+
+								<div id="card-sort-type-hint" class="govuk-hint">
+									This decides whether participants create their own groups, use yours, or both.
+								</div>
+
+								<div class="govuk-radios" data-module="govuk-radios">
+									<div class="govuk-radios__item">
+										<input
+											class="govuk-radios__input"
+											id="card-sort-type"
+											name="cardSortType"
+											type="radio"
+											value="open"
+											checked
+											aria-describedby="card-sort-type-item-hint"
+										/>
+										<label class="govuk-label govuk-radios__label" for="card-sort-type">Open card sort</label>
+
+										<div id="card-sort-type-item-hint" class="govuk-hint govuk-radios__hint">
+											Participants create, name and nest their own groups.
+										</div>
+									</div>
+
+									<div class="govuk-radios__item">
+										<input
+											class="govuk-radios__input"
+											id="card-sort-type-2"
+											name="cardSortType"
+											type="radio"
+											value="closed"
+											aria-describedby="card-sort-type-2-item-hint"
+										/>
+										<label class="govuk-label govuk-radios__label" for="card-sort-type-2">Closed card sort</label>
+
+										<div id="card-sort-type-2-item-hint" class="govuk-hint govuk-radios__hint">
+											Participants sort cards into the predefined groups you set up here.
+										</div>
+									</div>
+
+									<div class="govuk-radios__item">
+										<input
+											class="govuk-radios__input"
+											id="card-sort-type-3"
+											name="cardSortType"
+											type="radio"
+											value="hybrid"
+											aria-describedby="card-sort-type-3-item-hint"
+										/>
+										<label class="govuk-label govuk-radios__label" for="card-sort-type-3">Hybrid card sort</label>
+
+										<div id="card-sort-type-3-item-hint" class="govuk-hint govuk-radios__hint">
+											Participants use your predefined groups but can also create their own.
+										</div>
+									</div>
+								</div>
+							</fieldset>
+						</div>
+
+						<div class="govuk-form-group">
+							<fieldset class="govuk-fieldset">
+								<legend class="govuk-fieldset__legend govuk-fieldset__legend--s">Options</legend>
+
+								<div class="govuk-checkboxes" data-module="govuk-checkboxes">
+									<div class="govuk-checkboxes__item">
+										<input
+											class="govuk-checkboxes__input"
+											id="allow-new-cards"
+											name="cardSortOptions"
+											type="checkbox"
+											value="allow-new-cards"
+											aria-describedby="allow-new-cards-item-hint"
+										/>
+										<label class="govuk-label govuk-checkboxes__label" for="allow-new-cards">
+											Allow participants to add their own cards
+										</label>
+
+										<div id="allow-new-cards-item-hint" class="govuk-hint govuk-checkboxes__hint">
+											Useful when the card set may not cover every concept participants think of.
+										</div>
+									</div>
+
+									<div class="govuk-checkboxes__item">
+										<input
+											class="govuk-checkboxes__input"
+											id="shuffle-cards"
+											name="cardSortOptions"
+											type="checkbox"
+											value="shuffle-cards"
+											checked
+											aria-describedby="shuffle-cards-item-hint"
+										/>
+										<label class="govuk-label govuk-checkboxes__label" for="shuffle-cards">
+											Shuffle card order for each participant
+										</label>
+
+										<div id="shuffle-cards-item-hint" class="govuk-hint govuk-checkboxes__hint">
+											Reduces order bias by presenting the cards in a random order.
+										</div>
+									</div>
+								</div>
+							</fieldset>
+						</div>
+
+						<div class="govuk-form-group">
+							<label class="govuk-label govuk-label--s" for="card-sort-instructions">
+								Instructions for participants
+							</label>
+
+							<div id="card-sort-instructions-hint" class="govuk-hint">
+								Shown at the top of the card sort session. Explain the task in the participant&#39;s language.
+							</div>
+
+							<textarea
+								class="govuk-textarea"
+								id="card-sort-instructions"
+								name="cardSortInstructions"
+								rows="3"
+								aria-describedby="card-sort-instructions-hint"
+							></textarea>
+						</div>
+					</section>
+
+					<section class="study-card-sort-section govuk-!-margin-bottom-8" aria-labelledby="cards-editor-title">
+						<h2 id="cards-editor-title" class="govuk-heading-m">Cards</h2>
+						<p class="govuk-body govuk-!-width-two-thirds">
+							Add one card per concept. Keep labels short; use the optional description for anything the label cannot
+							carry on its own.
+						</p>
+
+						<ol
+							id="card-editor-list"
+							class="govuk-list study-card-sort-editor-list"
+							aria-label="Cards in this sort"
+						></ol>
+
+						<div class="govuk-button-group">
+							<button
+								type="button"
+								class="govuk-button govuk-button--secondary"
+								data-module="govuk-button"
+								id="btn-add-card"
+							>
+								Add card
+							</button>
+
+							<button
+								type="button"
+								class="govuk-button govuk-button--secondary"
+								data-module="govuk-button"
+								id="btn-bulk-cards"
+							>
+								Add cards in bulk
+							</button>
+						</div>
+
+						<div id="bulk-cards-panel" class="study-card-sort-bulk-panel" hidden>
+							<div class="govuk-form-group">
+								<label class="govuk-label govuk-label--s" for="bulk-cards-input">One card per line</label>
+
+								<div id="bulk-cards-input-hint" class="govuk-hint">
+									Optionally add a description after a pipe, for example: Passport | Physical travel document.
+								</div>
+
+								<textarea
+									class="govuk-textarea"
+									id="bulk-cards-input"
+									name="bulkCardsInput"
+									rows="6"
+									aria-describedby="bulk-cards-input-hint"
+								></textarea>
+							</div>
+
+							<div class="govuk-button-group">
+								<button type="button" class="govuk-button" data-module="govuk-button" id="btn-bulk-cards-apply">
+									Add these cards
+								</button>
+
+								<button
+									type="button"
+									class="govuk-button govuk-button--secondary"
+									data-module="govuk-button"
+									id="btn-bulk-cards-cancel"
+								>
+									Cancel
+								</button>
+							</div>
+						</div>
+					</section>
+
+					<section
+						class="study-card-sort-section govuk-!-margin-bottom-8"
+						id="groups-editor-section"
+						aria-labelledby="groups-editor-title"
+						hidden
+					>
+						<h2 id="groups-editor-title" class="govuk-heading-m">Predefined groups</h2>
+						<p class="govuk-body govuk-!-width-two-thirds">
+							Closed and hybrid sorts need the groups participants will sort into. Order here is the order participants
+							see.
+						</p>
+
+						<ol
+							id="group-editor-list"
+							class="govuk-list study-card-sort-editor-list"
+							aria-label="Predefined groups"
+						></ol>
+
+						<button
+							type="button"
+							class="govuk-button govuk-button--secondary"
+							data-module="govuk-button"
+							id="btn-add-group"
+						>
+							Add group
+						</button>
+					</section>
+
+					<details class="govuk-details">
+						<summary class="govuk-details__summary">
+							<span class="govuk-details__summary-text">Which sort type should I choose?</span>
+						</summary>
+						<div class="govuk-details__text">
+							<p class="govuk-body">
+								Use an
+								<strong>open</strong>
+								sort to learn how participants naturally group and label concepts, typically early in discovery. Use a
+								<strong>closed</strong>
+								sort to test whether an existing structure works, typically to validate navigation. A
+								<strong>hybrid</strong>
+								sort sits in between: participants start from your groups but can add their own when nothing fits.
+							</p>
+						</div>
+					</details>
+
+					<div class="govuk-button-group">
+						<button type="submit" class="govuk-button" data-module="govuk-button" id="btn-save-card-sort">
+							Save card sort
+						</button>
+
+						<a
+							href="#"
+							role="button"
+							draggable="false"
+							class="govuk-button govuk-button--secondary"
+							data-module="govuk-button"
+							id="btn-back-to-study"
+						>
+							Back to study
+						</a>
+
+						<p id="card-sort-save-status" class="govuk-hint study-card-sort-save-status" aria-live="polite"></p>
+					</div>
+				</form>
+			</div>
+		</main>
+		<x-include src="/partials/footer.html?v=govuk-page-chrome-20260702-1"></x-include>
+
+		<script type="module" src="/js/study-card-sort-page.js?v=study-card-sort-20260708-1"></script>
+	</body>
+</html>

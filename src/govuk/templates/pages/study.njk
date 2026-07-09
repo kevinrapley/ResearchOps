@@ -12,7 +12,7 @@
 {% from "macros/sourcebook-evidence-ledger.njk" import SourcebookEvidenceLedger %}
 {% from "macros/sourcebook-gate.njk" import SourcebookGate %}
 
-{% set studyReadinessScriptVersion = "study-session-canonical-20260707-1" %}
+{% set studyReadinessScriptVersion = "study-card-sort-20260708-1" %}
 
 {% block head %}
 	<meta property="schema:name" content="Study — ResearchOps">
@@ -297,6 +297,11 @@
 						title: { html: '<a id="link-guides" class="govuk-link govuk-task-list__link" href="#">Create or manage discussion guides</a>' },
 						hint: { html: 'Create or review the guide before running a session. <span class="study-sourcebook-reference">Sourcebook: <a class="govuk-link" href="/pages/sourcebook/scope/#scope-2-1-1">SCOPE 2.1.1</a></span>' },
 						status: { html: '<strong id="study-setup-guide-status" class="govuk-tag govuk-tag--yellow">Action needed</strong>' }
+					},
+					{
+						title: { html: '<a id="link-card-sort" class="govuk-link govuk-task-list__link" href="#">Prepare the card sort</a>' },
+						hint: { html: '<span id="study-setup-card-sort-hint">Define the cards and groups participants will sort in sessions. Only needed for Card Sort studies.</span>' },
+						status: { html: '<strong id="study-setup-card-sort-status" class="govuk-tag govuk-tag--yellow">Action needed</strong>' }
 					},
 					{
 						title: { html: '<a id="link-note-takers-observers" class="govuk-link govuk-task-list__link" href="#">Add note takers and observers</a>' },

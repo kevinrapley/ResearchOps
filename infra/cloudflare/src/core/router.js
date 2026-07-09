@@ -363,6 +363,15 @@ export async function handleRequest(request, env) {
 				if (m && request.method === "PATCH") return service.updateSessionNote(request, origin, decodeURIComponent(m[1]));
 			}
 
+			if (url.pathname === "/api/card-sorts/config" && request.method === "GET") return service.getCardSortConfig(origin, url);
+			if (url.pathname === "/api/card-sorts/config" && request.method === "POST") return service.saveCardSortConfig(request, origin);
+			if (url.pathname === "/api/card-sorts/results" && request.method === "GET") return service.listCardSortResults(origin, url);
+			if (url.pathname === "/api/card-sorts/results" && request.method === "POST") return service.createCardSortResult(request, origin);
+			if (url.pathname.startsWith("/api/card-sorts/results/")) {
+				const m = url.pathname.match(/^\/api\/card-sorts\/results\/([^/]+)$/);
+				if (m && request.method === "PATCH") return service.updateCardSortResult(request, origin, decodeURIComponent(m[1]));
+			}
+
 			if (url.pathname === "/api/comms/send" && request.method === "POST" && typeof service.sendComms === "function") return service.sendComms(request, origin);
 
 			if (url.pathname.startsWith("/api/mural/") && url.pathname !== "/api/mural/callback") {

@@ -833,6 +833,43 @@ function renderSupportSetupStatus(supportSetup = {}) {
 	}
 }
 
+function cardSortTaskRow() {
+	return $("#link-card-sort")?.closest("li") || null;
+}
+
+async function renderCardSortTask(study, projectId, studyId) {
+	const row = cardSortTaskRow();
+	if (!row) return;
+	const isCardSort = String(study.method || "").trim().toLowerCase() === "card sort";
+	row.hidden = !isCardSort;
+	if (!isCardSort) return;
+
+	enableLink("#link-card-sort", route("/pages/study/card-sort/", { id: studyId, project: projectId }));
+
+	const status = $("#study-setup-card-sort-status");
+	const hint = $("#study-setup-card-sort-hint");
+	try {
+		const res = await fetch(apiUrl(`/api/card-sorts/config?study=${encodeURIComponent(studyId)}&ts=${Date.now()}`), {
+			cache: "no-store",
+			credentials: "include"
+		});
+		const body = await res.json().catch(() => ({}));
+		const config = body?.config || null;
+		const ready = Boolean(config && Array.isArray(config.cards) && config.cards.length);
+		if (status) {
+			status.textContent = ready ? "Ready" : "Action needed";
+			status.className = `govuk-tag ${ready ? "govuk-tag--green" : "govuk-tag--yellow"}`;
+		}
+		if (hint) {
+			hint.textContent = ready
+				? `${config.sort_type.charAt(0).toUpperCase()}${config.sort_type.slice(1)} sort with ${config.cards.length} card${config.cards.length === 1 ? "" : "s"}${config.groups?.length ? ` and ${config.groups.length} predefined group${config.groups.length === 1 ? "" : "s"}` : ""}.`
+				: "Define the cards and groups participants will sort in sessions.";
+		}
+	} catch (error) {
+		console.warn("[study-page] card sort status failed", error);
+	}
+}
+
 function renderRoutes(projectId, studyId) {
 	const studyParams = { id: studyId, project: projectId };
 	enableLink("#breadcrumb-project", route("/pages/project-dashboard/", { id: projectId }));
@@ -877,6 +914,7 @@ function renderStudy(project, study, projectId, studyId, readinessContext) {
 	setText("#kv-studyid", String(study.studyId || study.id || "—").toUpperCase());
 
 	const routes = renderRoutes(projectId, studyId);
+	renderCardSortTask(study, projectId, studyId);
 	renderReadiness(study, readinessContext, routes.sessionHref);
 	renderSupportSetupStatus(readinessContext.supportSetup);
 	renderEvidenceStateSummary(readinessContext);
@@ -923,4 +961,7 @@ document.addEventListener("study:desc:save", async event => {
 });
 
 primeEthicsRiskLinkFromUrl();
+// Hidden until the study loads; only Card Sort studies show this setup task.
+const initialCardSortRow = cardSortTaskRow();
+if (initialCardSortRow) initialCardSortRow.hidden = true;
 init();

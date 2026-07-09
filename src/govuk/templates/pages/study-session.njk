@@ -8,7 +8,7 @@
 {% from "govuk/components/warning-text/macro.njk" import govukWarningText %}
 {% from "macros/daas-brand-panel.njk" import daasBrandPanel %}
 
-{% set sessionPageScriptVersion = "study-session-fieldnotes-20260707-3" %}
+{% set sessionPageScriptVersion = "study-session-card-sort-20260708-1" %}
 
 {% block head %}
 	<meta property="schema:name" content="Research session - ResearchOps">
@@ -19,7 +19,9 @@
 	<link rel="stylesheet" href="/css/daas-brand-panel.css?v=leds-brand-panel-20260624" media="screen">
 	<link rel="modulepreload" href="/js/daas-brand-panel.js?v=leds-brand-panel-20260624">
 	<link rel="modulepreload" href="/components/session-controller.js?v={{ sessionPageScriptVersion }}">
+	<link rel="stylesheet" href="/css/study-card-sort.css?v={{ sessionPageScriptVersion }}" media="screen">
 	<link rel="modulepreload" href="/components/session-consent-controller.js?v={{ sessionPageScriptVersion }}">
+	<link rel="modulepreload" href="/components/session-card-sort-controller.js?v={{ sessionPageScriptVersion }}">
 {% endblock %}
 
 {% block content %}
@@ -134,6 +136,60 @@
 		</div>
 	</section>
 
+	<section class="study-session-section govuk-!-margin-bottom-8" id="card-sort-section" aria-labelledby="card-sort-title" hidden>
+		<h2 id="card-sort-title" class="govuk-heading-m">Card sort</h2>
+		<p id="card-sort-type-line" class="govuk-body govuk-!-width-two-thirds"></p>
+
+		{{ govukWarningText({
+			html: 'This study does not have a card sort set up yet.
+				<a id="card-sort-setup-link" class="govuk-link" href="/pages/study/card-sort/">Prepare the card sort</a>
+				before running this session.',
+			iconFallbackText: "Warning",
+			attributes: { id: "card-sort-setup-warning", hidden: "hidden" }
+		}) }}
+
+		<div id="card-sort-instructions" class="card-sort-instructions" hidden>
+			<h3 class="govuk-heading-s govuk-!-margin-bottom-1">Instructions for the participant</h3>
+			<p id="card-sort-instructions-text" class="govuk-body govuk-!-margin-bottom-0"></p>
+		</div>
+
+		<div class="card-sort-toolbar">
+			<p id="card-sort-progress" class="govuk-body card-sort-progress" aria-live="polite"></p>
+			{{ govukButton({ text: "Mark card sort complete", type: "button", attributes: { id: "btn-complete-card-sort" } }) }}
+			{{ govukButton({
+				text: "Reset sort",
+				type: "button",
+				classes: "govuk-button--warning",
+				attributes: { id: "btn-reset-card-sort" }
+			}) }}
+			<p id="card-sort-save-status" class="govuk-hint card-sort-save-status" aria-live="polite"></p>
+		</div>
+
+		<div id="card-sort-board" class="card-sort-board">
+			<div class="card-sort-tray" aria-labelledby="card-sort-tray-title">
+				<h3 id="card-sort-tray-title" class="govuk-heading-s card-sort-tray__title">Cards to sort</h3>
+				<ol id="card-sort-tray-list" class="card-sort-card-list" aria-label="Unsorted cards"></ol>
+
+				<form id="card-sort-add-card-form" class="card-sort-add-form" hidden>
+					<label class="govuk-label govuk-visually-hidden" for="card-sort-new-card-input">New card label</label>
+					<input class="govuk-input" id="card-sort-new-card-input" type="text" placeholder="Add a card">
+					<button type="submit" class="govuk-button govuk-button--secondary" data-module="govuk-button">Add card</button>
+				</form>
+			</div>
+
+			<div class="card-sort-groups" aria-labelledby="card-sort-groups-title">
+				<h3 id="card-sort-groups-title" class="govuk-heading-s card-sort-groups__title">Groups</h3>
+				<div id="card-sort-groups-grid" class="card-sort-groups__grid"></div>
+
+				<form id="card-sort-add-group-form" class="card-sort-add-form" hidden>
+					<label class="govuk-label govuk-visually-hidden" for="card-sort-new-group-input">New group name</label>
+					<input class="govuk-input" id="card-sort-new-group-input" type="text" placeholder="Add a group">
+					<button type="submit" class="govuk-button govuk-button--secondary" data-module="govuk-button">Add group</button>
+				</form>
+			</div>
+		</div>
+	</section>
+
 	<section class="study-session-section" aria-labelledby="notes-title">
 		<h2 id="notes-title" class="govuk-heading-m">Fieldnotes</h2>
 		<p class="govuk-body govuk-!-width-two-thirds">
@@ -220,4 +276,5 @@
 	<script type="module" src="/js/daas-brand-panel.js?v=leds-brand-panel-20260624"></script>
 	<script type="module" src="/components/session-controller.js?v={{ sessionPageScriptVersion }}"></script>
 	<script type="module" src="/components/session-consent-controller.js?v={{ sessionPageScriptVersion }}"></script>
+	<script type="module" src="/components/session-card-sort-controller.js?v={{ sessionPageScriptVersion }}"></script>
 {% endblock %}
