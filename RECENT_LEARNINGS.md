@@ -2,6 +2,14 @@
 
 This file records repeatable repository-specific lessons for ResearchOps agents and maintainers. It is not a changelog.
 
+## 2026-07-11 — More telemetry categories must still be metadata-only
+
+Context: ResearchOps needed to support Flux’s full per-session demo-model view without exporting content. The safe additions were event categories for paste, undo and shortcut use, field revisits, help disclosures, validation transitions, submit attempts and rapid repeated clicks—not the text, labels, identifiers or validity messages behind them.
+
+Learning: The event name and bounded count/timing can be useful service-friction evidence. The content behind the event is not required and must remain out of the tracker.
+
+Action: Whenever adding a behavioural category, add a source assertion that it emits only structural keys and approved metadata, continue excluding sensitive authentication fields, and use a new versioned module URL so cached pages cannot delay privacy fixes.
+
 ## 2026-07-11 — Shared partials are not proof that rendered pages include an asset
 
 Context: PR #475 versioned the Flux tracker after cache behaviour delayed delivery, but the versioned module was added only to `public/partials/html-head.html`. The normal GOV.UK pages are rendered from `src/govuk/templates/layouts/researchops.njk`, which did not consume that partial, so the tracker was not requested from production pages.

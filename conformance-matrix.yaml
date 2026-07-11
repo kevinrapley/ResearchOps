@@ -1,4 +1,15 @@
 records:
+  - id: flux-tracker-session-dimension-signals
+    control: The ResearchOps tracker records only consented content-free signal categories required for Flux session dimensions.
+    evidence:
+      - public/js/flux-researchops-tracker.1.1.0.js
+      - public/js/flux-researchops-tracker.1.2.0.js
+      - tests/flux-behaviour-tracker-route-state.test.js
+      - docs/agent-audit/reasoning/2026/07/11/flux-tracker-session-dimension-signals.md
+    status: implemented
+    risk: high
+    owner: repository-maintainers
+
   - id: flux-tracker-rendered-page-coverage
     control: Every rendered ResearchOps page loads the reviewed, versioned Flux tracker from its source layout or committed static page shell.
     evidence:
