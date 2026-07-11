@@ -1,0 +1,36 @@
+{
+  "schemaVersion": "agent-trace-promotion/v1",
+  "title": "Fix failing CI checks and respond to active Codex review comments on ResearchOps PR 473.",
+  "sourceTrace": ".agent-traces/raw/atrace-20260711-130644-pr-473-flux-tracker-review-remediation.jsonl",
+  "markdownReport": "docs/agent-audit/reasoning/2026/07/11/pr-473-flux-tracker-review-remediation.md",
+  "jsonSummary": "docs/agent-audit/reasoning/2026/07/11/pr-473-flux-tracker-review-remediation.json",
+  "promotedAt": "2026-07-11T13:06:48.444Z",
+  "eventCount": 23,
+  "run": {
+    "startedAt": "2026-07-11T13:06:44.749Z",
+    "completedAt": "2026-07-11T13:06:44.754Z",
+    "taskSummary": "Fix failing CI checks and respond to active Codex review comments on ResearchOps PR 473."
+  },
+  "bundles": [
+    "github-diamond",
+    "researchops-developer-control",
+    "multi-functional-team"
+  ],
+  "filesRead": [],
+  "filesWritten": [
+    "public/partials/header.html",
+    "public/partials/html-head.html",
+    "public/js/flux-researchops-tracker.js",
+    "public/_worker.js",
+    "public/_headers",
+    "tests/flux-behaviour-tracker-route-state.test.js",
+    "tests/govuk-page-chrome-navigation-route-state.test.js"
+  ],
+  "validations": [
+    "node --test tests/flux-behaviour-tracker-route-state.test.js tests/govuk-page-chrome-navigation-route-state.test.js — exit 0"
+  ],
+  "issues": [
+    "CI trace coverage failed and five active Codex threads found header-inclusion, CSP, integrity and preview-environment defects."
+  ],
+  "warnings": []
+}

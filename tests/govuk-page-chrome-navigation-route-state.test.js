@@ -67,9 +67,7 @@ excludes(headerServiceBrandCss, "word-spacing: -6px;", "header product-name styl
 excludes(headerServiceBrandCss, "box-shadow: 0 3px 0 #ffffff;", "header product-name stylesheet");
 
 includes(headerPartial, "class=\"govuk-skip-link\" href=\"#main-content\"", "shared header partial");
-includes(headerPartial, "https://flux-behaviour.pages.dev/assets/flux/sdk/flux-auto-capture.mjs", "shared Flux Behaviour tracker");
-includes(headerPartial, "data-flux-endpoint=\"https://flux-behaviour.pages.dev/api/collect\"", "Flux collector endpoint");
-includes(headerPartial, "data-flux-tenant=\"researchops\"", "Flux ResearchOps tenant");
+excludes(headerPartial, "flux-behaviour.pages.dev/assets/flux/sdk", "shared header partial");
 includes(
 	headerPartial,
 	"href=\"/css/govuk/govuk-header-service-brand.css?v=hide-signed-out-sign-out-20260624-1\"",
