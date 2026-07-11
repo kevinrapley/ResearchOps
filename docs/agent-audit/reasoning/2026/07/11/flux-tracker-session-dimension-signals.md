@@ -16,6 +16,7 @@ Extend the consented ResearchOps tracker so Flux can calculate all 20 demo-model
 - It exports only neutral structural keys and bounded count/timing metadata.
 - Email, telephone, password and one-time-code inputs remain excluded.
 - The versioned `1.2.0` module contains the hardened implementation, rather than importing an older versioned asset, so deployment cannot reuse a cached nested tracker asset.
+- Rendered pages add the `v=1.2.1` query cache key so the custom domain retrieves the deployed module immediately when its prior URL is cached.
 
 ## Validation
 
