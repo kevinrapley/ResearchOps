@@ -15,7 +15,7 @@ Extend the consented ResearchOps tracker so Flux can calculate all 20 demo-model
 - The module records paste, undo and shortcut categories, field revisit counts, help disclosure, validation transition, submit attempt and rapid-click events.
 - It exports only neutral structural keys and bounded count/timing metadata.
 - Email, telephone, password and one-time-code inputs remain excluded.
-- The versioned `1.2.0` module points at the hardened implementation so deployment can bypass cached tracker assets.
+- The versioned `1.2.0` module contains the hardened implementation, rather than importing an older versioned asset, so deployment cannot reuse a cached nested tracker asset.
 
 ## Validation
 
