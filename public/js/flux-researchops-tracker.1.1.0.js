@@ -7,6 +7,8 @@ const SESSION_KEY = 'flux.behaviour.session_id';
 const SAFE_KEY = /^[A-Za-z0-9._:-]{1,120}$/;
 const CONTROL_SELECTOR = 'a,button,input,select,textarea,[role="button"],[tabindex]';
 const focusState = new WeakMap();
+const fieldVisits = new Map();
+const recentClicks = [];
 let lastPointerType = 'unknown';
 
 if (PRODUCTION_HOSTS.has(window.location.hostname)) startTracker();
@@ -40,8 +42,12 @@ function instrument() {
 	document.addEventListener('pointerdown', (event) => { lastPointerType = event.pointerType || 'mouse'; }, true);
 	document.addEventListener('click', trackClick, true);
 	document.addEventListener('keydown', trackKeyboard, true);
+	document.addEventListener('paste', trackPaste, true);
 	document.addEventListener('focusin', beginFocus, true);
 	document.addEventListener('focusout', endFocus, true);
+	document.addEventListener('submit', trackSubmit, true);
+	document.addEventListener('invalid', trackInvalid, true);
+	document.addEventListener('toggle', trackHelp, true);
 }
 
 function trackClick(event) {
@@ -52,6 +58,7 @@ function trackClick(event) {
 		pointer_type: lastPointerType,
 		interaction_type: lastPointerType === 'touch' ? 'touch' : 'click',
 	});
+	recordRage(details);
 }
 
 function trackKeyboard(event) {
@@ -59,10 +66,21 @@ function trackKeyboard(event) {
 		const details = targetDetails(event.target);
 		if (details) track('nav', 'control.tab', { ...details, pointer_type: 'keyboard', interaction_type: 'tab' });
 	}
+	const details = targetDetails(event.target);
+	if (details && (event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'z') track('kbd', 'edit.undo', details);
+	if (details && (event.metaKey || event.ctrlKey) && ['a', 'c', 'x', 'f'].includes(event.key.toLowerCase())) track('kbd', 'act.shortcut', details);
 	const state = focusState.get(event.target);
 	if (!state) return;
 	if (event.key.length === 1) state.keyPressCount += 1;
 	if (event.key === 'Backspace') state.backspaceCount += 1;
+}
+
+function trackPaste(event) {
+	const state = focusState.get(event.target);
+	const details = state?.details ?? editableTarget(event.target);
+	if (!details) return;
+	if (state) state.pasteCount += 1;
+	track('input', 'edit.paste', details);
 }
 
 function beginFocus(event) {
@@ -70,7 +88,10 @@ function beginFocus(event) {
 	if (!details) return;
 	const previous = focusState.get(event.target);
 	if (previous?.onInput) event.target.removeEventListener('input', previous.onInput);
-	const state = { startedAt: performance.now(), keyPressCount: 0, backspaceCount: 0, editCount: 0, details, onInput: null };
+	const revisitCount = (fieldVisits.get(details.element_key) ?? 0) + 1;
+	fieldVisits.set(details.element_key, revisitCount);
+	if (revisitCount > 1) track('input', 'field.revisit', { ...details, revisit_count: revisitCount });
+	const state = { startedAt: performance.now(), keyPressCount: 0, backspaceCount: 0, editCount: 0, pasteCount: 0, revisitCount, details, onInput: null };
 	state.onInput = () => {
 		const current = focusState.get(event.target);
 		if (current === state) current.editCount += 1;
@@ -90,10 +111,35 @@ function endFocus(event) {
 		key_press_count: state.keyPressCount,
 		backspace_count: state.backspaceCount,
 		edit_count: state.editCount,
+		paste_count: state.pasteCount,
+		chars_per_minute: state.keyPressCount > 0 ? Math.min(2000, Math.round((state.keyPressCount * 60000) / Math.max(1, performance.now() - state.startedAt))) : 0,
+		revisit_count: state.revisitCount,
 		value_length: typeof event.target.value === 'string' ? event.target.value.length : 0,
 		pointer_type: lastPointerType,
 		interaction_type: 'input',
 	});
+}
+
+function trackSubmit(event) {
+	const form = event.target?.matches?.('form') ? event.target : null;
+	if (form) track('nav', 'flow.submit', { role: 'form', element_key: formKey(form) });
+}
+
+function trackInvalid(event) {
+	const details = editableTarget(event.target);
+	if (details) track('input', 'error.invalid', details);
+}
+
+function trackHelp(event) {
+	const details = event.target;
+	if (details?.matches?.('details[open]')) track('assist', 'assist.help', { role: 'control', element_key: detailsKey(details) });
+}
+
+function recordRage(details) {
+	const now = performance.now();
+	recentClicks.push({ key: details.element_key, at: now });
+	while (recentClicks.length && now - recentClicks[0].at > 700) recentClicks.shift();
+	if (recentClicks.filter((click) => click.key === details.element_key).length === 3) track('nav', 'act.rage', details);
 }
 
 function targetDetails(element) {
@@ -134,6 +180,16 @@ function pageKey() {
 	return key || 'home';
 }
 
+function formKey(form) {
+	const position = [...document.forms].indexOf(form);
+	return `form.${pageKey()}.${Math.max(0, position) + 1}`;
+}
+
+function detailsKey(details) {
+	const position = [...document.querySelectorAll('details')].indexOf(details);
+	return `auto.details.${Math.max(0, position) + 1}`;
+}
+
 function track(eventClass, action, details) {
 	const body = {
 		schema_version: '1.1.0',
@@ -148,7 +204,7 @@ function track(eventClass, action, details) {
 		element_key: details.element_key,
 		timestamp_ms: Date.now(),
 	};
-	for (const key of ['value_length', 'edit_count', 'duration_ms', 'pointer_type', 'key_press_count', 'backspace_count']) {
+	for (const key of ['value_length', 'edit_count', 'duration_ms', 'pointer_type', 'key_press_count', 'backspace_count', 'paste_count', 'chars_per_minute', 'revisit_count']) {
 		if (details[key] !== undefined) body[key] = details[key];
 	}
 	void window.fetch(COLLECTOR_ENDPOINT, {
