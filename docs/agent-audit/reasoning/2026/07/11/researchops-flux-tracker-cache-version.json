@@ -1,0 +1,32 @@
+{
+  "schemaVersion": "agent-trace-promotion/v1",
+  "title": "Verify rich tracker is live after merge and remediate stale cached asset.",
+  "sourceTrace": ".agent-traces/raw/atrace-20260711-133254-researchops-flux-tracker-cache-version.jsonl",
+  "markdownReport": "docs/agent-audit/reasoning/2026/07/11/researchops-flux-tracker-cache-version.md",
+  "jsonSummary": "docs/agent-audit/reasoning/2026/07/11/researchops-flux-tracker-cache-version.json",
+  "promotedAt": "2026-07-11T13:33:01.056Z",
+  "eventCount": 15,
+  "run": {
+    "startedAt": "2026-07-11T13:32:54.016Z",
+    "completedAt": "2026-07-11T13:32:54.020Z",
+    "taskSummary": "Verify rich tracker is live after merge and remediate stale cached asset."
+  },
+  "bundles": [
+    "github-diamond",
+    "researchops-developer-control",
+    "multi-functional-team"
+  ],
+  "filesRead": [],
+  "filesWritten": [
+    "public/js/flux-researchops-tracker.1.1.0.js",
+    "public/partials/html-head.html",
+    "tests/flux-behaviour-tracker-route-state.test.js"
+  ],
+  "validations": [
+    "node --test tests/flux-behaviour-tracker-route-state.test.js tests/govuk-page-chrome-navigation-route-state.test.js — exit 0"
+  ],
+  "issues": [
+    "Production Pages deployment was active but the existing tracker URL served an older one-hour cached static asset."
+  ],
+  "warnings": []
+}
