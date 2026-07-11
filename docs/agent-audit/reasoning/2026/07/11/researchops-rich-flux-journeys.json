@@ -1,0 +1,31 @@
+{
+  "schemaVersion": "agent-trace-promotion/v1",
+  "title": "Capture click, touch, Tab, dwell time, character counts and corrections across ResearchOps without typed content.",
+  "sourceTrace": ".agent-traces/raw/atrace-20260711-132357-researchops-rich-flux-journeys.jsonl",
+  "markdownReport": "docs/agent-audit/reasoning/2026/07/11/researchops-rich-flux-journeys.md",
+  "jsonSummary": "docs/agent-audit/reasoning/2026/07/11/researchops-rich-flux-journeys.json",
+  "promotedAt": "2026-07-11T13:25:11.225Z",
+  "eventCount": 15,
+  "run": {
+    "startedAt": "2026-07-11T13:23:57.641Z",
+    "completedAt": "2026-07-11T13:23:57.644Z",
+    "taskSummary": "Capture click, touch, Tab, dwell time, character counts and corrections across ResearchOps without typed content."
+  },
+  "bundles": [
+    "github-diamond",
+    "researchops-developer-control",
+    "multi-functional-team",
+    "govuk-design-system"
+  ],
+  "filesRead": [],
+  "filesWritten": [
+    "public/js/flux-researchops-tracker.js",
+    "tests/flux-behaviour-tracker-route-state.test.js",
+    "RECENT_LEARNINGS.md"
+  ],
+  "validations": [
+    "npm run build && npm test && npm run validate — exit 0"
+  ],
+  "issues": [],
+  "warnings": []
+}
