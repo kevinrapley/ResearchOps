@@ -1,4 +1,19 @@
 gaps:
+  - id: flux-tracker-rendered-page-coverage
+    title: Ensure the Flux tracker is loaded by rendered ResearchOps pages
+    status: implemented
+    severity: high
+    owner: repository-maintainers
+    context: PR #475 versioned the static tracker asset but placed its reference only in an unused partial, leaving normal rendered pages without instrumentation.
+    mitigation: Load the versioned tracker from the GOV.UK source layout, update the three committed static page shells outside that renderer, regenerate all GOV.UK outputs and assert every rendered page includes the asset.
+    evidence:
+      - src/govuk/templates/layouts/researchops.njk
+      - public/pages/account/sign-in/index.html
+      - public/pages/synthesize/index.html
+      - public/pages/team/registration-requests/index.html
+      - tests/flux-behaviour-tracker-route-state.test.js
+      - docs/agent-audit/reasoning/2026/07/11/flux-tracker-rendered-page-remediation.md
+
   - id: branch-protection-release-gate-required
     title: Require Release Gate before merge
     status: in-progress
