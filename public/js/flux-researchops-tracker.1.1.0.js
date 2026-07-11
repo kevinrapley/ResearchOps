@@ -115,8 +115,8 @@ function editableTarget(element) {
 function isExcludedSensitiveInput(element) {
 	if (!element?.matches?.('input')) return false;
 	const type = (element.type || 'text').toLowerCase();
-	if (!['password', 'email', 'tel'].includes(type)) return false;
-	return !(element.dataset.fluxCapture === 'allow-sensitive' && typeof element.dataset.fluxKey === 'string');
+	const autocomplete = (element.autocomplete || '').toLowerCase();
+	return ['password', 'email', 'tel'].includes(type) || ['one-time-code', 'current-password', 'new-password'].includes(autocomplete);
 }
 
 function stableKey(element) {

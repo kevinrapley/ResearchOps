@@ -31,7 +31,7 @@ assert.match(tracker, /duration_ms/);
 assert.match(tracker, /control\.tab/);
 assert.match(tracker, /auto\.\$\{kind\}/);
 assert.match(tracker, /\['password', 'email', 'tel'\]/);
-assert.match(tracker, /allow-sensitive/);
+assert.match(tracker, /\['one-time-code', 'current-password', 'new-password'\]/);
 assert.match(tracker, /removeEventListener\('input', state\.onInput\)/);
 assert.match(versionedTracker, /flux-researchops-tracker\.1\.1\.0\.js/);
 assert.doesNotMatch(tracker, /target\.(ariaLabel|textContent|innerText)/);
