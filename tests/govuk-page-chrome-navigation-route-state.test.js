@@ -67,6 +67,7 @@ excludes(headerServiceBrandCss, "word-spacing: -6px;", "header product-name styl
 excludes(headerServiceBrandCss, "box-shadow: 0 3px 0 #ffffff;", "header product-name stylesheet");
 
 includes(headerPartial, "class=\"govuk-skip-link\" href=\"#main-content\"", "shared header partial");
+excludes(headerPartial, "flux-behaviour.pages.dev/assets/flux/sdk", "shared header partial");
 includes(
 	headerPartial,
 	"href=\"/css/govuk/govuk-header-service-brand.css?v=hide-signed-out-sign-out-20260624-1\"",
