@@ -1,0 +1,41 @@
+{
+  "schemaVersion": "agent-trace-promotion/v1",
+  "title": "Remediate Flux tracker coverage on rendered ResearchOps pages.",
+  "sourceTrace": "repository-audited corrective branch",
+  "markdownReport": "docs/agent-audit/reasoning/2026/07/11/flux-tracker-rendered-page-remediation.md",
+  "jsonSummary": "docs/agent-audit/reasoning/2026/07/11/flux-tracker-rendered-page-remediation.json",
+  "run": {
+    "taskSummary": "Address active Codex P1 review feedback on merged PR #475."
+  },
+  "bundles": [
+    "github-diamond",
+    "researchops-developer-control",
+    "multi-functional-team"
+  ],
+  "filesRead": [
+    "src/govuk/templates/layouts/researchops.njk",
+    "public/partials/html-head.html",
+    "public/pages/account/sign-in/index.html",
+    "tests/flux-behaviour-tracker-route-state.test.js"
+  ],
+  "filesWritten": [
+    "src/govuk/templates/layouts/researchops.njk",
+    "public/pages/**/index.html",
+    "tests/flux-behaviour-tracker-route-state.test.js",
+    "conformance-matrix.yaml",
+    "gap-register.yaml",
+    "RECENT_LEARNINGS.md"
+  ],
+  "validations": [
+    "npm run build",
+    "npm test",
+    "npm run validate",
+    "npm run trace:coverage -- --date 2026-07-11"
+  ],
+  "issues": [
+    "PR #475 was merged with an unresolved Codex P1 review thread."
+  ],
+  "warnings": [
+    "npm test -- --ci is not a valid invocation for this Node test runner; npm test was run successfully instead."
+  ]
+}

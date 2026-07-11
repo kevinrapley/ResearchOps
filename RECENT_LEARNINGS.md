@@ -2,6 +2,14 @@
 
 This file records repeatable repository-specific lessons for ResearchOps agents and maintainers. It is not a changelog.
 
+## 2026-07-11 — Shared partials are not proof that rendered pages include an asset
+
+Context: PR #475 versioned the Flux tracker after cache behaviour delayed delivery, but the versioned module was added only to `public/partials/html-head.html`. The normal GOV.UK pages are rendered from `src/govuk/templates/layouts/researchops.njk`, which did not consume that partial, so the tracker was not requested from production pages.
+
+Learning: A shared partial can be present in the repository yet not belong to a rendered page path. Static assets that must be site-wide need coverage at the actual rendering boundary, with generated output checked alongside source.
+
+Action: For global scripts and styles, search for the renderer/layout used by each route family, update the canonical source and any committed static shells outside that renderer, then assert every rendered page loads the asset before merging.
+
 ## 2026-07-11 — Broad interaction coverage can remain content-free
 
 ResearchOps needs behavioural journeys that cover the controls people actually use, but a tracker must not turn visible labels or field values into analytics. A consent-gated tracker can use explicit safe keys where a service provides them and otherwise emit a neutral structural key based only on control type and position. Dwell, character count, corrections, Tab, click and touch metadata support a useful journey narrative without exporting typed content, labels, IDs or URLs.

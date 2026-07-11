@@ -68,18 +68,22 @@ function trackKeyboard(event) {
 function beginFocus(event) {
 	const details = editableTarget(event.target);
 	if (!details) return;
-	const state = { startedAt: performance.now(), keyPressCount: 0, backspaceCount: 0, editCount: 0, details };
-	focusState.set(event.target, state);
-	event.target.addEventListener('input', () => {
+	const previous = focusState.get(event.target);
+	if (previous?.onInput) event.target.removeEventListener('input', previous.onInput);
+	const state = { startedAt: performance.now(), keyPressCount: 0, backspaceCount: 0, editCount: 0, details, onInput: null };
+	state.onInput = () => {
 		const current = focusState.get(event.target);
-		if (current) current.editCount += 1;
-	});
+		if (current === state) current.editCount += 1;
+	};
+	focusState.set(event.target, state);
+	event.target.addEventListener('input', state.onInput);
 }
 
 function endFocus(event) {
 	const state = focusState.get(event.target);
 	if (!state) return;
 	focusState.delete(event.target);
+	event.target.removeEventListener('input', state.onInput);
 	track('input', 'field.blur', {
 		...state.details,
 		duration_ms: Math.round(performance.now() - state.startedAt),
@@ -94,16 +98,25 @@ function endFocus(event) {
 
 function targetDetails(element) {
 	const target = element?.closest?.(CONTROL_SELECTOR);
+	if (isExcludedSensitiveInput(target)) return null;
 	const key = stableKey(target);
 	if (!target || !key) return null;
 	return { role: target.matches('input, select, textarea') ? 'field' : 'control', element_key: key };
 }
 
 function editableTarget(element) {
+	if (isExcludedSensitiveInput(element)) return null;
 	const key = stableKey(element);
 	return element?.matches?.('input:not([type="hidden"]), textarea, select') && key
 		? { role: 'field', element_key: key }
 		: null;
+}
+
+function isExcludedSensitiveInput(element) {
+	if (!element?.matches?.('input')) return false;
+	const type = (element.type || 'text').toLowerCase();
+	const autocomplete = (element.autocomplete || '').toLowerCase();
+	return ['password', 'email', 'tel'].includes(type) || ['one-time-code', 'current-password', 'new-password'].includes(autocomplete);
 }
 
 function stableKey(element) {
