@@ -5,7 +5,7 @@ gaps:
     severity: high
     owner: product-lead
     context: Dictionary and grammar heuristics can produce false positives for names, specialist language, dialects, disability-related writing patterns and valid stylistic choices. Counts are service-friction signals, not validated person-level measures.
-    mitigation: Keep the explicit en-GB baseline, possible-issue wording, on-device-only analysis and no-automated-decision boundary; review a representative, consented golden corpus with privacy and accessibility leads before using the indicators operationally.
+    mitigation: Keep the explicit en-GB baseline, possible-issue wording, on-device-only analysis and no-automated-decision boundary; fetch protected dictionary assets with same-origin credentials while keeping collector credentials omitted; review a representative, consented golden corpus with privacy and accessibility leads before using the indicators operationally.
     evidence:
       - src/flux/uk-english-writing-analyser.mjs
       - tests/flux-uk-writing-analyser.test.js

@@ -1,6 +1,6 @@
 records:
   - id: flux-uk-english-writing-signals
-    control: Consented writing analysis uses an on-device en-GB baseline and exports only bounded, non-reversible issue and casing counts, never entered text, words or suggestions.
+    control: Consented writing analysis uses an on-device en-GB baseline, retrieves protected dictionary assets with the same-origin service session, and exports only bounded, non-reversible issue and casing counts, never entered text, words or suggestions.
     evidence:
       - src/flux/uk-english-writing-analyser.mjs
       - src/flux/uk-english-writing-runtime.mjs

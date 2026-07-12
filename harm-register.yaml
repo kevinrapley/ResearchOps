@@ -7,7 +7,7 @@ harms:
       - Visitors who use dialects or English as an additional language
     likelihood: medium
     severity: high
-    mitigation: Label counts as possible issues, keep analysis on-device and en-GB-specific, export no words or suggestions, prohibit literacy, intelligence, professionalism, personality and protected-characteristic inference, prohibit automated decisions, and validate with representative accessibility and privacy review before operational use.
+    mitigation: Label counts as possible issues, keep analysis on-device and en-GB-specific, retrieve the protected dictionary through the same-origin service session, export no words or suggestions, prohibit literacy, intelligence, professionalism, personality and protected-characteristic inference, prohibit automated decisions, and validate with representative accessibility and privacy review before operational use.
     residual_risk: medium
     owner: product-lead
     escalation_route: Product owner, accessibility lead and privacy lead

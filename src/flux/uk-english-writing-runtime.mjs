@@ -9,9 +9,15 @@ window.researchOpsFluxWriting = Object.freeze({
 
 function checker() {
 	checkerPromise ??= Promise.all([
-		fetch('/assets/flux/uk-english/index.aff?v=1.0.0', { credentials: 'omit' }).then(requireText),
-		fetch('/assets/flux/uk-english/index-1.dic?v=1.0.0', { credentials: 'omit' }).then(requireText),
-		fetch('/assets/flux/uk-english/index-2.dic?v=1.0.0', { credentials: 'omit' }).then(requireText),
+		fetch('/assets/flux/uk-english/index.aff?v=1.0.0', { credentials: 'same-origin' }).then(
+			requireText
+		),
+		fetch('/assets/flux/uk-english/index-1.dic?v=1.0.0', { credentials: 'same-origin' }).then(
+			requireText
+		),
+		fetch('/assets/flux/uk-english/index-2.dic?v=1.0.0', { credentials: 'same-origin' }).then(
+			requireText
+		),
 	]).then(([affix, dictionaryPart1, dictionaryPart2]) =>
 		nspell(affix, dictionaryPart1 + dictionaryPart2)
 	);

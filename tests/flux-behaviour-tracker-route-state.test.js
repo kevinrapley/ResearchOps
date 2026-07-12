@@ -41,6 +41,8 @@ assert.match(sessionTracker, /text is checked only in this browser and never lea
 assert.match(sessionTracker, /fluxWritingAnalysis === 'false'/);
 assert.match(sessionTracker, /localStorage\.getItem\(CONSENT_KEY\) !== 'yes'/);
 assert.match(writingRuntime, /en-GB/);
+assert.match(writingRuntime, /credentials:"same-origin"/);
+assert.doesNotMatch(writingRuntime, /credentials:"omit"/);
 assert.match(tracker, /control\.tab/);
 assert.match(tracker, /auto\.\$\{kind\}/);
 assert.match(tracker, /\['password', 'email', 'tel'\]/);
