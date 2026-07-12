@@ -2,6 +2,14 @@
 
 This file records repeatable repository-specific lessons for ResearchOps agents and maintainers. It is not a changelog.
 
+## 2026-07-12 — Publisher instrumentation is attributes, not a copied analytics product
+
+Context: ResearchOps accumulated a local tracker, session engine, UK-English analyser, dictionary build and authentication analytics calls while integrating Flux.
+
+Learning: ResearchOps should declare service meaning through a hosted Flux include and controlled `data-flux-*` attributes. Capture, interpretation, privacy enforcement, session lifecycle, linguistic analysis and dictionaries must remain owned and deployed by Flux Behaviour.
+
+Action: Keep the local boundary test that forbids `src/flux` and local tracker/analyser assets, test important authored attributes directly, and consume the versioned hosted Flux module.
+
 ## 2026-07-12 — Same-origin protected analysis assets need the service session
 
 Context: The local UK English analyser fetched its dictionary with credentials omitted, but ResearchOps routes unauthenticated static-asset requests through the sign-in boundary. A successful HTML response could therefore be mistaken for dictionary data.

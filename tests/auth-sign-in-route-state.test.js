@@ -94,12 +94,7 @@ function assertSignInScriptStartsAndVerifiesEmailCode() {
 	assert.match(signInScript, /code: dom\.codeInput\?\.value/);
 	assert.match(signInScript, /credentials: 'include'/);
 	assert.match(signInScript, /fetchJson\('\/api\/me'\)/);
-	assert.match(signInScript, /function trackAuthMilestone\(action\)/);
-	assert.match(signInScript, /try \{\s*window\.researchOpsFlux\?\.milestone\?\.\(action\);\s*\} catch \{/);
-	assert.match(signInScript, /trackAuthMilestone\('auth\.otp\.requested'\)/);
-	assert.match(signInScript, /trackAuthMilestone\('auth\.otp\.succeeded'\)/);
-	assert.match(signInScript, /if \(!verified\) trackAuthMilestone\('auth\.otp\.failed'\)/);
-	assert.doesNotMatch(signInScript, /trackAuthMilestone\([^\n]+(?:email|codeInput|challengeInput)/);
+	assert.doesNotMatch(signInScript, /researchOpsFlux|trackAuthMilestone/);
 }
 
 function assertSignInScriptRedirectsAuthenticatedUsersToAccountDashboard() {

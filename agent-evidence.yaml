@@ -1,68 +1,84 @@
-task_id: flux-uk-writing-dictionary-auth
+task_id: researchops-hosted-flux-boundary
 mode: repo-fix
 repository: ResearchOps
 risk_level: high
 base_branch: main
-working_branch: fix/uk-writing-dictionary-auth
+working_branch: fix/flux-wpm-keyboard-autocomplete
 files_read:
   - README.md
   - AGENTS.md
   - RECENT_LEARNINGS.md
-  - CONTRIBUTING.md
-  - SECURITY.md
-  - repository-contract.yaml
+  - .agent-operating-model/orchestration.xml
+  - .agent-operating-model/bundle-registry.json
+  - .agent-operating-model/task-signal-catalog.json
+  - .agent-operating-model/selection-rules.json
+  - .agent-operating-model/github-mutation-policy.md
   - github-settings.yaml
   - conformance-matrix.yaml
   - gap-register.yaml
   - harm-register.yaml
   - docs/implementation/flux-semantic-instrumentation.md
-  - src/flux/uk-english-writing-runtime.mjs
 files_changed:
-  - src/flux/uk-english-writing-runtime.mjs
-  - public/assets/flux/uk-english-writing-runtime.mjs
+  - src/govuk/templates/layouts/researchops.njk
+  - public/partials/html-head.html
   - public/pages/**/index.html
+  - public/_headers
+  - public/_worker.js
+  - public/js/auth-sign-in-page.js
   - tests/flux-behaviour-tracker-route-state.test.js
+  - tests/flux-semantic-instrumentation.test.js
+  - tests/e2e/flux-semantic-coverage.spec.js
   - docs/implementation/flux-semantic-instrumentation.md
-  - docs/agent-audit/reasoning/2026/07/12/flux-uk-writing-dictionary-auth.md
-  - docs/agent-audit/reasoning/2026/07/12/flux-uk-writing-dictionary-auth.json
-  - RECENT_LEARNINGS.md
-  - conformance-matrix.yaml
-  - gap-register.yaml
-  - harm-register.yaml
+  - docs/agent-audit/reasoning/2026/07/12/researchops-hosted-flux-boundary.md
+  - docs/agent-audit/reasoning/2026/07/12/researchops-hosted-flux-boundary.json
+files_removed:
+  - src/flux/
+  - scripts/flux/build-uk-english-writing.mjs
+  - public/js/flux-researchops-tracker.1.1.0.js
+  - public/js/flux-researchops-tracker.1.1.1.js
+  - public/js/flux-researchops-tracker.1.2.0.js
+  - public/assets/flux/
+  - tests/flux-focus-narrative-events.test.js
+  - tests/flux-session-lifecycle.test.js
+  - tests/flux-uk-writing-analyser.test.js
 commands_run:
-  - command: node --test tests/flux-uk-writing-analyser.test.js tests/flux-focus-narrative-events.test.js tests/flux-behaviour-tracker-route-state.test.js
-    state: verified
-    status: passed
-    evidence: Eighteen focused analyser, tracker, privacy and route-state tests passed.
-  - command: npm test
-    state: observed
-    status: failed
-    evidence: The first concurrent run had one transient repository-front-page route-state failure; the isolated test immediately passed.
   - command: npm test
     state: verified
     status: passed
-    evidence: The clean rerun passed all 378 repository tests.
+    evidence: All 359 repository tests passed after removing local Flux product logic.
   - command: npm run lint
     state: verified
     status: passed
-    evidence: ESLint completed with zero errors and the existing 236-warning baseline.
+    evidence: Formatting checks and ESLint passed with the repository's existing warning baseline.
   - command: npm run validate
     state: verified
     status: passed
-    evidence: Repository contract, trace coverage, rendered output, sourcebook, JavaScript and performance validation completed.
+    evidence: Operating-model, trace, sourcebook, route-state, JavaScript and performance validation completed.
+  - command: npm run build
+    state: verified
+    status: passed
+    evidence: GOV.UK assets, generated styles and rendered service pages built without a local Flux analyser step.
+  - command: node --import ./tests/helpers/generated-govuk-page-source.mjs --test tests/flux-behaviour-tracker-route-state.test.js
+    state: verified
+    status: passed
+    evidence: Every rendered page loads the hosted Flux module; local tracker, analyser and src/flux paths are absent; CSP permits the hosted script and collector.
+  - command: npx playwright test tests/e2e/flux-semantic-coverage.spec.js --reporter=line
+    state: verified
+    status: passed
+    evidence: Authored Flux keys are purpose-led and paired with valid roles in rendered pages.
 recent_learnings:
   read: true
   updated: true
-  entry: Same-origin protected analysis assets need the service session.
+  entry: Publisher instrumentation is attributes, not a copied analytics product.
 security:
   secrets_changed: false
   authentication_changed: false
 privacy:
   data_collection_scope_changed: false
-  assessment: The service session cookie is sent only to same-origin static dictionary paths; cross-origin Flux collection continues to omit credentials and entered text remains local.
+  assessment: ResearchOps now contains less analytics code and no dictionary; sensitive field values remain outside publisher telemetry logic.
 accessibility:
-  required: false
-  assessment: The fix restores the reviewed analyser consistently for authenticated visitors without changing the interface.
+  required: true
+  assessment: Navigation and important journey attributes remain authored; the hosted Flux module owns keyboard semantics.
 risks:
-  - Dictionary availability must fail closed to the existing content-free timing event.
-  - Same-origin credentials must never be changed to cross-origin inclusion.
+  - ResearchOps deployment depends on the versioned hosted Flux asset being deployed first.
+  - Browser production verification is required after both pull requests merge.

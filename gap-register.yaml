@@ -7,8 +7,8 @@ gaps:
     context: Dictionary and grammar heuristics can produce false positives for names, specialist language, dialects, disability-related writing patterns and valid stylistic choices. Counts are service-friction signals, not validated person-level measures.
     mitigation: Keep the explicit en-GB baseline, possible-issue wording, on-device-only analysis and no-automated-decision boundary; fetch protected dictionary assets with same-origin credentials while keeping collector credentials omitted; review a representative, consented golden corpus with privacy and accessibility leads before using the indicators operationally.
     evidence:
-      - src/flux/uk-english-writing-analyser.mjs
-      - tests/flux-uk-writing-analyser.test.js
+      - src/govuk/templates/layouts/researchops.njk
+      - tests/flux-behaviour-tracker-route-state.test.js
       - docs/agent-audit/reasoning/2026/07/12/flux-uk-english-writing-signals.md
 
   - id: flux-field-timing-semantics
@@ -16,25 +16,24 @@ gaps:
     status: implemented
     severity: high
     owner: repository-maintainers
-    context: The tracker previously sent focus-to-blur duration as duration_ms and calculated typing rate across that whole interval, so Flux labelled active entry as dwell and understated typing speed after a pause.
-    mitigation: Emit bounded dwell_before_input_ms and typing_duration_ms values, calculate characters per minute only across the first-to-latest typing interval, retain duration_ms as total focus context, and cache-bust the tracker asset.
+    context: The previous ResearchOps-local tracker conflated publisher and analytics ownership and calculated character rate locally.
+    mitigation: Delegate timing and words-per-minute calculation to the versioned hosted Flux module; retain only the include and semantic attributes in ResearchOps.
     evidence:
-      - public/js/flux-researchops-tracker.1.2.0.js
-      - tests/flux-focus-narrative-events.test.js
+      - src/govuk/templates/layouts/researchops.njk
       - tests/flux-behaviour-tracker-route-state.test.js
-      - docs/agent-audit/reasoning/2026/07/12/flux-accurate-field-timing.md
+      - docs/implementation/flux-semantic-instrumentation.md
 
   - id: flux-tracker-inactivity-session-boundary
     title: Separate returning ResearchOps visits into behavioural sessions
     status: implemented
     severity: high
     owner: repository-maintainers
-    context: The tracker previously equated the lifetime of sessionStorage with a behavioural session, so activity more than seven hours apart was stored under one journey and the return was not counted as a new session.
-    mitigation: Roll the pseudonymous session identifier after 30 minutes without a captured interaction, update the activity timestamp on every event, migrate legacy stored sessions on first use, and cache-bust the deployed tracker reference.
+    context: The previous ResearchOps-local tracker equated the lifetime of sessionStorage with a behavioural session and duplicated Flux product logic in the publisher.
+    mitigation: The hosted Flux module owns the 30-minute inactivity boundary and persistent returning-visitor identifier; ResearchOps owns only the include and semantic attributes.
     evidence:
-      - public/js/flux-researchops-tracker.1.2.0.js
-      - tests/flux-session-lifecycle.test.js
-      - docs/agent-audit/reasoning/2026/07/12/flux-session-inactivity-boundary.md
+      - src/govuk/templates/layouts/researchops.njk
+      - tests/flux-behaviour-tracker-route-state.test.js
+      - docs/implementation/flux-semantic-instrumentation.md
 
   - id: flux-tracker-event-contract-alignment
     title: Align the ResearchOps tracker payload with the Flux event contract
@@ -44,7 +43,7 @@ gaps:
     context: The cache-busted 1.2.0 JavaScript asset emitted schema_version 1.2.0 while the Flux collector accepted contract 1.1.0, causing all production interactions to return HTTP 400 invalid_event.
     mitigation: Emit schema_version 1.1.0, assert it independently from the asset URL, and advance the cache key so browsers retrieve the corrected tracker.
     evidence:
-      - public/js/flux-researchops-tracker.1.2.0.js
+      - src/govuk/templates/layouts/researchops.njk
       - tests/flux-behaviour-tracker-route-state.test.js
       - docs/agent-audit/reasoning/2026/07/12/flux-tracker-schema-version-fix.md
 
@@ -56,7 +55,7 @@ gaps:
     context: ResearchOps emits additional consented metadata-only categories so Flux can calculate the demo model per session. The scores remain service-improvement heuristics and are not validated person-level measures.
     mitigation: Keep the no-automated-decision boundary, complete the Flux golden-corpus validation and review the data-protection and accessibility evidence before operational use.
     evidence:
-      - public/js/flux-researchops-tracker.1.1.0.js
+      - src/govuk/templates/layouts/researchops.njk
       - docs/agent-audit/reasoning/2026/07/11/flux-tracker-session-dimension-signals.md
 
   - id: flux-tracker-rendered-page-coverage
@@ -154,10 +153,10 @@ gaps:
     status: implemented
     severity: low
     owner: repository-maintainers
-    context: Important journeys use explicit reviewed attributes, and a runtime structural annotation layer now covers all rendered and newly inserted controls before capture. The positional fallback remains intentionally available for an unforeseen or malformed control.
-    mitigation: Keep explicit stable keys on important journeys, browser-audit all rendered pages for purpose-led attributes, and derive missing purpose only from privacy-safe structure rather than DOM ordinals, visible content, entered values, query strings or record identifiers.
+    context: Important journeys use explicit reviewed attributes, while the hosted Flux module owns safe structural fallback interpretation for unforeseen controls.
+    mitigation: Keep explicit stable keys on important journeys, audit authored keys and roles, and keep all fallback interpretation in Flux Behaviour rather than ResearchOps.
     evidence:
-      - public/js/flux-researchops-tracker.1.2.0.js
+      - src/govuk/templates/layouts/researchops.njk
       - docs/implementation/flux-semantic-instrumentation.md
       - tests/flux-semantic-instrumentation.test.js
       - tests/e2e/flux-semantic-coverage.spec.js

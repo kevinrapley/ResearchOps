@@ -38,8 +38,11 @@ assert.equal(packageJson.devDependencies.sass, '^1.100.0');
 assert.equal(packageJson.devDependencies.nunjucks, '^3.2.4');
 assert.equal(
 	packageJson.scripts.build,
-	'npm run build:govuk && npm run build:flux-writing && npm run build:generated-css && npm run build:govuk-pages'
+	'npm run build:govuk && npm run build:generated-css && npm run build:govuk-pages'
 );
+assert.equal(packageJson.scripts['build:flux-writing'], undefined);
+assert.equal(packageJson.devDependencies['dictionary-en-gb'], undefined);
+assert.equal(packageJson.devDependencies.nspell, undefined);
 assert.equal(
 	packageJson.scripts['build:govuk'],
 	'sass --load-path=node_modules --silence-deprecation=import --no-source-map --style=compressed src/styles/govuk.scss public/assets/govuk/govuk-frontend.css && node scripts/govuk/copy-govuk-assets.mjs'
