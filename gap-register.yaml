@@ -1,4 +1,16 @@
 gaps:
+  - id: analytics-consent-and-privacy-governance
+    title: Approve consent and privacy controls for Google Tag Manager
+    status: open
+    severity: high
+    owner: service-owner
+    context: Google Tag Manager now loads across public and authenticated ResearchOps pages using GTM-KGGFK4KW. The repository does not yet contain an approved consent mechanism, data-flow record, tag inventory or opt-out path for non-essential analytics.
+    mitigation: Obtain privacy and service-owner approval; document the measurement purpose, lawful basis, retention and international-transfer posture; implement and test consent and withdrawal controls before publishing non-essential GTM tags.
+    evidence:
+      - harm-register.yaml
+      - src/govuk/templates/layouts/researchops.njk
+      - scripts/govuk/normalise-service-pages.mjs
+
   - id: flux-uk-english-writing-validation
     title: Validate UK English writing indicators before operational interpretation
     status: open
