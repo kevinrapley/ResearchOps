@@ -1,32 +1,27 @@
 records:
   - id: flux-uk-english-writing-signals
-    control: Consented writing analysis uses an on-device en-GB baseline, retrieves protected dictionary assets with the same-origin service session, and exports only bounded, non-reversible issue and casing counts, never entered text, words or suggestions.
+    control: ResearchOps loads the Flux-owned hosted analyser; no linguistic code or dictionary is copied into the publisher repository.
     evidence:
-      - src/flux/uk-english-writing-analyser.mjs
-      - src/flux/uk-english-writing-runtime.mjs
-      - public/js/flux-researchops-tracker.1.2.0.js
-      - tests/flux-uk-writing-analyser.test.js
-      - tests/flux-focus-narrative-events.test.js
-      - docs/agent-audit/reasoning/2026/07/12/flux-uk-english-writing-signals.md
+      - src/govuk/templates/layouts/researchops.njk
+      - tests/flux-behaviour-tracker-route-state.test.js
+      - docs/implementation/flux-semantic-instrumentation.md
     status: implemented
     risk: high
     owner: repository-maintainers
 
   - id: flux-accurate-field-timing
-    control: ResearchOps keeps total focus duration, pre-input dwell and active typing duration distinct, and calculates typing rate only from active typing time.
+    control: ResearchOps delegates focus, dwell, active typing and words-per-minute calculation to the hosted Flux module.
     evidence:
-      - public/js/flux-researchops-tracker.1.2.0.js
-      - tests/flux-focus-narrative-events.test.js
+      - src/govuk/templates/layouts/researchops.njk
       - tests/flux-behaviour-tracker-route-state.test.js
-      - docs/agent-audit/reasoning/2026/07/12/flux-accurate-field-timing.md
+      - docs/implementation/flux-semantic-instrumentation.md
     status: implemented
     risk: high
     owner: repository-maintainers
 
   - id: flux-semantic-interactive-coverage
-    control: Every rendered or dynamically inserted ResearchOps link, button, field, form and help control receives privacy-safe purpose-led Flux key and role attributes before capture, while the positional fallback remains available for unforeseen controls.
+    control: Important ResearchOps links, buttons, fields, forms, navigation and help controls expose authored privacy-safe purpose-led keys and roles; Flux owns defensive fallback interpretation.
     evidence:
-      - public/js/flux-researchops-tracker.1.2.0.js
       - public/js/project-dashboard.js
       - tests/e2e/flux-semantic-coverage.spec.js
       - tests/flux-semantic-instrumentation.test.js
@@ -36,38 +31,35 @@ records:
     owner: repository-maintainers
 
   - id: flux-tracker-inactivity-session-boundary
-    control: ResearchOps creates a new pseudonymous Flux session after 30 minutes without a captured interaction while retaining the returning visitor identifier.
+    control: The hosted Flux module creates a new pseudonymous session after 30 minutes without a captured interaction while retaining the returning visitor identifier.
     evidence:
-      - public/js/flux-researchops-tracker.1.2.0.js
-      - tests/flux-session-lifecycle.test.js
-      - docs/agent-audit/reasoning/2026/07/12/flux-session-inactivity-boundary.md
+      - src/govuk/templates/layouts/researchops.njk
+      - tests/flux-behaviour-tracker-route-state.test.js
+      - docs/implementation/flux-semantic-instrumentation.md
     status: implemented
     risk: high
     owner: repository-maintainers
 
   - id: flux-tracker-event-contract-alignment
-    control: The deployed ResearchOps tracker emits the Flux collector's accepted event-contract version independently from its JavaScript asset version.
+    control: ResearchOps consumes the versioned Flux-hosted module and does not own or duplicate its event-contract implementation.
     evidence:
-      - public/js/flux-researchops-tracker.1.2.0.js
+      - src/govuk/templates/layouts/researchops.njk
       - tests/flux-behaviour-tracker-route-state.test.js
-      - docs/agent-audit/reasoning/2026/07/12/flux-tracker-schema-version-fix.md
     status: implemented
     risk: high
     owner: repository-maintainers
 
   - id: flux-tracker-session-dimension-signals
-    control: The ResearchOps tracker records only consented content-free signal categories required for Flux session dimensions.
+    control: ResearchOps supplies content-free semantic context while the hosted Flux module owns session-dimension signal capture.
     evidence:
-      - public/js/flux-researchops-tracker.1.1.0.js
-      - public/js/flux-researchops-tracker.1.2.0.js
+      - tests/flux-semantic-instrumentation.test.js
       - tests/flux-behaviour-tracker-route-state.test.js
-      - docs/agent-audit/reasoning/2026/07/11/flux-tracker-session-dimension-signals.md
     status: implemented
     risk: high
     owner: repository-maintainers
 
   - id: flux-tracker-rendered-page-coverage
-    control: Every rendered ResearchOps page loads the reviewed, versioned Flux tracker from its source layout or committed static page shell.
+    control: Every rendered ResearchOps page loads the reviewed, versioned Flux-hosted module from its source layout or committed static page shell.
     evidence:
       - src/govuk/templates/layouts/researchops.njk
       - public/pages/**/index.html
@@ -141,9 +133,8 @@ records:
     control: The Add Objective journey exposes stable content-free Flux keys and distinguishes automatic focus, keyboard input and focus exit.
     evidence:
       - src/govuk/templates/pages/project-dashboard.njk
-      - public/js/flux-researchops-tracker.1.2.0.js
       - tests/flux-semantic-instrumentation.test.js
-      - tests/flux-focus-narrative-events.test.js
+      - tests/flux-behaviour-tracker-route-state.test.js
     status: implemented
     risk: medium
     owner: repository-maintainers
