@@ -50,7 +50,7 @@ function searchEntities({ query = "", type = "" } = {}) {
 	return typed.filter(entity => JSON.stringify(entity).toLowerCase().includes(needle));
 }
 
-function renderItem(entity) {
+function renderItem(entity, index) {
 	const raw = escapeHtml(JSON.stringify(entity, null, 2));
 	const title = entity.name || entity.description || entity.hasBody || entity.id || "Untitled result";
 
@@ -64,7 +64,7 @@ function renderItem(entity) {
 		</ul>
 	</div>
 	<div class="govuk-summary-card__content">
-		<details class="govuk-details" data-module="govuk-details">
+		<details class="govuk-details" data-module="govuk-details" data-flux-key="button.search.result-${index + 1}-raw-record" data-flux-role="control">
 			<summary class="govuk-details__summary">
 				<span class="govuk-details__summary-text">Raw record</span>
 			</summary>

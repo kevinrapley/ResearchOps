@@ -9,11 +9,13 @@ const SESSION_TIMEOUT_MS = 30 * 60 * 1000;
 const SAFE_KEY = /^[A-Za-z0-9._:-]{1,120}$/;
 const SAFE_ROLE = new Set(['field', 'form', 'control', 'page', 'service', 'environment']);
 const SAFE_AUTH_MILESTONE = /^auth\.otp\.(requested|succeeded|failed)$/;
+const SAFE_OPTION_PURPOSE_VALUES = new Set(['email', 'sms', 'phone']);
 const SAFE_DATA_PURPOSE_VALUES = new Map([
 	['data-act', new Set(['cancel-code-edit', 'cancel-delete', 'cancel-memo-edit', 'confirm-delete', 'confirm-delete-code', 'confirm-delete-memo', 'delete', 'delete-code', 'delete-memo', 'edit-code', 'edit-memo'])],
 	['data-action', new Set(['ask-remove', 'cancel-remove', 'confirm-remove'])],
 	['data-analysis', new Set(['co-occurrence', 'export', 'retrieval', 'timeline'])],
 	['data-cooccurrence-panel', new Set(['chart', 'clustered', 'heatmap', 'small-multiples', 'stacked', 'table'])],
+	['data-close-panel', new Set(['add-objective-panel', 'add-stakeholder-panel', 'add-user-group-panel'])],
 	['data-filter', new Set(['all', 'decisions', 'introspections', 'perceptions', 'procedures'])],
 	['data-memo-filter', new Set(['all', 'analytical', 'methodological', 'reflexive', 'theoretical'])],
 	['data-participants-page', new Set(['next', 'previous'])],
@@ -284,16 +286,27 @@ function semanticPurpose(element, type) {
 	const hrefPurpose = type === 'link' ? semanticHref(element.getAttribute?.('href') || element.href) : '';
 	const form = element.closest?.('form');
 	const container = element.closest?.('nav[id], section[id], article[id], [role="region"][id]');
-	const identifier = type === 'field' ? element.name || element.id : element.id || element.name;
+	const identifier = type === 'field' ? semanticFieldIdentifier(element) : element.id || element.name;
 	const candidate = identifier
 		|| dataPurpose
 		|| element.getAttribute?.('aria-controls')
 		|| hrefPurpose
 		|| form?.id
 		|| form?.name
-		|| container?.id
-		|| (type === 'field' ? element.type || 'field' : type === 'form' ? 'form' : element.type || 'control');
-	return semanticSlug(candidate);
+		|| container?.id;
+	const preserveNumericOrdinal = type === 'field'
+		&& ['checkbox', 'radio'].includes(String(element?.type || '').toLowerCase())
+		&& candidate === identifier;
+	return semanticSlug(candidate, { preserveNumericOrdinal });
+}
+
+function semanticFieldIdentifier(element) {
+	const inputType = String(element?.type || '').toLowerCase();
+	if (!['checkbox', 'radio'].includes(inputType)) return element.name || element.id;
+	const group = semanticSlug(element.name || element.id);
+	const value = SAFE_OPTION_PURPOSE_VALUES.has(element.value) ? semanticSlug(element.value) : '';
+	if (group && value) return `${group}-${value}`;
+	return semanticSlug(element.id, { preserveNumericOrdinal: true }) || group;
 }
 
 function semanticDataPurpose(element) {
@@ -326,7 +339,7 @@ function semanticHref(value) {
 	}
 }
 
-function semanticSlug(value) {
+function semanticSlug(value, { preserveNumericOrdinal = false } = {}) {
 	return String(value || '')
 		.replace(/([a-z0-9])([A-Z])/g, '$1-$2')
 		.toLowerCase()
@@ -335,7 +348,7 @@ function semanticSlug(value) {
 		.replace(/^(btn|button|link|input)-/, '')
 		.replace(/-(btn|button|link|input)$/, '')
 		.replace(/(^|-)desc($|-)/g, '$1description$2')
-		.replace(/(^|-)\d+(?=-|$)/g, '$1')
+		.replace(preserveNumericOrdinal ? /$^/ : /(^|-)\d+(?=-|$)/g, '$1')
 		.replace(/[^a-z0-9]+/g, '-')
 		.replace(/^-+|-+$/g, '')
 		.slice(0, 80);

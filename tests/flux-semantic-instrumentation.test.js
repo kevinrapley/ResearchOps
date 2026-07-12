@@ -10,6 +10,7 @@ const dashboardRuntime = fs.readFileSync('public/js/project-dashboard.js', 'utf8
 const home = fs.readFileSync('src/govuk/templates/pages/home.njk', 'utf8');
 const study = fs.readFileSync('src/govuk/templates/pages/study.njk', 'utf8');
 const studySession = fs.readFileSync('src/govuk/templates/pages/study-session.njk', 'utf8');
+const searchRuntime = fs.readFileSync('public/js/search-page.js', 'utf8');
 
 for (const key of [
 	'button.journal.add-entry',
@@ -23,6 +24,7 @@ for (const key of [
 	'form.analysis.code-retrieval',
 	'field.analysis.code-retrieval',
 	'button.analysis.run-search',
+	'button.journal.close-coding-panel',
 ]) {
 	assert.match(
 		journals,
@@ -47,6 +49,7 @@ for (const [template, key] of [
 
 assert.match(projects, /data-flux-key="link\.project\.view-dashboard"/);
 assert.match(dashboard, /["']data-flux-key["']:\s*["']link\.journal\.open["']/);
+assert.match(searchRuntime, /button\.search\.result-\$\{index \+ 1\}-raw-record/);
 
 for (const key of [
 	'button.project.add-objective',

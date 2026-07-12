@@ -18,11 +18,13 @@ files_read:
   - docs/implementation/flux-semantic-instrumentation.md
   - public/js/flux-researchops-tracker.1.2.0.js
   - public/js/project-dashboard.js
+  - public/js/search-page.js
 files_changed:
   - public/js/flux-researchops-tracker.1.2.0.js
   - public/js/project-dashboard.js
   - src/govuk/templates/layouts/researchops.njk
   - src/govuk/templates/pages/home.njk
+  - src/govuk/templates/pages/projects-journals.njk
   - src/govuk/templates/pages/project-dashboard-participants.njk
   - src/govuk/templates/pages/study-participants.njk
   - src/govuk/templates/pages/study-session.njk
@@ -57,7 +59,7 @@ commands_run:
   - command: Codex review thread remediation focused tests
     state: verified
     status: passed
-    evidence: Eleven focused tests passed, including regressions for contact-protocol redaction, allow-listed action distinctions and controlled page scopes; both Chromium coverage tests passed.
+    evidence: Thirteen focused tests passed after two Codex review rounds, including contact-protocol redaction, allow-listed action distinctions, controlled page scopes, distinct checkbox options and retained positional fallback; both Chromium coverage tests passed.
   - command: npm run build
     state: verified
     status: passed
@@ -65,7 +67,7 @@ commands_run:
   - command: npm test
     state: verified
     status: passed
-    evidence: All 368 repository tests passed after Codex review remediation.
+    evidence: All 370 repository tests passed after the second Codex review remediation.
   - command: npm run lint
     state: verified
     status: passed

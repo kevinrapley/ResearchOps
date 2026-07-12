@@ -34,13 +34,14 @@
     "focused Flux tracker and session tests: 8 passed",
     "targeted Chromium semantic coverage: 2 passed",
     "npm run build",
-    "npm test: 368 passed after Codex review remediation",
+    "npm test: 370 passed after two Codex review remediation rounds",
     "npm run lint: zero errors with existing warnings",
     "npm run validate"
   ],
   "issues": [
     "Unlabelled and positional fallback narratives appeared for ResearchOps controls without publisher context.",
-    "Codex review identified contact-protocol PII exposure, collapsed dynamic action keys and incorrect project scope on non-project routes; all three were remediated with regressions."
+    "Codex review identified contact-protocol PII exposure, collapsed dynamic action keys and incorrect project scope on non-project routes; all three were remediated with regressions.",
+    "The second Codex pass identified collapsed panel and option controls plus generic dynamic disclosures; all were remediated with explicit or privacy-safe distinct context and regressions."
   ],
   "warnings": [
     "The defensive fallback remains available by product decision.",

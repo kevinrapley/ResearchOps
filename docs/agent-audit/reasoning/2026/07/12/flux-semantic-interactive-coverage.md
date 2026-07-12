@@ -11,6 +11,7 @@ Keep Flux fallback journey events visible while ensuring ResearchOps supplies st
 - Prefer explicit reviewed keys on important journeys, including objective editing and participant actions.
 - Derive missing purpose only from controlled structural attributes and destination paths without query strings; never use visible text, accessible names, entered values or record identifiers.
 - Use only allow-listed action values, map contact protocols to fixed purposes, and derive route scope from the controlled page key.
+- Keep grouped options distinct with allow-listed controlled values or sanitised structural IDs, give search-result disclosures explicit non-PII ordinals, and let truly contextless controls reach the retained positional fallback instead of inventing a generic semantic purpose.
 - Exclude focus-management and display-only `tabindex` targets. Custom interactive controls must declare an interactive role.
 
 ## Implementation
@@ -25,10 +26,11 @@ Keep Flux fallback journey events visible while ensuring ResearchOps supplies st
 - Focused tracker, semantic markup, focus narrative and session lifecycle tests passed.
 - A Chromium audit loaded every committed rendered page and found no missing semantic key/role attributes, `auto.*` keys or generic `.control`, `.field` or `.form` endings.
 - A Chromium mutation test verified that controls inserted after page load receive purpose-led keys and roles while `<main tabindex="-1">` remains excluded.
-- `npm test` passed all 368 repository tests after Codex review remediation.
+- `npm test` passed all 370 repository tests after two Codex review remediation rounds.
 - `npm run lint` completed with zero errors and the existing warning baseline.
 - `npm run validate` passed the governed repository contract, trace, generated-output, route-state and performance gates.
 - Codex review regressions cover PII-safe contact links, distinct allow-listed actions and non-project page scopes; both Chromium coverage tests pass after remediation.
+- Second-pass regressions cover distinct panel actions, checkbox/radio options, explicit search-result disclosures and the no-generic-key fallback boundary.
 
 ## Residual risk
 

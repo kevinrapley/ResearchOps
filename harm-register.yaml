@@ -31,7 +31,7 @@ harms:
       - Research participants represented in ResearchOps records
     likelihood: low
     severity: high
-    mitigation: Derive only from controlled attribute names, allow-listed action values, field names, element IDs, HTTP(S) destination paths without query strings, controlled page keys and container identities; map mail and telephone links to fixed contact purposes; ignore visible and accessible text, entered values, arbitrary data values and URL query data; strip UUIDs, long record tokens, long hexadecimal tokens and numeric ordinals; retain explicit reviewed keys for important dynamic journeys.
+    mitigation: Derive only from controlled attribute names, allow-listed action and option values, field names, sanitised structural option IDs, element IDs, HTTP(S) destination paths without query strings, controlled page keys and container identities; map mail and telephone links to fixed contact purposes; ignore visible and accessible text, entered values, arbitrary data values and URL query data; strip UUIDs, long record tokens, long hexadecimal tokens and non-structural numeric ordinals; retain explicit reviewed keys for important dynamic journeys.
     residual_risk: low
     owner: repository-maintainers
     escalation_route: Product owner, security lead and privacy lead

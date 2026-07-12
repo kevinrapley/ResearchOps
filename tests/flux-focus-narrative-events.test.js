@@ -21,6 +21,7 @@ function element({
 	id = '',
 	name = '',
 	href = '',
+	value = '',
 	attributes = {},
 }) {
 	const listeners = new Map();
@@ -37,7 +38,7 @@ function element({
 		name,
 		href,
 		autocomplete: '',
-		value: '',
+		value,
 		attributes: [...attributeValues].map(([attributeName, value]) => ({
 			name: attributeName,
 			value,
@@ -186,9 +187,21 @@ test('uses allow-listed action values to distinguish dynamic controls', () => {
 		type: 'button',
 		attributes: { 'data-act': 'confirm-delete' },
 	});
+	const closeObjective = element({
+		tagName: 'BUTTON',
+		type: 'button',
+		attributes: { 'data-close-panel': 'add-objective-panel' },
+	});
+	const closeStakeholder = element({
+		tagName: 'BUTTON',
+		type: 'button',
+		attributes: { 'data-close-panel': 'add-stakeholder-panel' },
+	});
 	context.previous = previous;
 	context.next = next;
 	context.remove = remove;
+	context.closeObjective = closeObjective;
+	context.closeStakeholder = closeStakeholder;
 
 	assert.equal(
 		vm.runInContext('stableKey(previous)', context),
@@ -199,6 +212,60 @@ test('uses allow-listed action values to distinguish dynamic controls', () => {
 		'button.project.participants-page-next'
 	);
 	assert.equal(vm.runInContext('stableKey(remove)', context), 'button.project.confirm-delete');
+	assert.equal(
+		vm.runInContext('stableKey(closeObjective)', context),
+		'button.project.close-panel-add-objective-panel'
+	);
+	assert.equal(
+		vm.runInContext('stableKey(closeStakeholder)', context),
+		'button.project.close-panel-add-stakeholder-panel'
+	);
+});
+
+test('keeps controlled checkbox options distinct without exposing arbitrary values', () => {
+	const { context } = harness();
+	const email = element({
+		tagName: 'INPUT',
+		type: 'checkbox',
+		id: 'p_channel',
+		name: 'channel_pref',
+		value: 'email',
+	});
+	const sms = element({
+		tagName: 'INPUT',
+		type: 'checkbox',
+		id: 'p_channel-2',
+		name: 'channel_pref',
+		value: 'sms',
+	});
+	const recordOption = element({
+		tagName: 'INPUT',
+		type: 'radio',
+		id: 'participant-choice-2',
+		name: 'participant',
+		value: 'recSecret123456789',
+	});
+	context.email = email;
+	context.sms = sms;
+	context.recordOption = recordOption;
+
+	assert.equal(vm.runInContext('stableKey(email)', context), 'field.project.channel-pref-email');
+	assert.equal(vm.runInContext('stableKey(sms)', context), 'field.project.channel-pref-sms');
+	assert.equal(
+		vm.runInContext('stableKey(recordOption)', context),
+		'field.project.participant-choice-2'
+	);
+	assert.doesNotMatch(recordOption.dataset.fluxKey, /recsecret/i);
+});
+
+test('retains positional fallback rather than assigning a generic semantic key', () => {
+	const { context } = harness();
+	const generic = element({ tagName: 'BUTTON', type: 'button' });
+	context.generic = generic;
+	context.document.querySelectorAll = () => [generic];
+
+	assert.equal(vm.runInContext('stableKey(generic)', context), 'auto.button.button.1');
+	assert.equal(generic.dataset.fluxKey, undefined);
 });
 
 test('derives non-project scopes from the controlled page key', () => {
