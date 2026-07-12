@@ -206,12 +206,16 @@ function semanticRole(element, fallback) {
 	return SAFE_ROLE.has(declared) ? declared : fallback;
 }
 
-function milestone(action, elementKey) {
-	if (!PRODUCTION_HOSTS.has(window.location.hostname)) return false;
-	if (window.localStorage.getItem(CONSENT_KEY) !== 'yes') return false;
-	if (!SAFE_AUTH_MILESTONE.test(action) || !SAFE_KEY.test(elementKey)) return false;
-	track('trust', action, { role: 'service', element_key: elementKey });
-	return true;
+function milestone(action) {
+	try {
+		if (!PRODUCTION_HOSTS.has(window.location.hostname)) return false;
+		if (window.localStorage.getItem(CONSENT_KEY) !== 'yes') return false;
+		if (!SAFE_AUTH_MILESTONE.test(action)) return false;
+		track('trust', action, { role: 'service', element_key: 'auth.otp' });
+		return true;
+	} catch {
+		return false;
+	}
 }
 
 function track(eventClass, action, details) {

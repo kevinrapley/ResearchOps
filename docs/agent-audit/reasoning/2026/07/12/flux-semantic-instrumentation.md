@@ -15,14 +15,15 @@ Replace weak positional ResearchOps journey labels with controlled semantic page
 - Use type-first keys such as `page.account.sign-in`, `tab.journal.analysis`, `button.analysis.code-retrieval` and `field.analysis.code-retrieval`.
 - Never derive semantic meaning from visible text, values, record IDs, project IDs, URLs or query parameters.
 - Keep email and one-time-code inputs excluded and explicitly mark them sensitive.
-- Emit OTP requested, succeeded and failed as consent-gated, allow-listed `trust` milestones with the neutral `auth.otp` key.
+- Emit OTP requested, succeeded and failed as consent-gated, allow-listed `trust` milestones with a fixed neutral `auth.otp` key.
+- Keep analytics best-effort so storage, identifier or tracker failures cannot alter authentication success or error handling.
 - Retain generic positional fallback rather than inventing meaning for unannotated controls.
 
 ## Implementation
 
 - Page identity is generated for every GOV.UK output and emitted on the body.
 - Shared header navigation, account controls, the project-area navigation menu, project dashboard links, journal tabs, analysis actions, forms and fields now carry controlled semantic attributes.
-- The tracker consumes declared page, key and role attributes and exposes the constrained milestone API.
+- The tracker consumes declared page, key and role attributes and exposes a non-throwing milestone API whose callers cannot supply an element key.
 - Flux narratives distinguish page visits, named control use, actual typing, zero-character focus, form submission, validation error and OTP outcomes.
 - The tracker cache key advances to `v=1.2.3` without changing event schema `1.1.0`.
 
@@ -36,7 +37,7 @@ Replace weak positional ResearchOps journey labels with controlled semantic page
 - Desktop 1440×900 and mobile 375×812 browser checks found no horizontal overflow.
 - Browser exercise emitted semantic page, tab, button and field keys; a zero-character blur emitted zero key presses and value length.
 - Typing six digits into the explicitly sensitive OTP input emitted no input event.
-- The constrained API emitted requested and succeeded milestones and rejected an unlisted action/key attempt.
+- The constrained API emitted requested and succeeded milestones, rejected an unlisted action and always used the fixed neutral key.
 - Browser verification found every shared service-navigation key and captured a `link.project-area.stakeholders` click as a schema-valid `nav` event.
 
 ## Residual risk

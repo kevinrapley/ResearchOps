@@ -109,8 +109,12 @@ function redirectToAccount() {
 	location.assign(CONFIG.ACCOUNT_URL);
 }
 
-function trackAuthMilestone(action, elementKey = 'auth.otp') {
-	window.researchOpsFlux?.milestone?.(action, elementKey);
+function trackAuthMilestone(action) {
+	try {
+		window.researchOpsFlux?.milestone?.(action);
+	} catch {
+		// Analytics is best-effort and must never alter the authentication journey.
+	}
 }
 
 function showEmailForm() {
@@ -174,7 +178,7 @@ async function submitStart(event) {
 		if (!response.ok || !response.data?.ok) {
 			throw new Error(apiErrorMessage(response, 'We could not send a sign-in code.'));
 		}
-		trackAuthMilestone('auth.otp.requested', 'auth.otp');
+		trackAuthMilestone('auth.otp.requested');
 		showCodeForm(response.data.challengeId, email);
 	} catch (error) {
 		setStatus('There is a problem', `<p class="govuk-body">${escapeHtml(userFacingError(error))}</p>`);
@@ -201,10 +205,10 @@ async function submitVerify(event) {
 			throw new Error(apiErrorMessage(response, 'The code could not be verified.'));
 		}
 		verified = true;
-		trackAuthMilestone('auth.otp.succeeded', 'auth.otp');
+		trackAuthMilestone('auth.otp.succeeded');
 		await refreshSignInStatusAfterVerification();
 	} catch (error) {
-		if (!verified) trackAuthMilestone('auth.otp.failed', 'auth.otp');
+		if (!verified) trackAuthMilestone('auth.otp.failed');
 		setStatus('There is a problem', `<p class="govuk-body">${escapeHtml(userFacingError(error))}</p>`);
 		setVisible(dom.startForm, false);
 		setVisible(dom.verifyForm, true);
