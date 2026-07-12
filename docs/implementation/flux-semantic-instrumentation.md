@@ -16,6 +16,8 @@ Before capture, the tracker writes semantic attributes onto every current intera
 
 When a control changes purpose at runtime, its key must change with it. For example, the shared account link uses `link.account.sign-in` while signed out and `link.account.dashboard` after the header resolves an authenticated account.
 
+Tracker-owned consent controls are also publishers in this contract. The injected Accept and Reject buttons carry explicit semantic keys and roles so live DOM coverage does not depend on fallback labelling.
+
 Progressive-disclosure journeys should instrument the complete interaction: the opening button, containing form, focused field, submit button and cancel button. Focus entry is emitted as `field.focus.auto`, `field.focus.pointer`, `field.focus.keyboard` or `field.focus.programmatic`. Field blur records a recent pointer or Tab interaction only as the focus-exit method; printable key counts remain keyboard input and typed content is never captured.
 
 ## Authentication milestones

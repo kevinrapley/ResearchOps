@@ -32,6 +32,7 @@ Keep Flux fallback journey events visible while ensuring ResearchOps supplies st
 - Codex review regressions cover PII-safe contact links, distinct allow-listed actions and non-project page scopes; both Chromium coverage tests pass after remediation.
 - Second-pass regressions cover distinct panel actions, checkbox/radio options, explicit search-result disclosures and the no-generic-key fallback boundary.
 - Third-pass regressions prove GOV.UK initialization attributes cannot outrank service purpose, confirm search-result ordinals interpolate to valid keys, and record every selected operating-model bundle in the audit trace.
+- Post-merge production verification confirmed tracker `v=1.2.6` but found the injected consent buttons outside the semantic contract. A follow-up regression now creates the banner on a production hostname and verifies explicit Accept/Reject keys and roles.
 
 ## Residual risk
 

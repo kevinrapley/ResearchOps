@@ -99,3 +99,25 @@ test('annotates controls inserted after page load without positional auto keys',
 	await expect(page.locator('main')).not.toHaveAttribute('data-flux-key', /.+/);
 	await expect(page.locator('[data-flux-key^="auto."]')).toHaveCount(0);
 });
+
+test('gives the production consent controls explicit semantic keys', async ({ page }) => {
+	await page.route('https://research-operations.com/flux-consent-test', (route) =>
+		route.fulfill({
+			contentType: 'text/html',
+			body: '<!doctype html><html><body data-flux-page="page.home"></body></html>',
+		})
+	);
+	await page.goto('https://research-operations.com/flux-consent-test');
+	await page.addScriptTag({ content: trackerSource });
+
+	await expect(page.locator('[data-flux-consent="yes"]')).toHaveAttribute(
+		'data-flux-key',
+		'button.consent.accept-behavioural-analytics'
+	);
+	await expect(page.locator('[data-flux-consent="no"]')).toHaveAttribute(
+		'data-flux-key',
+		'button.consent.reject-behavioural-analytics'
+	);
+	await expect(page.locator('[data-flux-consent]')).toHaveCount(2);
+	await expect(page.locator('[data-flux-consent]:not([data-flux-role="control"])')).toHaveCount(0);
+});

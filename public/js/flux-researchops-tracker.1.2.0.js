@@ -61,7 +61,7 @@ function showConsentBanner() {
 	banner.className = 'govuk-cookie-banner';
 	banner.setAttribute('aria-label', 'Behavioural analytics consent');
 	banner.setAttribute('role', 'region');
-	banner.innerHTML = '<div class="govuk-width-container"><div class="govuk-grid-row"><div class="govuk-grid-column-two-thirds"><h2 class="govuk-heading-m">Help improve ResearchOps</h2><p class="govuk-body">With your consent, Flux Behaviour records interaction metadata such as navigation, timing and character counts. It never records what you type.</p><button type="button" class="govuk-button" data-flux-consent="yes">Accept behavioural analytics</button> <button type="button" class="govuk-button govuk-button--secondary" data-flux-consent="no">Reject</button></div></div></div>';
+	banner.innerHTML = '<div class="govuk-width-container"><div class="govuk-grid-row"><div class="govuk-grid-column-two-thirds"><h2 class="govuk-heading-m">Help improve ResearchOps</h2><p class="govuk-body">With your consent, Flux Behaviour records interaction metadata such as navigation, timing and character counts. It never records what you type.</p><button type="button" class="govuk-button" data-flux-consent="yes" data-flux-key="button.consent.accept-behavioural-analytics" data-flux-role="control">Accept behavioural analytics</button> <button type="button" class="govuk-button govuk-button--secondary" data-flux-consent="no" data-flux-key="button.consent.reject-behavioural-analytics" data-flux-role="control">Reject</button></div></div></div>';
 	document.body.prepend(banner);
 	banner.addEventListener('click', (event) => {
 		const choice = event.target?.dataset?.fluxConsent;

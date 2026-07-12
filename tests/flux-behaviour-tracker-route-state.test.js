@@ -61,6 +61,8 @@ assert.doesNotMatch(sessionTracker, /import '\.\/flux-researchops-tracker/);
 assert.match(sessionTracker, /function ensureSemanticAttributes\(element\)/);
 assert.match(sessionTracker, /MutationObserver/);
 assert.doesNotMatch(sessionTracker, /,\[tabindex\]/);
+assert.match(sessionTracker, /button\.consent\.accept-behavioural-analytics/);
+assert.match(sessionTracker, /button\.consent\.reject-behavioural-analytics/);
 assert.doesNotMatch(tracker, /target\.(ariaLabel|textContent|innerText)/);
 assert.match(worker, /connect-src[^\n]+flux-behaviour\.pages\.dev/);
 assert.match(headers, /connect-src[^\n]+flux-behaviour\.pages\.dev/);

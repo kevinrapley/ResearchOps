@@ -3,7 +3,7 @@ mode: repo-fix
 repository: ResearchOps
 risk_level: high
 base_branch: main
-working_branch: fix/semantic-objective-edit-tracking
+working_branch: fix/flux-consent-semantic-keys
 files_read:
   - README.md
   - AGENTS.md
@@ -56,6 +56,14 @@ commands_run:
     state: verified
     status: passed
     evidence: Both Chromium tests passed across every rendered page and a post-load dynamic insertion path, with no missing, auto or generic semantic attributes.
+  - command: live production semantic DOM audit
+    state: observed
+    status: failed
+    evidence: The v1.2.6 production tracker was live, but the tracker-owned Accept and Reject consent controls lacked semantic key and role attributes.
+  - command: npm run test:e2e -- --grep 'semantic Flux context|inserted after page load|production consent controls'
+    state: verified
+    status: passed
+    evidence: Three Chromium tests passed, including a production-host regression that creates the consent banner and verifies explicit Accept and Reject semantic keys and roles.
   - command: Codex review thread remediation focused tests
     state: verified
     status: passed

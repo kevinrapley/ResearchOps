@@ -48,7 +48,8 @@
     "Unlabelled and positional fallback narratives appeared for ResearchOps controls without publisher context.",
     "Codex review identified contact-protocol PII exposure, collapsed dynamic action keys and incorrect project scope on non-project routes; all three were remediated with regressions.",
     "The second Codex pass identified collapsed panel and option controls plus generic dynamic disclosures; all were remediated with explicit or privacy-safe distinct context and regressions.",
-    "The third Codex pass identified framework initialization attributes, incomplete bundle evidence and unclear search-result interpolation; all were remediated and covered."
+    "The third Codex pass identified framework initialization attributes, incomplete bundle evidence and unclear search-result interpolation; all were remediated and covered.",
+    "Post-merge live verification found tracker-owned consent controls without semantic attributes; the follow-up adds explicit Accept and Reject context plus a production-host browser regression."
   ],
   "warnings": [
     "The defensive fallback remains available by product decision.",
