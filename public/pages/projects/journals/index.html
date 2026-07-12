@@ -22,9 +22,9 @@
 
 		<script type="module" src="/components/layout.js?v=govuk-page-chrome-20260702-1" defer></script>
 		<script type="module" src="/js/govuk-frontend-init.js?v=govuk-page-chrome-20260702-1" defer></script>
-		<script type="module" src="/js/flux-researchops-tracker.1.2.0.js?v=1.2.2" defer></script>
+		<script type="module" src="/js/flux-researchops-tracker.1.2.0.js?v=1.2.3" defer></script>
 	</head>
-	<body class="govuk-template__body">
+	<body class="govuk-template__body" data-flux-page="page.projects-journals">
 		<script>
 			document.body.className +=
 				" js-enabled" + ("noModule" in HTMLScriptElement.prototype ? " govuk-frontend-supported" : "");
@@ -106,19 +106,37 @@
 
 						<ul class="govuk-tabs__list">
 							<li class="govuk-tabs__list-item govuk-tabs__list-item--selected">
-								<a class="govuk-tabs__tab" href="#journal-entries">Journal entries</a>
+								<a
+									class="govuk-tabs__tab"
+									href="#journal-entries"
+									data-flux-key="tab.journal.entries"
+									data-flux-role="control"
+								>
+									Journal entries
+								</a>
 							</li>
 
 							<li class="govuk-tabs__list-item">
-								<a class="govuk-tabs__tab" href="#codes">Codes</a>
+								<a class="govuk-tabs__tab" href="#codes" data-flux-key="tab.journal.codes" data-flux-role="control">
+									Codes
+								</a>
 							</li>
 
 							<li class="govuk-tabs__list-item">
-								<a class="govuk-tabs__tab" href="#memos">Memos</a>
+								<a class="govuk-tabs__tab" href="#memos" data-flux-key="tab.journal.memos" data-flux-role="control">
+									Memos
+								</a>
 							</li>
 
 							<li class="govuk-tabs__list-item">
-								<a class="govuk-tabs__tab" href="#analysis">Analysis</a>
+								<a
+									class="govuk-tabs__tab"
+									href="#analysis"
+									data-flux-key="tab.journal.analysis"
+									data-flux-role="control"
+								>
+									Analysis
+								</a>
 							</li>
 						</ul>
 
@@ -127,7 +145,14 @@
 								<div class="journal-entries-header">
 									<div class="journal-entries-header__primary">
 										<h3 class="govuk-heading-m">Journal entries</h3>
-										<button type="button" class="govuk-button" data-module="govuk-button" id="new-entry-btn">
+										<button
+											type="button"
+											class="govuk-button"
+											data-module="govuk-button"
+											id="new-entry-btn"
+											data-flux-key="button.journal.add-entry"
+											data-flux-role="control"
+										>
 											Add journal entry
 										</button>
 									</div>
@@ -152,10 +177,17 @@
 								<section id="mural-sync-panel" hidden aria-hidden="true"></section>
 
 								<div id="entry-form" hidden>
-									<form id="add-entry-form" novalidate>
+									<form id="add-entry-form" data-flux-key="form.journal.add-entry" data-flux-role="form" novalidate>
 										<div class="govuk-form-group">
 											<label class="govuk-label govuk-label--s" for="entry-category">Category</label>
-											<select class="govuk-select" id="entry-category" name="category" required>
+											<select
+												class="govuk-select"
+												id="entry-category"
+												name="category"
+												data-flux-key="field.journal.entry-category"
+												data-flux-role="field"
+												required
+											>
 												<option value="perceptions">Evolving perceptions</option>
 												<option value="procedures">Day-to-day procedures</option>
 												<option value="decisions">Methodological decision points</option>
@@ -175,17 +207,35 @@
 												rows="8"
 												required
 												aria-describedby="content-hint"
+												data-flux-key="field.journal.entry-content"
+												data-flux-role="field"
 											></textarea>
 										</div>
 
 										<div class="govuk-form-group">
 											<label class="govuk-label govuk-label--s" for="entry-tags">Tags (optional)</label>
 											<div id="tags-hint" class="govuk-hint">Comma-separated keywords for easier retrieval</div>
-											<input class="govuk-input" type="text" id="entry-tags" name="tags" aria-describedby="tags-hint" />
+											<input
+												class="govuk-input"
+												type="text"
+												id="entry-tags"
+												name="tags"
+												aria-describedby="tags-hint"
+												data-flux-key="field.journal.entry-tags"
+												data-flux-role="field"
+											/>
 										</div>
 
 										<div class="govuk-button-group">
-											<button type="submit" class="govuk-button" data-module="govuk-button">Save entry</button>
+											<button
+												type="submit"
+												class="govuk-button"
+												data-module="govuk-button"
+												data-flux-key="button.journal.save-entry"
+												data-flux-role="control"
+											>
+												Save entry
+											</button>
 											<button
 												type="button"
 												class="govuk-button govuk-button--secondary"
@@ -282,7 +332,14 @@
 						<div class="govuk-tabs__panel govuk-tabs__panel--hidden" id="codes">
 							<h3 class="govuk-heading-m">Codebook management</h3>
 							<div id="codes-panel">
-								<button type="button" class="govuk-button" data-module="govuk-button" id="new-code-btn">
+								<button
+									type="button"
+									class="govuk-button"
+									data-module="govuk-button"
+									id="new-code-btn"
+									data-flux-key="button.journal.add-code"
+									data-flux-role="control"
+								>
 									Add code
 								</button>
 								<div id="codes-container"></div>
@@ -292,7 +349,14 @@
 						<div class="govuk-tabs__panel govuk-tabs__panel--hidden" id="memos">
 							<h3 class="govuk-heading-m">Research memos</h3>
 							<div id="memos-panel">
-								<button type="button" class="govuk-button" data-module="govuk-button" id="new-memo-btn">
+								<button
+									type="button"
+									class="govuk-button"
+									data-module="govuk-button"
+									id="new-memo-btn"
+									data-flux-key="button.journal.add-memo"
+									data-flux-role="control"
+								>
 									Add memo
 								</button>
 
@@ -371,14 +435,40 @@
 							<h3 class="govuk-heading-m">Analysis tools</h3>
 							<div id="analysis-panel">
 								<div class="govuk-button-group">
-									<button type="button" class="govuk-button" data-analysis="timeline">Timeline view</button>
-									<button type="button" class="govuk-button govuk-button--secondary" data-analysis="co-occurrence">
+									<button
+										type="button"
+										class="govuk-button"
+										data-analysis="timeline"
+										data-flux-key="button.analysis.timeline"
+										data-flux-role="control"
+									>
+										Timeline view
+									</button>
+									<button
+										type="button"
+										class="govuk-button govuk-button--secondary"
+										data-analysis="co-occurrence"
+										data-flux-key="button.analysis.code-cooccurrence"
+										data-flux-role="control"
+									>
 										Code co-occurrence
 									</button>
-									<button type="button" class="govuk-button govuk-button--secondary" data-analysis="retrieval">
+									<button
+										type="button"
+										class="govuk-button govuk-button--secondary"
+										data-analysis="retrieval"
+										data-flux-key="button.analysis.code-retrieval"
+										data-flux-role="control"
+									>
 										Code retrieval
 									</button>
-									<button type="button" class="govuk-button govuk-button--secondary" data-analysis="export">
+									<button
+										type="button"
+										class="govuk-button govuk-button--secondary"
+										data-analysis="export"
+										data-flux-key="button.analysis.export"
+										data-flux-role="control"
+									>
 										Export analysis
 									</button>
 								</div>
@@ -391,7 +481,12 @@
 									<section id="analysis-cooccurrence" class="govuk-!-margin-bottom-6" aria-live="polite"></section>
 
 									<section id="analysis-retrieval" class="govuk-!-margin-bottom-6" aria-live="polite">
-										<form id="retrieval-form" novalidate>
+										<form
+											id="retrieval-form"
+											data-flux-key="form.analysis.code-retrieval"
+											data-flux-role="form"
+											novalidate
+										>
 											<div class="govuk-form-group">
 												<label class="govuk-label" for="retrieval-q">Search term</label>
 												<div class="govuk-hint" id="retrieval-q-hint">Searches code names and journal text.</div>
@@ -403,9 +498,17 @@
 													spellcheck="true"
 													autocomplete="off"
 													aria-describedby="retrieval-q-hint"
+													data-flux-key="field.analysis.code-retrieval"
+													data-flux-role="field"
 												/>
 											</div>
-											<button class="govuk-button govuk-!-margin-top-2" type="submit" data-module="govuk-button">
+											<button
+												class="govuk-button govuk-!-margin-top-2"
+												type="submit"
+												data-module="govuk-button"
+												data-flux-key="button.analysis.run-search"
+												data-flux-role="control"
+											>
 												Run search
 											</button>
 										</form>

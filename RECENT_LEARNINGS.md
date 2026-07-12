@@ -2,6 +2,14 @@
 
 This file records repeatable repository-specific lessons for ResearchOps agents and maintainers. It is not a changelog.
 
+## 2026-07-12 — Semantic analytics keys must describe service purpose without reading content
+
+Context: Positional keys such as `auto.a.3` preserved privacy but made Flux journey narratives unusable, while copying visible labels, IDs or field values would weaken the metadata-only boundary.
+
+Learning: Controlled type-first attributes such as `data-flux-key="button.analysis.code-retrieval"` provide stable service meaning without exporting interface content. Authentication fields should remain excluded even when marked up; success is better represented by a separate allow-listed lifecycle milestone.
+
+Action: Add `data-flux-page`, `data-flux-key` and schema-valid `data-flux-role` attributes at canonical templates and shared partials, mark sensitive fields explicitly, and emit only neutral consent-gated authentication milestones with no email, code, length, challenge or account identity.
+
 ## 2026-07-12 — Asset versions and event-contract versions are independent
 
 Context: The ResearchOps tracker asset was cache-busted as `1.2.0`, and its emitted `schema_version` was changed to match. Flux still accepted event contract `1.1.0`, so every production interaction was rejected with HTTP 400 while the fire-and-forget tracker hid the response.

@@ -1,0 +1,58 @@
+{
+  "schemaVersion": "agent-trace-promotion/v1",
+  "title": "Add privacy-safe semantic instrumentation for Flux journeys.",
+  "sourceTrace": "repository-audited feature branch",
+  "markdownReport": "docs/agent-audit/reasoning/2026/07/12/flux-semantic-instrumentation.md",
+  "jsonSummary": "docs/agent-audit/reasoning/2026/07/12/flux-semantic-instrumentation.json",
+  "run": {
+    "taskSummary": "Add controlled data attributes and OTP lifecycle milestones for richer Flux journey narratives."
+  },
+  "bundles": [
+    "github-diamond",
+    "researchops-developer-control",
+    "multi-functional-team",
+    "govuk-design-system",
+    "cloudflare"
+  ],
+  "filesRead": [
+    "AGENTS.md",
+    "RECENT_LEARNINGS.md",
+    "public/js/flux-researchops-tracker.1.2.0.js",
+    "public/js/auth-sign-in-page.js",
+    "public/js/auth-header-links.js",
+    "src/govuk/templates/layouts/researchops.njk",
+    "src/govuk/templates/pages/projects-journals.njk",
+    "tests/flux-behaviour-tracker-route-state.test.js",
+    "tests/auth-sign-in-route-state.test.js"
+  ],
+  "filesWritten": [
+    "public/js/flux-researchops-tracker.1.2.0.js",
+    "public/js/auth-sign-in-page.js",
+    "src/govuk/templates/layouts/researchops.njk",
+    "src/govuk/templates/pages/projects-journals.njk",
+    "src/govuk/templates/pages/projects.njk",
+    "src/govuk/templates/pages/project-dashboard.njk",
+    "public/partials/header.html",
+    "scripts/govuk/render-govuk-pages.mjs",
+    "tests/flux-semantic-instrumentation.test.js",
+    "docs/implementation/flux-semantic-instrumentation.md",
+    "RECENT_LEARNINGS.md"
+  ],
+  "validations": [
+    "focused tests failed before implementation and passed afterward",
+    "npm run build",
+    "npm test: 359 passed",
+    "npm run lint: passed with existing warnings and no errors",
+    "npm run validate",
+    "desktop 1440x900 browser semantic-event exercise",
+    "mobile 375x812 OTP privacy and overflow exercise",
+    "desktop navigation menu event exercise"
+  ],
+  "issues": [
+    "Positional keys preserved privacy but could not identify service purpose."
+  ],
+  "warnings": [
+    "Unannotated controls retain generic positional fallback.",
+    "Fire-and-forget delivery still lacks first-class failure observability."
+  ]
+}

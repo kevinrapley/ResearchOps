@@ -83,6 +83,7 @@ function renderSignedInUser(elements, context) {
 
 	elements.userLink.textContent = name;
 	elements.userLink.setAttribute('href', CONFIG.ACCOUNT_URL);
+	elements.userLink.dataset.fluxKey = 'link.account.dashboard';
 	setVisible(elements.signOutLink, true);
 	setVisible(elements.accountNav, true);
 }
@@ -90,6 +91,7 @@ function renderSignedInUser(elements, context) {
 function renderSignedOutUser(elements) {
 	elements.userLink.textContent = 'Sign in';
 	elements.userLink.setAttribute('href', CONFIG.SIGN_IN_URL);
+	elements.userLink.dataset.fluxKey = 'link.account.sign-in';
 	setVisible(elements.signOutLink, false);
 	setVisible(elements.accountNav, true);
 }

@@ -24,11 +24,12 @@ function assertSharedHeaderContainsAccountNavigation() {
 	includes(headerPartial, 'class="researchops-header__account"', 'shared header partial');
 	includes(headerPartial, 'aria-label="Account"', 'shared header partial');
 	includes(headerPartial, 'data-auth-header-account>', 'shared header partial');
-	includes(headerPartial, 'href="/pages/account/sign-in/" data-auth-header-user>Sign in</a>', 'shared header partial');
-	includes(headerPartial, 'data-auth-header-sign-out hidden aria-hidden="true">Sign out</a>', 'shared header partial');
+	includes(headerPartial, 'data-auth-header-user data-flux-key="link.account.sign-in"', 'shared header partial');
+	includes(headerPartial, 'data-auth-header-sign-out data-flux-key="link.account.sign-out"', 'shared header partial');
+	includes(headerPartial, 'data-flux-role="control" hidden aria-hidden="true">Sign out</a>', 'shared header partial');
 	includes(
 		headerPartial,
-		'<script type="module" src="/js/auth-header-links.js?v=header-account-links-20260623-1"></script>',
+		'<script type="module" src="/js/auth-header-links.js?v=flux-semantic-20260712"></script>',
 		'shared header partial',
 	);
 }
@@ -44,8 +45,10 @@ function assertHeaderScriptUsesAccountContextSessionCheck() {
 	includes(headerScript, 'hydratedAccountNavs.has(elements.accountNav)', 'header auth script');
 	includes(headerScript, "elements.userLink.textContent = 'Sign in'", 'header auth script');
 	includes(headerScript, "elements.userLink.setAttribute('href', CONFIG.SIGN_IN_URL)", 'header auth script');
+	includes(headerScript, "elements.userLink.dataset.fluxKey = 'link.account.sign-in'", 'header auth script');
 	includes(headerScript, 'elements.userLink.textContent = name', 'header auth script');
 	includes(headerScript, "elements.userLink.setAttribute('href', CONFIG.ACCOUNT_URL)", 'header auth script');
+	includes(headerScript, "elements.userLink.dataset.fluxKey = 'link.account.dashboard'", 'header auth script');
 	includes(headerScript, 'setVisible(elements.signOutLink, true)', 'header auth script');
 	includes(headerScript, 'setVisible(elements.signOutLink, false)', 'header auth script');
 	includes(headerScript, "await fetchJson('/api/auth/logout', { method: 'POST', body: JSON.stringify({}) });", 'header auth script');
@@ -98,7 +101,7 @@ function assertHeaderPartialBypassesStaleIncludeCache() {
 
 function assertSharedInitLoadsHeaderAuthAfterInclude() {
 	includes(govukInitScript, "String(src).startsWith('/partials/header.html')", 'GOV.UK frontend init');
-	includes(govukInitScript, "import('/js/auth-header-links.js?v=header-account-links-20260623-1')", 'GOV.UK frontend init');
+	includes(govukInitScript, "import('/js/auth-header-links.js?v=flux-semantic-20260712')", 'GOV.UK frontend init');
 	includes(govukInitScript, 'module.initAuthHeaderLinks(event.target)', 'GOV.UK frontend init');
 }
 

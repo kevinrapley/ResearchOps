@@ -65,11 +65,11 @@
 				</div>
 				<div class="govuk-summary-card__content">
 						<ul class="govuk-list govuk-list--spaced rops-compact-list">
-							<li><a class="govuk-link" href="#reflexive-journal">Reflexive journal</a></li>
-							<li><a class="govuk-link" href="#stakeholders">Stakeholder management</a></li>
-							<li><a class="govuk-link" href="#project-objectives">Project Objectives</a></li>
-							<li><a class="govuk-link" href="#planning">Research planning</a></li>
-							<li><a class="govuk-link" href="/pages/projects/outcomes/?id=" id="outcomes-link" property="schema:relatedLink">Research outcomes</a></li>
+							<li><a class="govuk-link" href="#reflexive-journal" data-flux-key="link.project-area.journal" data-flux-role="control">Reflexive journal</a></li>
+							<li><a class="govuk-link" href="#stakeholders" data-flux-key="link.project-area.stakeholders" data-flux-role="control">Stakeholder management</a></li>
+							<li><a class="govuk-link" href="#project-objectives" data-flux-key="link.project-area.objectives" data-flux-role="control">Project Objectives</a></li>
+							<li><a class="govuk-link" href="#planning" data-flux-key="link.project-area.planning" data-flux-role="control">Research planning</a></li>
+							<li><a class="govuk-link" href="/pages/projects/outcomes/?id=" id="outcomes-link" property="schema:relatedLink" data-flux-key="link.project-area.outcomes" data-flux-role="control">Research outcomes</a></li>
 						</ul>
 				</div>
 			</nav>
@@ -91,7 +91,9 @@
 							text: "Open reflexive journal",
 							href: "/pages/projects/journals/?id=",
 							attributes: {
-								id: "journal-button-link"
+								id: "journal-button-link",
+								"data-flux-key": "link.journal.open",
+								"data-flux-role": "control"
 							}
 						}) }}
 					</div>

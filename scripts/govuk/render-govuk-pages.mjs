@@ -975,10 +975,21 @@ export const govukPages = [
 	},
 ];
 
+export function pageKeyFromOutput(output) {
+	const route = String(output)
+		.replace(/^public\/?/, '')
+		.replace(/(?:\/)?index\.html$/, '')
+		.replace(/^pages\/?/, '')
+		.replace(/[^A-Za-z0-9._:-]+/g, '-')
+		.replace(/^-|-$/g, '');
+	return `page.${route || 'home'}`;
+}
+
 export async function renderGovukPage(page) {
 	const outputPath = resolve(root, page.output);
 	const context = {
 		...page.context,
+		fluxPageKey: pageKeyFromOutput(page.output),
 		layoutCacheKey: generatedGovukChromeCacheKey,
 		footerCacheKey: generatedGovukChromeCacheKey,
 	};

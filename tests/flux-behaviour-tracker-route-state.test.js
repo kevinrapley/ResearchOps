@@ -10,15 +10,15 @@ const renderedLayout = fs.readFileSync('src/govuk/templates/layouts/researchops.
 const worker = fs.readFileSync('public/_worker.js', 'utf8');
 const headers = fs.readFileSync('public/_headers', 'utf8');
 
-assert.match(head, /src="\/js\/flux-researchops-tracker\.1\.2\.0\.js\?v=1\.2\.2"/);
-assert.match(renderedLayout, /src="\/js\/flux-researchops-tracker\.1\.2\.0\.js\?v=1\.2\.2"/);
+assert.match(head, /src="\/js\/flux-researchops-tracker\.1\.2\.0\.js\?v=1\.2\.3"/);
+assert.match(renderedLayout, /src="\/js\/flux-researchops-tracker\.1\.2\.0\.js\?v=1\.2\.3"/);
 const renderedPages = fs
 	.readdirSync('public', { recursive: true })
 	.filter((path) => path.endsWith('.html') && !path.startsWith('partials/') && path !== 'clear.html');
 
 for (const relativePath of renderedPages) {
 	const page = `public/${relativePath}`;
-	assert.match(fs.readFileSync(page, 'utf8'), /src="\/js\/flux-researchops-tracker\.1\.2\.0\.js\?v=1\.2\.2"/, `${page} should load the Flux tracker`);
+	assert.match(fs.readFileSync(page, 'utf8'), /src="\/js\/flux-researchops-tracker\.1\.2\.0\.js\?v=1\.2\.3"/, `${page} should load the Flux tracker`);
 }
 assert.doesNotMatch(header, /flux-behaviour\.pages\.dev\/assets\/flux/);
 assert.match(tracker, /researchops\.pages\.dev/);
@@ -46,6 +46,16 @@ assert.match(sessionTracker, /field\.revisit/);
 assert.match(sessionTracker, /flow\.submit/);
 assert.match(sessionTracker, /assist\.help/);
 assert.match(sessionTracker, /act\.rage/);
+assert.match(sessionTracker, /dataset\?\.fluxPage/);
+assert.match(sessionTracker, /dataset\?\.fluxRole/);
+assert.match(sessionTracker, /window\.researchOpsFlux/);
+assert.match(sessionTracker, /function milestone\(action, elementKey\)/);
+assert.match(sessionTracker, /SAFE_AUTH_MILESTONE\.test\(action\)/);
+assert.match(sessionTracker, /track\('trust', action, \{ role: 'service', element_key: elementKey \}\)/);
+assert.match(renderedLayout, /data-flux-page="\{\{ fluxPageKey \| default\('page\.unknown'\) \}\}"/);
+assert.match(header, /data-flux-key="link\.account\.sign-in"/);
+assert.match(header, /data-flux-key="link\.navigation\.projects"/);
+assert.match(header, /data-flux-key="button\.navigation\.menu"/);
 assert.doesNotMatch(sessionTracker, /import '\.\/flux-researchops-tracker/);
 assert.doesNotMatch(tracker, /target\.(ariaLabel|textContent|innerText)/);
 assert.match(worker, /connect-src[^\n]+flux-behaviour\.pages\.dev/);
