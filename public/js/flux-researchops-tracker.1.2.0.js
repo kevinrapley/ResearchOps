@@ -192,7 +192,7 @@ function detailsKey(details) {
 
 function track(eventClass, action, details) {
 	const body = {
-		schema_version: '1.2.0',
+		schema_version: '1.1.0',
 		session_id: sessionId(),
 		visitor_id: visitorId(),
 		tenant_id: TENANT_ID,

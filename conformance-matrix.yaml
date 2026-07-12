@@ -1,4 +1,14 @@
 records:
+  - id: flux-tracker-event-contract-alignment
+    control: The deployed ResearchOps tracker emits the Flux collector's accepted event-contract version independently from its JavaScript asset version.
+    evidence:
+      - public/js/flux-researchops-tracker.1.2.0.js
+      - tests/flux-behaviour-tracker-route-state.test.js
+      - docs/agent-audit/reasoning/2026/07/12/flux-tracker-schema-version-fix.md
+    status: implemented
+    risk: high
+    owner: repository-maintainers
+
   - id: flux-tracker-session-dimension-signals
     control: The ResearchOps tracker records only consented content-free signal categories required for Flux session dimensions.
     evidence:

@@ -1,4 +1,16 @@
 gaps:
+  - id: flux-tracker-event-contract-alignment
+    title: Align the ResearchOps tracker payload with the Flux event contract
+    status: implemented
+    severity: high
+    owner: repository-maintainers
+    context: The cache-busted 1.2.0 JavaScript asset emitted schema_version 1.2.0 while the Flux collector accepted contract 1.1.0, causing all production interactions to return HTTP 400 invalid_event.
+    mitigation: Emit schema_version 1.1.0, assert it independently from the asset URL, and advance the cache key so browsers retrieve the corrected tracker.
+    evidence:
+      - public/js/flux-researchops-tracker.1.2.0.js
+      - tests/flux-behaviour-tracker-route-state.test.js
+      - docs/agent-audit/reasoning/2026/07/12/flux-tracker-schema-version-fix.md
+
   - id: flux-session-dimension-interpretation
     title: Validate Flux session-dimension heuristics before operational interpretation
     status: open
