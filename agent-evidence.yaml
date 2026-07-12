@@ -71,11 +71,11 @@ commands_run:
   - command: npm run build
     state: verified
     status: passed
-    evidence: GOV.UK assets, generated CSS and every canonical static page were rebuilt with tracker cache key v1.2.6.
+    evidence: GOV.UK assets, generated CSS and every canonical static page were rebuilt with tracker cache key v1.2.7 so the consent-control semantic fix cannot be masked by a cached v1.2.6 response.
   - command: npm test
     state: verified
     status: passed
-    evidence: All 371 repository tests passed after the third Codex review remediation.
+    evidence: All 371 repository tests passed after the consent cache-key Codex review remediation.
   - command: npm run lint
     state: verified
     status: passed
