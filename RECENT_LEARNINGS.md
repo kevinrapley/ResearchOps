@@ -2,6 +2,10 @@
 
 This file records repeatable repository-specific lessons for ResearchOps agents and maintainers. It is not a changelog.
 
+## 2026-07-12 — Programmatic focus needs publisher-declared purpose and origin
+
+A generated DOM key can show that a text area received focus, but not why. Important progressive-disclosure journeys should declare stable keys on the opener, form, field and actions, and mark deliberately automatic focus. The tracker should record focus entry separately from field exit so keyboard typing is not described as mouse input merely because a pointer ended focus.
+
 ## 2026-07-12 — Browser lifetime is not an analytics session boundary
 
 Context: The Flux tracker stored its session identifier in `sessionStorage` without an inactivity timestamp. A visitor who returned more than seven hours later was still appended to the journey that began at 03:28, which inflated session duration and prevented Flux from recognising the return as a new session.

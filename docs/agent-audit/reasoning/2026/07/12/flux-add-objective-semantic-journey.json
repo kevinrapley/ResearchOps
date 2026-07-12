@@ -1,0 +1,35 @@
+{
+  "schemaVersion": "agent-trace-promotion/v1",
+  "title": "Add semantic context and focus origin to the ResearchOps Add Objective journey.",
+  "sourceTrace": "repository-audited fix branch",
+  "markdownReport": "docs/agent-audit/reasoning/2026/07/12/flux-add-objective-semantic-journey.md",
+  "jsonSummary": "docs/agent-audit/reasoning/2026/07/12/flux-add-objective-semantic-journey.json",
+  "run": {
+    "taskSummary": "Replace generated Add Objective labels and separate automatic focus, keyboard entry and pointer focus exit."
+  },
+  "bundles": [
+    "github-diamond",
+    "researchops-developer-control",
+    "multi-functional-team",
+    "govuk-design-system",
+    "cloudflare"
+  ],
+  "filesWritten": [
+    "src/govuk/templates/pages/project-dashboard.njk",
+    "public/js/flux-researchops-tracker.1.2.0.js",
+    "tests/flux-focus-narrative-events.test.js",
+    "tests/flux-semantic-instrumentation.test.js"
+  ],
+  "validations": [
+    "semantic instrumentation test failed before and passed after implementation",
+    "focus-origin event test failed before and passed after implementation",
+    "six focused tracker and rendered-page assertions passed",
+    "generated project dashboard contains controlled Add Objective attributes",
+    "npm run build and all 362 tests passed",
+    "formatting, lint and repository validation passed"
+  ],
+  "warnings": [
+    "Other uninstrumented controls remain generic until explicitly mapped.",
+    "Production verification follows deployment of the stacked pull requests."
+  ]
+}

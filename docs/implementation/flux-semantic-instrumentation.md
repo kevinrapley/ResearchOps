@@ -8,10 +8,13 @@ ResearchOps supplies controlled, content-free data attributes so Flux can descri
 - `data-flux-key` identifies the purpose and control type, for example `tab.journal.analysis`, `button.analysis.code-retrieval`, `field.analysis.code-retrieval` or `form.auth.otp-verify`.
 - `data-flux-role` may be only a role accepted by the shared Flux event schema: `field`, `form`, `control`, `page`, `service` or `environment`.
 - `data-flux-sensitive="true"` excludes the element from interaction capture in addition to the tracker's built-in email, telephone, password and one-time-code exclusions.
+- `data-flux-autofocus="true"` identifies a field that the service deliberately focuses after another control opens its region. It does not change browser focus behaviour.
 
 Keys must match `[A-Za-z0-9._:-]{1,120}` and describe stable service purpose. They must not contain visible or entered text, email addresses, names, record identifiers, project identifiers, query-string values or other user content. The tracker retains neutral positional fallback keys where a controlled key is absent rather than guessing meaning from the DOM.
 
 When a control changes purpose at runtime, its key must change with it. For example, the shared account link uses `link.account.sign-in` while signed out and `link.account.dashboard` after the header resolves an authenticated account.
+
+Progressive-disclosure journeys should instrument the complete interaction: the opening button, containing form, focused field, submit button and cancel button. Focus entry is emitted as `field.focus.auto`, `field.focus.pointer`, `field.focus.keyboard` or `field.focus.programmatic`. Field blur records a recent pointer or Tab interaction only as the focus-exit method; printable key counts remain keyboard input and typed content is never captured.
 
 ## Authentication milestones
 

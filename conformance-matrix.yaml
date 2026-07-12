@@ -101,3 +101,13 @@ records:
     status: proposed
     risk: low
     owner: repository-maintainers
+  - id: flux-add-objective-semantic-journey
+    control: The Add Objective journey exposes stable content-free Flux keys and distinguishes automatic focus, keyboard input and focus exit.
+    evidence:
+      - src/govuk/templates/pages/project-dashboard.njk
+      - public/js/flux-researchops-tracker.1.2.0.js
+      - tests/flux-semantic-instrumentation.test.js
+      - tests/flux-focus-narrative-events.test.js
+    status: implemented
+    risk: medium
+    owner: repository-maintainers
