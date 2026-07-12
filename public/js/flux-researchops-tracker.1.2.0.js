@@ -9,6 +9,16 @@ const SESSION_TIMEOUT_MS = 30 * 60 * 1000;
 const SAFE_KEY = /^[A-Za-z0-9._:-]{1,120}$/;
 const SAFE_ROLE = new Set(['field', 'form', 'control', 'page', 'service', 'environment']);
 const SAFE_AUTH_MILESTONE = /^auth\.otp\.(requested|succeeded|failed)$/;
+const SAFE_DATA_PURPOSE_VALUES = new Map([
+	['data-act', new Set(['cancel-code-edit', 'cancel-delete', 'cancel-memo-edit', 'confirm-delete', 'confirm-delete-code', 'confirm-delete-memo', 'delete', 'delete-code', 'delete-memo', 'edit-code', 'edit-memo'])],
+	['data-action', new Set(['ask-remove', 'cancel-remove', 'confirm-remove'])],
+	['data-analysis', new Set(['co-occurrence', 'export', 'retrieval', 'timeline'])],
+	['data-cooccurrence-panel', new Set(['chart', 'clustered', 'heatmap', 'small-multiples', 'stacked', 'table'])],
+	['data-filter', new Set(['all', 'decisions', 'introspections', 'perceptions', 'procedures'])],
+	['data-memo-filter', new Set(['all', 'analytical', 'methodological', 'reflexive', 'theoretical'])],
+	['data-participants-page', new Set(['next', 'previous'])],
+	['data-project-action', new Set(['start'])],
+]);
 const CONTROL_SELECTOR = 'a,button,input,select,textarea,[role="button"]';
 const SEMANTIC_SELECTOR = `${CONTROL_SELECTOR},form,details`;
 const focusState = new WeakMap();
@@ -270,15 +280,13 @@ function semanticControlType(element) {
 }
 
 function semanticPurpose(element, type) {
-	const dataPurpose = [...(element.attributes ?? [])]
-		.map((attribute) => attribute?.name || '')
-		.find((name) => name.startsWith('data-') && !['data-flux-key', 'data-flux-role', 'data-flux-sensitive', 'data-module'].includes(name));
+	const dataPurpose = semanticDataPurpose(element);
 	const hrefPurpose = type === 'link' ? semanticHref(element.getAttribute?.('href') || element.href) : '';
 	const form = element.closest?.('form');
 	const container = element.closest?.('nav[id], section[id], article[id], [role="region"][id]');
 	const identifier = type === 'field' ? element.name || element.id : element.id || element.name;
 	const candidate = identifier
-		|| dataPurpose?.slice(5)
+		|| dataPurpose
 		|| element.getAttribute?.('aria-controls')
 		|| hrefPurpose
 		|| form?.id
@@ -288,12 +296,28 @@ function semanticPurpose(element, type) {
 	return semanticSlug(candidate);
 }
 
+function semanticDataPurpose(element) {
+	for (const [name, values] of SAFE_DATA_PURPOSE_VALUES) {
+		const value = element.getAttribute?.(name);
+		if (!values.has(value)) continue;
+		if (name === 'data-act' || name === 'data-action') return value;
+		return `${name.slice(5)}-${value}`;
+	}
+	const name = [...(element.attributes ?? [])]
+		.map((attribute) => attribute?.name || '')
+		.find((attributeName) => attributeName.startsWith('data-') && !['data-flux-key', 'data-flux-role', 'data-flux-sensitive', 'data-module'].includes(attributeName));
+	return name?.slice(5) || '';
+}
+
 function semanticHref(value) {
 	const href = String(value || '').trim();
 	if (!href || href === '#') return '';
 	try {
 		const origin = window.location.origin;
 		const url = new URL(href, origin && origin !== 'null' ? origin : 'https://research-operations.com');
+		if (url.protocol === 'mailto:') return 'contact-email';
+		if (url.protocol === 'tel:') return 'contact-telephone';
+		if (!['http:', 'https:'].includes(url.protocol)) return 'external-action';
 		const hash = url.hash.replace(/^#/, '');
 		const path = url.pathname.replace(/^\/pages\/?/, '').replace(/^\/+|\/+$/g, '');
 		return hash || path || (url.pathname === '/' ? 'home' : '');
@@ -318,16 +342,32 @@ function semanticSlug(value) {
 }
 
 function pageScope() {
-	const path = window.location.pathname.toLowerCase();
-	if (path.includes('journal')) return 'journal';
-	if (path.includes('account') || path.includes('sign-in')) return 'account';
-	if (path.includes('repository')) return 'repository';
-	if (path.includes('sourcebook')) return 'sourcebook';
-	if (path.includes('study')) return 'study';
-	if (path.includes('consent')) return 'consent';
-	if (path.includes('search')) return 'search';
-	if (path.includes('session')) return 'session';
-	return 'project';
+	const declared = typeof document.body?.dataset?.fluxPage === 'string' && SAFE_KEY.test(document.body.dataset.fluxPage)
+		? document.body.dataset.fluxPage.replace(/^page\./, '').toLowerCase()
+		: '';
+	const path = declared || window.location.pathname.replace(/^\/pages\/?/, '').replace(/^\/+|\/+$/g, '').toLowerCase();
+	for (const [prefix, scope] of [
+		['projects-journals', 'journal'],
+		['journal', 'journal'],
+		['project', 'project'],
+		['projects', 'project'],
+		['account', 'account'],
+		['repository', 'repository'],
+		['sourcebook', 'sourcebook'],
+		['study', 'study'],
+		['consent', 'consent'],
+		['search', 'search'],
+		['sessions', 'session'],
+		['start', 'start'],
+		['team', 'team'],
+		['compliance', 'compliance'],
+		['notes', 'notes'],
+		['product-proof', 'product'],
+		['home', 'home'],
+	]) {
+		if (path === prefix || path.startsWith(`${prefix}-`) || path.startsWith(`${prefix}/`)) return scope;
+	}
+	return semanticSlug(path).split('-')[0] || 'page';
 }
 
 function pageKey() {

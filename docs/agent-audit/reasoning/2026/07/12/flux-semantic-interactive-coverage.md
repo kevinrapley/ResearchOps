@@ -10,6 +10,7 @@ Keep Flux fallback journey events visible while ensuring ResearchOps supplies st
 - Write `data-flux-key` and `data-flux-role` onto current controls before consent capture and observe newly inserted controls.
 - Prefer explicit reviewed keys on important journeys, including objective editing and participant actions.
 - Derive missing purpose only from controlled structural attributes and destination paths without query strings; never use visible text, accessible names, entered values or record identifiers.
+- Use only allow-listed action values, map contact protocols to fixed purposes, and derive route scope from the controlled page key.
 - Exclude focus-management and display-only `tabindex` targets. Custom interactive controls must declare an interactive role.
 
 ## Implementation
@@ -24,9 +25,10 @@ Keep Flux fallback journey events visible while ensuring ResearchOps supplies st
 - Focused tracker, semantic markup, focus narrative and session lifecycle tests passed.
 - A Chromium audit loaded every committed rendered page and found no missing semantic key/role attributes, `auto.*` keys or generic `.control`, `.field` or `.form` endings.
 - A Chromium mutation test verified that controls inserted after page load receive purpose-led keys and roles while `<main tabindex="-1">` remains excluded.
-- `npm test` passed all 365 repository tests.
+- `npm test` passed all 368 repository tests after Codex review remediation.
 - `npm run lint` completed with zero errors and the existing warning baseline.
 - `npm run validate` passed the governed repository contract, trace, generated-output, route-state and performance gates.
+- Codex review regressions cover PII-safe contact links, distinct allow-listed actions and non-project page scopes; both Chromium coverage tests pass after remediation.
 
 ## Residual risk
 

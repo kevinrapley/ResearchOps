@@ -54,6 +54,10 @@ commands_run:
     state: verified
     status: passed
     evidence: Both Chromium tests passed across every rendered page and a post-load dynamic insertion path, with no missing, auto or generic semantic attributes.
+  - command: Codex review thread remediation focused tests
+    state: verified
+    status: passed
+    evidence: Eleven focused tests passed, including regressions for contact-protocol redaction, allow-listed action distinctions and controlled page scopes; both Chromium coverage tests passed.
   - command: npm run build
     state: verified
     status: passed
@@ -61,7 +65,7 @@ commands_run:
   - command: npm test
     state: verified
     status: passed
-    evidence: All 365 repository tests passed.
+    evidence: All 368 repository tests passed after Codex review remediation.
   - command: npm run lint
     state: verified
     status: passed
@@ -79,7 +83,7 @@ security:
   authentication_changed: false
 privacy:
   data_collection_scope_changed: false
-  assessment: Existing metadata events receive stronger content-free purpose keys. Derivation ignores visible and accessible text, entered values and query strings, and strips UUID, record-token, long hexadecimal and numeric identifier patterns.
+  assessment: Existing metadata events receive stronger content-free purpose keys. Derivation ignores visible and accessible text, entered values, query strings and arbitrary data values; contact protocols map to fixed purposes; UUID, record-token, long hexadecimal and numeric identifier patterns are stripped.
 accessibility:
   required: true
   assessment: Focus-management and display-only tabindex targets are no longer mistaken for controls; custom controls remain covered through their interactive role.

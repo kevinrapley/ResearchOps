@@ -40,24 +40,41 @@ test('annotates every rendered ResearchOps interactive element with semantic Flu
 test('annotates controls inserted after page load without positional auto keys', async ({
 	page,
 }) => {
-	await page.setContent('<main tabindex="-1"></main><div id="dynamic"></div>');
+	await page.setContent(
+		'<body data-flux-page="page.start"><main tabindex="-1"></main><div id="dynamic"></div></body>'
+	);
 	await page.addScriptTag({ content: trackerSource });
 	await page.evaluate(() => {
 		annotateInteractiveElements(document);
 		observeInteractiveElements();
 		document.querySelector('#dynamic').innerHTML =
-			'<a href="/pages/projects/">Projects</a><textarea name="objective"></textarea>';
+			'<a href="/pages/projects/">Projects</a><a href="mailto:alice.person@example.com">Email</a><textarea name="objective"></textarea><button data-participants-page="previous">Previous</button><button data-participants-page="next">Next</button>';
 	});
 
-	await expect(page.locator('#dynamic a')).toHaveAttribute(
+	await expect(page.locator('#dynamic a[href="/pages/projects/"]')).toHaveAttribute(
 		'data-flux-key',
 		'link.navigation.projects'
 	);
 	await expect(page.locator('#dynamic textarea')).toHaveAttribute(
 		'data-flux-key',
-		'field.project.objective'
+		'field.start.objective'
 	);
-	await expect(page.locator('#dynamic a')).toHaveAttribute('data-flux-role', 'control');
+	await expect(page.locator('#dynamic a[href^="mailto:"]')).toHaveAttribute(
+		'data-flux-key',
+		'link.navigation.contact-email'
+	);
+	await expect(page.locator('#dynamic button').nth(0)).toHaveAttribute(
+		'data-flux-key',
+		'button.start.participants-page-previous'
+	);
+	await expect(page.locator('#dynamic button').nth(1)).toHaveAttribute(
+		'data-flux-key',
+		'button.start.participants-page-next'
+	);
+	await expect(page.locator('#dynamic a[href="/pages/projects/"]')).toHaveAttribute(
+		'data-flux-role',
+		'control'
+	);
 	await expect(page.locator('#dynamic textarea')).toHaveAttribute('data-flux-role', 'field');
 	await expect(page.locator('main')).not.toHaveAttribute('data-flux-key', /.+/);
 	await expect(page.locator('[data-flux-key^="auto."]')).toHaveCount(0);

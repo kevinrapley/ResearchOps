@@ -13,8 +13,19 @@ function storage() {
 	};
 }
 
-function element({ key, tagName, type = '', autofocus = false, id = '', name = '', href = '' }) {
+function element({
+	key,
+	tagName,
+	type = '',
+	autofocus = false,
+	id = '',
+	name = '',
+	href = '',
+	attributes = {},
+}) {
 	const listeners = new Map();
+	const attributeValues = new Map(Object.entries(attributes));
+	if (href) attributeValues.set('href', href);
 	const node = {
 		dataset: {
 			...(key ? { fluxKey: key } : {}),
@@ -27,12 +38,18 @@ function element({ key, tagName, type = '', autofocus = false, id = '', name = '
 		href,
 		autocomplete: '',
 		value: '',
-		attributes: [],
+		attributes: [...attributeValues].map(([attributeName, value]) => ({
+			name: attributeName,
+			value,
+		})),
 		getAttribute(attribute) {
-			if (attribute === 'href') return href || null;
-			return null;
+			return attributeValues.get(attribute) ?? null;
 		},
 		setAttribute(attribute, value) {
+			attributeValues.set(attribute, value);
+			const existing = this.attributes.find((item) => item.name === attribute);
+			if (existing) existing.value = value;
+			else this.attributes.push({ name: attribute, value });
 			if (attribute === 'data-flux-key') this.dataset.fluxKey = value;
 			if (attribute === 'data-flux-role') this.dataset.fluxRole = value;
 		},
@@ -59,6 +76,7 @@ function harness() {
 	const clock = { now: 0 };
 	const requests = [];
 	const context = vm.createContext({
+		URL,
 		Date: class extends Date {
 			static now() {
 				return clock.now;
@@ -134,6 +152,62 @@ test('adds semantic data attributes to previously uninstrumented interactive ele
 	assert.equal(link.dataset.fluxKey, 'link.navigation.journal-entry-edit');
 	assert.equal(vm.runInContext('stableKey(field)', context), 'field.project.objective-editor');
 	assert.equal(field.dataset.fluxKey, 'field.project.objective-editor');
+});
+
+test('keeps contact values out of semantic link keys', () => {
+	const { context } = harness();
+	const email = element({ tagName: 'A', href: 'mailto:alice.person@example.com' });
+	const telephone = element({ tagName: 'A', href: 'tel:+447700900123' });
+	context.email = email;
+	context.telephone = telephone;
+
+	assert.equal(vm.runInContext('stableKey(email)', context), 'link.navigation.contact-email');
+	assert.equal(
+		vm.runInContext('stableKey(telephone)', context),
+		'link.navigation.contact-telephone'
+	);
+	assert.doesNotMatch(email.dataset.fluxKey, /alice|example|447700/i);
+});
+
+test('uses allow-listed action values to distinguish dynamic controls', () => {
+	const { context } = harness();
+	const previous = element({
+		tagName: 'BUTTON',
+		type: 'button',
+		attributes: { 'data-participants-page': 'previous' },
+	});
+	const next = element({
+		tagName: 'BUTTON',
+		type: 'button',
+		attributes: { 'data-participants-page': 'next' },
+	});
+	const remove = element({
+		tagName: 'BUTTON',
+		type: 'button',
+		attributes: { 'data-act': 'confirm-delete' },
+	});
+	context.previous = previous;
+	context.next = next;
+	context.remove = remove;
+
+	assert.equal(
+		vm.runInContext('stableKey(previous)', context),
+		'button.project.participants-page-previous'
+	);
+	assert.equal(
+		vm.runInContext('stableKey(next)', context),
+		'button.project.participants-page-next'
+	);
+	assert.equal(vm.runInContext('stableKey(remove)', context), 'button.project.confirm-delete');
+});
+
+test('derives non-project scopes from the controlled page key', () => {
+	const { context } = harness();
+	const action = element({ tagName: 'BUTTON', type: 'button', id: 'ai-rewrite' });
+	context.action = action;
+	context.document.body.dataset.fluxPage = 'page.start';
+
+	assert.equal(vm.runInContext('stableKey(action)', context), 'button.start.ai-rewrite');
 });
 
 test('classifies an associated label click as pointer focus', () => {
