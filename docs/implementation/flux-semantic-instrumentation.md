@@ -19,6 +19,10 @@ The tracker exposes `window.researchOpsFlux.milestone(action, elementKey)` for t
 
 The email and one-time-code fields remain excluded from click, focus, dwell, character-count, correction and content capture. Milestones never include the email, code, code length, challenge ID or authenticated account identity.
 
+## Visitor and session lifecycle
+
+The visitor identifier remains in local storage so Flux can recognise a returning browser without identifying the person. The session identifier is tab-scoped and rolls after 30 minutes without a captured interaction. Each captured interaction refreshes the activity timestamp. Trackers deployed before this boundary stored no activity timestamp, so their legacy session is replaced on the first captured interaction after the updated asset loads.
+
 ## Rendering and testing
 
 Generated GOV.UK pages receive their page key from `scripts/govuk/render-govuk-pages.mjs`; shared navigation keys for Home, Start a project, Projects, Research repository, Sourcebook, account actions and the mobile menu live in `public/partials/header.html`; page-specific navigation and control keys belong in their canonical Nunjucks template. The project dashboard's Project areas menu uses `link.project-area.*` keys. Static route shells outside that renderer must be updated directly. Run the GOV.UK build and check committed `public/` output together with the source templates.

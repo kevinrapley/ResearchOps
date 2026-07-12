@@ -1,4 +1,4 @@
-task_id: flux-tracker-schema-version-fix
+task_id: flux-session-inactivity-boundary
 mode: repo-fix
 repository: ResearchOps
 risk_level: high
@@ -7,7 +7,7 @@ files_read:
   - RECENT_LEARNINGS.md
   - public/js/flux-researchops-tracker.1.2.0.js
   - tests/flux-behaviour-tracker-route-state.test.js
-  - docs/deployment/generated-html-policy.md
+  - docs/implementation/flux-semantic-instrumentation.md
   - conformance-matrix.yaml
   - gap-register.yaml
 files_changed:
@@ -15,64 +15,95 @@ files_changed:
   - src/govuk/templates/layouts/researchops.njk
   - public/partials/html-head.html
   - public/pages/**/index.html
+  - tests/flux-session-lifecycle.test.js
   - tests/flux-behaviour-tracker-route-state.test.js
+  - docs/implementation/flux-semantic-instrumentation.md
   - RECENT_LEARNINGS.md
   - conformance-matrix.yaml
   - gap-register.yaml
-  - docs/agent-audit/reasoning/2026/07/12/flux-tracker-schema-version-fix.md
-  - docs/agent-audit/reasoning/2026/07/12/flux-tracker-schema-version-fix.json
+  - harm-register.yaml
+  - docs/agent-audit/reasoning/2026/07/12/flux-session-inactivity-boundary.md
+  - docs/agent-audit/reasoning/2026/07/12/flux-session-inactivity-boundary.json
 commands_run:
-  - command: production browser-shaped POST with schema_version 1.2.0
-    status: failed
-    evidence: Flux returned HTTP 400 invalid_event, reproducing the reported defect.
-  - command: npm ci
+  - command: production D1 read-only session and event query
+    state: verified
     status: passed
-    evidence: Locked dependencies installed; npm reported the repository's known advisory findings.
+    evidence: Events at 09:41-09:42 UTC were stored under the session created at 02:28 UTC, reproducing the missing-new-session symptom.
+  - command: Cloudflare collector CORS preflight
+    state: verified
+    status: passed
+    evidence: Production returned HTTP 204 with research-operations.com allowed and cache-control no-store.
+  - command: node --test tests/flux-session-lifecycle.test.js before implementation
+    state: observed
+    status: failed
+    evidence: Both the legacy-session migration and 30-minute inactivity assertions failed for the expected reason.
+  - command: node --test tests/flux-session-lifecycle.test.js after implementation
+    state: verified
+    status: passed
+    evidence: Two session-lifecycle regression tests passed.
   - command: npm run build
+    state: verified
     status: passed
-    evidence: GOV.UK pages and generated assets rebuilt successfully.
+    evidence: Canonical GOV.UK pages were regenerated with tracker cache key v1.2.4.
+  - command: node --test tests/flux-session-lifecycle.test.js tests/flux-behaviour-tracker-route-state.test.js
+    state: verified
+    status: passed
+    evidence: Three focused assertions passed.
   - command: npm run format:check
+    state: verified
     status: passed
+    evidence: Prettier and generated CSS checks passed.
   - command: npm run lint
+    state: verified
     status: passed
-    evidence: No errors; existing warning baseline remained visible.
+    evidence: No errors; the existing warning baseline remained visible.
   - command: npm test
+    state: verified
     status: passed
-    evidence: 358 tests passed.
+    evidence: 361 tests passed.
   - command: npm run validate
+    state: verified
     status: passed
-    evidence: Repository, operating-model, trace, route-state and generated-output validation completed.
+    evidence: Repository contract, operating model, trace coverage, generated output, route-state checks and performance audit completed.
   - command: code-confidence-grader
+    state: observed
     status: failed
-    evidence: Scored 0.65 because the grader implementation has no mapping for its documentation or structured-evidence criteria, despite both being present and the evidence schema validating.
+    evidence: Scored 0.65 because the grader implementation did not map the updated documentation or structured agent evidence to criteria 3 and 5, although both are present.
   - command: recent-learnings-grader
+    state: verified
     status: passed
     evidence: Scored 1.0.
 contracts_validated:
-  - Flux event contract schema version 1.1.0
+  - Flux consented metadata-only tracking boundary
   - ResearchOps generated HTML policy
-  - Pull Request Contract
 tests_run:
-  - name: tests/flux-behaviour-tracker-route-state.test.js before implementation
-    status: failed
-    evidence: Expected schema_version 1.1.0 but tracker emitted 1.2.0.
-  - name: tests/flux-behaviour-tracker-route-state.test.js after implementation
+  - name: legacy Flux session migration
+    state: verified
     status: passed
+    evidence: The legacy session identifier was replaced and the activity timestamp was stored.
+  - name: 30-minute inactivity session rollover
+    state: verified
+    status: passed
+    evidence: Activity inside the boundary retained the session and activity at the boundary created a new identifier.
+  - name: rendered tracker asset coverage
+    state: verified
+    status: passed
+    evidence: Every rendered HTML page referenced tracker cache key v1.2.4.
   - name: full Node test suite
+    state: verified
     status: passed
-    evidence: 358 tests passed.
+    evidence: 361 tests passed.
 gaps_recorded:
-  - flux-tracker-event-contract-alignment marked implemented
-  - delivery observability remains a residual risk in the trace
+  - flux-tracker-inactivity-session-boundary marked implemented
 waivers_recorded: []
 artifacts_created:
-  - docs/agent-audit/reasoning/2026/07/12/flux-tracker-schema-version-fix.md
-  - docs/agent-audit/reasoning/2026/07/12/flux-tracker-schema-version-fix.json
-  - agent-evidence.yaml
+  - docs/agent-audit/reasoning/2026/07/12/flux-session-inactivity-boundary.md
+  - docs/agent-audit/reasoning/2026/07/12/flux-session-inactivity-boundary.json
+  - harm-register.yaml
 recent_learnings:
   read: true
   updated: true
-  entry: Asset versions and event-contract versions are independent.
+  entry: Browser lifetime is not an analytics session boundary.
 github_settings:
   verification_method: file
 security:
@@ -82,11 +113,14 @@ accessibility:
   required: false
   release_decision: not_applicable
 performance:
-  impact: Cache-key-only HTML changes and a one-line payload correction.
-harms: []
+  impact: Two sessionStorage reads and up to two writes per captured interaction; no network payload fields added.
+harms:
+  - HARM-FLUX-SESSION-001
 claims:
-  - The production HTTP 400 was reproduced before implementation.
-  - The full test and validation suites passed after implementation.
+  - Production ingestion was healthy and the defect was isolated to client-side session lifecycle.
+  - Focused session-lifecycle and rendered-asset tests passed after implementation.
+  - The full test, lint, formatting and validation suites passed after implementation.
 risks:
-  - Fire-and-forget delivery still lacks first-class non-2xx observability.
+  - Existing events remain immutable and cannot gain semantic context retroactively.
+  - Production deployment and post-deploy session rollover remain to be verified after merge.
   - The generic code-confidence grader cannot recognise documentation or structured evidence from its current criterion mapper.

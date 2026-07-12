@@ -4,6 +4,8 @@ const PRODUCTION_HOSTS = new Set(['researchops.pages.dev', 'research-operations.
 const CONSENT_KEY = 'flux.behaviour.consent';
 const VISITOR_KEY = 'flux.behaviour.visitor_id';
 const SESSION_KEY = 'flux.behaviour.session_id';
+const SESSION_ACTIVITY_KEY = 'flux.behaviour.session_activity_ms';
+const SESSION_TIMEOUT_MS = 30 * 60 * 1000;
 const SAFE_KEY = /^[A-Za-z0-9._:-]{1,120}$/;
 const SAFE_ROLE = new Set(['field', 'form', 'control', 'page', 'service', 'environment']);
 const SAFE_AUTH_MILESTONE = /^auth\.otp\.(requested|succeeded|failed)$/;
@@ -249,7 +251,17 @@ function visitorId() {
 }
 
 function sessionId() {
-	return persistentId(window.sessionStorage, SESSION_KEY, 'session');
+	const now = Date.now();
+	const existing = window.sessionStorage.getItem(SESSION_KEY);
+	const lastActivity = Number(window.sessionStorage.getItem(SESSION_ACTIVITY_KEY));
+	if (existing && Number.isFinite(lastActivity) && lastActivity > 0 && now - lastActivity < SESSION_TIMEOUT_MS) {
+		window.sessionStorage.setItem(SESSION_ACTIVITY_KEY, now);
+		return existing;
+	}
+	const id = `session-${crypto.randomUUID().replace(/-/g, '')}`;
+	window.sessionStorage.setItem(SESSION_KEY, id);
+	window.sessionStorage.setItem(SESSION_ACTIVITY_KEY, now);
+	return id;
 }
 
 function persistentId(storage, key, prefix) {

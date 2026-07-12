@@ -1,0 +1,13 @@
+harms:
+  - id: HARM-FLUX-SESSION-001
+    harm: Analytics users could interpret a long-lived browser tab as one continuous journey, obscuring returning visits and inflating session duration.
+    affected_groups:
+      - Consenting ResearchOps visitors
+      - ResearchOps service analysts
+    likelihood: low
+    severity: medium
+    mitigation: Apply a tested 30-minute inactivity boundary, retain metadata-only identifiers and monitor production session start and last-seen timestamps after deployment.
+    residual_risk: low
+    owner: repository-maintainers
+    escalation_route: Product owner and privacy lead
+    release_decision: proceed-with-monitoring
