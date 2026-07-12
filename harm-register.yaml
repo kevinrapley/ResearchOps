@@ -1,4 +1,18 @@
 harms:
+  - id: HARM-FLUX-WRITING-001
+    harm: UK English spelling, grammar or casing indicators could be treated as a judgement about a visitor, or could disadvantage people whose names, dialect, disability, education or writing style differ from the analyser's assumptions.
+    affected_groups:
+      - Consenting ResearchOps visitors
+      - Disabled and neurodivergent visitors
+      - Visitors who use dialects or English as an additional language
+    likelihood: medium
+    severity: high
+    mitigation: Label counts as possible issues, keep analysis on-device and en-GB-specific, export no words or suggestions, prohibit literacy, intelligence, professionalism, personality and protected-characteristic inference, prohibit automated decisions, and validate with representative accessibility and privacy review before operational use.
+    residual_risk: medium
+    owner: product-lead
+    escalation_route: Product owner, accessibility lead and privacy lead
+    release_decision: proceed-with-monitoring
+
   - id: HARM-FLUX-SESSION-001
     harm: Analytics users could interpret a long-lived browser tab as one continuous journey, obscuring returning visits and inflating session duration.
     affected_groups:

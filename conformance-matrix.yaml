@@ -1,4 +1,17 @@
 records:
+  - id: flux-uk-english-writing-signals
+    control: Consented writing analysis uses an on-device en-GB baseline and exports only bounded, non-reversible issue and casing counts, never entered text, words or suggestions.
+    evidence:
+      - src/flux/uk-english-writing-analyser.mjs
+      - src/flux/uk-english-writing-runtime.mjs
+      - public/js/flux-researchops-tracker.1.2.0.js
+      - tests/flux-uk-writing-analyser.test.js
+      - tests/flux-focus-narrative-events.test.js
+      - docs/agent-audit/reasoning/2026/07/12/flux-uk-english-writing-signals.md
+    status: implemented
+    risk: high
+    owner: repository-maintainers
+
   - id: flux-accurate-field-timing
     control: ResearchOps keeps total focus duration, pre-input dwell and active typing duration distinct, and calculates typing rate only from active typing time.
     evidence:

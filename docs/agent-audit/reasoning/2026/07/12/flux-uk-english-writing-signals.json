@@ -1,0 +1,16 @@
+{
+  "schemaVersion": "agent-trace-promotion/v1",
+  "title": "Measure consented writing indicators against UK English without exporting text.",
+  "sourceTrace": "repository-audited feature branch",
+  "markdownReport": "docs/agent-audit/reasoning/2026/07/12/flux-uk-english-writing-signals.md",
+  "jsonSummary": "docs/agent-audit/reasoning/2026/07/12/flux-uk-english-writing-signals.json",
+  "run": {
+    "taskSummary": "Add on-device en-GB spelling, grammar and casing indicators for Flux."
+  },
+  "bundles": ["github-diamond", "researchops-developer-control", "multi-functional-team", "cloudflare"],
+  "filesRead": ["AGENTS.md", "RECENT_LEARNINGS.md", "docs/implementation/flux-semantic-instrumentation.md", "public/js/flux-researchops-tracker.1.2.0.js"],
+  "filesWritten": ["src/flux/uk-english-writing-analyser.mjs", "src/flux/uk-english-writing-runtime.mjs", "scripts/flux/build-uk-english-writing.mjs", "public/js/flux-researchops-tracker.1.2.0.js", "tests/flux-uk-writing-analyser.test.js", "tests/flux-focus-narrative-events.test.js"],
+  "validations": ["focused UK English analyser tests", "tracker privacy regression", "rendered-page route-state tests", "full repository validation"],
+  "issues": ["Locale-neutral or US-default spelling analysis would misclassify UK English and obscure the measurement baseline."],
+  "warnings": ["Possible issue counts are heuristic service-friction evidence and must not be interpreted as a person-level capability score."]
+}
