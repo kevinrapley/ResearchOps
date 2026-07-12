@@ -78,7 +78,7 @@ lacks(files.headerPartial, '<div class="govuk-header" role="banner" data-module=
 has(files.headerPartial, '<section class="govuk-service-navigation"', 'header partial');
 has(files.headerPartial, '</section>\n</header>', 'header partial');
 
-has(files.layout, '<body class="govuk-template__body{% if bodyClass %} {{ bodyClass }}{% endif %}">', 'shared researchops layout');
+has(files.layout, 'data-flux-page="{{ fluxPageKey | default(\'page.unknown\') }}"', 'shared researchops layout');
 has(files.renderPages, "bodyClass: 'researchops-repository-front-page'", 'GOV.UK page renderer');
 has(files.normalisePages, "mergeClassValue(classMatch[1], 'govuk-template__body')", 'GOV.UK page normaliser');
 

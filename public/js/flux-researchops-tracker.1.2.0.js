@@ -5,11 +5,15 @@ const CONSENT_KEY = 'flux.behaviour.consent';
 const VISITOR_KEY = 'flux.behaviour.visitor_id';
 const SESSION_KEY = 'flux.behaviour.session_id';
 const SAFE_KEY = /^[A-Za-z0-9._:-]{1,120}$/;
+const SAFE_ROLE = new Set(['field', 'form', 'control', 'page', 'service', 'environment']);
+const SAFE_AUTH_MILESTONE = /^auth\.otp\.(requested|succeeded|failed)$/;
 const CONTROL_SELECTOR = 'a,button,input,select,textarea,[role="button"],[tabindex]';
 const focusState = new WeakMap();
 const fieldVisits = new Map();
 const recentClicks = [];
 let lastPointerType = 'unknown';
+
+window.researchOpsFlux = Object.freeze({ milestone });
 
 if (PRODUCTION_HOSTS.has(window.location.hostname)) startTracker();
 
@@ -147,18 +151,19 @@ function targetDetails(element) {
 	if (isExcludedSensitiveInput(target)) return null;
 	const key = stableKey(target);
 	if (!target || !key) return null;
-	return { role: target.matches('input, select, textarea') ? 'field' : 'control', element_key: key };
+	return { role: semanticRole(target, target.matches('input, select, textarea') ? 'field' : 'control'), element_key: key };
 }
 
 function editableTarget(element) {
 	if (isExcludedSensitiveInput(element)) return null;
 	const key = stableKey(element);
 	return element?.matches?.('input:not([type="hidden"]), textarea, select') && key
-		? { role: 'field', element_key: key }
+		? { role: semanticRole(element, 'field'), element_key: key }
 		: null;
 }
 
 function isExcludedSensitiveInput(element) {
+	if (element?.dataset?.fluxSensitive === 'true') return true;
 	if (!element?.matches?.('input')) return false;
 	const type = (element.type || 'text').toLowerCase();
 	const autocomplete = (element.autocomplete || '').toLowerCase();
@@ -176,18 +181,41 @@ function stableKey(element) {
 }
 
 function pageKey() {
-	const key = window.location.pathname.replace(/[^A-Za-z0-9._:-]+/g, '-').replace(/^-|-$/g, '');
-	return key || 'home';
+	const declared = document.body?.dataset?.fluxPage;
+	if (typeof declared === 'string' && SAFE_KEY.test(declared)) return declared;
+	const key = window.location.pathname.replace(/^\/pages\/?/, '').replace(/\/?$/, '').replace(/[^A-Za-z0-9._:-]+/g, '-').replace(/^-|-$/g, '');
+	return `page.${key || 'home'}`;
 }
 
 function formKey(form) {
+	const declared = stableKey(form);
+	if (declared) return declared;
 	const position = [...document.forms].indexOf(form);
 	return `form.${pageKey()}.${Math.max(0, position) + 1}`;
 }
 
 function detailsKey(details) {
+	const declared = stableKey(details);
+	if (declared) return declared;
 	const position = [...document.querySelectorAll('details')].indexOf(details);
 	return `auto.details.${Math.max(0, position) + 1}`;
+}
+
+function semanticRole(element, fallback) {
+	const declared = element?.dataset?.fluxRole;
+	return SAFE_ROLE.has(declared) ? declared : fallback;
+}
+
+function milestone(action) {
+	try {
+		if (!PRODUCTION_HOSTS.has(window.location.hostname)) return false;
+		if (window.localStorage.getItem(CONSENT_KEY) !== 'yes') return false;
+		if (!SAFE_AUTH_MILESTONE.test(action)) return false;
+		track('trust', action, { role: 'service', element_key: 'auth.otp' });
+		return true;
+	} catch {
+		return false;
+	}
 }
 
 function track(eventClass, action, details) {

@@ -76,7 +76,7 @@ function assertTopLevelAdminInformationArchitecture() {
 
 function assertUsesFullGOVUKFrontendTemplate() {
 	assert.match(pageSource, /<html class="govuk-template" lang="en">/);
-	assert.match(pageSource, /<body class="govuk-template__body">/);
+	assert.match(pageSource, /<body class="govuk-template__body" data-flux-page="page\.(?:unknown|team-role-assignments)">/);
 	assert.match(pageSource, /\/assets\/govuk\/govuk-frontend\.css/);
 	assert.match(pageSource, /\/components\/layout\.js/);
 	assert.match(pageSource, /\/js\/govuk-frontend-init\.js/);

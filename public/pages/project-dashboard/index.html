@@ -22,9 +22,9 @@
 
 		<script type="module" src="/components/layout.js?v=govuk-page-chrome-20260702-1" defer></script>
 		<script type="module" src="/js/govuk-frontend-init.js?v=govuk-page-chrome-20260702-1" defer></script>
-		<script type="module" src="/js/flux-researchops-tracker.1.2.0.js?v=1.2.2" defer></script>
+		<script type="module" src="/js/flux-researchops-tracker.1.2.0.js?v=1.2.3" defer></script>
 	</head>
-	<body class="govuk-template__body">
+	<body class="govuk-template__body" data-flux-page="page.project-dashboard">
 		<script>
 			document.body.className +=
 				" js-enabled" + ("noModule" in HTMLScriptElement.prototype ? " govuk-frontend-supported" : "");
@@ -95,16 +95,54 @@
 							</div>
 							<div class="govuk-summary-card__content">
 								<ul class="govuk-list govuk-list--spaced rops-compact-list">
-									<li><a class="govuk-link" href="#reflexive-journal">Reflexive journal</a></li>
-									<li><a class="govuk-link" href="#stakeholders">Stakeholder management</a></li>
-									<li><a class="govuk-link" href="#project-objectives">Project Objectives</a></li>
-									<li><a class="govuk-link" href="#planning">Research planning</a></li>
+									<li>
+										<a
+											class="govuk-link"
+											href="#reflexive-journal"
+											data-flux-key="link.project-area.journal"
+											data-flux-role="control"
+										>
+											Reflexive journal
+										</a>
+									</li>
+									<li>
+										<a
+											class="govuk-link"
+											href="#stakeholders"
+											data-flux-key="link.project-area.stakeholders"
+											data-flux-role="control"
+										>
+											Stakeholder management
+										</a>
+									</li>
+									<li>
+										<a
+											class="govuk-link"
+											href="#project-objectives"
+											data-flux-key="link.project-area.objectives"
+											data-flux-role="control"
+										>
+											Project Objectives
+										</a>
+									</li>
+									<li>
+										<a
+											class="govuk-link"
+											href="#planning"
+											data-flux-key="link.project-area.planning"
+											data-flux-role="control"
+										>
+											Research planning
+										</a>
+									</li>
 									<li>
 										<a
 											class="govuk-link"
 											href="/pages/projects/outcomes/?id="
 											id="outcomes-link"
 											property="schema:relatedLink"
+											data-flux-key="link.project-area.outcomes"
+											data-flux-role="control"
 										>
 											Research outcomes
 										</a>
@@ -143,6 +181,8 @@
 										class="govuk-button"
 										data-module="govuk-button"
 										id="journal-button-link"
+										data-flux-key="link.journal.open"
+										data-flux-role="control"
 									>
 										Open reflexive journal
 									</a>

@@ -1,0 +1,24 @@
+# Flux semantic instrumentation
+
+ResearchOps supplies controlled, content-free data attributes so Flux can describe a visitor journey using service purpose instead of DOM position.
+
+## Attribute contract
+
+- `data-flux-page` identifies the rendered page, for example `page.projects-journals`.
+- `data-flux-key` identifies the purpose and control type, for example `tab.journal.analysis`, `button.analysis.code-retrieval`, `field.analysis.code-retrieval` or `form.auth.otp-verify`.
+- `data-flux-role` may be only a role accepted by the shared Flux event schema: `field`, `form`, `control`, `page`, `service` or `environment`.
+- `data-flux-sensitive="true"` excludes the element from interaction capture in addition to the tracker's built-in email, telephone, password and one-time-code exclusions.
+
+Keys must match `[A-Za-z0-9._:-]{1,120}` and describe stable service purpose. They must not contain visible or entered text, email addresses, names, record identifiers, project identifiers, query-string values or other user content. The tracker retains neutral positional fallback keys where a controlled key is absent rather than guessing meaning from the DOM.
+
+When a control changes purpose at runtime, its key must change with it. For example, the shared account link uses `link.account.sign-in` while signed out and `link.account.dashboard` after the header resolves an authenticated account.
+
+## Authentication milestones
+
+The tracker exposes `window.researchOpsFlux.milestone(action, elementKey)` for the fixed allow-list `auth.otp.requested`, `auth.otp.succeeded` and `auth.otp.failed`. It emits only after behavioural analytics consent, only on production ResearchOps hosts, and uses the schema-valid `trust` event class with the neutral `auth.otp` element key.
+
+The email and one-time-code fields remain excluded from click, focus, dwell, character-count, correction and content capture. Milestones never include the email, code, code length, challenge ID or authenticated account identity.
+
+## Rendering and testing
+
+Generated GOV.UK pages receive their page key from `scripts/govuk/render-govuk-pages.mjs`; shared navigation keys for Home, Start a project, Projects, Research repository, Sourcebook, account actions and the mobile menu live in `public/partials/header.html`; page-specific navigation and control keys belong in their canonical Nunjucks template. The project dashboard's Project areas menu uses `link.project-area.*` keys. Static route shells outside that renderer must be updated directly. Run the GOV.UK build and check committed `public/` output together with the source templates.
