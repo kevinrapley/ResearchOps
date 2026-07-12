@@ -18,7 +18,7 @@ When a control changes purpose at runtime, its key must change with it. For exam
 
 Tracker-owned consent controls are also publishers in this contract. The injected Accept and Reject buttons carry explicit semantic keys and roles so live DOM coverage does not depend on fallback labelling.
 
-Progressive-disclosure journeys should instrument the complete interaction: the opening button, containing form, focused field, submit button and cancel button. Focus entry is emitted as `field.focus.auto`, `field.focus.pointer`, `field.focus.keyboard` or `field.focus.programmatic`. Field blur records a recent pointer or Tab interaction only as the focus-exit method; printable key counts remain keyboard input and typed content is never captured.
+Progressive-disclosure journeys should instrument the complete interaction: the opening button, containing form, focused field, submit button and cancel button. Focus entry is emitted as `field.focus.auto`, `field.focus.pointer`, `field.focus.keyboard` or `field.focus.programmatic`. Field blur records total focus time, pre-input dwell, active typing duration and rate, printable keys, Backspace/Delete use, pastes and revisits as separate bounded values. Dwell ends at the first keyboard, input or paste interaction; typing rate uses only the first-to-latest typing interval. A recent pointer or Tab interaction remains only the focus-exit method, and typed content is never exported.
 
 ## Authentication milestones
 

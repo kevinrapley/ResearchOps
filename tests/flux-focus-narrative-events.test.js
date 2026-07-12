@@ -121,11 +121,20 @@ test('records automatic field focus separately from keyboard input and mouse foc
 		"recordPointer({ target: toggle, pointerType: 'mouse' }); beginFocus({ target: textarea });",
 		context
 	);
-	for (let index = 0; index < 101; index += 1)
+	for (let index = 0; index < 101; index += 1) {
+		clock.now = 1_400 + index * 260;
 		vm.runInContext(
 			"trackKeyboard({ target: textarea, key: 'x', metaKey: false, ctrlKey: false });",
 			context
 		);
+	}
+	for (let index = 0; index < 3; index += 1) {
+		clock.now += 100;
+		vm.runInContext(
+			"trackKeyboard({ target: textarea, key: 'Delete', metaKey: false, ctrlKey: false });",
+			context
+		);
+	}
 	clock.now = 28_800;
 	textarea.value = 'x'.repeat(101);
 	vm.runInContext(
@@ -138,7 +147,11 @@ test('records automatic field focus separately from keyboard input and mouse foc
 	assert.equal(requests[0].element_key, 'field.project.add-objective-textarea');
 	assert.equal(requests[1].action, 'field.blur');
 	assert.equal(requests[1].key_press_count, 101);
+	assert.equal(requests[1].backspace_count, 3);
 	assert.equal(requests[1].duration_ms, 28_800);
+	assert.equal(requests[1].dwell_before_input_ms, 1_400);
+	assert.equal(requests[1].typing_duration_ms, 26_300);
+	assert.equal(requests[1].chars_per_minute, 230);
 	assert.equal(requests[1].pointer_type, 'mouse');
 });
 

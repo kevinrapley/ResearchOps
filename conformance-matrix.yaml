@@ -1,4 +1,15 @@
 records:
+  - id: flux-accurate-field-timing
+    control: ResearchOps keeps total focus duration, pre-input dwell and active typing duration distinct, and calculates typing rate only from active typing time.
+    evidence:
+      - public/js/flux-researchops-tracker.1.2.0.js
+      - tests/flux-focus-narrative-events.test.js
+      - tests/flux-behaviour-tracker-route-state.test.js
+      - docs/agent-audit/reasoning/2026/07/12/flux-accurate-field-timing.md
+    status: implemented
+    risk: high
+    owner: repository-maintainers
+
   - id: flux-semantic-interactive-coverage
     control: Every rendered or dynamically inserted ResearchOps link, button, field, form and help control receives privacy-safe purpose-led Flux key and role attributes before capture, while the positional fallback remains available for unforeseen controls.
     evidence:
