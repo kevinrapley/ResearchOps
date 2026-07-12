@@ -6,6 +6,10 @@ const projects = fs.readFileSync('src/govuk/templates/pages/projects.njk', 'utf8
 const dashboard = fs.readFileSync('src/govuk/templates/pages/project-dashboard.njk', 'utf8');
 const header = fs.readFileSync('public/partials/header.html', 'utf8');
 const renderer = fs.readFileSync('scripts/govuk/render-govuk-pages.mjs', 'utf8');
+const dashboardRuntime = fs.readFileSync('public/js/project-dashboard.js', 'utf8');
+const home = fs.readFileSync('src/govuk/templates/pages/home.njk', 'utf8');
+const study = fs.readFileSync('src/govuk/templates/pages/study.njk', 'utf8');
+const studySession = fs.readFileSync('src/govuk/templates/pages/study-session.njk', 'utf8');
 
 for (const key of [
 	'button.journal.add-entry',
@@ -24,6 +28,20 @@ for (const key of [
 		journals,
 		new RegExp(`data-flux-key=['"]${key}['"]`),
 		`journals should expose ${key}`
+	);
+}
+
+for (const [template, key] of [
+	[home, 'button.navigation.audio-explainer-transcript'],
+	[study, 'button.study.sourcebook-evidence-record'],
+	[studySession, 'button.study.participant-details'],
+	[studySession, 'button.study.consent-summary'],
+	[studySession, 'button.study.note-prefix-help'],
+]) {
+	assert.match(
+		template,
+		new RegExp(`data-flux-key["']?\\s*[:=]\\s*["']${key}["']`),
+		`details control should expose ${key}`
 	);
 }
 
@@ -83,3 +101,17 @@ for (const key of [
 
 assert.match(renderer, /fluxPageKey:/);
 assert.match(renderer, /pageKeyFromOutput\(page\.output\)/);
+
+for (const key of [
+	'button.project.edit-description',
+	'button.project.edit-objective',
+	'field.project.edit-objective-textarea',
+	'link.project.add-participant',
+	'link.project.import-participants',
+]) {
+	assert.match(
+		dashboardRuntime,
+		new RegExp(`data-flux-key=["']${key}["']`),
+		`dynamic project dashboard controls should expose ${key}`
+	);
+}

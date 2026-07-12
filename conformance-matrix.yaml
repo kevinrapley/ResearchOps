@@ -1,4 +1,16 @@
 records:
+  - id: flux-semantic-interactive-coverage
+    control: Every rendered or dynamically inserted ResearchOps link, button, field, form and help control receives privacy-safe purpose-led Flux key and role attributes before capture, while the positional fallback remains available for unforeseen controls.
+    evidence:
+      - public/js/flux-researchops-tracker.1.2.0.js
+      - public/js/project-dashboard.js
+      - tests/e2e/flux-semantic-coverage.spec.js
+      - tests/flux-semantic-instrumentation.test.js
+      - docs/agent-audit/reasoning/2026/07/12/flux-semantic-interactive-coverage.md
+    status: implemented
+    risk: high
+    owner: repository-maintainers
+
   - id: flux-tracker-inactivity-session-boundary
     control: ResearchOps creates a new pseudonymous Flux session after 30 minutes without a captured interaction while retaining the returning visitor identifier.
     evidence:

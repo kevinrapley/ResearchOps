@@ -65,7 +65,8 @@
 
 	{{ govukDetails({
 		summaryText: "What happens next",
-		html: '<p class="govuk-body">ResearchOps creates a participant record and links it to the selected study.</p><p class="govuk-body">This does not send an email, create a consent request or schedule a session. Those actions happen separately from the study participants area.</p>'
+		html: '<p class="govuk-body">ResearchOps creates a participant record and links it to the selected study.</p><p class="govuk-body">This does not send an email, create a consent request or schedule a session. Those actions happen separately from the study participants area.</p>',
+		attributes: { "data-flux-key": "button.project.participant-next-steps", "data-flux-role": "control" }
 	}) }}
 
 	{{ govukErrorSummary({

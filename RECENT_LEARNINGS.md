@@ -2,6 +2,14 @@
 
 This file records repeatable repository-specific lessons for ResearchOps agents and maintainers. It is not a changelog.
 
+## 2026-07-12 — Semantic analytics coverage needs both explicit purpose and a structural safety layer
+
+Context: Important controls gained reviewed `data-flux-*` attributes, but other links and dynamically inserted controls could still fall through to positional labels such as `auto.a.4`. Focus-only layout elements were also mistaken for controls because they carried `tabindex`.
+
+Learning: A service-wide analytics contract needs explicit purpose-led keys for important journeys plus a privacy-safe runtime annotation layer for the rest. The layer must write real semantic attributes, observe newly inserted controls and use only controlled structure—never visible text, entered values, query strings or record identifiers. Focusability alone does not make an element an interactive control.
+
+Action: Browser-audit every rendered page and dynamic insertion path for `data-flux-key` and `data-flux-role`, reject `auto.*` and generic purpose endings in that audit, require custom controls to expose an interactive role, and retain the positional fallback only as an operational safety net.
+
 ## 2026-07-12 — Programmatic focus needs publisher-declared purpose and origin
 
 A generated DOM key can show that a text area received focus, but not why. Important progressive-disclosure journeys should declare stable keys on the opener, form, field and actions, and mark deliberately automatic focus. The tracker should record focus entry separately from field exit so keyboard typing is not described as mouse input merely because a pointer ended focus.

@@ -202,7 +202,8 @@
 			<div class="govuk-grid-column-one-third">
 				{{ govukDetails({
 					summaryText: "What happens next",
-					html: '<p class="govuk-body">ResearchOps creates a participant record and links it to this study.</p><p class="govuk-body">This does not send an email, create a consent request or schedule a session. Those actions happen separately from this page.</p>'
+					html: '<p class="govuk-body">ResearchOps creates a participant record and links it to this study.</p><p class="govuk-body">This does not send an email, create a consent request or schedule a session. Those actions happen separately from this page.</p>',
+					attributes: { "data-flux-key": "button.study.participant-next-steps", "data-flux-role": "control" }
 				}) }}
 			</div>
 		</div>

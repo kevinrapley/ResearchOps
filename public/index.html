@@ -16,7 +16,7 @@
 
 		<script type="module" src="/components/layout.js?v=govuk-page-chrome-20260702-1" defer></script>
 		<script type="module" src="/js/govuk-frontend-init.js?v=govuk-page-chrome-20260702-1" defer></script>
-		<script type="module" src="/js/flux-researchops-tracker.1.2.0.js?v=1.2.5" defer></script>
+		<script type="module" src="/js/flux-researchops-tracker.1.2.0.js?v=1.2.6" defer></script>
 	</head>
 	<body class="govuk-template__body researchops-home-front-page" data-flux-page="page.home">
 		<script>
@@ -71,7 +71,11 @@
 									</button>
 									<audio preload="metadata" src="/audio/researchops-explainer.m4a"></audio>
 								</div>
-								<details class="govuk-details researchops-explainer-transcript">
+								<details
+									class="govuk-details researchops-explainer-transcript"
+									data-flux-key="button.navigation.audio-explainer-transcript"
+									data-flux-role="control"
+								>
 									<summary class="govuk-details__summary">
 										<span class="govuk-details__summary-text">Text alternative for audio explainer</span>
 									</summary>

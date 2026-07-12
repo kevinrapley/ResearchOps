@@ -1,0 +1,34 @@
+# Flux semantic interactive coverage
+
+## Task summary
+
+Keep Flux fallback journey events visible while ensuring ResearchOps supplies strong semantic context for links and interactive elements across static and dynamically rendered interfaces.
+
+## Decisions
+
+- Retain the existing `auto.*` fallback as the final defensive path; do not hide or rewrite historical fallback events.
+- Write `data-flux-key` and `data-flux-role` onto current controls before consent capture and observe newly inserted controls.
+- Prefer explicit reviewed keys on important journeys, including objective editing and participant actions.
+- Derive missing purpose only from controlled structural attributes and destination paths without query strings; never use visible text, accessible names, entered values or record identifiers.
+- Exclude focus-management and display-only `tabindex` targets. Custom interactive controls must declare an interactive role.
+
+## Implementation
+
+- The versioned ResearchOps tracker annotates links, buttons, fields, forms and details controls and watches DOM insertions with `MutationObserver`.
+- Dynamic project description, objective editing, objective textarea and participant actions have explicit semantic attributes.
+- Previously generic help/details controls have explicit purpose-led attributes.
+- The tracker cache key advances to `v=1.2.6` without changing event schema `1.1.0`.
+
+## Validation
+
+- Focused tracker, semantic markup, focus narrative and session lifecycle tests passed.
+- A Chromium audit loaded every committed rendered page and found no missing semantic key/role attributes, `auto.*` keys or generic `.control`, `.field` or `.form` endings.
+- A Chromium mutation test verified that controls inserted after page load receive purpose-led keys and roles while `<main tabindex="-1">` remains excluded.
+- `npm test` passed all 365 repository tests.
+- `npm run lint` completed with zero errors and the existing warning baseline.
+- `npm run validate` passed the governed repository contract, trace, generated-output, route-state and performance gates.
+
+## Residual risk
+
+- The fallback remains reachable for an unforeseen malformed control, as requested; it is not expected on the audited ResearchOps DOM.
+- Historical fallback events retain their original labels because their missing purpose cannot be reconstructed safely after capture.

@@ -13,24 +13,35 @@ function storage() {
 	};
 }
 
-function element({ key, tagName, type = '', autofocus = false, id = '' }) {
+function element({ key, tagName, type = '', autofocus = false, id = '', name = '', href = '' }) {
 	const listeners = new Map();
 	const node = {
-		dataset: { fluxKey: key, fluxRole: tagName === 'TEXTAREA' ? 'field' : 'control' },
+		dataset: {
+			...(key ? { fluxKey: key } : {}),
+			fluxRole: tagName === 'TEXTAREA' ? 'field' : 'control',
+		},
 		tagName,
 		type,
 		id,
+		name,
+		href,
 		autocomplete: '',
 		value: '',
+		attributes: [],
+		getAttribute(attribute) {
+			if (attribute === 'href') return href || null;
+			return null;
+		},
+		setAttribute(attribute, value) {
+			if (attribute === 'data-flux-key') this.dataset.fluxKey = value;
+			if (attribute === 'data-flux-role') this.dataset.fluxRole = value;
+		},
 		closest: () => node,
 		matches(selector) {
 			if (selector === 'input') return tagName === 'INPUT';
-			if (
-				selector.includes('input:not') ||
-				selector.includes('textarea') ||
-				selector.includes('select')
-			)
-				return tagName === 'TEXTAREA';
+			if (tagName === 'A') return selector.split(',').includes('a');
+			if (tagName === 'BUTTON') return selector.split(',').includes('button');
+			if (tagName === 'TEXTAREA') return selector.includes('textarea');
 			return selector.includes(tagName.toLowerCase());
 		},
 		addEventListener(name, handler) {
@@ -110,6 +121,19 @@ test('records automatic field focus separately from keyboard input and mouse foc
 	assert.equal(requests[1].key_press_count, 101);
 	assert.equal(requests[1].duration_ms, 28_800);
 	assert.equal(requests[1].pointer_type, 'mouse');
+});
+
+test('adds semantic data attributes to previously uninstrumented interactive elements', () => {
+	const { context } = harness();
+	const link = element({ tagName: 'A', id: 'journal-entry-edit-link', href: '#' });
+	const field = element({ tagName: 'TEXTAREA', id: 'objective-editor-0' });
+	context.link = link;
+	context.field = field;
+
+	assert.equal(vm.runInContext('stableKey(link)', context), 'link.navigation.journal-entry-edit');
+	assert.equal(link.dataset.fluxKey, 'link.navigation.journal-entry-edit');
+	assert.equal(vm.runInContext('stableKey(field)', context), 'field.project.objective-editor');
+	assert.equal(field.dataset.fluxKey, 'field.project.objective-editor');
 });
 
 test('classifies an associated label click as pointer focus', () => {

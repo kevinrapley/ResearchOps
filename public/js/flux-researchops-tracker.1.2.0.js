@@ -9,7 +9,8 @@ const SESSION_TIMEOUT_MS = 30 * 60 * 1000;
 const SAFE_KEY = /^[A-Za-z0-9._:-]{1,120}$/;
 const SAFE_ROLE = new Set(['field', 'form', 'control', 'page', 'service', 'environment']);
 const SAFE_AUTH_MILESTONE = /^auth\.otp\.(requested|succeeded|failed)$/;
-const CONTROL_SELECTOR = 'a,button,input,select,textarea,[role="button"],[tabindex]';
+const CONTROL_SELECTOR = 'a,button,input,select,textarea,[role="button"]';
+const SEMANTIC_SELECTOR = `${CONTROL_SELECTOR},form,details`;
 const focusState = new WeakMap();
 const fieldVisits = new Map();
 const recentClicks = [];
@@ -22,6 +23,8 @@ window.researchOpsFlux = Object.freeze({ milestone });
 if (PRODUCTION_HOSTS.has(window.location.hostname)) startTracker();
 
 function startTracker() {
+	annotateInteractiveElements(document);
+	observeInteractiveElements();
 	if (window.localStorage.getItem(CONSENT_KEY) === 'yes') {
 		instrument();
 		return;
@@ -56,6 +59,23 @@ function instrument() {
 	document.addEventListener('submit', trackSubmit, true);
 	document.addEventListener('invalid', trackInvalid, true);
 	document.addEventListener('toggle', trackHelp, true);
+}
+
+function annotateInteractiveElements(root) {
+	if (root?.matches?.(SEMANTIC_SELECTOR)) ensureSemanticAttributes(root);
+	for (const element of root?.querySelectorAll?.(SEMANTIC_SELECTOR) ?? []) ensureSemanticAttributes(element);
+}
+
+function observeInteractiveElements() {
+	if (typeof MutationObserver !== 'function' || !document.documentElement) return;
+	const observer = new MutationObserver((records) => {
+		for (const record of records) {
+			for (const node of record.addedNodes) {
+				if (node?.nodeType === 1) annotateInteractiveElements(node);
+			}
+		}
+	});
+	observer.observe(document.documentElement, { childList: true, subtree: true });
 }
 
 function trackClick(event) {
@@ -213,12 +233,101 @@ function isExcludedSensitiveInput(element) {
 
 function stableKey(element) {
 	if (typeof element?.dataset?.fluxKey === 'string' && SAFE_KEY.test(element.dataset.fluxKey)) return element.dataset.fluxKey;
-	if (!element?.matches?.(CONTROL_SELECTOR)) return null;
+	const semanticKey = ensureSemanticAttributes(element);
+	if (semanticKey) return semanticKey;
+	if (!element?.matches?.(SEMANTIC_SELECTOR)) return null;
 	const position = [...document.querySelectorAll(CONTROL_SELECTOR)].indexOf(element);
 	if (position < 0) return null;
 	const kind = element.tagName.toLowerCase();
 	const type = typeof element.type === 'string' && /^[a-z]+$/i.test(element.type) ? `.${element.type.toLowerCase()}` : '';
 	return `auto.${kind}${type}.${position + 1}`;
+}
+
+function ensureSemanticAttributes(element) {
+	if (!element?.matches?.(SEMANTIC_SELECTOR)) return null;
+	const type = semanticControlType(element);
+	const role = type === 'field' ? 'field' : type === 'form' ? 'form' : 'control';
+	if (typeof element?.dataset?.fluxKey === 'string' && SAFE_KEY.test(element.dataset.fluxKey)) {
+		if (!SAFE_ROLE.has(element.dataset.fluxRole)) element.setAttribute?.('data-flux-role', role);
+		return element.dataset.fluxKey;
+	}
+	const purpose = semanticPurpose(element, type);
+	if (!type || !purpose) return null;
+	const scope = type === 'link' ? 'navigation' : pageScope();
+	const key = `${type}.${scope}.${purpose}`.slice(0, 120).replace(/[.:-]+$/, '');
+	if (!SAFE_KEY.test(key)) return null;
+	element.setAttribute?.('data-flux-key', key);
+	element.setAttribute?.('data-flux-role', role);
+	return key;
+}
+
+function semanticControlType(element) {
+	const tag = String(element?.tagName || '').toLowerCase();
+	if (tag === 'a') return 'link';
+	if (['input', 'select', 'textarea'].includes(tag)) return 'field';
+	if (tag === 'form') return 'form';
+	return 'button';
+}
+
+function semanticPurpose(element, type) {
+	const dataPurpose = [...(element.attributes ?? [])]
+		.map((attribute) => attribute?.name || '')
+		.find((name) => name.startsWith('data-') && !['data-flux-key', 'data-flux-role', 'data-flux-sensitive', 'data-module'].includes(name));
+	const hrefPurpose = type === 'link' ? semanticHref(element.getAttribute?.('href') || element.href) : '';
+	const form = element.closest?.('form');
+	const container = element.closest?.('nav[id], section[id], article[id], [role="region"][id]');
+	const identifier = type === 'field' ? element.name || element.id : element.id || element.name;
+	const candidate = identifier
+		|| dataPurpose?.slice(5)
+		|| element.getAttribute?.('aria-controls')
+		|| hrefPurpose
+		|| form?.id
+		|| form?.name
+		|| container?.id
+		|| (type === 'field' ? element.type || 'field' : type === 'form' ? 'form' : element.type || 'control');
+	return semanticSlug(candidate);
+}
+
+function semanticHref(value) {
+	const href = String(value || '').trim();
+	if (!href || href === '#') return '';
+	try {
+		const origin = window.location.origin;
+		const url = new URL(href, origin && origin !== 'null' ? origin : 'https://research-operations.com');
+		const hash = url.hash.replace(/^#/, '');
+		const path = url.pathname.replace(/^\/pages\/?/, '').replace(/^\/+|\/+$/g, '');
+		return hash || path || (url.pathname === '/' ? 'home' : '');
+	} catch {
+		return '';
+	}
+}
+
+function semanticSlug(value) {
+	return String(value || '')
+		.replace(/([a-z0-9])([A-Z])/g, '$1-$2')
+		.toLowerCase()
+		.replace(/[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}/g, '')
+		.replace(/(^|-)(rec[a-z0-9]{10,}|[a-f0-9]{12,}|\d{4,})(?=-|$)/g, '$1')
+		.replace(/^(btn|button|link|input)-/, '')
+		.replace(/-(btn|button|link|input)$/, '')
+		.replace(/(^|-)desc($|-)/g, '$1description$2')
+		.replace(/(^|-)\d+(?=-|$)/g, '$1')
+		.replace(/[^a-z0-9]+/g, '-')
+		.replace(/^-+|-+$/g, '')
+		.slice(0, 80);
+}
+
+function pageScope() {
+	const path = window.location.pathname.toLowerCase();
+	if (path.includes('journal')) return 'journal';
+	if (path.includes('account') || path.includes('sign-in')) return 'account';
+	if (path.includes('repository')) return 'repository';
+	if (path.includes('sourcebook')) return 'sourcebook';
+	if (path.includes('study')) return 'study';
+	if (path.includes('consent')) return 'consent';
+	if (path.includes('search')) return 'search';
+	if (path.includes('session')) return 'session';
+	return 'project';
 }
 
 function pageKey() {

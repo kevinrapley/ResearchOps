@@ -21,7 +21,7 @@
 
 		<script type="module" src="/components/layout.js?v=govuk-page-chrome-20260702-1" defer></script>
 		<script type="module" src="/js/govuk-frontend-init.js?v=govuk-page-chrome-20260702-1" defer></script>
-		<script type="module" src="/js/flux-researchops-tracker.1.2.0.js?v=1.2.5" defer></script>
+		<script type="module" src="/js/flux-researchops-tracker.1.2.0.js?v=1.2.6" defer></script>
 	</head>
 	<body class="govuk-template__body" data-flux-page="page.study-session">
 		<script>
@@ -108,7 +108,7 @@
 
 					<div class="govuk-grid-row study-session-summary-grid">
 						<div class="govuk-grid-column-one-half">
-							<details class="govuk-details">
+							<details class="govuk-details" data-flux-key="button.study.participant-details" data-flux-role="control">
 								<summary class="govuk-details__summary">
 									<span class="govuk-details__summary-text">Participant details</span>
 								</summary>
@@ -119,7 +119,7 @@
 						</div>
 
 						<div class="govuk-grid-column-one-half">
-							<details class="govuk-details">
+							<details class="govuk-details" data-flux-key="button.study.consent-summary" data-flux-role="control">
 								<summary class="govuk-details__summary">
 									<span class="govuk-details__summary-text">Consent summary</span>
 								</summary>
@@ -370,7 +370,7 @@
 						</div>
 					</div>
 
-					<details class="govuk-details">
+					<details class="govuk-details" data-flux-key="button.study.note-prefix-help" data-flux-role="control">
 						<summary class="govuk-details__summary">
 							<span class="govuk-details__summary-text">How shorthand prefixes work</span>
 						</summary>
