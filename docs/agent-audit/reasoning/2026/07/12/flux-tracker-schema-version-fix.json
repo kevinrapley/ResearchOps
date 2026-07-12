@@ -1,0 +1,52 @@
+{
+  "schemaVersion": "agent-trace-promotion/v1",
+  "title": "Restore ResearchOps Flux event-contract compatibility.",
+  "sourceTrace": "repository-audited fix branch",
+  "markdownReport": "docs/agent-audit/reasoning/2026/07/12/flux-tracker-schema-version-fix.md",
+  "jsonSummary": "docs/agent-audit/reasoning/2026/07/12/flux-tracker-schema-version-fix.json",
+  "run": {
+    "taskSummary": "Fix HTTP 400 invalid_event responses from the ResearchOps Flux tracker."
+  },
+  "bundles": [
+    "github-diamond",
+    "researchops-developer-control",
+    "multi-functional-team",
+    "cloudflare"
+  ],
+  "filesRead": [
+    "AGENTS.md",
+    "RECENT_LEARNINGS.md",
+    "public/js/flux-researchops-tracker.1.2.0.js",
+    "tests/flux-behaviour-tracker-route-state.test.js",
+    "docs/deployment/generated-html-policy.md"
+  ],
+  "filesWritten": [
+    "public/js/flux-researchops-tracker.1.2.0.js",
+    "src/govuk/templates/layouts/researchops.njk",
+    "public/partials/html-head.html",
+    "tests/flux-behaviour-tracker-route-state.test.js",
+    "RECENT_LEARNINGS.md",
+    "conformance-matrix.yaml",
+    "gap-register.yaml",
+    "agent-evidence.yaml"
+  ],
+  "validations": [
+    "production browser-shaped POST returned HTTP 400 before the fix",
+    "focused route-state test failed before and passed after the fix",
+    "npm run build",
+    "npm run format:check",
+    "npm run lint",
+    "npm test: 358 passed",
+    "npm run validate",
+    "agent evidence validation passed",
+    "recent-learnings grader: 1.0 pass",
+    "code-confidence grader: 0.65 fail due unmapped documentation and structured-evidence criteria"
+  ],
+  "issues": [
+    "The JavaScript asset version was incorrectly reused as the cross-repository event-contract version."
+  ],
+  "warnings": [
+    "Fire-and-forget tracker delivery still lacks first-class failure observability.",
+    "The generic confidence grader cannot map its documentation or structured-evidence criteria to available evidence fields."
+  ]
+}

@@ -2,6 +2,14 @@
 
 This file records repeatable repository-specific lessons for ResearchOps agents and maintainers. It is not a changelog.
 
+## 2026-07-12 — Asset versions and event-contract versions are independent
+
+Context: The ResearchOps tracker asset was cache-busted as `1.2.0`, and its emitted `schema_version` was changed to match. Flux still accepted event contract `1.1.0`, so every production interaction was rejected with HTTP 400 while the fire-and-forget tracker hid the response.
+
+Learning: A JavaScript asset version identifies a deployed file; an event schema version identifies a shared producer-consumer contract. Changing one does not imply changing the other.
+
+Action: Pin the emitted schema version to the collector's published contract, assert that version independently from the asset URL, and use only the asset URL or cache key when forcing browsers to load tracker changes.
+
 ## 2026-07-11 — More telemetry categories must still be metadata-only
 
 Context: ResearchOps needed to support Flux’s full per-session demo-model view without exporting content. The safe additions were event categories for paste, undo and shortcut use, field revisits, help disclosures, validation transitions, submit attempts and rapid repeated clicks—not the text, labels, identifiers or validity messages behind them.
