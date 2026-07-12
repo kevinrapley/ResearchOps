@@ -9,7 +9,32 @@ const SESSION_TIMEOUT_MS = 30 * 60 * 1000;
 const SAFE_KEY = /^[A-Za-z0-9._:-]{1,120}$/;
 const SAFE_ROLE = new Set(['field', 'form', 'control', 'page', 'service', 'environment']);
 const SAFE_AUTH_MILESTONE = /^auth\.otp\.(requested|succeeded|failed)$/;
-const CONTROL_SELECTOR = 'a,button,input,select,textarea,[role="button"],[tabindex]';
+const SAFE_OPTION_PURPOSE_VALUES = new Set(['email', 'sms', 'phone']);
+const SAFE_DATA_PURPOSE_NAMES = new Set([
+	'data-approve-request',
+	'data-cancel-team-access-request',
+	'data-participant-hide',
+	'data-participant-reveal',
+	'data-record-consent',
+	'data-reject-request',
+	'data-researchops-explainer-toggle',
+	'data-sourcebook-gate-action',
+	'data-submit-route',
+	'data-submit-to-repository',
+]);
+const SAFE_DATA_PURPOSE_VALUES = new Map([
+	['data-act', new Set(['cancel-code-edit', 'cancel-delete', 'cancel-memo-edit', 'confirm-delete', 'confirm-delete-code', 'confirm-delete-memo', 'delete', 'delete-code', 'delete-memo', 'edit-code', 'edit-memo', 'reveal-contact', 'schedule'])],
+	['data-action', new Set(['ask-remove', 'cancel-remove', 'confirm-remove', 'reveal-contact', 'schedule'])],
+	['data-analysis', new Set(['co-occurrence', 'export', 'retrieval', 'timeline'])],
+	['data-cooccurrence-panel', new Set(['chart', 'clustered', 'heatmap', 'small-multiples', 'stacked', 'table'])],
+	['data-close-panel', new Set(['add-objective-panel', 'add-stakeholder-panel', 'add-user-group-panel'])],
+	['data-filter', new Set(['all', 'decisions', 'introspections', 'perceptions', 'procedures'])],
+	['data-memo-filter', new Set(['all', 'analytical', 'methodological', 'reflexive', 'theoretical'])],
+	['data-participants-page', new Set(['next', 'previous'])],
+	['data-project-action', new Set(['start'])],
+]);
+const CONTROL_SELECTOR = 'a,button,input,select,textarea,[role="button"]';
+const SEMANTIC_SELECTOR = `${CONTROL_SELECTOR},form,details`;
 const focusState = new WeakMap();
 const fieldVisits = new Map();
 const recentClicks = [];
@@ -22,6 +47,8 @@ window.researchOpsFlux = Object.freeze({ milestone });
 if (PRODUCTION_HOSTS.has(window.location.hostname)) startTracker();
 
 function startTracker() {
+	annotateInteractiveElements(document);
+	observeInteractiveElements();
 	if (window.localStorage.getItem(CONSENT_KEY) === 'yes') {
 		instrument();
 		return;
@@ -56,6 +83,23 @@ function instrument() {
 	document.addEventListener('submit', trackSubmit, true);
 	document.addEventListener('invalid', trackInvalid, true);
 	document.addEventListener('toggle', trackHelp, true);
+}
+
+function annotateInteractiveElements(root) {
+	if (root?.matches?.(SEMANTIC_SELECTOR)) ensureSemanticAttributes(root);
+	for (const element of root?.querySelectorAll?.(SEMANTIC_SELECTOR) ?? []) ensureSemanticAttributes(element);
+}
+
+function observeInteractiveElements() {
+	if (typeof MutationObserver !== 'function' || !document.documentElement) return;
+	const observer = new MutationObserver((records) => {
+		for (const record of records) {
+			for (const node of record.addedNodes) {
+				if (node?.nodeType === 1) annotateInteractiveElements(node);
+			}
+		}
+	});
+	observer.observe(document.documentElement, { childList: true, subtree: true });
 }
 
 function trackClick(event) {
@@ -213,12 +257,142 @@ function isExcludedSensitiveInput(element) {
 
 function stableKey(element) {
 	if (typeof element?.dataset?.fluxKey === 'string' && SAFE_KEY.test(element.dataset.fluxKey)) return element.dataset.fluxKey;
-	if (!element?.matches?.(CONTROL_SELECTOR)) return null;
+	const semanticKey = ensureSemanticAttributes(element);
+	if (semanticKey) return semanticKey;
+	if (!element?.matches?.(SEMANTIC_SELECTOR)) return null;
 	const position = [...document.querySelectorAll(CONTROL_SELECTOR)].indexOf(element);
 	if (position < 0) return null;
 	const kind = element.tagName.toLowerCase();
 	const type = typeof element.type === 'string' && /^[a-z]+$/i.test(element.type) ? `.${element.type.toLowerCase()}` : '';
 	return `auto.${kind}${type}.${position + 1}`;
+}
+
+function ensureSemanticAttributes(element) {
+	if (!element?.matches?.(SEMANTIC_SELECTOR)) return null;
+	const type = semanticControlType(element);
+	const role = type === 'field' ? 'field' : type === 'form' ? 'form' : 'control';
+	if (typeof element?.dataset?.fluxKey === 'string' && SAFE_KEY.test(element.dataset.fluxKey)) {
+		if (!SAFE_ROLE.has(element.dataset.fluxRole)) element.setAttribute?.('data-flux-role', role);
+		return element.dataset.fluxKey;
+	}
+	const purpose = semanticPurpose(element, type);
+	if (!type || !purpose) return null;
+	const scope = type === 'link' ? 'navigation' : pageScope();
+	const key = `${type}.${scope}.${purpose}`.slice(0, 120).replace(/[.:-]+$/, '');
+	if (!SAFE_KEY.test(key)) return null;
+	element.setAttribute?.('data-flux-key', key);
+	element.setAttribute?.('data-flux-role', role);
+	return key;
+}
+
+function semanticControlType(element) {
+	const tag = String(element?.tagName || '').toLowerCase();
+	if (tag === 'a') return 'link';
+	if (['input', 'select', 'textarea'].includes(tag)) return 'field';
+	if (tag === 'form') return 'form';
+	return 'button';
+}
+
+function semanticPurpose(element, type) {
+	const dataPurpose = semanticDataPurpose(element);
+	const hrefPurpose = type === 'link' ? semanticHref(element.getAttribute?.('href') || element.href) : '';
+	const form = element.closest?.('form');
+	const container = element.closest?.('nav[id], section[id], article[id], [role="region"][id]');
+	const identifier = type === 'field' ? semanticFieldIdentifier(element) : element.id || element.name;
+	const candidate = identifier
+		|| dataPurpose
+		|| element.getAttribute?.('aria-controls')
+		|| hrefPurpose
+		|| form?.id
+		|| form?.name
+		|| container?.id;
+	const preserveNumericOrdinal = type === 'field'
+		&& ['checkbox', 'radio'].includes(String(element?.type || '').toLowerCase())
+		&& candidate === identifier;
+	return semanticSlug(candidate, { preserveNumericOrdinal });
+}
+
+function semanticFieldIdentifier(element) {
+	const inputType = String(element?.type || '').toLowerCase();
+	if (!['checkbox', 'radio'].includes(inputType)) return element.name || element.id;
+	const group = semanticSlug(element.name || element.id);
+	const value = SAFE_OPTION_PURPOSE_VALUES.has(element.value) ? semanticSlug(element.value) : '';
+	if (group && value) return `${group}-${value}`;
+	return semanticSlug(element.id, { preserveNumericOrdinal: true }) || group;
+}
+
+function semanticDataPurpose(element) {
+	for (const [name, values] of SAFE_DATA_PURPOSE_VALUES) {
+		const value = element.getAttribute?.(name);
+		if (!values.has(value)) continue;
+		if (name === 'data-act' || name === 'data-action') return value;
+		return `${name.slice(5)}-${value}`;
+	}
+	const name = [...(element.attributes ?? [])]
+		.map((attribute) => attribute?.name || '')
+		.find((attributeName) => SAFE_DATA_PURPOSE_NAMES.has(attributeName));
+	return name?.slice(5) || '';
+}
+
+function semanticHref(value) {
+	const href = String(value || '').trim();
+	if (!href || href === '#') return '';
+	try {
+		const origin = window.location.origin;
+		const url = new URL(href, origin && origin !== 'null' ? origin : 'https://research-operations.com');
+		if (url.protocol === 'mailto:') return 'contact-email';
+		if (url.protocol === 'tel:') return 'contact-telephone';
+		if (!['http:', 'https:'].includes(url.protocol)) return 'external-action';
+		const hash = url.hash.replace(/^#/, '');
+		const path = url.pathname.replace(/^\/pages\/?/, '').replace(/^\/+|\/+$/g, '');
+		return hash || path || (url.pathname === '/' ? 'home' : '');
+	} catch {
+		return '';
+	}
+}
+
+function semanticSlug(value, { preserveNumericOrdinal = false } = {}) {
+	return String(value || '')
+		.replace(/([a-z0-9])([A-Z])/g, '$1-$2')
+		.toLowerCase()
+		.replace(/[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}/g, '')
+		.replace(/(^|-)(rec[a-z0-9]{10,}|[a-f0-9]{12,}|\d{4,})(?=-|$)/g, '$1')
+		.replace(/^(btn|button|link|input)-/, '')
+		.replace(/-(btn|button|link|input)$/, '')
+		.replace(/(^|-)desc($|-)/g, '$1description$2')
+		.replace(preserveNumericOrdinal ? /$^/ : /(^|-)\d+(?=-|$)/g, '$1')
+		.replace(/[^a-z0-9]+/g, '-')
+		.replace(/^-+|-+$/g, '')
+		.slice(0, 80);
+}
+
+function pageScope() {
+	const declared = typeof document.body?.dataset?.fluxPage === 'string' && SAFE_KEY.test(document.body.dataset.fluxPage)
+		? document.body.dataset.fluxPage.replace(/^page\./, '').toLowerCase()
+		: '';
+	const path = declared || window.location.pathname.replace(/^\/pages\/?/, '').replace(/^\/+|\/+$/g, '').toLowerCase();
+	for (const [prefix, scope] of [
+		['projects-journals', 'journal'],
+		['journal', 'journal'],
+		['project', 'project'],
+		['projects', 'project'],
+		['account', 'account'],
+		['repository', 'repository'],
+		['sourcebook', 'sourcebook'],
+		['study', 'study'],
+		['consent', 'consent'],
+		['search', 'search'],
+		['sessions', 'session'],
+		['start', 'start'],
+		['team', 'team'],
+		['compliance', 'compliance'],
+		['notes', 'notes'],
+		['product-proof', 'product'],
+		['home', 'home'],
+	]) {
+		if (path === prefix || path.startsWith(`${prefix}-`) || path.startsWith(`${prefix}/`)) return scope;
+	}
+	return semanticSlug(path).split('-')[0] || 'page';
 }
 
 function pageKey() {

@@ -1,83 +1,94 @@
-task_id: flux-add-objective-semantic-journey
+task_id: flux-semantic-interactive-coverage
 mode: repo-fix
 repository: ResearchOps
 risk_level: high
-base_branch: fix/flux-session-inactivity
-working_branch: fix/flux-objective-journey-context
+base_branch: main
+working_branch: fix/semantic-objective-edit-tracking
 files_read:
+  - README.md
   - AGENTS.md
   - RECENT_LEARNINGS.md
-  - docs/implementation/flux-semantic-instrumentation.md
-  - public/js/flux-researchops-tracker.1.2.0.js
-  - src/govuk/templates/pages/project-dashboard.njk
-  - public/js/project-dashboard.js
+  - CONTRIBUTING.md
+  - SECURITY.md
+  - repository-contract.yaml
+  - github-settings.yaml
   - conformance-matrix.yaml
   - gap-register.yaml
   - harm-register.yaml
+  - docs/implementation/flux-semantic-instrumentation.md
+  - public/js/flux-researchops-tracker.1.2.0.js
+  - public/js/project-dashboard.js
+  - public/js/search-page.js
 files_changed:
   - public/js/flux-researchops-tracker.1.2.0.js
-  - src/govuk/templates/pages/project-dashboard.njk
+  - public/js/project-dashboard.js
   - src/govuk/templates/layouts/researchops.njk
+  - src/govuk/templates/pages/home.njk
+  - src/govuk/templates/pages/projects-journals.njk
+  - src/govuk/templates/pages/project-dashboard-participants.njk
+  - src/govuk/templates/pages/study-participants.njk
+  - src/govuk/templates/pages/study-session.njk
+  - src/govuk/templates/pages/study.njk
   - public/partials/html-head.html
+  - public/index.html
   - public/pages/**/index.html
+  - tests/e2e/flux-semantic-coverage.spec.js
+  - tests/flux-behaviour-tracker-route-state.test.js
   - tests/flux-focus-narrative-events.test.js
   - tests/flux-semantic-instrumentation.test.js
-  - tests/flux-behaviour-tracker-route-state.test.js
   - docs/implementation/flux-semantic-instrumentation.md
+  - docs/agent-audit/reasoning/2026/07/12/flux-semantic-interactive-coverage.md
+  - docs/agent-audit/reasoning/2026/07/12/flux-semantic-interactive-coverage.json
   - RECENT_LEARNINGS.md
   - conformance-matrix.yaml
   - gap-register.yaml
   - harm-register.yaml
 commands_run:
-  - command: node --test tests/flux-semantic-instrumentation.test.js
-    state: observed
-    status: failed
-    evidence: The canonical template lacked every Add Objective semantic key.
-  - command: node --test tests/flux-focus-narrative-events.test.js
-    state: observed
-    status: failed
-    evidence: The tracker had no focus-origin event implementation.
-  - command: npm run build:govuk-pages
+  - command: node --test tests/flux-behaviour-tracker-route-state.test.js tests/flux-semantic-instrumentation.test.js tests/flux-focus-narrative-events.test.js tests/flux-session-lifecycle.test.js
     state: verified
     status: passed
-    evidence: Canonical GOV.UK output was regenerated with Add Objective attributes and tracker cache key v1.2.5.
-  - command: focused Flux tracker and rendered-route tests
+    evidence: Eight focused tests passed for cache coverage, semantic attributes, focus origin and the 30-minute session boundary.
+  - command: npm run test:e2e -- --grep 'semantic Flux context|inserted after page load'
+    state: observed
+    status: failed
+    evidence: The first Chromium run exposed an opaque-origin link derivation defect and a selector-audit defect; neither assertion was weakened.
+  - command: npm run test:e2e -- --grep 'semantic Flux context|inserted after page load'
     state: verified
     status: passed
-    evidence: Six assertions passed across semantic markup, focus events, session lifecycle, route coverage and project-dashboard rendering.
+    evidence: Both Chromium tests passed across every rendered page and a post-load dynamic insertion path, with no missing, auto or generic semantic attributes.
+  - command: Codex review thread remediation focused tests
+    state: verified
+    status: passed
+    evidence: Fourteen focused tests passed after three Codex review rounds, including contact-protocol redaction, allow-listed action distinctions, controlled page scopes, distinct checkbox options, framework-attribute exclusion and retained positional fallback; both Chromium coverage tests passed.
   - command: npm run build
     state: verified
     status: passed
-    evidence: GOV.UK assets, generated CSS and every canonical page were rebuilt.
+    evidence: GOV.UK assets, generated CSS and every canonical static page were rebuilt with tracker cache key v1.2.6.
   - command: npm test
     state: verified
     status: passed
-    evidence: All 364 tests passed, including Codex review regressions for associated-label focus and keyboard activation.
-  - command: npm run format:check
-    state: verified
-    status: passed
-    evidence: Prettier and generated CSS checks passed.
+    evidence: All 371 repository tests passed after the third Codex review remediation.
   - command: npm run lint
     state: verified
     status: passed
-    evidence: No errors; the existing warning baseline remained visible.
+    evidence: Formatting, generated CSS checks and ESLint completed with zero errors; the existing 236-warning baseline remained visible.
   - command: npm run validate
     state: verified
     status: passed
-    evidence: Repository contract, operating model, trace coverage, generated output, route-state checks and performance audit completed.
+    evidence: Repository contract, operating model, trace coverage, rendered output, sourcebook integrity, JavaScript imports, route-state checks and performance audit completed.
 recent_learnings:
   read: true
   updated: true
-  entry: Programmatic focus needs publisher-declared purpose and origin.
+  entry: Semantic analytics coverage needs both explicit purpose and a structural safety layer.
 security:
   secrets_changed: false
   authentication_changed: false
 privacy:
-  data_collection_scope_changed: true
-  assessment: One content-free focus-origin event is added; no entered value, visible text, account identity or record identifier is captured.
+  data_collection_scope_changed: false
+  assessment: Existing metadata events receive stronger content-free purpose keys. Derivation ignores visible and accessible text, entered values, query strings and arbitrary data values; contact protocols map to fixed purposes; UUID, record-token, long hexadecimal and numeric identifier patterns are stripped.
 accessibility:
   required: true
-  assessment: Automatic focus remains existing page behaviour and is now accurately represented; keyboard input is no longer attributed to a mouse.
+  assessment: Focus-management and display-only tabindex targets are no longer mistaken for controls; custom controls remain covered through their interactive role.
 risks:
-  - Other uninstrumented controls may retain generic fallback keys until mapped.
-  - Production behaviour requires post-deployment verification after both stacked pull requests merge.
+  - A malformed unforeseen control can still reach the retained positional fallback by product decision.
+  - Historical fallback events cannot be safely reconstructed from data that was never captured.

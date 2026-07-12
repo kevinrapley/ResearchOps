@@ -19,8 +19,20 @@ harms:
       - ResearchOps service analysts
     likelihood: low
     severity: medium
-    mitigation: Declare stable content-free keys across the Add Objective journey, record automatic focus explicitly, and use only a recent pointer or Tab event as the focus-exit method.
+    mitigation: Declare stable content-free keys across important journeys, annotate current and newly inserted controls before capture, browser-audit purpose-led coverage, record automatic focus explicitly, and use only a recent pointer or Tab event as the focus-exit method.
     residual_risk: low
     owner: repository-maintainers
     escalation_route: Product owner, accessibility lead and privacy lead
+    release_decision: proceed-with-monitoring
+  - id: HARM-FLUX-SEMANTIC-002
+    harm: Automatically derived analytics keys could disclose user content or record identifiers if uncontrolled DOM values were treated as semantic purpose.
+    affected_groups:
+      - Consenting ResearchOps visitors
+      - Research participants represented in ResearchOps records
+    likelihood: low
+    severity: high
+    mitigation: Derive only from controlled attribute names, allow-listed action and option values, field names, sanitised structural option IDs, element IDs, HTTP(S) destination paths without query strings, controlled page keys and container identities; map mail and telephone links to fixed contact purposes; ignore visible and accessible text, entered values, arbitrary data values and URL query data; strip UUIDs, long record tokens, long hexadecimal tokens and non-structural numeric ordinals; retain explicit reviewed keys for important dynamic journeys.
+    residual_risk: low
+    owner: repository-maintainers
+    escalation_route: Product owner, security lead and privacy lead
     release_decision: proceed-with-monitoring

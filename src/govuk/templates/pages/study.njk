@@ -332,7 +332,8 @@
 	{{ govukDetails({
 		classes: "study-sourcebook-evidence-details govuk-!-margin-bottom-8",
 		summaryText: "Sourcebook evidence record",
-		html: SourcebookEvidenceLedger(sourcebookEvidenceLedger)
+		html: SourcebookEvidenceLedger(sourcebookEvidenceLedger),
+		attributes: { "data-flux-key": "button.study.sourcebook-evidence-record", "data-flux-role": "control" }
 	}) }}
 </div>
 {% endblock %}

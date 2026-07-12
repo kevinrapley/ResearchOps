@@ -76,14 +76,16 @@
 			<div class="govuk-grid-column-one-half">
 				{{ govukDetails({
 					summaryText: "Participant details",
-					html: '<dl class="govuk-summary-list study-session-data-list" id="participant-details"></dl>'
+					html: '<dl class="govuk-summary-list study-session-data-list" id="participant-details"></dl>',
+					attributes: { "data-flux-key": "button.study.participant-details", "data-flux-role": "control" }
 				}) }}
 			</div>
 
 			<div class="govuk-grid-column-one-half">
 				{{ govukDetails({
 					summaryText: "Consent summary",
-					html: '<dl class="govuk-summary-list study-session-data-list" id="consent-summary"></dl>'
+					html: '<dl class="govuk-summary-list study-session-data-list" id="consent-summary"></dl>',
+					attributes: { "data-flux-key": "button.study.consent-summary", "data-flux-role": "control" }
 				}) }}
 			</div>
 		</div>
@@ -268,7 +270,8 @@
 			summaryText: "How shorthand prefixes work",
 			html: '<p class="govuk-body">Start a note with a prefix and a space to set its category, for example
 				<code>q</code> for a quote in the Fieldnotes framework. The prefix is removed from the saved note.
-				Notes without a prefix use the category selected above.</p>'
+				Notes without a prefix use the category selected above.</p>',
+			attributes: { "data-flux-key": "button.study.note-prefix-help", "data-flux-role": "control" }
 		}) }}
 
 		<section id="saved-notes-section" aria-labelledby="saved-notes-title" class="govuk-!-margin-top-6" hidden>
