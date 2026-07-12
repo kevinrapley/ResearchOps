@@ -66,13 +66,23 @@
 		{
 			"command": "git diff --check",
 			"result": "passed"
+		},
+		{
+			"command": "node --test tests/google-tag-manager-route-state.test.js tests/flux-behaviour-tracker-route-state.test.js",
+			"result": "passed after merging origin/main; both GTM and Flux coverage remain intact"
 		}
 	],
 	"issues": [
 		"The isolated worktree initially lacked installed dependencies; npm ci resolved the missing nunjucks package before validation.",
-		"No consent mechanism or privacy-review artefact exists for unconditional analytics across authenticated research pages; this is recorded as a high residual risk requiring escalation."
+		"No consent mechanism or privacy-review artefact exists for unconditional analytics across authenticated research pages; this is recorded as a high residual risk requiring escalation.",
+		"origin/main added Flux analytics at the same shared head and body insertion points. The merge retains Flux's module and page metadata, restores the GTM snippets, and regenerates all static pages from the combined sources."
 	],
 	"residualRisks": [
 		"Only the GTM container bootstrap is committed. Actual Google Analytics tags, retention and event configuration remain controlled in GTM and need privacy approval before non-essential analytics are enabled."
-	]
+	],
+	"mergeResolution": {
+		"base": "origin/main",
+		"strategy": "Merged without rewriting published branch history.",
+		"outcome": "Retained Flux integration and GTM integration in the shared layout, static page normaliser, governance registers and generated HTML."
+	}
 }

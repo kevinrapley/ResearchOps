@@ -19,10 +19,10 @@
 	<nav class="govuk-breadcrumbs" aria-label="Breadcrumb">
 		<ol class="govuk-breadcrumbs__list">
 			<li class="govuk-breadcrumbs__list-item">
-				<a class="govuk-breadcrumbs__link" href="/">Home</a>
+				<a class="govuk-breadcrumbs__link" href="/" data-flux-key="link.breadcrumb.home" data-flux-role="control">Home</a>
 			</li>
 			<li class="govuk-breadcrumbs__list-item">
-				<a class="govuk-breadcrumbs__link" href="/pages/sourcebook/">Sourcebook</a>
+				<a class="govuk-breadcrumbs__link" href="/pages/sourcebook/" data-flux-key="link.breadcrumb.sourcebook" data-flux-role="control">Sourcebook</a>
 			</li>
 			<li class="govuk-breadcrumbs__list-item" aria-current="page">{{ pillar.title }}</li>
 		</ol>
@@ -68,13 +68,13 @@
 			<h2 class="govuk-heading-m" id="pillar-contents">Contents</h2>
 			<ol class="govuk-list govuk-list--number">
 				{% for section in pillar.sections %}
-					<li><a class="govuk-link" href="#{{ section.id | lower | replace(' ', '-') | replace('.', '-') }}">{{ section.title }}</a></li>
+					<li><a class="govuk-link" href="#{{ section.id | lower | replace(' ', '-') | replace('.', '-') }}" data-flux-key="link.sourcebook.contents.{{ section.id | lower | replace(' ', '-') | replace('.', '-') }}" data-flux-role="control">{{ section.title }}</a></li>
 				{% endfor %}
 				{% if pillar.glossary is defined and pillar.glossary.length %}
-					<li><a class="govuk-link" href="#glossary">Glossary</a></li>
+					<li><a class="govuk-link" href="#glossary" data-flux-key="link.sourcebook.contents.glossary" data-flux-role="control">Glossary</a></li>
 				{% endif %}
 				{% if pillar.changeHistory is defined and pillar.changeHistory.length %}
-					<li><a class="govuk-link" href="#change-history">Change history</a></li>
+					<li><a class="govuk-link" href="#change-history" data-flux-key="link.sourcebook.contents.change-history" data-flux-role="control">Change history</a></li>
 				{% endif %}
 			</ol>
 		</nav>
@@ -130,7 +130,7 @@
 										<dt class="govuk-summary-list__key">Related routes</dt>
 										<dd class="govuk-summary-list__value">
 											{% for route in clause.relatedAppRoutes %}
-												<a class="govuk-link" href="{{ route }}">{{ route }}</a>{% if not loop.last %}, {% endif %}
+											<a class="govuk-link" href="{{ route }}" data-flux-key="link.sourcebook.related-route.{{ clause.id | lower | replace(' ', '-') | replace('.', '-') }}.{{ loop.index }}" data-flux-role="control">{{ route }}</a>{% if not loop.last %}, {% endif %}
 											{% endfor %}
 										</dd>
 									</div>

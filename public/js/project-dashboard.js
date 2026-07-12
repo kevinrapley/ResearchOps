@@ -58,7 +58,7 @@ function setTagText(id, value, fallback) {
 
 function editableDescriptionHtml(description = "") {
 	const text = String(description || "").trim();
-	return `<p id="project-subtitle" class="govuk-body-l rops-dashboard-description" property="schema:description" role="button" tabindex="0" data-description-edit aria-label="Edit project description">${escapeHtml(text || "No project description yet.")}</p>`;
+	return `<p id="project-subtitle" class="govuk-body-l rops-dashboard-description" property="schema:description" role="button" tabindex="0" data-description-edit data-flux-key="button.project.edit-description" data-flux-role="control" aria-label="Edit project description">${escapeHtml(text || "No project description yet.")}</p>`;
 }
 
 function firstPresent(...values) {
@@ -434,7 +434,7 @@ function objectiveListHtml(objectives = []) {
 		const children = objective.children.length
 			? `<ul class="govuk-list govuk-list--bullet rops-objective-list__sublist">${objective.children.map((child) => `<li>${escapeHtml(child)}</li>`).join("")}</ul>`
 			: "";
-		return `<li data-objective-index="${index}"><div class="rops-objective-list__display" role="button" tabindex="0" data-objective-edit="${index}" aria-label="Edit objective: ${escapeHtml(objective.text)}"><span class="rops-objective-list__title">${escapeHtml(objective.text)}</span>${children}</div></li>`;
+		return `<li data-objective-index="${index}"><div class="rops-objective-list__display" role="button" tabindex="0" data-objective-edit="${index}" data-flux-key="button.project.edit-objective" data-flux-role="control" aria-label="Edit objective: ${escapeHtml(objective.text)}"><span class="rops-objective-list__title">${escapeHtml(objective.text)}</span>${children}</div></li>`;
 	});
 	return `<ol class="govuk-list govuk-list--number rops-objective-list">${items.join("")}</ol>`;
 }
@@ -445,7 +445,7 @@ function objectiveEditorHtml(index, objective) {
 	return `
 <div class="rops-objective-editor" data-objective-editor-index="${index}">
 <label class="govuk-label govuk-visually-hidden" for="${textareaId}">Edit objective markdown</label>
-<textarea class="govuk-textarea rops-objective-editor__textarea" id="${textareaId}" rows="5" aria-describedby="${statusId}">${escapeHtml(objective.markdown)}</textarea>
+<textarea class="govuk-textarea rops-objective-editor__textarea" id="${textareaId}" rows="5" aria-describedby="${statusId}" data-flux-key="field.project.edit-objective-textarea" data-flux-role="field" data-flux-autofocus="true">${escapeHtml(objective.markdown)}</textarea>
 <div class="dashboard-action-status" id="${statusId}" aria-live="polite"></div>
 </div>`;
 }
@@ -580,8 +580,8 @@ ${participants.map((participant) => {
 ${participantList}
 <p class="govuk-body-s">Participants are managed through study-specific workflows so consent, scheduling and safeguarding states stay traceable.</p>
 <div class="govuk-button-group">
-<a href="/pages/project-dashboard/participants/?id=${projectId}" role="button" draggable="false" class="govuk-button govuk-button--secondary" data-module="govuk-button" id="add-participant-link">Add participant</a>
-<a href="/pages/project-dashboard/participants/import/?id=${projectId}" role="button" draggable="false" class="govuk-button govuk-button--secondary" data-module="govuk-button" id="import-participants-link">Bulk upload participants via CSV</a>
+<a href="/pages/project-dashboard/participants/?id=${projectId}" role="button" draggable="false" class="govuk-button govuk-button--secondary" data-module="govuk-button" data-flux-key="link.project.add-participant" data-flux-role="control" id="add-participant-link">Add participant</a>
+<a href="/pages/project-dashboard/participants/import/?id=${projectId}" role="button" draggable="false" class="govuk-button govuk-button--secondary" data-module="govuk-button" data-flux-key="link.project.import-participants" data-flux-role="control" id="import-participants-link">Bulk upload participants via CSV</a>
 </div>`;
 }
 
@@ -596,8 +596,8 @@ function renderParticipantsLoadError(project, error) {
 <p class="govuk-body-s"><strong>Technical detail:</strong> <code>${reason}</code></p>
 <p class="govuk-body-s">Participants are managed through study-specific workflows so consent, scheduling and safeguarding states stay traceable.</p>
 <div class="govuk-button-group">
-<a href="/pages/project-dashboard/participants/?pid=${projectId}" role="button" draggable="false" class="govuk-button govuk-button--secondary" data-module="govuk-button" id="add-participant-link">Add participant</a>
-<a href="/pages/project-dashboard/participants/import/?pid=${projectId}" role="button" draggable="false" class="govuk-button govuk-button--secondary" data-module="govuk-button" id="import-participants-link">Bulk upload participants via CSV</a>
+<a href="/pages/project-dashboard/participants/?pid=${projectId}" role="button" draggable="false" class="govuk-button govuk-button--secondary" data-module="govuk-button" data-flux-key="link.project.add-participant" data-flux-role="control" id="add-participant-link">Add participant</a>
+<a href="/pages/project-dashboard/participants/import/?pid=${projectId}" role="button" draggable="false" class="govuk-button govuk-button--secondary" data-module="govuk-button" data-flux-key="link.project.import-participants" data-flux-role="control" id="import-participants-link">Bulk upload participants via CSV</a>
 </div>`;
 }
 

@@ -1,0 +1,14 @@
+{
+  "schemaVersion": "agent-trace-promotion/v1",
+  "title": "Add privacy-safe ResearchOps tracker signals for Flux session dimensions.",
+  "sourceTrace": "repository-audited feature branch",
+  "markdownReport": "docs/agent-audit/reasoning/2026/07/11/flux-tracker-session-dimension-signals.md",
+  "jsonSummary": "docs/agent-audit/reasoning/2026/07/11/flux-tracker-session-dimension-signals.json",
+  "run": { "taskSummary": "Support Flux demo-model dimensions with consented, content-free ResearchOps interaction categories." },
+  "bundles": ["github-diamond", "researchops-developer-control", "multi-functional-team"],
+  "filesRead": ["public/js/flux-researchops-tracker.1.1.0.js", "tests/flux-behaviour-tracker-route-state.test.js"],
+  "filesWritten": ["public/js/flux-researchops-tracker.1.1.0.js", "public/js/flux-researchops-tracker.1.2.0.js", "src/govuk/templates/layouts/researchops.njk", "tests/flux-behaviour-tracker-route-state.test.js"],
+  "validations": ["npm run build", "npm test", "npm run validate", "npm run format:check", "npm run trace:coverage -- --date 2026-07-11"],
+  "issues": ["A partial page render did not generate all required CSS; the canonical full build resolved the prerequisite before test execution.", "Production verification found that a 1.2.0 wrapper still imported the cached 1.1.0 asset; the 1.2.0 file now contains the hardened implementation."],
+  "warnings": ["Session-dimension interpretation remains governed by an open assurance gap."]
+}

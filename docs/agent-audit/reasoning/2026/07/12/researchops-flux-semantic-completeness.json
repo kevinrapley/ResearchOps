@@ -1,0 +1,12 @@
+{
+  "taskId": "researchops-flux-semantic-completeness",
+  "date": "2026-07-12",
+  "branch": "fix/flux-semantic-completeness",
+  "traceRequired": true,
+  "selectedBundles": ["github-diamond", "researchops-developer-control", "multi-functional-team", "govuk-design-system", "cloudflare"],
+  "skippedBundles": ["airtable-public-api", "mural-public-api", "openai-platform", "mcp-agent-tooling"],
+  "filesRead": ["AGENTS.md", "RECENT_LEARNINGS.md", "docs/implementation/flux-semantic-instrumentation.md", "src/govuk/templates/sourcebook/index.njk", "src/govuk/templates/sourcebook/pillar.njk", "src/govuk/templates/pages/project-dashboard.njk"],
+  "decision": "Add publisher-controlled semantic keys to the actual focus-order destinations exposed by the supplied ResearchOps journey.",
+  "validation": ["npm run build", "npm test", "npm run validate", "git diff --check"],
+  "residualRisks": ["Historical stored fallback keys remain generic", "Production verification follows reviewed merge"]
+}

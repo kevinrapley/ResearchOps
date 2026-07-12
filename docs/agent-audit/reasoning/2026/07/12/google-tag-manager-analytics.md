@@ -44,3 +44,9 @@
 ## Residual risk
 
 The commit installs only the GTM container. Any tag configuration in GTM can change what data is collected without a code deployment; keep non-essential tags disabled until the recorded privacy and consent controls have been approved and implemented.
+
+## Follow-up: merge-conflict resolution
+
+- Merged the current `origin/main` without rewriting the published feature branch.
+- `main` had added Flux analytics at the same shared head and body insertion points. The resolution retains Flux's module and page metadata, restores the GTM snippets and regenerates static pages from the combined sources.
+- `node --test tests/google-tag-manager-route-state.test.js tests/flux-behaviour-tracker-route-state.test.js` passed after the merge.

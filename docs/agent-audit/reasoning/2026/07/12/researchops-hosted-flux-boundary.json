@@ -1,0 +1,12 @@
+{
+  "taskId": "researchops-hosted-flux-boundary",
+  "date": "2026-07-12",
+  "branch": "fix/flux-wpm-keyboard-autocomplete",
+  "traceRequired": true,
+  "selectedBundles": ["github-diamond", "researchops-developer-control", "multi-functional-team", "govuk-design-system", "cloudflare"],
+  "skippedBundles": ["airtable-public-api", "mural-public-api", "openai-platform", "mcp-agent-tooling"],
+  "filesRead": ["AGENTS.md", "RECENT_LEARNINGS.md", ".agent-operating-model/orchestration.xml", ".agent-operating-model/bundle-registry.json", "docs/implementation/flux-semantic-instrumentation.md"],
+  "decision": "ResearchOps owns only the hosted Flux include, configuration and controlled semantic attributes; Flux Behaviour owns capture and interpretation.",
+  "validation": ["npm run build", "hosted boundary route-state test", "Playwright authored-attribute audit"],
+  "residualRisks": ["Deploy Flux first", "Verify cross-origin module and collection in production browser"]
+}

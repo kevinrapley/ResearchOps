@@ -12,3 +12,55 @@ harms:
     owner: service-owner
     escalation_route: Privacy lead, data protection officer and service owner
     release_decision: requires-escalation
+
+  - id: HARM-FLUX-WRITING-001
+    harm: UK English spelling, grammar or casing indicators could be treated as a judgement about a visitor, or could disadvantage people whose names, dialect, disability, education or writing style differ from the analyser's assumptions.
+    affected_groups:
+      - Consenting ResearchOps visitors
+      - Disabled and neurodivergent visitors
+      - Visitors who use dialects or English as an additional language
+    likelihood: medium
+    severity: high
+    mitigation: Label counts as possible issues, keep analysis on-device and en-GB-specific, retrieve the protected dictionary through the same-origin service session, export no words or suggestions, prohibit literacy, intelligence, professionalism, personality and protected-characteristic inference, prohibit automated decisions, and validate with representative accessibility and privacy review before operational use.
+    residual_risk: medium
+    owner: product-lead
+    escalation_route: Product owner, accessibility lead and privacy lead
+    release_decision: proceed-with-monitoring
+
+  - id: HARM-FLUX-SESSION-001
+    harm: Analytics users could interpret a long-lived browser tab as one continuous journey, obscuring returning visits and inflating session duration.
+    affected_groups:
+      - Consenting ResearchOps visitors
+      - ResearchOps service analysts
+    likelihood: low
+    severity: medium
+    mitigation: Apply a tested 30-minute inactivity boundary, retain metadata-only identifiers and monitor production session start and last-seen timestamps after deployment.
+    residual_risk: low
+    owner: repository-maintainers
+    escalation_route: Product owner and privacy lead
+    release_decision: proceed-with-monitoring
+  - id: HARM-FLUX-NARRATIVE-001
+    harm: Ambiguous generated labels or stale pointer state could misrepresent how a consenting visitor completed a ResearchOps task.
+    affected_groups:
+      - Keyboard users
+      - Assistive-technology users
+      - ResearchOps service analysts
+    likelihood: low
+    severity: medium
+    mitigation: Declare stable content-free keys across important journeys, load only the versioned hosted Flux module, audit authored purpose-led attributes, keep capture and fallback interpretation in Flux Behaviour, and test keyboard and pointer narratives in the owning product repository.
+    residual_risk: low
+    owner: repository-maintainers
+    escalation_route: Product owner, accessibility lead and privacy lead
+    release_decision: proceed-with-monitoring
+  - id: HARM-FLUX-SEMANTIC-002
+    harm: Automatically derived analytics keys could disclose user content or record identifiers if uncontrolled DOM values were treated as semantic purpose.
+    affected_groups:
+      - Consenting ResearchOps visitors
+      - Research participants represented in ResearchOps records
+    likelihood: low
+    severity: high
+    mitigation: Retain explicit reviewed keys for important ResearchOps journeys and keep all defensive derivation in Flux Behaviour, where tests restrict it to controlled structure and exclude visible text, entered values, query data, UUIDs and record tokens.
+    residual_risk: low
+    owner: repository-maintainers
+    escalation_route: Product owner, security lead and privacy lead
+    release_decision: proceed-with-monitoring

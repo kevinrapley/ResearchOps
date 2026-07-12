@@ -7,9 +7,10 @@
 	<link rel="stylesheet" href="/assets/govuk/govuk-frontend.css" media="screen">
 	<script type="module" src="/components/layout.js" defer></script>
 	<script type="module" src="/js/govuk-frontend-init.js" defer></script>
+	<script type="module" src="https://flux-behaviour.pages.dev/assets/flux/sdk/flux-auto-capture.mjs?v=1.3.0" data-flux-endpoint="https://flux-behaviour.pages.dev/api/collect" data-flux-tenant="researchops" defer></script>
 	<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start': new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);})(window,document,'script','dataLayer','GTM-KGGFK4KW');</script>
 </head>
-<body class="govuk-template__body">
+<body class="govuk-template__body" data-flux-page="page.account.sign-in">
 	<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-KGGFK4KW" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 	<script>document.body.className += ' js-enabled' + ('noModule' in HTMLScriptElement.prototype ? ' govuk-frontend-supported' : '');</script>
 	<x-include src="/partials/header.html" vars='{"active":""}'></x-include>
@@ -41,25 +42,25 @@
 						</div>
 					</section>
 
-					<form id="email-code-start-form" novalidate>
+					<form id="email-code-start-form" data-flux-key="form.auth.otp-request" data-flux-role="form" novalidate>
 						<div class="govuk-form-group">
 							<label class="govuk-label govuk-label--m" for="sign-in-email">Email address</label>
 							<div id="sign-in-email-hint" class="govuk-hint">Use the email address your ResearchOps account was set up with.</div>
-							<input class="govuk-input" id="sign-in-email" name="email" type="email" spellcheck="false" autocomplete="email" aria-describedby="sign-in-email-hint">
+							<input class="govuk-input" id="sign-in-email" name="email" type="email" spellcheck="false" autocomplete="email" aria-describedby="sign-in-email-hint" data-flux-key="field.auth.email" data-flux-role="field" data-flux-sensitive="true">
 						</div>
-						<button class="govuk-button" type="submit" data-module="govuk-button">Send code</button>
+						<button class="govuk-button" type="submit" data-module="govuk-button" data-flux-key="button.auth.send-code" data-flux-role="control">Send code</button>
 					</form>
 
-					<form id="email-code-verify-form" novalidate hidden>
+					<form id="email-code-verify-form" data-flux-key="form.auth.otp-verify" data-flux-role="form" novalidate hidden>
 						<input type="hidden" id="email-code-challenge-id" name="challengeId">
 						<div class="govuk-form-group">
 							<label class="govuk-label govuk-label--m" for="sign-in-code">Security code</label>
 							<div id="sign-in-code-hint" class="govuk-hint">Enter the 6 digit code we sent to your email address.</div>
-							<input class="govuk-input govuk-input--width-10" id="sign-in-code" name="code" type="text" inputmode="numeric" pattern="[0-9]*" autocomplete="one-time-code" aria-describedby="sign-in-code-hint">
+							<input class="govuk-input govuk-input--width-10" id="sign-in-code" name="code" type="text" inputmode="numeric" pattern="[0-9]*" autocomplete="one-time-code" aria-describedby="sign-in-code-hint" data-flux-key="field.auth.otp" data-flux-role="field" data-flux-sensitive="true">
 						</div>
 						<div class="govuk-button-group">
-							<button class="govuk-button" type="submit" data-module="govuk-button">Continue</button>
-							<button class="govuk-button govuk-button--secondary" id="email-code-change-email" type="button" data-module="govuk-button">Use a different email address</button>
+							<button class="govuk-button" type="submit" data-module="govuk-button" data-flux-key="button.auth.verify-code" data-flux-role="control">Continue</button>
+							<button class="govuk-button govuk-button--secondary" id="email-code-change-email" type="button" data-module="govuk-button" data-flux-key="button.auth.change-email" data-flux-role="control">Use a different email address</button>
 						</div>
 					</form>
 
@@ -79,6 +80,6 @@
 		</div>
 	</main>
 	<x-include src="/partials/footer.html"></x-include>
-	<script type="module" src="/js/auth-sign-in-page.js?v=account-dashboard-redirect-20260512"></script>
+	<script type="module" src="/js/auth-sign-in-page.js?v=flux-auth-milestones-20260712"></script>
 </body>
 </html>

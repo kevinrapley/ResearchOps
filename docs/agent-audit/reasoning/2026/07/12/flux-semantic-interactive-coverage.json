@@ -1,0 +1,59 @@
+{
+  "schemaVersion": "agent-trace-promotion/v1",
+  "title": "Provide purpose-led Flux attributes across ResearchOps interactives.",
+  "sourceTrace": "repository-audited fix branch",
+  "markdownReport": "docs/agent-audit/reasoning/2026/07/12/flux-semantic-interactive-coverage.md",
+  "jsonSummary": "docs/agent-audit/reasoning/2026/07/12/flux-semantic-interactive-coverage.json",
+  "run": {
+    "taskSummary": "Keep fallback events and strengthen ResearchOps semantic analytics context across static and dynamic controls."
+  },
+  "bundles": [
+    "github-diamond",
+    "researchops-developer-control",
+    "multi-functional-team",
+    "govuk-design-system",
+    "cloudflare"
+  ],
+  "filesRead": [
+    "AGENTS.md",
+    "RECENT_LEARNINGS.md",
+    "docs/implementation/flux-semantic-instrumentation.md",
+    "public/js/flux-researchops-tracker.1.2.0.js",
+    "public/js/project-dashboard.js",
+    "conformance-matrix.yaml",
+    "gap-register.yaml",
+    "harm-register.yaml"
+  ],
+  "filesWritten": [
+    "public/js/flux-researchops-tracker.1.2.0.js",
+    "public/js/project-dashboard.js",
+    "src/govuk/templates/pages/home.njk",
+    "src/govuk/templates/pages/project-dashboard-participants.njk",
+    "src/govuk/templates/pages/study-participants.njk",
+    "src/govuk/templates/pages/study-session.njk",
+    "src/govuk/templates/pages/study.njk",
+    "tests/e2e/flux-semantic-coverage.spec.js",
+    "tests/flux-focus-narrative-events.test.js",
+    "tests/flux-semantic-instrumentation.test.js"
+  ],
+  "validations": [
+    "focused Flux tracker and session tests: 8 passed",
+    "targeted Chromium semantic coverage: 3 passed, including production-host consent controls",
+    "npm run build",
+    "npm test: 371 passed after the consent cache-key Codex review remediation",
+    "npm run lint: zero errors with existing warnings",
+    "npm run validate"
+  ],
+  "issues": [
+    "Unlabelled and positional fallback narratives appeared for ResearchOps controls without publisher context.",
+    "Codex review identified contact-protocol PII exposure, collapsed dynamic action keys and incorrect project scope on non-project routes; all three were remediated with regressions.",
+    "The second Codex pass identified collapsed panel and option controls plus generic dynamic disclosures; all were remediated with explicit or privacy-safe distinct context and regressions.",
+    "The third Codex pass identified framework initialization attributes, incomplete bundle evidence and unclear search-result interpolation; all were remediated and covered.",
+    "Post-merge live verification found tracker-owned consent controls without semantic attributes; the follow-up adds explicit Accept and Reject context plus a production-host browser regression.",
+    "Codex review identified reuse of the cacheable v1.2.6 tracker URL; source templates, rendered pages and route-state assertions now use v1.2.7."
+  ],
+  "warnings": [
+    "The defensive fallback remains available by product decision.",
+    "Historical fallback events cannot be safely relabelled after capture."
+  ]
+}

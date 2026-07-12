@@ -1,4 +1,74 @@
 records:
+  - id: flux-uk-english-writing-signals
+    control: ResearchOps loads the Flux-owned hosted analyser; no linguistic code or dictionary is copied into the publisher repository.
+    evidence:
+      - src/govuk/templates/layouts/researchops.njk
+      - tests/flux-behaviour-tracker-route-state.test.js
+      - docs/implementation/flux-semantic-instrumentation.md
+    status: implemented
+    risk: high
+    owner: repository-maintainers
+
+  - id: flux-accurate-field-timing
+    control: ResearchOps delegates focus, dwell, active typing and words-per-minute calculation to the hosted Flux module.
+    evidence:
+      - src/govuk/templates/layouts/researchops.njk
+      - tests/flux-behaviour-tracker-route-state.test.js
+      - docs/implementation/flux-semantic-instrumentation.md
+    status: implemented
+    risk: high
+    owner: repository-maintainers
+
+  - id: flux-semantic-interactive-coverage
+    control: Important ResearchOps links, buttons, fields, forms, navigation and help controls expose authored privacy-safe purpose-led keys and roles; Flux owns defensive fallback interpretation.
+    evidence:
+      - public/js/project-dashboard.js
+      - tests/e2e/flux-semantic-coverage.spec.js
+      - tests/flux-semantic-instrumentation.test.js
+      - docs/agent-audit/reasoning/2026/07/12/flux-semantic-interactive-coverage.md
+    status: implemented
+    risk: high
+    owner: repository-maintainers
+
+  - id: flux-tracker-inactivity-session-boundary
+    control: The hosted Flux module creates a new pseudonymous session after 30 minutes without a captured interaction while retaining the returning visitor identifier.
+    evidence:
+      - src/govuk/templates/layouts/researchops.njk
+      - tests/flux-behaviour-tracker-route-state.test.js
+      - docs/implementation/flux-semantic-instrumentation.md
+    status: implemented
+    risk: high
+    owner: repository-maintainers
+
+  - id: flux-tracker-event-contract-alignment
+    control: ResearchOps consumes the versioned Flux-hosted module and does not own or duplicate its event-contract implementation.
+    evidence:
+      - src/govuk/templates/layouts/researchops.njk
+      - tests/flux-behaviour-tracker-route-state.test.js
+    status: implemented
+    risk: high
+    owner: repository-maintainers
+
+  - id: flux-tracker-session-dimension-signals
+    control: ResearchOps supplies content-free semantic context while the hosted Flux module owns session-dimension signal capture.
+    evidence:
+      - tests/flux-semantic-instrumentation.test.js
+      - tests/flux-behaviour-tracker-route-state.test.js
+    status: implemented
+    risk: high
+    owner: repository-maintainers
+
+  - id: flux-tracker-rendered-page-coverage
+    control: Every rendered ResearchOps page loads the reviewed, versioned Flux-hosted module from its source layout or committed static page shell.
+    evidence:
+      - src/govuk/templates/layouts/researchops.njk
+      - public/pages/**/index.html
+      - tests/flux-behaviour-tracker-route-state.test.js
+      - docs/agent-audit/reasoning/2026/07/11/flux-tracker-rendered-page-remediation.md
+    status: implemented
+    risk: medium
+    owner: repository-maintainers
+
   - id: github-governance-files
     control: GitHub governance files use recognised repository paths.
     evidence:
@@ -58,4 +128,13 @@ records:
       - configuration-evidence.yaml
     status: proposed
     risk: low
+    owner: repository-maintainers
+  - id: flux-add-objective-semantic-journey
+    control: The Add Objective journey exposes stable content-free Flux keys and distinguishes automatic focus, keyboard input and focus exit.
+    evidence:
+      - src/govuk/templates/pages/project-dashboard.njk
+      - tests/flux-semantic-instrumentation.test.js
+      - tests/flux-behaviour-tracker-route-state.test.js
+    status: implemented
+    risk: medium
     owner: repository-maintainers

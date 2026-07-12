@@ -11,7 +11,7 @@ const migration = fs.readFileSync('infra/cloudflare/migrations/0003_auth_passwor
 
 function assertSignInPageUsesGovukFrontendTemplate() {
 	assert.match(signInPage, /<html class="govuk-template" lang="en">/);
-	assert.match(signInPage, /<body class="govuk-template__body">/);
+	assert.match(signInPage, /<body class="govuk-template__body" data-flux-page="page\.account\.sign-in">/);
 	assert.match(signInPage, /govuk-frontend-supported/);
 	assert.match(signInPage, /href="\/assets\/govuk\/govuk-frontend\.css"/);
 	assert.match(signInPage, /src="\/components\/layout\.js"/);
@@ -44,6 +44,12 @@ function assertSignInPageUsesResearchOpsPasswordlessJourney() {
 	assert.match(signInPage, /data-verify-route="\/api\/auth\/email\/verify"/);
 	assert.match(signInPage, /data-auth-route="\/api\/me"/);
 	assert.match(signInPage, /data-account-destination="\/pages\/account\/"/);
+	assert.match(signInPage, /data-flux-page="page\.account\.sign-in"/);
+	assert.match(signInPage, /data-flux-key="form\.auth\.otp-request"/);
+	assert.match(signInPage, /data-flux-key="button\.auth\.send-code"/);
+	assert.match(signInPage, /data-flux-key="form\.auth\.otp-verify"/);
+	assert.match(signInPage, /data-flux-key="button\.auth\.verify-code"/);
+	assert.match(signInPage, /data-flux-sensitive="true"/);
 	assert.equal(signInPage.includes('Authenticate'), false);
 	assert.equal(signInPage.includes('authenticate'), false);
 	assert.equal(signInPage.includes('data-team-admin-destination'), false);
@@ -88,6 +94,7 @@ function assertSignInScriptStartsAndVerifiesEmailCode() {
 	assert.match(signInScript, /code: dom\.codeInput\?\.value/);
 	assert.match(signInScript, /credentials: 'include'/);
 	assert.match(signInScript, /fetchJson\('\/api\/me'\)/);
+	assert.doesNotMatch(signInScript, /researchOpsFlux|trackAuthMilestone/);
 }
 
 function assertSignInScriptRedirectsAuthenticatedUsersToAccountDashboard() {

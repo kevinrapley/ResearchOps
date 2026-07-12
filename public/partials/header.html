@@ -4,12 +4,12 @@
 <link id="researchops-home-office-brand" rel="stylesheet" href="/css/brands/home-office.css" media="screen" disabled />
 <script type="module" src="/js/brand-variant.js"></script>
 
-<a class="govuk-skip-link" href="#main-content" data-module="govuk-skip-link">Skip to main content</a>
+<a class="govuk-skip-link" href="#main-content" data-module="govuk-skip-link" data-flux-key="link.accessibility.skip-to-main-content" data-flux-role="control">Skip to main content</a>
 
 <header class="govuk-template__header govuk-header" role="banner" data-module="govuk-header">
 	<div class="govuk-header__container govuk-width-container">
 		<div class="govuk-header__logo">
-			<a href="/" class="govuk-header__homepage-link researchops-header__homepage-link" aria-label="GOV.UK ResearchOps Demo Suite home">
+			<a href="/" class="govuk-header__homepage-link researchops-header__homepage-link" aria-label="GOV.UK ResearchOps Demo Suite home" data-flux-key="link.header.home" data-flux-role="control">
 				<span class="researchops-header__home-office-logo" aria-hidden="true">
 					<svg
 	          preserveAspectRatio="xMinYMin meet"
@@ -99,8 +99,8 @@
 			</a>
 		</div>
 		<nav class="researchops-header__account" aria-label="Account" data-auth-header-account>
-			<a class="govuk-header__link researchops-header__account-link" href="/pages/account/sign-in/" data-auth-header-user>Sign in</a>
-			<a class="govuk-header__link researchops-header__account-link" href="/pages/account/sign-in/" data-auth-header-sign-out hidden aria-hidden="true">Sign out</a>
+			<a class="govuk-header__link researchops-header__account-link" href="/pages/account/sign-in/" data-auth-header-user data-flux-key="link.account.sign-in" data-flux-role="control">Sign in</a>
+			<a class="govuk-header__link researchops-header__account-link" href="/pages/account/sign-in/" data-auth-header-sign-out data-flux-key="link.account.sign-out" data-flux-role="control" hidden aria-hidden="true">Sign out</a>
 		</nav>
 	</div>
 
@@ -108,24 +108,24 @@
 	<div class="govuk-width-container">
 		<div class="govuk-service-navigation__container">
 			<nav aria-label="Menu" class="govuk-service-navigation__wrapper">
-				<button type="button" class="govuk-service-navigation__toggle govuk-js-service-navigation-toggle" aria-controls="navigation" hidden aria-hidden="true">
+				<button type="button" class="govuk-service-navigation__toggle govuk-js-service-navigation-toggle" aria-controls="navigation" data-flux-key="button.navigation.menu" data-flux-role="control" hidden aria-hidden="true">
 					Menu
 				</button>
 				<ul class="govuk-service-navigation__list" id="navigation">
 					<li class="govuk-service-navigation__item">
-						<a class="govuk-service-navigation__link" href="/" data-nav="Home">Home</a>
+						<a class="govuk-service-navigation__link" href="/" data-nav="Home" data-flux-key="link.navigation.home" data-flux-role="control">Home</a>
 					</li>
 					<li class="govuk-service-navigation__item">
-						<a class="govuk-service-navigation__link" href="/pages/start/overview/" data-nav="Start Research Project">Start research project</a>
+						<a class="govuk-service-navigation__link" href="/pages/start/overview/" data-nav="Start Research Project" data-flux-key="link.navigation.start-project" data-flux-role="control">Start research project</a>
 					</li>
 					<li class="govuk-service-navigation__item">
-						<a class="govuk-service-navigation__link" href="/pages/projects/" data-nav="Projects">Projects</a>
+						<a class="govuk-service-navigation__link" href="/pages/projects/" data-nav="Projects" data-flux-key="link.navigation.projects" data-flux-role="control">Projects</a>
 					</li>
 					<li class="govuk-service-navigation__item">
-						<a class="govuk-service-navigation__link" href="/pages/repository/" data-nav="Research Repository">Research repository</a>
+						<a class="govuk-service-navigation__link" href="/pages/repository/" data-nav="Research Repository" data-flux-key="link.navigation.research-repository" data-flux-role="control">Research repository</a>
 					</li>
 					<li class="govuk-service-navigation__item">
-						<a class="govuk-service-navigation__link" href="/pages/sourcebook/" data-nav="Sourcebook">Sourcebook</a>
+						<a class="govuk-service-navigation__link" href="/pages/sourcebook/" data-nav="Sourcebook" data-flux-key="link.navigation.sourcebook" data-flux-role="control">Sourcebook</a>
 					</li>
 				</ul>
 			</nav>
@@ -183,4 +183,4 @@
 	ensureMainContentTarget();
 	initServiceNavigation();
 </script>
-<script type="module" src="/js/auth-header-links.js?v=header-account-links-20260623-1"></script>
+<script type="module" src="/js/auth-header-links.js?v=flux-semantic-20260712"></script>

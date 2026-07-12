@@ -1,6 +1,98 @@
 # Recent Learnings
 
+## 2026-07-12 — Semantic instrumentation must cover focus-order destinations
+
+Auditing only elements that already have `data-flux-key` misses the exact controls that degrade into unlabelled journey events. Check the complete keyboard focus order on high-use pages, including breadcrumbs, page contents links, generated GOV.UK buttons and related-route links.
+
 This file records repeatable repository-specific lessons for ResearchOps agents and maintainers. It is not a changelog.
+
+## 2026-07-12 — Publisher instrumentation is attributes, not a copied analytics product
+
+Context: ResearchOps accumulated a local tracker, session engine, UK-English analyser, dictionary build and authentication analytics calls while integrating Flux.
+
+Learning: ResearchOps should declare service meaning through a hosted Flux include and controlled `data-flux-*` attributes. Capture, interpretation, privacy enforcement, session lifecycle, linguistic analysis and dictionaries must remain owned and deployed by Flux Behaviour.
+
+Action: Keep the local boundary test that forbids `src/flux` and local tracker/analyser assets, test important authored attributes directly, and consume the versioned hosted Flux module.
+
+## 2026-07-12 — Same-origin protected analysis assets need the service session
+
+Context: The local UK English analyser fetched its dictionary with credentials omitted, but ResearchOps routes unauthenticated static-asset requests through the sign-in boundary. A successful HTML response could therefore be mistaken for dictionary data.
+
+Learning: Privacy-safe same-origin analysis assets behind an authenticated service boundary still need the service session cookie. Omitting credentials is appropriate for cross-origin telemetry, not for protected same-origin static dependencies.
+
+Action: Fetch the UK dictionary with `credentials: "same-origin"`, retain `credentials: "omit"` for the cross-origin Flux collector, and test both boundaries independently.
+
+## 2026-07-12 — Linguistic analytics needs a declared locale and an on-device privacy boundary
+
+Context: Flux needed possible spelling, grammar and casing indicators without disclosing what a visitor entered. Locale-neutral spelling would also misclassify accepted UK forms or silently apply a US baseline.
+
+Learning: Linguistic metadata is still derived from content and therefore changes the consent and harm surface even when raw text is not exported. The baseline must be explicit (`en-GB`), analysis must stay in the browser, outputs must be bounded and non-reversible, and narratives must describe possible issues rather than facts about a person.
+
+Action: Use the reviewed UK dictionary and conservative grammar heuristics only after analytics consent; exclude sensitive fields; send counts rather than words or suggestions; disclose local analysis in the consent banner; and prohibit literacy, intelligence, professionalism, personality, protected-characteristic or automated-decision inferences.
+
+## 2026-07-12 — Total focus time is not field dwell or active typing time
+
+Context: ResearchOps measured focus-to-blur duration and Flux described the whole interval as dwell, even when the visitor typed throughout it. The same interval was used to calculate typing rate.
+
+Learning: Pre-input dwell ends at the first keyboard, input or paste interaction. Active typing time runs from the first to latest typing key. Total focus time remains useful context but cannot substitute for either signal.
+
+Action: Capture all three intervals separately, count Backspace and Delete consistently, calculate characters per minute only from active typing time, and cache-bust every rendered tracker reference when changing the runtime.
+
+## 2026-07-12 — Semantic analytics coverage needs both explicit purpose and a structural safety layer
+
+Context: Important controls gained reviewed `data-flux-*` attributes, but other links and dynamically inserted controls could still fall through to positional labels such as `auto.a.4`. Focus-only layout elements were also mistaken for controls because they carried `tabindex`.
+
+Learning: A service-wide analytics contract needs explicit purpose-led keys for important journeys plus a privacy-safe runtime annotation layer for the rest. The layer must write real semantic attributes, observe newly inserted controls and use only controlled structure—never visible text, entered values, query strings or record identifiers. Focusability alone does not make an element an interactive control.
+
+Action: Browser-audit every rendered page and dynamic insertion path for `data-flux-key` and `data-flux-role`, reject `auto.*` and generic purpose endings in that audit, require custom controls to expose an interactive role, and retain the positional fallback only as an operational safety net.
+
+## 2026-07-12 — Programmatic focus needs publisher-declared purpose and origin
+
+A generated DOM key can show that a text area received focus, but not why. Important progressive-disclosure journeys should declare stable keys on the opener, form, field and actions, and mark deliberately automatic focus. The tracker should record focus entry separately from field exit so keyboard typing is not described as mouse input merely because a pointer ended focus.
+
+## 2026-07-12 — Browser lifetime is not an analytics session boundary
+
+Context: The Flux tracker stored its session identifier in `sessionStorage` without an inactivity timestamp. A visitor who returned more than seven hours later was still appended to the journey that began at 03:28, which inflated session duration and prevented Flux from recognising the return as a new session.
+
+Learning: Tab-scoped storage controls persistence, not behavioural-session meaning. Analytics sessions need an explicit inactivity boundary, and a cache-busted migration path is required when an existing stored identifier has no activity timestamp.
+
+Action: Keep the visitor identifier stable, roll the pseudonymous session identifier after 30 minutes without a captured interaction, refresh the activity timestamp on each event, and replace legacy sessions on their first event after deployment.
+
+## 2026-07-12 — Semantic analytics keys must describe service purpose without reading content
+
+Context: Positional keys such as `auto.a.3` preserved privacy but made Flux journey narratives unusable, while copying visible labels, IDs or field values would weaken the metadata-only boundary.
+
+Learning: Controlled type-first attributes such as `data-flux-key="button.analysis.code-retrieval"` provide stable service meaning without exporting interface content. Authentication fields should remain excluded even when marked up; success is better represented by a separate allow-listed lifecycle milestone.
+
+Action: Add `data-flux-page`, `data-flux-key` and schema-valid `data-flux-role` attributes at canonical templates and shared partials, mark sensitive fields explicitly, and emit only neutral consent-gated authentication milestones with no email, code, length, challenge or account identity.
+
+## 2026-07-12 — Asset versions and event-contract versions are independent
+
+Context: The ResearchOps tracker asset was cache-busted as `1.2.0`, and its emitted `schema_version` was changed to match. Flux still accepted event contract `1.1.0`, so every production interaction was rejected with HTTP 400 while the fire-and-forget tracker hid the response.
+
+Learning: A JavaScript asset version identifies a deployed file; an event schema version identifies a shared producer-consumer contract. Changing one does not imply changing the other.
+
+Action: Pin the emitted schema version to the collector's published contract, assert that version independently from the asset URL, and use only the asset URL or cache key when forcing browsers to load tracker changes.
+
+## 2026-07-11 — More telemetry categories must still be metadata-only
+
+Context: ResearchOps needed to support Flux’s full per-session demo-model view without exporting content. The safe additions were event categories for paste, undo and shortcut use, field revisits, help disclosures, validation transitions, submit attempts and rapid repeated clicks—not the text, labels, identifiers or validity messages behind them.
+
+Learning: The event name and bounded count/timing can be useful service-friction evidence. The content behind the event is not required and must remain out of the tracker.
+
+Action: Whenever adding a behavioural category, add a source assertion that it emits only structural keys and approved metadata, continue excluding sensitive authentication fields, and use a new versioned module URL so cached pages cannot delay privacy fixes.
+
+## 2026-07-11 — Shared partials are not proof that rendered pages include an asset
+
+Context: PR #475 versioned the Flux tracker after cache behaviour delayed delivery, but the versioned module was added only to `public/partials/html-head.html`. The normal GOV.UK pages are rendered from `src/govuk/templates/layouts/researchops.njk`, which did not consume that partial, so the tracker was not requested from production pages.
+
+Learning: A shared partial can be present in the repository yet not belong to a rendered page path. Static assets that must be site-wide need coverage at the actual rendering boundary, with generated output checked alongside source.
+
+Action: For global scripts and styles, search for the renderer/layout used by each route family, update the canonical source and any committed static shells outside that renderer, then assert every rendered page loads the asset before merging.
+
+## 2026-07-11 — Broad interaction coverage can remain content-free
+
+ResearchOps needs behavioural journeys that cover the controls people actually use, but a tracker must not turn visible labels or field values into analytics. A consent-gated tracker can use explicit safe keys where a service provides them and otherwise emit a neutral structural key based only on control type and position. Dwell, character count, corrections, Tab, click and touch metadata support a useful journey narrative without exporting typed content, labels, IDs or URLs.
 
 ## 2026-07-02 — Do not invent Cloudflare resource IDs for hardening changes
 
