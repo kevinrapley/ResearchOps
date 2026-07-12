@@ -1,17 +1,61 @@
 {
-  "taskId": "researchops-header-semantic-links",
-  "date": "2026-07-12",
-  "branch": "fix/header-semantic-links",
-  "traceRequired": true,
-  "selectedBundles": ["github-diamond", "researchops-developer-control", "multi-functional-team", "govuk-design-system", "cloudflare"],
-  "skippedBundles": ["airtable-public-api", "mural-public-api", "openai-platform", "mcp-agent-tooling"],
-  "filesRead": ["AGENTS.md", "RECENT_LEARNINGS.md", "public/partials/header.html", "tests/auth-header-links-route-state.test.js"],
-  "decision": "Give the shared header homepage and skip links explicit publisher-controlled Flux semantics.",
-  "validation": [
-    "node --test tests/auth-header-links-route-state.test.js tests/flux-behaviour-tracker-route-state.test.js",
-    "npm run validate",
-    "npm run format:check",
-    "git diff --check"
+  "schemaVersion": "agent-trace-promotion/v1",
+  "title": "ResearchOps header semantic links",
+  "sourceTrace": ".agent-traces/raw/atrace-20260712-researchops-header-semantic-links.jsonl",
+  "markdownReport": "docs/agent-audit/reasoning/2026/07/12/researchops-header-semantic-links.md",
+  "jsonSummary": "docs/agent-audit/reasoning/2026/07/12/researchops-header-semantic-links.json",
+  "promotedAt": "2026-07-12T21:22:58.876Z",
+  "eventCount": 55,
+  "run": {
+    "startedAt": "2026-07-12T21:22:49.762Z",
+    "completedAt": "2026-07-12T21:22:49.769Z",
+    "taskSummary": "Prevent unlabelled ResearchOps header interactions in Flux and address the Codex review comment on PR 491."
+  },
+  "bundles": [
+    "github-diamond",
+    "researchops-developer-control",
+    "multi-functional-team"
   ],
-  "residualRisks": ["Historical unlabelled header events remain generic"]
+  "filesRead": [
+    "AGENTS.md",
+    ".agent-operating-model/orchestration.xml",
+    ".agent-operating-model/bundle-registry.json",
+    ".agent-operating-model/task-signal-catalog.json",
+    ".agent-operating-model/selection-rules.json",
+    ".agent-operating-model/bootstrap-checklist.md",
+    ".agent-operating-model/precedence-policy.md",
+    ".agent-operating-model/trace-policy.md",
+    ".agent-operating-model/trace-layers.md",
+    ".agent-operating-model/behavioural-evals.json",
+    ".agent-operating-model/github-mutation-policy.md",
+    ".agent-operating-model/bundles/github/prompt.spec.yaml",
+    ".agent-operating-model/bundles/github/prompt.body.xml",
+    ".agent-operating-model/bundles/researchops-developer-control/prompt.spec.yaml",
+    ".agent-operating-model/bundles/researchops-developer-control/prompt.body.xml",
+    ".agent-operating-model/bundles/multi-functional-team/prompt.spec.yaml",
+    ".agent-operating-model/bundles/multi-functional-team/prompt.body.xml",
+    "public/partials/header.html",
+    "tests/auth-header-links-route-state.test.js",
+    "scripts/agent-trace/trace-validator.mjs",
+    "scripts/agent-trace/promote-trace.mjs",
+    "docs/agent-audit/reasoning/2026/06/26/remove-home-phase-banner-border.json"
+  ],
+  "filesWritten": [
+    "public/partials/header.html",
+    "tests/auth-header-links-route-state.test.js",
+    "docs/agent-audit/reasoning/2026/07/12/researchops-header-semantic-links.md",
+    "docs/agent-audit/reasoning/2026/07/12/researchops-header-semantic-links.json"
+  ],
+  "validations": [
+    "node --test tests/auth-header-links-route-state.test.js tests/flux-behaviour-tracker-route-state.test.js — exit 0",
+    "npm run format:check — exit 0",
+    "npm run trace:coverage — exit 0",
+    "git diff --check — exit 0",
+    "npm run validate — exit 0"
+  ],
+  "issues": [
+    "Codex review comment discussion_r3567132535 identified that the original JSON could satisfy trace coverage without containing the complete promoted-trace evidence required by policy.",
+    "Replace both hand-written audit artefacts with output generated from a validated, hash-chained raw trace."
+  ],
+  "warnings": []
 }
