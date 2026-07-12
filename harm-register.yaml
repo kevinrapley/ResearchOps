@@ -1,0 +1,14 @@
+harms:
+  - id: HARM-001
+    harm: Unconditional Google Tag Manager loading can enable third-party analytics on pages containing research, participant or staff information before the service has an approved consent and privacy-control design.
+    affected_groups:
+      - Research participants
+      - ResearchOps users
+      - ResearchOps staff
+    likelihood: high
+    severity: high
+    mitigation: Keep the container limited to the approved GTM configuration; complete privacy review, consent design, data-flow documentation and a tested opt-out path before enabling any non-essential analytics tags in the container.
+    residual_risk: high
+    owner: service-owner
+    escalation_route: Privacy lead, data protection officer and service owner
+    release_decision: requires-escalation

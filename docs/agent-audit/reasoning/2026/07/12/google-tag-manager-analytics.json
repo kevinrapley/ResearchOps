@@ -1,0 +1,78 @@
+{
+	"date": "2026-07-12",
+	"branch": "feature/add-gtm-analytics",
+	"task": "Add the GTM-KGGFK4KW container across ResearchOps public and application pages.",
+	"traceRequired": true,
+	"traceLayer": "operational",
+	"selectedBundles": [
+		"github-diamond",
+		"researchops-developer-control",
+		"multi-functional-team",
+		"govuk-design-system",
+		"mural-public-api"
+	],
+	"skippedBundles": ["cloudflare", "openai-platform", "mcp-agent-tooling", "airtable-public-api"],
+	"precedenceDecisions": [
+		"GitHub Diamond required a separate approved feature branch because the starting worktree contained unrelated uncommitted changes.",
+		"ResearchOps Developer Control required the generated Nunjucks source and committed public HTML to remain in sync.",
+		"Multi-Functional Team privacy controls required the missing consent and data-protection review to be recorded as an escalated high residual risk.",
+		"GOV.UK Design System affected only the shared HTML delivery surface; no visible component or interaction was changed.",
+		"Mural Public API was selected only by the operating-model keyword fallback for 'tag'; no Mural API capability was used or changed."
+	],
+	"filesRead": [
+		"AGENTS.md and the required .agent-operating-model control files",
+		"selected bundle prompt specifications and bodies",
+		"src/govuk/templates/layouts/researchops.njk",
+		"public/partials/html-head.html",
+		"scripts/govuk/render-govuk-pages.mjs",
+		"scripts/govuk/normalise-service-pages.mjs",
+		"visual-walkthrough.config.mjs",
+		"package.json, README.md, RECENT_LEARNINGS.md and .github/CODEOWNERS"
+	],
+	"filesModified": [
+		"src/govuk/templates/layouts/researchops.njk",
+		"public/partials/html-head.html",
+		"scripts/govuk/normalise-service-pages.mjs",
+		"public/clear.html",
+		"public/pages/synthesize/index.html",
+		"public/index.html and the 64 registered public/pages HTML outputs",
+		"tests/google-tag-manager-route-state.test.js",
+		"harm-register.yaml",
+		"gap-register.yaml",
+		"docs/agent-audit/reasoning/2026/07/12/google-tag-manager-analytics.md",
+		"docs/agent-audit/reasoning/2026/07/12/google-tag-manager-analytics.json"
+	],
+	"validation": [
+		{
+			"command": "npm run build:govuk-pages",
+			"result": "passed; regenerated deployable public and application pages"
+		},
+		{
+			"command": "node --test tests/google-tag-manager-route-state.test.js",
+			"result": "passed; verifies exactly one GTM loader in the head and one noscript fallback after body start on every deployable page"
+		},
+		{
+			"command": "npm run format:check",
+			"result": "passed"
+		},
+		{
+			"command": "npm run lint",
+			"result": "passed with pre-existing warnings"
+		},
+		{
+			"command": "npm test",
+			"result": "passed: 358 tests"
+		},
+		{
+			"command": "git diff --check",
+			"result": "passed"
+		}
+	],
+	"issues": [
+		"The isolated worktree initially lacked installed dependencies; npm ci resolved the missing nunjucks package before validation.",
+		"No consent mechanism or privacy-review artefact exists for unconditional analytics across authenticated research pages; this is recorded as a high residual risk requiring escalation."
+	],
+	"residualRisks": [
+		"Only the GTM container bootstrap is committed. Actual Google Analytics tags, retention and event configuration remain controlled in GTM and need privacy approval before non-essential analytics are enabled."
+	]
+}

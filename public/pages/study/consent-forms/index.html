@@ -14,10 +14,34 @@
 		<link rel="modulepreload" href="/js/daas-brand-panel.js?v=leds-brand-panel-20260624" />
 		<link rel="modulepreload" href="/js/consent-forms-route-loader.js?v=study-record-id-routing-20260518" />
 
+		<!-- Google Tag Manager -->
+		<script>
+			(function (w, d, s, l, i) {
+				w[l] = w[l] || [];
+				w[l].push({ "gtm.start": new Date().getTime(), event: "gtm.js" });
+				var f = d.getElementsByTagName(s)[0],
+					j = d.createElement(s),
+					dl = l != "dataLayer" ? "&l=" + l : "";
+				j.async = true;
+				j.src = "https://www.googletagmanager.com/gtm.js?id=" + i + dl;
+				f.parentNode.insertBefore(j, f);
+			})(window, document, "script", "dataLayer", "GTM-KGGFK4KW");
+		</script>
+		<!-- End Google Tag Manager -->
 		<script type="module" src="/components/layout.js?v=govuk-page-chrome-20260702-1" defer></script>
 		<script type="module" src="/js/govuk-frontend-init.js?v=govuk-page-chrome-20260702-1" defer></script>
 	</head>
 	<body class="govuk-template__body">
+		<!-- Google Tag Manager (noscript) -->
+		<noscript>
+			<iframe
+				src="https://www.googletagmanager.com/ns.html?id=GTM-KGGFK4KW"
+				height="0"
+				width="0"
+				style="display: none; visibility: hidden"
+			></iframe>
+		</noscript>
+		<!-- End Google Tag Manager (noscript) -->
 		<script>
 			document.body.className +=
 				" js-enabled" + ("noModule" in HTMLScriptElement.prototype ? " govuk-frontend-supported" : "");
