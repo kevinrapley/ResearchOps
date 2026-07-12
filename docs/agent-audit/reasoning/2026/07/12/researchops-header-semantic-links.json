@@ -1,0 +1,17 @@
+{
+  "taskId": "researchops-header-semantic-links",
+  "date": "2026-07-12",
+  "branch": "fix/header-semantic-links",
+  "traceRequired": true,
+  "selectedBundles": ["github-diamond", "researchops-developer-control", "multi-functional-team", "govuk-design-system", "cloudflare"],
+  "skippedBundles": ["airtable-public-api", "mural-public-api", "openai-platform", "mcp-agent-tooling"],
+  "filesRead": ["AGENTS.md", "RECENT_LEARNINGS.md", "public/partials/header.html", "tests/auth-header-links-route-state.test.js"],
+  "decision": "Give the shared header homepage and skip links explicit publisher-controlled Flux semantics.",
+  "validation": [
+    "node --test tests/auth-header-links-route-state.test.js tests/flux-behaviour-tracker-route-state.test.js",
+    "npm run validate",
+    "npm run format:check",
+    "git diff --check"
+  ],
+  "residualRisks": ["Historical unlabelled header events remain generic"]
+}
