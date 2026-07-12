@@ -10,15 +10,15 @@ const renderedLayout = fs.readFileSync('src/govuk/templates/layouts/researchops.
 const worker = fs.readFileSync('public/_worker.js', 'utf8');
 const headers = fs.readFileSync('public/_headers', 'utf8');
 
-assert.match(head, /src="\/js\/flux-researchops-tracker\.1\.2\.0\.js\?v=1\.2\.4"/);
-assert.match(renderedLayout, /src="\/js\/flux-researchops-tracker\.1\.2\.0\.js\?v=1\.2\.4"/);
+assert.match(head, /src="\/js\/flux-researchops-tracker\.1\.2\.0\.js\?v=1\.2\.5"/);
+assert.match(renderedLayout, /src="\/js\/flux-researchops-tracker\.1\.2\.0\.js\?v=1\.2\.5"/);
 const renderedPages = fs
 	.readdirSync('public', { recursive: true })
 	.filter((path) => path.endsWith('.html') && !path.startsWith('partials/') && path !== 'clear.html');
 
 for (const relativePath of renderedPages) {
 	const page = `public/${relativePath}`;
-	assert.match(fs.readFileSync(page, 'utf8'), /src="\/js\/flux-researchops-tracker\.1\.2\.0\.js\?v=1\.2\.4"/, `${page} should load the Flux tracker`);
+	assert.match(fs.readFileSync(page, 'utf8'), /src="\/js\/flux-researchops-tracker\.1\.2\.0\.js\?v=1\.2\.5"/, `${page} should load the Flux tracker`);
 }
 assert.doesNotMatch(header, /flux-behaviour\.pages\.dev\/assets\/flux/);
 assert.match(tracker, /researchops\.pages\.dev/);

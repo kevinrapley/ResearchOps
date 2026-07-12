@@ -13,7 +13,9 @@ const CONTROL_SELECTOR = 'a,button,input,select,textarea,[role="button"],[tabind
 const focusState = new WeakMap();
 const fieldVisits = new Map();
 const recentClicks = [];
-let lastPointerType = 'unknown';
+const RECENT_INTERACTION_MS = 1000;
+let lastPointer = { target: null, type: 'unknown', at: Number.NEGATIVE_INFINITY };
+let lastKeyboard = { target: null, at: Number.NEGATIVE_INFINITY };
 
 window.researchOpsFlux = Object.freeze({ milestone });
 
@@ -45,7 +47,7 @@ function showConsentBanner() {
 
 function instrument() {
 	track('nav', 'page.loaded', { role: 'page', element_key: pageKey() });
-	document.addEventListener('pointerdown', (event) => { lastPointerType = event.pointerType || 'mouse'; }, true);
+	document.addEventListener('pointerdown', recordPointer, true);
 	document.addEventListener('click', trackClick, true);
 	document.addEventListener('keydown', trackKeyboard, true);
 	document.addEventListener('paste', trackPaste, true);
@@ -61,24 +63,35 @@ function trackClick(event) {
 	if (!details) return;
 	track('nav', 'control.click', {
 		...details,
-		pointer_type: lastPointerType,
-		interaction_type: lastPointerType === 'touch' ? 'touch' : 'click',
+		pointer_type: lastPointer.type,
+		interaction_type: lastPointer.type === 'touch' ? 'touch' : 'click',
 	});
 	recordRage(details);
 }
 
 function trackKeyboard(event) {
+	const details = targetDetails(event.target);
+	const activationKey = event.key === 'Enter' || event.key === ' ';
+	if (event.key === 'Tab' || (activationKey && !editableTarget(event.target))) {
+		lastKeyboard = { target: event.target, at: performance.now() };
+	}
 	if (event.key === 'Tab') {
-		const details = targetDetails(event.target);
 		if (details) track('nav', 'control.tab', { ...details, pointer_type: 'keyboard', interaction_type: 'tab' });
 	}
-	const details = targetDetails(event.target);
 	if (details && (event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'z') track('kbd', 'edit.undo', details);
 	if (details && (event.metaKey || event.ctrlKey) && ['a', 'c', 'x', 'f'].includes(event.key.toLowerCase())) track('kbd', 'act.shortcut', details);
 	const state = focusState.get(event.target);
 	if (!state) return;
 	if (event.key.length === 1) state.keyPressCount += 1;
 	if (event.key === 'Backspace') state.backspaceCount += 1;
+}
+
+function recordPointer(event) {
+	lastPointer = {
+		target: event.target,
+		type: event.pointerType || 'mouse',
+		at: performance.now()
+	};
 }
 
 function trackPaste(event) {
@@ -97,6 +110,24 @@ function beginFocus(event) {
 	const revisitCount = (fieldVisits.get(details.element_key) ?? 0) + 1;
 	fieldVisits.set(details.element_key, revisitCount);
 	if (revisitCount > 1) track('input', 'field.revisit', { ...details, revisit_count: revisitCount });
+	const now = performance.now();
+	const recentPointer = now - lastPointer.at <= RECENT_INTERACTION_MS;
+	const recentKeyboard = now - lastKeyboard.at <= RECENT_INTERACTION_MS;
+	let focusOrigin = 'programmatic';
+	let focusPointerType;
+	if (recentPointer && pointerInitiatedFocus(lastPointer.target, event.target)) {
+		focusOrigin = 'pointer';
+		focusPointerType = lastPointer.type;
+	} else if (recentKeyboard) {
+		focusOrigin = 'keyboard';
+		focusPointerType = 'keyboard';
+	} else if (event.target?.dataset?.fluxAutofocus === 'true' && recentPointer) {
+		focusOrigin = 'auto';
+	}
+	track('focus', `field.focus.${focusOrigin}`, {
+		...details,
+		...(focusPointerType ? { pointer_type: focusPointerType } : {})
+	});
 	const state = { startedAt: performance.now(), keyPressCount: 0, backspaceCount: 0, editCount: 0, pasteCount: 0, revisitCount, details, onInput: null };
 	state.onInput = () => {
 		const current = focusState.get(event.target);
@@ -106,11 +137,19 @@ function beginFocus(event) {
 	event.target.addEventListener('input', state.onInput);
 }
 
+function pointerInitiatedFocus(pointerTarget, focusTarget) {
+	return pointerTarget === focusTarget || pointerTarget?.control === focusTarget;
+}
+
 function endFocus(event) {
 	const state = focusState.get(event.target);
 	if (!state) return;
 	focusState.delete(event.target);
 	event.target.removeEventListener('input', state.onInput);
+	const now = performance.now();
+	const exitPointerType = now - lastPointer.at <= RECENT_INTERACTION_MS && lastPointer.target !== event.target
+		? lastPointer.type
+		: now - lastKeyboard.at <= RECENT_INTERACTION_MS ? 'keyboard' : 'unknown';
 	track('input', 'field.blur', {
 		...state.details,
 		duration_ms: Math.round(performance.now() - state.startedAt),
@@ -121,7 +160,7 @@ function endFocus(event) {
 		chars_per_minute: state.keyPressCount > 0 ? Math.min(2000, Math.round((state.keyPressCount * 60000) / Math.max(1, performance.now() - state.startedAt))) : 0,
 		revisit_count: state.revisitCount,
 		value_length: typeof event.target.value === 'string' ? event.target.value.length : 0,
-		pointer_type: lastPointerType,
+		pointer_type: exitPointerType,
 		interaction_type: 'input',
 	});
 }

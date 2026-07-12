@@ -11,3 +11,16 @@ harms:
     owner: repository-maintainers
     escalation_route: Product owner and privacy lead
     release_decision: proceed-with-monitoring
+  - id: HARM-FLUX-NARRATIVE-001
+    harm: Ambiguous generated labels or stale pointer state could misrepresent how a consenting visitor completed a ResearchOps task.
+    affected_groups:
+      - Keyboard users
+      - Assistive-technology users
+      - ResearchOps service analysts
+    likelihood: low
+    severity: medium
+    mitigation: Declare stable content-free keys across the Add Objective journey, record automatic focus explicitly, and use only a recent pointer or Tab event as the focus-exit method.
+    residual_risk: low
+    owner: repository-maintainers
+    escalation_route: Product owner, accessibility lead and privacy lead
+    release_decision: proceed-with-monitoring

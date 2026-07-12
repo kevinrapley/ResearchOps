@@ -124,3 +124,13 @@ gaps:
     evidence:
       - github-settings.yaml
       - branch-protection-evidence.yaml
+  - id: flux-uninstrumented-control-context
+    title: Continue semantic Flux coverage for important ResearchOps journeys
+    status: open
+    severity: low
+    owner: repository-maintainers
+    context: Add Objective now has complete semantic instrumentation, while generated fallback keys may still occur on lower-priority controls that have not been explicitly mapped.
+    mitigation: Add stable content-free data-flux keys as important journeys are reviewed; never derive purpose from DOM ordinals or visible user content.
+    evidence:
+      - docs/implementation/flux-semantic-instrumentation.md
+      - tests/flux-semantic-instrumentation.test.js

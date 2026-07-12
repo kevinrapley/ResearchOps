@@ -31,6 +31,26 @@ assert.match(projects, /data-flux-key="link\.project\.view-dashboard"/);
 assert.match(dashboard, /["']data-flux-key["']:\s*["']link\.journal\.open["']/);
 
 for (const key of [
+	'button.project.add-objective',
+	'form.project.add-objective',
+	'field.project.add-objective-textarea',
+	'button.project.save-objective',
+	'button.project.cancel-objective',
+]) {
+	assert.match(
+		dashboard,
+		new RegExp(`data-flux-key[="'\\s:]+["']${key}["']`),
+		`Add Objective journey should expose ${key}`
+	);
+}
+
+assert.match(
+	dashboard,
+	/data-flux-autofocus="true"/,
+	'Add Objective text area should identify its automatic focus'
+);
+
+for (const key of [
 	'button.navigation.menu',
 	'link.navigation.home',
 	'link.navigation.start-project',

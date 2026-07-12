@@ -232,27 +232,38 @@
 						attributes: {
 							id: "add-objective-toggle",
 							"aria-expanded": "false",
-							"aria-controls": "add-objective-panel"
+							"aria-controls": "add-objective-panel",
+							"data-flux-key": "button.project.add-objective",
+							"data-flux-role": "control"
 						}
 					}) }}
 					<div id="add-objective-panel" class="dashboard-action-panel" hidden>
-						<form id="add-objective-form" novalidate>
+						<form id="add-objective-form" novalidate data-flux-key="form.project.add-objective" data-flux-role="form">
 							<h3 class="govuk-heading-s">Add objective</h3>
 							<div id="add-objective-status" class="dashboard-action-status" aria-live="polite"></div>
 							<div class="govuk-form-group">
 								<label class="govuk-label" for="objective-text">Research objective</label>
 								<div id="objective-text-hint" class="govuk-hint">Keep objectives action-oriented and linked to decisions the team needs to make. Do not include participant personal data.</div>
-								<textarea class="govuk-textarea" id="objective-text" name="objective" rows="4" required aria-describedby="objective-text-hint"></textarea>
+								<textarea class="govuk-textarea" id="objective-text" name="objective" rows="4" required aria-describedby="objective-text-hint" data-flux-key="field.project.add-objective-textarea" data-flux-role="field" data-flux-autofocus="true"></textarea>
 							</div>
 							<div class="govuk-button-group">
-								{{ govukButton({ text: "Save objective", type: "submit" }) }}
+								{{ govukButton({
+									text: "Save objective",
+									type: "submit",
+									attributes: {
+										"data-flux-key": "button.project.save-objective",
+										"data-flux-role": "control"
+									}
+								}) }}
 								{{ govukButton({
 									text: "Cancel",
 									type: "button",
 									classes: "govuk-button--secondary",
 									attributes: {
 										"data-close-panel": "add-objective-panel",
-										"data-toggle": "add-objective-toggle"
+										"data-toggle": "add-objective-toggle",
+										"data-flux-key": "button.project.cancel-objective",
+										"data-flux-role": "control"
 									}
 								}) }}
 							</div>

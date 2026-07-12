@@ -1,54 +1,58 @@
-task_id: flux-session-inactivity-boundary
+task_id: flux-add-objective-semantic-journey
 mode: repo-fix
 repository: ResearchOps
 risk_level: high
+base_branch: fix/flux-session-inactivity
+working_branch: fix/flux-objective-journey-context
 files_read:
   - AGENTS.md
   - RECENT_LEARNINGS.md
-  - public/js/flux-researchops-tracker.1.2.0.js
-  - tests/flux-behaviour-tracker-route-state.test.js
   - docs/implementation/flux-semantic-instrumentation.md
+  - public/js/flux-researchops-tracker.1.2.0.js
+  - src/govuk/templates/pages/project-dashboard.njk
+  - public/js/project-dashboard.js
   - conformance-matrix.yaml
   - gap-register.yaml
+  - harm-register.yaml
 files_changed:
   - public/js/flux-researchops-tracker.1.2.0.js
+  - src/govuk/templates/pages/project-dashboard.njk
   - src/govuk/templates/layouts/researchops.njk
   - public/partials/html-head.html
   - public/pages/**/index.html
-  - tests/flux-session-lifecycle.test.js
+  - tests/flux-focus-narrative-events.test.js
+  - tests/flux-semantic-instrumentation.test.js
   - tests/flux-behaviour-tracker-route-state.test.js
   - docs/implementation/flux-semantic-instrumentation.md
   - RECENT_LEARNINGS.md
   - conformance-matrix.yaml
   - gap-register.yaml
   - harm-register.yaml
-  - docs/agent-audit/reasoning/2026/07/12/flux-session-inactivity-boundary.md
-  - docs/agent-audit/reasoning/2026/07/12/flux-session-inactivity-boundary.json
 commands_run:
-  - command: production D1 read-only session and event query
-    state: verified
-    status: passed
-    evidence: Events at 09:41-09:42 UTC were stored under the session created at 02:28 UTC, reproducing the missing-new-session symptom.
-  - command: Cloudflare collector CORS preflight
-    state: verified
-    status: passed
-    evidence: Production returned HTTP 204 with research-operations.com allowed and cache-control no-store.
-  - command: node --test tests/flux-session-lifecycle.test.js before implementation
+  - command: node --test tests/flux-semantic-instrumentation.test.js
     state: observed
     status: failed
-    evidence: Both the legacy-session migration and 30-minute inactivity assertions failed for the expected reason.
-  - command: node --test tests/flux-session-lifecycle.test.js after implementation
+    evidence: The canonical template lacked every Add Objective semantic key.
+  - command: node --test tests/flux-focus-narrative-events.test.js
+    state: observed
+    status: failed
+    evidence: The tracker had no focus-origin event implementation.
+  - command: npm run build:govuk-pages
     state: verified
     status: passed
-    evidence: Two session-lifecycle regression tests passed.
+    evidence: Canonical GOV.UK output was regenerated with Add Objective attributes and tracker cache key v1.2.5.
+  - command: focused Flux tracker and rendered-route tests
+    state: verified
+    status: passed
+    evidence: Six assertions passed across semantic markup, focus events, session lifecycle, route coverage and project-dashboard rendering.
   - command: npm run build
     state: verified
     status: passed
-    evidence: Canonical GOV.UK pages were regenerated with tracker cache key v1.2.4.
-  - command: node --test tests/flux-session-lifecycle.test.js tests/flux-behaviour-tracker-route-state.test.js
+    evidence: GOV.UK assets, generated CSS and every canonical page were rebuilt.
+  - command: npm test
     state: verified
     status: passed
-    evidence: Three focused assertions passed.
+    evidence: All 364 tests passed, including Codex review regressions for associated-label focus and keyboard activation.
   - command: npm run format:check
     state: verified
     status: passed
@@ -57,70 +61,23 @@ commands_run:
     state: verified
     status: passed
     evidence: No errors; the existing warning baseline remained visible.
-  - command: npm test
-    state: verified
-    status: passed
-    evidence: 361 tests passed.
   - command: npm run validate
     state: verified
     status: passed
     evidence: Repository contract, operating model, trace coverage, generated output, route-state checks and performance audit completed.
-  - command: code-confidence-grader
-    state: observed
-    status: failed
-    evidence: Scored 0.65 because the grader implementation did not map the updated documentation or structured agent evidence to criteria 3 and 5, although both are present.
-  - command: recent-learnings-grader
-    state: verified
-    status: passed
-    evidence: Scored 1.0.
-contracts_validated:
-  - Flux consented metadata-only tracking boundary
-  - ResearchOps generated HTML policy
-tests_run:
-  - name: legacy Flux session migration
-    state: verified
-    status: passed
-    evidence: The legacy session identifier was replaced and the activity timestamp was stored.
-  - name: 30-minute inactivity session rollover
-    state: verified
-    status: passed
-    evidence: Activity inside the boundary retained the session and activity at the boundary created a new identifier.
-  - name: rendered tracker asset coverage
-    state: verified
-    status: passed
-    evidence: Every rendered HTML page referenced tracker cache key v1.2.4.
-  - name: full Node test suite
-    state: verified
-    status: passed
-    evidence: 361 tests passed.
-gaps_recorded:
-  - flux-tracker-inactivity-session-boundary marked implemented
-waivers_recorded: []
-artifacts_created:
-  - docs/agent-audit/reasoning/2026/07/12/flux-session-inactivity-boundary.md
-  - docs/agent-audit/reasoning/2026/07/12/flux-session-inactivity-boundary.json
-  - harm-register.yaml
 recent_learnings:
   read: true
   updated: true
-  entry: Browser lifetime is not an analytics session boundary.
-github_settings:
-  verification_method: file
+  entry: Programmatic focus needs publisher-declared purpose and origin.
 security:
   secrets_changed: false
-  data_collection_scope_changed: false
+  authentication_changed: false
+privacy:
+  data_collection_scope_changed: true
+  assessment: One content-free focus-origin event is added; no entered value, visible text, account identity or record identifier is captured.
 accessibility:
-  required: false
-  release_decision: not_applicable
-performance:
-  impact: Two sessionStorage reads and up to two writes per captured interaction; no network payload fields added.
-harms:
-  - HARM-FLUX-SESSION-001
-claims:
-  - Production ingestion was healthy and the defect was isolated to client-side session lifecycle.
-  - Focused session-lifecycle and rendered-asset tests passed after implementation.
-  - The full test, lint, formatting and validation suites passed after implementation.
+  required: true
+  assessment: Automatic focus remains existing page behaviour and is now accurately represented; keyboard input is no longer attributed to a mouse.
 risks:
-  - Existing events remain immutable and cannot gain semantic context retroactively.
-  - Production deployment and post-deploy session rollover remain to be verified after merge.
-  - The generic code-confidence grader cannot recognise documentation or structured evidence from its current criterion mapper.
+  - Other uninstrumented controls may retain generic fallback keys until mapped.
+  - Production behaviour requires post-deployment verification after both stacked pull requests merge.
