@@ -50,3 +50,9 @@ The commit installs only the GTM container. Any tag configuration in GTM can cha
 - Merged the current `origin/main` without rewriting the published feature branch.
 - `main` had added Flux analytics at the same shared head and body insertion points. The resolution retains Flux's module and page metadata, restores the GTM snippets and regenerates static pages from the combined sources.
 - `node --test tests/google-tag-manager-route-state.test.js tests/flux-behaviour-tracker-route-state.test.js` passed after the merge.
+
+## Follow-up: Codex review comments
+
+- **CSP finding:** moved the GTM bootstrap into the first-party `/js/google-tag-manager.js` script. The Pages Worker and static header policies now allow only `https://www.googletagmanager.com` for GTM scripts and the noscript iframe, without adding `'unsafe-inline'`.
+- **Redirect-page finding:** removed GTM from the legacy `/pages/synthesize/` redirect so its automatic navigation cannot produce a duplicate GTM page view.
+- `node --test tests/google-tag-manager-route-state.test.js tests/security-hardening-controls-route-state.test.js tests/flux-behaviour-tracker-route-state.test.js` passed.

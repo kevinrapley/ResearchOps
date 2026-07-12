@@ -12,9 +12,9 @@ const GOVUK_INIT_SCRIPT = '/js/govuk-frontend-init.js';
 const HEADER_PARTIAL = '/partials/header.html';
 const FOOTER_PARTIAL = '/partials/footer.html';
 const GOOGLE_TAG_MANAGER_CONTAINER_ID = 'GTM-KGGFK4KW';
-const GOOGLE_TAG_MANAGER_SCRIPT_URL = `https://www.googletagmanager.com/gtm.js?id=${GOOGLE_TAG_MANAGER_CONTAINER_ID}`;
+const GOOGLE_TAG_MANAGER_LOADER_PATH = '/js/google-tag-manager.js';
 const GOOGLE_TAG_MANAGER_NOSCRIPT_URL = `https://www.googletagmanager.com/ns.html?id=${GOOGLE_TAG_MANAGER_CONTAINER_ID}`;
-const GOOGLE_TAG_MANAGER_SCRIPT = `<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start': new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);})(window,document,'script','dataLayer','${GOOGLE_TAG_MANAGER_CONTAINER_ID}');</script>`;
+const GOOGLE_TAG_MANAGER_SCRIPT = `<script src="${GOOGLE_TAG_MANAGER_LOADER_PATH}"></script>`;
 const GOOGLE_TAG_MANAGER_NOSCRIPT = `<noscript><iframe src="${GOOGLE_TAG_MANAGER_NOSCRIPT_URL}" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>`;
 
 function routeToFile(route) {
@@ -66,7 +66,7 @@ function normaliseHead(html) {
 	next = next.replace(/<head>([\s\S]*?)<\/head>/i, (match) => {
 		let head = match;
 		head = ensureHeadAsset(head, `<link rel="stylesheet" href="${GOVUK_FRONTEND_STYLESHEET}" media="screen">`, GOVUK_FRONTEND_STYLESHEET);
-		head = ensureHeadAsset(head, GOOGLE_TAG_MANAGER_SCRIPT, GOOGLE_TAG_MANAGER_CONTAINER_ID);
+		head = ensureHeadAsset(head, GOOGLE_TAG_MANAGER_SCRIPT, GOOGLE_TAG_MANAGER_LOADER_PATH);
 		head = ensureHeadAsset(head, `<script type="module" src="${SHARED_LAYOUT_SCRIPT}" defer></script>`, SHARED_LAYOUT_SCRIPT);
 		head = ensureHeadAsset(head, `<script type="module" src="${GOVUK_INIT_SCRIPT}" defer></script>`, GOVUK_INIT_SCRIPT);
 		return head;

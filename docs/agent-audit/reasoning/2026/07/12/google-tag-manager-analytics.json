@@ -84,5 +84,17 @@
 		"base": "origin/main",
 		"strategy": "Merged without rewriting published branch history.",
 		"outcome": "Retained Flux integration and GTM integration in the shared layout, static page normaliser, governance registers and generated HTML."
-	}
+	},
+	"reviewComments": [
+		{
+			"id": 3567364534,
+			"finding": "CSP blocked GTM's external script and noscript iframe.",
+			"resolution": "Moved the bootstrap into a first-party script, allowed only www.googletagmanager.com in script-src and frame-src, and added route-state coverage for both Worker and static CSP policies."
+		},
+		{
+			"id": 3567364541,
+			"finding": "The legacy synthesis redirect could create a duplicate page view.",
+			"resolution": "Removed GTM bootstrap and noscript markup from the redirect page and added a regression assertion that the route stays excluded."
+		}
+	]
 }
