@@ -1,9 +1,9 @@
-task_id: flux-uk-english-writing-signals
-mode: repo-feature
+task_id: flux-uk-writing-dictionary-auth
+mode: repo-fix
 repository: ResearchOps
 risk_level: high
 base_branch: main
-working_branch: feature/uk-english-writing-signals
+working_branch: fix/uk-writing-dictionary-auth
 files_read:
   - README.md
   - AGENTS.md
@@ -16,25 +16,15 @@ files_read:
   - gap-register.yaml
   - harm-register.yaml
   - docs/implementation/flux-semantic-instrumentation.md
-  - public/js/flux-researchops-tracker.1.2.0.js
-files_changed:
-  - package.json
-  - package-lock.json
-  - scripts/flux/build-uk-english-writing.mjs
-  - src/flux/uk-english-writing-analyser.mjs
   - src/flux/uk-english-writing-runtime.mjs
-  - public/assets/flux/**
-  - public/js/flux-researchops-tracker.1.2.0.js
-  - src/govuk/templates/layouts/researchops.njk
-  - public/partials/html-head.html
-  - public/index.html
+files_changed:
+  - src/flux/uk-english-writing-runtime.mjs
+  - public/assets/flux/uk-english-writing-runtime.mjs
   - public/pages/**/index.html
-  - tests/flux-uk-writing-analyser.test.js
-  - tests/flux-focus-narrative-events.test.js
   - tests/flux-behaviour-tracker-route-state.test.js
   - docs/implementation/flux-semantic-instrumentation.md
-  - docs/agent-audit/reasoning/2026/07/12/flux-uk-english-writing-signals.md
-  - docs/agent-audit/reasoning/2026/07/12/flux-uk-english-writing-signals.json
+  - docs/agent-audit/reasoning/2026/07/12/flux-uk-writing-dictionary-auth.md
+  - docs/agent-audit/reasoning/2026/07/12/flux-uk-writing-dictionary-auth.json
   - RECENT_LEARNINGS.md
   - conformance-matrix.yaml
   - gap-register.yaml
@@ -43,15 +33,15 @@ commands_run:
   - command: node --test tests/flux-uk-writing-analyser.test.js tests/flux-focus-narrative-events.test.js tests/flux-behaviour-tracker-route-state.test.js
     state: verified
     status: passed
-    evidence: Eighteen focused tests passed, including shortcut and IME/mobile timing, UK-versus-US spelling, raw-text exclusion and consent revocation during pending analysis.
-  - command: npm run build
-    state: verified
-    status: passed
-    evidence: The analyser, split UK dictionary and all rendered pages were built.
+    evidence: Eighteen focused analyser, tracker, privacy and route-state tests passed.
+  - command: npm test
+    state: observed
+    status: failed
+    evidence: The first concurrent run had one transient repository-front-page route-state failure; the isolated test immediately passed.
   - command: npm test
     state: verified
     status: passed
-    evidence: All 378 repository tests passed.
+    evidence: The clean rerun passed all 378 repository tests.
   - command: npm run lint
     state: verified
     status: passed
@@ -60,23 +50,19 @@ commands_run:
     state: verified
     status: passed
     evidence: Repository contract, trace coverage, rendered output, sourcebook, JavaScript and performance validation completed.
-  - command: npm run audit:security && npm audit --omit=dev --audit-level=high
-    state: verified
-    status: passed
-    evidence: The repository policy found no blocking findings and the production dependency surface reported zero vulnerabilities; five existing development-only advisories remain visible.
 recent_learnings:
   read: true
   updated: true
-  entry: Linguistic analytics needs a declared locale and an on-device privacy boundary.
+  entry: Same-origin protected analysis assets need the service session.
 security:
   secrets_changed: false
   authentication_changed: false
 privacy:
-  data_collection_scope_changed: true
-  assessment: Input-only entry reads inserted data length without retaining content. Entered text is analysed locally after consent; only bounded en-GB issue and casing counts are exported, and text, words and suggestions never leave the page.
+  data_collection_scope_changed: false
+  assessment: The service session cookie is sent only to same-origin static dictionary paths; cross-origin Flux collection continues to omit credentials and entered text remains local.
 accessibility:
-  required: true
-  assessment: Possible issue counts can be biased by disability, neurodivergence, dialect and language background; person-level and automated-decision uses are prohibited and representative validation remains open.
+  required: false
+  assessment: The fix restores the reviewed analyser consistently for authenticated visitors without changing the interface.
 risks:
-  - Dictionary and grammar false positives must be described as possible issues only.
-  - Linguistic indicators remain service-friction heuristics, not judgements about a person.
+  - Dictionary availability must fail closed to the existing content-free timing event.
+  - Same-origin credentials must never be changed to cross-origin inclusion.

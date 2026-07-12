@@ -1,0 +1,14 @@
+{
+  "schemaVersion": "agent-trace-promotion/v1",
+  "title": "Authenticate protected same-origin UK dictionary requests.",
+  "sourceTrace": "production verification",
+  "markdownReport": "docs/agent-audit/reasoning/2026/07/12/flux-uk-writing-dictionary-auth.md",
+  "jsonSummary": "docs/agent-audit/reasoning/2026/07/12/flux-uk-writing-dictionary-auth.json",
+  "run": { "taskSummary": "Restore the on-device UK English analyser behind the ResearchOps session boundary." },
+  "bundles": ["github-diamond", "researchops-developer-control", "multi-functional-team", "cloudflare"],
+  "filesRead": ["AGENTS.md", "RECENT_LEARNINGS.md", "src/flux/uk-english-writing-runtime.mjs", "docs/implementation/flux-semantic-instrumentation.md"],
+  "filesWritten": ["src/flux/uk-english-writing-runtime.mjs", "public/assets/flux/uk-english-writing-runtime.mjs", "tests/flux-behaviour-tracker-route-state.test.js", "RECENT_LEARNINGS.md", "conformance-matrix.yaml", "gap-register.yaml", "harm-register.yaml", "agent-evidence.yaml"],
+  "validations": ["focused analyser and tracker tests", "full repository tests", "lint", "repository validation"],
+  "issues": ["Credential-free same-origin dictionary requests received the authenticated sign-in boundary instead of dictionary data."],
+  "warnings": ["Collector transport must continue to omit credentials; only same-origin static analysis dependencies use the service session."]
+}

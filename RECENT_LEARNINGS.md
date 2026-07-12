@@ -2,6 +2,14 @@
 
 This file records repeatable repository-specific lessons for ResearchOps agents and maintainers. It is not a changelog.
 
+## 2026-07-12 — Same-origin protected analysis assets need the service session
+
+Context: The local UK English analyser fetched its dictionary with credentials omitted, but ResearchOps routes unauthenticated static-asset requests through the sign-in boundary. A successful HTML response could therefore be mistaken for dictionary data.
+
+Learning: Privacy-safe same-origin analysis assets behind an authenticated service boundary still need the service session cookie. Omitting credentials is appropriate for cross-origin telemetry, not for protected same-origin static dependencies.
+
+Action: Fetch the UK dictionary with `credentials: "same-origin"`, retain `credentials: "omit"` for the cross-origin Flux collector, and test both boundaries independently.
+
 ## 2026-07-12 — Linguistic analytics needs a declared locale and an on-device privacy boundary
 
 Context: Flux needed possible spelling, grammar and casing indicators without disclosing what a visitor entered. Locale-neutral spelling would also misclassify accepted UK forms or silently apply a US baseline.
