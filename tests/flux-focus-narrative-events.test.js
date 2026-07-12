@@ -155,6 +155,53 @@ test('records automatic field focus separately from keyboard input and mouse foc
 	assert.equal(requests[1].pointer_type, 'mouse');
 });
 
+test('does not count modified shortcuts as typing', () => {
+	const { clock, context, requests } = harness();
+	const textarea = element({ key: 'field.project.objective-editor', tagName: 'TEXTAREA' });
+	context.textarea = textarea;
+
+	vm.runInContext('beginFocus({ target: textarea });', context);
+	clock.now = 500;
+	vm.runInContext(
+		"trackKeyboard({ target: textarea, key: 'a', metaKey: false, ctrlKey: true });",
+		context
+	);
+	clock.now = 1_000;
+	vm.runInContext('endFocus({ target: textarea });', context);
+
+	const blur = requests.find(({ action }) => action === 'field.blur');
+	assert.equal(blur.key_press_count, 0);
+	assert.equal(blur.typing_duration_ms, 0);
+	assert.equal(blur.chars_per_minute, 0);
+});
+
+test('uses input-only edits for IME and mobile active-entry timing', () => {
+	const { clock, context, requests } = harness();
+	const textarea = element({ key: 'field.project.objective-editor', tagName: 'TEXTAREA' });
+	context.textarea = textarea;
+
+	vm.runInContext('beginFocus({ target: textarea });', context);
+	clock.now = 800;
+	vm.runInContext(
+		"focusState.get(textarea).onInput({ data: 'ab', inputType: 'insertCompositionText' });",
+		context
+	);
+	clock.now = 1_800;
+	vm.runInContext(
+		"focusState.get(textarea).onInput({ data: 'cd', inputType: 'insertCompositionText' });",
+		context
+	);
+	clock.now = 2_000;
+	vm.runInContext('endFocus({ target: textarea });', context);
+
+	const blur = requests.find(({ action }) => action === 'field.blur');
+	assert.equal(blur.key_press_count, 0);
+	assert.equal(blur.edit_count, 2);
+	assert.equal(blur.dwell_before_input_ms, 800);
+	assert.equal(blur.typing_duration_ms, 1_000);
+	assert.equal(blur.chars_per_minute, 240);
+});
+
 test('adds semantic data attributes to previously uninstrumented interactive elements', () => {
 	const { context } = harness();
 	const link = element({ tagName: 'A', id: 'journal-entry-edit-link', href: '#' });

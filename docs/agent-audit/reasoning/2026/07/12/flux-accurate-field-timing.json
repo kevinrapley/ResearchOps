@@ -20,11 +20,21 @@
     "public/js/flux-researchops-tracker.1.2.0.js"
   ],
   "filesWritten": [
+    "RECENT_LEARNINGS.md",
+    "agent-evidence.yaml",
+    "conformance-matrix.yaml",
+    "gap-register.yaml",
+    "harm-register.yaml",
     "public/js/flux-researchops-tracker.1.2.0.js",
     "tests/flux-focus-narrative-events.test.js",
     "tests/flux-behaviour-tracker-route-state.test.js",
     "src/govuk/templates/layouts/researchops.njk",
-    "public/partials/html-head.html"
+    "public/partials/html-head.html",
+    "public/index.html",
+    "public/pages/**/index.html",
+    "docs/implementation/flux-semantic-instrumentation.md",
+    "docs/agent-audit/reasoning/2026/07/12/flux-accurate-field-timing.md",
+    "docs/agent-audit/reasoning/2026/07/12/flux-accurate-field-timing.json"
   ],
   "validations": [
     "focused tracker timing tests",

@@ -116,17 +116,20 @@ function trackClick(event) {
 function trackKeyboard(event) {
 	const details = targetDetails(event.target);
 	const activationKey = event.key === 'Enter' || event.key === ' ';
+	const modifiedShortcut = (event.metaKey || event.ctrlKey)
+		&& ['a', 'c', 'f', 'x', 'z'].includes(event.key.toLowerCase());
 	if (event.key === 'Tab' || (activationKey && !editableTarget(event.target))) {
 		lastKeyboard = { target: event.target, at: performance.now() };
 	}
 	if (event.key === 'Tab') {
 		if (details) track('nav', 'control.tab', { ...details, pointer_type: 'keyboard', interaction_type: 'tab' });
 	}
-	if (details && (event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'z') track('kbd', 'edit.undo', details);
-	if (details && (event.metaKey || event.ctrlKey) && ['a', 'c', 'x', 'f'].includes(event.key.toLowerCase())) track('kbd', 'act.shortcut', details);
+	if (details && modifiedShortcut && event.key.toLowerCase() === 'z') track('kbd', 'edit.undo', details);
+	if (details && modifiedShortcut && ['a', 'c', 'x', 'f'].includes(event.key.toLowerCase())) track('kbd', 'act.shortcut', details);
 	const state = focusState.get(event.target);
 	if (!state) return;
 	if (event.key !== 'Tab') recordFirstInteraction(state);
+	if (modifiedShortcut) return;
 	if (event.key.length === 1) {
 		state.keyPressCount += 1;
 		recordTyping(state);
@@ -182,11 +185,13 @@ function beginFocus(event) {
 		...details,
 		...(focusPointerType ? { pointer_type: focusPointerType } : {})
 	});
-	const state = { startedAt: performance.now(), firstInteractionAt: null, firstTypingAt: null, lastTypingAt: null, keyPressCount: 0, backspaceCount: 0, editCount: 0, pasteCount: 0, revisitCount, details, onInput: null };
-	state.onInput = () => {
+	const state = { startedAt: performance.now(), firstInteractionAt: null, firstTypingAt: null, lastTypingAt: null, keyPressCount: 0, inputCharacterCount: 0, backspaceCount: 0, editCount: 0, pasteCount: 0, revisitCount, details, onInput: null };
+	state.onInput = (inputEvent) => {
 		const current = focusState.get(event.target);
 		if (current === state) {
 			recordFirstInteraction(current);
+			recordTyping(current);
+			if (typeof inputEvent?.data === 'string') current.inputCharacterCount += inputEvent.data.length;
 			current.editCount += 1;
 		}
 	};
@@ -206,6 +211,7 @@ function endFocus(event) {
 	const now = performance.now();
 	const durationMs = Math.round(now - state.startedAt);
 	const typingDurationMs = state.firstTypingAt === null ? 0 : Math.round(state.lastTypingAt - state.firstTypingAt);
+	const typedCharacterCount = Math.max(state.keyPressCount, state.inputCharacterCount);
 	const exitPointerType = now - lastPointer.at <= RECENT_INTERACTION_MS && lastPointer.target !== event.target
 		? lastPointer.type
 		: now - lastKeyboard.at <= RECENT_INTERACTION_MS ? 'keyboard' : 'unknown';
@@ -218,7 +224,7 @@ function endFocus(event) {
 		backspace_count: state.backspaceCount,
 		edit_count: state.editCount,
 		paste_count: state.pasteCount,
-		chars_per_minute: typingDurationMs > 0 ? Math.min(2000, Math.round((state.keyPressCount * 60000) / typingDurationMs)) : 0,
+		chars_per_minute: typingDurationMs > 0 ? Math.min(2000, Math.round((typedCharacterCount * 60000) / typingDurationMs)) : 0,
 		revisit_count: state.revisitCount,
 		value_length: typeof event.target.value === 'string' ? event.target.value.length : 0,
 		pointer_type: exitPointerType,

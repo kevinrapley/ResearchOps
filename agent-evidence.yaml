@@ -41,6 +41,10 @@ commands_run:
     state: verified
     status: passed
     evidence: Ten tracker tests passed after separating field timing intervals.
+  - command: node --test tests/flux-focus-narrative-events.test.js tests/flux-behaviour-tracker-route-state.test.js
+    state: verified
+    status: passed
+    evidence: Thirteen tests passed after Codex review remediation covered modified shortcuts and input-only IME/mobile entry timing.
   - command: npm run build
     state: verified
     status: passed
@@ -66,7 +70,7 @@ security:
   authentication_changed: false
 privacy:
   data_collection_scope_changed: true
-  assessment: Two bounded timing fields are added; no typed value or printable key identity is exported.
+  assessment: Two bounded timing fields are added; input-only entry reads inserted data length without retaining content, and no typed value or printable key identity is exported.
 accessibility:
   required: false
   assessment: No interface or focus behaviour changes; analytics interpretation is made more accurate for keyboard and assistive input.
