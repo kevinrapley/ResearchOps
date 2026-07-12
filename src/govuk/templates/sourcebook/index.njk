@@ -20,7 +20,7 @@
 	<nav class="govuk-breadcrumbs" aria-label="Breadcrumb">
 		<ol class="govuk-breadcrumbs__list">
 			<li class="govuk-breadcrumbs__list-item">
-				<a class="govuk-breadcrumbs__link" href="/">Home</a>
+				<a class="govuk-breadcrumbs__link" href="/" data-flux-key="link.breadcrumb.home" data-flux-role="control">Home</a>
 			</li>
 			<li class="govuk-breadcrumbs__list-item" aria-current="page">Sourcebook</li>
 		</ol>
@@ -93,7 +93,7 @@
 			<h2 class="govuk-heading-l" id="sourcebook-pillars">The 8 pillars</h2>
 			<div class="sourcebook-pillar-grid">
 				{% for pillar in sourcebook.pillars %}
-					<a class="sourcebook-pillar-card" href="{{ pillar.route }}" typeof="skos:Concept" resource="#{{ pillar.code | lower }}">
+					<a class="sourcebook-pillar-card" href="{{ pillar.route }}" typeof="skos:Concept" resource="#{{ pillar.code | lower }}" data-flux-key="link.sourcebook.pillar.{{ pillar.code | lower }}" data-flux-role="control">
 						<span class="sourcebook-pillar-card__code" property="skos:notation">{{ pillar.code }}</span>
 						<span class="sourcebook-pillar-card__title" property="skos:prefLabel">{{ pillar.title }}</span>
 						<span class="sourcebook-pillar-card__text" property="skos:definition">{{ pillar.operatingQuestion }}</span>
@@ -194,7 +194,7 @@
 				{% for item in sourcebook.attribution %}
 					<li>
 						{% if item.url is defined and item.url %}
-							<a class="govuk-link" href="{{ item.url }}">{{ item.name }}</a>
+							<a class="govuk-link" href="{{ item.url }}" data-flux-key="link.sourcebook.reference.{{ loop.index }}" data-flux-role="control">{{ item.name }}</a>
 						{% else %}
 							{{ item.name }}
 						{% endif %}

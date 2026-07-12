@@ -50,7 +50,9 @@
 				<nav class="govuk-breadcrumbs" aria-label="Breadcrumb">
 					<ol class="govuk-breadcrumbs__list">
 						<li class="govuk-breadcrumbs__list-item">
-							<a class="govuk-breadcrumbs__link" href="/">Home</a>
+							<a class="govuk-breadcrumbs__link" href="/" data-flux-key="link.breadcrumb.home" data-flux-role="control">
+								Home
+							</a>
 						</li>
 						<li class="govuk-breadcrumbs__list-item" aria-current="page">Sourcebook</li>
 					</ol>
@@ -190,6 +192,8 @@
 								href="/pages/sourcebook/environment/"
 								typeof="skos:Concept"
 								resource="#enviro"
+								data-flux-key="link.sourcebook.pillar.enviro"
+								data-flux-role="control"
 							>
 								<span class="sourcebook-pillar-card__code" property="skos:notation">ENVIRO</span>
 								<span class="sourcebook-pillar-card__title" property="skos:prefLabel">Environment</span>
@@ -198,7 +202,14 @@
 								</span>
 							</a>
 
-							<a class="sourcebook-pillar-card" href="/pages/sourcebook/scope/" typeof="skos:Concept" resource="#scope">
+							<a
+								class="sourcebook-pillar-card"
+								href="/pages/sourcebook/scope/"
+								typeof="skos:Concept"
+								resource="#scope"
+								data-flux-key="link.sourcebook.pillar.scope"
+								data-flux-role="control"
+							>
 								<span class="sourcebook-pillar-card__code" property="skos:notation">SCOPE</span>
 								<span class="sourcebook-pillar-card__title" property="skos:prefLabel">Scope</span>
 								<span class="sourcebook-pillar-card__text" property="skos:definition">
@@ -211,6 +222,8 @@
 								href="/pages/sourcebook/people/"
 								typeof="skos:Concept"
 								resource="#peop-comm"
+								data-flux-key="link.sourcebook.pillar.peop-comm"
+								data-flux-role="control"
 							>
 								<span class="sourcebook-pillar-card__code" property="skos:notation">PEOP-COMM</span>
 								<span class="sourcebook-pillar-card__title" property="skos:prefLabel">People</span>
@@ -224,6 +237,8 @@
 								href="/pages/sourcebook/organisational-context/"
 								typeof="skos:Concept"
 								resource="#org-cont"
+								data-flux-key="link.sourcebook.pillar.org-cont"
+								data-flux-role="control"
 							>
 								<span class="sourcebook-pillar-card__code" property="skos:notation">ORG-CONT</span>
 								<span class="sourcebook-pillar-card__title" property="skos:prefLabel">Organisational context</span>
@@ -238,6 +253,8 @@
 								href="/pages/sourcebook/recruitment-and-administration/"
 								typeof="skos:Concept"
 								resource="#rec-admn"
+								data-flux-key="link.sourcebook.pillar.rec-admn"
+								data-flux-role="control"
 							>
 								<span class="sourcebook-pillar-card__code" property="skos:notation">REC-ADMN</span>
 								<span class="sourcebook-pillar-card__title" property="skos:prefLabel">
@@ -254,6 +271,8 @@
 								href="/pages/sourcebook/data-and-knowledge-management/"
 								typeof="skos:Concept"
 								resource="#data-sto-acc"
+								data-flux-key="link.sourcebook.pillar.data-sto-acc"
+								data-flux-role="control"
 							>
 								<span class="sourcebook-pillar-card__code" property="skos:notation">DATA-STO-ACC</span>
 								<span class="sourcebook-pillar-card__title" property="skos:prefLabel">
@@ -269,6 +288,8 @@
 								href="/pages/sourcebook/governance/"
 								typeof="skos:Concept"
 								resource="#govern"
+								data-flux-key="link.sourcebook.pillar.govern"
+								data-flux-role="control"
 							>
 								<span class="sourcebook-pillar-card__code" property="skos:notation">GOVERN</span>
 								<span class="sourcebook-pillar-card__title" property="skos:prefLabel">Governance</span>
@@ -282,6 +303,8 @@
 								href="/pages/sourcebook/tools-and-infrastructure/"
 								typeof="skos:Concept"
 								resource="#infra-prov"
+								data-flux-key="link.sourcebook.pillar.infra-prov"
+								data-flux-role="control"
 							>
 								<span class="sourcebook-pillar-card__code" property="skos:notation">INFRA-PROV</span>
 								<span class="sourcebook-pillar-card__title" property="skos:prefLabel">Tools and infrastructure</span>
@@ -528,7 +551,14 @@
 						<h2 class="govuk-heading-m" id="sourcebook-attribution">Attribution</h2>
 						<ul class="govuk-list govuk-list--bullet">
 							<li>
-								<a class="govuk-link" href="https://researchops.community/about/">ResearchOps Community</a>
+								<a
+									class="govuk-link"
+									href="https://researchops.community/about/"
+									data-flux-key="link.sourcebook.reference.1"
+									data-flux-role="control"
+								>
+									ResearchOps Community
+								</a>
 
 								- The 8 pillars of ResearchOps are used as the sourcebook&#39;s primary taxonomy.
 							</li>
@@ -539,7 +569,14 @@
 							</li>
 
 							<li>
-								<a class="govuk-link" href="https://github.com/researchops/consentform">researchops/consentform</a>
+								<a
+									class="govuk-link"
+									href="https://github.com/researchops/consentform"
+									data-flux-key="link.sourcebook.reference.3"
+									data-flux-role="control"
+								>
+									researchops/consentform
+								</a>
 
 								- Conceptual benchmark for simplifying privacy and consent statements through structured questions and
 								generated participant-facing wording. No source text is reproduced.

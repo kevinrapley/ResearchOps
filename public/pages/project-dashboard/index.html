@@ -167,6 +167,8 @@
 											href="/pages/projects/journals/?id="
 											id="journal-link"
 											property="schema:relatedLink"
+											data-flux-key="link.journal.open-summary"
+											data-flux-role="control"
 										>
 											Open journal
 										</a>
@@ -276,7 +278,17 @@
 									<div class="govuk-summary-list__row">
 										<dt class="govuk-summary-list__key">Lead researcher email</dt>
 										<dd class="govuk-summary-list__value">
-											<a class="govuk-link" id="kv-lead-email" property="schema:email" href="mailto:">–</a>
+											<a
+												class="govuk-link"
+												id="kv-lead-email"
+												property="schema:email"
+												href="mailto:"
+												data-flux-key="link.project.lead-email"
+												data-flux-role="control"
+												data-flux-sensitive="true"
+											>
+												–
+											</a>
 										</dd>
 									</div>
 								</dl>
@@ -301,12 +313,19 @@
 										id="add-stakeholder-toggle"
 										aria-expanded="false"
 										aria-controls="add-stakeholder-panel"
+										data-flux-key="button.stakeholder.add"
+										data-flux-role="control"
 									>
 										Add stakeholder
 									</button>
 
 									<div id="add-stakeholder-panel" class="dashboard-action-panel" hidden>
-										<form id="add-stakeholder-form" novalidate>
+										<form
+											id="add-stakeholder-form"
+											novalidate
+											data-flux-key="form.stakeholder.add"
+											data-flux-role="form"
+										>
 											<h4 class="govuk-heading-s">Add stakeholder</h4>
 											<div id="add-stakeholder-status" class="dashboard-action-status" aria-live="polite"></div>
 											<div class="govuk-form-group">
@@ -317,6 +336,8 @@
 													name="name"
 													autocomplete="name"
 													required
+													data-flux-key="field.stakeholder.name"
+													data-flux-role="field"
 												/>
 											</div>
 											<div class="govuk-form-group">
@@ -327,6 +348,8 @@
 													name="role"
 													autocomplete="organization-title"
 													required
+													data-flux-key="field.stakeholder.role"
+													data-flux-role="field"
 												/>
 											</div>
 											<div class="govuk-form-group">
@@ -341,10 +364,21 @@
 													type="email"
 													autocomplete="email"
 													aria-describedby="stakeholder-email-hint"
+													data-flux-key="field.stakeholder.email"
+													data-flux-role="field"
+													data-flux-sensitive="true"
 												/>
 											</div>
 											<div class="govuk-button-group">
-												<button type="submit" class="govuk-button" data-module="govuk-button">Save stakeholder</button>
+												<button
+													type="submit"
+													class="govuk-button"
+													data-module="govuk-button"
+													data-flux-key="button.stakeholder.save"
+													data-flux-role="control"
+												>
+													Save stakeholder
+												</button>
 
 												<button
 													type="button"
@@ -352,6 +386,8 @@
 													data-module="govuk-button"
 													data-close-panel="add-stakeholder-panel"
 													data-toggle="add-stakeholder-toggle"
+													data-flux-key="button.stakeholder.cancel"
+													data-flux-role="control"
 												>
 													Cancel
 												</button>
@@ -457,12 +493,19 @@
 												id="add-user-group-toggle"
 												aria-expanded="false"
 												aria-controls="add-user-group-panel"
+												data-flux-key="button.user-group.add"
+												data-flux-role="control"
 											>
 												Add user group
 											</button>
 
 											<div id="add-user-group-panel" class="dashboard-action-panel" hidden>
-												<form id="add-user-group-form" novalidate>
+												<form
+													id="add-user-group-form"
+													novalidate
+													data-flux-key="form.user-group.add"
+													data-flux-role="form"
+												>
 													<h4 class="govuk-heading-s">Add user group</h4>
 													<div id="add-user-group-status" class="dashboard-action-status" aria-live="polite"></div>
 													<div class="govuk-form-group">
@@ -472,10 +515,18 @@
 															id="user-group-name"
 															name="user-group"
 															required
+															data-flux-key="field.user-group.name"
+															data-flux-role="field"
 														/>
 													</div>
 													<div class="govuk-button-group">
-														<button type="submit" class="govuk-button" data-module="govuk-button">
+														<button
+															type="submit"
+															class="govuk-button"
+															data-module="govuk-button"
+															data-flux-key="button.user-group.save"
+															data-flux-role="control"
+														>
 															Save user group
 														</button>
 
@@ -485,6 +536,8 @@
 															data-module="govuk-button"
 															data-close-panel="add-user-group-panel"
 															data-toggle="add-user-group-toggle"
+															data-flux-key="button.user-group.cancel"
+															data-flux-role="control"
 														>
 															Cancel
 														</button>
@@ -507,6 +560,8 @@
 													class="govuk-button govuk-button--secondary"
 													data-module="govuk-button"
 													id="add-participant-link"
+													data-flux-key="link.project.add-participant"
+													data-flux-role="control"
 												>
 													Add participant
 												</a>
@@ -518,6 +573,8 @@
 													class="govuk-button govuk-button--secondary"
 													data-module="govuk-button"
 													id="import-participants-link"
+													data-flux-key="link.project.import-participants"
+													data-flux-role="control"
 												>
 													Bulk upload participants via CSV
 												</a>
@@ -532,7 +589,13 @@
 									<h2 class="govuk-summary-card__title">Research outcomes</h2>
 									<ul class="govuk-summary-card__actions">
 										<li class="govuk-summary-card__action">
-											<a class="govuk-link" id="outcomes-card-link" href="/pages/projects/outcomes/?id=">
+											<a
+												class="govuk-link"
+												id="outcomes-card-link"
+												href="/pages/projects/outcomes/?id="
+												data-flux-key="link.outcomes.open"
+												data-flux-role="control"
+											>
 												Open outcomes
 											</a>
 										</li>
@@ -553,6 +616,8 @@
 												class="govuk-button govuk-button--secondary"
 												data-module="govuk-button"
 												id="add-study-link"
+												data-flux-key="link.study.add"
+												data-flux-role="control"
 											>
 												Add study
 											</a>
@@ -572,6 +637,8 @@
 												class="govuk-button govuk-button--secondary"
 												data-module="govuk-button"
 												id="add-insight-link"
+												data-flux-key="link.insight.add"
+												data-flux-role="control"
 											>
 												Add insight
 											</a>
