@@ -13,12 +13,13 @@ function storage() {
 	};
 }
 
-function element({ key, tagName, type = '', autofocus = false }) {
+function element({ key, tagName, type = '', autofocus = false, id = '' }) {
 	const listeners = new Map();
 	const node = {
 		dataset: { fluxKey: key, fluxRole: tagName === 'TEXTAREA' ? 'field' : 'control' },
 		tagName,
 		type,
+		id,
 		autocomplete: '',
 		value: '',
 		closest: () => node,
@@ -109,4 +110,49 @@ test('records automatic field focus separately from keyboard input and mouse foc
 	assert.equal(requests[1].key_press_count, 101);
 	assert.equal(requests[1].duration_ms, 28_800);
 	assert.equal(requests[1].pointer_type, 'mouse');
+});
+
+test('classifies an associated label click as pointer focus', () => {
+	const { context, requests } = harness();
+	const textarea = element({
+		key: 'field.project.add-objective-textarea',
+		tagName: 'TEXTAREA',
+		autofocus: true,
+		id: 'objective-text',
+	});
+	const label = { control: textarea };
+	context.label = label;
+	context.textarea = textarea;
+
+	vm.runInContext(
+		"recordPointer({ target: label, pointerType: 'mouse' }); beginFocus({ target: textarea });",
+		context
+	);
+
+	assert.equal(requests[0].action, 'field.focus.pointer');
+	assert.equal(requests[0].pointer_type, 'mouse');
+});
+
+test('classifies focus following keyboard activation as keyboard initiated', () => {
+	const { context, requests } = harness();
+	const toggle = element({
+		key: 'button.project.add-objective',
+		tagName: 'BUTTON',
+		type: 'button',
+	});
+	const textarea = element({
+		key: 'field.project.add-objective-textarea',
+		tagName: 'TEXTAREA',
+		autofocus: true,
+	});
+	context.toggle = toggle;
+	context.textarea = textarea;
+
+	vm.runInContext(
+		"trackKeyboard({ target: toggle, key: 'Enter', metaKey: false, ctrlKey: false }); beginFocus({ target: textarea });",
+		context
+	);
+
+	assert.equal(requests[0].action, 'field.focus.keyboard');
+	assert.equal(requests[0].pointer_type, 'keyboard');
 });

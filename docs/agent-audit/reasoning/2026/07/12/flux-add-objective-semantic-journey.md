@@ -30,7 +30,8 @@ Replace generated Add Objective control labels with stable, privacy-safe service
 - Semantic-template and focus-event tests failed before implementation.
 - Six focused tracker, session, route and rendered-page assertions passed after implementation.
 - The generated project dashboard contains all five semantic keys and the automatic-focus marker.
-- `npm run build`, all 362 tests, formatting, lint and repository validation passed.
+- `npm run build`, all 364 tests, formatting, lint and repository validation passed.
+- Codex review regressions confirm associated-label clicks are pointer focus and Enter or Space activation is keyboard-initiated focus.
 
 ## Residual risk
 

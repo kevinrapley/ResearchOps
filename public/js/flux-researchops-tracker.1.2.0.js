@@ -70,12 +70,14 @@ function trackClick(event) {
 }
 
 function trackKeyboard(event) {
-	if (event.key === 'Tab') {
+	const details = targetDetails(event.target);
+	const activationKey = event.key === 'Enter' || event.key === ' ';
+	if (event.key === 'Tab' || (activationKey && !editableTarget(event.target))) {
 		lastKeyboard = { target: event.target, at: performance.now() };
-		const details = targetDetails(event.target);
+	}
+	if (event.key === 'Tab') {
 		if (details) track('nav', 'control.tab', { ...details, pointer_type: 'keyboard', interaction_type: 'tab' });
 	}
-	const details = targetDetails(event.target);
 	if (details && (event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'z') track('kbd', 'edit.undo', details);
 	if (details && (event.metaKey || event.ctrlKey) && ['a', 'c', 'x', 'f'].includes(event.key.toLowerCase())) track('kbd', 'act.shortcut', details);
 	const state = focusState.get(event.target);
@@ -113,7 +115,7 @@ function beginFocus(event) {
 	const recentKeyboard = now - lastKeyboard.at <= RECENT_INTERACTION_MS;
 	let focusOrigin = 'programmatic';
 	let focusPointerType;
-	if (recentPointer && lastPointer.target === event.target) {
+	if (recentPointer && pointerInitiatedFocus(lastPointer.target, event.target)) {
 		focusOrigin = 'pointer';
 		focusPointerType = lastPointer.type;
 	} else if (recentKeyboard) {
@@ -133,6 +135,10 @@ function beginFocus(event) {
 	};
 	focusState.set(event.target, state);
 	event.target.addEventListener('input', state.onInput);
+}
+
+function pointerInitiatedFocus(pointerTarget, focusTarget) {
+	return pointerTarget === focusTarget || pointerTarget?.control === focusTarget;
 }
 
 function endFocus(event) {

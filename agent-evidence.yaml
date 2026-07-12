@@ -52,7 +52,7 @@ commands_run:
   - command: npm test
     state: verified
     status: passed
-    evidence: All 362 tests passed.
+    evidence: All 364 tests passed, including Codex review regressions for associated-label focus and keyboard activation.
   - command: npm run format:check
     state: verified
     status: passed

@@ -25,7 +25,7 @@
     "focus-origin event test failed before and passed after implementation",
     "six focused tracker and rendered-page assertions passed",
     "generated project dashboard contains controlled Add Objective attributes",
-    "npm run build and all 362 tests passed",
+    "npm run build and all 364 tests passed, including Codex focus-origin review regressions",
     "formatting, lint and repository validation passed"
   ],
   "warnings": [
