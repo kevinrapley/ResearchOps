@@ -2,6 +2,14 @@
 
 This file records repeatable repository-specific lessons for ResearchOps agents and maintainers. It is not a changelog.
 
+## 2026-07-12 — Browser lifetime is not an analytics session boundary
+
+Context: The Flux tracker stored its session identifier in `sessionStorage` without an inactivity timestamp. A visitor who returned more than seven hours later was still appended to the journey that began at 03:28, which inflated session duration and prevented Flux from recognising the return as a new session.
+
+Learning: Tab-scoped storage controls persistence, not behavioural-session meaning. Analytics sessions need an explicit inactivity boundary, and a cache-busted migration path is required when an existing stored identifier has no activity timestamp.
+
+Action: Keep the visitor identifier stable, roll the pseudonymous session identifier after 30 minutes without a captured interaction, refresh the activity timestamp on each event, and replace legacy sessions on their first event after deployment.
+
 ## 2026-07-12 — Semantic analytics keys must describe service purpose without reading content
 
 Context: Positional keys such as `auto.a.3` preserved privacy but made Flux journey narratives unusable, while copying visible labels, IDs or field values would weaken the metadata-only boundary.

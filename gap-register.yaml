@@ -1,4 +1,16 @@
 gaps:
+  - id: flux-tracker-inactivity-session-boundary
+    title: Separate returning ResearchOps visits into behavioural sessions
+    status: implemented
+    severity: high
+    owner: repository-maintainers
+    context: The tracker previously equated the lifetime of sessionStorage with a behavioural session, so activity more than seven hours apart was stored under one journey and the return was not counted as a new session.
+    mitigation: Roll the pseudonymous session identifier after 30 minutes without a captured interaction, update the activity timestamp on every event, migrate legacy stored sessions on first use, and cache-bust the deployed tracker reference.
+    evidence:
+      - public/js/flux-researchops-tracker.1.2.0.js
+      - tests/flux-session-lifecycle.test.js
+      - docs/agent-audit/reasoning/2026/07/12/flux-session-inactivity-boundary.md
+
   - id: flux-tracker-event-contract-alignment
     title: Align the ResearchOps tracker payload with the Flux event contract
     status: implemented

@@ -1,4 +1,14 @@
 records:
+  - id: flux-tracker-inactivity-session-boundary
+    control: ResearchOps creates a new pseudonymous Flux session after 30 minutes without a captured interaction while retaining the returning visitor identifier.
+    evidence:
+      - public/js/flux-researchops-tracker.1.2.0.js
+      - tests/flux-session-lifecycle.test.js
+      - docs/agent-audit/reasoning/2026/07/12/flux-session-inactivity-boundary.md
+    status: implemented
+    risk: high
+    owner: repository-maintainers
+
   - id: flux-tracker-event-contract-alignment
     control: The deployed ResearchOps tracker emits the Flux collector's accepted event-contract version independently from its JavaScript asset version.
     evidence:

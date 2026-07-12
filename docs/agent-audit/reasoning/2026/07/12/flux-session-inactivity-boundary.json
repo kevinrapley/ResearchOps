@@ -1,0 +1,61 @@
+{
+  "schemaVersion": "agent-trace-promotion/v1",
+  "title": "Add an inactivity boundary to ResearchOps Flux sessions.",
+  "sourceTrace": "repository-audited fix branch",
+  "markdownReport": "docs/agent-audit/reasoning/2026/07/12/flux-session-inactivity-boundary.md",
+  "jsonSummary": "docs/agent-audit/reasoning/2026/07/12/flux-session-inactivity-boundary.json",
+  "run": {
+    "taskSummary": "Fix ResearchOps visits more than seven hours apart being stored as one Flux session."
+  },
+  "bundles": [
+    "github-diamond",
+    "researchops-developer-control",
+    "multi-functional-team",
+    "cloudflare"
+  ],
+  "filesRead": [
+    "AGENTS.md",
+    "RECENT_LEARNINGS.md",
+    "public/js/flux-researchops-tracker.1.2.0.js",
+    "tests/flux-behaviour-tracker-route-state.test.js",
+    "docs/implementation/flux-semantic-instrumentation.md",
+    "conformance-matrix.yaml",
+    "gap-register.yaml"
+  ],
+  "filesWritten": [
+    "public/js/flux-researchops-tracker.1.2.0.js",
+    "src/govuk/templates/layouts/researchops.njk",
+    "public/partials/html-head.html",
+    "public/pages/**/index.html",
+    "tests/flux-session-lifecycle.test.js",
+    "tests/flux-behaviour-tracker-route-state.test.js",
+    "docs/implementation/flux-semantic-instrumentation.md",
+    "RECENT_LEARNINGS.md",
+    "conformance-matrix.yaml",
+    "gap-register.yaml",
+    "harm-register.yaml",
+    "agent-evidence.yaml"
+  ],
+  "validations": [
+    "production D1 showed 09:41-09:42 UTC events on the 02:28 UTC session",
+    "collector preflight returned HTTP 204 with no-store",
+    "session lifecycle tests failed before and passed after implementation",
+    "focused lifecycle and route-state tests: 3 passed",
+    "npm run build",
+    "npm run format:check",
+    "npm run lint: no errors",
+    "npm test: 361 passed",
+    "npm run validate",
+    "agent evidence validation passed",
+    "recent-learnings grader: 1.0 pass",
+    "code-confidence grader: 0.65 fail due unmapped documentation and structured-evidence criteria"
+  ],
+  "issues": [
+    "The tracker equated sessionStorage lifetime with behavioural-session lifetime."
+  ],
+  "warnings": [
+    "Historical event keys cannot be enriched retroactively.",
+    "Production rollover requires post-deployment D1 verification.",
+    "The generic confidence grader cannot map its documentation or structured-evidence criteria to available evidence fields."
+  ]
+}
