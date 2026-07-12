@@ -21,6 +21,8 @@ function excludes(source, text, label) {
 }
 
 function assertSharedHeaderContainsAccountNavigation() {
+	includes(headerPartial, 'data-flux-key="link.accessibility.skip-to-main-content" data-flux-role="control"', 'shared header partial');
+	includes(headerPartial, 'data-flux-key="link.header.home" data-flux-role="control"', 'shared header partial');
 	includes(headerPartial, 'class="researchops-header__account"', 'shared header partial');
 	includes(headerPartial, 'aria-label="Account"', 'shared header partial');
 	includes(headerPartial, 'data-auth-header-account>', 'shared header partial');
