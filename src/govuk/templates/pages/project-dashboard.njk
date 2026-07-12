@@ -79,7 +79,7 @@
 					<h2 class="govuk-summary-card__title">Reflexive journal</h2>
 					<ul class="govuk-summary-card__actions">
 						<li class="govuk-summary-card__action">
-							<a class="govuk-link" href="/pages/projects/journals/?id=" id="journal-link" property="schema:relatedLink">Open journal</a>
+							<a class="govuk-link" href="/pages/projects/journals/?id=" id="journal-link" property="schema:relatedLink" data-flux-key="link.journal.open-summary" data-flux-role="control">Open journal</a>
 						</li>
 					</ul>
 				</div>
@@ -161,7 +161,7 @@
 						</div>
 						<div class="govuk-summary-list__row">
 							<dt class="govuk-summary-list__key">Lead researcher email</dt>
-							<dd class="govuk-summary-list__value"><a class="govuk-link" id="kv-lead-email" property="schema:email" href="mailto:">–</a></dd>
+							<dd class="govuk-summary-list__value"><a class="govuk-link" id="kv-lead-email" property="schema:email" href="mailto:" data-flux-key="link.project.lead-email" data-flux-role="control">–</a></dd>
 						</div>
 					</dl>
 				</div>
@@ -191,26 +191,28 @@
 							<div id="add-stakeholder-status" class="dashboard-action-status" aria-live="polite"></div>
 							<div class="govuk-form-group">
 								<label class="govuk-label" for="stakeholder-name">Name</label>
-								<input class="govuk-input govuk-!-width-two-thirds" id="stakeholder-name" name="name" autocomplete="name" required>
+								<input class="govuk-input govuk-!-width-two-thirds" id="stakeholder-name" name="name" autocomplete="name" required data-flux-key="field.stakeholder.name" data-flux-role="field">
 							</div>
 							<div class="govuk-form-group">
 								<label class="govuk-label" for="stakeholder-role">Role</label>
-								<input class="govuk-input govuk-!-width-two-thirds" id="stakeholder-role" name="role" autocomplete="organization-title" required>
+								<input class="govuk-input govuk-!-width-two-thirds" id="stakeholder-role" name="role" autocomplete="organization-title" required data-flux-key="field.stakeholder.role" data-flux-role="field">
 							</div>
 							<div class="govuk-form-group">
 								<label class="govuk-label" for="stakeholder-email">Work email</label>
 								<div id="stakeholder-email-hint" class="govuk-hint">Only add staff contact details where needed for project ownership or coordination.</div>
-								<input class="govuk-input govuk-!-width-two-thirds" id="stakeholder-email" name="email" type="email" autocomplete="email" aria-describedby="stakeholder-email-hint">
+								<input class="govuk-input govuk-!-width-two-thirds" id="stakeholder-email" name="email" type="email" autocomplete="email" aria-describedby="stakeholder-email-hint" data-flux-key="field.stakeholder.email" data-flux-role="field" data-flux-sensitive="true">
 							</div>
 							<div class="govuk-button-group">
-								{{ govukButton({ text: "Save stakeholder", type: "submit" }) }}
+								{{ govukButton({ text: "Save stakeholder", type: "submit", attributes: { "data-flux-key": "button.stakeholder.save", "data-flux-role": "control" } }) }}
 								{{ govukButton({
 									text: "Cancel",
 									type: "button",
 									classes: "govuk-button--secondary",
 									attributes: {
 										"data-close-panel": "add-stakeholder-panel",
-										"data-toggle": "add-stakeholder-toggle"
+										"data-toggle": "add-stakeholder-toggle",
+										"data-flux-key": "button.stakeholder.cancel",
+										"data-flux-role": "control"
 									}
 								}) }}
 							</div>
@@ -297,10 +299,10 @@
 								<div id="add-user-group-status" class="dashboard-action-status" aria-live="polite"></div>
 								<div class="govuk-form-group">
 									<label class="govuk-label" for="user-group-name">User group</label>
-									<input class="govuk-input govuk-!-width-two-thirds" id="user-group-name" name="user-group" required>
+									<input class="govuk-input govuk-!-width-two-thirds" id="user-group-name" name="user-group" required data-flux-key="field.user-group.name" data-flux-role="field">
 								</div>
 								<div class="govuk-button-group">
-									{{ govukButton({ text: "Save user group", type: "submit" }) }}
+									{{ govukButton({ text: "Save user group", type: "submit", attributes: { "data-flux-key": "button.user-group.save", "data-flux-role": "control" } }) }}
 									{{ govukButton({
 										text: "Cancel",
 										type: "button",
@@ -319,8 +321,8 @@
 						<p class="govuk-body-s" id="participants-summary-status">Loading participants…</p>
 						<p class="govuk-body-s">Participants are managed through study-specific workflows so consent, scheduling and safeguarding states stay traceable.</p>
 						<div class="govuk-button-group">
-							{{ govukButton({ text: "Add participant", href: "/pages/project-dashboard/participants/?id=", classes: "govuk-button--secondary", attributes: { id: "add-participant-link" } }) }}
-							{{ govukButton({ text: "Bulk upload participants via CSV", href: "/pages/project-dashboard/participants/import/?id=", classes: "govuk-button--secondary", attributes: { id: "import-participants-link" } }) }}
+						{{ govukButton({ text: "Add participant", href: "/pages/project-dashboard/participants/?id=", classes: "govuk-button--secondary", attributes: { id: "add-participant-link", "data-flux-key": "link.participant.add", "data-flux-role": "control" } }) }}
+						{{ govukButton({ text: "Bulk upload participants via CSV", href: "/pages/project-dashboard/participants/import/?id=", classes: "govuk-button--secondary", attributes: { id: "import-participants-link", "data-flux-key": "link.participant.import", "data-flux-role": "control" } }) }}
 						</div>
 					</div>
 				</div>
@@ -331,7 +333,7 @@
 			<div class="govuk-summary-card__title-wrapper">
 				<h2 class="govuk-summary-card__title">Research outcomes</h2>
 				<ul class="govuk-summary-card__actions">
-					<li class="govuk-summary-card__action"><a class="govuk-link" id="outcomes-card-link" href="/pages/projects/outcomes/?id=">Open outcomes</a></li>
+					<li class="govuk-summary-card__action"><a class="govuk-link" id="outcomes-card-link" href="/pages/projects/outcomes/?id=" data-flux-key="link.outcomes.open" data-flux-role="control">Open outcomes</a></li>
 				</ul>
 			</div>
 			<div class="govuk-summary-card__content govuk-body-s">

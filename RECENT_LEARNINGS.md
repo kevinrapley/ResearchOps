@@ -1,5 +1,9 @@
 # Recent Learnings
 
+## 2026-07-12 — Semantic instrumentation must cover focus-order destinations
+
+Auditing only elements that already have `data-flux-key` misses the exact controls that degrade into unlabelled journey events. Check the complete keyboard focus order on high-use pages, including breadcrumbs, page contents links, generated GOV.UK buttons and related-route links.
+
 This file records repeatable repository-specific lessons for ResearchOps agents and maintainers. It is not a changelog.
 
 ## 2026-07-12 — Publisher instrumentation is attributes, not a copied analytics product

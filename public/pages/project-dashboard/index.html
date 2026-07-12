@@ -167,6 +167,8 @@
 											href="/pages/projects/journals/?id="
 											id="journal-link"
 											property="schema:relatedLink"
+											data-flux-key="link.journal.open-summary"
+											data-flux-role="control"
 										>
 											Open journal
 										</a>
@@ -276,7 +278,16 @@
 									<div class="govuk-summary-list__row">
 										<dt class="govuk-summary-list__key">Lead researcher email</dt>
 										<dd class="govuk-summary-list__value">
-											<a class="govuk-link" id="kv-lead-email" property="schema:email" href="mailto:">–</a>
+											<a
+												class="govuk-link"
+												id="kv-lead-email"
+												property="schema:email"
+												href="mailto:"
+												data-flux-key="link.project.lead-email"
+												data-flux-role="control"
+											>
+												–
+											</a>
 										</dd>
 									</div>
 								</dl>
@@ -317,6 +328,8 @@
 													name="name"
 													autocomplete="name"
 													required
+													data-flux-key="field.stakeholder.name"
+													data-flux-role="field"
 												/>
 											</div>
 											<div class="govuk-form-group">
@@ -327,6 +340,8 @@
 													name="role"
 													autocomplete="organization-title"
 													required
+													data-flux-key="field.stakeholder.role"
+													data-flux-role="field"
 												/>
 											</div>
 											<div class="govuk-form-group">
@@ -341,10 +356,21 @@
 													type="email"
 													autocomplete="email"
 													aria-describedby="stakeholder-email-hint"
+													data-flux-key="field.stakeholder.email"
+													data-flux-role="field"
+													data-flux-sensitive="true"
 												/>
 											</div>
 											<div class="govuk-button-group">
-												<button type="submit" class="govuk-button" data-module="govuk-button">Save stakeholder</button>
+												<button
+													type="submit"
+													class="govuk-button"
+													data-module="govuk-button"
+													data-flux-key="button.stakeholder.save"
+													data-flux-role="control"
+												>
+													Save stakeholder
+												</button>
 
 												<button
 													type="button"
@@ -352,6 +378,8 @@
 													data-module="govuk-button"
 													data-close-panel="add-stakeholder-panel"
 													data-toggle="add-stakeholder-toggle"
+													data-flux-key="button.stakeholder.cancel"
+													data-flux-role="control"
 												>
 													Cancel
 												</button>
@@ -472,10 +500,18 @@
 															id="user-group-name"
 															name="user-group"
 															required
+															data-flux-key="field.user-group.name"
+															data-flux-role="field"
 														/>
 													</div>
 													<div class="govuk-button-group">
-														<button type="submit" class="govuk-button" data-module="govuk-button">
+														<button
+															type="submit"
+															class="govuk-button"
+															data-module="govuk-button"
+															data-flux-key="button.user-group.save"
+															data-flux-role="control"
+														>
 															Save user group
 														</button>
 
@@ -507,6 +543,8 @@
 													class="govuk-button govuk-button--secondary"
 													data-module="govuk-button"
 													id="add-participant-link"
+													data-flux-key="link.participant.add"
+													data-flux-role="control"
 												>
 													Add participant
 												</a>
@@ -518,6 +556,8 @@
 													class="govuk-button govuk-button--secondary"
 													data-module="govuk-button"
 													id="import-participants-link"
+													data-flux-key="link.participant.import"
+													data-flux-role="control"
 												>
 													Bulk upload participants via CSV
 												</a>
@@ -532,7 +572,13 @@
 									<h2 class="govuk-summary-card__title">Research outcomes</h2>
 									<ul class="govuk-summary-card__actions">
 										<li class="govuk-summary-card__action">
-											<a class="govuk-link" id="outcomes-card-link" href="/pages/projects/outcomes/?id=">
+											<a
+												class="govuk-link"
+												id="outcomes-card-link"
+												href="/pages/projects/outcomes/?id="
+												data-flux-key="link.outcomes.open"
+												data-flux-role="control"
+											>
 												Open outcomes
 											</a>
 										</li>

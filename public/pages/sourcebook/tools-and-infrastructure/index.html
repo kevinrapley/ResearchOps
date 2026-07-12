@@ -36,7 +36,7 @@
 		></script>
 	</head>
 	<body
-		class="govuk-template__body researchops-sourcebook-page"
+	 class="govuk-template__body researchops-sourcebook-page"
 		data-flux-page="page.sourcebook-tools-and-infrastructure"
 	>
 		<script>
@@ -49,10 +49,19 @@
 				<nav class="govuk-breadcrumbs" aria-label="Breadcrumb">
 					<ol class="govuk-breadcrumbs__list">
 						<li class="govuk-breadcrumbs__list-item">
-							<a class="govuk-breadcrumbs__link" href="/">Home</a>
+							<a class="govuk-breadcrumbs__link" href="/" data-flux-key="link.breadcrumb.home" data-flux-role="control">
+								Home
+							</a>
 						</li>
 						<li class="govuk-breadcrumbs__list-item">
-							<a class="govuk-breadcrumbs__link" href="/pages/sourcebook/">Sourcebook</a>
+							<a
+								class="govuk-breadcrumbs__link"
+								href="/pages/sourcebook/"
+								data-flux-key="link.breadcrumb.sourcebook"
+								data-flux-role="control"
+							>
+								Sourcebook
+							</a>
 						</li>
 						<li class="govuk-breadcrumbs__list-item" aria-current="page">Tools and infrastructure</li>
 					</ol>
@@ -110,25 +119,104 @@
 					<nav class="sourcebook-contents" aria-labelledby="pillar-contents">
 						<h2 class="govuk-heading-m" id="pillar-contents">Contents</h2>
 						<ol class="govuk-list govuk-list--number">
-							<li><a class="govuk-link" href="#infra-prov-1-0-0">Tools and infrastructure operating model</a></li>
-
-							<li><a class="govuk-link" href="#infra-prov-2-0-0">Tool evaluation, procurement and adoption</a></li>
-
-							<li><a class="govuk-link" href="#infra-prov-3-0-0">Access, identity and permission management</a></li>
-
 							<li>
-								<a class="govuk-link" href="#infra-prov-4-0-0">Integration, automation and workflow reliability</a>
+								<a
+									class="govuk-link"
+									href="#infra-prov-1-0-0"
+									data-flux-key="link.sourcebook.contents.infra-prov-1-0-0"
+									data-flux-role="control"
+								>
+									Tools and infrastructure operating model
+								</a>
 							</li>
 
-							<li><a class="govuk-link" href="#infra-prov-5-0-0">Support, service health and incident response</a></li>
+							<li>
+								<a
+									class="govuk-link"
+									href="#infra-prov-2-0-0"
+									data-flux-key="link.sourcebook.contents.infra-prov-2-0-0"
+									data-flux-role="control"
+								>
+									Tool evaluation, procurement and adoption
+								</a>
+							</li>
 
-							<li><a class="govuk-link" href="#infra-prov-6-0-0">Security, compliance and resilience</a></li>
+							<li>
+								<a
+									class="govuk-link"
+									href="#infra-prov-3-0-0"
+									data-flux-key="link.sourcebook.contents.infra-prov-3-0-0"
+									data-flux-role="control"
+								>
+									Access, identity and permission management
+								</a>
+							</li>
 
-							<li><a class="govuk-link" href="#infra-prov-7-0-0">Lifecycle review, retirement and improvement</a></li>
+							<li>
+								<a
+									class="govuk-link"
+									href="#infra-prov-4-0-0"
+									data-flux-key="link.sourcebook.contents.infra-prov-4-0-0"
+									data-flux-role="control"
+								>
+									Integration, automation and workflow reliability
+								</a>
+							</li>
 
-							<li><a class="govuk-link" href="#glossary">Glossary</a></li>
+							<li>
+								<a
+									class="govuk-link"
+									href="#infra-prov-5-0-0"
+									data-flux-key="link.sourcebook.contents.infra-prov-5-0-0"
+									data-flux-role="control"
+								>
+									Support, service health and incident response
+								</a>
+							</li>
 
-							<li><a class="govuk-link" href="#change-history">Change history</a></li>
+							<li>
+								<a
+									class="govuk-link"
+									href="#infra-prov-6-0-0"
+									data-flux-key="link.sourcebook.contents.infra-prov-6-0-0"
+									data-flux-role="control"
+								>
+									Security, compliance and resilience
+								</a>
+							</li>
+
+							<li>
+								<a
+									class="govuk-link"
+									href="#infra-prov-7-0-0"
+									data-flux-key="link.sourcebook.contents.infra-prov-7-0-0"
+									data-flux-role="control"
+								>
+									Lifecycle review, retirement and improvement
+								</a>
+							</li>
+
+							<li>
+								<a
+									class="govuk-link"
+									href="#glossary"
+									data-flux-key="link.sourcebook.contents.glossary"
+									data-flux-role="control"
+								>
+									Glossary
+								</a>
+							</li>
+
+							<li>
+								<a
+									class="govuk-link"
+									href="#change-history"
+									data-flux-key="link.sourcebook.contents.change-history"
+									data-flux-role="control"
+								>
+									Change history
+								</a>
+							</li>
 						</ol>
 					</nav>
 
@@ -522,10 +610,24 @@
 									<div class="govuk-summary-list__row">
 										<dt class="govuk-summary-list__key">Related routes</dt>
 										<dd class="govuk-summary-list__value">
-											<a class="govuk-link" href="/pages/account/team-access/">/pages/account/team-access/</a>
+											<a
+												class="govuk-link"
+												href="/pages/account/team-access/"
+												data-flux-key="link.sourcebook.related-route.infra-prov.1"
+												data-flux-role="control"
+											>
+												/pages/account/team-access/
+											</a>
 											,
 
-											<a class="govuk-link" href="/pages/team/role-assignments/">/pages/team/role-assignments/</a>
+											<a
+												class="govuk-link"
+												href="/pages/team/role-assignments/"
+												data-flux-key="link.sourcebook.related-route.infra-prov.2"
+												data-flux-role="control"
+											>
+												/pages/team/role-assignments/
+											</a>
 										</dd>
 									</div>
 								</dl>

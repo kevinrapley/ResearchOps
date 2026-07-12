@@ -36,7 +36,7 @@
 		></script>
 	</head>
 	<body
-		class="govuk-template__body researchops-sourcebook-page"
+	 class="govuk-template__body researchops-sourcebook-page"
 		data-flux-page="page.sourcebook-data-and-knowledge-management"
 	>
 		<script>
@@ -49,10 +49,19 @@
 				<nav class="govuk-breadcrumbs" aria-label="Breadcrumb">
 					<ol class="govuk-breadcrumbs__list">
 						<li class="govuk-breadcrumbs__list-item">
-							<a class="govuk-breadcrumbs__link" href="/">Home</a>
+							<a class="govuk-breadcrumbs__link" href="/" data-flux-key="link.breadcrumb.home" data-flux-role="control">
+								Home
+							</a>
 						</li>
 						<li class="govuk-breadcrumbs__list-item">
-							<a class="govuk-breadcrumbs__link" href="/pages/sourcebook/">Sourcebook</a>
+							<a
+								class="govuk-breadcrumbs__link"
+								href="/pages/sourcebook/"
+								data-flux-key="link.breadcrumb.sourcebook"
+								data-flux-role="control"
+							>
+								Sourcebook
+							</a>
 						</li>
 						<li class="govuk-breadcrumbs__list-item" aria-current="page">Data and knowledge management</li>
 					</ol>
@@ -110,23 +119,104 @@
 					<nav class="sourcebook-contents" aria-labelledby="pillar-contents">
 						<h2 class="govuk-heading-m" id="pillar-contents">Contents</h2>
 						<ol class="govuk-list govuk-list--number">
-							<li><a class="govuk-link" href="#data-sto-acc-1-0-0">Data and knowledge operating model</a></li>
+							<li>
+								<a
+									class="govuk-link"
+									href="#data-sto-acc-1-0-0"
+									data-flux-key="link.sourcebook.contents.data-sto-acc-1-0-0"
+									data-flux-role="control"
+								>
+									Data and knowledge operating model
+								</a>
+							</li>
 
-							<li><a class="govuk-link" href="#data-sto-acc-2-0-0">Evidence capture and repository entry</a></li>
+							<li>
+								<a
+									class="govuk-link"
+									href="#data-sto-acc-2-0-0"
+									data-flux-key="link.sourcebook.contents.data-sto-acc-2-0-0"
+									data-flux-role="control"
+								>
+									Evidence capture and repository entry
+								</a>
+							</li>
 
-							<li><a class="govuk-link" href="#data-sto-acc-3-0-0">Metadata, taxonomy and findability</a></li>
+							<li>
+								<a
+									class="govuk-link"
+									href="#data-sto-acc-3-0-0"
+									data-flux-key="link.sourcebook.contents.data-sto-acc-3-0-0"
+									data-flux-role="control"
+								>
+									Metadata, taxonomy and findability
+								</a>
+							</li>
 
-							<li><a class="govuk-link" href="#data-sto-acc-4-0-0">Access, privacy and permission</a></li>
+							<li>
+								<a
+									class="govuk-link"
+									href="#data-sto-acc-4-0-0"
+									data-flux-key="link.sourcebook.contents.data-sto-acc-4-0-0"
+									data-flux-role="control"
+								>
+									Access, privacy and permission
+								</a>
+							</li>
 
-							<li><a class="govuk-link" href="#data-sto-acc-5-0-0">Retention, disposal and auditability</a></li>
+							<li>
+								<a
+									class="govuk-link"
+									href="#data-sto-acc-5-0-0"
+									data-flux-key="link.sourcebook.contents.data-sto-acc-5-0-0"
+									data-flux-role="control"
+								>
+									Retention, disposal and auditability
+								</a>
+							</li>
 
-							<li><a class="govuk-link" href="#data-sto-acc-6-0-0">Reuse, synthesis and decision trace</a></li>
+							<li>
+								<a
+									class="govuk-link"
+									href="#data-sto-acc-6-0-0"
+									data-flux-key="link.sourcebook.contents.data-sto-acc-6-0-0"
+									data-flux-role="control"
+								>
+									Reuse, synthesis and decision trace
+								</a>
+							</li>
 
-							<li><a class="govuk-link" href="#data-sto-acc-7-0-0">Repository health and knowledge learning</a></li>
+							<li>
+								<a
+									class="govuk-link"
+									href="#data-sto-acc-7-0-0"
+									data-flux-key="link.sourcebook.contents.data-sto-acc-7-0-0"
+									data-flux-role="control"
+								>
+									Repository health and knowledge learning
+								</a>
+							</li>
 
-							<li><a class="govuk-link" href="#glossary">Glossary</a></li>
+							<li>
+								<a
+									class="govuk-link"
+									href="#glossary"
+									data-flux-key="link.sourcebook.contents.glossary"
+									data-flux-role="control"
+								>
+									Glossary
+								</a>
+							</li>
 
-							<li><a class="govuk-link" href="#change-history">Change history</a></li>
+							<li>
+								<a
+									class="govuk-link"
+									href="#change-history"
+									data-flux-key="link.sourcebook.contents.change-history"
+									data-flux-role="control"
+								>
+									Change history
+								</a>
+							</li>
 						</ol>
 					</nav>
 
@@ -395,7 +485,14 @@
 									<div class="govuk-summary-list__row">
 										<dt class="govuk-summary-list__key">Related routes</dt>
 										<dd class="govuk-summary-list__value">
-											<a class="govuk-link" href="/pages/repository/">/pages/repository/</a>
+											<a
+												class="govuk-link"
+												href="/pages/repository/"
+												data-flux-key="link.sourcebook.related-route.data-sto-acc.1"
+												data-flux-role="control"
+											>
+												/pages/repository/
+											</a>
 										</dd>
 									</div>
 								</dl>
@@ -555,16 +652,44 @@
 									<div class="govuk-summary-list__row">
 										<dt class="govuk-summary-list__key">Related routes</dt>
 										<dd class="govuk-summary-list__value">
-											<a class="govuk-link" href="/pages/repository/service-areas/">/pages/repository/service-areas/</a>
+											<a
+												class="govuk-link"
+												href="/pages/repository/service-areas/"
+												data-flux-key="link.sourcebook.related-route.data-sto-acc.1"
+												data-flux-role="control"
+											>
+												/pages/repository/service-areas/
+											</a>
 											,
 
-											<a class="govuk-link" href="/pages/repository/user-groups/">/pages/repository/user-groups/</a>
+											<a
+												class="govuk-link"
+												href="/pages/repository/user-groups/"
+												data-flux-key="link.sourcebook.related-route.data-sto-acc.2"
+												data-flux-role="control"
+											>
+												/pages/repository/user-groups/
+											</a>
 											,
 
-											<a class="govuk-link" href="/pages/repository/methods/">/pages/repository/methods/</a>
+											<a
+												class="govuk-link"
+												href="/pages/repository/methods/"
+												data-flux-key="link.sourcebook.related-route.data-sto-acc.3"
+												data-flux-role="control"
+											>
+												/pages/repository/methods/
+											</a>
 											,
 
-											<a class="govuk-link" href="/pages/repository/risks/">/pages/repository/risks/</a>
+											<a
+												class="govuk-link"
+												href="/pages/repository/risks/"
+												data-flux-key="link.sourcebook.related-route.data-sto-acc.4"
+												data-flux-role="control"
+											>
+												/pages/repository/risks/
+											</a>
 										</dd>
 									</div>
 								</dl>
@@ -1034,7 +1159,14 @@
 									<div class="govuk-summary-list__row">
 										<dt class="govuk-summary-list__key">Related routes</dt>
 										<dd class="govuk-summary-list__value">
-											<a class="govuk-link" href="/pages/search/">/pages/search/</a>
+											<a
+												class="govuk-link"
+												href="/pages/search/"
+												data-flux-key="link.sourcebook.related-route.data-sto-acc.1"
+												data-flux-role="control"
+											>
+												/pages/search/
+											</a>
 										</dd>
 									</div>
 								</dl>
