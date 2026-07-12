@@ -1,0 +1,1 @@
+UK English dictionary: dictionary-en-gb 3.0.0, generated from wordlist.aspell.net. Licensed MIT AND BSD. https://github.com/wooorm/dictionaries

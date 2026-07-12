@@ -61,7 +61,7 @@ function showConsentBanner() {
 	banner.className = 'govuk-cookie-banner';
 	banner.setAttribute('aria-label', 'Behavioural analytics consent');
 	banner.setAttribute('role', 'region');
-	banner.innerHTML = '<div class="govuk-width-container"><div class="govuk-grid-row"><div class="govuk-grid-column-two-thirds"><h2 class="govuk-heading-m">Help improve ResearchOps</h2><p class="govuk-body">With your consent, Flux Behaviour records interaction metadata such as navigation, timing and character counts. It never records what you type.</p><button type="button" class="govuk-button" data-flux-consent="yes" data-flux-key="button.consent.accept-behavioural-analytics" data-flux-role="control">Accept behavioural analytics</button> <button type="button" class="govuk-button govuk-button--secondary" data-flux-consent="no" data-flux-key="button.consent.reject-behavioural-analytics" data-flux-role="control">Reject</button></div></div></div>';
+	banner.innerHTML = '<div class="govuk-width-container"><div class="govuk-grid-row"><div class="govuk-grid-column-two-thirds"><h2 class="govuk-heading-m">Help improve ResearchOps</h2><p class="govuk-body">With your consent, Flux Behaviour records interaction metadata such as navigation, timing, character counts and possible UK English writing issues. Your text is checked only in this browser and never leaves the page.</p><button type="button" class="govuk-button" data-flux-consent="yes" data-flux-key="button.consent.accept-behavioural-analytics" data-flux-role="control">Accept behavioural analytics</button> <button type="button" class="govuk-button govuk-button--secondary" data-flux-consent="no" data-flux-key="button.consent.reject-behavioural-analytics" data-flux-role="control">Reject</button></div></div></div>';
 	document.body.prepend(banner);
 	banner.addEventListener('click', (event) => {
 		const choice = event.target?.dataset?.fluxConsent;
@@ -215,7 +215,7 @@ function endFocus(event) {
 	const exitPointerType = now - lastPointer.at <= RECENT_INTERACTION_MS && lastPointer.target !== event.target
 		? lastPointer.type
 		: now - lastKeyboard.at <= RECENT_INTERACTION_MS ? 'keyboard' : 'unknown';
-	track('input', 'field.blur', {
+	const details = {
 		...state.details,
 		duration_ms: durationMs,
 		dwell_before_input_ms: Math.round((state.firstInteractionAt ?? now) - state.startedAt),
@@ -229,7 +229,29 @@ function endFocus(event) {
 		value_length: typeof event.target.value === 'string' ? event.target.value.length : 0,
 		pointer_type: exitPointerType,
 		interaction_type: 'input',
-	});
+	};
+	const analyser = supportsWritingAnalysis(event.target) ? window.researchOpsFluxWriting?.analyse : null;
+	if (typeof analyser !== 'function') {
+		track('input', 'field.blur', details);
+		return;
+	}
+	const localValue = typeof event.target.value === 'string' ? event.target.value : '';
+	void Promise.resolve(analyser(localValue))
+		.then((signals) => track('input', 'field.blur', { ...details, ...safeWritingSignals(signals) }))
+		.catch(() => track('input', 'field.blur', details));
+}
+
+function supportsWritingAnalysis(element) {
+	if (element?.dataset?.fluxWritingAnalysis === 'false') return false;
+	if (element?.tagName === 'TEXTAREA') return true;
+	return element?.tagName === 'INPUT' && ['', 'text', 'search'].includes((element.type || 'text').toLowerCase());
+}
+
+function safeWritingSignals(value) {
+	if (!value || value.writing_language !== 'en-GB') return {};
+	const fields = ['word_count', 'spelling_issue_count', 'grammar_issue_count', 'uppercase_letter_count', 'lowercase_letter_count', 'all_caps_word_count'];
+	if (!fields.every((field) => Number.isInteger(value[field]) && value[field] >= 0 && value[field] <= 10_000)) return {};
+	return Object.fromEntries([['writing_language', 'en-GB'], ...fields.map((field) => [field, value[field]])]);
 }
 
 function recordFirstInteraction(state) {
@@ -467,6 +489,7 @@ function milestone(action) {
 }
 
 function track(eventClass, action, details) {
+	if (window.localStorage.getItem(CONSENT_KEY) !== 'yes') return;
 	const body = {
 		schema_version: '1.1.0',
 		session_id: sessionId(),
@@ -480,7 +503,7 @@ function track(eventClass, action, details) {
 		element_key: details.element_key,
 		timestamp_ms: Date.now(),
 	};
-	for (const key of ['value_length', 'edit_count', 'duration_ms', 'dwell_before_input_ms', 'typing_duration_ms', 'pointer_type', 'key_press_count', 'backspace_count', 'paste_count', 'chars_per_minute', 'revisit_count']) {
+	for (const key of ['value_length', 'edit_count', 'duration_ms', 'dwell_before_input_ms', 'typing_duration_ms', 'pointer_type', 'key_press_count', 'backspace_count', 'paste_count', 'chars_per_minute', 'revisit_count', 'writing_language', 'word_count', 'spelling_issue_count', 'grammar_issue_count', 'uppercase_letter_count', 'lowercase_letter_count', 'all_caps_word_count']) {
 		if (details[key] !== undefined) body[key] = details[key];
 	}
 	void window.fetch(COLLECTOR_ENDPOINT, {

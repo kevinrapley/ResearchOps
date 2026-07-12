@@ -9,16 +9,20 @@ const sessionTracker = fs.readFileSync('public/js/flux-researchops-tracker.1.2.0
 const renderedLayout = fs.readFileSync('src/govuk/templates/layouts/researchops.njk', 'utf8');
 const worker = fs.readFileSync('public/_worker.js', 'utf8');
 const headers = fs.readFileSync('public/_headers', 'utf8');
+const writingRuntime = fs.readFileSync('public/assets/flux/uk-english-writing-runtime.mjs', 'utf8');
 
-assert.match(head, /src="\/js\/flux-researchops-tracker\.1\.2\.0\.js\?v=1\.2\.8"/);
-assert.match(renderedLayout, /src="\/js\/flux-researchops-tracker\.1\.2\.0\.js\?v=1\.2\.8"/);
+assert.match(head, /src="\/js\/flux-researchops-tracker\.1\.2\.0\.js\?v=1\.2\.9"/);
+assert.match(renderedLayout, /src="\/js\/flux-researchops-tracker\.1\.2\.0\.js\?v=1\.2\.9"/);
+assert.match(head, /src="\/assets\/flux\/uk-english-writing-runtime\.mjs\?v=1\.0\.0"/);
+assert.match(renderedLayout, /src="\/assets\/flux\/uk-english-writing-runtime\.mjs\?v=1\.0\.0"/);
 const renderedPages = fs
 	.readdirSync('public', { recursive: true })
 	.filter((path) => path.endsWith('.html') && !path.startsWith('partials/') && path !== 'clear.html');
 
 for (const relativePath of renderedPages) {
 	const page = `public/${relativePath}`;
-	assert.match(fs.readFileSync(page, 'utf8'), /src="\/js\/flux-researchops-tracker\.1\.2\.0\.js\?v=1\.2\.8"/, `${page} should load the Flux tracker`);
+	assert.match(fs.readFileSync(page, 'utf8'), /src="\/js\/flux-researchops-tracker\.1\.2\.0\.js\?v=1\.2\.9"/, `${page} should load the Flux tracker`);
+	assert.match(fs.readFileSync(page, 'utf8'), /src="\/assets\/flux\/uk-english-writing-runtime\.mjs\?v=1\.0\.0"/, `${page} should load the UK English analyser`);
 }
 assert.doesNotMatch(header, /flux-behaviour\.pages\.dev\/assets\/flux/);
 assert.match(tracker, /researchops\.pages\.dev/);
@@ -31,6 +35,12 @@ assert.match(tracker, /backspace_count/);
 assert.match(tracker, /duration_ms/);
 assert.match(sessionTracker, /dwell_before_input_ms/);
 assert.match(sessionTracker, /typing_duration_ms/);
+assert.match(sessionTracker, /writing_language/);
+assert.match(sessionTracker, /possible UK English writing issues/);
+assert.match(sessionTracker, /text is checked only in this browser and never leaves the page/);
+assert.match(sessionTracker, /fluxWritingAnalysis === 'false'/);
+assert.match(sessionTracker, /localStorage\.getItem\(CONSENT_KEY\) !== 'yes'/);
+assert.match(writingRuntime, /en-GB/);
 assert.match(tracker, /control\.tab/);
 assert.match(tracker, /auto\.\$\{kind\}/);
 assert.match(tracker, /\['password', 'email', 'tel'\]/);

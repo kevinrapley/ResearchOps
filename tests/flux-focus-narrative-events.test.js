@@ -73,9 +73,11 @@ function element({
 	return node;
 }
 
-function harness() {
+function harness({ writingAnalyser } = {}) {
 	const clock = { now: 0 };
 	const requests = [];
+	const localStorage = storage();
+	localStorage.setItem('flux.behaviour.consent', 'yes');
 	const context = vm.createContext({
 		URL,
 		Date: class extends Date {
@@ -88,12 +90,13 @@ function harness() {
 		document: { querySelectorAll: () => [], forms: [], body: { dataset: {} } },
 		window: {
 			location: { hostname: 'example.test', pathname: '/pages/project-dashboard/' },
-			localStorage: storage(),
+			localStorage,
 			sessionStorage: storage(),
 			fetch: (_url, options) => {
 				requests.push(JSON.parse(options.body));
 				return Promise.resolve({ ok: true });
 			},
+			...(writingAnalyser ? { researchOpsFluxWriting: { analyse: writingAnalyser } } : {}),
 		},
 	});
 	vm.runInContext(trackerSource, context);
@@ -202,6 +205,80 @@ test('uses input-only edits for IME and mobile active-entry timing', () => {
 	assert.equal(blur.chars_per_minute, 240);
 });
 
+test('exports only derived UK English indicators from local field analysis', async () => {
+	const { clock, context, requests } = harness({
+		writingAnalyser: async () => ({
+			writing_language: 'en-GB',
+			word_count: 9,
+			spelling_issue_count: 1,
+			grammar_issue_count: 2,
+			uppercase_letter_count: 4,
+			lowercase_letter_count: 31,
+			all_caps_word_count: 1,
+		}),
+	});
+	const textarea = element({
+		key: 'field.project.objective-editor',
+		tagName: 'TEXTAREA',
+		value: 'source text must remain local',
+	});
+	context.textarea = textarea;
+	vm.runInContext('beginFocus({ target: textarea });', context);
+	clock.now = 100;
+	vm.runInContext(
+		"trackKeyboard({ target: textarea, key: 'x', metaKey: false, ctrlKey: false });",
+		context
+	);
+	clock.now = 500;
+	vm.runInContext('endFocus({ target: textarea });', context);
+	await new Promise((resolve) => setImmediate(resolve));
+
+	const blur = requests.find(({ action }) => action === 'field.blur');
+	assert.equal(blur.writing_language, 'en-GB');
+	assert.equal(blur.spelling_issue_count, 1);
+	assert.equal(blur.grammar_issue_count, 2);
+	assert.equal(JSON.stringify(blur).includes(textarea.value), false);
+});
+
+test('does not send a pending writing result after consent is revoked', async () => {
+	let finishAnalysis;
+	const { clock, context, requests } = harness({
+		writingAnalyser: () =>
+			new Promise((resolve) => {
+				finishAnalysis = resolve;
+			}),
+	});
+	const textarea = element({
+		key: 'field.project.objective-editor',
+		tagName: 'TEXTAREA',
+		value: 'source text must remain local',
+	});
+	context.textarea = textarea;
+	vm.runInContext('beginFocus({ target: textarea });', context);
+	clock.now = 100;
+	vm.runInContext(
+		"trackKeyboard({ target: textarea, key: 'x', metaKey: false, ctrlKey: false });",
+		context
+	);
+	clock.now = 500;
+	vm.runInContext('endFocus({ target: textarea });', context);
+	context.window.localStorage.setItem('flux.behaviour.consent', 'no');
+	finishAnalysis({
+		writing_language: 'en-GB',
+		word_count: 4,
+		spelling_issue_count: 0,
+		grammar_issue_count: 0,
+		uppercase_letter_count: 1,
+		lowercase_letter_count: 20,
+		all_caps_word_count: 0,
+	});
+	await new Promise((resolve) => setImmediate(resolve));
+
+	assert.equal(
+		requests.some(({ action }) => action === 'field.blur'),
+		false
+	);
+});
 test('adds semantic data attributes to previously uninstrumented interactive elements', () => {
 	const { context } = harness();
 	const link = element({ tagName: 'A', id: 'journal-entry-edit-link', href: '#' });

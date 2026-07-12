@@ -1,4 +1,16 @@
 gaps:
+  - id: flux-uk-english-writing-validation
+    title: Validate UK English writing indicators before operational interpretation
+    status: open
+    severity: high
+    owner: product-lead
+    context: Dictionary and grammar heuristics can produce false positives for names, specialist language, dialects, disability-related writing patterns and valid stylistic choices. Counts are service-friction signals, not validated person-level measures.
+    mitigation: Keep the explicit en-GB baseline, possible-issue wording, on-device-only analysis and no-automated-decision boundary; review a representative, consented golden corpus with privacy and accessibility leads before using the indicators operationally.
+    evidence:
+      - src/flux/uk-english-writing-analyser.mjs
+      - tests/flux-uk-writing-analyser.test.js
+      - docs/agent-audit/reasoning/2026/07/12/flux-uk-english-writing-signals.md
+
   - id: flux-field-timing-semantics
     title: Separate total focus, pre-input dwell and active typing time
     status: implemented

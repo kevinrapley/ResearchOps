@@ -2,6 +2,14 @@
 
 This file records repeatable repository-specific lessons for ResearchOps agents and maintainers. It is not a changelog.
 
+## 2026-07-12 — Linguistic analytics needs a declared locale and an on-device privacy boundary
+
+Context: Flux needed possible spelling, grammar and casing indicators without disclosing what a visitor entered. Locale-neutral spelling would also misclassify accepted UK forms or silently apply a US baseline.
+
+Learning: Linguistic metadata is still derived from content and therefore changes the consent and harm surface even when raw text is not exported. The baseline must be explicit (`en-GB`), analysis must stay in the browser, outputs must be bounded and non-reversible, and narratives must describe possible issues rather than facts about a person.
+
+Action: Use the reviewed UK dictionary and conservative grammar heuristics only after analytics consent; exclude sensitive fields; send counts rather than words or suggestions; disclose local analysis in the consent banner; and prohibit literacy, intelligence, professionalism, personality, protected-characteristic or automated-decision inferences.
+
 ## 2026-07-12 — Total focus time is not field dwell or active typing time
 
 Context: ResearchOps measured focus-to-blur duration and Flux described the whole interval as dwell, even when the visitor typed throughout it. The same interval was used to calculate typing rate.

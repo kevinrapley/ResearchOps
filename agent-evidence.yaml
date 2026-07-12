@@ -1,9 +1,9 @@
-task_id: flux-accurate-field-timing
-mode: repo-fix
+task_id: flux-uk-english-writing-signals
+mode: repo-feature
 repository: ResearchOps
 risk_level: high
 base_branch: main
-working_branch: fix/accurate-field-dwell
+working_branch: feature/uk-english-writing-signals
 files_read:
   - README.md
   - AGENTS.md
@@ -18,41 +18,40 @@ files_read:
   - docs/implementation/flux-semantic-instrumentation.md
   - public/js/flux-researchops-tracker.1.2.0.js
 files_changed:
+  - package.json
+  - package-lock.json
+  - scripts/flux/build-uk-english-writing.mjs
+  - src/flux/uk-english-writing-analyser.mjs
+  - src/flux/uk-english-writing-runtime.mjs
+  - public/assets/flux/**
   - public/js/flux-researchops-tracker.1.2.0.js
   - src/govuk/templates/layouts/researchops.njk
   - public/partials/html-head.html
   - public/index.html
   - public/pages/**/index.html
+  - tests/flux-uk-writing-analyser.test.js
   - tests/flux-focus-narrative-events.test.js
   - tests/flux-behaviour-tracker-route-state.test.js
   - docs/implementation/flux-semantic-instrumentation.md
-  - docs/agent-audit/reasoning/2026/07/12/flux-accurate-field-timing.md
-  - docs/agent-audit/reasoning/2026/07/12/flux-accurate-field-timing.json
+  - docs/agent-audit/reasoning/2026/07/12/flux-uk-english-writing-signals.md
+  - docs/agent-audit/reasoning/2026/07/12/flux-uk-english-writing-signals.json
   - RECENT_LEARNINGS.md
   - conformance-matrix.yaml
   - gap-register.yaml
   - harm-register.yaml
 commands_run:
-  - command: node --test tests/flux-focus-narrative-events.test.js
-    state: observed
-    status: failed
-    evidence: The regression reproduced missing Delete correction counts and absent pre-input dwell and typing-duration metadata.
-  - command: node --test tests/flux-focus-narrative-events.test.js
+  - command: node --test tests/flux-uk-writing-analyser.test.js tests/flux-focus-narrative-events.test.js tests/flux-behaviour-tracker-route-state.test.js
     state: verified
     status: passed
-    evidence: Ten tracker tests passed after separating field timing intervals.
-  - command: node --test tests/flux-focus-narrative-events.test.js tests/flux-behaviour-tracker-route-state.test.js
-    state: verified
-    status: passed
-    evidence: Thirteen tests passed after Codex review remediation covered modified shortcuts and input-only IME/mobile entry timing.
+    evidence: Eighteen focused tests passed, including shortcut and IME/mobile timing, UK-versus-US spelling, raw-text exclusion and consent revocation during pending analysis.
   - command: npm run build
     state: verified
     status: passed
-    evidence: GOV.UK assets and all rendered pages were rebuilt with tracker cache key v1.2.8.
+    evidence: The analyser, split UK dictionary and all rendered pages were built.
   - command: npm test
     state: verified
     status: passed
-    evidence: The full repository test suite passed.
+    evidence: All 378 repository tests passed.
   - command: npm run lint
     state: verified
     status: passed
@@ -61,18 +60,23 @@ commands_run:
     state: verified
     status: passed
     evidence: Repository contract, trace coverage, rendered output, sourcebook, JavaScript and performance validation completed.
+  - command: npm run audit:security && npm audit --omit=dev --audit-level=high
+    state: verified
+    status: passed
+    evidence: The repository policy found no blocking findings and the production dependency surface reported zero vulnerabilities; five existing development-only advisories remain visible.
 recent_learnings:
   read: true
   updated: true
-  entry: Total focus time is not field dwell or active typing time.
+  entry: Linguistic analytics needs a declared locale and an on-device privacy boundary.
 security:
   secrets_changed: false
   authentication_changed: false
 privacy:
   data_collection_scope_changed: true
-  assessment: Two bounded timing fields are added; input-only entry reads inserted data length without retaining content, and no typed value or printable key identity is exported.
+  assessment: Input-only entry reads inserted data length without retaining content. Entered text is analysed locally after consent; only bounded en-GB issue and casing counts are exported, and text, words and suggestions never leave the page.
 accessibility:
-  required: false
-  assessment: No interface or focus behaviour changes; analytics interpretation is made more accurate for keyboard and assistive input.
+  required: true
+  assessment: Possible issue counts can be biased by disability, neurodivergence, dialect and language background; person-level and automated-decision uses are prohibited and representative validation remains open.
 risks:
-  - Typing and correction signals remain service-improvement heuristics, not judgements about a person.
+  - Dictionary and grammar false positives must be described as possible issues only.
+  - Linguistic indicators remain service-friction heuristics, not judgements about a person.
