@@ -285,6 +285,7 @@
 												href="mailto:"
 												data-flux-key="link.project.lead-email"
 												data-flux-role="control"
+												data-flux-sensitive="true"
 											>
 												–
 											</a>
@@ -312,12 +313,19 @@
 										id="add-stakeholder-toggle"
 										aria-expanded="false"
 										aria-controls="add-stakeholder-panel"
+										data-flux-key="button.stakeholder.add"
+										data-flux-role="control"
 									>
 										Add stakeholder
 									</button>
 
 									<div id="add-stakeholder-panel" class="dashboard-action-panel" hidden>
-										<form id="add-stakeholder-form" novalidate>
+										<form
+											id="add-stakeholder-form"
+											novalidate
+											data-flux-key="form.stakeholder.add"
+											data-flux-role="form"
+										>
 											<h4 class="govuk-heading-s">Add stakeholder</h4>
 											<div id="add-stakeholder-status" class="dashboard-action-status" aria-live="polite"></div>
 											<div class="govuk-form-group">
@@ -485,12 +493,19 @@
 												id="add-user-group-toggle"
 												aria-expanded="false"
 												aria-controls="add-user-group-panel"
+												data-flux-key="button.user-group.add"
+												data-flux-role="control"
 											>
 												Add user group
 											</button>
 
 											<div id="add-user-group-panel" class="dashboard-action-panel" hidden>
-												<form id="add-user-group-form" novalidate>
+												<form
+													id="add-user-group-form"
+													novalidate
+													data-flux-key="form.user-group.add"
+													data-flux-role="form"
+												>
 													<h4 class="govuk-heading-s">Add user group</h4>
 													<div id="add-user-group-status" class="dashboard-action-status" aria-live="polite"></div>
 													<div class="govuk-form-group">
@@ -521,6 +536,8 @@
 															data-module="govuk-button"
 															data-close-panel="add-user-group-panel"
 															data-toggle="add-user-group-toggle"
+															data-flux-key="button.user-group.cancel"
+															data-flux-role="control"
 														>
 															Cancel
 														</button>
@@ -543,7 +560,7 @@
 													class="govuk-button govuk-button--secondary"
 													data-module="govuk-button"
 													id="add-participant-link"
-													data-flux-key="link.participant.add"
+													data-flux-key="link.project.add-participant"
 													data-flux-role="control"
 												>
 													Add participant
@@ -556,7 +573,7 @@
 													class="govuk-button govuk-button--secondary"
 													data-module="govuk-button"
 													id="import-participants-link"
-													data-flux-key="link.participant.import"
+													data-flux-key="link.project.import-participants"
 													data-flux-role="control"
 												>
 													Bulk upload participants via CSV
@@ -599,6 +616,8 @@
 												class="govuk-button govuk-button--secondary"
 												data-module="govuk-button"
 												id="add-study-link"
+												data-flux-key="link.study.add"
+												data-flux-role="control"
 											>
 												Add study
 											</a>
@@ -618,6 +637,8 @@
 												class="govuk-button govuk-button--secondary"
 												data-module="govuk-button"
 												id="add-insight-link"
+												data-flux-key="link.insight.add"
+												data-flux-role="control"
 											>
 												Add insight
 											</a>

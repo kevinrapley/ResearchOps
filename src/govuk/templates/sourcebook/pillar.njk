@@ -130,7 +130,7 @@
 										<dt class="govuk-summary-list__key">Related routes</dt>
 										<dd class="govuk-summary-list__value">
 											{% for route in clause.relatedAppRoutes %}
-											<a class="govuk-link" href="{{ route }}" data-flux-key="link.sourcebook.related-route.{{ pillar.code | lower }}.{{ loop.index }}" data-flux-role="control">{{ route }}</a>{% if not loop.last %}, {% endif %}
+											<a class="govuk-link" href="{{ route }}" data-flux-key="link.sourcebook.related-route.{{ clause.id | lower | replace(' ', '-') | replace('.', '-') }}.{{ loop.index }}" data-flux-role="control">{{ route }}</a>{% if not loop.last %}, {% endif %}
 											{% endfor %}
 										</dd>
 									</div>
