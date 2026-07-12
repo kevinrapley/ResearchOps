@@ -48,7 +48,7 @@ test('annotates controls inserted after page load without positional auto keys',
 		annotateInteractiveElements(document);
 		observeInteractiveElements();
 		document.querySelector('#dynamic').innerHTML =
-			'<a href="/pages/projects/">Projects</a><a href="mailto:alice.person@example.com">Email</a><textarea name="objective"></textarea><button data-participants-page="previous">Previous</button><button data-participants-page="next">Next</button><button data-close-panel="add-objective-panel">Cancel objective</button><button data-close-panel="add-stakeholder-panel">Cancel stakeholder</button><input id="channel-email" name="channel_pref" type="checkbox" value="email"><input id="channel-sms" name="channel_pref" type="checkbox" value="sms">';
+			'<a href="/pages/projects/" data-govuk-button-init>Projects</a><a href="mailto:alice.person@example.com">Email</a><textarea name="objective"></textarea><button data-participants-page="previous">Previous</button><button data-participants-page="next">Next</button><button data-close-panel="add-objective-panel">Cancel objective</button><button data-close-panel="add-stakeholder-panel">Cancel stakeholder</button><button data-action="schedule">Schedule</button><input id="channel-email" name="channel_pref" type="checkbox" value="email"><input id="channel-sms" name="channel_pref" type="checkbox" value="sms">';
 	});
 
 	await expect(page.locator('#dynamic a[href="/pages/projects/"]')).toHaveAttribute(
@@ -78,6 +78,10 @@ test('annotates controls inserted after page load without positional auto keys',
 	await expect(page.locator('[data-close-panel="add-stakeholder-panel"]')).toHaveAttribute(
 		'data-flux-key',
 		'button.start.close-panel-add-stakeholder-panel'
+	);
+	await expect(page.locator('[data-action="schedule"]')).toHaveAttribute(
+		'data-flux-key',
+		'button.start.schedule'
 	);
 	await expect(page.locator('#channel-email')).toHaveAttribute(
 		'data-flux-key',

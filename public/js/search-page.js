@@ -53,6 +53,7 @@ function searchEntities({ query = "", type = "" } = {}) {
 function renderItem(entity, index) {
 	const raw = escapeHtml(JSON.stringify(entity, null, 2));
 	const title = entity.name || entity.description || entity.hasBody || entity.id || "Untitled result";
+	const resultPosition = index + 1;
 
 	return `<div class="govuk-summary-card researchops-utility-card">
 	<div class="govuk-summary-card__title-wrapper">
@@ -64,7 +65,7 @@ function renderItem(entity, index) {
 		</ul>
 	</div>
 	<div class="govuk-summary-card__content">
-		<details class="govuk-details" data-module="govuk-details" data-flux-key="button.search.result-${index + 1}-raw-record" data-flux-role="control">
+		<details class="govuk-details" data-module="govuk-details" data-flux-key="button.search.result-${resultPosition}-raw-record" data-flux-role="control">
 			<summary class="govuk-details__summary">
 				<span class="govuk-details__summary-text">Raw record</span>
 			</summary>

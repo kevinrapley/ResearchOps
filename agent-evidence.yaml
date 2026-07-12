@@ -59,7 +59,7 @@ commands_run:
   - command: Codex review thread remediation focused tests
     state: verified
     status: passed
-    evidence: Thirteen focused tests passed after two Codex review rounds, including contact-protocol redaction, allow-listed action distinctions, controlled page scopes, distinct checkbox options and retained positional fallback; both Chromium coverage tests passed.
+    evidence: Fourteen focused tests passed after three Codex review rounds, including contact-protocol redaction, allow-listed action distinctions, controlled page scopes, distinct checkbox options, framework-attribute exclusion and retained positional fallback; both Chromium coverage tests passed.
   - command: npm run build
     state: verified
     status: passed
@@ -67,7 +67,7 @@ commands_run:
   - command: npm test
     state: verified
     status: passed
-    evidence: All 370 repository tests passed after the second Codex review remediation.
+    evidence: All 371 repository tests passed after the third Codex review remediation.
   - command: npm run lint
     state: verified
     status: passed

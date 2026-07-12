@@ -49,7 +49,8 @@ for (const [template, key] of [
 
 assert.match(projects, /data-flux-key="link\.project\.view-dashboard"/);
 assert.match(dashboard, /["']data-flux-key["']:\s*["']link\.journal\.open["']/);
-assert.match(searchRuntime, /button\.search\.result-\$\{index \+ 1\}-raw-record/);
+assert.match(searchRuntime, /const resultPosition = index \+ 1/);
+assert.match(searchRuntime, /button\.search\.result-\$\{resultPosition\}-raw-record/);
 
 for (const key of [
 	'button.project.add-objective',

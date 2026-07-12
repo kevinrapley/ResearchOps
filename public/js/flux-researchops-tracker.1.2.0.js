@@ -10,9 +10,21 @@ const SAFE_KEY = /^[A-Za-z0-9._:-]{1,120}$/;
 const SAFE_ROLE = new Set(['field', 'form', 'control', 'page', 'service', 'environment']);
 const SAFE_AUTH_MILESTONE = /^auth\.otp\.(requested|succeeded|failed)$/;
 const SAFE_OPTION_PURPOSE_VALUES = new Set(['email', 'sms', 'phone']);
+const SAFE_DATA_PURPOSE_NAMES = new Set([
+	'data-approve-request',
+	'data-cancel-team-access-request',
+	'data-participant-hide',
+	'data-participant-reveal',
+	'data-record-consent',
+	'data-reject-request',
+	'data-researchops-explainer-toggle',
+	'data-sourcebook-gate-action',
+	'data-submit-route',
+	'data-submit-to-repository',
+]);
 const SAFE_DATA_PURPOSE_VALUES = new Map([
-	['data-act', new Set(['cancel-code-edit', 'cancel-delete', 'cancel-memo-edit', 'confirm-delete', 'confirm-delete-code', 'confirm-delete-memo', 'delete', 'delete-code', 'delete-memo', 'edit-code', 'edit-memo'])],
-	['data-action', new Set(['ask-remove', 'cancel-remove', 'confirm-remove'])],
+	['data-act', new Set(['cancel-code-edit', 'cancel-delete', 'cancel-memo-edit', 'confirm-delete', 'confirm-delete-code', 'confirm-delete-memo', 'delete', 'delete-code', 'delete-memo', 'edit-code', 'edit-memo', 'reveal-contact', 'schedule'])],
+	['data-action', new Set(['ask-remove', 'cancel-remove', 'confirm-remove', 'reveal-contact', 'schedule'])],
 	['data-analysis', new Set(['co-occurrence', 'export', 'retrieval', 'timeline'])],
 	['data-cooccurrence-panel', new Set(['chart', 'clustered', 'heatmap', 'small-multiples', 'stacked', 'table'])],
 	['data-close-panel', new Set(['add-objective-panel', 'add-stakeholder-panel', 'add-user-group-panel'])],
@@ -318,7 +330,7 @@ function semanticDataPurpose(element) {
 	}
 	const name = [...(element.attributes ?? [])]
 		.map((attribute) => attribute?.name || '')
-		.find((attributeName) => attributeName.startsWith('data-') && !['data-flux-key', 'data-flux-role', 'data-flux-sensitive', 'data-module'].includes(attributeName));
+		.find((attributeName) => SAFE_DATA_PURPOSE_NAMES.has(attributeName));
 	return name?.slice(5) || '';
 }
 

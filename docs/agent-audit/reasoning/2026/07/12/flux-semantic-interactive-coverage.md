@@ -26,11 +26,12 @@ Keep Flux fallback journey events visible while ensuring ResearchOps supplies st
 - Focused tracker, semantic markup, focus narrative and session lifecycle tests passed.
 - A Chromium audit loaded every committed rendered page and found no missing semantic key/role attributes, `auto.*` keys or generic `.control`, `.field` or `.form` endings.
 - A Chromium mutation test verified that controls inserted after page load receive purpose-led keys and roles while `<main tabindex="-1">` remains excluded.
-- `npm test` passed all 370 repository tests after two Codex review remediation rounds.
+- `npm test` passed all 371 repository tests after three Codex review remediation rounds.
 - `npm run lint` completed with zero errors and the existing warning baseline.
 - `npm run validate` passed the governed repository contract, trace, generated-output, route-state and performance gates.
 - Codex review regressions cover PII-safe contact links, distinct allow-listed actions and non-project page scopes; both Chromium coverage tests pass after remediation.
 - Second-pass regressions cover distinct panel actions, checkbox/radio options, explicit search-result disclosures and the no-generic-key fallback boundary.
+- Third-pass regressions prove GOV.UK initialization attributes cannot outrank service purpose, confirm search-result ordinals interpolate to valid keys, and record every selected operating-model bundle in the audit trace.
 
 ## Residual risk
 

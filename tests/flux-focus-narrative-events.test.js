@@ -187,6 +187,11 @@ test('uses allow-listed action values to distinguish dynamic controls', () => {
 		type: 'button',
 		attributes: { 'data-act': 'confirm-delete' },
 	});
+	const schedule = element({
+		tagName: 'BUTTON',
+		type: 'button',
+		attributes: { 'data-action': 'schedule' },
+	});
 	const closeObjective = element({
 		tagName: 'BUTTON',
 		type: 'button',
@@ -200,6 +205,7 @@ test('uses allow-listed action values to distinguish dynamic controls', () => {
 	context.previous = previous;
 	context.next = next;
 	context.remove = remove;
+	context.schedule = schedule;
 	context.closeObjective = closeObjective;
 	context.closeStakeholder = closeStakeholder;
 
@@ -212,6 +218,7 @@ test('uses allow-listed action values to distinguish dynamic controls', () => {
 		'button.project.participants-page-next'
 	);
 	assert.equal(vm.runInContext('stableKey(remove)', context), 'button.project.confirm-delete');
+	assert.equal(vm.runInContext('stableKey(schedule)', context), 'button.project.schedule');
 	assert.equal(
 		vm.runInContext('stableKey(closeObjective)', context),
 		'button.project.close-panel-add-objective-panel'
@@ -220,6 +227,19 @@ test('uses allow-listed action values to distinguish dynamic controls', () => {
 		vm.runInContext('stableKey(closeStakeholder)', context),
 		'button.project.close-panel-add-stakeholder-panel'
 	);
+});
+
+test('ignores framework data attributes when choosing semantic purpose', () => {
+	const { context } = harness();
+	const link = element({
+		tagName: 'A',
+		href: '/pages/projects/',
+		attributes: { 'data-govuk-button-init': '' },
+	});
+	context.link = link;
+
+	assert.equal(vm.runInContext('stableKey(link)', context), 'link.navigation.projects');
+	assert.doesNotMatch(link.dataset.fluxKey, /govuk|init/);
 });
 
 test('keeps controlled checkbox options distinct without exposing arbitrary values', () => {
