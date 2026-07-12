@@ -38,9 +38,9 @@
   ],
   "validations": [
     "focused Flux tracker and session tests: 8 passed",
-    "targeted Chromium semantic coverage: 2 passed",
+    "targeted Chromium semantic coverage: 3 passed, including production-host consent controls",
     "npm run build",
-    "npm test: 371 passed after three Codex review remediation rounds",
+    "npm test: 371 passed after the consent cache-key Codex review remediation",
     "npm run lint: zero errors with existing warnings",
     "npm run validate"
   ],
@@ -48,7 +48,9 @@
     "Unlabelled and positional fallback narratives appeared for ResearchOps controls without publisher context.",
     "Codex review identified contact-protocol PII exposure, collapsed dynamic action keys and incorrect project scope on non-project routes; all three were remediated with regressions.",
     "The second Codex pass identified collapsed panel and option controls plus generic dynamic disclosures; all were remediated with explicit or privacy-safe distinct context and regressions.",
-    "The third Codex pass identified framework initialization attributes, incomplete bundle evidence and unclear search-result interpolation; all were remediated and covered."
+    "The third Codex pass identified framework initialization attributes, incomplete bundle evidence and unclear search-result interpolation; all were remediated and covered.",
+    "Post-merge live verification found tracker-owned consent controls without semantic attributes; the follow-up adds explicit Accept and Reject context plus a production-host browser regression.",
+    "Codex review identified reuse of the cacheable v1.2.6 tracker URL; source templates, rendered pages and route-state assertions now use v1.2.7."
   ],
   "warnings": [
     "The defensive fallback remains available by product decision.",

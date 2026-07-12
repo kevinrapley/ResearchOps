@@ -19,7 +19,7 @@ Keep Flux fallback journey events visible while ensuring ResearchOps supplies st
 - The versioned ResearchOps tracker annotates links, buttons, fields, forms and details controls and watches DOM insertions with `MutationObserver`.
 - Dynamic project description, objective editing, objective textarea and participant actions have explicit semantic attributes.
 - Previously generic help/details controls have explicit purpose-led attributes.
-- The tracker cache key advances to `v=1.2.6` without changing event schema `1.1.0`.
+- The tracker cache key advances to `v=1.2.7` without changing event schema `1.1.0`; the consent-control follow-up receives its own URL rather than reusing a cacheable `v=1.2.6` response.
 
 ## Validation
 
@@ -32,6 +32,8 @@ Keep Flux fallback journey events visible while ensuring ResearchOps supplies st
 - Codex review regressions cover PII-safe contact links, distinct allow-listed actions and non-project page scopes; both Chromium coverage tests pass after remediation.
 - Second-pass regressions cover distinct panel actions, checkbox/radio options, explicit search-result disclosures and the no-generic-key fallback boundary.
 - Third-pass regressions prove GOV.UK initialization attributes cannot outrank service purpose, confirm search-result ordinals interpolate to valid keys, and record every selected operating-model bundle in the audit trace.
+- Post-merge production verification confirmed tracker `v=1.2.6` but found the injected consent buttons outside the semantic contract. A follow-up regression now creates the banner on a production hostname and verifies explicit Accept/Reject keys and roles.
+- Codex review of the follow-up identified that the runtime fix initially reused the cacheable `v=1.2.6` URL; source templates, rendered pages and route-state assertions now use `v=1.2.7`.
 
 ## Residual risk
 
