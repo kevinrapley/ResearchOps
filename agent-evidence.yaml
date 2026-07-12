@@ -1,9 +1,9 @@
-task_id: flux-semantic-interactive-coverage
+task_id: flux-accurate-field-timing
 mode: repo-fix
 repository: ResearchOps
 risk_level: high
 base_branch: main
-working_branch: fix/flux-consent-semantic-keys
+working_branch: fix/accurate-field-dwell
 files_read:
   - README.md
   - AGENTS.md
@@ -17,86 +17,62 @@ files_read:
   - harm-register.yaml
   - docs/implementation/flux-semantic-instrumentation.md
   - public/js/flux-researchops-tracker.1.2.0.js
-  - public/js/project-dashboard.js
-  - public/js/search-page.js
 files_changed:
   - public/js/flux-researchops-tracker.1.2.0.js
-  - public/js/project-dashboard.js
   - src/govuk/templates/layouts/researchops.njk
-  - src/govuk/templates/pages/home.njk
-  - src/govuk/templates/pages/projects-journals.njk
-  - src/govuk/templates/pages/project-dashboard-participants.njk
-  - src/govuk/templates/pages/study-participants.njk
-  - src/govuk/templates/pages/study-session.njk
-  - src/govuk/templates/pages/study.njk
   - public/partials/html-head.html
   - public/index.html
   - public/pages/**/index.html
-  - tests/e2e/flux-semantic-coverage.spec.js
-  - tests/flux-behaviour-tracker-route-state.test.js
   - tests/flux-focus-narrative-events.test.js
-  - tests/flux-semantic-instrumentation.test.js
+  - tests/flux-behaviour-tracker-route-state.test.js
   - docs/implementation/flux-semantic-instrumentation.md
-  - docs/agent-audit/reasoning/2026/07/12/flux-semantic-interactive-coverage.md
-  - docs/agent-audit/reasoning/2026/07/12/flux-semantic-interactive-coverage.json
+  - docs/agent-audit/reasoning/2026/07/12/flux-accurate-field-timing.md
+  - docs/agent-audit/reasoning/2026/07/12/flux-accurate-field-timing.json
   - RECENT_LEARNINGS.md
   - conformance-matrix.yaml
   - gap-register.yaml
   - harm-register.yaml
 commands_run:
-  - command: node --test tests/flux-behaviour-tracker-route-state.test.js tests/flux-semantic-instrumentation.test.js tests/flux-focus-narrative-events.test.js tests/flux-session-lifecycle.test.js
-    state: verified
-    status: passed
-    evidence: Eight focused tests passed for cache coverage, semantic attributes, focus origin and the 30-minute session boundary.
-  - command: npm run test:e2e -- --grep 'semantic Flux context|inserted after page load'
+  - command: node --test tests/flux-focus-narrative-events.test.js
     state: observed
     status: failed
-    evidence: The first Chromium run exposed an opaque-origin link derivation defect and a selector-audit defect; neither assertion was weakened.
-  - command: npm run test:e2e -- --grep 'semantic Flux context|inserted after page load'
+    evidence: The regression reproduced missing Delete correction counts and absent pre-input dwell and typing-duration metadata.
+  - command: node --test tests/flux-focus-narrative-events.test.js
     state: verified
     status: passed
-    evidence: Both Chromium tests passed across every rendered page and a post-load dynamic insertion path, with no missing, auto or generic semantic attributes.
-  - command: live production semantic DOM audit
-    state: observed
-    status: failed
-    evidence: The v1.2.6 production tracker was live, but the tracker-owned Accept and Reject consent controls lacked semantic key and role attributes.
-  - command: npm run test:e2e -- --grep 'semantic Flux context|inserted after page load|production consent controls'
+    evidence: Ten tracker tests passed after separating field timing intervals.
+  - command: node --test tests/flux-focus-narrative-events.test.js tests/flux-behaviour-tracker-route-state.test.js
     state: verified
     status: passed
-    evidence: Three Chromium tests passed, including a production-host regression that creates the consent banner and verifies explicit Accept and Reject semantic keys and roles.
-  - command: Codex review thread remediation focused tests
-    state: verified
-    status: passed
-    evidence: Fourteen focused tests passed after three Codex review rounds, including contact-protocol redaction, allow-listed action distinctions, controlled page scopes, distinct checkbox options, framework-attribute exclusion and retained positional fallback; both Chromium coverage tests passed.
+    evidence: Thirteen tests passed after Codex review remediation covered modified shortcuts and input-only IME/mobile entry timing.
   - command: npm run build
     state: verified
     status: passed
-    evidence: GOV.UK assets, generated CSS and every canonical static page were rebuilt with tracker cache key v1.2.7 so the consent-control semantic fix cannot be masked by a cached v1.2.6 response.
+    evidence: GOV.UK assets and all rendered pages were rebuilt with tracker cache key v1.2.8.
   - command: npm test
     state: verified
     status: passed
-    evidence: All 371 repository tests passed after the consent cache-key Codex review remediation.
+    evidence: The full repository test suite passed.
   - command: npm run lint
     state: verified
     status: passed
-    evidence: Formatting, generated CSS checks and ESLint completed with zero errors; the existing 236-warning baseline remained visible.
+    evidence: ESLint completed with zero errors and the existing 236-warning baseline.
   - command: npm run validate
     state: verified
     status: passed
-    evidence: Repository contract, operating model, trace coverage, rendered output, sourcebook integrity, JavaScript imports, route-state checks and performance audit completed.
+    evidence: Repository contract, trace coverage, rendered output, sourcebook, JavaScript and performance validation completed.
 recent_learnings:
   read: true
   updated: true
-  entry: Semantic analytics coverage needs both explicit purpose and a structural safety layer.
+  entry: Total focus time is not field dwell or active typing time.
 security:
   secrets_changed: false
   authentication_changed: false
 privacy:
-  data_collection_scope_changed: false
-  assessment: Existing metadata events receive stronger content-free purpose keys. Derivation ignores visible and accessible text, entered values, query strings and arbitrary data values; contact protocols map to fixed purposes; UUID, record-token, long hexadecimal and numeric identifier patterns are stripped.
+  data_collection_scope_changed: true
+  assessment: Two bounded timing fields are added; input-only entry reads inserted data length without retaining content, and no typed value or printable key identity is exported.
 accessibility:
-  required: true
-  assessment: Focus-management and display-only tabindex targets are no longer mistaken for controls; custom controls remain covered through their interactive role.
+  required: false
+  assessment: No interface or focus behaviour changes; analytics interpretation is made more accurate for keyboard and assistive input.
 risks:
-  - A malformed unforeseen control can still reach the retained positional fallback by product decision.
-  - Historical fallback events cannot be safely reconstructed from data that was never captured.
+  - Typing and correction signals remain service-improvement heuristics, not judgements about a person.

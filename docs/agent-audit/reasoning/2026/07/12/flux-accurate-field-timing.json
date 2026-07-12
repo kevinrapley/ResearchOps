@@ -1,0 +1,51 @@
+{
+  "schemaVersion": "agent-trace-promotion/v1",
+  "title": "Separate ResearchOps field dwell from active typing time.",
+  "sourceTrace": "repository-audited fix branch",
+  "markdownReport": "docs/agent-audit/reasoning/2026/07/12/flux-accurate-field-timing.md",
+  "jsonSummary": "docs/agent-audit/reasoning/2026/07/12/flux-accurate-field-timing.json",
+  "run": {
+    "taskSummary": "Correct dwell and typing-rate semantics in the ResearchOps Flux tracker."
+  },
+  "bundles": [
+    "github-diamond",
+    "researchops-developer-control",
+    "multi-functional-team",
+    "cloudflare"
+  ],
+  "filesRead": [
+    "AGENTS.md",
+    "RECENT_LEARNINGS.md",
+    "docs/implementation/flux-semantic-instrumentation.md",
+    "public/js/flux-researchops-tracker.1.2.0.js"
+  ],
+  "filesWritten": [
+    "RECENT_LEARNINGS.md",
+    "agent-evidence.yaml",
+    "conformance-matrix.yaml",
+    "gap-register.yaml",
+    "harm-register.yaml",
+    "public/js/flux-researchops-tracker.1.2.0.js",
+    "tests/flux-focus-narrative-events.test.js",
+    "tests/flux-behaviour-tracker-route-state.test.js",
+    "src/govuk/templates/layouts/researchops.njk",
+    "public/partials/html-head.html",
+    "public/index.html",
+    "public/pages/**/index.html",
+    "docs/implementation/flux-semantic-instrumentation.md",
+    "docs/agent-audit/reasoning/2026/07/12/flux-accurate-field-timing.md",
+    "docs/agent-audit/reasoning/2026/07/12/flux-accurate-field-timing.json"
+  ],
+  "validations": [
+    "focused tracker timing tests",
+    "full repository tests",
+    "lint",
+    "repository validation"
+  ],
+  "issues": [
+    "Focus-to-blur duration was incorrectly described as dwell and used as the typing-rate denominator."
+  ],
+  "warnings": [
+    "Backspace/Delete counts cannot establish why a correction occurred."
+  ]
+}

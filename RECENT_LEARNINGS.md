@@ -2,6 +2,14 @@
 
 This file records repeatable repository-specific lessons for ResearchOps agents and maintainers. It is not a changelog.
 
+## 2026-07-12 — Total focus time is not field dwell or active typing time
+
+Context: ResearchOps measured focus-to-blur duration and Flux described the whole interval as dwell, even when the visitor typed throughout it. The same interval was used to calculate typing rate.
+
+Learning: Pre-input dwell ends at the first keyboard, input or paste interaction. Active typing time runs from the first to latest typing key. Total focus time remains useful context but cannot substitute for either signal.
+
+Action: Capture all three intervals separately, count Backspace and Delete consistently, calculate characters per minute only from active typing time, and cache-bust every rendered tracker reference when changing the runtime.
+
 ## 2026-07-12 — Semantic analytics coverage needs both explicit purpose and a structural safety layer
 
 Context: Important controls gained reviewed `data-flux-*` attributes, but other links and dynamically inserted controls could still fall through to positional labels such as `auto.a.4`. Focus-only layout elements were also mistaken for controls because they carried `tabindex`.
