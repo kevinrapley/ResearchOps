@@ -1,0 +1,27 @@
+{
+	"date": "2026-07-13",
+	"branch": "fix/allow-ga4-collection-csp",
+	"task": "Allow the published GA4 Google tag to send its collection request through the ResearchOps Pages Content Security Policy.",
+	"traceRequired": true,
+	"traceLayer": "operational",
+	"selectedBundles": ["github-diamond", "researchops-developer-control", "multi-functional-team", "govuk-design-system", "cloudflare", "mural-public-api"],
+	"skippedBundles": ["openai-platform", "mcp-agent-tooling", "airtable-public-api"],
+	"selectionNote": "The model selected GOV.UK and Mural from generic content/tag wording; no GOV.UK or Mural implementation surface is changed.",
+	"precedence": "GitHub repository controls govern branch and PR handling; ResearchOps and multi-functional controls require a narrow, privacy-aware change; Cloudflare controls apply to the Pages Worker CSP.",
+	"evidence": [
+		"The live GTM Version 2 contains Google tag – ResearchOps GA4 destination with Tag ID G-D446CZRCDD and Initialization - All Pages.",
+		"A fresh browser loaded gtag.js for G-D446CZRCDD, then CSP blocked region1.google-analytics.com/g/collect under connect-src.",
+		"Google's Tag Platform CSP guidance requires GA4 collection support for https://*.google-analytics.com and https://*.analytics.google.com in connect-src, and https://*.google-analytics.com in img-src."
+	],
+	"filesModified": ["public/_worker.js", "public/_headers", "public/pages/account/sign-in/index.html", "public/pages/team/registration-requests/index.html", "tests/google-tag-manager-route-state.test.js", "RECENT_LEARNINGS.md", "docs/agent-audit/reasoning/2026/07/13/ga4-collection-csp.md", "docs/agent-audit/reasoning/2026/07/13/ga4-collection-csp.json"],
+	"validation": [
+		{"command": "node --test tests/google-tag-manager-route-state.test.js tests/security-hardening-controls-route-state.test.js", "result": "passed after npm run build"},
+		{"command": "npm test", "result": "passed (362 tests; rerun after Codex review fix)"},
+		{"command": "npm run validate", "result": "passed"},
+		{"command": "npm run format:check", "result": "passed"},
+		{"command": "npm run lint", "result": "passed (236 existing warnings, 0 errors)"},
+		{"command": "published-site browser request check", "result": "pending deployment"},
+		{"command": "node --test tests/google-tag-manager-route-state.test.js tests/security-hardening-controls-route-state.test.js (after Codex review fix)", "result": "passed"}
+	],
+	"residualRisk": "harm-register.yaml records that non-essential GTM analytics requires privacy, consent, data-flow and opt-out escalation before enabling tags beyond the approved configuration. This CSP repair does not resolve that governance decision."
+}

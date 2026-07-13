@@ -6,7 +6,7 @@ Context: The initial Google Tag Manager integration allowed the Tag Manager orig
 
 Learning: GTM's resource types are broader than its bootstrap script and noscript iframe. A CSP change for GTM must be applied consistently to the Worker-generated policy and every static HTML policy, with each required directive covered by a regression assertion.
 
-Action: When introducing or changing a third-party tag manager, inspect browser CSP violations in a production-like page and allow only the necessary exact origin in `img-src`, `script-src` and `frame-src`; never widen the policy with a wildcard.
+Action: When introducing or changing a third-party tag manager, inspect browser CSP violations in a production-like page and cover bootstrap, beacon and collection resource types in every policy. Keep third-party origins exact unless the provider's current security documentation requires a bounded host wildcard—for GA4, `https://*.google-analytics.com` is needed for regional collection hosts such as `region1.google-analytics.com`.
 
 ## 2026-07-12 — Semantic instrumentation must cover focus-order destinations
 
