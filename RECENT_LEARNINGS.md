@@ -1,5 +1,13 @@
 # Recent Learnings
 
+## 2026-07-13 — GTM needs CSP permission for beacon images as well as scripts and frames
+
+Context: The initial Google Tag Manager integration allowed the Tag Manager origin in `script-src` and `frame-src`, but production blocked GTM's `/td` request because it is made as an image/beacon and `img-src` omitted the origin.
+
+Learning: GTM's resource types are broader than its bootstrap script and noscript iframe. A CSP change for GTM must be applied consistently to the Worker-generated policy and every static HTML policy, with each required directive covered by a regression assertion.
+
+Action: When introducing or changing a third-party tag manager, inspect browser CSP violations in a production-like page and allow only the necessary exact origin in `img-src`, `script-src` and `frame-src`; never widen the policy with a wildcard.
+
 ## 2026-07-12 — Semantic instrumentation must cover focus-order destinations
 
 Auditing only elements that already have `data-flux-key` misses the exact controls that degrade into unlabelled journey events. Check the complete keyboard focus order on high-use pages, including breadcrumbs, page contents links, generated GOV.UK buttons and related-route links.
