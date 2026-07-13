@@ -212,12 +212,12 @@ function nonceInlineScripts(html, nonce) {
 function contentSecurityPolicy(nonce) {
 	return [
 		"default-src 'self'",
-		"connect-src 'self' https://rops-api.digikev-kevin-rapley.workers.dev https://rops-api-passwordless-preview.digikev-kevin-rapley.workers.dev https://flux-behaviour.pages.dev https://*.google-analytics.com https://*.analytics.google.com",
-		"img-src 'self' data: https://www.googletagmanager.com https://*.google-analytics.com",
+		"connect-src 'self' https://rops-api.digikev-kevin-rapley.workers.dev https://rops-api-passwordless-preview.digikev-kevin-rapley.workers.dev https://flux-behaviour.pages.dev",
+		"img-src 'self' data:",
 		"style-src 'self' 'unsafe-inline'",
-		`script-src 'self' 'nonce-${nonce}' https://flux-behaviour.pages.dev https://www.googletagmanager.com`,
+		`script-src 'self' 'nonce-${nonce}' https://flux-behaviour.pages.dev`,
 		"font-src 'self'",
-		"frame-src https://www.googletagmanager.com",
+		"frame-src 'none'",
 		"frame-ancestors 'none'",
 		"base-uri 'self'",
 		"form-action 'self'",

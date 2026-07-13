@@ -349,3 +349,11 @@ Context: ResearchOps already had CI, validation, accessibility, security and QA 
 Learning: A dedicated release gate makes the release decision auditable.
 
 Action: Use the `Release Gate` workflow as the central release-assurance check and keep its uploaded report artifacts as release evidence.
+
+# 2026-07-13 — Third-party analytics must fail closed while consent governance is open
+
+Context: Google Tag Manager origins were added to the Pages Content Security Policy even though the repository still recorded the consent mechanism, tag inventory, data-flow review and opt-out path as unresolved.
+
+Learning: A narrow CSP allowlist is not sufficient privacy approval. Permitting the vendor origin activates a remotely managed analytics capability and can enable a beacon without another repository change.
+
+Action: Keep GTM scripts, frames, connections and image beacons blocked by CSP until the recorded privacy and service-owner controls are approved and tested. Update CSP tests and governance evidence together when that decision changes.

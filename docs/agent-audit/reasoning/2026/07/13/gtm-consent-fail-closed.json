@@ -1,0 +1,54 @@
+{
+	"date": "2026-07-13",
+	"branch": "fix/gate-gtm-beacon-consent",
+	"task": "Address the unresolved Codex review on merged PR #493 by keeping Google Tag Manager blocked until analytics consent governance is approved.",
+	"traceRequired": true,
+	"traceLayer": "operational",
+	"operatingModelFilesLoaded": [
+		"AGENTS.md",
+		".agent-operating-model/orchestration.xml",
+		".agent-operating-model/bundle-registry.json",
+		".agent-operating-model/task-signal-catalog.json",
+		".agent-operating-model/selection-rules.json",
+		".agent-operating-model/bootstrap-checklist.md",
+		".agent-operating-model/precedence-policy.md",
+		".agent-operating-model/trace-policy.md",
+		".agent-operating-model/trace-layers.md",
+		".agent-operating-model/behavioural-evals.json",
+		".agent-operating-model/github-mutation-policy.md"
+	],
+	"selectedBundles": ["github-diamond", "researchops-developer-control", "multi-functional-team", "cloudflare"],
+	"selectedBundlePaths": [
+		".agent-operating-model/bundles/github/",
+		".agent-operating-model/bundles/researchops-developer-control/",
+		".agent-operating-model/bundles/multi-functional-team/",
+		".agent-operating-model/bundles/cloudflare/"
+	],
+	"skippedBundles": ["govuk-design-system", "openai-platform", "mcp-agent-tooling", "airtable-public-api", "mural-public-api"],
+	"selectionCorrection": "The loader's registry-keyword fallback matched Mural from the word tag and missed Cloudflare. The task was manually routed to Cloudflare because it changes a Pages Worker and static CSP; Mural is not in scope.",
+	"instructionConflicts": [],
+	"precedenceDecisions": ["Privacy and harm controls require GTM to fail closed until approval; a narrow vendor allowlist does not override the open high-severity governance gap."],
+	"sourceReview": ["PR #493 Codex review comment 3567427317", "gap-register.yaml", "harm-register.yaml", "public/_worker.js", "public/_headers"],
+	"filesModified": [
+		"public/_worker.js",
+		"public/_headers",
+		"tests/google-tag-manager-route-state.test.js",
+		"gap-register.yaml",
+		"harm-register.yaml",
+		"conformance-matrix.yaml",
+		"RECENT_LEARNINGS.md",
+		"agent-evidence.yaml",
+		"docs/agent-audit/reasoning/2026/07/13/gtm-consent-fail-closed.md",
+		"docs/agent-audit/reasoning/2026/07/13/gtm-consent-fail-closed.json"
+	],
+	"testContractImpact": ["GTM Worker CSP", "static Pages CSP", "GTM image beacon policy", "GTM noscript frame policy", "analytics consent governance records"],
+	"validation": [
+		{"command": "node --test tests/google-tag-manager-route-state.test.js tests/security-hardening-controls-route-state.test.js", "result": "passed"},
+		{"command": "npm test", "result": "passed (362 tests)"},
+		{"command": "npm run validate", "result": "passed"},
+		{"command": "npm run format:check", "result": "passed"},
+		{"command": "npm run lint", "result": "passed (236 pre-existing warnings, 0 errors)"},
+		{"command": "git diff --check", "result": "passed"}
+	],
+	"reviewDisposition": "Legitimate: permitting the GTM image origin activated a non-essential beacon despite unresolved consent governance. The follow-up restores a fail-closed CSP boundary."
+}

@@ -1,4 +1,16 @@
 records:
+  - id: analytics-consent-fail-closed
+    control: Third-party Google Tag Manager scripts, frames, connections and image beacons remain blocked by Content Security Policy while consent and privacy governance is unresolved.
+    evidence:
+      - public/_worker.js
+      - public/_headers
+      - tests/google-tag-manager-route-state.test.js
+      - gap-register.yaml
+      - harm-register.yaml
+    status: implemented
+    risk: high
+    owner: service-owner
+
   - id: flux-uk-english-writing-signals
     control: ResearchOps loads the Flux-owned hosted analyser; no linguistic code or dictionary is copied into the publisher repository.
     evidence:
