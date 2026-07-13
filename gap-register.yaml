@@ -4,14 +4,11 @@ gaps:
     status: open
     severity: high
     owner: service-owner
-    context: Google Tag Manager markup exists across public and authenticated ResearchOps pages using GTM-KGGFK4KW, but the Content Security Policy blocks the remote script, iframe and image beacons. The repository does not yet contain an approved consent mechanism, data-flow record, tag inventory or opt-out path for non-essential analytics.
-    mitigation: Keep GTM fail-closed in Content Security Policy. Obtain privacy and service-owner approval; document the measurement purpose, lawful basis, retention and international-transfer posture; implement and test consent and withdrawal controls before permitting GTM origins or publishing non-essential tags.
+    context: Google Tag Manager now loads across public and authenticated ResearchOps pages using GTM-KGGFK4KW. The repository does not yet contain an approved consent mechanism, data-flow record, tag inventory or opt-out path for non-essential analytics.
+    mitigation: Obtain privacy and service-owner approval; document the measurement purpose, lawful basis, retention and international-transfer posture; implement and test consent and withdrawal controls before publishing non-essential GTM tags.
     evidence:
       - harm-register.yaml
       - src/govuk/templates/layouts/researchops.njk
-      - public/_worker.js
-      - public/_headers
-      - tests/google-tag-manager-route-state.test.js
       - scripts/govuk/normalise-service-pages.mjs
 
   - id: flux-uk-english-writing-validation

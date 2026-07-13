@@ -48,13 +48,14 @@ assert.match(normaliser, /GOOGLE_TAG_MANAGER_LOADER_PATH = '\/js\/google-tag-man
 assert.match(normaliser, /ensureGoogleTagManagerNoscript/, 'normaliser should add the GTM noscript fallback');
 assert.match(loader, /https:\/\/www\.googletagmanager\.com\/gtm\.js\?id=\$\{containerId\}/, 'first-party bootstrap should load GTM');
 assert.match(loader, /'GTM-KGGFK4KW'/, 'first-party bootstrap should use the configured GTM container');
-assert.doesNotMatch(worker, /https:\/\/www\.googletagmanager\.com/, 'Pages Worker CSP should block GTM while analytics consent governance is open');
-assert.doesNotMatch(worker, /https:\/\/\*\.google-analytics\.com/, 'Pages Worker CSP should block GA4 collection while analytics consent governance is open');
-assert.match(worker, /img-src 'self' data:/, 'Pages Worker CSP should block third-party image beacons');
-assert.match(worker, /frame-src 'none'/, 'Pages Worker CSP should block the GTM noscript iframe');
-assert.doesNotMatch(headers, /https:\/\/www\.googletagmanager\.com/, 'static CSP should block GTM for every HTML route');
-assert.doesNotMatch(headers, /https:\/\/\*\.google-analytics\.com/, 'static CSP should block GA4 collection for every HTML route');
-assert.equal((headers.match(/frame-src 'none'/g) || []).length, 3, 'static CSP should block third-party frames for every HTML route');
+assert.match(worker, /img-src 'self' data: https:\/\/www\.googletagmanager\.com/, 'Pages Worker CSP should allow GTM image requests');
+assert.match(worker, /img-src 'self' data: https:\/\/www\.googletagmanager\.com https:\/\/\*\.google-analytics\.com/, 'Pages Worker CSP should allow GA4 image requests');
+assert.match(worker, /connect-src[^;]+https:\/\/\*\.google-analytics\.com https:\/\/\*\.analytics\.google\.com/, 'Pages Worker CSP should allow GA4 collection requests');
+assert.match(worker, /https:\/\/www\.googletagmanager\.com/, 'Pages Worker CSP should allow GTM scripts and frames');
+assert.match(worker, /frame-src https:\/\/www\.googletagmanager\.com/, 'Pages Worker CSP should allow the GTM noscript iframe');
+assert.equal((headers.match(/https:\/\/www\.googletagmanager\.com/g) || []).length, 9, 'static CSP should allow GTM image requests, scripts and frames for every HTML route');
+assert.equal((headers.match(/https:\/\/\*\.google-analytics\.com/g) || []).length, 6, 'static CSP should allow GA4 image and collection requests for every HTML route');
+assert.equal((headers.match(/https:\/\/\*\.analytics\.google\.com/g) || []).length, 3, 'static CSP should allow GA4 collection requests for every HTML route');
 
 const deployablePagePaths = [
 	...visualWalkthroughConfig.pages.map(({ path: route }) => outputPathForRoute(route)),

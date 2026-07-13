@@ -1,9 +1,9 @@
-task_id: researchops-gtm-consent-fail-closed
+task_id: researchops-hosted-flux-boundary
 mode: repo-fix
 repository: ResearchOps
 risk_level: high
 base_branch: main
-working_branch: fix/gate-gtm-beacon-consent
+working_branch: fix/flux-wpm-keyboard-autocomplete
 files_read:
   - README.md
   - AGENTS.md
@@ -12,71 +12,73 @@ files_read:
   - .agent-operating-model/bundle-registry.json
   - .agent-operating-model/task-signal-catalog.json
   - .agent-operating-model/selection-rules.json
-  - .agent-operating-model/bootstrap-checklist.md
-  - .agent-operating-model/precedence-policy.md
-  - .agent-operating-model/trace-policy.md
-  - .agent-operating-model/trace-layers.md
-  - .agent-operating-model/behavioural-evals.json
   - .agent-operating-model/github-mutation-policy.md
-  - .agent-operating-model/bundles/github/prompt.spec.yaml
-  - .agent-operating-model/bundles/github/prompt.body.xml
-  - .agent-operating-model/bundles/researchops-developer-control/prompt.spec.yaml
-  - .agent-operating-model/bundles/researchops-developer-control/prompt.body.xml
-  - .agent-operating-model/bundles/multi-functional-team/prompt.spec.yaml
-  - .agent-operating-model/bundles/multi-functional-team/prompt.body.xml
-  - .agent-operating-model/bundles/cloudflare/prompt.spec.yaml
-  - .agent-operating-model/bundles/cloudflare/prompt.body.xml
+  - github-settings.yaml
+  - conformance-matrix.yaml
   - gap-register.yaml
   - harm-register.yaml
-  - conformance-matrix.yaml
-  - public/_worker.js
-  - public/_headers
-  - tests/google-tag-manager-route-state.test.js
+  - docs/implementation/flux-semantic-instrumentation.md
 files_changed:
-  - public/_worker.js
+  - src/govuk/templates/layouts/researchops.njk
+  - public/partials/html-head.html
+  - public/pages/**/index.html
   - public/_headers
-  - tests/google-tag-manager-route-state.test.js
-  - gap-register.yaml
-  - harm-register.yaml
-  - conformance-matrix.yaml
-  - RECENT_LEARNINGS.md
-  - agent-evidence.yaml
-  - docs/agent-audit/reasoning/2026/07/13/gtm-consent-fail-closed.md
-  - docs/agent-audit/reasoning/2026/07/13/gtm-consent-fail-closed.json
+  - public/_worker.js
+  - public/js/auth-sign-in-page.js
+  - tests/flux-behaviour-tracker-route-state.test.js
+  - tests/flux-semantic-instrumentation.test.js
+  - tests/e2e/flux-semantic-coverage.spec.js
+  - docs/implementation/flux-semantic-instrumentation.md
+  - docs/agent-audit/reasoning/2026/07/12/researchops-hosted-flux-boundary.md
+  - docs/agent-audit/reasoning/2026/07/12/researchops-hosted-flux-boundary.json
+files_removed:
+  - src/flux/
+  - scripts/flux/build-uk-english-writing.mjs
+  - public/js/flux-researchops-tracker.1.1.0.js
+  - public/js/flux-researchops-tracker.1.1.1.js
+  - public/js/flux-researchops-tracker.1.2.0.js
+  - public/assets/flux/
+  - tests/flux-focus-narrative-events.test.js
+  - tests/flux-session-lifecycle.test.js
+  - tests/flux-uk-writing-analyser.test.js
 commands_run:
-  - command: node --test tests/google-tag-manager-route-state.test.js tests/security-hardening-controls-route-state.test.js
-    state: verified
-    status: passed
-    evidence: The focused GTM and security tests passed after the governed pages were built.
   - command: npm test
     state: verified
     status: passed
-    evidence: All 362 repository tests passed.
-  - command: npm run validate
-    state: verified
-    status: passed
-    evidence: Repository contract, operating model, trace, generated pages, route-state, sourcebook and performance validation passed.
-  - command: npm run format:check
-    state: verified
-    status: passed
-    evidence: Prettier and generated CSS checks passed.
+    evidence: All 359 repository tests passed after removing local Flux product logic.
   - command: npm run lint
     state: verified
     status: passed
-    evidence: ESLint completed with the repository's existing 236-warning baseline and no errors.
+    evidence: Formatting checks and ESLint passed with the repository's existing warning baseline.
+  - command: npm run validate
+    state: verified
+    status: passed
+    evidence: Operating-model, trace, sourcebook, route-state, JavaScript and performance validation completed.
+  - command: npm run build
+    state: verified
+    status: passed
+    evidence: GOV.UK assets, generated styles and rendered service pages built without a local Flux analyser step.
+  - command: node --import ./tests/helpers/generated-govuk-page-source.mjs --test tests/flux-behaviour-tracker-route-state.test.js
+    state: verified
+    status: passed
+    evidence: Every rendered page loads the hosted Flux module; local tracker, analyser and src/flux paths are absent; CSP permits the hosted script and collector.
+  - command: npx playwright test tests/e2e/flux-semantic-coverage.spec.js --reporter=line
+    state: verified
+    status: passed
+    evidence: Authored Flux keys are purpose-led and paired with valid roles in rendered pages.
 recent_learnings:
   read: true
   updated: true
-  entry: Third-party analytics must fail closed while consent governance is open.
+  entry: Publisher instrumentation is attributes, not a copied analytics product.
 security:
   secrets_changed: false
   authentication_changed: false
 privacy:
-  data_collection_scope_changed: true
-  assessment: Google Tag Manager's remote script, iframe and beacon channels are blocked by CSP; the independently consent-controlled Flux origin remains permitted.
+  data_collection_scope_changed: false
+  assessment: ResearchOps now contains less analytics code and no dictionary; sensitive field values remain outside publisher telemetry logic.
 accessibility:
-  required: false
-  assessment: No visible interface or interaction changed.
+  required: true
+  assessment: Navigation and important journey attributes remain authored; the hosted Flux module owns keyboard semantics.
 risks:
-  - Dormant GTM markup remains in rendered pages and must not be activated until governance prerequisites are approved and tested.
-  - The open consent gap remains release-escalated despite the fail-closed technical mitigation.
+  - ResearchOps deployment depends on the versioned hosted Flux asset being deployed first.
+  - Browser production verification is required after both pull requests merge.

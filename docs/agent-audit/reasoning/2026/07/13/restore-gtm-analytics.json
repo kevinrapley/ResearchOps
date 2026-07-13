@@ -1,0 +1,26 @@
+{
+	"date": "2026-07-13",
+	"branch": "fix/restore-gtm-analytics",
+	"task": "Restore live Google Tag Manager and GA4 collection after the merged fail-closed CSP gate blocked every deployed ResearchOps page.",
+	"traceRequired": true,
+	"traceLayer": "operational",
+	"selectedBundles": ["github-diamond", "researchops-developer-control", "multi-functional-team", "govuk-design-system", "cloudflare", "mural-public-api"],
+	"skippedBundles": ["openai-platform", "mcp-agent-tooling", "airtable-public-api"],
+	"selectionNote": "The operating-model selector included GOV.UK and Mural from generic content/tag wording; no GOV.UK or Mural implementation is changed.",
+	"decision": "Revert the fail-closed merge commit with mainline parent to restore the already-tested GTM and GA4 CSP allowlist, its route-state tests, and the corresponding governance evidence without rewriting history.",
+	"evidence": [
+		"A live crawl found GTM markup on 65 of 66 static routes; /pages/synthesize/ is an intentional legacy redirect exception.",
+		"All 66 live responses blocked www.googletagmanager.com in CSP after PR #494 merged.",
+		"The user explicitly directed restoration of live tagging."
+	],
+	"filesModified": ["RECENT_LEARNINGS.md", "agent-evidence.yaml", "conformance-matrix.yaml", "gap-register.yaml", "harm-register.yaml", "public/_headers", "public/_worker.js", "tests/google-tag-manager-route-state.test.js", "docs/agent-audit/reasoning/2026/07/13/restore-gtm-analytics.md", "docs/agent-audit/reasoning/2026/07/13/restore-gtm-analytics.json"],
+	"validation": [
+		{"command": "node --test tests/google-tag-manager-route-state.test.js tests/security-hardening-controls-route-state.test.js", "result": "passed after npm run build"},
+		{"command": "npm test", "result": "passed (362 tests)"},
+		{"command": "npm run validate", "result": "passed"},
+		{"command": "npm run format:check", "result": "passed"},
+		{"command": "npm run lint", "result": "passed (236 existing warnings, 0 errors)"},
+		{"command": "live browser collection request check", "result": "pending deployment"}
+	],
+	"residualRisk": "The restored harm and gap registers record that non-essential analytics remains subject to privacy, consent, data-flow and opt-out escalation."
+}
