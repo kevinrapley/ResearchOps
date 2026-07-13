@@ -7,8 +7,8 @@ harms:
       - ResearchOps staff
     likelihood: high
     severity: high
-    mitigation: Keep Google Tag Manager scripts, frames, image beacons and connections blocked by Content Security Policy; complete privacy review, consent design, data-flow documentation and a tested opt-out path before permitting the GTM origins or enabling any non-essential analytics tags in the container.
-    residual_risk: medium
+    mitigation: Keep the container limited to the approved GTM configuration; complete privacy review, consent design, data-flow documentation and a tested opt-out path before enabling any non-essential analytics tags in the container.
+    residual_risk: high
     owner: service-owner
     escalation_route: Privacy lead, data protection officer and service owner
     release_decision: requires-escalation
