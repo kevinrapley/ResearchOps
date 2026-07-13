@@ -37,6 +37,7 @@ function assertGoogleTagManager(page, pagePath) {
 	);
 	assert.equal(page.split(loaderPath).length - 1, 1, `${pagePath} should include one GTM script`);
 	assert.equal(page.split(noscriptUrl).length - 1, 1, `${pagePath} should include one GTM noscript fallback`);
+	assert.equal(page.includes('gtm.start'), false, `${pagePath} should not include a second inline GTM bootstrap`);
 }
 
 assert.ok(layout.includes(loaderPath), 'shared Nunjucks layout should load the first-party GTM bootstrap');
@@ -48,13 +49,19 @@ assert.match(normaliser, /ensureGoogleTagManagerNoscript/, 'normaliser should ad
 assert.match(loader, /https:\/\/www\.googletagmanager\.com\/gtm\.js\?id=\$\{containerId\}/, 'first-party bootstrap should load GTM');
 assert.match(loader, /'GTM-KGGFK4KW'/, 'first-party bootstrap should use the configured GTM container');
 assert.match(worker, /img-src 'self' data: https:\/\/www\.googletagmanager\.com/, 'Pages Worker CSP should allow GTM image requests');
+assert.match(worker, /img-src 'self' data: https:\/\/www\.googletagmanager\.com https:\/\/\*\.google-analytics\.com/, 'Pages Worker CSP should allow GA4 image requests');
+assert.match(worker, /connect-src[^;]+https:\/\/\*\.google-analytics\.com https:\/\/\*\.analytics\.google\.com/, 'Pages Worker CSP should allow GA4 collection requests');
 assert.match(worker, /https:\/\/www\.googletagmanager\.com/, 'Pages Worker CSP should allow GTM scripts and frames');
 assert.match(worker, /frame-src https:\/\/www\.googletagmanager\.com/, 'Pages Worker CSP should allow the GTM noscript iframe');
 assert.equal((headers.match(/https:\/\/www\.googletagmanager\.com/g) || []).length, 9, 'static CSP should allow GTM image requests, scripts and frames for every HTML route');
+assert.equal((headers.match(/https:\/\/\*\.google-analytics\.com/g) || []).length, 6, 'static CSP should allow GA4 image and collection requests for every HTML route');
+assert.equal((headers.match(/https:\/\/\*\.analytics\.google\.com/g) || []).length, 3, 'static CSP should allow GA4 collection requests for every HTML route');
 
 const deployablePagePaths = [
 	...visualWalkthroughConfig.pages.map(({ path: route }) => outputPathForRoute(route)),
 	'public/clear.html',
+	'public/pages/account/sign-in/index.html',
+	'public/pages/team/registration-requests/index.html',
 ];
 
 for (const pagePath of deployablePagePaths) {
