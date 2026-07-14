@@ -1,0 +1,38 @@
+{% extends "layouts/researchops.njk" %}
+{% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
+{% from "govuk/components/textarea/macro.njk" import govukTextarea %}
+
+{% block head %}
+	<link rel="stylesheet" href="/css/study-tree-test.css" media="screen">
+	<link rel="modulepreload" href="/js/study-tree-test-page.js">
+{% endblock %}
+
+{% block content %}
+<div class="govuk-width-container study-tree-test-page" data-study-subpage-template="tree-test">
+	{{ govukBreadcrumbs({ items: [{ text: "Projects", href: "/pages/projects/" }, { text: "Project", href: "#", attributes: { id: "breadcrumb-project" } }, { text: "Study", href: "/pages/study/", attributes: { id: "breadcrumb-study" } }, { text: "Prepare tree test" }] }) }}
+	{{ govukErrorSummary({ titleText: "There is a problem", errorList: [{ html: '<span id="tree-test-error-message">The tree test could not be loaded.</span>', href: "#tree-test-instructions" }], attributes: { id: "tree-test-error-summary", hidden: "hidden" } }) }}
+	<h1 class="govuk-heading-l">Prepare the tree test</h1>
+	<p class="govuk-body govuk-!-width-two-thirds">Set the navigation structure and tasks participants will attempt. Each task must point to a destination in the tree.</p>
+
+	<form id="tree-test-form" novalidate>
+		{{ govukTextarea({ id: "tree-test-instructions", name: "instructions", value: "", rows: 3, label: { text: "Instructions for participants" }, hint: { text: "Explain what to do without revealing the right destination." } }) }}
+		{{ govukTextarea({ id: "tree-test-tree", name: "tree", value: "", rows: 12, label: { text: "Navigation tree" }, hint: { text: "Enter one location per line. Indent child locations with two spaces, for example: Services, then two spaces Benefits." } }) }}
+		<section aria-labelledby="tree-test-tasks-title" class="tree-test-editor-section">
+			<h2 id="tree-test-tasks-title" class="govuk-heading-m">Tasks</h2>
+			<p class="govuk-hint">Describe an outcome a participant might look for, then choose its correct destination.</p>
+			<ol id="tree-test-task-list" class="tree-test-task-list"></ol>
+			{{ govukButton({ text: "Add task", type: "button", classes: "govuk-button--secondary", attributes: { id: "btn-add-tree-test-task" } }) }}
+		</section>
+		<div class="govuk-button-group">
+			{{ govukButton({ text: "Save tree test", type: "submit", attributes: { id: "btn-save-tree-test" } }) }}
+			<p id="tree-test-save-status" class="govuk-hint" aria-live="polite"></p>
+		</div>
+	</form>
+</div>
+{% endblock %}
+
+{% block scripts %}
+	<script type="module" src="/js/study-tree-test-page.js"></script>
+{% endblock %}

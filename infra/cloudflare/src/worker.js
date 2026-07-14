@@ -359,6 +359,11 @@ const RESEARCH_DATA_ROUTE_PERMISSIONS = [
 	["route_api_card_sorts_results_get", "GET", "/api/card-sorts/results", "[\"research.content.view\"]"],
 	["route_api_card_sorts_results_post", "POST", "/api/card-sorts/results", "[\"research.content.manage\"]"],
 	["route_api_card_sorts_result_patch", "PATCH", "/api/card-sorts/results/:id", "[\"research.content.manage\"]"],
+	["route_api_tree_tests_config_get", "GET", "/api/tree-tests/config", "[\"study.view\"]"],
+	["route_api_tree_tests_config_post", "POST", "/api/tree-tests/config", "[\"study.manage\"]"],
+	["route_api_tree_tests_results_get", "GET", "/api/tree-tests/results", "[\"research.content.view\"]"],
+	["route_api_tree_tests_results_post", "POST", "/api/tree-tests/results", "[\"research.content.manage\"]"],
+	["route_api_tree_tests_result_patch", "PATCH", "/api/tree-tests/results/:id", "[\"research.content.manage\"]"],
 	["route_api_ai_rewrite_post", "POST", "/api/ai-rewrite", "[\"research.content.manage\"]", 1],
 	["route_api_journal_entries_get", "GET", "/api/journal-entries", "[\"research.content.view\"]", 1],
 	["route_api_journal_entries_post", "POST", "/api/journal-entries", "[\"research.content.manage\"]", 1],
@@ -555,6 +560,7 @@ function researchDataRoutePermissionRequest(request, apiPath) {
 	if (apiPath.match(/^\/api\/sessions\/([^/]+)$/)) return requestForRoutePermission(request, "/api/sessions/:id");
 	if (apiPath.match(/^\/api\/session-notes\/([^/]+)$/)) return requestForRoutePermission(request, "/api/session-notes/:id");
 	if (apiPath.match(/^\/api\/card-sorts\/results\/([^/]+)$/)) return requestForRoutePermission(request, "/api/card-sorts/results/:id");
+	if (apiPath.match(/^\/api\/tree-tests\/results\/([^/]+)$/)) return requestForRoutePermission(request, "/api/tree-tests/results/:id");
 	if (apiPath.match(/^\/api\/synthesis\/clusters\/([^/]+)$/)) return requestForRoutePermission(request, "/api/synthesis/clusters/:id");
 	if (apiPath.match(/^\/api\/consent-forms\/([^/]+)\/publish$/)) return requestForRoutePermission(request, "/api/consent-forms/:id/publish");
 	if (apiPath.match(/^\/api\/consent-forms\/([^/]+)$/)) return requestForRoutePermission(request, "/api/consent-forms/:id");

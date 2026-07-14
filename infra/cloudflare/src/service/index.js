@@ -41,6 +41,7 @@ import * as SessionNotes from "./session-notes.js";
 
 /* Card Sorts */
 import * as CardSorts from "./card-sorts.js";
+import * as TreeTests from "./tree-tests.js";
 
 /* Integrations */
 import { MuralServicePart } from "./internals/mural.js";
@@ -291,6 +292,13 @@ export class ResearchOpsService {
 	listCardSortResults = (origin, url) => CardSorts.listCardSortResults(this, origin, url);
 	createCardSortResult = (req, origin) => CardSorts.createCardSortResult(this, req, origin);
 	updateCardSortResult = (req, origin, id) => CardSorts.updateCardSortResult(this, req, origin, id);
+
+	/* ─────────────── Tree Tests ─────────────── */
+	getTreeTestConfig = (origin, url) => TreeTests.getTreeTestConfig(this, origin, url);
+	saveTreeTestConfig = (req, origin) => TreeTests.saveTreeTestConfig(this, req, origin);
+	listTreeTestResults = (origin, url) => TreeTests.listTreeTestResults(this, origin, url);
+	createTreeTestResult = (req, origin) => TreeTests.createTreeTestResult(this, req, origin);
+	updateTreeTestResult = (req, origin, id) => TreeTests.updateTreeTestResult(this, req, origin, id);
 
 	/* ─────────────── Comms ─────────────── */
 	sendComms = (req, origin) => Comms.sendComms(this, req, origin);
