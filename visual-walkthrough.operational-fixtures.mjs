@@ -29,6 +29,7 @@ export const operationalPaths = {
 	studyNoteTakersObservers: `/pages/study/note-takers-observers/?pid=${operationalProjectId}&sid=${operationalStudyId}`,
 	studyParticipants: `/pages/study/participants/?pid=${operationalProjectId}&sid=${operationalStudyId}`,
 	studyCardSort: `/pages/study/card-sort/?id=${operationalStudyId}&project=${operationalProjectId}`,
+	studyTreeTest: `/pages/study/tree-test/?id=${operationalStudyId}&project=${operationalProjectId}`,
 	studySession: `/pages/study/session/?pid=${operationalProjectId}&sid=${operationalStudyId}`,
 	studyConsentForms: `/pages/study/consent-forms/?pid=${operationalProjectId}&sid=${operationalStudyId}`,
 	studyEthicsRisk: `/pages/study/ethics-risk/?id=${operationalStudyId}&project=${operationalProjectId}`,
