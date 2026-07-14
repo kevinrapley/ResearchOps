@@ -1,0 +1,39 @@
+{
+  "date": "2026-07-14",
+  "branch": "feature/tree-test-session",
+  "task": "Fix the failing PR tests for the Tree Test branch.",
+  "traceRequired": true,
+  "traceLayer": "operational",
+  "selectedBundles": [
+    "github-diamond",
+    "researchops-developer-control",
+    "multi-functional-team",
+    "govuk-design-system",
+    "cloudflare"
+  ],
+  "skippedBundles": [
+    "openai-platform",
+    "mcp-agent-tooling",
+    "airtable-public-api",
+    "mural-public-api"
+  ],
+  "filesModified": [
+    "visual-walkthrough.config.mjs",
+    "visual-walkthrough.operational-fixtures.mjs",
+    "docs/agent-audit/reasoning/2026/07/14/tree-test-ci-fix.md",
+    "docs/agent-audit/reasoning/2026/07/14/tree-test-ci-fix.json"
+  ],
+  "validation": [
+    {
+      "command": "node --test tests/visual-walkthrough-registry-coverage.test.js",
+      "result": "1 pass, 0 fail"
+    },
+    {
+      "command": "npm test",
+      "result": "358 pass, 0 fail"
+    }
+  ],
+  "residualRisks": [
+    "GitHub checks still need to rerun on the pushed fix commit before the PR status updates remotely."
+  ]
+}

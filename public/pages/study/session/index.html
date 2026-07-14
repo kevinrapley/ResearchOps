@@ -11,13 +11,15 @@
 		<meta property="schema:creator" content="Home Office ResearchOps Platform" />
 		<meta property="dcterms:language" content="en-GB" />
 		<link rel="stylesheet" href="/css/study-page.css" media="screen" />
-		<link rel="stylesheet" href="/css/study-session.css?v=study-session-card-sort-20260709-8" media="screen" />
+		<link rel="stylesheet" href="/css/study-session.css?v=study-session-tree-test-20260710-1" media="screen" />
 		<link rel="stylesheet" href="/css/daas-brand-panel.css?v=leds-brand-panel-20260624" media="screen" />
 		<link rel="modulepreload" href="/js/daas-brand-panel.js?v=leds-brand-panel-20260624" />
-		<link rel="modulepreload" href="/components/session-controller.js?v=study-session-card-sort-20260709-8" />
-		<link rel="stylesheet" href="/css/study-card-sort.css?v=study-session-card-sort-20260709-8" media="screen" />
-		<link rel="modulepreload" href="/components/session-consent-controller.js?v=study-session-card-sort-20260709-8" />
-		<link rel="modulepreload" href="/components/session-card-sort-controller.js?v=study-session-card-sort-20260709-8" />
+		<link rel="modulepreload" href="/components/session-controller.js?v=study-session-tree-test-20260710-1" />
+		<link rel="stylesheet" href="/css/study-card-sort.css?v=study-session-tree-test-20260710-1" media="screen" />
+		<link rel="stylesheet" href="/css/study-tree-test.css?v=study-session-tree-test-20260710-1" media="screen" />
+		<link rel="modulepreload" href="/components/session-consent-controller.js?v=study-session-tree-test-20260710-1" />
+		<link rel="modulepreload" href="/components/session-card-sort-controller.js?v=study-session-tree-test-20260710-1" />
+		<link rel="modulepreload" href="/components/session-tree-test-controller.js?v=study-session-tree-test-20260710-1" />
 
 		<!-- Google Tag Manager -->
 		<script src="/js/google-tag-manager.js"></script>
@@ -313,6 +315,42 @@
 					</div>
 				</section>
 
+				<section
+					class="study-session-section govuk-!-margin-bottom-8"
+					id="tree-test-section"
+					aria-labelledby="tree-test-title"
+					hidden
+				>
+					<h2 id="tree-test-title" class="govuk-heading-m">Tree test</h2>
+					<div class="govuk-warning-text" id="tree-test-setup-warning" hidden="hidden">
+						<span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+						<strong class="govuk-warning-text__text">
+							<span class="govuk-visually-hidden">Warning</span>
+							This study does not have a tree test set up yet.
+							<a id="tree-test-setup-link" class="govuk-link" href="/pages/study/tree-test/">Prepare the tree test</a>
+							before running this session.
+						</strong>
+					</div>
+
+					<div id="tree-test-instructions-wrap" class="tree-test-instructions" hidden>
+						<h3 class="govuk-heading-s govuk-!-margin-bottom-1">Instructions for the participant</h3>
+						<p id="tree-test-instructions" class="govuk-body govuk-!-margin-bottom-0"></p>
+					</div>
+					<div class="tree-test-session">
+						<div class="tree-test-task-panel">
+							<p id="tree-test-progress" class="govuk-body-s" aria-live="polite"></p>
+							<h3 id="tree-test-prompt" class="govuk-heading-s"></h3>
+						</div>
+						<nav id="tree-test-path" class="tree-test-path" aria-label="Current location"></nav>
+						<ul id="tree-test-tree-nav" class="govuk-list" aria-label="Navigation choices"></ul>
+						<p id="tree-test-save-status" class="govuk-hint" aria-live="polite"></p>
+						<div id="tree-test-complete" hidden>
+							<h3 class="govuk-heading-s">All tree-test tasks are complete</h3>
+						</div>
+						<ol id="tree-test-results" class="govuk-list"></ol>
+					</div>
+				</section>
+
 				<section class="study-session-section" aria-labelledby="notes-title">
 					<h2 id="notes-title" class="govuk-heading-m">Fieldnotes</h2>
 					<p class="govuk-body govuk-!-width-two-thirds">
@@ -433,11 +471,15 @@
 		<x-include src="/partials/footer.html?v=govuk-page-chrome-20260702-1"></x-include>
 
 		<script type="module" src="/js/daas-brand-panel.js?v=leds-brand-panel-20260624"></script>
-		<script type="module" src="/components/session-controller.js?v=study-session-card-sort-20260709-8"></script>
-		<script type="module" src="/components/session-consent-controller.js?v=study-session-card-sort-20260709-8"></script>
+		<script type="module" src="/components/session-controller.js?v=study-session-tree-test-20260710-1"></script>
+		<script type="module" src="/components/session-consent-controller.js?v=study-session-tree-test-20260710-1"></script>
 		<script
 			type="module"
-			src="/components/session-card-sort-controller.js?v=study-session-card-sort-20260709-8"
+			src="/components/session-card-sort-controller.js?v=study-session-tree-test-20260710-1"
+		></script>
+		<script
+			type="module"
+			src="/components/session-tree-test-controller.js?v=study-session-tree-test-20260710-1"
 		></script>
 	</body>
 </html>

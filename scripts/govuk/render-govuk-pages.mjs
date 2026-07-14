@@ -833,6 +833,16 @@ export const govukPages = [
 		},
 	},
 	{
+		template: 'pages/study-tree-test.njk',
+		output: 'public/pages/study/tree-test/index.html',
+		context: {
+			pageTitle: 'Tree test setup - ResearchOps Demo Suite',
+			serviceName: 'ResearchOps Demo Suite',
+			activeNavigation: 'Projects',
+			navigation: projectNavigation,
+		},
+	},
+	{
 		template: 'pages/study-synthesis.njk',
 		output: 'public/pages/study/synthesis/index.html',
 		context: {

@@ -1,0 +1,71 @@
+{
+  "date": "2026-07-14",
+  "branch": "feature/tree-test-session",
+  "task": "Open a pull request for the Tree Test feature work.",
+  "traceRequired": true,
+  "traceLayer": "operational",
+  "selectedBundles": [
+    "github-diamond",
+    "researchops-developer-control",
+    "multi-functional-team",
+    "govuk-design-system",
+    "cloudflare"
+  ],
+  "skippedBundles": [
+    "openai-platform",
+    "mcp-agent-tooling",
+    "airtable-public-api",
+    "mural-public-api"
+  ],
+  "filesModified": [
+    "docs/deployment/d1-migration-ordering.md",
+    "docs/agent-audit/reasoning/2026/07/10/tree-test-session.md",
+    "docs/agent-audit/reasoning/2026/07/10/tree-test-session.json",
+    "docs/agent-audit/reasoning/2026/07/14/tree-test-pr.md",
+    "docs/agent-audit/reasoning/2026/07/14/tree-test-pr.json",
+    "infra/cloudflare/migrations/0028_tree_tests.sql",
+    "infra/cloudflare/migrations/preview/0003_seed_tree_test_session.sql",
+    "infra/cloudflare/src/core/router.js",
+    "infra/cloudflare/src/service/index.js",
+    "infra/cloudflare/src/service/tree-tests.js",
+    "infra/cloudflare/src/worker.js",
+    "public/components/session-tree-test-controller.js",
+    "public/css/study-tree-test.css",
+    "public/js/study-page.js",
+    "public/js/study-tree-test-page.js",
+    "public/pages/study/index.html",
+    "public/pages/study/session/index.html",
+    "public/pages/study/tree-test/index.html",
+    "scripts/govuk/render-govuk-pages.mjs",
+    "src/govuk/templates/pages/study-session.njk",
+    "src/govuk/templates/pages/study-tree-test.njk",
+    "src/govuk/templates/pages/study.njk",
+    "tests/tree-tests-route-state.test.js"
+  ],
+  "validation": [
+    {
+      "command": "node --check public/components/session-tree-test-controller.js",
+      "result": "passed"
+    },
+    {
+      "command": "npm run build:govuk-pages",
+      "result": "passed; rendered Tree Test setup and session routes"
+    },
+    {
+      "command": "node --test tests/tree-tests-route-state.test.js tests/card-sorts-route-state.test.js tests/study-session-route-state.test.js tests/d1-migration-ordering-route-state.test.js",
+      "result": "4 pass, 0 fail"
+    },
+    {
+      "command": "git diff --check",
+      "result": "passed"
+    },
+    {
+      "command": "npm run trace:validate",
+      "result": "validated trace files"
+    }
+  ],
+  "residualRisks": [
+    "Full repository-wide lint, typecheck and CI test suite were not rerun in this publication turn.",
+    "Non-preview environments still require migration 0028 for Tree Test persistence."
+  ]
+}

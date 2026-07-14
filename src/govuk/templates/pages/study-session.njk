@@ -8,7 +8,7 @@
 {% from "govuk/components/warning-text/macro.njk" import govukWarningText %}
 {% from "macros/daas-brand-panel.njk" import daasBrandPanel %}
 
-{% set sessionPageScriptVersion = "study-session-card-sort-20260709-8" %}
+{% set sessionPageScriptVersion = "study-session-tree-test-20260710-1" %}
 
 {% block head %}
 	<meta property="schema:name" content="Research session - ResearchOps">
@@ -20,8 +20,10 @@
 	<link rel="modulepreload" href="/js/daas-brand-panel.js?v=leds-brand-panel-20260624">
 	<link rel="modulepreload" href="/components/session-controller.js?v={{ sessionPageScriptVersion }}">
 	<link rel="stylesheet" href="/css/study-card-sort.css?v={{ sessionPageScriptVersion }}" media="screen">
+	<link rel="stylesheet" href="/css/study-tree-test.css?v={{ sessionPageScriptVersion }}" media="screen">
 	<link rel="modulepreload" href="/components/session-consent-controller.js?v={{ sessionPageScriptVersion }}">
 	<link rel="modulepreload" href="/components/session-card-sort-controller.js?v={{ sessionPageScriptVersion }}">
+	<link rel="modulepreload" href="/components/session-tree-test-controller.js?v={{ sessionPageScriptVersion }}">
 {% endblock %}
 
 {% block content %}
@@ -211,6 +213,32 @@
 		</div>
 	</section>
 
+	<section class="study-session-section govuk-!-margin-bottom-8" id="tree-test-section" aria-labelledby="tree-test-title" hidden>
+		<h2 id="tree-test-title" class="govuk-heading-m">Tree test</h2>
+		{{ govukWarningText({
+			html: 'This study does not have a tree test set up yet. <a id="tree-test-setup-link" class="govuk-link" href="/pages/study/tree-test/">Prepare the tree test</a> before running this session.',
+			iconFallbackText: "Warning",
+			attributes: { id: "tree-test-setup-warning", hidden: "hidden" }
+		}) }}
+		<div id="tree-test-instructions-wrap" class="tree-test-instructions" hidden>
+			<h3 class="govuk-heading-s govuk-!-margin-bottom-1">Instructions for the participant</h3>
+			<p id="tree-test-instructions" class="govuk-body govuk-!-margin-bottom-0"></p>
+		</div>
+		<div class="tree-test-session">
+			<div class="tree-test-task-panel">
+				<p id="tree-test-progress" class="govuk-body-s" aria-live="polite"></p>
+				<h3 id="tree-test-prompt" class="govuk-heading-s"></h3>
+			</div>
+			<nav id="tree-test-path" class="tree-test-path" aria-label="Current location"></nav>
+			<ul id="tree-test-tree-nav" class="govuk-list" aria-label="Navigation choices"></ul>
+			<p id="tree-test-save-status" class="govuk-hint" aria-live="polite"></p>
+			<div id="tree-test-complete" hidden>
+				<h3 class="govuk-heading-s">All tree-test tasks are complete</h3>
+			</div>
+			<ol id="tree-test-results" class="govuk-list"></ol>
+		</div>
+	</section>
+
 	<section class="study-session-section" aria-labelledby="notes-title">
 		<h2 id="notes-title" class="govuk-heading-m">Fieldnotes</h2>
 		<p class="govuk-body govuk-!-width-two-thirds">
@@ -299,4 +327,5 @@
 	<script type="module" src="/components/session-controller.js?v={{ sessionPageScriptVersion }}"></script>
 	<script type="module" src="/components/session-consent-controller.js?v={{ sessionPageScriptVersion }}"></script>
 	<script type="module" src="/components/session-card-sort-controller.js?v={{ sessionPageScriptVersion }}"></script>
+	<script type="module" src="/components/session-tree-test-controller.js?v={{ sessionPageScriptVersion }}"></script>
 {% endblock %}

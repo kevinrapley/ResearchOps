@@ -1,0 +1,127 @@
+<!doctype html>
+<html class="govuk-template" lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>Tree test setup - ResearchOps Demo Suite</title>
+		<link rel="stylesheet" href="/assets/govuk/govuk-frontend.css" media="screen" />
+		<link rel="stylesheet" href="/css/researchops-fonts.css" media="screen" />
+
+		<link rel="stylesheet" href="/css/study-tree-test.css" media="screen" />
+		<link rel="modulepreload" href="/js/study-tree-test-page.js" />
+
+		<script type="module" src="/components/layout.js?v=govuk-page-chrome-20260702-1" defer></script>
+		<script type="module" src="/js/govuk-frontend-init.js?v=govuk-page-chrome-20260702-1" defer></script>
+	</head>
+	<body class="govuk-template__body">
+		<script>
+			document.body.className +=
+				" js-enabled" + ("noModule" in HTMLScriptElement.prototype ? " govuk-frontend-supported" : "");
+		</script>
+		<x-include src="/partials/header.html" vars='{"active":"Projects"}'></x-include>
+		<main class="govuk-main-wrapper" id="main-content" role="main" tabindex="-1">
+			<div class="govuk-width-container study-tree-test-page" data-study-subpage-template="tree-test">
+				<nav class="govuk-breadcrumbs" aria-label="Breadcrumb">
+					<ol class="govuk-breadcrumbs__list">
+						<li class="govuk-breadcrumbs__list-item">
+							<a class="govuk-breadcrumbs__link" href="/pages/projects/">Projects</a>
+						</li>
+
+						<li class="govuk-breadcrumbs__list-item">
+							<a class="govuk-breadcrumbs__link" href="#" id="breadcrumb-project">Project</a>
+						</li>
+
+						<li class="govuk-breadcrumbs__list-item">
+							<a class="govuk-breadcrumbs__link" href="/pages/study/" id="breadcrumb-study">Study</a>
+						</li>
+
+						<li class="govuk-breadcrumbs__list-item" aria-current="page">Prepare tree test</li>
+					</ol>
+				</nav>
+
+				<div class="govuk-error-summary" id="tree-test-error-summary" hidden="hidden" data-module="govuk-error-summary">
+					<div role="alert">
+						<h2 class="govuk-error-summary__title">There is a problem</h2>
+						<div class="govuk-error-summary__body">
+							<ul class="govuk-list govuk-error-summary__list">
+								<li>
+									<a href="#tree-test-instructions">
+										<span id="tree-test-error-message">The tree test could not be loaded.</span>
+									</a>
+								</li>
+							</ul>
+						</div>
+					</div>
+				</div>
+
+				<h1 class="govuk-heading-l">Prepare the tree test</h1>
+				<p class="govuk-body govuk-!-width-two-thirds">
+					Set the navigation structure and tasks participants will attempt. Each task must point to a destination in the
+					tree.
+				</p>
+
+				<form id="tree-test-form" novalidate>
+					<div class="govuk-form-group">
+						<label class="govuk-label" for="tree-test-instructions">Instructions for participants</label>
+
+						<div id="tree-test-instructions-hint" class="govuk-hint">
+							Explain what to do without revealing the right destination.
+						</div>
+
+						<textarea
+							class="govuk-textarea"
+							id="tree-test-instructions"
+							name="instructions"
+							rows="3"
+							aria-describedby="tree-test-instructions-hint"
+						></textarea>
+					</div>
+
+					<div class="govuk-form-group">
+						<label class="govuk-label" for="tree-test-tree">Navigation tree</label>
+
+						<div id="tree-test-tree-hint" class="govuk-hint">
+							Enter one location per line. Indent child locations with two spaces, for example: Services, then two
+							spaces Benefits.
+						</div>
+
+						<textarea
+							class="govuk-textarea"
+							id="tree-test-tree"
+							name="tree"
+							rows="12"
+							aria-describedby="tree-test-tree-hint"
+						></textarea>
+					</div>
+
+					<section aria-labelledby="tree-test-tasks-title" class="tree-test-editor-section">
+						<h2 id="tree-test-tasks-title" class="govuk-heading-m">Tasks</h2>
+						<p class="govuk-hint">
+							Describe an outcome a participant might look for, then choose its correct destination.
+						</p>
+						<ol id="tree-test-task-list" class="tree-test-task-list"></ol>
+
+						<button
+							type="button"
+							class="govuk-button govuk-button--secondary"
+							data-module="govuk-button"
+							id="btn-add-tree-test-task"
+						>
+							Add task
+						</button>
+					</section>
+					<div class="govuk-button-group">
+						<button type="submit" class="govuk-button" data-module="govuk-button" id="btn-save-tree-test">
+							Save tree test
+						</button>
+
+						<p id="tree-test-save-status" class="govuk-hint" aria-live="polite"></p>
+					</div>
+				</form>
+			</div>
+		</main>
+		<x-include src="/partials/footer.html?v=govuk-page-chrome-20260702-1"></x-include>
+
+		<script type="module" src="/js/study-tree-test-page.js"></script>
+	</body>
+</html>

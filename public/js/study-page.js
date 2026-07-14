@@ -295,6 +295,7 @@ function renderSetupTaskStatuses(readiness) {
 	setSetupTaskStatus("#study-setup-participants-status", readiness.participants.state);
 	setSetupTaskStatus("#study-setup-guide-status", readiness.guide.state);
 	if (readiness.cardSort) setSetupTaskStatus("#study-setup-card-sort-status", readiness.cardSort.state);
+	if (readiness.treeTest) setSetupTaskStatus("#study-setup-tree-test-status", readiness.treeTest.state);
 }
 
 function blockerActionForKey(key) {
@@ -305,6 +306,7 @@ function blockerActionForKey(key) {
 		participants: { label: "Add or review participants", selector: "#link-participants" },
 		guide: { label: "Publish a discussion guide", selector: "#link-guides" },
 		cardSort: { label: "Prepare the card sort", selector: "#link-card-sort" },
+		treeTest: { label: "Prepare the tree test", selector: "#link-tree-test" },
 		consentMaterials: { label: "Create or review consent forms", selector: "#link-consent-forms" },
 		participantConsent: { label: "Record required participant consent", selector: "#link-participant-consent" }
 	};
@@ -467,6 +469,13 @@ function evaluateReadiness(study, context = {}) {
 			ready: false,
 			state: "Action needed",
 			text: "Define the cards and groups participants will sort in sessions."
+		};
+	}
+	if (String(study.method || "").trim().toLowerCase() === "tree test") {
+		readiness.treeTest = context.treeTest || {
+			ready: false,
+			state: "Action needed",
+			text: "Define the navigation tree and task destinations participants will use in sessions."
 		};
 	}
 	return readiness;
@@ -847,6 +856,10 @@ function cardSortTaskRow() {
 	return $("#link-card-sort")?.closest("li") || null;
 }
 
+function treeTestTaskRow() {
+	return $("#link-tree-test")?.closest("li") || null;
+}
+
 async function renderCardSortTask(study, projectId, studyId) {
 	const row = cardSortTaskRow();
 	const fallback = {
@@ -888,6 +901,31 @@ async function renderCardSortTask(study, projectId, studyId) {
 		};
 	} catch (error) {
 		console.warn("[study-page] card sort status failed", error);
+		return fallback;
+	}
+}
+
+async function renderTreeTestTask(study, projectId, studyId) {
+	const row = treeTestTaskRow();
+	const fallback = { ready: false, state: "Action needed", text: "Define the navigation tree and tasks participants will complete in sessions." };
+	if (!row) return fallback;
+	const isTreeTest = String(study.method || "").trim().toLowerCase() === "tree test";
+	row.hidden = !isTreeTest;
+	if (!isTreeTest) return null;
+	enableLink("#link-tree-test", route("/pages/study/tree-test/", { id: studyId, project: projectId }));
+	const status = $("#study-setup-tree-test-status");
+	const hint = $("#study-setup-tree-test-hint");
+	try {
+		const res = await fetch(apiUrl(`/api/tree-tests/config?study=${encodeURIComponent(studyId)}&ts=${Date.now()}`), { cache: "no-store", credentials: "include" });
+		const body = await res.json().catch(() => ({}));
+		const config = body?.config || null;
+		const ready = Boolean(config && Array.isArray(config.tree) && config.tree.length && Array.isArray(config.tasks) && config.tasks.length);
+		const text = ready ? `Tree test with ${config.tasks.length} task${config.tasks.length === 1 ? "" : "s"}.` : fallback.text;
+		if (status) { status.textContent = ready ? "Ready" : "Action needed"; status.className = `govuk-tag ${ready ? "govuk-tag--green" : "govuk-tag--yellow"}`; }
+		if (hint) hint.textContent = text;
+		return { ready, state: ready ? "Ready" : "Action needed", text };
+	} catch (error) {
+		console.warn("[study-page] tree test status failed", error);
 		return fallback;
 	}
 }
@@ -938,6 +976,8 @@ async function renderStudy(project, study, projectId, studyId, readinessContext)
 	const routes = renderRoutes(projectId, studyId);
 	const cardSort = await renderCardSortTask(study, projectId, studyId);
 	if (cardSort) readinessContext.cardSort = cardSort;
+	const treeTest = await renderTreeTestTask(study, projectId, studyId);
+	if (treeTest) readinessContext.treeTest = treeTest;
 	renderReadiness(study, readinessContext, routes.sessionHref);
 	renderSupportSetupStatus(readinessContext.supportSetup);
 	renderEvidenceStateSummary(readinessContext);
@@ -984,7 +1024,9 @@ document.addEventListener("study:desc:save", async event => {
 });
 
 primeEthicsRiskLinkFromUrl();
-// Hidden until the study loads; only Card Sort studies show this setup task.
+// Hidden until the study loads; method-specific setup tasks are then shown.
 const initialCardSortRow = cardSortTaskRow();
 if (initialCardSortRow) initialCardSortRow.hidden = true;
+const initialTreeTestRow = treeTestTaskRow();
+if (initialTreeTestRow) initialTreeTestRow.hidden = true;
 init();

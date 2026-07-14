@@ -372,6 +372,15 @@ export async function handleRequest(request, env) {
 				if (m && request.method === "PATCH") return service.updateCardSortResult(request, origin, decodeURIComponent(m[1]));
 			}
 
+			if (url.pathname === "/api/tree-tests/config" && request.method === "GET") return service.getTreeTestConfig(origin, url);
+			if (url.pathname === "/api/tree-tests/config" && request.method === "POST") return service.saveTreeTestConfig(request, origin);
+			if (url.pathname === "/api/tree-tests/results" && request.method === "GET") return service.listTreeTestResults(origin, url);
+			if (url.pathname === "/api/tree-tests/results" && request.method === "POST") return service.createTreeTestResult(request, origin);
+			if (url.pathname.startsWith("/api/tree-tests/results/")) {
+				const m = url.pathname.match(/^\/api\/tree-tests\/results\/([^/]+)$/);
+				if (m && request.method === "PATCH") return service.updateTreeTestResult(request, origin, decodeURIComponent(m[1]));
+			}
+
 			if (url.pathname === "/api/comms/send" && request.method === "POST" && typeof service.sendComms === "function") return service.sendComms(request, origin);
 
 			if (url.pathname.startsWith("/api/mural/") && url.pathname !== "/api/mural/callback") {
