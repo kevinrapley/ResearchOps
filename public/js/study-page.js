@@ -471,6 +471,13 @@ function evaluateReadiness(study, context = {}) {
 			text: "Define the cards and groups participants will sort in sessions."
 		};
 	}
+	if (String(study.method || "").trim().toLowerCase() === "tree test") {
+		readiness.treeTest = context.treeTest || {
+			ready: false,
+			state: "Action needed",
+			text: "Define the navigation tree and task destinations participants will use in sessions."
+		};
+	}
 	return readiness;
 }
 

@@ -34,6 +34,8 @@ includes(setupPage, 'id="tree-test-tree"', "Tree Test setup page");
 includes(setupPage, 'id="tree-test-task-list"', "Tree Test setup page");
 includes(setupController, "/api/tree-tests/config", "Tree Test setup controller");
 includes(setupController, "parseTree", "Tree Test setup controller");
+includes(setupController, "editorState = { loadedTree: [], treeDirty: false }", "Tree Test setup controller preserves loaded tree state");
+includes(setupController, "editorState.treeDirty || !editorState.loadedTree.length ? parseTree", "Tree Test setup controller preserves node ids until the tree is edited");
 
 includes(sessionPage, 'id="tree-test-section"', "session page");
 includes(sessionPage, 'id="tree-test-tree-nav"', "session page");
@@ -45,6 +47,10 @@ includes(sessionController, "correct", "session controller");
 includes(sessionController, "elapsed_ms", "session controller");
 includes(sessionController, "tree-test-node__children", "session controller nested tree view");
 includes(sessionController, 'aria-expanded', "session controller expandable tree controls");
+includes(sessionController, "Select a participant before recording Tree Test responses.", "session controller participant guard");
+includes(sessionController, "const generation = state.saveGeneration", "session controller save generation guard");
+includes(sessionController, "const participantId = state.participantId", "session controller participant snapshot");
+includes(sessionController, "path: selectedPath(node.id)", "session controller selected path persistence");
 assert.equal(sessionController.includes('result.correct ? "Correct" : "Incorrect"'), false, "session controller must not disclose task correctness to participants");
 assert.equal(sessionController.includes('home.textContent = "Home"'), false, "session controller must not render a Home breadcrumb button");
 

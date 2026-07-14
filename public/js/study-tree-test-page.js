@@ -3,6 +3,7 @@ const $ = (selector, root = document) => root.querySelector(selector);
 const API_ORIGIN = document.documentElement?.dataset?.apiOrigin || window.API_ORIGIN || window.RESEARCHOPS_API_ORIGIN || location.origin;
 const apiUrl = (path) => `${API_ORIGIN}${path.startsWith("/") ? path : `/${path}`}`;
 const id = (prefix) => `${prefix}_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
+const editorState = { loadedTree: [], treeDirty: false };
 
 function studyId() { return new URLSearchParams(location.search).get("id") || ""; }
 function parseTree(text) {
@@ -22,7 +23,8 @@ function serialiseTree(nodes, depth = 0) { return nodes.flatMap((node) => [`${" 
 function showError(message) { const summary = $("#tree-test-error-summary"); if (summary) summary.hidden = false; const target = $("#tree-test-error-message"); if (target) target.textContent = message; summary?.focus(); }
 function clearError() { const summary = $("#tree-test-error-summary"); if (summary) summary.hidden = true; }
 function status(message) { const el = $("#tree-test-save-status"); if (el) el.textContent = message; }
-function options(select, selected = "") { const nodes = flatten(parseTree($("#tree-test-tree")?.value || "")); select.replaceChildren(); const empty = new Option("Choose a destination", ""); select.append(empty); nodes.forEach((node) => select.append(new Option(`${"— ".repeat(node.depth)}${node.label}`, node.id, false, node.id === selected))); }
+function currentTree() { return editorState.treeDirty || !editorState.loadedTree.length ? parseTree($("#tree-test-tree")?.value || "") : editorState.loadedTree; }
+function options(select, selected = "") { const nodes = flatten(currentTree()); select.replaceChildren(); const empty = new Option("Choose a destination", ""); select.append(empty); nodes.forEach((node) => select.append(new Option(`${"— ".repeat(node.depth)}${node.label}`, node.id, false, node.id === selected))); }
 
 function addTask(task = {}) {
 	const row = document.createElement("li"); row.className = "tree-test-task-row"; row.dataset.taskId = task.id || id("task");
@@ -40,15 +42,15 @@ async function hydrateContext(currentStudyId) {
 
 (async function init() {
 	const currentStudyId = studyId(); if (!currentStudyId) { showError("Missing study ID. Open this page from the study overview."); return; }
-	$("#tree-test-tree")?.addEventListener("input", refreshTaskDestinations);
+	$("#tree-test-tree")?.addEventListener("input", () => { editorState.treeDirty = true; refreshTaskDestinations(); });
 	$("#btn-add-tree-test-task")?.addEventListener("click", () => addTask());
 	$("#tree-test-form")?.addEventListener("submit", async (event) => {
-		event.preventDefault(); const tree = parseTree($("#tree-test-tree")?.value || ""); const tasks = taskPayload();
+		event.preventDefault(); const tree = currentTree(); const tasks = taskPayload();
 		if (!tree.length || !tasks.some((task) => task.prompt && task.target_id)) { showError("Add a navigation tree and at least one task with a correct destination."); return; }
 		clearError(); status("Saving tree test.");
-		try { await request("/api/tree-tests/config", { method: "POST", body: JSON.stringify({ study_id: currentStudyId, instructions: $("#tree-test-instructions")?.value.trim() || "", tree, tasks }) }); status("Tree test saved."); }
+		try { await request("/api/tree-tests/config", { method: "POST", body: JSON.stringify({ study_id: currentStudyId, instructions: $("#tree-test-instructions")?.value.trim() || "", tree, tasks }) }); editorState.loadedTree = tree; editorState.treeDirty = false; status("Tree test saved."); }
 		catch (error) { status(""); showError(`Could not save the tree test. ${error.message}`); }
 	});
-	try { const data = await request(`/api/tree-tests/config?study=${encodeURIComponent(currentStudyId)}`); if (data.config) { $("#tree-test-instructions").value = data.config.instructions || ""; $("#tree-test-tree").value = serialiseTree(data.config.tree || []); (data.config.tasks || []).forEach(addTask); } } catch { /* Empty configuration is expected on first use. */ }
+	try { const data = await request(`/api/tree-tests/config?study=${encodeURIComponent(currentStudyId)}`); if (data.config) { editorState.loadedTree = Array.isArray(data.config.tree) ? data.config.tree : []; editorState.treeDirty = false; $("#tree-test-instructions").value = data.config.instructions || ""; $("#tree-test-tree").value = serialiseTree(editorState.loadedTree); (data.config.tasks || []).forEach(addTask); } } catch { /* Empty configuration is expected on first use. */ }
 	if (!$("#tree-test-task-list")?.children.length) addTask(); hydrateContext(currentStudyId);
 })();
