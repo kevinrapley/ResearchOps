@@ -22,6 +22,7 @@
  */
 
 import { initCopilotSuggester } from './copilot-suggester.js';
+import { aiRewriteErrorMessage } from './ai-rewrite-status.js';
 import { marked } from '/lib/marked.min.js';
 import DOMPurify from '/lib/purify.min.js';
 
@@ -145,7 +146,7 @@ export function initStartDescriptionAssist(cfg = {}) {
       }, opts.requestTimeoutMs);
 
       if (!res.ok) {
-        aiStatus && (aiStatus.textContent = 'Suggestions are temporarily unavailable.');
+        aiStatus && (aiStatus.textContent = aiRewriteErrorMessage(res.status));
         return;
       }
 

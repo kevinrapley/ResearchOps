@@ -108,14 +108,18 @@ includes(descriptionAssistSource, "govuk-section-break govuk-section-break--m go
 includes(descriptionAssistSource, "rewrite-block govuk-body", "description assist");
 includes(descriptionAssistSource, "import { marked } from '/lib/marked.min.js';", "description assist");
 includes(descriptionAssistSource, "import DOMPurify from '/lib/purify.min.js';", "description assist");
+includes(descriptionAssistSource, "import { aiRewriteErrorMessage } from './ai-rewrite-status.js';", "description assist");
 includes(descriptionAssistSource, "DOMPurify.sanitize(rawHtml)", "description assist");
+includes(descriptionAssistSource, "aiRewriteErrorMessage(res.status)", "description assist");
 includes(descriptionAssistSource, "ta.value = typeof data?.rewrite === 'string' ? data.rewrite : ''", "description assist");
 excludes(descriptionAssistSource, "renderTwoColumnSuggestions(left, right", "description assist");
 includes(objectiveAssistSource, "govuk-inset-text", "objectives assist");
 includes(objectiveAssistSource, "rewrite-block govuk-body", "objectives assist");
 includes(objectiveAssistSource, "import { marked } from '/lib/marked.min.js';", "objectives assist");
 includes(objectiveAssistSource, "import DOMPurify from '/lib/purify.min.js';", "objectives assist");
+includes(objectiveAssistSource, "import { aiRewriteErrorMessage } from './ai-rewrite-status.js';", "objectives assist");
 includes(objectiveAssistSource, "DOMPurify.sanitize(rawHtml)", "objectives assist");
+includes(objectiveAssistSource, "aiRewriteErrorMessage(res.status)", "objectives assist");
 includes(objectiveAssistSource, "ta.value = typeof data?.rewrite === 'string' ? data.rewrite : ''", "objectives assist");
 includes(generatedCssTargets, "source: 'src/styles/start.scss'", "generated CSS targets");
 includes(generatedCssTargets, "output: 'public/css/start.css'", "generated CSS targets");

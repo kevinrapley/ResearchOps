@@ -1,0 +1,81 @@
+{
+  "date": "2026-07-15",
+  "agent": "Codex /root",
+  "branch": "fix/ai-rewrite-auth-feedback",
+  "traceTrigger": "fix branch requires auditable trace",
+  "taskSummary": "Fix the start-page AI rewrite hiding authentication failures behind Suggestions are temporarily unavailable.",
+  "branchDecision": "Created fix/ai-rewrite-auth-feedback from origin/main after investigation began on an already-merged feature branch.",
+  "operatingModelFiles": [
+    "AGENTS.md",
+    ".agent-operating-model/orchestration.xml",
+    ".agent-operating-model/bundle-registry.json",
+    ".agent-operating-model/task-signal-catalog.json",
+    ".agent-operating-model/selection-rules.json",
+    ".agent-operating-model/bootstrap-checklist.md",
+    ".agent-operating-model/precedence-policy.md",
+    ".agent-operating-model/trace-policy.md",
+    ".agent-operating-model/trace-layers.md",
+    ".agent-operating-model/behavioural-evals.json"
+  ],
+  "selectedBundles": [
+    ".agent-operating-model/bundles/github/",
+    ".agent-operating-model/bundles/researchops-developer-control/",
+    ".agent-operating-model/bundles/multi-functional-team/",
+    ".agent-operating-model/bundles/govuk-design-system/",
+    ".agent-operating-model/bundles/cloudflare/"
+  ],
+  "skippedBundles": [
+    ".agent-operating-model/bundles/openai/",
+    ".agent-operating-model/bundles/mcp-agent-tooling/",
+    ".agent-operating-model/bundles/airtable-public-api/",
+    ".agent-operating-model/bundles/mural-public-api/"
+  ],
+  "instructionConflicts": [],
+  "rootCause": "The route was deliberately secured with research.content.manage in commit 528efee4, while both start-page clients continued to translate every non-2xx response into the old service-outage message.",
+  "filesRead": [
+    "README.md",
+    "RECENT_LEARNINGS.md",
+    "public/pages/start/index.html",
+    "public/_worker.js",
+    "functions/api/[[path]].js",
+    "public/js/start-description-assist.js",
+    "public/js/start-objectives-assist.js",
+    "public/pages/start/start-new-project.js",
+    "infra/cloudflare/src/worker.js",
+    "infra/cloudflare/src/core/router.js",
+    "infra/cloudflare/src/core/ai-rewrite.js",
+    "infra/cloudflare/src/core/ai-rewrite/http.js",
+    "infra/cloudflare/wrangler.toml",
+    "tests/start-page-route-state.test.js",
+    "tests/security-review-hardening-runtime.test.js"
+  ],
+  "filesCreated": [
+    "public/js/ai-rewrite-status.js",
+    "tests/ai-rewrite-auth-feedback.test.js",
+    "docs/agent-audit/reasoning/2026/07/15/ai-rewrite-auth-feedback.md",
+    "docs/agent-audit/reasoning/2026/07/15/ai-rewrite-auth-feedback.json"
+  ],
+  "filesModified": [
+    "public/js/start-description-assist.js",
+    "public/js/start-objectives-assist.js",
+    "tests/start-page-route-state.test.js"
+  ],
+  "validationAttempted": [
+    "Production curl reproduction through Pages and directly to the Worker",
+    "TDD red/green unit cycles for 401 and 403 status messages",
+    "15 focused AI rewrite and start-page tests",
+    "Prettier check for changed files",
+    "ESLint for changed files",
+    "npm run lint: passed with 0 errors and 237 existing warnings",
+    "npm run build: passed; unrelated generated HTML rewrites were removed from the scoped change",
+    "npm test: 365 passed, 0 failed",
+    "Playwright at 1280x900 and 390x844 for the Step 1 401 state",
+    "Playwright for the Step 2 403 state"
+  ],
+  "validationNotRun": [
+    "Live deployment"
+  ],
+  "residualRisks": [
+    "Expired signed-in sessions receive accurate sign-in guidance but are not automatically redirected while preserving form state."
+  ]
+}
