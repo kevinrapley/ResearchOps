@@ -1,0 +1,81 @@
+{
+  "schemaVersion": "agent-trace-promotion/v1",
+  "title": "Gate the start route behind sign-in",
+  "sourceTrace": ".agent-traces/raw/atrace-20260715-gate-start-route-final.jsonl",
+  "markdownReport": "docs/agent-audit/reasoning/2026/07/15/gate-start-route-behind-sign-in.md",
+  "jsonSummary": "docs/agent-audit/reasoning/2026/07/15/gate-start-route-behind-sign-in.json",
+  "promotedAt": "2026-07-15T17:19:42.977Z",
+  "eventCount": 59,
+  "run": {
+    "startedAt": "2026-07-15T17:19:42.399Z",
+    "completedAt": "2026-07-15T17:19:42.653Z",
+    "taskSummary": "Gate /pages/start/ behind /pages/account/sign-in/.",
+    "branch": "fix/gate-start-route-behind-sign-in",
+    "traceDecision": "The approved fix/ prefix requires an auditable trace.",
+    "correctedBranchBehaviour": "Fast-forwarded main to origin/main, then created the work branch before implementation."
+  },
+  "bundles": [
+    "github-diamond",
+    "researchops-developer-control",
+    "multi-functional-team",
+    "cloudflare"
+  ],
+  "skippedBundles": [
+    "govuk-design-system",
+    "openai-platform",
+    "mcp-agent-tooling",
+    "airtable-public-api",
+    "mural-public-api"
+  ],
+  "precedenceDecision": "GitHub Diamond governed repository workflow; ResearchOps Developer Control and Cloudflare governed the route implementation; no conflict was detected.",
+  "filesRead": [
+    "AGENTS.md",
+    ".agent-operating-model/orchestration.xml",
+    ".agent-operating-model/bundle-registry.json",
+    ".agent-operating-model/task-signal-catalog.json",
+    ".agent-operating-model/selection-rules.json",
+    ".agent-operating-model/bootstrap-checklist.md",
+    ".agent-operating-model/precedence-policy.md",
+    ".agent-operating-model/trace-policy.md",
+    ".agent-operating-model/trace-layers.md",
+    ".agent-operating-model/behavioural-evals.json",
+    ".agent-operating-model/github-mutation-policy.md",
+    "README.md",
+    "RECENT_LEARNINGS.md",
+    "package.json",
+    "public/_worker.js",
+    "tests/pages-advanced-worker-auth-route-state.test.js",
+    "scripts/visual-walkthrough.mjs",
+    "tests/qa-bdd-authenticated-walkthrough-route-state.test.js"
+  ],
+  "filesWritten": [
+    "public/_worker.js",
+    "tests/pages-advanced-worker-auth-route-state.test.js",
+    "scripts/visual-walkthrough.mjs",
+    "tests/qa-bdd-authenticated-walkthrough-route-state.test.js",
+    "docs/agent-audit/reasoning/2026/07/15/gate-start-route-behind-sign-in.md",
+    "docs/agent-audit/reasoning/2026/07/15/gate-start-route-behind-sign-in.json"
+  ],
+  "validations": [
+    "node --test tests/pages-advanced-worker-auth-route-state.test.js tests/qa-bdd-authenticated-walkthrough-route-state.test.js (baseline) — exit 0",
+    "git diff --check — exit 0",
+    "npx prettier -c public/_worker.js tests/pages-advanced-worker-auth-route-state.test.js scripts/visual-walkthrough.mjs tests/qa-bdd-authenticated-walkthrough-route-state.test.js — exit 0",
+    "node --test tests/pages-advanced-worker-auth-route-state.test.js tests/qa-bdd-authenticated-walkthrough-route-state.test.js — exit 0",
+    "npm run lint — exit 0",
+    "npm test — exit 0",
+    "npm run validate — exit 0"
+  ],
+  "issues": [
+    "npm run lint reported 237 existing warnings and no errors.",
+    "npm run validate regenerated nine unrelated HTML files.",
+    "Removed only the unrelated HTML regeneration side effects after validation."
+  ],
+  "warnings": []
+  ,
+  "validationNotRun": [
+    "Deployed Cloudflare Pages preview check: no deployment had occurred; local tests used mocked bindings."
+  ],
+  "residualRisks": [
+    "Local validation does not prove deployed Pages and upstream /api/me availability; PR preview and CI evidence mitigate this before merge."
+  ]
+}
