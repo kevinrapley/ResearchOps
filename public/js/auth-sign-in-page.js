@@ -105,8 +105,28 @@ async function fetchJson(path, options = {}) {
 	}
 }
 
+function isSignInDestination(pathname) {
+	const cleanPath = pathname.replace(/\/index\.html$/, '').replace(/\/+$/, '');
+	return cleanPath === '/pages/account/sign-in';
+}
+
+function postSignInDestination() {
+	const returnTo = new URLSearchParams(location.search).get('returnTo');
+	if (!returnTo || !returnTo.startsWith('/') || returnTo.startsWith('//')) return CONFIG.ACCOUNT_URL;
+
+	try {
+		const destination = new URL(returnTo, location.origin);
+		if (destination.origin !== location.origin || isSignInDestination(destination.pathname)) {
+			return CONFIG.ACCOUNT_URL;
+		}
+		return `${destination.pathname}${destination.search}${destination.hash}`;
+	} catch {
+		return CONFIG.ACCOUNT_URL;
+	}
+}
+
 function redirectToAccount() {
-	location.assign(CONFIG.ACCOUNT_URL);
+	location.assign(postSignInDestination());
 }
 
 function showEmailForm() {
@@ -236,6 +256,7 @@ window.__ropsAuthSignInPage = Object.freeze({
 	apiErrorMessage,
 	apiUrl,
 	defaultApiOrigin,
+	postSignInDestination,
 	redirectAlreadySignedInUser,
 	redirectToAccount,
 	userFacingError,

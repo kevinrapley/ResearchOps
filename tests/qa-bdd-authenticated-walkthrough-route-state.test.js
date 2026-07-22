@@ -60,7 +60,7 @@ test('visual walkthrough uses local assets and deterministic authenticated mocks
 	assert.match(visualWalkthroughSource, /RESEARCHOPS_QA_BDD_AUTH_CODE/);
 	assert.match(
 		visualWalkthroughSource,
-		/SERVER_PROTECTED_PAGE_IDS = new Set\(\['projects', 'project-dashboard', 'repository'\]\)/,
+		/SERVER_PROTECTED_PAGE_IDS = new Set\(\['start', 'projects', 'project-dashboard', 'repository'\]\)/,
 	);
 	const projectsPage = visualWalkthroughConfig.pages.find((page) => page.id === 'projects');
 	assert.equal(projectsPage.path, '/pages/projects/index.html');

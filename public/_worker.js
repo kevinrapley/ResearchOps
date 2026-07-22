@@ -128,8 +128,8 @@ function jsonResponse(body, status = 200, target = null, extraHeaders = {}, env 
 }
 
 function isProtectedPage(pathname) {
-	const cleanPath = pathname.replace(/\/+$/, '');
-	return cleanPath === '/pages/projects' || cleanPath === '/pages/project-dashboard' || cleanPath === '/pages/repository';
+	const cleanPath = pathname.replace(/\/index\.html$/, '').replace(/\/+$/, '');
+	return cleanPath === '/pages/start' || cleanPath === '/pages/projects' || cleanPath === '/pages/project-dashboard' || cleanPath === '/pages/repository';
 }
 
 function signInRedirect(request) {
