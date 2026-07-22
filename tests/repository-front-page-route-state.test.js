@@ -37,6 +37,7 @@ const files = {
 		'.github/workflows/deploy-passwordless-preview-worker.yml',
 		'utf8'
 	),
+	d1MigrationRetry: fs.readFileSync('scripts/d1/execute-remote-migration-with-retry.sh', 'utf8'),
 	gitignore: fs.readFileSync('.gitignore', 'utf8'),
 	lychee: fs.readFileSync('lychee.toml', 'utf8'),
 };
@@ -248,9 +249,10 @@ has(
 );
 has(
 	files.passwordlessPreviewWorker,
-	'--file "${REPOSITORY_SEED_CLEANUP_MIGRATION}"',
+	'"${REPOSITORY_SEED_CLEANUP_MIGRATION}"',
 	'passwordless preview workflow'
 );
+has(files.d1MigrationRetry, '--file "${migration_file}"', 'D1 migration retry wrapper');
 
 has(files.gitignore, 'public/css/repository.css', 'gitignore');
 has(files.gitignore, 'public/pages/repository/', 'gitignore');

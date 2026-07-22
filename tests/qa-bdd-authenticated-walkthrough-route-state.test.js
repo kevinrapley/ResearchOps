@@ -29,6 +29,10 @@ const passwordlessPreviewWorkflowSource = fs.readFileSync(
 	'.github/workflows/deploy-passwordless-preview-worker.yml',
 	'utf8',
 );
+const d1MigrationRetrySource = fs.readFileSync(
+	'scripts/d1/execute-remote-migration-with-retry.sh',
+	'utf8',
+);
 const cloudflareWranglerSource = fs.readFileSync('infra/cloudflare/wrangler.toml', 'utf8');
 const passwordlessPreviewWranglerSource = fs.readFileSync(
 	'infra/cloudflare/wrangler.passwordless-preview.toml',
@@ -157,7 +161,7 @@ test('Cloudflare Worker config keeps QA BDD auth disabled in production without 
 	assert.doesNotMatch(passwordlessPreviewWranglerSource, /RESEARCHOPS_QA_BDD_AUTH_CODE/);
 });
 
-test('preview Worker deployment restores QA auth and preview mutation origins', () => {
+test('preview Worker deployment restores QA auth and retries transient D1 imports', () => {
 	assert.match(deployWorkerWorkflowSource, /replace_pattern_once/);
 	assert.match(deployWorkerWorkflowSource, /RESEARCHOPS_QA_BDD_AUTH_ENABLED\\s\*=/);
 	assert.match(deployWorkerWorkflowSource, /RESEARCHOPS_QA_BDD_AUTH_ENABLED = "true"/);
@@ -177,6 +181,26 @@ test('preview Worker deployment restores QA auth and preview mutation origins', 
 	assert.match(passwordlessPreviewWorkflowSource, /node-version: 22/);
 	assert.match(passwordlessPreviewWorkflowSource, /for attempt in 1 2 3/);
 	assert.match(passwordlessPreviewWorkflowSource, /Deploying preview Worker \(attempt \$\{attempt\}\)/);
+	assert.match(passwordlessPreviewWorkflowSource, /D1_MIGRATION_MAX_ATTEMPTS: "4"/);
+	assert.match(passwordlessPreviewWorkflowSource, /D1_MIGRATION_RETRY_DELAY_SECONDS: "3"/);
+	assert.match(
+		passwordlessPreviewWorkflowSource,
+		/- "scripts\/d1\/execute-remote-migration-with-retry\.sh"/,
+	);
+	assert.match(
+		passwordlessPreviewWorkflowSource,
+		/concurrency:\n  group: deploy-passwordless-preview-worker-shared-target\n  cancel-in-progress: false/,
+	);
+	assert.equal(
+		passwordlessPreviewWorkflowSource.match(
+			/bash scripts\/d1\/execute-remote-migration-with-retry\.sh/g,
+		)?.length,
+		6,
+	);
+	assert.doesNotMatch(passwordlessPreviewWorkflowSource, /npx --no-install wrangler d1 execute/);
+	assert.match(d1MigrationRetrySource, /attempt <= max_attempts/);
+	assert.match(d1MigrationRetrySource, /Currently processing a long-running import\|fetch failed/);
+	assert.match(d1MigrationRetrySource, /base_delay_seconds \* attempt/);
 });
 
 test('Cloudflare deploy workflows pass the QA BDD auth code secret to Workers', () => {
