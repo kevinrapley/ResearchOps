@@ -1,8 +1,9 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import test from 'node:test';
+import { publishedGovukPage } from './helpers/published-govuk-pages.mjs';
 
-const signInPage = fs.readFileSync('public/pages/account/sign-in/index.html', 'utf8');
+const signInPage = await publishedGovukPage('public/pages/account/sign-in/index.html');
 const signInScript = fs.readFileSync('public/js/auth-sign-in-page.js', 'utf8');
 const projectsController = fs.readFileSync('public/js/projects-page.js', 'utf8');
 const worker = fs.readFileSync('infra/cloudflare/src/worker.js', 'utf8');
@@ -15,8 +16,8 @@ function assertSignInPageUsesGovukFrontendTemplate() {
 	assert.match(signInPage, /<body class="govuk-template__body" data-flux-page="page\.account\.sign-in">/);
 	assert.match(signInPage, /govuk-frontend-supported/);
 	assert.match(signInPage, /href="\/assets\/govuk\/govuk-frontend\.css"/);
-	assert.match(signInPage, /src="\/components\/layout\.js"/);
-	assert.match(signInPage, /src="\/js\/govuk-frontend-init\.js"/);
+	assert.match(signInPage, /src="\/components\/layout\.js(?:\?[^"]*)?"/);
+	assert.match(signInPage, /src="\/js\/govuk-frontend-init\.js(?:\?[^"]*)?"/);
 	assert.match(signInPage, /<x-include src="\/partials\/header\.html" vars='\{"active":""\}'><\/x-include>/);
 	assert.match(signInPage, /<x-include src="\/partials\/footer\.html(?:\?[^"]*)?"><\/x-include>/);
 	assert.match(signInPage, /<main class="govuk-main-wrapper" id="main-content" role="main" tabindex="-1">/);
@@ -33,7 +34,7 @@ function assertSignInPageUsesResearchOpsPasswordlessJourney() {
 	assert.match(signInPage, /<h1 class="govuk-heading-xl">Sign in to ResearchOps<\/h1>/);
 	assert.match(signInPage, /Use your work email address to continue\./);
 	assert.match(signInPage, /You need to sign in before accessing governed research activity/);
-	assert.match(signInPage, /connect sensitive work to the right account and audit trail/);
+	assert.match(signInPage, /connect sensitive work\s+to the right account and audit trail/);
 	assert.match(signInPage, /We will send you a 6 digit code/);
 	assert.match(signInPage, /id="email-code-start-form"/);
 	assert.match(signInPage, /id="email-code-verify-form"/);

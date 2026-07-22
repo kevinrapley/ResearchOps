@@ -1,0 +1,46 @@
+{% extends "layouts/researchops.njk" %}
+
+{% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
+
+{% block content %}
+<div class="govuk-width-container">
+	{{ govukBreadcrumbs({
+		items: [
+			{
+				text: 'Home',
+				href: '/'
+			},
+			{
+				text: 'Team administration'
+			}
+		]
+	}) }}
+
+	<div class="govuk-grid-row">
+		<div class="govuk-grid-column-two-thirds">
+			<span class="govuk-caption-l">Team administration</span>
+			<h1 class="govuk-heading-xl">Review account requests</h1>
+			<p class="govuk-body-l">Review requests from people who have asked for a ResearchOps account.</p>
+			<p class="govuk-body">The information they give about what they need to do is for review only. It does not assign a role or give access.</p>
+		</div>
+	</div>
+
+	<section id="registration-requests-status" class="govuk-notification-banner" role="region" aria-live="polite" aria-busy="true" aria-labelledby="registration-requests-status-title" data-registration-requests-route="/api/auth/registration-requests">
+		<div class="govuk-notification-banner__header">
+			<h2 class="govuk-notification-banner__title" id="registration-requests-status-title">Account requests</h2>
+		</div>
+		<div class="govuk-notification-banner__content" id="registration-requests-status-body">
+			<p class="govuk-body">Loading account requests.</p>
+		</div>
+	</section>
+
+	<section aria-labelledby="pending-registration-requests-title">
+		<h2 class="govuk-heading-l" id="pending-registration-requests-title">Pending requests</h2>
+		<div id="registration-requests-list"></div>
+	</section>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script type="module" src="/js/auth-registration-requests-page.js?v=registration-review-20260512"></script>
+{% endblock %}

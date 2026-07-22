@@ -9,7 +9,8 @@ gaps:
     evidence:
       - harm-register.yaml
       - src/govuk/templates/layouts/researchops.njk
-      - scripts/govuk/normalise-service-pages.mjs
+      - src/govuk/templates/pages/account-sign-in.njk
+      - src/govuk/templates/pages/team-registration-requests.njk
 
   - id: flux-uk-english-writing-validation
     title: Validate UK English writing indicators before operational interpretation
@@ -75,13 +76,16 @@ gaps:
     status: implemented
     severity: high
     owner: repository-maintainers
-    context: PR #475 versioned the static tracker asset but placed its reference only in an unused partial, leaving normal rendered pages without instrumentation.
-    mitigation: Load the versioned tracker from the GOV.UK source layout, update the three committed static page shells outside that renderer, regenerate all GOV.UK outputs and assert every rendered page includes the asset.
+    context: PR #475 versioned the static tracker asset but placed its reference only in an unused partial, leaving normal rendered pages without instrumentation. The sign-in and registration-request pages have since moved from static shells into the GOV.UK page publisher.
+    mitigation: Load the versioned tracker from the GOV.UK source layout, publish every GOV.UK route through the canonical catalogue, regenerate committed outputs and assert every rendered page includes the asset.
     evidence:
       - src/govuk/templates/layouts/researchops.njk
+      - src/govuk/templates/pages/account-sign-in.njk
+      - src/govuk/templates/pages/team-registration-requests.njk
       - public/pages/account/sign-in/index.html
       - public/pages/synthesize/index.html
       - public/pages/team/registration-requests/index.html
+      - tests/govuk-page-publisher.test.js
       - tests/flux-behaviour-tracker-route-state.test.js
       - docs/agent-audit/reasoning/2026/07/11/flux-tracker-rendered-page-remediation.md
 

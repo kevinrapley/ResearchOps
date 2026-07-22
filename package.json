@@ -12,8 +12,6 @@
     "build:project-dashboard": "node scripts/styles/build-generated-css.mjs public/css/project-dashboard.css",
     "build:outcomes": "node scripts/styles/build-generated-css.mjs public/css/outcomes.css",
     "build:govuk-pages": "node scripts/govuk/render-govuk-pages.mjs",
-    "postbuild:govuk-pages": "node scripts/govuk/normalise-service-pages.mjs",
-    "build:service-pages": "node scripts/govuk/normalise-service-pages.mjs",
     "lint": "npm run build:generated-css && npm run format:check && eslint .",
     "format": "prettier -w . && npm run generated-css:format",
     "format:check": "prettier -c . && npm run generated-css:check",

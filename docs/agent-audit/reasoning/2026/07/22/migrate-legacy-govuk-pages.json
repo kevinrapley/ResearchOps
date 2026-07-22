@@ -1,0 +1,50 @@
+{
+	"date": "2026-07-22",
+	"branch": "feature/migrate-legacy-govuk-pages",
+	"task": "Migrate the sign-in and registration-request pages to Nunjucks and fold them into the GOV.UK page publisher and catalogue.",
+	"traceRequired": true,
+	"traceLayer": "operational",
+	"selectedBundles": [
+		"github-diamond",
+		"researchops-developer-control",
+		"multi-functional-team",
+		"govuk-design-system"
+	],
+	"skippedBundles": [
+		"cloudflare",
+		"openai-platform",
+		"mcp-agent-tooling",
+		"airtable-public-api",
+		"mural-public-api"
+	],
+	"decisions": [
+		"Register two Nunjucks templates behind the existing publishGovukPages interface.",
+		"Delete the legacy post-build normaliser and its package and workflow hooks.",
+		"Replace filesystem-backed legacy page assertions with the in-memory publisher fixture.",
+		"Preserve the established sign-in Flux page key through catalogue context."
+	],
+	"testContractImpactSweep": [
+		"authentication route-state tests",
+		"registration-request route-state tests",
+		"GOV.UK frontend page coverage",
+		"publisher route count and byte parity",
+		"render workflow and package scripts",
+		"governance evidence"
+	],
+	"validation": [
+		"targeted publisher and affected route-state tests: 10 passed",
+		"npm run build:govuk-pages: passed",
+		"desktop browser verification at 1440x1200: passed",
+		"mobile browser verification at 412x915: passed",
+		"npm test -- --test-reporter=dot: passed",
+		"npm run lint: passed with existing warnings only",
+		"npm run validate: passed",
+		"repeat publisher build changed only the two intended outputs",
+		"git diff --check: passed"
+	],
+	"changedFileCount": 18,
+	"residualRisks": [
+		"Generated output diffs include canonical publisher formatting and shared-layout assets.",
+		"The registration-request page replaces legacy one-off chrome with the shared ResearchOps layout."
+	]
+}

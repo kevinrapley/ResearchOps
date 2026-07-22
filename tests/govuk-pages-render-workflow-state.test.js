@@ -30,7 +30,6 @@ for (const snippet of [
 	'scripts/govuk/render-govuk-pages.mjs',
 	'scripts/govuk/govuk-page-filesystem-output.mjs',
 	'scripts/govuk/page-publisher/**',
-	'scripts/govuk/normalise-service-pages.mjs',
 	'package.json',
 	'package-lock.json',
 	'.github/workflows/render-govuk-pages.yml',

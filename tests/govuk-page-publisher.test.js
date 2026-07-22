@@ -31,7 +31,7 @@ test('publishes every generated route with byte parity to tracked output', async
 		trackedOutputs.has(publication.output)
 	);
 
-	assert.equal(publications.length, 64);
+	assert.equal(publications.length, 66);
 	assert.ok(trackedPublications.length > 0);
 	assert.ok(trackedPublications.length < publications.length);
 	assert.equal(output.writes.length, 1);
