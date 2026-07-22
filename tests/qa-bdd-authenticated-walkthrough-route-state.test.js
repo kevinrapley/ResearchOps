@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import test from 'node:test';
 
+import { gotoWithRetry } from '../features/support/navigation.js';
 import { visualWalkthroughConfig } from '../visual-walkthrough.config.mjs';
 import {
 	operationalJournalAnalysis,
@@ -49,11 +50,50 @@ test('QA BDD walkthrough captures sign-in code and authenticated page states', (
 	assert.match(worldSource, /captureEvidenceScreenshot/);
 });
 
-test('Cucumber smoke profile excludes the heavyweight walkthrough feature', () => {
+test('Cucumber smoke profile exercises the Pages runtime with bounded navigation retries', async () => {
 	assert.match(cucumberConfigSource, /not @walkthrough/);
 	assert.match(cucumberConfigSource, /const walkthroughTags = '@walkthrough'/);
 	assert.match(cucumberConfigSource, /export \{ walkthrough \}/);
 	assert.match(packageSource, /"qa:cucumber:walkthrough": "BDD_CAPTURE_SCREENSHOTS=true cucumber-js -p walkthrough"/);
+	assert.match(qaBddWorkflowSource, /WRANGLER_VERSION: "4\.113\.0"/);
+	assert.match(
+		qaBddWorkflowSource,
+		/npx --yes wrangler@\$\{WRANGLER_VERSION\} pages dev public --ip 127\.0\.0\.1 --port 8977/,
+	);
+	assert.doesNotMatch(qaBddWorkflowSource, /python3 -m http\.server/);
+	assert.doesNotMatch(qaBddWorkflowSource, /^  workflow_run:/m);
+	assert.match(qaBddWorkflowSource, /- "\.github\/workflows\/qa-bdd\.yml"/);
+	assert.match(qaBddWorkflowSource, /Wait for smoke routes/);
+	assert.match(qaBddWorkflowSource, /--retry-all-errors/);
+
+	let attempts = 0;
+	const response = { ok: () => true };
+	const page = {
+		async goto() {
+			attempts += 1;
+			if (attempts === 1) throw new Error('page.goto: Timeout 30000ms exceeded.');
+			return response;
+		},
+	};
+
+	assert.equal(await gotoWithRetry(page, 'https://example.test/', { delayMs: 0 }), response);
+	assert.equal(attempts, 2);
+
+	let deterministicAttempts = 0;
+	await assert.rejects(
+		gotoWithRetry(
+			{
+				async goto() {
+					deterministicAttempts += 1;
+					throw new Error('HTTP contract assertion failed');
+				},
+			},
+			'https://example.test/',
+			{ delayMs: 0 },
+		),
+		/HTTP contract assertion failed/,
+	);
+	assert.equal(deterministicAttempts, 1);
 });
 
 test('visual walkthrough uses local assets and deterministic authenticated mocks', () => {
