@@ -4,7 +4,7 @@
 
 - Date: 2026-07-22
 - Branch: `feature/govuk-page-publisher`
-- Task: Implement the confirmed byte-preserving GOV.UK page publisher architecture.
+- Task: Implement the confirmed byte-preserving GOV.UK page publisher architecture, then address valid Codex review findings and CI failures on PR #501.
 
 ## Branch-prefix trace decision
 
@@ -66,7 +66,7 @@ Confirmed implementation decisions:
 - Use filesystem and in-memory output adapters.
 - Render and validate every selected route before any output write.
 - Replace the global filesystem monkeypatch and old implementation-shape tests.
-- Keep committed generated HTML and enforce all-route byte parity.
+- Keep committed generated HTML and enforce byte parity for every tracked generated output while still publishing all 64 routes, including ignored build-only repository pages.
 - Defer Nunjucks migration of the sign-in and registration-request pages.
 
 ## Files created or modified
@@ -81,6 +81,8 @@ Confirmed implementation decisions:
 - Deleted the old helper implementation-shape test and added `tests/govuk-page-publisher.test.js` for public-interface, two-phase rejection and 64-page parity behavior.
 - Updated affected route-state tests to request generated HTML explicitly through the in-memory publisher fixture.
 - Regenerated eight committed pages. Seven changes expose formatting that the previous normaliser pipeline already produced; the tree-test page also picks up analytics markup already present in the current shared Nunjucks layout.
+- Updated `tests/govuk-page-publisher.test.js` after Codex review so committed-output parity is based on Git-tracked outputs and succeeds in a clean checkout where ignored repository pages are absent.
+- Extended catalogue validation to reject any top-level `src/govuk/templates/pages/*.njk` template without a publisher registration, restoring the orphan-template guard at the publishing seam before output writes.
 
 Files read during implementation included the operating-model sources listed above, the four selected canonical bundle prompt files, `package.json`, both original GOV.UK rendering scripts, the shared Nunjucks layout, the generated-page workflow, deployment policy, visual-walkthrough route configuration and affected generated-page tests.
 
@@ -88,7 +90,14 @@ Files read during implementation included the operating-model sources listed abo
 
 - `node --check` passed for every new publisher module.
 - `npm run build:govuk-pages` passed repeatedly; the public diff hash was identical before and after a repeat build.
-- `npm test -- --test-reporter=dot` passed, including all 64 final-HTML byte-parity comparisons.
+- `npm test -- --test-reporter=dot` passed before PR review, including final-HTML parity for the then-present generated outputs.
+- `node --test --test-reporter=spec tests/govuk-page-publisher.test.js tests/govuk-pages-render-workflow-state.test.js` passed after review remediation: 5 tests passed.
+- The publisher test also passed after temporarily removing the ignored `public/pages/repository/` build outputs, reproducing clean-checkout conditions: 4 tests passed.
+- `npx prettier --check scripts/govuk/page-publisher/validation.mjs tests/govuk-page-publisher.test.js` passed after review remediation.
+- `npm test -- --test-reporter=dot` passed again after review remediation.
+- `npm run lint` and `npm run format:check` passed again after review remediation; lint reported only the repository's existing warnings.
+- `npm run trace:validate` and `npm run trace:coverage` passed after the trace update.
+- `npm run build:govuk-pages` passed after review remediation without changing tracked generated output.
 - `npm run lint` passed. Repository-wide pre-existing warnings remain warnings and produced no lint errors.
 - `npm run validate` passed, including operating-model validation and evals, bundle validation, trace validation and coverage, report/sourcebook validation, syntax checks, performance audit and route-state validation.
 - `git diff --check` passed.
@@ -100,9 +109,12 @@ Files read during implementation included the operating-model sources listed abo
 - Hiding the catalogue invalidated the workflow's template-to-output import. The workflow now runs the one public publishing command for every relevant change instead of depending on private descriptors.
 - Final formatted HTML exposed assertions that depended on unformatted whitespace. Those assertions now test normalized visible content or structural markup.
 - Repeat generation exposed existing committed-output drift in eight pages. The new parity contract makes that drift explicit and prevents it recurring.
+- Codex review identified two valid P2 findings. Both comments received a thumbs-up before remediation. The parity test now excludes ignored build-only outputs by selecting Git-tracked artefacts, and catalogue validation now rejects orphan page templates.
+- The passwordless preview Worker check failed after Wrangler uploaded a D1 migration and then reported `fetch failed` for the remote Cloudflare request. Repository CI, Worker validation, CodeQL, accessibility, BDD, formatting, links and release-gate checks passed; no changed file is in the passwordless deployment surface.
 
 ## Residual risks
 
 - `public/pages/account/sign-in/index.html` and `public/pages/team/registration-requests/index.html` remain static legacy pages outside the Nunjucks publisher. They are still normalized by the legacy command and should be migrated later.
 - The workflow now republishes all 64 generated pages instead of selecting outputs from changed templates. This is simpler and preserves catalogue encapsulation, at the cost of additional CI work.
+- Orphan-template coverage currently applies to top-level `src/govuk/templates/pages/*.njk`, matching the workflow contract that it replaces. Nested page-template directories would need the validator to recurse.
 - The eight committed HTML diffs should be reviewed as generated-output synchronization, especially the tree-test analytics markup.

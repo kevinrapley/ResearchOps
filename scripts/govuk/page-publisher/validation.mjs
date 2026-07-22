@@ -1,8 +1,9 @@
-import { access } from 'node:fs/promises';
+import { access, readdir } from 'node:fs/promises';
 import { isAbsolute, relative, resolve } from 'node:path';
 
 const root = resolve(process.cwd());
 const templatesRoot = resolve(root, 'src/govuk/templates');
+const pageTemplatesRoot = resolve(templatesRoot, 'pages');
 
 export function routeFromOutput(output) {
 	if (output === 'public/index.html') return '/';
@@ -26,6 +27,7 @@ export async function validatePageCatalogue(catalogue) {
 
 	const routes = new Set();
 	const outputs = new Set();
+	const registeredTemplates = new Set();
 
 	for (const [index, page] of catalogue.entries()) {
 		if (!page || typeof page !== 'object') throw new Error(`Catalogue entry ${index} must be an object.`);
@@ -64,6 +66,20 @@ export async function validatePageCatalogue(catalogue) {
 		} catch {
 			throw new Error(`GOV.UK page template does not exist: ${page.template}`);
 		}
+
+		registeredTemplates.add(page.template);
+	}
+
+	const unregisteredPageTemplates = (await readdir(pageTemplatesRoot, { withFileTypes: true }))
+		.filter((entry) => entry.isFile() && entry.name.endsWith('.njk'))
+		.map((entry) => `pages/${entry.name}`)
+		.filter((template) => !registeredTemplates.has(template))
+		.sort();
+
+	if (unregisteredPageTemplates.length > 0) {
+		throw new Error(
+			`No GOV.UK publisher catalogue registration found for: ${unregisteredPageTemplates.join(', ')}`
+		);
 	}
 }
 
