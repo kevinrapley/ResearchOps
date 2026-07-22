@@ -61,8 +61,14 @@ test('Cucumber smoke profile exercises the Pages runtime with bounded navigation
 		/npx --yes wrangler@\$\{WRANGLER_VERSION\} pages dev public --ip 127\.0\.0\.1 --port 8977/,
 	);
 	assert.doesNotMatch(qaBddWorkflowSource, /python3 -m http\.server/);
-	assert.doesNotMatch(qaBddWorkflowSource, /^  workflow_run:/m);
-	assert.match(qaBddWorkflowSource, /- "\.github\/workflows\/qa-bdd\.yml"/);
+	assert.doesNotMatch(qaBddWorkflowSource, /^  push:/m);
+	assert.match(
+		qaBddWorkflowSource,
+		/workflow_run:\n    workflows: \["QA • Playwright E2E"\]\n    types: \[completed\]/,
+	);
+	assert.match(qaBddWorkflowSource, /github\.event\.workflow_run\.conclusion == 'success'/);
+	assert.match(qaBddWorkflowSource, /github\.event\.workflow_run\.head_branch == 'main'/);
+	assert.match(qaBddWorkflowSource, /ref: \$\{\{ github\.event\.workflow_run\.head_sha \|\| github\.sha \}\}/);
 	assert.match(qaBddWorkflowSource, /Wait for smoke routes/);
 	assert.match(qaBddWorkflowSource, /--retry-all-errors/);
 

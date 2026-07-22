@@ -33,12 +33,14 @@ Skipped bundles: `govuk-design-system`, `openai-platform`, `mcp-agent-tooling`, 
 - A deterministic workflow assertion failed because the PR workflow contained `Start local static site for PR smoke tests` and a `127.0.0.1:8080` fallback.
 - Hosted immutable and branch preview URLs redirect anonymous clients through Cloudflare Access. They cannot replace the local PR target without separately provisioned service-token credentials.
 - `wrangler pages dev public` successfully compiled `public/_worker.js`, exercised the protected Start-route redirect to the ResearchOps sign-in page, and passed the complete smoke suite.
+- Codex review correctly identified that removing the delayed trigger left the immediate `main` push able to validate the previous production deployment. The valid finding was acknowledged with `+1` before remediation.
 
 ## Implementation decisions
 
 - Replace Python static hosting with pinned Wrangler `4.113.0` Pages local development on PRs.
-- Remove the chained `workflow_run` trigger; retain direct PR, main push and manual triggers.
-- Make the workflow itself part of the path and scope filters so workflow-only changes exercise the gate.
+- Remove the immediate `main` push trigger and retain one delayed `workflow_run` only for a successful `QA • Playwright E2E` run whose head branch is `main`.
+- Check out `github.event.workflow_run.head_sha` so the delayed deployed-site check uses the exact upstream commit rather than whichever revision is current when it starts.
+- Retain direct PR and manual triggers. PR scope detection keeps workflow-only changes inside the gate.
 - Preflight the home, sign-in and protected Start routes using bounded curl retries before Cucumber starts.
 - Retry `page.goto` once only when Playwright reports a timeout or network transport error. HTTP responses, including failures, are not retried by the navigation helper.
 - Record the repeatable trap in `RECENT_LEARNINGS.md`.
@@ -46,6 +48,7 @@ Skipped bundles: `govuk-design-system`, `openai-platform`, `mcp-agent-tooling`, 
 ## Validation
 
 - The pre-fix PR/main target-parity assertion failed as expected.
+- The post-review workflow contract failed before remediation because the delayed trigger was absent and passed after the trigger and exact-SHA checkout were restored.
 - `node --test --test-reporter=spec tests/qa-bdd-authenticated-walkthrough-route-state.test.js` passed all 14 tests after implementation.
 - The exact workflow runtime command passed all 3 Cucumber scenarios and 11 steps against `wrangler pages dev public`.
 - The original deployed-site command passed all 3 scenarios and 11 steps against `https://researchops.pages.dev/` after the fix.
@@ -63,4 +66,5 @@ Skipped bundles: `govuk-design-system`, `openai-platform`, `mcp-agent-tooling`, 
 
 - Cloudflare Access prevents anonymous PR CI from exercising hosted branch preview URLs.
 - Local Wrangler Pages execution covers the advanced Pages Worker, redirects, headers and generated assets but not external DNS, Access or edge availability.
-- The main push remains the deployed production smoke check. It will still fail when the bounded route-readiness and navigation retry budgets are exhausted.
+- The delayed successful-QA-Playwright run remains the deployed production smoke check. It will still fail when the bounded route-readiness and navigation retry budgets are exhausted.
+- QA Playwright completion is the repository's existing post-CI chain rather than a formal Cloudflare Pages deployment-complete event; bounded route readiness remains the final deployment guard.
