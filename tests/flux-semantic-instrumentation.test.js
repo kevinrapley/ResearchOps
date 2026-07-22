@@ -5,7 +5,6 @@ const journals = fs.readFileSync('src/govuk/templates/pages/projects-journals.nj
 const projects = fs.readFileSync('src/govuk/templates/pages/projects.njk', 'utf8');
 const dashboard = fs.readFileSync('src/govuk/templates/pages/project-dashboard.njk', 'utf8');
 const header = fs.readFileSync('public/partials/header.html', 'utf8');
-const renderer = fs.readFileSync('scripts/govuk/render-govuk-pages.mjs', 'utf8');
 const dashboardRuntime = fs.readFileSync('public/js/project-dashboard.js', 'utf8');
 const home = fs.readFileSync('src/govuk/templates/pages/home.njk', 'utf8');
 const study = fs.readFileSync('src/govuk/templates/pages/study.njk', 'utf8');
@@ -102,9 +101,6 @@ for (const key of [
 		`project navigation should expose ${key}`
 	);
 }
-
-assert.match(renderer, /fluxPageKey:/);
-assert.match(renderer, /pageKeyFromOutput\(page\.output\)/);
 
 for (const key of [
 	'button.project.edit-description',

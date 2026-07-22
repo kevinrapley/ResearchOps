@@ -1,8 +1,9 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import { visualWalkthroughConfig } from '../visual-walkthrough.config.mjs';
+import { publishedGovukPage } from './helpers/published-govuk-pages.mjs';
 
-const startPage = fs.readFileSync('public/pages/start/index.html', 'utf8');
+const startPage = await publishedGovukPage('public/pages/start/index.html');
 const startController = fs.readFileSync('public/pages/start/start-new-project.js', 'utf8');
 const startAcceptance = fs.readFileSync('scripts/researchops-start-acceptance.mjs', 'utf8');
 const reportingEvidence = fs.readFileSync('scripts/reporting-review-evidence.mjs', 'utf8');

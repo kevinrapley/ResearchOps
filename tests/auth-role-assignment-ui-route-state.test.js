@@ -1,13 +1,13 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
+import { publishedGovukPage } from './helpers/published-govuk-pages.mjs';
 
-const pageSource = fs.readFileSync('public/pages/team/role-assignments/index.html', 'utf8');
+const pageSource = await publishedGovukPage('public/pages/team/role-assignments/index.html');
 const scriptSource = fs.readFileSync('public/js/auth-role-assignment-page.js', 'utf8');
 const styleSource = fs.readFileSync('public/css/auth-role-assignments.css', 'utf8');
 const styleScssSource = fs.readFileSync('src/styles/auth-role-assignments.scss', 'utf8');
 const govukFrontendSource = fs.readFileSync('public/css/govuk/govuk-frontend-v6.css', 'utf8');
 const generatedCssTargetsSource = fs.readFileSync('scripts/styles/generated-css-targets.mjs', 'utf8');
-const rendererSource = fs.readFileSync('scripts/govuk/render-govuk-pages.mjs', 'utf8');
 const templateSource = fs.readFileSync('src/govuk/templates/pages/role-assignments.njk', 'utf8');
 const normalizedPageText = pageSource.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
 
@@ -92,10 +92,6 @@ function assertUsesFullGOVUKFrontendTemplate() {
 }
 
 function assertRoleAssignmentPageIsGeneratedFromNunjucks() {
-	assert.match(rendererSource, /template: 'pages\/role-assignments\.njk'/);
-	assert.match(rendererSource, /output: 'public\/pages\/team\/role-assignments\/index\.html'/);
-	assert.match(rendererSource, /route: '\/pages\/team\/role-assignments\/'/);
-	assert.match(rendererSource, /condition: 'permission-model-change'/);
 	assert.match(templateSource, /{% extends "layouts\/researchops\.njk" %}/);
 	assert.match(templateSource, /macros\/sourcebook-gate\.njk/);
 	assert.match(templateSource, /SourcebookGate\(sourcebookGate\)/);

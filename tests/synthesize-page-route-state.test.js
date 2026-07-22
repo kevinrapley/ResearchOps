@@ -1,9 +1,9 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
+import { publishedGovukPage } from './helpers/published-govuk-pages.mjs';
 
-const pageSource = fs.readFileSync("public/pages/study/synthesis/index.html", "utf8");
+const pageSource = await publishedGovukPage("public/pages/study/synthesis/index.html");
 const templateSource = fs.readFileSync("src/govuk/templates/pages/study-synthesis.njk", "utf8");
-const rendererSource = fs.readFileSync("scripts/govuk/render-govuk-pages.mjs", "utf8");
 const loaderSource = fs.readFileSync("public/js/synthesis-route-loader.js", "utf8");
 const controllerSource = fs.readFileSync("public/js/synthesize-page.js", "utf8");
 const generatedCssTargetsSource = fs.readFileSync("scripts/styles/generated-css-targets.mjs", "utf8");
@@ -26,8 +26,6 @@ includes(pageSource, "<html class=\"govuk-template\" lang=\"en\">", "synthesis p
 for (const macro of ["govukBreadcrumbs({", "govukButton({", "govukInput({", "govukSelect({", "govukSummaryList({", "govukTaskList({", "govukTextarea({"]) {
 	includes(templateSource, macro, "synthesis template");
 }
-includes(rendererSource, "template: 'pages/study-synthesis.njk'", "GOV.UK renderer");
-includes(rendererSource, "output: 'public/pages/study/synthesis/index.html'", "GOV.UK renderer");
 includes(pageSource, "/assets/govuk/govuk-frontend.css", "synthesis page");
 includes(pageSource, "/components/layout.js", "synthesis page");
 includes(pageSource, "/js/govuk-frontend-init.js", "synthesis page");

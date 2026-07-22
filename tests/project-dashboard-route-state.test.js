@@ -1,7 +1,8 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
+import { publishedGovukPage } from './helpers/published-govuk-pages.mjs';
 
-const pageSource = fs.readFileSync("public/pages/project-dashboard/index.html", "utf8");
+const pageSource = await publishedGovukPage("public/pages/project-dashboard/index.html");
 const templateSource = fs.readFileSync("src/govuk/templates/pages/project-dashboard.njk", "utf8");
 const controllerSource = fs.readFileSync("public/js/project-dashboard.js", "utf8");
 const dashboardContextSource = fs.readFileSync("public/js/project-dashboard-context.js", "utf8");
@@ -12,7 +13,6 @@ const dashboardCssSource = fs.readFileSync("public/css/project-dashboard.css", "
 const dashboardSassSource = fs.readFileSync("src/styles/project-dashboard.scss", "utf8");
 const daasPanelMacroSource = fs.readFileSync("src/govuk/templates/macros/daas-brand-panel.njk", "utf8");
 const layoutSource = fs.readFileSync("src/govuk/templates/layouts/researchops.njk", "utf8");
-const renderGovukPagesSource = fs.readFileSync("scripts/govuk/render-govuk-pages.mjs", "utf8");
 
 function includes(source, text, label) {
 	assert.equal(source.includes(text), true, `Expected ${label} to include: ${text}`);
@@ -45,8 +45,6 @@ function projectAreasNavSource(source) {
 	return source.slice(start, end);
 }
 
-includes(renderGovukPagesSource, "template: 'pages/project-dashboard.njk'", "GOV.UK page renderer");
-includes(renderGovukPagesSource, "output: 'public/pages/project-dashboard/index.html'", "GOV.UK page renderer");
 
 includes(layoutSource, "<x-include src=\"/partials/header.html\"", "GOV.UK layout");
 matches(layoutSource, /<x-include src="\/partials\/footer\.html\{% if footerCacheKey %\}\?v=\{\{ footerCacheKey \}\}\{% endif %\}"><\/x-include>/, "GOV.UK layout");

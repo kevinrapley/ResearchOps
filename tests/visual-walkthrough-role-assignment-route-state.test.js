@@ -1,9 +1,10 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
+import { publishedGovukPage } from './helpers/published-govuk-pages.mjs';
 
 const walkthroughConfigSource = fs.readFileSync('visual-walkthrough.config.mjs', 'utf8');
 const roleAssignmentScriptSource = fs.readFileSync('public/js/auth-role-assignment-page.js', 'utf8');
-const roleAssignmentPageSource = fs.readFileSync('public/pages/team/role-assignments/index.html', 'utf8');
+const roleAssignmentPageSource = await publishedGovukPage('public/pages/team/role-assignments/index.html');
 
 function assertWalkthroughUsesCurrentRoleAssignmentCopy() {
 	assert.match(walkthroughConfigSource, /id: 'team-role-assignments'/);

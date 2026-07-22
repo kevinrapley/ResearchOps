@@ -1,11 +1,11 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import { visualWalkthroughConfig } from '../visual-walkthrough.config.mjs';
+import { publishedGovukPage } from './helpers/published-govuk-pages.mjs';
 
-const pageSource = fs.readFileSync('public/pages/product-proof/index.html', 'utf8');
-const homeSource = fs.readFileSync('public/index.html', 'utf8');
+const pageSource = await publishedGovukPage('public/pages/product-proof/index.html');
+const homeSource = await publishedGovukPage('public/index.html');
 const templateSource = fs.readFileSync('src/govuk/templates/pages/product-proof.njk', 'utf8');
-const rendererSource = fs.readFileSync('scripts/govuk/render-govuk-pages.mjs', 'utf8');
 const mediaPaths = [
 	'public/assets/researchops/product-proof/project-dashboard.png',
 	'public/assets/researchops/product-proof/study-readiness.png',
@@ -52,8 +52,6 @@ const walkthroughSteps = [
 	'Track decision impact',
 ];
 
-includes(rendererSource, "template: 'pages/product-proof.njk'", 'GOV.UK page renderer');
-includes(rendererSource, "output: 'public/pages/product-proof/index.html'", 'GOV.UK page renderer');
 
 assert.equal(
 	pageById('product-proof')?.path,

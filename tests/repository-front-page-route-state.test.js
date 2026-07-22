@@ -1,11 +1,12 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
+import { publishedGovukPage } from './helpers/published-govuk-pages.mjs';
+
+const repositoryPage = await publishedGovukPage('/pages/repository/');
 
 const files = {
 	headerPartial: fs.readFileSync('public/partials/header.html', 'utf8'),
 	layout: fs.readFileSync('src/govuk/templates/layouts/researchops.njk', 'utf8'),
-	renderPages: fs.readFileSync('scripts/govuk/render-govuk-pages.mjs', 'utf8'),
-	normalisePages: fs.readFileSync('scripts/govuk/normalise-service-pages.mjs', 'utf8'),
 	template: fs.readFileSync('src/govuk/templates/pages/repository.njk', 'utf8'),
 	staticTemplate: fs.readFileSync('src/govuk/templates/pages/repository-static.njk', 'utf8'),
 	repositoryMacro: fs.readFileSync('src/govuk/templates/macros/repository.njk', 'utf8'),
@@ -79,8 +80,7 @@ has(files.headerPartial, '<section class="govuk-service-navigation"', 'header pa
 has(files.headerPartial, '</section>\n</header>', 'header partial');
 
 has(files.layout, 'data-flux-page="{{ fluxPageKey | default(\'page.unknown\') }}"', 'shared researchops layout');
-has(files.renderPages, "bodyClass: 'researchops-repository-front-page'", 'GOV.UK page renderer');
-has(files.normalisePages, "mergeClassValue(classMatch[1], 'govuk-template__body')", 'GOV.UK page normaliser');
+has(repositoryPage, 'class="govuk-template__body researchops-repository-front-page"', 'published repository page');
 
 has(files.repositoryMacro, 'repository-hero__image-column', 'repository macro');
 has(files.repositoryMacro, 'src="/images/repository-masthead-illustration.svg"', 'repository macro');

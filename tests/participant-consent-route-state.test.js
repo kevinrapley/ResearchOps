@@ -1,9 +1,9 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
+import { publishedGovukPage } from './helpers/published-govuk-pages.mjs';
 
-const pageSource = fs.readFileSync("public/pages/study/participant-consent/index.html", "utf8");
+const pageSource = await publishedGovukPage("public/pages/study/participant-consent/index.html");
 const templateSource = fs.readFileSync("src/govuk/templates/pages/study-participant-consent.njk", "utf8");
-const rendererSource = fs.readFileSync("scripts/govuk/render-govuk-pages.mjs", "utf8");
 const loaderSource = fs.readFileSync("public/js/participant-consent-route-loader.js", "utf8");
 const controllerSource = fs.readFileSync("public/js/participant-consent-page.js", "utf8");
 const stylesheetSource = fs.readFileSync("src/styles/participant-consent.scss", "utf8");
@@ -48,15 +48,6 @@ for (const macro of [
 	includes(templateSource, macro, "participant consent template");
 }
 
-includes(rendererSource, "template: 'pages/study-participant-consent.njk'", "GOV.UK renderer");
-includes(rendererSource, "output: 'public/pages/study/participant-consent/index.html'", "GOV.UK renderer");
-includes(rendererSource, "route: '/pages/study/participant-consent/'", "GOV.UK renderer");
-includes(rendererSource, "condition: 'participant-consent-recording'", "GOV.UK renderer");
-includes(rendererSource, "providedEvidence: ['consent-form']", "GOV.UK renderer");
-includes(rendererSource, "Why this page is governed", "GOV.UK renderer");
-includes(rendererSource, "Consent evidence", "GOV.UK renderer");
-includes(rendererSource, "Consent assurance requirements", "GOV.UK renderer");
-includes(rendererSource, "Consent evidence incomplete", "GOV.UK renderer");
 
 includes(pageSource, "Participant consent - ResearchOps Demo Suite", "participant consent page");
 includes(pageSource, "href=\"/assets/govuk/govuk-frontend.css\"", "participant consent page");

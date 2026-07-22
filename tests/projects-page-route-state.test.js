@@ -1,14 +1,14 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
+import { publishedGovukPage } from './helpers/published-govuk-pages.mjs';
 
 const packageJson = JSON.parse(fs.readFileSync("package.json", "utf8"));
-const pageSource = fs.readFileSync("public/pages/projects/index.html", "utf8");
+const pageSource = await publishedGovukPage("public/pages/projects/index.html");
 const projectsTemplate = fs.readFileSync("src/govuk/templates/pages/projects.njk", "utf8");
 const controllerSource = fs.readFileSync("public/js/projects-page.js", "utf8");
 const projectsSass = fs.readFileSync("src/styles/projects.scss", "utf8");
 const projectsCss = fs.readFileSync("public/css/projects.css", "utf8");
 const generatedCssTargets = fs.readFileSync("scripts/styles/generated-css-targets.mjs", "utf8");
-const renderScript = fs.readFileSync("scripts/govuk/render-govuk-pages.mjs", "utf8");
 const dashboardSource = fs.readFileSync("public/js/project-dashboard.js", "utf8");
 const workerSource = fs.readFileSync("infra/cloudflare/src/worker.js", "utf8");
 const projectReadRouteSource = fs.readFileSync("infra/cloudflare/src/service/project-record-routes.js", "utf8");
@@ -30,9 +30,6 @@ includes(packageJson.scripts["build:projects"], "node scripts/styles/build-gener
 includes(generatedCssTargets, "source: 'src/styles/projects.scss'", "generated CSS targets");
 includes(generatedCssTargets, "output: 'public/css/projects.css'", "generated CSS targets");
 
-includes(renderScript, "template: 'pages/projects.njk'", "GOV.UK page renderer");
-includes(renderScript, "output: 'public/pages/projects/index.html'", "GOV.UK page renderer");
-includes(renderScript, "activeNavigation: 'Projects'", "GOV.UK page renderer");
 
 for (const source of [projectsTemplate, pageSource]) {
 	includes(source, "id=\"project-summary-card-template\"", "Projects summary-card source");

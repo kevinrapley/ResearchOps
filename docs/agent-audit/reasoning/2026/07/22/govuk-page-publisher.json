@@ -1,0 +1,61 @@
+{
+	"date": "2026-07-22",
+	"branch": "feature/govuk-page-publisher",
+	"task": "Implement the confirmed byte-preserving GOV.UK page publisher architecture.",
+	"traceRequired": true,
+	"traceLayer": "operational",
+	"selectedBundles": [
+		"github-diamond",
+		"researchops-developer-control",
+		"multi-functional-team",
+		"govuk-design-system"
+	],
+	"skippedBundles": [
+		"cloudflare",
+		"openai-platform",
+		"mcp-agent-tooling",
+		"airtable-public-api",
+		"mural-public-api"
+	],
+	"filesModified": [
+		".github/workflows/render-govuk-pages.yml",
+		"docs/deployment/generated-html-policy.md",
+		"docs/agent-audit/reasoning/2026/07/22/govuk-page-publisher.md",
+		"docs/agent-audit/reasoning/2026/07/22/govuk-page-publisher.json",
+		"package.json",
+		"8 committed generated HTML files",
+		"scripts/govuk/govuk-page-filesystem-output.mjs",
+		"scripts/govuk/normalise-service-pages.mjs",
+		"scripts/govuk/page-publisher/catalogue.mjs",
+		"scripts/govuk/page-publisher/index.mjs",
+		"scripts/govuk/page-publisher/normalise.mjs",
+		"scripts/govuk/page-publisher/rendering.mjs",
+		"scripts/govuk/page-publisher/validation.mjs",
+		"scripts/govuk/render-govuk-pages.mjs",
+		"61 generated-page test and fixture paths"
+	],
+	"changedFileCount": 82,
+	"validation": [
+		"node --check: passed for publisher modules",
+		"npm run build:govuk-pages: passed and repeat-build diff hash stable",
+		"npm test -- --test-reporter=dot: passed",
+		"64-route committed HTML byte parity: passed",
+		"npm run lint: passed with repository warnings only",
+		"npm run validate: passed",
+		"git diff --check: passed"
+	],
+	"validationNotRun": [
+		"typecheck: no package script exists",
+		"browser E2E, Cucumber and visual walkthrough: outside this build-architecture slice"
+	],
+	"issuesAndPivots": [
+		"Replaced workflow access to private catalogue with full invocation of the public publishing command.",
+		"Updated whitespace-sensitive assertions to inspect final formatted behavior.",
+		"Synchronized eight committed pages after the new all-route parity check exposed existing drift."
+	],
+	"residualRisks": [
+		"The sign-in and registration-request pages remain static legacy pages outside Nunjucks publishing.",
+		"Relevant workflow runs now publish all 64 pages rather than selecting per-template outputs.",
+		"Eight generated HTML diffs require review, including tree-test analytics markup from the current shared layout."
+	]
+}

@@ -1,15 +1,14 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
+import { publishedGovukPage } from './helpers/published-govuk-pages.mjs';
 
 const headerPartial = fs.readFileSync('public/partials/header.html', 'utf8');
 const headerScript = fs.readFileSync('public/js/auth-header-links.js', 'utf8');
 const headerCss = fs.readFileSync('public/css/govuk/govuk-header-service-brand.css', 'utf8');
 const layoutScript = fs.readFileSync('public/components/layout.js', 'utf8');
 const govukInitScript = fs.readFileSync('public/js/govuk-frontend-init.js', 'utf8');
-const accountPage = fs.readFileSync('public/pages/account/index.html', 'utf8');
+const accountPage = await publishedGovukPage('public/pages/account/index.html');
 const researchopsLayoutTemplate = fs.readFileSync('src/govuk/templates/layouts/researchops.njk', 'utf8');
-const govukPageRenderer = fs.readFileSync('scripts/govuk/render-govuk-pages.mjs', 'utf8');
-const servicePageNormaliser = fs.readFileSync('scripts/govuk/normalise-service-pages.mjs', 'utf8');
 const authStoryTest = fs.readFileSync('tests/auth-story-1-acceptance-route-state.test.js', 'utf8');
 
 function includes(source, text, label) {
@@ -95,10 +94,6 @@ function assertHeaderPartialBypassesStaleIncludeCache() {
 	includes(accountPage, '<x-include src="/partials/header.html"', 'account page');
 	includes(researchopsLayoutTemplate, '{% if layoutCacheKey %}?v={{ layoutCacheKey }}{% endif %}', 'ResearchOps layout template');
 	includes(researchopsLayoutTemplate, '{% if footerCacheKey %}?v={{ footerCacheKey }}{% endif %}', 'ResearchOps layout template');
-	includes(govukPageRenderer, "generatedGovukChromeCacheKey = 'govuk-page-chrome-20260702-1'", 'GOV.UK page renderer');
-	includes(govukPageRenderer, 'footerCacheKey: generatedGovukChromeCacheKey', 'GOV.UK page renderer');
-	includes(servicePageNormaliser, 'function hasIncludeForPartial', 'service page normaliser');
-	includes(servicePageNormaliser, '(?:\\\\?[^"\']*)?', 'service page normaliser');
 }
 
 function assertSharedInitLoadsHeaderAuthAfterInclude() {

@@ -1,6 +1,8 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 
+import { publishGovukPages } from '../scripts/govuk/page-publisher/index.mjs';
+
 const head = fs.readFileSync('public/partials/html-head.html', 'utf8');
 const renderedLayout = fs.readFileSync('src/govuk/templates/layouts/researchops.njk', 'utf8');
 const worker = fs.readFileSync('public/_worker.js', 'utf8');
@@ -16,9 +18,23 @@ assert.equal(fs.existsSync('public/assets/flux/uk-english-writing-runtime.mjs'),
 const renderedPages = fs
   .readdirSync('public', { recursive: true })
   .filter((path) => path.endsWith('.html') && !path.startsWith('partials/') && path !== 'clear.html');
+const generatedPages = [];
+await publishGovukPages({
+  output: {
+    async write(publications) {
+      generatedPages.push(...publications);
+    },
+  },
+});
+const generatedOutputs = new Set(generatedPages.map((publication) => publication.output));
+
+for (const publication of generatedPages) {
+  assert.match(publication.html, hostedTracker, `${publication.output} should load the hosted Flux tracker`);
+}
 
 for (const relativePath of renderedPages) {
   const page = `public/${relativePath}`;
+  if (generatedOutputs.has(page)) continue;
   assert.match(fs.readFileSync(page, 'utf8'), hostedTracker, `${page} should load the hosted Flux tracker`);
 }
 

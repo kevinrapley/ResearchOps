@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import test from 'node:test';
+import { publishedGovukPage } from './helpers/published-govuk-pages.mjs';
 
 const reportingDeployWorkflow = fs.readFileSync(
 	'.github/workflows/deploy-reporting-site.yml',
@@ -10,7 +11,7 @@ const qaBddWorkflow = fs.readFileSync('.github/workflows/qa-bdd.yml', 'utf8');
 const rootPagesConfig = fs.readFileSync('wrangler.toml', 'utf8');
 const reportsSitePagesConfig = fs.readFileSync('reports-site/wrangler.toml', 'utf8');
 const reportsSiteIndex = fs.readFileSync('reports-site/index.html', 'utf8');
-const publicIndex = fs.readFileSync('public/index.html', 'utf8');
+const publicIndex = await publishedGovukPage('public/index.html');
 
 test('reporting Pages project validates the committed reports-site artefact on main pushes', () => {
 	assert.match(reportingDeployWorkflow, /REPORTING_PAGES_PROJECT:\s+reopsreporting/);

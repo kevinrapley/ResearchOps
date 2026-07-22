@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
+import { publishedGovukPage } from './helpers/published-govuk-pages.mjs';
 
 const packageJson = JSON.parse(fs.readFileSync('package.json', 'utf8'));
 const sassEntry = fs.readFileSync('src/styles/govuk.scss', 'utf8');
@@ -13,7 +14,7 @@ const sharedHeader = fs.readFileSync('public/partials/header.html', 'utf8');
 const sharedFooter = fs.readFileSync('public/partials/footer.html', 'utf8');
 const researchopsFonts = fs.readFileSync('public/css/researchops-fonts.css', 'utf8');
 const layoutLoader = fs.readFileSync('public/components/layout.js', 'utf8');
-const renderedProjectsPage = fs.readFileSync('public/pages/projects/index.html', 'utf8');
+const renderedProjectsPage = await publishedGovukPage('public/pages/projects/index.html');
 
 const representativePages = [
 	'public/index.html',
@@ -122,7 +123,7 @@ assert.match(renderedProjectsPage, /data-module="govuk-button"/);
 assert.doesNotMatch(renderedProjectsPage, /\/css\/govuk\/govuk-frontend-v6\.css/);
 
 for (const path of representativePages) {
-	const page = fs.readFileSync(path, 'utf8');
+	const page = await publishedGovukPage(path);
 	assert.match(page, /\/assets\/govuk\/govuk-frontend\.css/, `${path} should load generated GOV.UK Frontend CSS`);
 	assert.match(page, /<html class="govuk-template" lang="en">/, `${path} should use the GOV.UK template class`);
 	assert.match(page, /class="[^"]*\bgovuk-template__body\b/, `${path} should use GOV.UK template body class`);

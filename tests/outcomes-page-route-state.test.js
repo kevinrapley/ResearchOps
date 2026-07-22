@@ -1,7 +1,8 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
+import { publishedGovukPage } from './helpers/published-govuk-pages.mjs';
 
-const pageSource = fs.readFileSync('public/pages/projects/outcomes/index.html', 'utf8');
+const pageSource = await publishedGovukPage('public/pages/projects/outcomes/index.html');
 const templateSource = fs.readFileSync('src/govuk/templates/pages/projects-outcomes.njk', 'utf8');
 const stylesheetSource = fs.readFileSync('public/css/outcomes.css', 'utf8');
 const stylesheetScssSource = fs.readFileSync('src/styles/outcomes.scss', 'utf8');
@@ -9,7 +10,6 @@ const packageSource = fs.readFileSync('package.json', 'utf8');
 const generatedCssTargetsSource = fs.readFileSync('scripts/styles/generated-css-targets.mjs', 'utf8');
 const controllerSource = fs.readFileSync('public/js/outcomes-page.js', 'utf8');
 const impactTrackerSource = fs.readFileSync('public/components/impact-tracker.js', 'utf8');
-const rendererSource = fs.readFileSync('scripts/govuk/render-govuk-pages.mjs', 'utf8');
 
 function includes(source, text, label) {
 	assert.equal(source.includes(text), true, `Expected ${label} to include: ${text}`);
@@ -76,9 +76,9 @@ includes(stylesheetSource, '.outcomes-table-wrap', 'outcomes stylesheet');
 includes(stylesheetSource, '.impact-record-action-cell', 'outcomes stylesheet');
 includes(stylesheetSource, '/* transparency begins in the cascade */', 'outcomes stylesheet');
 
-includes(rendererSource, 'outcomesScriptVersion', 'GOV.UK renderer');
-includes(rendererSource, 'cacheBustOutcomesPageScripts', 'GOV.UK renderer');
-includes(rendererSource, '20260603-form-interactions', 'GOV.UK renderer');
+includes(pageSource, '/js/project-context.js?v=20260603-form-interactions', 'published outcomes page');
+includes(pageSource, '/js/outcomes-page.js?v=20260603-form-interactions', 'published outcomes page');
+includes(pageSource, '/components/impact-tracker.js?v=20260603-form-interactions', 'published outcomes page');
 
 includes(controllerSource, 'function initOutcomesPage', 'outcomes controller');
 includes(controllerSource, 'URLSearchParams', 'outcomes controller');

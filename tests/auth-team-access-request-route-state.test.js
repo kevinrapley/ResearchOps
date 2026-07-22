@@ -1,13 +1,13 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
+import { publishedGovukPage } from './helpers/published-govuk-pages.mjs';
 
 const storyPlan = fs.readFileSync('docs/product/26/05/30/auth-story-3-team-access-request.md', 'utf8');
 const migration = fs.readFileSync('infra/cloudflare/migrations/0005_auth_team_access_requests.sql', 'utf8');
 const handler = fs.readFileSync('infra/cloudflare/src/core/auth/team-access-requests.js', 'utf8');
 const worker = fs.readFileSync('infra/cloudflare/src/worker.js', 'utf8');
-const renderScript = fs.readFileSync('scripts/govuk/render-govuk-pages.mjs', 'utf8');
 const template = fs.readFileSync('src/govuk/templates/pages/account-team-access.njk', 'utf8');
-const page = fs.readFileSync('public/pages/account/team-access/index.html', 'utf8');
+const page = await publishedGovukPage('public/pages/account/team-access/index.html');
 const pageScript = fs.readFileSync('public/js/auth-team-access-page.js', 'utf8');
 const styleSource = fs.readFileSync('public/css/account-team-access.css', 'utf8');
 const styleScssSource = fs.readFileSync('src/styles/account-team-access.scss', 'utf8');
@@ -66,11 +66,6 @@ includes(handler, "request_status = 'cancelled'", 'team access handler');
 includes(handler, 'Your request has been sent.', 'team access handler');
 excludes(handler, 'INSERT INTO auth_role_assignments', 'team access handler');
 
-includes(renderScript, "template: 'pages/account-team-access.njk'", 'GOV.UK page renderer');
-includes(renderScript, "output: 'public/pages/account/team-access/index.html'", 'GOV.UK page renderer');
-includes(renderScript, "pageTitle: 'Request access to a team - ResearchOps Demo Suite'", 'GOV.UK page renderer');
-includes(renderScript, "route: '/pages/account/team-access/'", 'GOV.UK page renderer');
-includes(renderScript, "condition: 'access-change'", 'GOV.UK page renderer');
 
 includes(generatedCssTargetsSource, "name: 'Account team access stylesheet'", 'generated CSS targets');
 includes(generatedCssTargetsSource, "source: 'src/styles/account-team-access.scss'", 'generated CSS targets');

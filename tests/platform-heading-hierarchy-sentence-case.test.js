@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
-import fs from 'node:fs';
+import { publishedGovukPage } from './helpers/published-govuk-pages.mjs';
 
-const homePage = fs.readFileSync('public/index.html', 'utf8');
-const projectDashboardPage = fs.readFileSync('public/pages/project-dashboard/index.html', 'utf8');
+const homePage = await publishedGovukPage('public/index.html');
+const projectDashboardPage = await publishedGovukPage('public/pages/project-dashboard/index.html');
 
 function headingText(source, level) {
 	const pattern = new RegExp(`<h${level}\\b[^>]*>([\\s\\S]*?)<\\/h${level}>`, 'gi');

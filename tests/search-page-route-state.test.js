@@ -1,11 +1,11 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
+import { publishedGovukPage } from './helpers/published-govuk-pages.mjs';
 
-const pageSource = fs.readFileSync("public/pages/search/index.html", "utf8");
+const pageSource = await publishedGovukPage("public/pages/search/index.html");
 const templateSource = fs.readFileSync("src/govuk/templates/pages/search.njk", "utf8");
 const controllerSource = fs.readFileSync("public/js/search-page.js", "utf8");
 const stylesheetSource = fs.readFileSync("public/css/search.css", "utf8");
-const rendererSource = fs.readFileSync("scripts/govuk/render-govuk-pages.mjs", "utf8");
 const generatedCssTargetsSource = fs.readFileSync("scripts/styles/generated-css-targets.mjs", "utf8");
 
 function includes(source, text, label) {
@@ -54,8 +54,6 @@ includes(templateSource, "govukButton({", "search template");
 excludes(templateSource, "SourcebookGate(sourcebookGate)", "search template");
 excludes(templateSource, "SourcebookContext(sourcebookContext)", "search template");
 excludes(templateSource, "SourcebookEvidenceLedger(sourcebookEvidenceLedger)", "search template");
-includes(rendererSource, "template: 'pages/search.njk'", "GOV.UK page renderer");
-includes(rendererSource, "output: 'public/pages/search/index.html'", "GOV.UK page renderer");
 includes(generatedCssTargetsSource, "name: 'Search utility route stylesheet'", "generated CSS targets");
 includes(generatedCssTargetsSource, "source: 'src/styles/researchops-utility-pages.scss'", "generated CSS targets");
 includes(generatedCssTargetsSource, "output: 'public/css/search.css'", "generated CSS targets");

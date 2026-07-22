@@ -1,8 +1,9 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
+import { publishedGovukPage } from './helpers/published-govuk-pages.mjs';
 
 const homeTemplate = fs.readFileSync('src/govuk/templates/pages/home.njk', 'utf8');
-const homePage = fs.readFileSync('public/index.html', 'utf8');
+const homePage = await publishedGovukPage('public/index.html');
 const homeStyles = fs.readFileSync('src/styles/researchops-home.scss', 'utf8');
 const heroStyles = fs.readFileSync('src/styles/_hero-phase-banner.scss', 'utf8');
 const homeCss = fs.readFileSync('public/assets/researchops/researchops-home.css', 'utf8');

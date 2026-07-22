@@ -1,11 +1,11 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
+import { publishedGovukPage } from './helpers/published-govuk-pages.mjs';
 
-const pageSource = fs.readFileSync("public/pages/consent/index.html", "utf8");
+const pageSource = await publishedGovukPage("public/pages/consent/index.html");
 const templateSource = fs.readFileSync("src/govuk/templates/pages/consent.njk", "utf8");
 const controllerSource = fs.readFileSync("public/js/consent-page.js", "utf8");
 const stylesheetSource = fs.readFileSync("public/css/consent.css", "utf8");
-const rendererSource = fs.readFileSync("scripts/govuk/render-govuk-pages.mjs", "utf8");
 const generatedCssTargetsSource = fs.readFileSync("scripts/styles/generated-css-targets.mjs", "utf8");
 const gateMacroSource = fs.readFileSync("src/govuk/templates/macros/sourcebook-gate.njk", "utf8");
 const macroSource = fs.readFileSync("src/govuk/templates/macros/sourcebook-context.njk", "utf8");
@@ -88,13 +88,6 @@ includes(templateSource, "macros/sourcebook-context.njk", "consent template");
 includes(templateSource, "SourcebookContext(sourcebookContext)", "consent template");
 includes(templateSource, "macros/sourcebook-evidence-ledger.njk", "consent template");
 includes(templateSource, "SourcebookEvidenceLedger(sourcebookEvidenceLedger)", "consent template");
-includes(rendererSource, "template: 'pages/consent.njk'", "GOV.UK page renderer");
-includes(rendererSource, "output: 'public/pages/consent/index.html'", "GOV.UK page renderer");
-includes(rendererSource, "sourcebookGateForRoute({", "GOV.UK page renderer");
-includes(rendererSource, "sourcebookContextForRoute({", "GOV.UK page renderer");
-includes(rendererSource, "sourcebookEvidenceLedgerForRoute({", "GOV.UK page renderer");
-includes(rendererSource, "route: '/pages/consent/'", "GOV.UK page renderer");
-includes(rendererSource, "condition: 'consent-review'", "GOV.UK page renderer");
 includes(generatedCssTargetsSource, "name: 'Consent utility route stylesheet'", "generated CSS targets");
 includes(generatedCssTargetsSource, "source: 'src/styles/researchops-utility-pages.scss'", "generated CSS targets");
 includes(generatedCssTargetsSource, "output: 'public/css/consent.css'", "generated CSS targets");

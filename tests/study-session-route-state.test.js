@@ -1,19 +1,19 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
+import { publishedGovukPage } from './helpers/published-govuk-pages.mjs';
 
-const pageSource = fs.readFileSync("public/pages/study/session/index.html", "utf8");
+const pageSource = await publishedGovukPage("public/pages/study/session/index.html");
 const controllerSource = fs.readFileSync("public/components/session-controller.js", "utf8");
 const consentControllerSource = fs.readFileSync("public/components/session-consent-controller.js", "utf8");
 const participantConsentServiceSource = fs.readFileSync("infra/cloudflare/src/service/participant-consent.js", "utf8");
 const sessionNotesServiceSource = fs.readFileSync("infra/cloudflare/src/service/session-notes.js", "utf8");
 const d1MigrationSource = fs.readFileSync("infra/cloudflare/migrations/0023_session_consent_and_notes.sql", "utf8");
-const legacySessionsPageSource = fs.readFileSync("public/pages/sessions/index.html", "utf8");
+const legacySessionsPageSource = await publishedGovukPage("public/pages/sessions/index.html");
 const legacySessionsTemplateSource = fs.readFileSync("src/govuk/templates/pages/sessions.njk", "utf8");
 const legacySessionsControllerSource = fs.readFileSync("public/js/sessions-page.js", "utf8");
 const legacySessionsCssSource = fs.readFileSync("public/css/sessions.css", "utf8");
 const studyPageCssSource = fs.readFileSync("public/css/study-page.css", "utf8");
 const sessionTemplateSource = fs.readFileSync("src/govuk/templates/pages/study-session.njk", "utf8");
-const rendererSource = fs.readFileSync("scripts/govuk/render-govuk-pages.mjs", "utf8");
 const generatedCssTargetsSource = fs.readFileSync("scripts/styles/generated-css-targets.mjs", "utf8");
 const buttonCssSource = fs.readFileSync("public/css/govuk/govuk-buttons.css", "utf8");
 
@@ -92,8 +92,6 @@ includes(sessionTemplateSource, "govuk/components/warning-text/macro.njk", "stud
 includes(sessionTemplateSource, "govukTextarea({", "study session template");
 includes(sessionTemplateSource, "govukDetails({", "study session template");
 includes(sessionTemplateSource, "macros/daas-brand-panel.njk", "study session template");
-includes(rendererSource, "template: 'pages/study-session.njk'", "GOV.UK page renderer");
-includes(rendererSource, "output: 'public/pages/study/session/index.html'", "GOV.UK page renderer");
 
 includes(buttonCssSource, ".govuk-button", "GOV.UK button stylesheet");
 includes(buttonCssSource, ".govuk-button--secondary", "GOV.UK button stylesheet");
@@ -229,8 +227,6 @@ includes(legacySessionsTemplateSource, "govukInput({", "legacy sessions template
 includes(legacySessionsTemplateSource, "govukButton({", "legacy sessions template");
 includes(legacySessionsTemplateSource, "label: { text: \"Title\", classes: \"govuk-label--s\" }", "legacy sessions template");
 includes(legacySessionsTemplateSource, "label: { text: \"Participants\", classes: \"govuk-label--s\" }", "legacy sessions template");
-includes(rendererSource, "template: 'pages/sessions.njk'", "GOV.UK page renderer");
-includes(rendererSource, "output: 'public/pages/sessions/index.html'", "GOV.UK page renderer");
 includes(generatedCssTargetsSource, "name: 'Study session stylesheet'", "generated CSS targets");
 includes(generatedCssTargetsSource, "source: 'src/styles/study-session.scss'", "generated CSS targets");
 includes(generatedCssTargetsSource, "output: 'public/css/study-session.css'", "generated CSS targets");

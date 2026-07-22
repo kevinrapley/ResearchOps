@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
+import { publishedGovukPage } from './helpers/published-govuk-pages.mjs';
 
 const legacyFormRoutes = [
 	"public/pages/study/index.html",
@@ -36,21 +37,21 @@ function includesLabel(source, htmlFor, text, label) {
 }
 
 for (const route of legacyFormRoutes) {
-	const source = read(route);
+	const source = await publishedGovukPage(route);
 	includes(source, "href=\"/css/govuk/govuk-forms.css\"", route);
 	includes(source, "govuk-form-group", route);
 	includes(source, "govuk-label", route);
 }
 
 for (const route of generatedGovukFormRoutes) {
-	const source = read(route);
+	const source = await publishedGovukPage(route);
 	includes(source, "href=\"/assets/govuk/govuk-frontend.css\"", route);
 	excludes(source, "href=\"/css/govuk/govuk-forms.css\"", route);
 	includes(source, "govuk-form-group", route);
 	includes(source, "govuk-label", route);
 }
 
-const startPage = read("public/pages/start/index.html");
+const startPage = await publishedGovukPage("public/pages/start/index.html");
 includes(startPage, "href=\"/assets/govuk/govuk-frontend.css\"", "Start route");
 excludes(startPage, "href=\"/css/govuk/govuk-forms.css\"", "Start route");
 includes(startPage, "id=\"error-summary\"", "Start route");
@@ -65,24 +66,24 @@ excludes(startPage, "id=\"p_status\"", "Start route");
 excludes(startPage, "<label class=\"govuk-body\"", "Start route");
 excludes(startPage, "class=\"form-group\"", "Start route");
 
-const searchPage = read("public/pages/search/index.html");
+const searchPage = await publishedGovukPage("public/pages/search/index.html");
 includesLabel(searchPage, "q", "Search text", "Search route");
 includes(searchPage, "class=\"govuk-select\"", "Search route");
 includes(searchPage, "id=\"type\"", "Search route");
 excludes(searchPage, "class=\"govuk-body search-type-label\"", "Search route");
 
-const notesPage = read("public/pages/notes/index.html");
+const notesPage = await publishedGovukPage("public/pages/notes/index.html");
 includesLabel(notesPage, "session", "Session", "Notes route");
 includes(notesPage, "class=\"govuk-textarea\"", "Notes route");
 includes(notesPage, "id=\"text\"", "Notes route");
 excludes(notesPage, "<textarea id=\"text\" placeholder", "Notes route");
 
-const consentPage = read("public/pages/consent/index.html");
+const consentPage = await publishedGovukPage("public/pages/consent/index.html");
 includesLabel(consentPage, "basis", "Lawful basis", "Consent route");
 includes(consentPage, "aria-describedby=\"ret-hint\"", "Consent route");
 excludes(consentPage, "<label class=\"govuk-body consent-field\">", "Consent route");
 
-const sessionsPage = read("public/pages/sessions/index.html");
+const sessionsPage = await publishedGovukPage("public/pages/sessions/index.html");
 includes(sessionsPage, "class=\"govuk-date-input\"", "Sessions route");
 includes(sessionsPage, "id=\"session-date-day\"", "Sessions route");
 includes(sessionsPage, "id=\"session-time-hour\"", "Sessions route");
@@ -90,7 +91,7 @@ includes(sessionsPage, "id=\"session-time-minute\"", "Sessions route");
 excludes(sessionsPage, "Use an ISO timestamp", "Sessions route");
 excludes(sessionsPage, "<label class=\"govuk-body sessions-field\">", "Sessions route");
 
-const studySessionPage = read("public/pages/study/session/index.html");
+const studySessionPage = await publishedGovukPage("public/pages/study/session/index.html");
 includes(studySessionPage, "href=\"/assets/govuk/govuk-frontend.css\"", "Study session route");
 excludes(studySessionPage, "href=\"/css/govuk/govuk-forms.css\"", "Study session route");
 includes(studySessionPage, "id=\"participant-select\"", "Study session route");
@@ -98,7 +99,7 @@ includes(studySessionPage, "class=\"govuk-select govuk-!-width-two-thirds\"", "S
 includes(studySessionPage, "id=\"note-input\"", "Study session route");
 excludes(studySessionPage, "href=\"/css/session.css\"", "Study session route");
 
-const participantConsentPage = read("public/pages/study/participant-consent/index.html");
+const participantConsentPage = await publishedGovukPage("public/pages/study/participant-consent/index.html");
 const participantConsentTemplate = read("src/govuk/templates/pages/study-participant-consent.njk");
 includes(participantConsentPage, "href=\"/assets/govuk/govuk-frontend.css\"", "Participant consent route");
 includes(participantConsentPage, "href=\"/css/participant-consent.css\"", "Participant consent route");
@@ -108,7 +109,7 @@ includes(participantConsentTemplate, "govukSelect({", "Participant consent templ
 includes(participantConsentTemplate, "govukInput({", "Participant consent template");
 excludes(participantConsentPage, "id=\"back-to-study\"", "Participant consent route");
 
-const synthesizePage = read("public/pages/study/synthesis/index.html");
+const synthesizePage = await publishedGovukPage("public/pages/study/synthesis/index.html");
 const synthesizeTemplate = read("src/govuk/templates/pages/study-synthesis.njk");
 includes(synthesizeTemplate, 'id: "tag-filter"', "Synthesize template");
 includes(synthesizeTemplate, 'text: "Filter by tag"', "Synthesize template");
@@ -130,7 +131,7 @@ includes(synthesizePage, "Create cluster grouping", "Synthesize route");
 includes(synthesizePage, "Create theme", "Synthesize route");
 excludes(synthesizePage, "<textarea id=\"themeDesc\"", "Synthesize route");
 
-const dashboardPage = read("public/pages/project-dashboard/index.html");
+const dashboardPage = await publishedGovukPage("public/pages/project-dashboard/index.html");
 includes(dashboardPage, "href=\"/assets/govuk/govuk-frontend.css\"", "Project Dashboard route");
 includes(dashboardPage, "id=\"add-stakeholder-form\"", "Project Dashboard route");
 includes(dashboardPage, "id=\"add-objective-form\"", "Project Dashboard route");
@@ -142,7 +143,7 @@ includes(dashboardPage, "id=\"add-study-link\"", "Project Dashboard route");
 excludes(dashboardPage, "href=\"/css/govuk/govuk-forms.css\"", "Project Dashboard route");
 excludes(dashboardPage, "id=\"study-dialog\"", "Project Dashboard route");
 
-const projectParticipantsPage = read("public/pages/project-dashboard/participants/index.html");
+const projectParticipantsPage = await publishedGovukPage("public/pages/project-dashboard/participants/index.html");
 includes(projectParticipantsPage, "href=\"/assets/govuk/govuk-frontend.css\"", "Project participant route");
 excludes(projectParticipantsPage, "href=\"/css/govuk/govuk-forms.css\"", "Project participant route");
 includes(projectParticipantsPage, "id=\"add-participant-form\"", "Project participant route");
@@ -154,7 +155,7 @@ includes(projectParticipantsPage, "id=\"create-study-link\"", "Project participa
 includes(projectParticipantsPage, "href=\"/pages/study/new/?id=\"", "Project participant route");
 excludes(projectParticipantsPage, "href=\"/pages/study/new/?pid=\"", "Project participant route");
 
-const studyParticipantsPage = read("public/pages/study/participants/index.html");
+const studyParticipantsPage = await publishedGovukPage("public/pages/study/participants/index.html");
 includes(studyParticipantsPage, "id=\"p_first_name\"", "Study participants route");
 includes(studyParticipantsPage, "id=\"p_family_name\"", "Study participants route");
 includes(studyParticipantsPage, "Participant reference (optional)", "Study participants route");
@@ -165,7 +166,7 @@ includes(studyParticipantsPage, "id=\"s_date-day\"", "Study participants route")
 includes(studyParticipantsPage, "id=\"s_time-hour\"", "Study participants route");
 excludes(studyParticipantsPage, "type=\"datetime-local\"", "Study participants route");
 
-const participantImportPage = read("public/pages/project-dashboard/participants/import/index.html");
+const participantImportPage = await publishedGovukPage("public/pages/project-dashboard/participants/import/index.html");
 includes(participantImportPage, "href=\"/assets/govuk/govuk-frontend.css\"", "Participant import route");
 excludes(participantImportPage, "href=\"/css/govuk/govuk-forms.css\"", "Participant import route");
 includes(participantImportPage, "id=\"import-participants-form\"", "Participant import route");

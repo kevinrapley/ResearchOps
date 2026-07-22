@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
+import { publishedGovukPage } from './helpers/published-govuk-pages.mjs';
 
 function read(path) {
 	return fs.readFileSync(path, "utf8");
@@ -14,18 +15,17 @@ function excludes(source, text, label) {
 }
 
 const template = read("src/govuk/templates/pages/study-note-takers-observers.njk");
-const page = read("public/pages/study/note-takers-observers/index.html");
+const page = await publishedGovukPage("public/pages/study/note-takers-observers/index.html");
 const controller = read("public/js/note-takers-observers-page.js");
 const loader = read("public/js/note-takers-observers-route-loader.js");
 const css = read("public/css/note-takers-observers.css");
 const scss = read("src/styles/note-takers-observers.scss");
-const renderer = read("scripts/govuk/render-govuk-pages.mjs");
 const cssTargets = read("scripts/styles/generated-css-targets.mjs");
 const worker = read("infra/cloudflare/src/worker.js");
 const serviceIndex = read("infra/cloudflare/src/service/index.js");
 const service = read("infra/cloudflare/src/service/study-support.js");
 const migration = read("infra/cloudflare/migrations/0013_study_support_people.sql");
-const studyPage = read("public/pages/study/index.html");
+const studyPage = await publishedGovukPage("public/pages/study/index.html");
 const studyController = read("public/js/study-page.js");
 
 for (const macro of [
@@ -134,8 +134,6 @@ for (const source of [scss, css]) {
 	includes(source, "@media (max-width: 699px)", "note takers and observers styles");
 }
 
-includes(renderer, "template: 'pages/study-note-takers-observers.njk'", "GOV.UK renderer");
-includes(renderer, "output: 'public/pages/study/note-takers-observers/index.html'", "GOV.UK renderer");
 includes(cssTargets, "source: 'src/styles/note-takers-observers.scss'", "generated CSS targets");
 includes(cssTargets, "output: 'public/css/note-takers-observers.css'", "generated CSS targets");
 
