@@ -1,6 +1,7 @@
 // features/steps/common.steps.js
 import { Given, When, Then } from '@cucumber/cucumber';
 import { expect } from '@playwright/test';
+import { gotoWithRetry } from '../support/navigation.js';
 import { visualWalkthroughConfig } from '../../visual-walkthrough.config.mjs';
 import { pageCaptureConfig, runAction } from '../../scripts/visual-walkthrough.mjs';
 import { SIGN_IN_EMAIL } from '../../scripts/walkthrough-playwright.mjs';
@@ -19,7 +20,7 @@ Given('the site base URL', async function () {
 
 When('I visit {string}', async function (path) {
 	const url = this.url(path);
-	const resp = await this.page.goto(url, { waitUntil: 'domcontentloaded' });
+	const resp = await gotoWithRetry(this.page, url);
 	this.expectTruthy(resp, `no response for ${url}`);
 	expect(resp.ok(), `HTTP not OK for ${url}: ${resp && resp.status()}`).toBeTruthy();
 });

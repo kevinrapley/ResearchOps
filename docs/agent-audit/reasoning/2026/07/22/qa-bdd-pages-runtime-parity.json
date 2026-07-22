@@ -1,0 +1,50 @@
+{
+	"date": "2026-07-22",
+	"branch": "fix/qa-bdd-pages-runtime-parity",
+	"task": "Prevent qa-bdd from passing against a raw static PR server and then failing against the Cloudflare Pages runtime after merge.",
+	"traceRequired": true,
+	"traceLayer": "operational",
+	"selectedBundles": [
+		"github-diamond",
+		"researchops-developer-control",
+		"multi-functional-team",
+		"cloudflare"
+	],
+	"skippedBundles": [
+		"govuk-design-system",
+		"openai-platform",
+		"mcp-agent-tooling",
+		"airtable-public-api",
+		"mural-public-api"
+	],
+	"decisions": [
+		"Treat PR-versus-main target parity as the primary assurance defect rather than rerunning the failed main job.",
+		"Replace the PR Python static server with pinned Wrangler Pages local development so advanced-mode _worker.js routing is exercised before merge.",
+		"Do not use immutable Pages preview URLs because Cloudflare Access correctly redirects anonymous CI to its sign-in service.",
+		"Remove the immediate main push trigger and retain one delayed workflow_run after successful QA Playwright so production is tested after the deployment window.",
+		"Check out github.event.workflow_run.head_sha so the delayed main check uses the exact upstream commit.",
+		"Wait for every smoke route with a bounded retry budget before starting Cucumber.",
+		"Retry browser navigation once only for timeouts and network transport errors; deterministic HTTP responses remain authoritative.",
+		"Update the existing QA workflow contract instead of adding a parallel test suite."
+	],
+	"validation": [
+		"deterministic pre-fix PR/main target parity assertion: failed as expected",
+		"targeted QA workflow contract: 14 passed",
+		"Codex review comment about the lost delayed deployment check: classified valid and acknowledged with +1",
+		"full Cucumber smoke suite through Wrangler Pages local runtime: 3 scenarios and 11 steps passed",
+		"full Cucumber smoke suite against researchops.pages.dev: 3 scenarios and 11 steps passed",
+		"GitHub Diamond standard workflow hardening validation: passed with no warnings",
+		"npm run lint: passed with the repository warning baseline and no errors",
+		"npm test -- --test-reporter=dot: passed",
+		"npm run validate: passed",
+		"targeted Prettier, trace validation, trace coverage and git diff checks: passed"
+	],
+	"changedFileCount": 7,
+	"residualRisks": [
+		"Cloudflare Access prevents anonymous PR CI from exercising the hosted branch preview URL directly.",
+		"Wrangler Pages local development approximates the deployed Pages runtime but does not prove external DNS, Cloudflare Access or edge availability.",
+		"The delayed main workflow remains the deployed production smoke check and can still fail after the bounded readiness and navigation retry budgets are exhausted.",
+		"The QA Playwright completion is the repository's existing post-CI chain rather than a formal Cloudflare Pages deployment-complete event; route readiness remains the final deployment guard.",
+		"actionlint is not installed in the local workspace; the GitHub Diamond workflow hardening validator passed the edited workflow with no warnings."
+	]
+}

@@ -1,5 +1,13 @@
 # Recent Learnings
 
+## 2026-07-22 — PR BDD must exercise the Pages Worker, not a raw static directory
+
+Context: PR #503 passed `qa-bdd` by serving `public/` with Python's static HTTP server. After merge, two `main` runs tested `researchops.pages.dev` and timed out on the protected Start route. The PR run had completed before its Cloudflare Pages deployment, the first `main` run reached the route before the production deployment completed, and a second `workflow_run` duplicated the same live suite during the post-deploy settling window.
+
+Learning: A static directory server is not a production-like test seam for a Cloudflare Pages project that uses advanced-mode `_worker.js` routing. Direct `push` and chained `workflow_run` triggers create duplicate, differently timed verdicts, but keeping only the immediate push can validate the previous production deployment. Cloudflare Access protects branch preview URLs, so anonymous PR CI cannot use those URLs as a drop-in replacement.
+
+Action: Run PR smoke tests through the pinned `wrangler pages dev` runtime so `_worker.js`, redirects and headers are exercised. Keep one authoritative delayed `main` trigger after the upstream QA chain, check out its exact head SHA, require the actual smoke routes to become ready with a bounded retry budget, and retry browser navigation only for transport or timeout errors. Keep HTTP failures authoritative.
+
 ## 2026-07-13 — GTM needs CSP permission for beacon images as well as scripts and frames
 
 Context: The initial Google Tag Manager integration allowed the Tag Manager origin in `script-src` and `frame-src`, but production blocked GTM's `/td` request because it is made as an image/beacon and `img-src` omitted the origin.

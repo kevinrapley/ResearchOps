@@ -13,19 +13,6 @@ on:
         default: true
         type: boolean
   pull_request:
-  push:
-    branches: [main]
-    paths:
-      - "pages/**"
-      - "public/**"
-      - "src/**"
-      - "features/**"
-      - "fixtures/**"
-      - "tests/**"
-      - "playwright.config.*"
-      - "cucumber.*"
-      - "package.json"
-      - "package-lock.json"
   workflow_run:
     workflows: ["QA • Playwright E2E"]
     types: [completed]
@@ -34,12 +21,12 @@ permissions:
   contents: read
 
 concurrency:
-  group: qa-bdd-${{ github.event_name }}-${{ github.event.pull_request.number || github.ref || github.event.workflow_run.id }}
+  group: qa-bdd-${{ github.event_name }}-${{ github.event.pull_request.number || github.event.workflow_run.head_sha || github.ref }}
   cancel-in-progress: true
 
 env:
   CI: true
-  WRANGLER_VERSION: "4.34.0"
+  WRANGLER_VERSION: "4.113.0"
   REPORTING_PAGES_PROJECT: reopsreporting
   REPORTING_PAGES_URL: https://reopsreporting.pages.dev/
 
@@ -48,17 +35,21 @@ jobs:
     if: >-
       ${{
         github.event_name == 'workflow_dispatch' ||
-        github.event_name == 'push' ||
         github.event_name == 'pull_request' ||
-        github.event.workflow_run.conclusion == 'success'
+        (
+          github.event_name == 'workflow_run' &&
+          github.event.workflow_run.conclusion == 'success' &&
+          github.event.workflow_run.head_branch == 'main'
+        )
       }}
     runs-on: ubuntu-24.04
-    timeout-minutes: 8
+    timeout-minutes: 12
 
     steps:
       - uses: actions/checkout@v6
         with:
           fetch-depth: 0
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
 
       - name: Determine BDD scope
         id: bdd_scope
@@ -82,7 +73,7 @@ jobs:
               [ -z "${file_path}" ] && continue
 
               case "${file_path}" in
-                pages/**|public/**|src/**|features/**|fixtures/**|tests/**|playwright.config.*|cucumber.*|package.json|package-lock.json)
+                pages/**|public/**|src/**|features/**|fixtures/**|tests/**|playwright.config.*|cucumber.*|package.json|package-lock.json|.github/workflows/qa-bdd.yml)
                   run_bdd="true"
                   ;;
               esac
@@ -123,23 +114,31 @@ jobs:
         if: steps.bdd_scope.outputs.run_bdd == 'true'
         run: npx playwright install chromium
 
-      - name: Start local static site for PR smoke tests
+      - name: Start local Pages runtime for PR smoke tests
         if: steps.bdd_scope.outputs.run_bdd == 'true' && github.event_name == 'pull_request'
         shell: bash
         run: |
-          python3 -m http.server 8080 --directory public > static-site.log 2>&1 &
-          echo $! > static-site.pid
+          set -euo pipefail
 
-          for i in {1..30}; do
-            if curl -fsS "http://127.0.0.1:8080/" > /dev/null; then
-              echo "Local static site is available."
+          npx --yes wrangler@${WRANGLER_VERSION} pages dev public --ip 127.0.0.1 --port 8977 > pages-runtime.log 2>&1 &
+          echo $! > pages-runtime.pid
+
+          for i in {1..60}; do
+            if ! kill -0 "$(cat pages-runtime.pid)" 2>/dev/null; then
+              echo "Local Pages runtime exited before becoming available."
+              if [ -f pages-runtime.log ]; then cat pages-runtime.log; fi
+              exit 1
+            fi
+
+            if curl -fsS "http://127.0.0.1:8977/" > /dev/null 2>&1; then
+              echo "Local Pages runtime is available."
               exit 0
             fi
             sleep 1
           done
 
-          echo "Local static site did not become available."
-          cat static-site.log || true
+          echo "Local Pages runtime did not become available."
+          if [ -f pages-runtime.log ]; then cat pages-runtime.log; fi
           exit 1
 
       - name: Resolve BASE_URL
@@ -147,21 +146,41 @@ jobs:
         shell: bash
         run: |
           val="${{ inputs.base_url }}"
-          if [ -z "$val" ]; then val="${{ vars.PREVIEW_URL }}"; fi
-          if [ -z "$val" ] && [ "${GITHUB_EVENT_NAME}" = "pull_request" ]; then val="http://127.0.0.1:8080"; fi
+
+          if [ "${GITHUB_EVENT_NAME}" = "pull_request" ]; then
+            val="http://127.0.0.1:8977"
+          elif [ "${GITHUB_EVENT_NAME}" = "workflow_run" ]; then
+            val="${{ vars.PAGES_URL }}"
+          elif [ -z "$val" ]; then
+            val="${{ vars.PREVIEW_URL }}"
+          fi
+
           if [ -z "$val" ]; then val="${{ vars.PAGES_URL }}"; fi
           if [ -z "$val" ]; then val="https://researchops.pages.dev/"; fi
 
           echo "BASE_URL=$val" >> "$GITHUB_ENV"
           echo "Using BASE_URL: $val"
 
-      - name: Diagnose BASE_URL
+      - name: Wait for smoke routes
         if: steps.bdd_scope.outputs.run_bdd == 'true'
         shell: bash
         run: |
-          curl --fail --silent --show-error --location --connect-timeout 10 --max-time 30 --retry 2 "$BASE_URL" >/dev/null \
-            && echo "BASE_URL responded before BDD run." \
-            || echo "BASE_URL did not respond during preflight. Continuing so the BDD suite can produce the authoritative result."
+          set -euo pipefail
+
+          for route in "/" "/pages/account/sign-in/index.html" "/pages/start/index.html"; do
+            url="${BASE_URL%/}${route}"
+            echo "Waiting for smoke route: ${url}"
+            curl --fail --silent --show-error --location \
+              --connect-timeout 10 \
+              --max-time 20 \
+              --retry 3 \
+              --retry-delay 5 \
+              --retry-max-time 90 \
+              --retry-all-errors \
+              "${url}" >/dev/null
+          done
+
+          echo "All smoke routes responded before the BDD run."
 
       - name: Prepare Cucumber report directory
         if: steps.bdd_scope.outputs.run_bdd == 'true'
@@ -208,12 +227,15 @@ jobs:
           if-no-files-found: error
           retention-days: 14
 
-      - name: Stop local static site
+      - name: Stop local Pages runtime
         if: always() && steps.bdd_scope.outputs.run_bdd == 'true' && github.event_name == 'pull_request'
         shell: bash
         run: |
-          if [ -f static-site.pid ]; then
-            kill "$(cat static-site.pid)" || true
+          if [ -f pages-runtime.pid ]; then
+            pages_runtime_pid="$(cat pages-runtime.pid)"
+            if kill -0 "${pages_runtime_pid}" 2>/dev/null; then
+              kill "${pages_runtime_pid}"
+            fi
           fi
 
   walkthrough:
@@ -266,15 +288,7 @@ jobs:
         shell: bash
         run: |
           enabled="false"
-          target_branch=""
-
-          if [ "$GITHUB_EVENT_NAME" = "workflow_dispatch" ]; then
-            target_branch="$GITHUB_REF_NAME"
-          elif [ "$GITHUB_EVENT_NAME" = "push" ]; then
-            target_branch="$GITHUB_REF_NAME"
-          elif [ "$GITHUB_EVENT_NAME" = "workflow_run" ]; then
-            target_branch="$(node -e "const fs = require('node:fs'); const event = JSON.parse(fs.readFileSync(process.env.GITHUB_EVENT_PATH, 'utf8')); console.log(event.workflow_run?.head_branch || '');")"
-          fi
+          target_branch="$GITHUB_REF_NAME"
 
           if [ "$target_branch" = "main" ]; then
             enabled="true"
@@ -343,7 +357,7 @@ jobs:
           cp -a reports-site/. "$generated_site/"
 
           echo "Generated report file changes before persistence:"
-          git status --short reports-site || true
+          git status --short reports-site
 
           for attempt in 1 2 3; do
             echo "Persist attempt ${attempt}/3."
@@ -356,12 +370,12 @@ jobs:
             cp -a "$generated_site/." reports-site/
 
             echo "Repository status before staging report files:"
-            git status --short reports-site || true
+            git status --short reports-site
 
             git add -A reports-site
 
             echo "Staged report file changes:"
-            git diff --cached --stat || true
+            git diff --cached --stat
 
             if git diff --cached --quiet; then
               echo "No reports-site changes to commit."
@@ -395,7 +409,9 @@ jobs:
           echo "Expected reporting timestamp: ${expected_started_at}"
 
           for attempt in {1..30}; do
-            body="$(curl --fail --silent --show-error --location --max-time 10 "${REPORTING_PAGES_URL}?run=${GITHUB_RUN_ID}-${attempt}" || true)"
+            if ! body="$(curl --fail --silent --show-error --location --max-time 10 "${REPORTING_PAGES_URL}?run=${GITHUB_RUN_ID}-${attempt}")"; then
+              body=""
+            fi
             if printf '%s' "$body" | grep -F "Run started: ${expected_started_at}" >/dev/null; then
               echo "Reporting site updated: ${REPORTING_PAGES_URL}"
               exit 0
