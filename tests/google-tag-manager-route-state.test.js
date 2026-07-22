@@ -3,12 +3,12 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 import { visualWalkthroughConfig } from '../visual-walkthrough.config.mjs';
+import { publishedGovukPage } from './helpers/published-govuk-pages.mjs';
 
 const containerId = 'GTM-KGGFK4KW';
 const loaderPath = '/js/google-tag-manager.js';
 const noscriptUrl = `https://www.googletagmanager.com/ns.html?id=${containerId}`;
 const layout = fs.readFileSync('src/govuk/templates/layouts/researchops.njk', 'utf8');
-const normaliser = fs.readFileSync('scripts/govuk/normalise-service-pages.mjs', 'utf8');
 const sharedHead = fs.readFileSync('public/partials/html-head.html', 'utf8');
 const loader = fs.readFileSync('public/js/google-tag-manager.js', 'utf8');
 const worker = fs.readFileSync('public/_worker.js', 'utf8');
@@ -43,9 +43,6 @@ function assertGoogleTagManager(page, pagePath) {
 assert.ok(layout.includes(loaderPath), 'shared Nunjucks layout should load the first-party GTM bootstrap');
 assert.ok(layout.includes(noscriptUrl), 'shared Nunjucks layout should include the GTM noscript fallback');
 assert.ok(sharedHead.includes(loaderPath), 'shared HTML head partial should load the first-party GTM bootstrap');
-assert.match(normaliser, /GOOGLE_TAG_MANAGER_CONTAINER_ID = 'GTM-KGGFK4KW'/, 'normaliser should manage the GTM container');
-assert.match(normaliser, /GOOGLE_TAG_MANAGER_LOADER_PATH = '\/js\/google-tag-manager\.js'/, 'normaliser should load GTM through the first-party bootstrap');
-assert.match(normaliser, /ensureGoogleTagManagerNoscript/, 'normaliser should add the GTM noscript fallback');
 assert.match(loader, /https:\/\/www\.googletagmanager\.com\/gtm\.js\?id=\$\{containerId\}/, 'first-party bootstrap should load GTM');
 assert.match(loader, /'GTM-KGGFK4KW'/, 'first-party bootstrap should use the configured GTM container');
 assert.match(worker, /img-src 'self' data: https:\/\/www\.googletagmanager\.com/, 'Pages Worker CSP should allow GTM image requests');
@@ -60,12 +57,18 @@ assert.equal((headers.match(/https:\/\/\*\.analytics\.google\.com/g) || []).leng
 const deployablePagePaths = [
 	...visualWalkthroughConfig.pages.map(({ path: route }) => outputPathForRoute(route)),
 	'public/clear.html',
+];
+const staticPagePaths = new Set([
+	'public/clear.html',
 	'public/pages/account/sign-in/index.html',
 	'public/pages/team/registration-requests/index.html',
-];
+]);
 
 for (const pagePath of deployablePagePaths) {
-	assertGoogleTagManager(fs.readFileSync(pagePath, 'utf8'), pagePath);
+	const page = staticPagePaths.has(pagePath)
+		? fs.readFileSync(pagePath, 'utf8')
+		: await publishedGovukPage(pagePath);
+	assertGoogleTagManager(page, pagePath);
 }
 
 const legacySynthesisRedirect = fs.readFileSync('public/pages/synthesize/index.html', 'utf8');

@@ -2,9 +2,9 @@
 
 Cloudflare Pages currently publishes the committed `public/` directory. Generated GOV.UK HTML in `public/index.html` and `public/pages/**/index.html` therefore remains committed source for the current deployment contract.
 
-Do not hand-edit generated GOV.UK HTML. Edit the Nunjucks templates or renderer inputs, then run the GOV.UK page renderer so committed HTML, templates and tests stay in step while generated HTML remains committed.
+Do not hand-edit generated GOV.UK HTML. Edit the Nunjucks templates or publisher inputs, then run the GOV.UK page publisher so committed HTML, templates and tests stay in step while generated HTML remains committed.
 
-route-state tests remain the guardrail for route behaviour, generated page registration and workflow state. Tests that need to inspect renderer-managed GOV.UK pages should load those pages from the Nunjucks templates and renderer registry rather than reading the committed generated HTML directly.
+route-state tests remain the guardrail for route behaviour, generated page publication and workflow state. Tests that need generated GOV.UK HTML publish the requested route through the in-memory output adapter. A parity test checks every final, post-normalised page byte-for-byte against the committed output.
 
 Generated HTML diffs should still be reviewed while Cloudflare Pages publishes committed files.
 

@@ -1,7 +1,8 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
+import { publishedGovukPage } from './helpers/published-govuk-pages.mjs';
 
-const pageSource = fs.readFileSync('public/pages/team/role-assignments/index.html', 'utf8');
+const pageSource = await publishedGovukPage('public/pages/team/role-assignments/index.html');
 const scriptSource = fs.readFileSync('public/js/auth-role-assignment-page.js', 'utf8');
 
 function assertRoleAssignmentErrorsAreUserFacing() {

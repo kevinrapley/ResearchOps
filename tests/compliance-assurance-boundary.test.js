@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import test from 'node:test';
+import { publishedGovukPage } from './helpers/published-govuk-pages.mjs';
 
 const read = (filePath) => fs.readFileSync(filePath, 'utf8');
 
@@ -13,7 +14,7 @@ const availabilityReadiness = read(
 const availabilityEvidence = read(
 	'docs/compliance/soc2-iso27001-readiness/availability-and-monitoring/backup-restore-availability-monitoring.md'
 );
-const availabilityEvidencePage = read(
+const availabilityEvidencePage = await publishedGovukPage(
 	'public/pages/compliance-readiness/availability-and-monitoring/backup-restore-availability-monitoring/index.html'
 );
 const incidentReadiness = read(
@@ -25,7 +26,7 @@ const privacyReadiness = read(
 const privacyEvidence = read(
 	'docs/compliance/soc2-iso27001-readiness/privacy-and-data-protection/dpia-data-map-ropa-lawful-basis.md'
 );
-const privacyEvidencePage = read(
+const privacyEvidencePage = await publishedGovukPage(
 	'public/pages/compliance-readiness/privacy-and-data-protection/dpia-data-map-ropa-lawful-basis/index.html'
 );
 const supplierReadiness = read(
@@ -34,7 +35,7 @@ const supplierReadiness = read(
 const supplierRegister = read(
 	'docs/compliance/soc2-iso27001-readiness/supplier-assurance/supplier-assurance-register.md'
 );
-const supplierRegisterPage = read(
+const supplierRegisterPage = await publishedGovukPage(
 	'public/pages/compliance-readiness/supplier-assurance/register/index.html'
 );
 const combined = `${readme}\n${scope}\n${evidenceIndex}`;

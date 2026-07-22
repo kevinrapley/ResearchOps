@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import test from 'node:test';
+import { publishedGovukPage } from './helpers/published-govuk-pages.mjs';
 
 import {
 	availabilityEvidencePages,
@@ -13,17 +14,13 @@ import {
 	supplierAssuranceEvidencePages,
 } from '../src/govuk/data/compliance-readiness.mjs';
 
-const page = fs.existsSync('public/pages/compliance-readiness/index.html')
-	? fs.readFileSync('public/pages/compliance-readiness/index.html', 'utf8')
-	: '';
+const page = await publishedGovukPage('public/pages/compliance-readiness/index.html');
 const template = fs.readFileSync('src/govuk/templates/pages/compliance-readiness.njk', 'utf8');
-const renderer = fs.readFileSync('scripts/govuk/render-govuk-pages.mjs', 'utf8');
 const footer = fs.readFileSync('public/partials/footer.html', 'utf8');
 const header = fs.readFileSync('public/partials/header.html', 'utf8');
 
 test('compliance readiness page is registered as a GOV.UK page without main navigation exposure', () => {
-	assert.match(renderer, /template: 'pages\/compliance-readiness\.njk'/);
-	assert.match(renderer, /output: 'public\/pages\/compliance-readiness\/index\.html'/);
+	assert.match(page, /data-compliance-readiness-page/);
 	assert.match(footer, /href="\/pages\/compliance-readiness\/">Compliance readiness<\/a>/);
 	assert.doesNotMatch(header, /\/pages\/compliance-readiness\//);
 });
@@ -87,9 +84,10 @@ test('control matrix maps readiness controls to SOC 2 and ISO Annex A', () => {
 });
 
 test('rendered compliance readiness page includes the expected public content', () => {
+	const normalisedPage = page.replace(/\s+/g, ' ');
 	assert.match(page, /SOC 2 and ISO\/IEC 27001 readiness documentation/);
 	assert.match(
-		page,
+		normalisedPage,
 		/<h1 class="govuk-heading-xl">\s*SOC 2 and ISO\/IEC 27001 readiness documentation\s*<\/h1>/
 	);
 	assert.match(page, /data-compliance-readiness-page/);
@@ -107,33 +105,33 @@ test('rendered compliance readiness page includes the expected public content', 
 	assert.match(page, /ISMS scope, risk assessment, risk treatment plan and Statement of Applicability/);
 	assert.match(page, /Incident response evidence/);
 	assert.match(
-		page,
+		normalisedPage,
 		/These pages make the incident response runbooks, personal data breach handling process and test evidence structure visible from the readiness artefact/
 	);
 	assert.match(page, /Supplier assurance evidence/);
 	assert.match(
-		page,
+		normalisedPage,
 		/These pages make the supplier and integration assurance position visible for Cloudflare, GitHub, Airtable, Mural, email delivery and configured AI services/
 	);
 	assert.match(page, /Privacy and data protection evidence/);
 	assert.match(
-		page,
+		normalisedPage,
 		/These pages make the DPIA, data map, records of processing and lawful-basis readiness position visible from the readiness artefact/
 	);
 	assert.match(page, /Availability and monitoring evidence/);
 	assert.match(
-		page,
+		normalisedPage,
 		/These pages make the backup, restore, availability and monitoring readiness position visible from the readiness artefact/
 	);
 	assert.match(page, /Governance, scope and accountability/);
-	assert.match(page, /service-specific runbooks, personal data breach handling process and planned test evidence structure/);
-	assert.match(page, /supplier and integration assurance register/);
-	assert.match(page, /privacy evidence structure for/);
-	assert.match(page, /data mapping, records of processing and lawful-basis decisions/);
-	assert.match(page, /continuity evidence structure for backup responsibilities/);
-	assert.match(page, /restore tests, availability scope/);
-	assert.match(page, /completed incident response test evidence/);
-	assert.match(page, /completed restore test evidence and approved monitoring evidence/);
+	assert.match(normalisedPage, /service-specific runbooks, personal data breach handling process and planned test evidence structure/);
+	assert.match(normalisedPage, /supplier and integration assurance register/);
+	assert.match(normalisedPage, /privacy evidence structure for/);
+	assert.match(normalisedPage, /data mapping, records of processing and lawful-basis decisions/);
+	assert.match(normalisedPage, /continuity evidence structure for backup responsibilities/);
+	assert.match(normalisedPage, /restore tests, availability scope/);
+	assert.match(normalisedPage, /completed incident response test evidence/);
+	assert.match(normalisedPage, /completed restore test evidence and approved monitoring evidence/);
 	assert.match(page, /Privacy, retention and data minimisation/);
 	assert.match(page, /CC6/);
 	assert.match(page, /A\.5\.34/);
@@ -142,7 +140,7 @@ test('rendered compliance readiness page includes the expected public content', 
 	assert.match(page, /<abbr title="Trust Services Criteria">TSC<\/abbr>/);
 	assert.match(
 		page,
-		/<abbr title="International Organization for Standardization \/ International Electrotechnical Commission">ISO\/IEC<\/abbr>/
+		/<abbr title="International Organization for Standardization \/ International Electrotechnical Commission">\s*ISO\/IEC\s*<\/abbr>/
 	);
 	assert.match(page, /<abbr title="General Data Protection Regulation">GDPR<\/abbr>/);
 	assert.match(page, /<abbr title="Data Protection Impact Assessment">DPIA<\/abbr>/);
@@ -190,11 +188,11 @@ test('compliance readiness page links to availability and monitoring evidence pa
 	}
 });
 
-test('compliance readiness evidence pages use the shared GOV.UK evidence renderer', () => {
+test('compliance readiness evidence pages publish through the GOV.UK page seam', async () => {
 	assert.equal(complianceEvidencePages.length, 6);
-	assert.match(renderer, /complianceEvidencePages/);
-	assert.match(renderer, /public\$\{page\.route\}index\.html/);
-	assert.match(renderer, /template: 'pages\/compliance-evidence-document\.njk'/);
+	for (const evidencePage of complianceEvidencePages) {
+		assert.match(await publishedGovukPage(evidencePage.route), /data-compliance-evidence-document=/);
+	}
 });
 
 test('rendered compliance readiness heading does not use abbreviation markup', () => {

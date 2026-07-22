@@ -1,9 +1,9 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
+import { publishedGovukPage } from './helpers/published-govuk-pages.mjs';
 
-const pageSource = fs.readFileSync("public/pages/study/participants/index.html", "utf8");
+const pageSource = await publishedGovukPage("public/pages/study/participants/index.html");
 const templateSource = fs.readFileSync("src/govuk/templates/pages/study-participants.njk", "utf8");
-const rendererSource = fs.readFileSync("scripts/govuk/render-govuk-pages.mjs", "utf8");
 const stylesheetSource = fs.readFileSync("public/css/participants.css", "utf8");
 const stylesheetScssSource = fs.readFileSync("src/styles/participants.scss", "utf8");
 const generatedCssTargetsSource = fs.readFileSync("scripts/styles/generated-css-targets.mjs", "utf8");
@@ -33,8 +33,6 @@ for (const macro of [
 	includes(templateSource, macro, "participants template");
 }
 
-includes(rendererSource, "template: 'pages/study-participants.njk'", "GOV.UK renderer");
-includes(rendererSource, "output: 'public/pages/study/participants/index.html'", "GOV.UK renderer");
 includes(generatedCssTargetsSource, "source: 'src/styles/participants.scss'", "generated CSS targets");
 includes(generatedCssTargetsSource, "output: 'public/css/participants.css'", "generated CSS targets");
 

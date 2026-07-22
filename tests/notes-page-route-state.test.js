@@ -1,11 +1,11 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
+import { publishedGovukPage } from './helpers/published-govuk-pages.mjs';
 
-const pageSource = fs.readFileSync("public/pages/notes/index.html", "utf8");
+const pageSource = await publishedGovukPage("public/pages/notes/index.html");
 const templateSource = fs.readFileSync("src/govuk/templates/pages/notes.njk", "utf8");
 const controllerSource = fs.readFileSync("public/js/notes-page.js", "utf8");
 const stylesheetSource = fs.readFileSync("public/css/notes.css", "utf8");
-const rendererSource = fs.readFileSync("scripts/govuk/render-govuk-pages.mjs", "utf8");
 const generatedCssTargetsSource = fs.readFileSync("scripts/styles/generated-css-targets.mjs", "utf8");
 
 function includes(source, text, label) {
@@ -55,8 +55,6 @@ includes(templateSource, "govukInput({", "notes template");
 includes(templateSource, "govukSelect({", "notes template");
 includes(templateSource, "govukTextarea({", "notes template");
 includes(templateSource, "govukButton({", "notes template");
-includes(rendererSource, "template: 'pages/notes.njk'", "GOV.UK page renderer");
-includes(rendererSource, "output: 'public/pages/notes/index.html'", "GOV.UK page renderer");
 includes(generatedCssTargetsSource, "name: 'Notes utility route stylesheet'", "generated CSS targets");
 includes(generatedCssTargetsSource, "source: 'src/styles/researchops-utility-pages.scss'", "generated CSS targets");
 includes(generatedCssTargetsSource, "output: 'public/css/notes.css'", "generated CSS targets");

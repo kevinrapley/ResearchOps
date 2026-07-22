@@ -1,12 +1,13 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
+import { publishedGovukPage } from './helpers/published-govuk-pages.mjs';
 
 const workerSource = fs.readFileSync('infra/cloudflare/src/worker.js', 'utf8');
 const deployWorkerSource = fs.readFileSync('.github/workflows/deploy-worker.yml', 'utf8');
 const passwordlessPreviewWorkerSource = fs.readFileSync('.github/workflows/deploy-passwordless-preview-worker.yml', 'utf8');
 const migrationSource = fs.readFileSync('infra/cloudflare/migrations/0005_auth_registration_requests.sql', 'utf8');
 const routeSource = fs.readFileSync('infra/cloudflare/src/core/auth/registration-requests.js', 'utf8');
-const registrationPageSource = fs.readFileSync('public/pages/account/register/index.html', 'utf8');
+const registrationPageSource = await publishedGovukPage('public/pages/account/register/index.html');
 const registrationPageScript = fs.readFileSync('public/js/auth-registration-page.js', 'utf8');
 const reviewPageSource = fs.readFileSync('public/pages/team/registration-requests/index.html', 'utf8');
 const reviewPageScript = fs.readFileSync('public/js/auth-registration-requests-page.js', 'utf8');
@@ -105,14 +106,15 @@ function assertRouteCapturesRequestedPurposeOnly() {
 }
 
 function assertRegistrationPageUsesReviewLanguage() {
-	assert.ok(registrationPageSource.includes('Request a ResearchOps account'));
-	assert.ok(registrationPageSource.includes('A team admin will review your request before any team access or role is added'));
-	assert.ok(registrationPageSource.includes('Your answer about what you need to do does not give you access'));
-	assert.ok(registrationPageSource.includes('What do you need to use ResearchOps for?'));
-	assert.ok(registrationPageSource.includes('A team admin will review your request and decide what access you need'));
-	assert.ok(registrationPageSource.includes('Check your answers before sending your request'));
-	assert.ok(registrationPageSource.includes('Continue'));
-	assert.ok(registrationPageSource.includes('Send request'));
+	const normalisedPage = registrationPageSource.replace(/\s+/g, ' ');
+	assert.ok(normalisedPage.includes('Request a ResearchOps account'));
+	assert.ok(normalisedPage.includes('A team admin will review your request before any team access or role is added'));
+	assert.ok(normalisedPage.includes('Your answer about what you need to do does not give you access'));
+	assert.ok(normalisedPage.includes('What do you need to use ResearchOps for?'));
+	assert.ok(normalisedPage.includes('A team admin will review your request and decide what access you need'));
+	assert.ok(normalisedPage.includes('Check your answers before sending your request'));
+	assert.ok(normalisedPage.includes('Continue'));
+	assert.ok(normalisedPage.includes('Send request'));
 	assert.doesNotMatch(registrationPageSource, /govuk-notification-banner/);
 }
 

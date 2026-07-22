@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
+import { publishedGovukPage } from './helpers/published-govuk-pages.mjs';
 
 const cssSource = fs.readFileSync("public/css/daas-brand-panel.css", "utf8");
 const sassSource = fs.readFileSync("src/styles/daas-brand-panel.scss", "utf8");
@@ -123,7 +124,7 @@ includes(controllerSource, "rops-leds-brand-panel--visible", "DaaS brand panel c
 
 for (const route of routes) {
 	const templateSource = fs.readFileSync(route.template, "utf8");
-	const pageSource = fs.readFileSync(route.page, "utf8");
+	const pageSource = await publishedGovukPage(route.page);
 	includes(templateSource, "{% from \"macros/daas-brand-panel.njk\" import daasBrandPanel %}", `${route.label} template`);
 	includes(templateSource, "{{ daasBrandPanel() }}", `${route.label} template`);
 	includes(templateSource, "/css/daas-brand-panel.css?v=leds-brand-panel-20260624", `${route.label} template`);

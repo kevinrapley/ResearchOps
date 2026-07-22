@@ -9,7 +9,6 @@ const studyNewControllerSource = fs.readFileSync("public/pages/study/new/study-n
 const participantControllerSource = fs.readFileSync("public/pages/project-dashboard/participants/participants-project.js", "utf8");
 const participantImportControllerSource = fs.readFileSync("public/pages/project-dashboard/participants/import/import-participants.js", "utf8");
 const dashboardContextSource = fs.readFileSync("public/js/project-dashboard-context.js", "utf8");
-const renderGovukPagesSource = fs.readFileSync("scripts/govuk/render-govuk-pages.mjs", "utf8");
 
 function includes(source, text, label) {
 	assert.equal(source.includes(text), true, `Expected ${label} to include: ${text}`);
@@ -19,12 +18,6 @@ function excludes(source, text, label) {
 	assert.equal(source.includes(text), false, `Expected ${label} not to include: ${text}`);
 }
 
-includes(renderGovukPagesSource, "template: 'pages/study-new.njk'", "GOV.UK page renderer");
-includes(renderGovukPagesSource, "output: 'public/pages/study/new/index.html'", "GOV.UK page renderer");
-includes(renderGovukPagesSource, "template: 'pages/project-dashboard-participants.njk'", "GOV.UK page renderer");
-includes(renderGovukPagesSource, "output: 'public/pages/project-dashboard/participants/index.html'", "GOV.UK page renderer");
-includes(renderGovukPagesSource, "template: 'pages/project-dashboard-participants-import.njk'", "GOV.UK page renderer");
-includes(renderGovukPagesSource, "output: 'public/pages/project-dashboard/participants/import/index.html'", "GOV.UK page renderer");
 
 includes(studyNewTemplateSource, "{% from \"govuk/components/breadcrumbs/macro.njk\" import govukBreadcrumbs %}", "study new template");
 includes(studyNewTemplateSource, "{% from \"govuk/components/button/macro.njk\" import govukButton %}", "study new template");

@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
+import { publishedGovukPage } from './helpers/published-govuk-pages.mjs';
 
 const pageChromeCss = fs.readFileSync("public/css/govuk/govuk-page-chrome.css", "utf8");
 const headerServiceBrandCss = fs.readFileSync(
@@ -122,7 +123,9 @@ includes(footerPartial, "class=\"govuk-footer__meta\"", "shared footer partial")
 excludes(footerPartial, "<hr", "shared footer partial");
 
 for (const pagePath of pagesUsingSharedChrome) {
-	const source = fs.readFileSync(pagePath, "utf8");
+	const source = pagePath === "public/pages/synthesize/index.html"
+		? fs.readFileSync(pagePath, "utf8")
+		: await publishedGovukPage(pagePath);
 
 	includes(source, "src=\"/partials/header.html\"", pagePath);
 	matches(source, /src="\/partials\/footer\.html(?:\?[^"]*)?"/, pagePath);

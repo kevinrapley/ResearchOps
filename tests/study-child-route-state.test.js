@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
+import { publishedGovukPage } from './helpers/published-govuk-pages.mjs';
 
 function read(path) {
 	return fs.readFileSync(path, "utf8");
@@ -18,14 +19,14 @@ const studyRouteContext = read("public/js/study-route-context.js");
 const studyBridge = read("public/js/study-canonical-url-bridge.js");
 
 const pages = {
-	consentForms: read("public/pages/study/consent-forms/index.html"),
-	ethicsRisk: read("public/pages/study/ethics-risk/index.html"),
-	ethicsRiskNextSteps: read("public/pages/study/ethics-risk/next-steps/index.html"),
-	guides: read("public/pages/study/guides/index.html"),
-	noteTakersObservers: read("public/pages/study/note-takers-observers/index.html"),
-	participantConsent: read("public/pages/study/participant-consent/index.html"),
-	participants: read("public/pages/study/participants/index.html"),
-	synthesis: read("public/pages/study/synthesis/index.html"),
+	consentForms: await publishedGovukPage("public/pages/study/consent-forms/index.html"),
+	ethicsRisk: await publishedGovukPage("public/pages/study/ethics-risk/index.html"),
+	ethicsRiskNextSteps: await publishedGovukPage("public/pages/study/ethics-risk/next-steps/index.html"),
+	guides: await publishedGovukPage("public/pages/study/guides/index.html"),
+	noteTakersObservers: await publishedGovukPage("public/pages/study/note-takers-observers/index.html"),
+	participantConsent: await publishedGovukPage("public/pages/study/participant-consent/index.html"),
+	participants: await publishedGovukPage("public/pages/study/participants/index.html"),
+	synthesis: await publishedGovukPage("public/pages/study/synthesis/index.html"),
 };
 
 const loaders = {

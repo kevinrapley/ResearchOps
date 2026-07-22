@@ -1,9 +1,9 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
+import { publishedGovukPage } from './helpers/published-govuk-pages.mjs';
 
-const pageSource = fs.readFileSync("public/pages/study/guides/index.html", "utf8");
+const pageSource = await publishedGovukPage("public/pages/study/guides/index.html");
 const templateSource = fs.readFileSync("src/govuk/templates/pages/study-guides.njk", "utf8");
-const rendererSource = fs.readFileSync("scripts/govuk/render-govuk-pages.mjs", "utf8");
 const contextSource = fs.readFileSync("public/js/study-guides-context.js", "utf8");
 const loaderSource = fs.readFileSync("public/js/guides-route-loader.js", "utf8");
 const guidesPageSource = fs.readFileSync("public/components/guides/guides-page.js", "utf8");
@@ -35,8 +35,6 @@ for (const macro of [
 	includes(templateSource, macro, "study guides template");
 }
 
-includes(rendererSource, "template: 'pages/study-guides.njk'", "GOV.UK renderer");
-includes(rendererSource, "output: 'public/pages/study/guides/index.html'", "GOV.UK renderer");
 
 includes(pageSource, "href=\"/assets/govuk/govuk-frontend.css\"", "study guides page");
 includes(pageSource, "href=\"/css/guides.css\"", "study guides page");

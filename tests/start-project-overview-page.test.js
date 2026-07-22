@@ -1,11 +1,12 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import { visualWalkthroughConfig } from '../visual-walkthrough.config.mjs';
+import { publishedGovukPage } from './helpers/published-govuk-pages.mjs';
 
-const overviewPage = fs.readFileSync('public/pages/start/overview/index.html', 'utf8');
+const overviewPage = await publishedGovukPage('public/pages/start/overview/index.html');
 const headerPartial = fs.readFileSync('public/partials/header.html', 'utf8');
-const homePage = fs.readFileSync('public/index.html', 'utf8');
-const projectsPage = fs.readFileSync('public/pages/projects/index.html', 'utf8');
+const homePage = await publishedGovukPage('public/index.html');
+const projectsPage = await publishedGovukPage('public/pages/projects/index.html');
 
 function headingText(source, level) {
 	const pattern = new RegExp(`<h${level}\\b[^>]*>([\\s\\S]*?)<\\/h${level}>`, 'gi');

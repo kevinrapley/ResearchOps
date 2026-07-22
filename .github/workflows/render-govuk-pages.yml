@@ -13,6 +13,8 @@ on:
       - 'src/govuk/data/sourcebook.mjs'
       - 'sourcebook/sourcebook-index.json'
       - 'scripts/govuk/render-govuk-pages.mjs'
+      - 'scripts/govuk/govuk-page-filesystem-output.mjs'
+      - 'scripts/govuk/page-publisher/**'
       - 'scripts/govuk/normalise-service-pages.mjs'
       - 'package.json'
       - 'package-lock.json'
@@ -49,132 +51,16 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Determine changed GOV.UK page outputs
-        id: changed-pages
-        shell: bash
-        run: |
-          set -euo pipefail
-
-          if [ "${{ github.event_name }}" != "pull_request" ]; then
-            echo "render_all=true" >> "$GITHUB_OUTPUT"
-            echo "outputs=" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-
-          base_ref="${{ github.event.pull_request.base.ref }}"
-          changed_global_sources_path="${RUNNER_TEMP}/changed-govuk-render-global-sources.txt"
-          changed_templates_path="${RUNNER_TEMP}/changed-govuk-page-templates.txt"
-          changed_outputs_path="${RUNNER_TEMP}/changed-govuk-page-outputs.txt"
-
-          git fetch --no-tags origin "$base_ref"
-          git diff --name-only "origin/${base_ref}"...HEAD -- \
-            'src/govuk/templates/**' \
-            'src/govuk/data/compliance-readiness.mjs' \
-            'docs/compliance/soc2-iso27001-readiness/availability-and-monitoring/**' \
-            'docs/compliance/soc2-iso27001-readiness/incident-response/**' \
-            'docs/compliance/soc2-iso27001-readiness/privacy-and-data-protection/**' \
-            'docs/compliance/soc2-iso27001-readiness/supplier-assurance/**' \
-            'src/govuk/data/sourcebook.mjs' \
-            'sourcebook/sourcebook-index.json' \
-            'scripts/govuk/render-govuk-pages.mjs' \
-            'scripts/govuk/normalise-service-pages.mjs' \
-            'package.json' \
-            'package-lock.json' \
-            '.github/workflows/render-govuk-pages.yml' \
-            | awk '$0 !~ /^src\/govuk\/templates\/pages\/[^/]+\.njk$/ { print }' \
-            | sort -u > "$changed_global_sources_path"
-
-          if [ -s "$changed_global_sources_path" ]; then
-            echo "Changed GOV.UK render inputs require all generated pages to be checked."
-            cat "$changed_global_sources_path"
-            echo "render_all=true" >> "$GITHUB_OUTPUT"
-            echo "outputs=" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-
-          git diff --name-only "origin/${base_ref}"...HEAD -- 'src/govuk/templates/pages/*.njk' \
-            | sed 's#^src/govuk/templates/##' \
-            | sort -u > "$changed_templates_path"
-
-          if [ ! -s "$changed_templates_path" ]; then
-            echo "No changed GOV.UK page templates to render."
-            echo "render_all=false" >> "$GITHUB_OUTPUT"
-            echo "outputs=" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-
-          GOVUK_CHANGED_TEMPLATE_FILE="$changed_templates_path" node --input-type=module <<'NODE' > "$changed_outputs_path"
-          import { readFileSync } from 'node:fs';
-          import { govukPages } from './scripts/govuk/render-govuk-pages.mjs';
-
-          const changedTemplates = readFileSync(process.env.GOVUK_CHANGED_TEMPLATE_FILE, 'utf8')
-            .split('\n')
-            .map((line) => line.trim())
-            .filter(Boolean);
-          const byTemplate = new Map();
-
-          for (const page of govukPages) {
-            if (!byTemplate.has(page.template)) {
-              byTemplate.set(page.template, []);
-            }
-            byTemplate.get(page.template).push(page.output);
-          }
-
-          const missing = changedTemplates.filter((template) => !byTemplate.has(template));
-          if (missing.length) {
-            throw new Error(`No GOV.UK renderer page registration found for: ${missing.join(', ')}`);
-          }
-
-          const changedOutputs = new Set();
-          for (const template of changedTemplates) {
-            for (const output of byTemplate.get(template)) {
-              changedOutputs.add(output);
-            }
-          }
-
-          for (const output of [...changedOutputs].sort()) {
-            console.log(output);
-          }
-          NODE
-
-          echo "render_all=false" >> "$GITHUB_OUTPUT"
-          {
-            echo "outputs<<EOF"
-            cat "$changed_outputs_path"
-            echo "EOF"
-          } >> "$GITHUB_OUTPUT"
-
       - name: Render GOV.UK pages from Nunjucks
-        if: steps.changed-pages.outputs.render_all == 'true' || steps.changed-pages.outputs.outputs != ''
-        run: |
-          # npm run build:govuk-pages uses this same canonical renderer.
-          node --input-type=module <<'NODE'
-          import { renderAllGovukPages } from './scripts/govuk/render-govuk-pages.mjs';
-
-          await renderAllGovukPages();
-          NODE
+        run: npm run build:govuk-pages
 
       - name: Commit rendered static pages
-        if: steps.changed-pages.outputs.render_all == 'true' || steps.changed-pages.outputs.outputs != ''
         shell: bash
         run: |
           set -euo pipefail
           branch_name="${{ github.event.pull_request.head.ref || github.ref_name }}"
           patch_path="${RUNNER_TEMP}/rendered-govuk-pages.patch"
-          changed_outputs_path="${RUNNER_TEMP}/changed-govuk-page-outputs.txt"
-          render_all="${{ steps.changed-pages.outputs.render_all }}"
-
-          if [ "$render_all" = "true" ]; then
-            output_paths=(public/index.html public/pages)
-          else
-            printf '%s\n' "${{ steps.changed-pages.outputs.outputs }}" > "$changed_outputs_path"
-            mapfile -t output_paths < "$changed_outputs_path"
-          fi
-
-          if [ "${#output_paths[@]}" -eq 0 ]; then
-            echo "No generated GOV.UK page outputs to check."
-            exit 0
-          fi
+          output_paths=(public/index.html public/pages)
 
           if [ -z "$(git status --short -- "${output_paths[@]}")" ]; then
             echo "Rendered GOV.UK pages are already committed."

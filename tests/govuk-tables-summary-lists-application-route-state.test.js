@@ -1,15 +1,16 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
+import { publishedGovukPage } from './helpers/published-govuk-pages.mjs';
 
 const tableCssSource = fs.readFileSync("public/css/govuk/govuk-tables.css", "utf8");
-const dashboardPageSource = fs.readFileSync("public/pages/project-dashboard/index.html", "utf8");
-const studyPageSource = fs.readFileSync("public/pages/study/index.html", "utf8");
-const guidesPageSource = fs.readFileSync("public/pages/study/guides/index.html", "utf8");
-const participantsPageSource = fs.readFileSync("public/pages/study/participants/index.html", "utf8");
-const participantConsentPageSource = fs.readFileSync("public/pages/study/participant-consent/index.html", "utf8");
+const dashboardPageSource = await publishedGovukPage("public/pages/project-dashboard/index.html");
+const studyPageSource = await publishedGovukPage("public/pages/study/index.html");
+const guidesPageSource = await publishedGovukPage("public/pages/study/guides/index.html");
+const participantsPageSource = await publishedGovukPage("public/pages/study/participants/index.html");
+const participantConsentPageSource = await publishedGovukPage("public/pages/study/participant-consent/index.html");
 const participantsModuleSource = fs.readFileSync("public/components/participants/participants-page.js", "utf8");
 const participantsSchedulerSource = fs.readFileSync("public/pages/study/participants/scheduler.js", "utf8");
-const outcomesPageSource = fs.readFileSync("public/pages/projects/outcomes/index.html", "utf8");
+const outcomesPageSource = await publishedGovukPage("public/pages/projects/outcomes/index.html");
 const outcomesTemplateSource = fs.readFileSync("src/govuk/templates/pages/projects-outcomes.njk", "utf8");
 const impactTrackerSource = fs.readFileSync("public/components/impact-tracker.js", "utf8");
 

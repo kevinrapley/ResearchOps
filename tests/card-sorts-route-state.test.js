@@ -1,18 +1,19 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
+import { publishedGovukPage } from './helpers/published-govuk-pages.mjs';
 
 const serviceSource = fs.readFileSync("infra/cloudflare/src/service/card-sorts.js", "utf8");
 const serviceIndexSource = fs.readFileSync("infra/cloudflare/src/service/index.js", "utf8");
 const routerSource = fs.readFileSync("infra/cloudflare/src/core/router.js", "utf8");
 const workerSource = fs.readFileSync("infra/cloudflare/src/worker.js", "utf8");
 const migrationSource = fs.readFileSync("infra/cloudflare/migrations/0027_card_sorts.sql", "utf8");
-const setupPage = fs.readFileSync("public/pages/study/card-sort/index.html", "utf8");
+const setupPage = await publishedGovukPage("public/pages/study/card-sort/index.html");
 const setupScript = fs.readFileSync("public/js/study-card-sort-page.js", "utf8");
-const sessionPage = fs.readFileSync("public/pages/study/session/index.html", "utf8");
+const sessionPage = await publishedGovukPage("public/pages/study/session/index.html");
 const sessionShellController = fs.readFileSync("public/components/session-controller.js", "utf8");
 const sessionController = fs.readFileSync("public/components/session-card-sort-controller.js", "utf8");
 const cardSortStyles = fs.readFileSync("public/css/study-card-sort.css", "utf8");
-const studyPage = fs.readFileSync("public/pages/study/index.html", "utf8");
+const studyPage = await publishedGovukPage("public/pages/study/index.html");
 const studyScript = fs.readFileSync("public/js/study-page.js", "utf8");
 
 function includes(source, text, label) {

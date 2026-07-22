@@ -1,7 +1,8 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
+import { publishedGovukPage } from './helpers/published-govuk-pages.mjs';
 
-const pageSource = fs.readFileSync("public/pages/study/index.html", "utf8");
+const pageSource = await publishedGovukPage("public/pages/study/index.html");
 const templateSource = fs.readFileSync("src/govuk/templates/pages/study.njk", "utf8");
 const controllerSource = fs.readFileSync("public/js/study-page.js", "utf8");
 const descControllerSource = fs.readFileSync("public/pages/study/study-desc-controller.js", "utf8");
@@ -9,7 +10,6 @@ const studyCssSource = fs.readFileSync("public/css/study-page.css", "utf8");
 const studyScssSource = fs.readFileSync("src/styles/study-page.scss", "utf8");
 const sourcebookComponentsCssSource = fs.readFileSync("public/css/sourcebook-components.css", "utf8");
 const sourcebookComponentsScssSource = fs.readFileSync("src/styles/sourcebook-components.scss", "utf8");
-const rendererSource = fs.readFileSync("scripts/govuk/render-govuk-pages.mjs", "utf8");
 const generatedCssTargetsSource = fs.readFileSync("scripts/styles/generated-css-targets.mjs", "utf8");
 const formatWorkflowSource = fs.readFileSync(".github/workflows/format-pr.yml", "utf8");
 const prettierIgnoreSource = fs.readFileSync(".prettierignore", "utf8");
@@ -89,8 +89,6 @@ for (const legacy of ["study-task-card", "study-readiness-list", "readiness-item
 	excludes(pageSource, legacy, "study page");
 }
 
-includes(rendererSource, "template: 'pages/study.njk'", "GOV.UK renderer");
-includes(rendererSource, "output: 'public/pages/study/index.html'", "GOV.UK renderer");
 
 for (const text of [
 	"<html class=\"govuk-template\" lang=\"en\">",

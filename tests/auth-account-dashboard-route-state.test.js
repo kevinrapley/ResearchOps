@@ -1,7 +1,8 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
+import { publishedGovukPage } from './helpers/published-govuk-pages.mjs';
 
-const accountPage = fs.readFileSync('public/pages/account/index.html', 'utf8');
+const accountPage = await publishedGovukPage('public/pages/account/index.html');
 const accountTemplate = fs.readFileSync('src/govuk/templates/pages/account.njk', 'utf8');
 const accountScript = fs.readFileSync('public/js/auth-account-page.js', 'utf8');
 const productRequirements = fs.readFileSync(

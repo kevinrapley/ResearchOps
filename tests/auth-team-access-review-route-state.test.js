@@ -1,14 +1,13 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
+import { publishedGovukPage } from './helpers/published-govuk-pages.mjs';
 
 const storyPlan = fs.readFileSync('docs/product/26/05/31/auth-story-4-team-access-review.md', 'utf8');
 const migration = fs.readFileSync('infra/cloudflare/migrations/0006_auth_team_access_review.sql', 'utf8');
 const handler = fs.readFileSync('infra/cloudflare/src/core/auth/team-access-requests.js', 'utf8');
-const renderScript = fs.readFileSync('scripts/govuk/render-govuk-pages.mjs', 'utf8');
-const renderWorkflow = fs.readFileSync('.github/workflows/render-govuk-pages.yml', 'utf8');
 const walkthroughConfig = fs.readFileSync('visual-walkthrough.config.mjs', 'utf8');
 const template = fs.readFileSync('src/govuk/templates/pages/team-access-requests.njk', 'utf8');
-const page = fs.readFileSync('public/pages/team/access-requests/index.html', 'utf8');
+const page = await publishedGovukPage('public/pages/team/access-requests/index.html');
 const pageScript = fs.readFileSync('public/js/auth-team-access-review-page.js', 'utf8');
 
 function includes(source, text, label) {
@@ -78,16 +77,6 @@ includes(handler, 'team.access.rejected', 'team access review handler');
 excludes(handler, 'INSERT INTO auth_role_assignments', 'team access review handler');
 excludes(handler, 'INSERT INTO auth_permission_exceptions', 'team access review handler');
 
-includes(renderScript, "template: 'pages/team-access-requests.njk'", 'GOV.UK page renderer');
-includes(renderScript, "output: 'public/pages/team/access-requests/index.html'", 'GOV.UK page renderer');
-includes(renderScript, "pageTitle: 'Review team access requests - ResearchOps Demo Suite'", 'GOV.UK page renderer');
-
-includes(renderWorkflow, 'Determine changed GOV.UK page outputs', 'GOV.UK render workflow');
-includes(renderWorkflow, "git diff --name-only \"origin/${base_ref}\"...HEAD -- 'src/govuk/templates/pages/*.njk'", 'GOV.UK render workflow');
-includes(renderWorkflow, 'No changed GOV.UK page templates to render.', 'GOV.UK render workflow');
-includes(renderWorkflow, 'No GOV.UK renderer page registration found for:', 'GOV.UK render workflow');
-includes(renderWorkflow, 'output_paths < "$changed_outputs_path"', 'GOV.UK render workflow');
-excludes(renderWorkflow, 'git add -A public/index.html public/pages', 'GOV.UK render workflow');
 
 includes(walkthroughConfig, "id: 'team-access-requests'", 'visual walkthrough registry');
 includes(walkthroughConfig, "'Review team access requests'", 'visual walkthrough registry');

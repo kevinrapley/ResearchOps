@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
+import { publishedGovukPage } from './helpers/published-govuk-pages.mjs';
 
 const read = (file) => fs.readFileSync(file, "utf8");
 const includes = (source, text, label) => assert.equal(source.includes(text), true, `Expected ${label} to include: ${text}`);
@@ -9,11 +10,11 @@ const serviceIndex = read("infra/cloudflare/src/service/index.js");
 const router = read("infra/cloudflare/src/core/router.js");
 const worker = read("infra/cloudflare/src/worker.js");
 const migration = read("infra/cloudflare/migrations/0028_tree_tests.sql");
-const setupPage = read("public/pages/study/tree-test/index.html");
+const setupPage = await publishedGovukPage("public/pages/study/tree-test/index.html");
 const setupController = read("public/js/study-tree-test-page.js");
-const sessionPage = read("public/pages/study/session/index.html");
+const sessionPage = await publishedGovukPage("public/pages/study/session/index.html");
 const sessionController = read("public/components/session-tree-test-controller.js");
-const studyPage = read("public/pages/study/index.html");
+const studyPage = await publishedGovukPage("public/pages/study/index.html");
 const studyController = read("public/js/study-page.js");
 
 includes(service, "rops_tree_test_configs", "Tree Test service");

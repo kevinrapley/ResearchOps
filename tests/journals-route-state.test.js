@@ -1,10 +1,10 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
+import { publishedGovukPage } from './helpers/published-govuk-pages.mjs';
 
-const pageSource = fs.readFileSync("public/pages/projects/journals/index.html", "utf8");
+const pageSource = await publishedGovukPage("public/pages/projects/journals/index.html");
 const templateSource = fs.readFileSync("src/govuk/templates/pages/projects-journals.njk", "utf8");
 const layoutSource = fs.readFileSync("src/govuk/templates/layouts/researchops.njk", "utf8");
-const renderGovukPagesSource = fs.readFileSync("scripts/govuk/render-govuk-pages.mjs", "utf8");
 const generatedCssTargetsSource = fs.readFileSync("scripts/styles/generated-css-targets.mjs", "utf8");
 const projectContextSource = fs.readFileSync("public/js/project-context.js", "utf8");
 const caqdasSource = fs.readFileSync("public/js/caqdas-interface.js", "utf8");
@@ -24,8 +24,6 @@ function matches(source, pattern, label) {
 	assert.match(source, pattern, `Expected ${label} to match: ${pattern}`);
 }
 
-includes(renderGovukPagesSource, "template: 'pages/projects-journals.njk'", "GOV.UK page renderer");
-includes(renderGovukPagesSource, "output: 'public/pages/projects/journals/index.html'", "GOV.UK page renderer");
 
 includes(layoutSource, "<x-include src=\"/partials/header.html\"", "GOV.UK layout");
 matches(layoutSource, /<x-include src="\/partials\/footer\.html\{% if footerCacheKey %\}\?v=\{\{ footerCacheKey \}\}\{% endif %\}"><\/x-include>/, "GOV.UK layout");

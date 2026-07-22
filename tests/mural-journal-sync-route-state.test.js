@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
+import { publishedGovukPage } from './helpers/published-govuk-pages.mjs';
 
 const serviceSource = fs.readFileSync("infra/cloudflare/src/service/mural-journal-sync.js", "utf8");
 const baseConstantsSource = fs.readFileSync("infra/cloudflare/src/service/mural-journal-sync/constants.js", "utf8");
@@ -16,7 +17,7 @@ const safeTagsSource = fs.readFileSync("infra/cloudflare/src/service/mural-journ
 const indexSource = fs.readFileSync("infra/cloudflare/src/service/index.js", "utf8");
 const journalTabsSource = fs.readFileSync("public/js/journal-tabs.js", "utf8");
 const compactSource = fs.readFileSync("public/js/journal-mural-sync-compact.js", "utf8");
-const pageSource = fs.readFileSync("public/pages/projects/journals/index.html", "utf8");
+const pageSource = await publishedGovukPage("public/pages/projects/journals/index.html");
 const compactCss = fs.readFileSync("public/css/journal-mural-sync.css", "utf8");
 
 function includes(source, text, label) {

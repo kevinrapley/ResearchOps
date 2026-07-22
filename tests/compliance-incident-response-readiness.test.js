@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import test from 'node:test';
+import { publishedGovukPage } from './helpers/published-govuk-pages.mjs';
 
 const read = (filePath) => fs.readFileSync(filePath, 'utf8');
 
@@ -105,9 +106,9 @@ test('incident response test evidence stays honest until an exercise is complete
 	assert.doesNotMatch(combined, /\bincident response control is tested and effective\b/i);
 });
 
-test('incident response evidence is rendered as visible GOV.UK pages', () => {
+test('incident response evidence is rendered as visible GOV.UK pages', async () => {
 	for (const page of generatedPages) {
-		const html = read(page.filePath);
+		const html = await publishedGovukPage(page.filePath);
 
 		assert.match(html, new RegExp(`data-compliance-evidence-document="${page.slug}"`));
 		assert.match(html, new RegExp(`<h1 class="govuk-heading-xl">\\s*${page.title}\\s*</h1>`));
@@ -124,14 +125,14 @@ test('incident response evidence is rendered as visible GOV.UK pages', () => {
 		}
 	}
 
-	const testEvidenceHtml = read(
+	const testEvidenceHtml = await publishedGovukPage(
 		'public/pages/compliance-readiness/incident-response/test-evidence/index.html'
 	);
 	assert.doesNotMatch(testEvidenceHtml, /\bexercise has been completed\b/i);
 });
 
-test('personal data breach decision route renders nested bullet lists inside one ordered list', () => {
-	const html = read(
+test('personal data breach decision route renders nested bullet lists inside one ordered list', async () => {
+	const html = await publishedGovukPage(
 		'public/pages/compliance-readiness/incident-response/personal-data-breach-handling/index.html'
 	);
 	const [, decisionRoute] = html.match(
@@ -148,11 +149,11 @@ test('personal data breach decision route renders nested bullet lists inside one
 	);
 	assert.match(
 		decisionRoute,
-		/<li><strong>Start the timer<\/strong>\s*<ul class="govuk-list govuk-list--bullet">\s*<li>Record when ResearchOps became aware of the suspected breach\.<\/li>/
+		/<li>\s*<strong>Start the timer<\/strong>\s*<ul class="govuk-list govuk-list--bullet">\s*<li>Record when ResearchOps became aware of the suspected breach\.<\/li>/
 	);
 	assert.match(
 		decisionRoute,
-		/<\/ul>\s*<\/li>\s*<li><strong>Contain first, but preserve evidence<\/strong>/
+		/<\/ul>\s*<\/li>\s*<li>\s*<strong>Contain first, but preserve evidence<\/strong>/
 	);
 	assert.doesNotMatch(decisionRoute, /<\/ol>\s*<ul class="govuk-list govuk-list--bullet">/);
 });

@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
+import { publishedGovukPage } from './helpers/published-govuk-pages.mjs';
 
 const participantService = fs.readFileSync('infra/cloudflare/src/service/participants.js', 'utf8');
 const serviceIndex = fs.readFileSync('infra/cloudflare/src/service/index.js', 'utf8');
@@ -9,9 +10,9 @@ const d1SeedMigration = fs.readFileSync('infra/cloudflare/migrations/0008_seed_t
 const workflow = fs.readFileSync('.github/workflows/apply-d1-participant-pseudonymised-view.yml', 'utf8');
 const component = fs.readFileSync('public/components/participants/participants-page.js', 'utf8');
 const scheduler = fs.readFileSync('public/pages/study/participants/scheduler.js', 'utf8');
-const page = fs.readFileSync('public/pages/study/participants/index.html', 'utf8');
+const page = await publishedGovukPage('public/pages/study/participants/index.html');
 const projectParticipantSource = fs.readFileSync('src/govuk/templates/pages/project-dashboard-participants.njk', 'utf8');
-const projectParticipantPage = fs.readFileSync('public/pages/project-dashboard/participants/index.html', 'utf8');
+const projectParticipantPage = await publishedGovukPage('public/pages/project-dashboard/participants/index.html');
 const projectParticipantController = fs.readFileSync('public/pages/project-dashboard/participants/participants-project.js', 'utf8');
 
 function includes(source, text, label) {

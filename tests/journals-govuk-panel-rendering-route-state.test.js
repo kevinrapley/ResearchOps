@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
+import { publishedGovukPage } from './helpers/published-govuk-pages.mjs';
 
 const journalTabs = fs.readFileSync("public/js/journal-tabs.js", "utf8");
 const journalExcerpts = fs.readFileSync("public/components/journal-excerpts.js", "utf8");
@@ -10,7 +11,7 @@ const timelineSass = fs.readFileSync("src/styles/home-office-timeline.scss", "ut
 const timelineCss = fs.readFileSync("public/css/home-office-timeline.css", "utf8");
 const generatedCssTargets = fs.readFileSync("scripts/styles/generated-css-targets.mjs", "utf8");
 const template = fs.readFileSync("src/govuk/templates/pages/projects-journals.njk", "utf8");
-const page = fs.readFileSync("public/pages/projects/journals/index.html", "utf8");
+const page = await publishedGovukPage("public/pages/projects/journals/index.html");
 
 function includes(source, text, label) {
 	assert.equal(source.includes(text), true, `Expected ${label} to include: ${text}`);

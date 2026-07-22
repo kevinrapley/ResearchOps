@@ -1,16 +1,16 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
+import { publishedGovukPage } from './helpers/published-govuk-pages.mjs';
 
-const pageSource = fs.readFileSync("public/pages/study/ethics-risk/index.html", "utf8");
+const pageSource = await publishedGovukPage("public/pages/study/ethics-risk/index.html");
 const templateSource = fs.readFileSync("src/govuk/templates/pages/study-ethics-risk.njk", "utf8");
-const nextStepsPageSource = fs.readFileSync("public/pages/study/ethics-risk/next-steps/index.html", "utf8");
+const nextStepsPageSource = await publishedGovukPage("public/pages/study/ethics-risk/next-steps/index.html");
 const nextStepsTemplateSource = fs.readFileSync("src/govuk/templates/pages/study-ethics-risk-next-steps.njk", "utf8");
 const controllerSource = fs.readFileSync("public/js/study-ethics-risk-page.js", "utf8");
 const nextStepsControllerSource = fs.readFileSync("public/js/study-ethics-risk-next-steps-page.js", "utf8");
 const modelSource = fs.readFileSync("public/js/study-ethics-risk-model.js", "utf8");
 const cssSource = fs.readFileSync("public/css/study-ethics-risk.css", "utf8");
 const scssSource = fs.readFileSync("src/styles/study-ethics-risk.scss", "utf8");
-const rendererSource = fs.readFileSync("scripts/govuk/render-govuk-pages.mjs", "utf8");
 const generatedCssTargetsSource = fs.readFileSync("scripts/styles/generated-css-targets.mjs", "utf8");
 const workerSource = fs.readFileSync("infra/cloudflare/src/worker.js", "utf8");
 const wranglerSource = fs.readFileSync("infra/cloudflare/wrangler.toml", "utf8");
@@ -43,14 +43,10 @@ for (const macro of [
 }
 
 for (const text of [
-	"template: 'pages/study-ethics-risk.njk'",
-	"output: 'public/pages/study/ethics-risk/index.html'",
-	"template: 'pages/study-ethics-risk-next-steps.njk'",
-	"output: 'public/pages/study/ethics-risk/next-steps/index.html'",
 	"source: 'src/styles/study-ethics-risk.scss'",
 	"output: 'public/css/study-ethics-risk.css'"
 ]) {
-	includes(`${rendererSource}\n${generatedCssTargetsSource}`, text, "render/style registry");
+	includes(generatedCssTargetsSource, text, "style registry");
 }
 
 for (const text of [

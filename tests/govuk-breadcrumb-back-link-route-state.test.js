@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
+import { publishedGovukPage } from './helpers/published-govuk-pages.mjs';
 
 const pageChromeCss = fs.readFileSync("public/css/govuk/govuk-page-chrome.css", "utf8");
 const projectContextSource = fs.readFileSync("public/js/project-context.js", "utf8");
@@ -109,7 +110,7 @@ includes(migrationDoc, "Visible arrow characters", "breadcrumb migration doc");
 includes(migrationDoc, "tests/govuk-breadcrumb-back-link-route-state.test.js", "breadcrumb migration doc");
 
 for (const page of breadcrumbPages) {
-	const source = fs.readFileSync(page.path, "utf8");
+	const source = await publishedGovukPage(page.path);
 
 	includes(source, "class=\"govuk-breadcrumbs\"", page.label);
 	includes(source, "aria-label=\"Breadcrumb\"", page.label);
@@ -129,18 +130,18 @@ for (const page of breadcrumbPages) {
 	excludes(source, "Back ←", page.label);
 }
 
-const studyPage = fs.readFileSync("public/pages/study/index.html", "utf8");
+const studyPage = await publishedGovukPage("public/pages/study/index.html");
 excludes(studyPage, "id=\"back-to-project\"", "Study route");
 excludes(studyPage, "Back to Project", "Study route");
 
-const outcomesPage = fs.readFileSync("public/pages/projects/outcomes/index.html", "utf8");
+const outcomesPage = await publishedGovukPage("public/pages/projects/outcomes/index.html");
 includes(outcomesPage, "rel=\"modulepreload\" href=\"/js/project-context.js?v=20260603-form-interactions\"", "Outcomes route");
 includes(outcomesPage, "src=\"/js/project-context.js?v=20260603-form-interactions\"", "Outcomes route");
 includes(outcomesPage, "id=\"breadcrumb-project\"", "Outcomes route");
 excludes(outcomesPage, "id=\"back-to-project\"", "Outcomes route");
 excludes(outcomesPage, ">Back to Project</a>", "Outcomes route");
 
-const journalsPage = fs.readFileSync("public/pages/projects/journals/index.html", "utf8");
+const journalsPage = await publishedGovukPage("public/pages/projects/journals/index.html");
 includes(journalsPage, "rel=\"modulepreload\" href=\"/js/project-context.js\"", "Journals route");
 includes(journalsPage, "src=\"/js/project-context.js\"", "Journals route");
 includes(journalsPage, "href=\"/pages/project-dashboard/\"", "Journals route");
@@ -148,14 +149,14 @@ includes(journalsPage, "Project Dashboard", "Journals route");
 excludes(journalsPage, "id=\"back-to-project\"", "Journals route");
 excludes(journalsPage, ">Back to Project</a>", "Journals route");
 
-const guidesPage = fs.readFileSync("public/pages/study/guides/index.html", "utf8");
+const guidesPage = await publishedGovukPage("public/pages/study/guides/index.html");
 excludes(guidesPage, "id=\"back-to-study\"", "Guides route");
 excludes(guidesPage, "Back to Study", "Guides route");
 
-const consentFormsPage = fs.readFileSync("public/pages/study/consent-forms/index.html", "utf8");
+const consentFormsPage = await publishedGovukPage("public/pages/study/consent-forms/index.html");
 includes(consentFormsPage, "id=\"back-to-study\"", "Consent Forms route");
 includesNormalised(consentFormsPage, "Back to Study", "Consent Forms route");
 
-const participantConsentPage = fs.readFileSync("public/pages/study/participant-consent/index.html", "utf8");
+const participantConsentPage = await publishedGovukPage("public/pages/study/participant-consent/index.html");
 excludes(participantConsentPage, "id=\"back-to-study\"", "Participant Consent route");
 excludes(participantConsentPage, "Back to Study", "Participant Consent route");

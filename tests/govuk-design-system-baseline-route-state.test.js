@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
+import { publishedGovukPage } from './helpers/published-govuk-pages.mjs';
 
 const complianceAudit = fs.readFileSync("docs/design-system/govuk-compliance-audit.md", "utf8");
 const componentInventory = fs.readFileSync("docs/design-system/researchops-component-inventory.md", "utf8");
@@ -15,8 +16,8 @@ const frontendV6Css = fs.readFileSync("public/css/govuk/govuk-frontend-v6.css", 
 const htmlHead = fs.readFileSync("public/partials/html-head.html", "utf8");
 const layoutJs = fs.readFileSync("public/components/layout.js", "utf8");
 const dashboardCss = fs.readFileSync("public/css/project-dashboard.css", "utf8");
-const dashboardPage = fs.readFileSync("public/pages/project-dashboard/index.html", "utf8");
-const projectsPage = fs.readFileSync("public/pages/projects/index.html", "utf8");
+const dashboardPage = await publishedGovukPage("public/pages/project-dashboard/index.html");
+const projectsPage = await publishedGovukPage("public/pages/projects/index.html");
 
 function includes(source, text, label) {
 	assert.equal(source.includes(text), true, `Expected ${label} to include: ${text}`);

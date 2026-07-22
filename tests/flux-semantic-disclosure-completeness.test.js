@@ -1,11 +1,10 @@
 import assert from 'node:assert/strict';
-import fs from 'node:fs';
 import test from 'node:test';
+import { publishedGovukPage } from './helpers/published-govuk-pages.mjs';
 
-const dashboard = fs.readFileSync('public/pages/project-dashboard/index.html', 'utf8');
-const sourcebookPillar = fs.readFileSync(
-	'public/pages/sourcebook/recruitment-and-administration/index.html',
-	'utf8'
+const dashboard = await publishedGovukPage('public/pages/project-dashboard/index.html');
+const sourcebookPillar = await publishedGovukPage(
+	'public/pages/sourcebook/recruitment-and-administration/index.html'
 );
 
 test('project dashboard disclosure flows use complete stable Flux semantics', () => {

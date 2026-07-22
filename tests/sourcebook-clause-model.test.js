@@ -1,10 +1,9 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import { normalize, resolve } from 'node:path';
 import test from 'node:test';
 
-import { govukPages } from '../scripts/govuk/render-govuk-pages.mjs';
 import { visualWalkthroughConfig } from '../visual-walkthrough.config.mjs';
+import { publishedGovukPage } from './helpers/published-govuk-pages.mjs';
 
 const sourcebook = JSON.parse(fs.readFileSync('sourcebook/sourcebook-index.json', 'utf8'));
 const clauseIdPattern = /^[A-Z]+(?:-[A-Z]+)* [0-9]+\.[0-9]+\.[0-9]+$/;
@@ -519,16 +518,12 @@ test('sourcebook includes the consent and privacy operating pattern', () => {
 	);
 });
 
-test('GOV.UK renderer exposes sourcebook routes for the index and every pillar', () => {
-	const outputs = new Set(govukPages.map((page) => normalize(resolve(page.output))));
-
-	assert.equal(outputs.has(normalize(resolve('public/pages/sourcebook/index.html'))), true);
-
+test('GOV.UK publisher exposes sourcebook routes for the index and every pillar', async () => {
+	assert.match(await publishedGovukPage('/pages/sourcebook/'), /resource="#sourcebook"/);
 	for (const pillar of sourcebook.pillars) {
-		assert.equal(
-			outputs.has(normalize(resolve(`public/pages/sourcebook/${pillar.slug}/index.html`))),
-			true,
-			`${pillar.code} should have a generated GOV.UK page`
+		assert.match(
+			await publishedGovukPage(`/pages/sourcebook/${pillar.slug}/`),
+			new RegExp(`property="skos:notation">${pillar.code}</span>`)
 		);
 	}
 });
@@ -552,27 +547,23 @@ test('visual walkthrough registers the sourcebook index and every pillar page', 
 	}
 });
 
-test('rendered sourcebook pages keep Dublin Core, RDFa and SKOS metadata', () => {
-	const index = fs.readFileSync('public/pages/sourcebook/index.html', 'utf8');
-	const recAdmn = fs.readFileSync(
-		'public/pages/sourcebook/recruitment-and-administration/index.html',
-		'utf8'
+test('rendered sourcebook pages keep Dublin Core, RDFa and SKOS metadata', async () => {
+	const index = await publishedGovukPage('public/pages/sourcebook/index.html');
+	const recAdmn = await publishedGovukPage(
+		'public/pages/sourcebook/recruitment-and-administration/index.html'
 	);
-	const environment = fs.readFileSync('public/pages/sourcebook/environment/index.html', 'utf8');
-	const scope = fs.readFileSync('public/pages/sourcebook/scope/index.html', 'utf8');
-	const people = fs.readFileSync('public/pages/sourcebook/people/index.html', 'utf8');
-	const organisationalContext = fs.readFileSync(
-		'public/pages/sourcebook/organisational-context/index.html',
-		'utf8'
+	const environment = await publishedGovukPage('public/pages/sourcebook/environment/index.html');
+	const scope = await publishedGovukPage('public/pages/sourcebook/scope/index.html');
+	const people = await publishedGovukPage('public/pages/sourcebook/people/index.html');
+	const organisationalContext = await publishedGovukPage(
+		'public/pages/sourcebook/organisational-context/index.html'
 	);
-	const dataKnowledge = fs.readFileSync(
-		'public/pages/sourcebook/data-and-knowledge-management/index.html',
-		'utf8'
+	const dataKnowledge = await publishedGovukPage(
+		'public/pages/sourcebook/data-and-knowledge-management/index.html'
 	);
-	const governance = fs.readFileSync('public/pages/sourcebook/governance/index.html', 'utf8');
-	const infrastructure = fs.readFileSync(
-		'public/pages/sourcebook/tools-and-infrastructure/index.html',
-		'utf8'
+	const governance = await publishedGovukPage('public/pages/sourcebook/governance/index.html');
+	const infrastructure = await publishedGovukPage(
+		'public/pages/sourcebook/tools-and-infrastructure/index.html'
 	);
 
 	for (const html of [

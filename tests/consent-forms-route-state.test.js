@@ -1,9 +1,10 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
+import { publishedGovukPage } from './helpers/published-govuk-pages.mjs';
 
-const studyPageSource = fs.readFileSync("public/pages/study/index.html", "utf8");
+const studyPageSource = await publishedGovukPage("public/pages/study/index.html");
 const studyControllerSource = fs.readFileSync("public/js/study-page.js", "utf8");
-const pageSource = fs.readFileSync("public/pages/study/consent-forms/index.html", "utf8");
+const pageSource = await publishedGovukPage("public/pages/study/consent-forms/index.html");
 const loaderSource = fs.readFileSync("public/js/consent-forms-route-loader.js", "utf8");
 const controllerSource = fs.readFileSync("public/js/consent-forms-page.js", "utf8");
 const cssSource = fs.readFileSync("public/css/consent-forms.css", "utf8");

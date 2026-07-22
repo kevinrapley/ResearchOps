@@ -1,0 +1,71 @@
+{
+	"date": "2026-07-22",
+	"branch": "feature/govuk-page-publisher",
+	"task": "Implement the confirmed byte-preserving GOV.UK page publisher architecture, then address valid Codex review findings and CI failures on PR #501.",
+	"traceRequired": true,
+	"traceLayer": "operational",
+	"selectedBundles": [
+		"github-diamond",
+		"researchops-developer-control",
+		"multi-functional-team",
+		"govuk-design-system"
+	],
+	"skippedBundles": [
+		"cloudflare",
+		"openai-platform",
+		"mcp-agent-tooling",
+		"airtable-public-api",
+		"mural-public-api"
+	],
+	"filesModified": [
+		".github/workflows/render-govuk-pages.yml",
+		"docs/deployment/generated-html-policy.md",
+		"docs/agent-audit/reasoning/2026/07/22/govuk-page-publisher.md",
+		"docs/agent-audit/reasoning/2026/07/22/govuk-page-publisher.json",
+		"package.json",
+		"8 committed generated HTML files",
+		"scripts/govuk/govuk-page-filesystem-output.mjs",
+		"scripts/govuk/normalise-service-pages.mjs",
+		"scripts/govuk/page-publisher/catalogue.mjs",
+		"scripts/govuk/page-publisher/index.mjs",
+		"scripts/govuk/page-publisher/normalise.mjs",
+		"scripts/govuk/page-publisher/rendering.mjs",
+		"scripts/govuk/page-publisher/validation.mjs",
+		"scripts/govuk/render-govuk-pages.mjs",
+		"61 generated-page test and fixture paths"
+	],
+	"changedFileCount": 82,
+	"validation": [
+		"node --check: passed for publisher modules",
+		"npm run build:govuk-pages: passed and repeat-build diff hash stable",
+		"npm test -- --test-reporter=dot: passed",
+		"64-route committed HTML byte parity: passed",
+		"npm run lint: passed with repository warnings only",
+		"npm run validate: passed",
+		"post-review publisher and workflow tests: 5 passed",
+		"clean-checkout reproduction without ignored repository outputs: 4 passed",
+		"post-review targeted Prettier check: passed",
+		"post-review npm test: passed",
+		"post-review lint and format checks: passed with repository warnings only",
+		"post-review trace validation and coverage: passed",
+		"post-review GOV.UK page build: passed with no tracked output drift",
+		"git diff --check: passed"
+	],
+	"validationNotRun": [
+		"typecheck: no package script exists",
+		"browser E2E, Cucumber and visual walkthrough: outside this build-architecture slice"
+	],
+	"issuesAndPivots": [
+		"Replaced workflow access to private catalogue with full invocation of the public publishing command.",
+		"Updated whitespace-sensitive assertions to inspect final formatted behavior.",
+		"Synchronized eight committed pages after the new all-route parity check exposed existing drift.",
+		"Addressed two valid Codex P2 findings: tracked-output parity now excludes ignored build-only pages, and catalogue validation rejects orphan page templates.",
+		"Classified the passwordless preview Worker failure as an external Cloudflare fetch failure after the remote D1 upload; all repository and Worker validation checks passed."
+	],
+	"residualRisks": [
+		"The sign-in and registration-request pages remain static legacy pages outside Nunjucks publishing.",
+		"Relevant workflow runs now publish all 64 pages rather than selecting per-template outputs.",
+		"Orphan-template coverage matches the existing top-level pages/*.njk contract and does not recurse into nested page-template directories.",
+		"Eight generated HTML diffs require review, including tree-test analytics markup from the current shared layout."
+	]
+}

@@ -1,14 +1,14 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
+import { publishedGovukPage } from './helpers/published-govuk-pages.mjs';
 
 const template = fs.readFileSync("src/govuk/templates/pages/journal-entry.njk", "utf8");
 const editTemplate = fs.readFileSync("src/govuk/templates/pages/journal-edit.njk", "utf8");
-const page = fs.readFileSync("public/pages/journal/entry/index.html", "utf8");
-const editPage = fs.readFileSync("public/pages/journal/edit/index.html", "utf8");
+const page = await publishedGovukPage("public/pages/journal/entry/index.html");
+const editPage = await publishedGovukPage("public/pages/journal/edit/index.html");
 const script = fs.readFileSync("public/js/journal-entry.js", "utf8");
 const editScript = fs.readFileSync("public/js/journal-entry-edit.js", "utf8");
 const tabs = fs.readFileSync("public/js/journal-tabs.js", "utf8");
-const renderer = fs.readFileSync("scripts/govuk/render-govuk-pages.mjs", "utf8");
 const router = fs.readFileSync("infra/cloudflare/src/core/router.js", "utf8");
 const journals = fs.readFileSync("infra/cloudflare/src/service/journals.js", "utf8");
 
@@ -33,8 +33,6 @@ includes(editPage, "id=\"journal-entry-edit-form\"", "rendered journal edit page
 includes(editPage, "src=\"/js/journal-entry-edit.js\"", "rendered journal edit page");
 includes(editTemplate, "id=\"journal-entry-edit-form\"", "journal edit template");
 includes(editTemplate, "script type=\"module\" src=\"/js/journal-entry-edit.js\"", "journal edit template");
-includes(renderer, "template: 'pages/journal-edit.njk'", "GOV.UK page renderer");
-includes(renderer, "output: 'public/pages/journal/edit/index.html'", "GOV.UK page renderer");
 excludes(page, "id=\"back-to-journals\"", "rendered journal entry page");
 excludes(template, "id=\"back-to-journals\"", "journal entry template");
 includes(template, "id: 'breadcrumb-journals'", "journal entry template");

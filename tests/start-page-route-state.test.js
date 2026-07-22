@@ -1,7 +1,8 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
+import { publishedGovukPage } from './helpers/published-govuk-pages.mjs';
 
-const pageSource = fs.readFileSync("public/pages/start/index.html", "utf8");
+const pageSource = await publishedGovukPage("public/pages/start/index.html");
 const stylesheetSource = fs.readFileSync("public/css/start.css", "utf8");
 const startTemplateSource = fs.readFileSync("src/govuk/templates/pages/start.njk", "utf8");
 const startSassSource = fs.readFileSync("src/styles/start.scss", "utf8");
@@ -9,7 +10,6 @@ const copilotSuggesterSource = fs.readFileSync("public/js/copilot-suggester.js",
 const descriptionAssistSource = fs.readFileSync("public/js/start-description-assist.js", "utf8");
 const objectiveAssistSource = fs.readFileSync("public/js/start-objectives-assist.js", "utf8");
 const generatedCssTargets = fs.readFileSync("scripts/styles/generated-css-targets.mjs", "utf8");
-const govukPageRenderer = fs.readFileSync("scripts/govuk/render-govuk-pages.mjs", "utf8");
 const buttonCssSource = fs.readFileSync("public/css/govuk/govuk-buttons.css", "utf8");
 
 function includes(source, text, label) {
@@ -123,5 +123,3 @@ includes(objectiveAssistSource, "aiRewriteErrorMessage(res.status)", "objectives
 includes(objectiveAssistSource, "ta.value = typeof data?.rewrite === 'string' ? data.rewrite : ''", "objectives assist");
 includes(generatedCssTargets, "source: 'src/styles/start.scss'", "generated CSS targets");
 includes(generatedCssTargets, "output: 'public/css/start.css'", "generated CSS targets");
-includes(govukPageRenderer, "template: 'pages/start.njk'", "GOV.UK page renderer");
-includes(govukPageRenderer, "output: 'public/pages/start/index.html'", "GOV.UK page renderer");
