@@ -183,6 +183,14 @@ test('preview Worker deployment restores QA auth and retries transient D1 import
 	assert.match(passwordlessPreviewWorkflowSource, /Deploying preview Worker \(attempt \$\{attempt\}\)/);
 	assert.match(passwordlessPreviewWorkflowSource, /D1_MIGRATION_MAX_ATTEMPTS: "4"/);
 	assert.match(passwordlessPreviewWorkflowSource, /D1_MIGRATION_RETRY_DELAY_SECONDS: "3"/);
+	assert.match(
+		passwordlessPreviewWorkflowSource,
+		/- "scripts\/d1\/execute-remote-migration-with-retry\.sh"/,
+	);
+	assert.match(
+		passwordlessPreviewWorkflowSource,
+		/concurrency:\n  group: deploy-passwordless-preview-worker-shared-target\n  cancel-in-progress: false/,
+	);
 	assert.equal(
 		passwordlessPreviewWorkflowSource.match(
 			/bash scripts\/d1\/execute-remote-migration-with-retry\.sh/g,

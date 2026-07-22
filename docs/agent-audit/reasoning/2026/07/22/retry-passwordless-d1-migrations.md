@@ -32,6 +32,9 @@ Skipped bundles: `govuk-design-system`, `openai-platform`, `mcp-agent-tooling`, 
 - Rerunning the failed job without a code change passed all six remote migrations, Worker deployment, secret upload and live passwordless route verification. This confirmed a transient remote failure rather than an SQL or Nunjucks regression.
 - All six remote migration commands now use `scripts/d1/execute-remote-migration-with-retry.sh`.
 - The wrapper retries only the two transient failure signatures observed in GitHub Actions. It makes at most four attempts with three-second linear backoff and preserves fail-fast behaviour for deterministic failures.
+- Codex review correctly identified that wrapper-only changes did not match the deployment workflow path filter. The wrapper path is now an explicit trigger.
+- Codex review also identified that retries alone did not prevent overlapping runs from targeting the same Worker and D1 database. A static workflow concurrency group now serializes every branch and manual deployment, with active runs allowed to finish.
+- Both valid Codex review comments were acknowledged with a `+1` reaction before remediation in accordance with the GitHub Diamond Standard.
 - Existing workflow, repository and security tests were updated to assert the wrapper-based seam. No parallel test layer was added.
 
 ## Validation
@@ -45,6 +48,9 @@ Skipped bundles: `govuk-design-system`, `openai-platform`, `mcp-agent-tooling`, 
 - `npm run trace:validate` and `npm run trace:coverage` passed for the `fix/` branch.
 - `npm run validate` passed, including the full build, operating-model validation and evals, trace checks, report and sourcebook integrity, syntax checks, performance audit and route-state validation.
 - Targeted Prettier checks and `git diff --check` passed.
+- After the Codex review fixes, the focused workflow contract suite passed all 14 tests.
+- The GitHub Diamond standard workflow hardening validator passed the edited workflow with no warnings. The repository does not include actionlint or the release-mode workflow action-lock file, so those optional checks were unavailable.
+- The complete post-review `npm run lint`, `npm test -- --test-reporter=dot` and `npm run validate` gates passed.
 
 ## Changed-file plausibility
 
