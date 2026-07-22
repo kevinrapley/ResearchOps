@@ -24,11 +24,11 @@ Gate /pages/start/ behind /pages/account/sign-in/.
 - github-diamond
 - researchops-developer-control
 - multi-functional-team
+- govuk-design-system
 - cloudflare
 
 ## Bundles skipped
 
-- `govuk-design-system` — no UI, content or component change.
 - `openai-platform` — no OpenAI integration change.
 - `mcp-agent-tooling` — no MCP or agent-tool contract change.
 - `airtable-public-api` — no Airtable API change.
@@ -36,7 +36,7 @@ Gate /pages/start/ behind /pages/account/sign-in/.
 
 ## Precedence decision
 
-GitHub Diamond governed repository safety, branch, trace, validation and PR workflow. ResearchOps Developer Control and the Cloudflare bundle governed the server-side route implementation. No bundle conflict was detected.
+GitHub Diamond governed repository safety, branch, trace, validation and PR workflow. ResearchOps Developer Control and the Cloudflare bundle governed the server-side route implementation. GOV.UK Design System governed the post-authentication sign-in journey added during review remediation. No bundle conflict was detected.
 
 ## Files read
 
@@ -58,6 +58,12 @@ GitHub Diamond governed repository safety, branch, trace, validation and PR work
 - tests/pages-advanced-worker-auth-route-state.test.js
 - scripts/visual-walkthrough.mjs
 - tests/qa-bdd-authenticated-walkthrough-route-state.test.js
+- public/js/auth-sign-in-page.js
+- public/pages/account/sign-in/index.html
+- tests/auth-sign-in-route-state.test.js
+- tests/auth-registration-signed-in-redirect-route-state.test.js
+- tests/auth-story-1-acceptance-route-state.test.js
+- tests/e2e/smoke.spec.js
 
 ## Files created or modified
 
@@ -65,6 +71,9 @@ GitHub Diamond governed repository safety, branch, trace, validation and PR work
 - tests/pages-advanced-worker-auth-route-state.test.js
 - scripts/visual-walkthrough.mjs
 - tests/qa-bdd-authenticated-walkthrough-route-state.test.js
+- public/js/auth-sign-in-page.js
+- public/pages/account/sign-in/index.html
+- tests/auth-sign-in-route-state.test.js
 - docs/agent-audit/reasoning/2026/07/15/gate-start-route-behind-sign-in.md
 - docs/agent-audit/reasoning/2026/07/15/gate-start-route-behind-sign-in.json
 
@@ -77,12 +86,22 @@ GitHub Diamond governed repository safety, branch, trace, validation and PR work
 - npm run lint — exit 0
 - npm test — exit 0
 - npm run validate — exit 0
+- node --test --test-reporter=spec tests/pages-advanced-worker-auth-route-state.test.js tests/auth-sign-in-route-state.test.js (post-rebase regression reproduction) — exit 1 with the two expected failures
+- node --test --test-reporter=spec tests/pages-advanced-worker-auth-route-state.test.js tests/auth-sign-in-route-state.test.js tests/auth-registration-signed-in-redirect-route-state.test.js tests/auth-story-1-acceptance-route-state.test.js tests/qa-bdd-authenticated-walkthrough-route-state.test.js (post-review remediation) — exit 0, 33 tests passed
+- npm test -- --test-reporter=dot (post-review remediation) — exit 0
+- npm run lint (post-review remediation) — exit 0 with 237 existing warnings and no errors
+- npm run validate (post-review remediation) — exit 0
+- npm run trace:validate and npm run trace:coverage (post-review remediation) — exit 0
+- targeted Prettier check and git diff --check (post-review remediation) — exit 0
 
 ## Issues and pivots
 
 - npm run lint reported 237 existing warnings and no errors.
 - npm run validate regenerated nine unrelated HTML files.
 - Removed only the unrelated HTML regeneration side effects after validation.
+- Rebased the PR branch cleanly onto `origin/main` at `c751c41b`; no conflict resolution was required.
+- Codex identified two valid unresolved findings: direct `index.html` requests bypassed the protected-page predicate, and sign-in discarded the Worker-provided `returnTo` destination.
+- Both valid comments received a thumbs-up before remediation.
 
 ## Validation warnings
 
@@ -95,6 +114,17 @@ None recorded.
 ## Residual risk
 
 - Local validation does not prove the deployed Pages project and upstream `/api/me` availability. The governed PR preview and CI deployment evidence mitigate this before merge.
+
+## PR review follow-up — 2026-07-22
+
+- Rebased `fix/gate-start-route-behind-sign-in` onto the latest `origin/main` before assessing the comments.
+- Added a failing regression for `/pages/start/index.html`; the rebased Worker returned `200` instead of redirecting signed-out users.
+- Added a behavioral sign-in regression; the rebased script sent all successful authentication flows to `/pages/account/` instead of honoring `returnTo`.
+- Normalized a terminal `/index.html` before matching protected static routes, closing the same direct-file bypass for all existing protected page roots.
+- Added a same-origin relative `returnTo` resolver with `/pages/account/` fallback. Absolute, protocol-relative and self-referential sign-in destinations are rejected.
+- Cache-busted `auth-sign-in-page.js` in the legacy static sign-in page so the fixed redirect behavior reaches deployed clients.
+- The post-remediation focused suite passed 33 tests.
+- The full Node suite, lint, repository validation, trace validation/coverage, formatting and diff checks all passed after remediation. The validation build introduced no unrelated tracked changes.
 
 ## Event timeline
 

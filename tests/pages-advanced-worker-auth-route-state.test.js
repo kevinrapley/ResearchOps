@@ -154,6 +154,25 @@ test("Pages advanced worker redirects unauthenticated Start page requests to sig
 	});
 });
 
+test("Pages advanced worker redirects unauthenticated direct Start index requests to sign in", async () => {
+	await withMockedFetch(async (url) => {
+		assert.equal(url, "https://rops-api.digikev-kevin-rapley.workers.dev/api/me");
+		return new Response(JSON.stringify({ ok: false, error: "authentication_required" }), { status: 401 });
+	}, async () => {
+		const response = await worker.fetch(
+			new Request("https://researchops.pages.dev/pages/start/index.html?source=smoke"),
+			assetEnv({ "content-type": "text/html; charset=utf-8" }, "<!doctype html><html><head></head><body>Start</body></html>"),
+		);
+		assert.equal(response.status, 302);
+		assert.equal(response.headers.get("cache-control"), "no-store");
+		assert.equal(response.headers.get("x-researchops-auth-redirect"), "pages-static-preflight");
+		assert.equal(
+			response.headers.get("location"),
+			"https://researchops.pages.dev/pages/account/sign-in/?returnTo=%2Fpages%2Fstart%2Findex.html%3Fsource%3Dsmoke",
+		);
+	});
+});
+
 test("Pages advanced worker redirects unauthenticated Project dashboard requests to sign in", async () => {
 	await withMockedFetch(async (url) => {
 		assert.equal(url, "https://rops-api.digikev-kevin-rapley.workers.dev/api/me");

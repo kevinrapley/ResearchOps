@@ -12,22 +12,22 @@
     "taskSummary": "Gate /pages/start/ behind /pages/account/sign-in/.",
     "branch": "fix/gate-start-route-behind-sign-in",
     "traceDecision": "The approved fix/ prefix requires an auditable trace.",
-    "correctedBranchBehaviour": "Fast-forwarded main to origin/main, then created the work branch before implementation."
+    "correctedBranchBehaviour": "Fast-forwarded main to origin/main, then created the work branch before implementation. On 2026-07-22, rebased the PR branch cleanly onto origin/main at c751c41b before review remediation."
   },
   "bundles": [
     "github-diamond",
     "researchops-developer-control",
     "multi-functional-team",
+    "govuk-design-system",
     "cloudflare"
   ],
   "skippedBundles": [
-    "govuk-design-system",
     "openai-platform",
     "mcp-agent-tooling",
     "airtable-public-api",
     "mural-public-api"
   ],
-  "precedenceDecision": "GitHub Diamond governed repository workflow; ResearchOps Developer Control and Cloudflare governed the route implementation; no conflict was detected.",
+  "precedenceDecision": "GitHub Diamond governed repository workflow; ResearchOps Developer Control and Cloudflare governed the route implementation; GOV.UK Design System governed the post-authentication sign-in journey added during review remediation; no conflict was detected.",
   "filesRead": [
     "AGENTS.md",
     ".agent-operating-model/orchestration.xml",
@@ -46,7 +46,13 @@
     "public/_worker.js",
     "tests/pages-advanced-worker-auth-route-state.test.js",
     "scripts/visual-walkthrough.mjs",
-    "tests/qa-bdd-authenticated-walkthrough-route-state.test.js"
+    "tests/qa-bdd-authenticated-walkthrough-route-state.test.js",
+    "public/js/auth-sign-in-page.js",
+    "public/pages/account/sign-in/index.html",
+    "tests/auth-sign-in-route-state.test.js",
+    "tests/auth-registration-signed-in-redirect-route-state.test.js",
+    "tests/auth-story-1-acceptance-route-state.test.js",
+    "tests/e2e/smoke.spec.js"
   ],
   "filesWritten": [
     "public/_worker.js",
@@ -54,7 +60,10 @@
     "scripts/visual-walkthrough.mjs",
     "tests/qa-bdd-authenticated-walkthrough-route-state.test.js",
     "docs/agent-audit/reasoning/2026/07/15/gate-start-route-behind-sign-in.md",
-    "docs/agent-audit/reasoning/2026/07/15/gate-start-route-behind-sign-in.json"
+    "docs/agent-audit/reasoning/2026/07/15/gate-start-route-behind-sign-in.json",
+    "public/js/auth-sign-in-page.js",
+    "public/pages/account/sign-in/index.html",
+    "tests/auth-sign-in-route-state.test.js"
   ],
   "validations": [
     "node --test tests/pages-advanced-worker-auth-route-state.test.js tests/qa-bdd-authenticated-walkthrough-route-state.test.js (baseline) — exit 0",
@@ -63,12 +72,21 @@
     "node --test tests/pages-advanced-worker-auth-route-state.test.js tests/qa-bdd-authenticated-walkthrough-route-state.test.js — exit 0",
     "npm run lint — exit 0",
     "npm test — exit 0",
-    "npm run validate — exit 0"
+    "npm run validate — exit 0",
+    "post-rebase regression reproduction — exit 1 with the two expected failures",
+    "post-review focused suite — exit 0, 33 tests passed",
+    "post-review npm test — exit 0",
+    "post-review npm run lint — exit 0 with 237 existing warnings and no errors",
+    "post-review npm run validate — exit 0",
+    "post-review trace validation, trace coverage, formatting and diff checks — exit 0"
   ],
   "issues": [
     "npm run lint reported 237 existing warnings and no errors.",
     "npm run validate regenerated nine unrelated HTML files.",
-    "Removed only the unrelated HTML regeneration side effects after validation."
+    "Removed only the unrelated HTML regeneration side effects after validation.",
+    "Rebased cleanly onto origin/main at c751c41b with no conflicts.",
+    "Confirmed two valid Codex findings: direct index.html authentication bypass and discarded returnTo continuation.",
+    "Both valid Codex comments received a thumbs-up before remediation."
   ],
   "warnings": []
   ,

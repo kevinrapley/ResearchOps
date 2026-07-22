@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
+import test from 'node:test';
 
 const signInPage = fs.readFileSync('public/pages/account/sign-in/index.html', 'utf8');
 const signInScript = fs.readFileSync('public/js/auth-sign-in-page.js', 'utf8');
@@ -99,8 +100,13 @@ function assertSignInScriptStartsAndVerifiesEmailCode() {
 
 function assertSignInScriptRedirectsAuthenticatedUsersToAccountDashboard() {
 	assert.match(signInScript, /ACCOUNT_URL: '\/pages\/account\/'/);
+	assert.match(signInScript, /new URLSearchParams\(location\.search\)\.get\('returnTo'\)/);
+	assert.match(signInScript, /!returnTo\.startsWith\('\/'\)/);
+	assert.match(signInScript, /returnTo\.startsWith\('\/\/'\)/);
+	assert.match(signInScript, /destination\.origin !== location\.origin/);
+	assert.match(signInScript, /isSignInDestination\(destination\.pathname\)/);
 	assert.match(signInScript, /function redirectToAccount\(\)/);
-	assert.match(signInScript, /location\.assign\(CONFIG\.ACCOUNT_URL\)/);
+	assert.match(signInScript, /location\.assign\(postSignInDestination\(\)\)/);
 	assert.match(signInScript, /redirectAlreadySignedInUser/);
 	assert.match(signInScript, /response\.data\?\.authenticated/);
 	assert.match(signInScript, /redirectToAccount\(\);/);
@@ -186,3 +192,55 @@ assertPasswordlessCodeAttemptLimitExists();
 assertPasswordlessRoleExpiryFiltersExist();
 assertAuthResolverPrefersResearchOpsSession();
 assertPasswordlessMigrationExists();
+
+test('sign-in resumes only safe same-origin returnTo destinations', async () => {
+	const originalDocument = globalThis.document;
+	const originalLocation = globalThis.location;
+	const originalWindow = globalThis.window;
+	const assignedDestinations = [];
+
+	globalThis.location = {
+		origin: 'https://researchops.pages.dev',
+		search: '?returnTo=%2Fpages%2Fstart%2F',
+		assign(destination) {
+			assignedDestinations.push(destination);
+		},
+	};
+	globalThis.window = { API_ORIGIN: '' };
+	globalThis.document = {
+		documentElement: { dataset: {} },
+		getElementById() {
+			return null;
+		},
+	};
+
+	try {
+		await import('../public/js/auth-sign-in-page.js?return-to-regression');
+		const controller = globalThis.window.__ropsAuthSignInPage;
+
+		controller.redirectToAccount();
+		globalThis.location.search = '?returnTo=%2Fpages%2Fstart%2Findex.html%3Fsource%3Dsmoke';
+		controller.redirectToAccount();
+		globalThis.location.search = '?returnTo=https%3A%2F%2Fevil.example%2F';
+		controller.redirectToAccount();
+		globalThis.location.search = '?returnTo=%2F%2Fevil.example%2F';
+		controller.redirectToAccount();
+		globalThis.location.search = '?returnTo=%2Fpages%2Faccount%2Fsign-in%2F';
+		controller.redirectToAccount();
+		globalThis.location.search = '';
+		controller.redirectToAccount();
+
+		assert.deepEqual(assignedDestinations, [
+			'/pages/start/',
+			'/pages/start/index.html?source=smoke',
+			'/pages/account/',
+			'/pages/account/',
+			'/pages/account/',
+			'/pages/account/',
+		]);
+	} finally {
+		globalThis.document = originalDocument;
+		globalThis.location = originalLocation;
+		globalThis.window = originalWindow;
+	}
+});
