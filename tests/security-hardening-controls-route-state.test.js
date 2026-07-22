@@ -14,6 +14,7 @@ const previewWrangler = fs.readFileSync('infra/cloudflare/wrangler.passwordless-
 const securityWorkflow = fs.readFileSync('.github/workflows/security.yml', 'utf8');
 const deployWorkerWorkflow = fs.readFileSync('.github/workflows/deploy-worker.yml', 'utf8');
 const passwordlessPreviewWorkflow = fs.readFileSync('.github/workflows/deploy-passwordless-preview-worker.yml', 'utf8');
+const d1MigrationRetry = fs.readFileSync('scripts/d1/execute-remote-migration-with-retry.sh', 'utf8');
 const releaseProvenance = fs.readFileSync('scripts/release-provenance.mjs', 'utf8');
 const githubSettings = fs.readFileSync('github-settings.yaml', 'utf8');
 
@@ -104,7 +105,8 @@ function assertRetentionAndProductionConfigExist() {
 	assert.match(passwordlessPreviewWorkflow, /MURAL_OAUTH_STATE_SECRET: \$\{\{ secrets\.MURAL_OAUTH_STATE_SECRET \}\}/);
 	assert.match(passwordlessPreviewWorkflow, /"MURAL_OAUTH_STATE_SECRET"/);
 	assert.match(passwordlessPreviewWorkflow, /SECURITY_REVIEW_ROUTE_PERMISSIONS_MIGRATION: "infra\/cloudflare\/migrations\/0025_security_review_route_permissions\.sql"/);
-	assert.match(passwordlessPreviewWorkflow, /--file "\$\{SECURITY_REVIEW_ROUTE_PERMISSIONS_MIGRATION\}"/);
+	assert.match(passwordlessPreviewWorkflow, /"\$\{SECURITY_REVIEW_ROUTE_PERMISSIONS_MIGRATION\}"/);
+	assert.match(d1MigrationRetry, /--file "\$\{migration_file\}"/);
 }
 
 function assertSupplyChainEvidenceExists() {
