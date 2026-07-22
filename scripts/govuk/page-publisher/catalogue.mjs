@@ -470,6 +470,17 @@ export const pageCatalogue = [
 		},
 	},
 	{
+		template: 'pages/account-sign-in.njk',
+		output: 'public/pages/account/sign-in/index.html',
+		context: {
+			pageTitle: 'Sign in to ResearchOps - ResearchOps Demo Suite',
+			serviceName: 'ResearchOps Demo Suite',
+			activeNavigation: '',
+			navigation: accountNavigation,
+			fluxPageKey: 'page.account.sign-in',
+		},
+	},
+	{
 		template: 'pages/account-register.njk',
 		output: 'public/pages/account/register/index.html',
 		context: {
@@ -515,6 +526,16 @@ export const pageCatalogue = [
 		output: 'public/pages/team/access-requests/index.html',
 		context: {
 			pageTitle: 'Review team access requests - ResearchOps Demo Suite',
+			serviceName: 'ResearchOps Demo Suite',
+			activeNavigation: '',
+			navigation: accountNavigation,
+		},
+	},
+	{
+		template: 'pages/team-registration-requests.njk',
+		output: 'public/pages/team/registration-requests/index.html',
+		context: {
+			pageTitle: 'Review account requests - ResearchOps Demo Suite',
 			serviceName: 'ResearchOps Demo Suite',
 			activeNavigation: '',
 			navigation: accountNavigation,

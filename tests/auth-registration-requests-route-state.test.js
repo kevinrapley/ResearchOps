@@ -9,9 +9,9 @@ const migrationSource = fs.readFileSync('infra/cloudflare/migrations/0005_auth_r
 const routeSource = fs.readFileSync('infra/cloudflare/src/core/auth/registration-requests.js', 'utf8');
 const registrationPageSource = await publishedGovukPage('public/pages/account/register/index.html');
 const registrationPageScript = fs.readFileSync('public/js/auth-registration-page.js', 'utf8');
-const reviewPageSource = fs.readFileSync('public/pages/team/registration-requests/index.html', 'utf8');
+const reviewPageSource = await publishedGovukPage('public/pages/team/registration-requests/index.html');
 const reviewPageScript = fs.readFileSync('public/js/auth-registration-requests-page.js', 'utf8');
-const signInPageSource = fs.readFileSync('public/pages/account/sign-in/index.html', 'utf8');
+const signInPageSource = await publishedGovukPage('public/pages/account/sign-in/index.html');
 
 function elementForId(source, fieldId) {
 	const match = source.match(new RegExp(`<[^>]+id=["']${fieldId}["'][^>]*>`));

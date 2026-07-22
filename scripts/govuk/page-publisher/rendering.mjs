@@ -40,7 +40,7 @@ async function formatRenderedHtml(html) {
 export async function renderFinalGovukPage(page, route) {
 	const context = {
 		...page.context,
-		fluxPageKey: pageKeyFromOutput(page.output),
+		fluxPageKey: page.context.fluxPageKey || pageKeyFromOutput(page.output),
 		layoutCacheKey: generatedGovukChromeCacheKey,
 		footerCacheKey: generatedGovukChromeCacheKey,
 	};

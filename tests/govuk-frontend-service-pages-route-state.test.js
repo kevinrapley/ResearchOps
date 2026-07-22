@@ -13,18 +13,12 @@ function routeToFile(route) {
 }
 
 const registeredPagePaths = [...new Set(visualWalkthroughConfig.pages.map((page) => page.path))];
-const legacyRoutes = new Set([
-	'/pages/account/sign-in/index.html',
-	'/pages/team/registration-requests/index.html',
-]);
 
 for (const route of registeredPagePaths) {
 	const filePath = routeToFile(route);
 	if (!fs.existsSync(filePath)) continue;
 
-	const page = legacyRoutes.has(route)
-		? fs.readFileSync(filePath, 'utf8')
-		: await publishedGovukPage(filePath);
+	const page = await publishedGovukPage(filePath);
 
 	assert.match(page, /<html class="govuk-template" lang="en">/, `${filePath} should use GOV.UK template html class`);
 	assert.match(page, /<body\b[^>]*class="[^"]*\bgovuk-template__body\b/, `${filePath} should use GOV.UK template body class`);
